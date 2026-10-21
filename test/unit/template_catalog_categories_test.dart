@@ -21,14 +21,32 @@ void main() {
       ),
       templateTopicOrder,
     );
+    const freeCounts = {
+      '웨딩': 6,
+      '여행': 6,
+      '일상': 6,
+      '성장·육아': 6,
+      '가족·친구': 6,
+      '커플·기념일': 6,
+      '반려동물': 6,
+    };
+    const totalCounts = {
+      '웨딩': 10,
+      '여행': 10,
+      '일상': 9,
+      '성장·육아': 10,
+      '가족·친구': 10,
+      '커플·기념일': 9,
+      '반려동물': 10,
+    };
     for (final topic in templateTopicOrder) {
       expect(
         bundledCreationTemplates.where((t) => t.category == topic).length,
-        topic == '여행' || topic == '커플·기념일' ? 6 : 5,
+        freeCounts[topic],
       );
       expect(
         publishedDesignTemplates.where((t) => t.category == topic).length,
-        topic == '여행' || topic == '커플·기념일' ? 6 : 5,
+        totalCounts[topic],
       );
     }
     expect(orderedTemplateTopics(['', '기타', '여행', '여행']), ['여행', '기타']);

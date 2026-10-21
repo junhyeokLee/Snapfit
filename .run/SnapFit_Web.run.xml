@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="SnapFit Web (로그인 고정 주소)" type="FlutterRunConfigurationType" factoryName="Flutter">
+    <option name="additionalArgs" value="--web-hostname 127.0.0.1 --web-port 7357 --dart-define=WEB_POINT_TOPUP_TEST_ENABLED=false" />
+    <option name="filePath" value="$PROJECT_DIR$/lib/main.dart" />
+    <method v="2" />
+  </configuration>
+</component>

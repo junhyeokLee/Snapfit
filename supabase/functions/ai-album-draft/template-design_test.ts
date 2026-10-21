@@ -1,11 +1,12 @@
-import { assertEquals, assertThrows } from "jsr:@std/assert";
+import { assertEquals, assertRejects, assertThrows } from "jsr:@std/assert";
 import {
   parseTemplateBrief,
-  templateCanvasHeight,
   type TemplateBrief,
+  templateCanvasHeight,
   validateTemplateDesign,
 } from "./template-design.ts";
-import { handleAiAlbumDraftRequest } from "./index.ts";
+import { openAiContractEnv } from "./test-support.ts";
+import { createOriginalTemplate } from "./index.ts";
 
 const brief: TemplateBrief = {
   prompt: "푸른 여백의 여행 사진집",
@@ -93,12 +94,6 @@ Deno.test("design validates every page, preserves free geometry and rejects defe
   assertThrows(() => parseTemplateBrief({ ...brief, prompt: "" }));
 });
 
-function request(designBrief = brief) {
-  return new Request("https://example.test/ai-album-draft", {
-    method: "POST",
-    body: JSON.stringify({ designBrief, candidates: [] }),
-  });
-}
 function modelResponse(design: unknown) {
   return new Response(
     JSON.stringify({
@@ -112,8 +107,8 @@ function modelResponse(design: unknown) {
 
 Deno.test("brief-only generation never reads photos or falls back to metadata", async () => {
   let calls = 0;
-  const response = await handleAiAlbumDraftRequest(request(), {
-    env: (key) => key === "OPENAI_API_KEY" ? "test-key" : undefined,
+  const body: any = await createOriginalTemplate(brief, {
+    env: openAiContractEnv("test-key"),
     fetch: async (url, init) => {
       calls++;
       assertEquals(String(url), "https://api.openai.com/v1/chat/completions");
@@ -125,8 +120,6 @@ Deno.test("brief-only generation never reads photos or falls back to metadata", 
       return modelResponse(designFixture());
     },
   });
-  assertEquals(response.status, 200);
-  const body = await response.json();
   assertEquals(body.design.pages.length, 5);
   assertEquals(body.recommendedPhotos, []);
   assertEquals(body.fallbackUsed, false);
@@ -136,8 +129,8 @@ Deno.test("brief-only generation never reads photos or falls back to metadata", 
 for (const pageCount of [20, 80]) {
   Deno.test(`v1 final${pageCount} expands a validated16-page model response without extra calls`, async () => {
     let calls = 0;
-    const response = await handleAiAlbumDraftRequest(request({ ...brief, pageCount }), {
-      env: (key) => key === "OPENAI_API_KEY" ? "test-key" : undefined,
+    const body: any = await createOriginalTemplate({ ...brief, pageCount }, {
+      env: openAiContractEnv("test-key"),
       fetch: async (_, init) => {
         calls++;
         const body = JSON.parse(String(init?.body));
@@ -146,8 +139,6 @@ for (const pageCount of [20, 80]) {
         return modelResponse(designFixture(16));
       },
     });
-    const body = await response.json();
-    assertEquals(response.status, 200);
     assertEquals(calls, 1);
     assertEquals(body.pageCount, pageCount);
     assertEquals(body.design.pages.length, pageCount + 1);
@@ -159,56 +150,80 @@ for (const pageCount of [20, 80]) {
 
 Deno.test("quality failure repairs once, then fails without returning a fixed layout", async () => {
   let calls = 0;
-  const response = await handleAiAlbumDraftRequest(request(), {
-    env: (key) => key === "OPENAI_API_KEY" ? "test-key" : undefined,
-    fetch: async (_, init) => {
-      calls++;
-      if (calls === 2) {
-        assertEquals(JSON.parse(String(init?.body)).messages.length, 4);
-      }
-      return modelResponse({ pages: [] });
-    },
-  });
+  await assertRejects(
+    () =>
+      createOriginalTemplate(brief, {
+        env: openAiContractEnv("test-key"),
+        fetch: async (_, init) => {
+          calls++;
+          if (calls === 2) {
+            assertEquals(JSON.parse(String(init?.body)).messages.length, 4);
+          }
+          return modelResponse({ pages: [] });
+        },
+      }),
+    Error,
+    "template_quality_failed",
+  );
   assertEquals(calls, 2);
-  assertEquals(response.status, 500);
-  assertEquals((await response.json()).error, "template_quality_failed");
 });
 
 Deno.test("corrected output is delivered and missing credentials never use metadata", async () => {
   let calls = 0;
-  const response = await handleAiAlbumDraftRequest(request(), {
-    env: (key) => key === "OPENAI_API_KEY" ? "test-key" : undefined,
+  const result = await createOriginalTemplate(brief, {
+    env: openAiContractEnv("test-key"),
     fetch: async () => modelResponse(++calls === 1 ? {} : designFixture()),
   });
-  assertEquals(response.status, 200);
+  assertEquals(result.design?.version, 1);
   assertEquals(calls, 2);
-  const missing = await handleAiAlbumDraftRequest(request(), {
-    env: () => undefined,
-  });
-  assertEquals(
-    (await missing.json()).error,
+  await assertRejects(
+    () =>
+      createOriginalTemplate(brief, {
+        env: () => undefined,
+      }),
+    Error,
     "template_provider_not_configured",
   );
 });
 
 Deno.test("ten size and cover products use exact canvas height and round trip in generated design", () => {
   for (const id of ["toString", "__proto__", "REDP_200_FABRIC", 123]) {
-    assertThrows(() => parseTemplateBrief({ ...brief, aspect: "square", printProduct: { id } }));
+    assertThrows(() =>
+      parseTemplateBrief({ ...brief, aspect: "square", printProduct: { id } })
+    );
   }
-  for (const [id, width, height] of [
-    ["REDP_200X150_SOFT", 200, 150], ["REDP_200_SOFT", 200, 200],
-    ["REDP_250X200_SOFT", 250, 200], ["REDP_250_SOFT", 250, 250],
-    ["REDP_300_SOFT", 300, 300],
-    ["REDP_200X150_HARD", 200, 150], ["REDP_200_HARD", 200, 200],
-    ["REDP_250X200_HARD", 250, 200], ["REDP_250_HARD", 250, 250],
-    ["REDP_300_HARD", 300, 300],
-  ] as const) {
+  for (
+    const [id, width, height] of [
+      ["REDP_200X150_SOFT", 200, 150],
+      ["REDP_200_SOFT", 200, 200],
+      ["REDP_250X200_SOFT", 250, 200],
+      ["REDP_250_SOFT", 250, 250],
+      ["REDP_300_SOFT", 300, 300],
+      ["REDP_200X150_HARD", 200, 150],
+      ["REDP_200_HARD", 200, 200],
+      ["REDP_250X200_HARD", 250, 200],
+      ["REDP_250_HARD", 250, 250],
+      ["REDP_300_HARD", 300, 300],
+    ] as const
+  ) {
     const printProduct = { id, trimWidthMm: width, trimHeightMm: height };
-    const request = parseTemplateBrief({ ...brief, aspect: width > height ? "landscape" : "square", printProduct });
+    const request = parseTemplateBrief({
+      ...brief,
+      aspect: width > height ? "landscape" : "square",
+      printProduct,
+    });
     assertEquals(templateCanvasHeight(request), 500 * height / width);
     const design = { ...designFixture(), aspect: request.aspect };
-    assertEquals(validateTemplateDesign(design, request).printProduct, printProduct);
-    assertThrows(() => parseTemplateBrief({ ...request, printProduct: { ...printProduct, trimWidthMm: width + 10 } }));
+    assertEquals(
+      validateTemplateDesign(design, request).printProduct,
+      printProduct,
+    );
+    assertThrows(() =>
+      parseTemplateBrief({
+        ...request,
+        printProduct: { ...printProduct, trimWidthMm: width + 10 },
+      })
+    );
     assertThrows(() => parseTemplateBrief({ ...request, aspect: "portrait" }));
   }
 });

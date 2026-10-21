@@ -8,6 +8,7 @@ import 'package:snap_fit/core/interceptors/token_storage.dart';
 import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
 import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
 import 'package:snap_fit/features/auth/presentation/views/login_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 
 class FakeAuthViewModel extends AuthViewModel {
   FakeAuthViewModel({
@@ -34,6 +35,9 @@ class FakeAuthViewModel extends AuthViewModel {
   String? loggedInEmail;
   String? passwordResetEmail;
   String? resentEmail;
+  Object? signUpError;
+  Object? passwordResetError;
+  Object? confirmationResendError;
 
   @override
   FutureOr<UserInfo?> build() => user;
@@ -65,6 +69,7 @@ class FakeAuthViewModel extends AuthViewModel {
     signedUpEmail = email;
     signedUpName = name;
     signedUpMarketing = marketingOptIn;
+    if (signUpError != null) throw signUpError!;
   }
 
   @override
@@ -80,6 +85,7 @@ class FakeAuthViewModel extends AuthViewModel {
   Future<void> requestPasswordReset(String email) async {
     passwordResetRequested = true;
     passwordResetEmail = email;
+    if (passwordResetError != null) throw passwordResetError!;
   }
 
   @override
@@ -87,6 +93,7 @@ class FakeAuthViewModel extends AuthViewModel {
     confirmationResent = true;
     confirmationResendCalls++;
     resentEmail = email;
+    if (confirmationResendError != null) throw confirmationResendError!;
   }
 
   @override
@@ -200,6 +207,112 @@ Future<void> fillSignUp(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets(
+    'rejected signup delivery stays editable without claiming mail sent',
+    (tester) async {
+      final fake = FakeAuthViewModel()
+        ..signUpError = const AuthException(
+          'Email address not authorized',
+          code: 'email_address_not_authorized',
+        );
+      await pumpLoginScreen(tester, fake);
+      await fillSignUp(tester);
+      await tester.ensureVisible(find.text('계정 만들기'));
+      await tester.tap(find.text('계정 만들기'));
+      await tester.pumpAndSettle();
+
+      expect(fake.emailSignUpCalled, isTrue);
+      expect(find.byKey(const Key('signup_confirmation_email')), findsNothing);
+      expect(find.text('가입 메일 확인'), findsNothing);
+      expect(
+        find.text('이메일 발송을 이용할 수 없는 상태예요. 다른 로그인 방법을 이용하거나 고객센터에 문의해주세요.'),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .widget<ElevatedButton>(
+              find.widgetWithText(ElevatedButton, '계정 만들기'),
+            )
+            .onPressed,
+        isNotNull,
+      );
+    },
+  );
+
+  testWidgets('failed resend clears the prior successful delivery notice', (
+    tester,
+  ) async {
+    final fake = FakeAuthViewModel();
+    await pumpLoginScreen(tester, fake);
+    await fillSignUp(tester);
+    await tester.ensureVisible(find.text('계정 만들기'));
+    await tester.tap(find.text('계정 만들기'));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 60));
+    await tester.ensureVisible(find.text('인증 메일 다시 보내기'));
+    await tester.tap(find.text('인증 메일 다시 보내기'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('방금 인증 메일을 다시 보냈어요. 가장 최근 메일의 링크를 열어주세요.'),
+      findsOneWidget,
+    );
+
+    await tester.pump(const Duration(seconds: 60));
+    fake.confirmationResendError = const AuthException(
+      'Error sending confirmation email',
+      code: 'unexpected_failure',
+      statusCode: '500',
+    );
+    await tester.ensureVisible(find.text('인증 메일 다시 보내기'));
+    await tester.tap(find.text('인증 메일 다시 보내기'));
+    await tester.pumpAndSettle();
+
+    expect(fake.confirmationResendCalls, 2);
+    expect(find.text('인증 메일을 보내지 못했어요. 잠시 후 다시 시도해주세요.'), findsOneWidget);
+    expect(find.text('방금 인증 메일을 다시 보냈어요. 가장 최근 메일의 링크를 열어주세요.'), findsNothing);
+    expect(find.text('인증 메일을 다시 보냈어요.'), findsNothing);
+    expect(find.text('이메일 인증을 먼저 완료해주세요.'), findsNothing);
+  });
+
+  testWidgets(
+    'failed password reset delivery does not show success or login error',
+    (tester) async {
+      final fake = FakeAuthViewModel()
+        ..passwordResetError = const AuthException(
+          'Error sending recovery email',
+          code: 'unexpected_failure',
+        );
+      await pumpLoginScreen(tester, fake);
+      await tester.ensureVisible(find.text('이메일로 로그인'));
+      await tester.tap(find.text('이메일로 로그인'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('비밀번호를 잊으셨나요?'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'snapfit@example.com'),
+        'album@example.com',
+      );
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+
+      expect(fake.passwordResetRequested, isTrue);
+      expect(
+        find.text('비밀번호 재설정 메일을 보내지 못했어요. 잠시 후 다시 시도해주세요.'),
+        findsOneWidget,
+      );
+      expect(find.text('비밀번호 재설정 메일을 보냈어요.'), findsNothing);
+      expect(find.text('이메일 로그인을 완료하지 못했어요. 잠시 후 다시 시도해주세요.'), findsNothing);
+      expect(
+        tester
+            .widget<ElevatedButton>(
+              find.widgetWithText(ElevatedButton, '재설정 메일 보내기'),
+            )
+            .onPressed,
+        isNotNull,
+      );
+    },
+  );
+
   for (final size in [
     const Size(320, 568),
     const Size(390, 844),

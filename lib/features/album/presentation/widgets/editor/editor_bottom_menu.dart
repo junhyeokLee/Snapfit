@@ -1,34 +1,20 @@
-import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'package:flutter/material.dart';
+import '../../../../../shared/widgets/album_stage_style.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'dart:ui';
-import '../../../../../core/constants/snapfit_colors.dart';
-import '../../../../../shared/widgets/snapfit_motion.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 enum EditorMode {
   none,
-  layout, // 슬롯 기반 레이아웃(페이지 템플릿)
-  template, // 전체 디자인 템플릿 (확장용)
+  layout,
+  template,
   sticker,
   backgroundColor,
   layer,
-  text, // For text editing, though usually handled by dialog/overlay
+  text,
 }
 
 class EditorBottomMenu extends StatelessWidget {
-  final EditorMode currentMode;
-  final Function(EditorMode) onModeChanged;
-  final VoidCallback? onAddPhoto;
-  final bool isCover;
-  final VoidCallback? onCover;
-  final bool showCoverMenuItem;
-  final bool canUndo;
-  final bool canRedo;
-  final VoidCallback? onUndo;
-  final VoidCallback? onRedo;
-  final bool useCreationStyle;
-
   const EditorBottomMenu({
     super.key,
     required this.currentMode,
@@ -44,341 +30,172 @@ class EditorBottomMenu extends StatelessWidget {
     this.useCreationStyle = false,
   });
 
+  final EditorMode currentMode;
+  final ValueChanged<EditorMode> onModeChanged;
+  final VoidCallback? onAddPhoto, onCover, onUndo, onRedo;
+  final bool isCover, showCoverMenuItem, canUndo, canRedo, useCreationStyle;
+
   @override
   Widget build(BuildContext context) {
-    final items = isCover
-        ? [
-            _EditorMenuItem('글', Icons.text_fields_outlined, EditorMode.text),
-            _EditorMenuItem(
-              '사진',
-              Icons.add_photo_alternate_outlined,
-              EditorMode.none,
-              isAction: true,
-              onAction: onAddPhoto,
-            ),
-            if (showCoverMenuItem)
-              _EditorMenuItem(
-                '커버',
-                Icons.photo_album_outlined,
-                EditorMode.none,
-                isAction: true,
-                onAction: onCover,
-              ),
-            _EditorMenuItem(
-              '레이아웃',
-              Icons.dashboard_customize_outlined,
-              EditorMode.layout,
-            ),
-            _EditorMenuItem(
-              '템플릿',
-              Icons.auto_awesome_mosaic_outlined,
-              EditorMode.template,
-            ),
-            _EditorMenuItem('레이어', Icons.layers_rounded, EditorMode.layer),
-            _EditorMenuItem(
-              '꾸미기',
-              Icons.emoji_emotions_outlined,
-              EditorMode.sticker,
-            ),
-            _EditorMenuItem(
-              '배경',
-              Icons.palette_outlined,
-              EditorMode.backgroundColor,
-            ),
-          ]
-        : [
-            _EditorMenuItem('글', Icons.text_fields_outlined, EditorMode.text),
-            _EditorMenuItem(
-              '사진',
-              Icons.add_photo_alternate_outlined,
-              EditorMode.none,
-              isAction: true,
-              onAction: onAddPhoto,
-            ),
-            _EditorMenuItem(
-              '레이아웃',
-              Icons.dashboard_customize_outlined,
-              EditorMode.layout,
-            ),
-            _EditorMenuItem(
-              '템플릿',
-              Icons.auto_awesome_mosaic_outlined,
-              EditorMode.template,
-            ),
-            _EditorMenuItem('레이어', Icons.layers_rounded, EditorMode.layer),
-            _EditorMenuItem(
-              '꾸미기',
-              Icons.emoji_emotions_outlined,
-              EditorMode.sticker,
-            ),
-            _EditorMenuItem(
-              '배경',
-              Icons.palette_outlined,
-              EditorMode.backgroundColor,
-            ),
-          ];
-
-    if (useCreationStyle) {
-      final labelSize = MediaQuery.textScalerOf(context).scale(11);
-      return SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            for (final item in items)
-              Padding(
-                padding: const EdgeInsets.only(right: 4),
-                child: Semantics(
-                  button: true,
-                  selected: !item.isAction && currentMode == item.mode,
-                  child: Tooltip(
-                    message: item.label,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(6),
-                      onTap: () {
-                        if (item.isAction) {
-                          item.onAction?.call();
-                        } else {
-                          onModeChanged(
-                            currentMode == item.mode
-                                ? EditorMode.none
-                                : item.mode,
-                          );
-                        }
-                      },
-                      child: Container(
-                        width: math.max(64, labelSize * 4 + 16),
-                        height: 38 + labelSize * 1.5,
-                        decoration: BoxDecoration(
-                          color: !item.isAction && currentMode == item.mode
-                              ? ExperienceFormStyle.selection(context)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              item.icon,
-                              size: 22,
-                              color: ExperienceFormStyle.ink(context),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              item.label,
-                              style: ExperienceFormStyle.text(
-                                context,
-                                11,
-                                weight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      );
-    }
-
+    final items = <_EditorMenuItem>[
+      _EditorMenuItem('사진', 'ImagePlus', null, onAction: onAddPhoto),
+      const _EditorMenuItem('글', 'Type', EditorMode.text),
+      const _EditorMenuItem('템플릿', 'PanelsTopLeft', EditorMode.template),
+      const _EditorMenuItem('꾸미기', 'Shapes', EditorMode.sticker),
+      if (isCover && showCoverMenuItem)
+        _EditorMenuItem('커버', 'BookOpen', null, onAction: onCover),
+      const _EditorMenuItem('레이아웃', 'LayoutGrid', EditorMode.layout),
+      const _EditorMenuItem('배경', 'Settings2', EditorMode.backgroundColor),
+      const _EditorMenuItem('레이어', 'Layers2', EditorMode.layer),
+    ];
     return LayoutBuilder(
-      builder: (context, constraints) {
-        final isVerticalRail = constraints.maxWidth < 120;
-        final isDark = SnapFitColors.isDark(context);
-
-        return Container(
-          height: isVerticalRail ? double.infinity : 90,
-          width: isVerticalRail ? 72 : null,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24.r),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: isDark
-                  ? [
-                      const Color(0xFF1D2230).withOpacity(0.96),
-                      const Color(0xFF101820).withOpacity(0.92),
-                    ]
-                  : [
-                      Colors.white.withOpacity(0.95),
-                      const Color(0xFFF5E8D7).withOpacity(0.92),
-                      const Color(0xFFFCF7EF).withOpacity(0.96),
-                    ],
-            ),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withOpacity(0.10)
-                  : const Color(0xFFDCCDBB),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(
-                  0xFF6C5740,
-                ).withOpacity(isDark ? 0.34 : 0.14),
-                blurRadius: 28,
-                offset: const Offset(0, -12),
-              ),
+      builder: (context, box) {
+        final vertical = !useCreationStyle && box.maxWidth < 120;
+        final labelHeight = MediaQuery.textScalerOf(context).scale(11) * 1.4;
+        final tools = SingleChildScrollView(
+          key: const ValueKey('editor-tool-scroll'),
+          scrollDirection: vertical ? Axis.vertical : Axis.horizontal,
+          padding: const EdgeInsets.all(4),
+          child: Flex(
+            direction: vertical ? Axis.vertical : Axis.horizontal,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var i = 0; i < items.length; i++) ...[
+                if (i == 4)
+                  vertical
+                      ? SizedBox(
+                          width: 44,
+                          child: Divider(
+                            key: const ValueKey('editor-advanced-tool-divider'),
+                            height: 12,
+                            color: AlbumStageStyle.line(context),
+                          ),
+                        )
+                      : SizedBox(
+                          height: 32,
+                          child: VerticalDivider(
+                            key: const ValueKey('editor-advanced-tool-divider'),
+                            width: 12,
+                            color: AlbumStageStyle.line(context),
+                          ),
+                        ),
+                Padding(
+                  padding: const EdgeInsets.all(2),
+                  child: _tool(context, items[i], labelHeight),
+                ),
+              ],
             ],
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(24.r),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-              child: SingleChildScrollView(
-                scrollDirection: isVerticalRail
-                    ? Axis.vertical
-                    : Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                padding: isVerticalRail
-                    ? const EdgeInsets.symmetric(horizontal: 6, vertical: 8)
-                    : EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.h),
-                child: isVerticalRail
-                    ? Column(
-                        children: items
-                            .map(
-                              (item) => Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 4,
-                                ),
-                                child: _buildMenuItem(
-                                  context,
-                                  item,
-                                  compact: true,
-                                ),
-                              ),
-                            )
-                            .toList(),
-                      )
-                    : Row(
-                        children: items
-                            .map(
-                              (item) => Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 3.w),
-                                child: _buildMenuItem(context, item),
-                              ),
-                            )
-                            .toList(),
+        );
+        if (useCreationStyle) return tools;
+        final history = Flex(
+          direction: vertical ? Axis.vertical : Axis.horizontal,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _history(context, '되돌리기', 'Undo2', canUndo ? onUndo : null),
+            _history(context, '다시하기', 'Redo2', canRedo ? onRedo : null),
+          ],
+        );
+        return ColoredBox(
+          key: const ValueKey('editor-command-surface'),
+          color: AlbumStageStyle.bottom(context),
+          child: vertical
+              ? Column(
+                  children: [
+                    history,
+                    Divider(height: 1, color: AlbumStageStyle.line(context)),
+                    Expanded(child: tools),
+                  ],
+                )
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Divider(height: 1, color: AlbumStageStyle.line(context)),
+                    SizedBox(
+                      height: 46 + labelHeight,
+                      child: Row(
+                        children: [
+                          Expanded(child: tools),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 4),
+                            child: history,
+                          ),
+                        ],
                       ),
-              ),
-            ),
-          ),
+                    ),
+                  ],
+                ),
         );
       },
     );
   }
 
-  Widget _buildMenuItem(
+  Widget _history(
     BuildContext context,
-    _EditorMenuItem item, {
-    bool compact = false,
-  }) {
-    final isSelected = !item.isAction && currentMode == item.mode;
-    final isDark = SnapFitColors.isDark(context);
-    final baseColor = isDark
-        ? Colors.white.withOpacity(0.74)
-        : SnapFitColors.deepCharcoal.withOpacity(0.70);
-    final isFeatured = isSelected;
+    String label,
+    String icon,
+    VoidCallback? action,
+  ) => IconButton(
+    key: ValueKey('editor-$icon'),
+    tooltip: label,
+    constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+    onPressed: action,
+    icon: ExperienceIcon(
+      icon,
+      size: 21,
+      color: AlbumStageStyle.ink(
+        context,
+      ).withValues(alpha: action == null ? .25 : 1),
+    ),
+  );
 
-    return Tooltip(
-      message: item.label,
-      child: SnapFitPressable(
-        pressedScale: 0.94,
-        borderRadius: BorderRadius.circular(22.r),
-        onTap: () {
-          if (item.isAction) {
-            item.onAction?.call();
-          } else {
-            onModeChanged(isSelected ? EditorMode.none : item.mode);
-          }
-        },
-        child: AnimatedContainer(
-          duration: SnapFitMotion.fast,
-          curve: SnapFitMotion.settle,
-          width: compact ? 54 : 58,
-          height: compact ? 44 : 66,
-          padding: compact
-              ? EdgeInsets.zero
-              : const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22.r),
-            gradient: isSelected
-                ? const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF2A2520), Color(0xFF6E5942)],
-                  )
-                : null,
-            color: isSelected
-                ? null
-                : isFeatured
-                ? const Color(0xFFF1E1CB).withOpacity(isDark ? 0.16 : 0.80)
-                : Colors.white.withOpacity(isDark ? 0.05 : 0.42),
-            border: Border.all(
-              color: isSelected
-                  ? Colors.white.withOpacity(0.20)
-                  : isFeatured
-                  ? const Color(0xFFB98B62).withOpacity(0.26)
-                  : SnapFitColors.overlayLightOf(context),
-            ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: const Color(0xFF6C5740).withOpacity(0.22),
-                      blurRadius: 18,
-                      offset: const Offset(0, 8),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
+  Widget _tool(BuildContext context, _EditorMenuItem item, double labelHeight) {
+    final selected = item.mode != null && currentMode == item.mode;
+    final action = item.mode == null
+        ? item.onAction
+        : () => onModeChanged(selected ? EditorMode.none : item.mode!);
+    final ink = selected
+        ? ExperienceFormStyle.selectionInk(context)
+        : AlbumStageStyle.ink(context);
+    return Semantics(
+      button: true,
+      selected: selected,
+      enabled: action != null,
+      label: item.label,
+      child: Tooltip(
+        message: item.label,
+        child: Material(
+          color: selected
+              ? AlbumStageStyle.controlFill(context)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          child: InkWell(
+            onTap: action,
+            borderRadius: BorderRadius.circular(8),
+            child: SizedBox(
+              width: math.max(
+                60,
+                MediaQuery.textScalerOf(context).scale(11) * 4 + 12,
+              ),
+              height: 34 + labelHeight,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  AnimatedScale(
-                    scale: isSelected ? 1.08 : 1.0,
-                    duration: SnapFitMotion.fast,
-                    curve: SnapFitMotion.settle,
-                    child: Icon(
-                      item.icon,
-                      color: isSelected
-                          ? Colors.white
-                          : isFeatured
-                          ? const Color(0xFF8F6846)
-                          : baseColor,
-                      size: compact ? 21 : 22,
+                  ExperienceIcon(item.icon, size: 22, color: ink),
+                  const SizedBox(height: 5),
+                  Text(
+                    item.label,
+                    maxLines: 1,
+                    style: ExperienceFormStyle.text(
+                      context,
+                      11,
+                      color: ink,
+                      weight: selected ? FontWeight.w700 : FontWeight.w500,
                     ),
                   ),
                 ],
               ),
-              if (!compact) ...[
-                const SizedBox(height: 6),
-                Text(
-                  item.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style:
-                      (Theme.of(context).textTheme.bodySmall ??
-                              const TextStyle())
-                          .copyWith(
-                            fontSize: 10,
-                            height: 1.0,
-                            color: isSelected
-                                ? Colors.white
-                                : isFeatured
-                                ? const Color(0xFF8F6846)
-                                : baseColor,
-                            fontWeight: isSelected || isFeatured
-                                ? FontWeight.w900
-                                : FontWeight.w800,
-                            letterSpacing: -0.12,
-                          ),
-                ),
-              ],
-            ],
+            ),
           ),
         ),
       ),
@@ -387,17 +204,8 @@ class EditorBottomMenu extends StatelessWidget {
 }
 
 class _EditorMenuItem {
-  const _EditorMenuItem(
-    this.label,
-    this.icon,
-    this.mode, {
-    this.isAction = false,
-    this.onAction,
-  });
-
-  final String label;
-  final IconData icon;
-  final EditorMode mode;
-  final bool isAction;
+  const _EditorMenuItem(this.label, this.icon, this.mode, {this.onAction});
+  final String label, icon;
+  final EditorMode? mode;
   final VoidCallback? onAction;
 }

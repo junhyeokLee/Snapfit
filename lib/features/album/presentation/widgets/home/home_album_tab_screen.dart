@@ -38,21 +38,14 @@ class HomeAlbumTabScreen extends ConsumerWidget {
       favoriteAlbumIds: favoriteAlbumIds,
       albumTabIndex: albumTabIndex,
     );
-    const labels = ['전체', '작업 중', '완성본', '즐겨찾기', '함께 만든'];
     void openSearch() => Navigator.push<void>(
       context,
       MaterialPageRoute(
         builder: (_) => AlbumCategoryScreen(
-          category: albumTabIndex == 4
-              ? AlbumCategory.shared
-              : AlbumCategory.recent,
+          category: AlbumCategory.recent,
           initialAlbums: data.allAlbums,
           currentUserId: currentUserId,
-          initialTabIndex: switch (albumTabIndex) {
-            2 => 1,
-            3 => 2,
-            _ => 0,
-          },
+          initialTabIndex: 0,
         ),
       ),
     );
@@ -77,74 +70,15 @@ class HomeAlbumTabScreen extends ConsumerWidget {
               physics: platformScrollPhysics(alwaysScrollable: true),
               slivers: [
                 SliverToBoxAdapter(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      children: [
-                        for (var i = 0; i < labels.length; i++)
-                          Semantics(
-                            selected: albumTabIndex == i,
-                            child: InkWell(
-                              onTap: () => onAlbumTabChanged(i),
-                              child: Container(
-                                constraints: const BoxConstraints(
-                                  minHeight: 52,
-                                ),
-                                alignment: Alignment.center,
-                                margin: const EdgeInsets.only(right: 24),
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    bottom: BorderSide(
-                                      width: 2,
-                                      color: albumTabIndex == i
-                                          ? ExperienceFormStyle.ink(context)
-                                          : Colors.transparent,
-                                    ),
-                                  ),
-                                ),
-                                child: Text(
-                                  labels[i],
-                                  style: ExperienceFormStyle.text(
-                                    context,
-                                    14,
-                                    weight: albumTabIndex == i
-                                        ? FontWeight.w600
-                                        : FontWeight.w400,
-                                    secondary: albumTabIndex != i,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-                SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            '${labels[albumTabIndex]} · ${data.tabAlbums.length}권',
-                            style: ExperienceFormStyle.text(
-                              context,
-                              13,
-                              secondary: true,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          '최근 순',
-                          style: ExperienceFormStyle.text(
-                            context,
-                            12,
-                            secondary: true,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      '${data.tabAlbums.length}권',
+                      style: ExperienceFormStyle.text(
+                        context,
+                        13,
+                        secondary: true,
+                      ),
                     ),
                   ),
                 ),
@@ -155,9 +89,7 @@ class HomeAlbumTabScreen extends ConsumerWidget {
                       child: Padding(
                         padding: const EdgeInsets.all(28),
                         child: Text(
-                          albumTabIndex == 3
-                              ? '아끼는 앨범에 별표를 남겨 주세요.'
-                              : '아직 이곳에 모인 앨범이 없어요.',
+                          '아직 이곳에 모인 앨범이 없어요.',
                           textAlign: TextAlign.center,
                           style: ExperienceFormStyle.text(
                             context,

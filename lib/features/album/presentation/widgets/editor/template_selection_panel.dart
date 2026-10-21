@@ -22,8 +22,10 @@ class TemplateSelectionPanel extends ConsumerStatefulWidget {
     super.key,
     this.title = '레이아웃',
     this.closeOnApply = true,
+    this.showHeader = true,
   });
   final bool closeOnApply;
+  final bool showHeader;
 
   @override
   ConsumerState<TemplateSelectionPanel> createState() =>
@@ -63,11 +65,15 @@ class _TemplateSelectionPanelState
     return Container(
       height: kIsWeb ? double.infinity : maxSheetHeight,
       decoration: BoxDecoration(
-        color: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.surfaceOf(context),
-        borderRadius: kIsWeb ? BorderRadius.circular(12) : BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
+        color: kIsWeb
+            ? WebPalette.of(context).surface
+            : SnapFitColors.surfaceOf(context),
+        borderRadius: kIsWeb
+            ? BorderRadius.circular(12)
+            : BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
       ),
       child: SafeArea(
         top: false,
@@ -75,32 +81,49 @@ class _TemplateSelectionPanelState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!kIsWeb) ...[
-            SizedBox(height: 12),
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: SnapFitColors.textPrimaryOf(
-                    context,
-                  ).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2),
+              SizedBox(height: 12),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: SnapFitColors.textPrimaryOf(
+                      context,
+                    ).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 16),
+              SizedBox(height: 16),
             ],
-            if (!kIsWeb || widget.closeOnApply) Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Row(children: [Expanded(child: Text(
-                widget.title == '레이아웃' ? '쪽 레이아웃 고르기' : widget.title,
-                style: TextStyle(
-                  fontSize: 19,
-                  fontWeight: kIsWeb ? FontWeight.w600 : FontWeight.w900,
-                  color: kIsWeb ? WebPalette.of(context).ink : SnapFitColors.textPrimaryOf(context),
+            if (widget.showHeader && (!kIsWeb || widget.closeOnApply))
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        widget.title == '레이아웃' ? '쪽 레이아웃 고르기' : widget.title,
+                        style: TextStyle(
+                          fontSize: 19,
+                          fontWeight: kIsWeb
+                              ? FontWeight.w700
+                              : FontWeight.w900,
+                          color: kIsWeb
+                              ? WebPalette.of(context).ink
+                              : SnapFitColors.textPrimaryOf(context),
+                        ),
+                      ),
+                    ),
+                    if (kIsWeb)
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        tooltip: '레이아웃 닫기',
+                        icon: const Icon(Icons.close, size: 20),
+                      ),
+                  ],
                 ),
-              )), if (kIsWeb) IconButton(onPressed: () => Navigator.pop(context), tooltip: '레이아웃 닫기', icon: const Icon(Icons.close, size: 20))]),
-            ),
+              ),
             const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -208,29 +231,39 @@ class _TemplateCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return SnapFitPressable(
       onTap: onTap,
+      semanticLabel: '${template.name} 레이아웃 미리보기',
+      selected: isSelected,
       pressedScale: 0.98,
       borderRadius: BorderRadius.circular(kIsWeb ? 12 : 8),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: SnapFitMotion.settle,
         decoration: BoxDecoration(
-          color: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.surfaceOf(context),
+          color: kIsWeb
+              ? WebPalette.of(context).surface
+              : SnapFitColors.surfaceOf(context),
           borderRadius: BorderRadius.circular(kIsWeb ? 12 : 8),
           border: Border.all(
             color: isSelected
-                ? kIsWeb ? WebPalette.of(context).brandInk : SnapFitColors.accent
-                : kIsWeb ? WebPalette.of(context).line : SnapFitColors.overlayLightOf(context),
+                ? kIsWeb
+                      ? WebPalette.of(context).brandInk
+                      : SnapFitColors.accent
+                : kIsWeb
+                ? WebPalette.of(context).line
+                : SnapFitColors.overlayLightOf(context),
             width: isSelected ? 2 : 1,
           ),
-          boxShadow: kIsWeb ? const [] : [
-            BoxShadow(
-              color: Colors.black.withOpacity(
-                SnapFitColors.isDark(context) ? 0.22 : 0.06,
-              ),
-              blurRadius: isSelected ? 20 : 12,
-              offset: const Offset(0, 8),
-            ),
-          ],
+          boxShadow: kIsWeb
+              ? const []
+              : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(
+                      SnapFitColors.isDark(context) ? 0.22 : 0.06,
+                    ),
+                    blurRadius: isSelected ? 20 : 12,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
         ),
         child: Padding(
           padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
@@ -268,7 +301,9 @@ class _TemplateCard extends StatelessWidget {
                           child: Icon(
                             Icons.check_rounded,
                             size: 13,
-                            color: kIsWeb ? WebPalette.of(context).onBrand : Colors.white,
+                            color: kIsWeb
+                                ? WebPalette.of(context).onBrand
+                                : Colors.white,
                           ),
                         ),
                       ),

@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/theme/snapfit_design_tokens.dart';
 import '../../../../core/navigation/web_app_location.dart';
 import '../../../album/data/gallery/browser_photo_asset.dart';
 import '../../../../config/env.dart';
@@ -36,6 +37,8 @@ import 'admin_template_management_screen.dart';
 import 'billing_management_screen.dart';
 import '../widgets/my_point_balance_card.dart';
 import '../widgets/personal_collection_shelf.dart';
+import '../widgets/personal_order_shortcut.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 import '../../../album/domain/entities/album.dart';
 import '../../../album/presentation/widgets/home/home_album_actions.dart';
 import '../widgets/theme_settings_sheet.dart';
@@ -56,10 +59,13 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
 
   void _openLibrary([String type = '전체']) {
     if (kIsWeb) {
-      Navigator.push(context, snapFitRoute(
-        page: MaterialCatalogScreen(library: true, initialType: type),
-        settings: const WebAppRouteSettings(WebAppLocation.library),
-      ));
+      Navigator.push(
+        context,
+        snapFitRoute(
+          page: MaterialCatalogScreen(library: true, initialType: type),
+          settings: const WebAppRouteSettings(WebAppLocation.library),
+        ),
+      );
       return;
     }
     final scope = ExperienceNavigationScope.maybeOf(context);
@@ -88,10 +94,16 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
 
   void _openSharedAlbums(List<Album> albums, String ownerId) {
     if (ref.read(visibleOrderOwnerProvider) != ownerId) return;
-    Navigator.push(context, snapFitRoute(page: AlbumCategoryScreen(
-      category: AlbumCategory.shared, initialAlbums: albums,
-      currentUserId: ownerId,
-    )));
+    Navigator.push(
+      context,
+      snapFitRoute(
+        page: AlbumCategoryScreen(
+          category: AlbumCategory.shared,
+          initialAlbums: albums,
+          currentUserId: ownerId,
+        ),
+      ),
+    );
   }
 
   Future<void> _openPointCharge() async {
@@ -158,7 +170,12 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
 
     return Scaffold(
       backgroundColor: SnapFitColors.backgroundOf(context),
-      appBar: const ExperienceHeader(title: '마이', themeAware: true),
+      appBar: ExperienceHeader(
+        title: '마이',
+        showDivider: false,
+        themeAware: true,
+        back: Navigator.of(context).canPop(),
+      ),
       body: Stack(
         children: [
           SafeArea(
@@ -179,8 +196,8 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                     compact: wide,
                   ),
                   const SizedBox(height: 12),
-                  MyPointBalanceCard(onCharge: _openPointCharge),
-                  const SizedBox(height: 28),
+                  MyPointBalanceCard(onCharge: _openPointCharge, compact: true),
+                  SizedBox(height: wide ? 0 : 28),
                   PersonalAlbumShelf(
                     key: const ValueKey('profile-album-collection'),
                     albums: albumsAsync,
@@ -200,13 +217,11 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                     onOpen: _openLibrary,
                   ),
                   const SizedBox(height: 24),
-                  _sectionTitle(context, '구매 및 이용'),
-                  ExperienceRow(
-                    themeAware: true,
-                    icon: Icons.inventory_2_outlined,
-                    title: '인쇄 주문 내역',
-                    subtitle: '제작 진행 · 배송 조회',
-                    onTap: () => Navigator.push(
+                  PersonalOrderShortcut(
+                    key: const ValueKey('profile-order-shortcut'),
+                    summary: orderSummaryAsync,
+                    onRetry: () => ref.invalidate(myOrderSummaryProvider),
+                    onOpen: () => Navigator.push(
                       context,
                       snapFitRoute(
                         page: const OrderHistoryScreen(),
@@ -218,41 +233,36 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                   ),
                   const SizedBox(height: 24),
                   _sectionTitle(context, '설정 및 도움말'),
-                  ExperienceRow(
-                    themeAware: true,
-                    icon: Icons.manage_accounts_outlined,
+                  _accountRow(
+                    icon: 'Settings2',
                     title: '계정 설정',
                     subtitle: '로그인 정보 · 프로필 · 보안',
                     onTap: _openAccountSettings,
                   ),
-                  ExperienceRow(
-                    themeAware: true,
-                    icon: Icons.palette_outlined,
+                  _accountRow(
+                    icon: 'Shapes',
                     title: '화면 테마',
                     subtitle: themeMode == ThemeMode.dark ? '다크' : '라이트',
                     onTap: () => _showThemeBottomSheet(context, ref, themeMode),
                   ),
-                  ExperienceRow(
-                    themeAware: true,
-                    icon: Icons.notifications_none,
+                  _accountRow(
+                    icon: 'Bell',
                     title: '알림 설정',
                     onTap: () => Navigator.push(
                       context,
                       snapFitRoute(page: const NotificationSettingsScreen()),
                     ),
                   ),
-                  ExperienceRow(
-                    themeAware: true,
-                    icon: Icons.chat_bubble_outline,
+                  _accountRow(
+                    icon: 'MessageCircle',
                     title: '고객센터',
                     onTap: () => Navigator.push(
                       context,
                       snapFitRoute(page: const SupportInquiryScreen()),
                     ),
                   ),
-                  ExperienceRow(
-                    themeAware: true,
-                    icon: Icons.description_outlined,
+                  _accountRow(
+                    icon: 'BookOpen',
                     title: '이용 안내',
                     onTap: () => Navigator.push(
                       context,
@@ -479,7 +489,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         SizedBox(
-                          width: (bounds.maxWidth * .36).clamp(220.0, 280.0),
+                          width: (bounds.maxWidth * .29).clamp(184.0, 240.0),
                           child: SingleChildScrollView(
                             key: const PageStorageKey('profile-summary-scroll'),
                             padding: const EdgeInsets.symmetric(vertical: 12),
@@ -541,10 +551,13 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
       webNavigation.onNavigate(WebSection.orders);
       return;
     }
-    Navigator.push(context, snapFitRoute(
-      page: const OrderHistoryScreen(),
-      settings: const WebAppRouteSettings(WebAppLocation.orders),
-    ));
+    Navigator.push(
+      context,
+      snapFitRoute(
+        page: const OrderHistoryScreen(),
+        settings: const WebAppRouteSettings(WebAppLocation.orders),
+      ),
+    );
   }
 
   Widget _webOverview({
@@ -556,19 +569,30 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
   }) {
     final visibleOwner = ref.watch(visibleOrderOwnerProvider);
     if (userInfo == null || visibleOwner != userInfo.id) {
-      return const SnapFitWebShell(showNavigation: false,
-        child: WebSurface(child: Text('로그인한 계정을 확인한 뒤 계정 정보를 볼 수 있어요.')));
+      return const SnapFitWebShell(
+        showNavigation: false,
+        child: WebSurface(child: Text('로그인한 계정을 확인한 뒤 계정 정보를 볼 수 있어요.')),
+      );
     }
     final name = userInfo.name;
     final photo = userInfo.profileImageUrl;
     final ownedDesigns = ref.watch(ownedPointShopKeysProvider);
-    final sharedAlbums = albums.asData?.value.where((album) =>
-      album.userId.trim().isNotEmpty && album.userId != userInfo.id).toList();
+    final sharedAlbums = albums.asData?.value
+        .where(
+          (album) =>
+              album.userId.trim().isNotEmpty && album.userId != userInfo.id,
+        )
+        .toList();
     final ownAlbums = albums.asData?.value
-        .where((album) => album.userId == userInfo.id).length;
+        .where((album) => album.userId == userInfo.id)
+        .length;
     final order = summary.asData?.value;
-    final pending = order == null ? null :
-        order.paymentPending + order.paymentCompleted + order.inProduction + order.shipping;
+    final pending = order == null
+        ? null
+        : order.paymentPending +
+              order.paymentCompleted +
+              order.inProduction +
+              order.shipping;
     String value(AsyncValue<dynamic> source, Object? result) =>
         source.hasError ? '조회 필요' : result?.toString() ?? '확인 중';
     return SnapFitWebShell(
@@ -578,174 +602,431 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             WebPageHeading(
-              eyebrow: 'MY ACCOUNT', title: '계정 개요',
-              description: '나의 앨범과 주문, 계정 설정을 한곳에서 확인하세요.',
+              title: '계정',
+              description: '내 정보와 포인트, 알림을 관리하세요.',
               trailing: OutlinedButton.icon(
                 onPressed: _openAccountSettings,
                 icon: const Icon(Icons.manage_accounts_outlined, size: 18),
                 label: const Text('계정 설정'),
               ),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
             WebSurface(
-              child: Row(children: [
-                Tooltip(message: '프로필 사진 크게 보기', child: InkWell(
-                  onTap: () => _openProfileImageViewer(context, photo, ownerId: userInfo.id),
-                  borderRadius: BorderRadius.circular(12),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: SizedBox(width: 64, height: 64,
-                      child: photo != null && photo.isNotEmpty
-                        ? Image.network(photo, fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => ColoredBox(
-                              color: WebPalette.of(context).softBrand,
-                              child: Icon(Icons.person_outline, color: WebPalette.of(context).brandInk)))
-                        : ColoredBox(color: WebPalette.of(context).softBrand,
-                            child: Icon(Icons.person_outline, color: WebPalette.of(context).brandInk)),
-                    ),
-                  ),
-                )),
-                const SizedBox(width: 20),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('$name님', style: TextStyle(fontSize: 22,
-                    fontWeight: FontWeight.w600, color: WebPalette.of(context).ink)),
-                  const SizedBox(height: 6),
-                  Text(userInfo.email ?? '로그인 정보를 확인해주세요.',
-                    style: TextStyle(fontSize: 14, color: WebPalette.of(context).muted)),
-                ])),
-                TextButton(
-                  onPressed: () => _pickAndSaveProfileImage(context, ref, userInfo),
-                  child: const Text('사진 변경'),
-                ),
-              ]),
+              padding: const EdgeInsets.all(24),
+              child: LayoutBuilder(
+                builder: (context, bounds) {
+                  final changePhoto = TextButton(
+                    onPressed: () =>
+                        _pickAndSaveProfileImage(context, ref, userInfo),
+                    child: const Text('사진 변경'),
+                  );
+                  final identity = Row(
+                    children: [
+                      Tooltip(
+                        message: '프로필 사진 크게 보기',
+                        child: InkWell(
+                          onTap: () => _openProfileImageViewer(
+                            context,
+                            photo,
+                            ownerId: userInfo.id,
+                          ),
+                          borderRadius: BorderRadius.circular(SnapFitRadius.md),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              SnapFitRadius.md,
+                            ),
+                            child: SizedBox(
+                              width: 64,
+                              height: 64,
+                              child: photo != null && photo.isNotEmpty
+                                  ? Image.network(
+                                      photo,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => ColoredBox(
+                                        color: WebPalette.of(context).softBrand,
+                                        child: Icon(
+                                          Icons.person_outline,
+                                          color: WebPalette.of(
+                                            context,
+                                          ).brandInk,
+                                        ),
+                                      ),
+                                    )
+                                  : ColoredBox(
+                                      color: WebPalette.of(context).softBrand,
+                                      child: Icon(
+                                        Icons.person_outline,
+                                        color: WebPalette.of(context).brandInk,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '$name님',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                                color: WebPalette.of(context).ink,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              userInfo.email ?? '로그인 정보를 확인해주세요.',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: WebPalette.of(context).muted,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                  if (bounds.maxWidth < 520) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        identity,
+                        const SizedBox(height: 12),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: changePhoto,
+                        ),
+                      ],
+                    );
+                  }
+                  return Row(
+                    children: [
+                      Expanded(child: identity),
+                      const SizedBox(width: 20),
+                      changePhoto,
+                    ],
+                  );
+                },
+              ),
             ),
             const SizedBox(height: 24),
-            LayoutBuilder(builder: (context, bounds) {
-              final columns = bounds.maxWidth >= 900 ? 3 : bounds.maxWidth >= 560 ? 2 : 1;
-              final width = (bounds.maxWidth - (columns - 1) * 20) / columns;
-              return Wrap(spacing: 20, runSpacing: 20, children: [
-                SizedBox(width: width, child: _webMetric('나의 앨범',
-                  value(albums, ownAlbums), '개', '내 앨범 보기', _webHome)),
-                SizedBox(width: width, child: _webMetric('진행 중인 주문',
-                  value(summary, pending), '건', '주문내역 보기', _webOrders)),
-                SizedBox(width: width, child: _webMetric('보유 포인트',
-                  value(points, points.asData?.value), 'P', '포인트 관리', _openPointCharge)),
-              ]);
-            }),
+            LayoutBuilder(
+              builder: (context, bounds) {
+                final columns = bounds.maxWidth >= 900
+                    ? 3
+                    : bounds.maxWidth >= 560
+                    ? 2
+                    : 1;
+                final width = (bounds.maxWidth - (columns - 1) * 20) / columns;
+                return Wrap(
+                  spacing: 20,
+                  runSpacing: 20,
+                  children: [
+                    SizedBox(
+                      width: width,
+                      child: _webMetric(
+                        '나의 앨범',
+                        value(albums, ownAlbums),
+                        '개',
+                        '내 앨범 보기',
+                        _webHome,
+                      ),
+                    ),
+                    SizedBox(
+                      width: width,
+                      child: _webMetric(
+                        '진행 중인 주문',
+                        value(summary, pending),
+                        '건',
+                        '주문내역 보기',
+                        _webOrders,
+                      ),
+                    ),
+                    SizedBox(
+                      width: width,
+                      child: _webMetric(
+                        '보유 포인트',
+                        value(points, points.asData?.value),
+                        'P',
+                        '포인트 관리',
+                        _openPointCharge,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
             const SizedBox(height: 24),
-            WebSurface(child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Text('나의 모음', style: TextStyle(fontSize: 18,
-                fontWeight: FontWeight.w600, color: WebPalette.of(context).ink)),
-              const SizedBox(height: 12),
-              _webLink('공유된 앨범',
-                albums.hasError ? '앨범 목록을 다시 확인해주세요.'
-                  : sharedAlbums == null ? '함께 만든 앨범을 확인하고 있습니다.'
-                  : '${sharedAlbums.length}개의 함께 만든 앨범',
-                Icons.people_outline,
-                () => _openSharedAlbums(sharedAlbums ?? const [], userInfo.id)),
-              _webLink('내 보관함', '구매한 템플릿과 스티커·프레임·문구·종이',
-                Icons.collections_bookmark_outlined, _openLibrary),
-              ownedDesigns.when(
-                loading: () => Padding(padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Text('구매한 디자인을 확인하고 있습니다.',
-                    style: TextStyle(fontSize: 13, color: WebPalette.of(context).muted))),
-                error: (_, __) => Align(alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: () => ref.invalidate(ownedPointShopKeysProvider),
-                    icon: const Icon(Icons.refresh, size: 18),
-                    label: const Text('구매한 디자인 다시 확인'))),
-                data: (keys) => Text(
-                  '보유 템플릿 ${keys.where((key) => key.startsWith('template:')).length}종 · 소재 ${keys.where((key) => !key.startsWith('template:')).length}종',
-                  style: TextStyle(fontSize: 13, color: WebPalette.of(context).muted)),
-              ),
-              const SizedBox(height: 16),
-              Wrap(spacing: 10, runSpacing: 10, children: [
-                for (final type in const ['템플릿', '스티커', '프레임', '문구', '종이'])
-                  OutlinedButton(onPressed: () => _openLibrary(type), child: Text(type)),
-              ]),
-            ])),
-            const SizedBox(height: 32),
-            LayoutBuilder(builder: (context, bounds) {
-              final wide = bounds.maxWidth >= 900;
-              final settings = WebSurface(child: Column(
+            WebSurface(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text('설정과 도움말', style: TextStyle(fontSize: 18,
-                    fontWeight: FontWeight.w600, color: WebPalette.of(context).ink)),
-                  const SizedBox(height: 12),
-                  _webLink('프로필 및 로그인 정보', '이메일, 로그인 방식과 보안 설정',
-                    Icons.person_outline, _openAccountSettings),
-                  _webLink('알림 설정', '서비스와 주문 알림 확인',
-                    Icons.notifications_none, () => Navigator.push(context,
-                      snapFitRoute(page: const NotificationSettingsScreen()))),
-                  _webLink('알림함', '앨범 초대·새 댓글·주문 진행 소식',
-                    Icons.inbox_outlined, () => Navigator.push(context,
-                      snapFitRoute(page: const NotificationScreen(),
-                        settings: const WebAppRouteSettings(WebAppLocation.notifications)))),
-                  _webLink('고객센터', '서비스 이용 문의와 도움말',
-                    Icons.chat_bubble_outline, () => Navigator.push(context,
-                      snapFitRoute(page: const SupportInquiryScreen()))),
-                  _webLink('이용 안내', '이용약관과 개인정보처리방침',
-                    Icons.description_outlined, () => Navigator.push(context,
-                      snapFitRoute(page: const TermsPolicyScreen()))),
-                  const SizedBox(height: 16),
-                  const WebThemeSetting(),
-                ],
-              ));
-              final storage = WebSurface(child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text('내 저장 공간', style: TextStyle(fontSize: 18,
-                    fontWeight: FontWeight.w600, color: WebPalette.of(context).ink)),
-                  const SizedBox(height: 24),
-                  quota.when(
-                    data: (q) => q.userId != userInfo.id
-                      ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text('계정의 저장 공간을 다시 확인해주세요.',
-                            style: TextStyle(fontSize: 14, color: WebPalette.of(context).muted)),
-                          const SizedBox(height: 12),
-                          OutlinedButton.icon(
-                            onPressed: () => ref.invalidate(myStorageQuotaProvider),
-                            icon: const Icon(Icons.refresh, size: 18),
-                            label: const Text('저장 공간 다시 확인')),
-                        ])
-                      : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('${(q.usedBytes / 1048576).toStringAsFixed(1)} MB 사용',
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600,
-                          color: WebPalette.of(context).ink)),
-                      const SizedBox(height: 16),
-                      ClipRRect(borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: q.hardLimitBytes > 0
-                              ? (q.usedBytes / q.hardLimitBytes).clamp(0.0, 1.0).toDouble() : 0,
-                          color: WebPalette.of(context).brand, backgroundColor: WebPalette.of(context).canvas,
-                          minHeight: 6,
-                        )),
-                      const SizedBox(height: 12),
-                      Text(q.hardLimitBytes > 0
-                        ? '전체 ${(q.hardLimitBytes / 1048576).toStringAsFixed(0)} MB'
-                        : '계정의 저장 한도를 확인하고 있습니다.',
-                        style: TextStyle(color: WebPalette.of(context).muted, fontSize: 13)),
-                    ]),
-                    loading: () => Text('저장 공간을 확인하고 있습니다.',
-                      style: TextStyle(color: WebPalette.of(context).muted)),
-                    error: (_, __) => TextButton.icon(
-                      onPressed: () => ref.invalidate(myStorageQuotaProvider),
-                      icon: const Icon(Icons.refresh, size: 18),
-                      label: const Text('저장 공간 다시 확인'),
+                  Text(
+                    '앨범과 디자인',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: WebPalette.of(context).ink,
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  Text('앨범에 사용하는 사진과 편집 내용은 계정에 보관됩니다.',
-                    style: TextStyle(fontSize: 13, height: 1.7, color: WebPalette.of(context).muted)),
+                  const SizedBox(height: 12),
+                  _webLink(
+                    '공유된 앨범',
+                    albums.hasError
+                        ? '앨범 목록을 다시 확인해주세요.'
+                        : sharedAlbums == null
+                        ? '함께 만든 앨범을 확인하고 있습니다.'
+                        : '${sharedAlbums.length}개의 함께 만든 앨범',
+                    Icons.people_outline,
+                    () => _openSharedAlbums(
+                      sharedAlbums ?? const [],
+                      userInfo.id,
+                    ),
+                  ),
+                  _webLink(
+                    '디자인 보관함',
+                    '보유한 템플릿과 스티커·프레임·문구·종이',
+                    Icons.collections_bookmark_outlined,
+                    _openLibrary,
+                  ),
+                  ownedDesigns.when(
+                    loading: () => Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Text(
+                        '구매한 디자인을 확인하고 있습니다.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: WebPalette.of(context).muted,
+                        ),
+                      ),
+                    ),
+                    error: (_, __) => Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: () =>
+                            ref.invalidate(ownedPointShopKeysProvider),
+                        icon: const Icon(Icons.refresh, size: 18),
+                        label: const Text('구매한 디자인 다시 확인'),
+                      ),
+                    ),
+                    data: (keys) => Text(
+                      '보유 템플릿 ${keys.where((key) => key.startsWith('template:')).length}종 · 소재 ${keys.where((key) => !key.startsWith('template:')).length}종',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: WebPalette.of(context).muted,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      for (final type in const [
+                        '템플릿',
+                        '스티커',
+                        '프레임',
+                        '문구',
+                        '종이',
+                      ])
+                        OutlinedButton(
+                          onPressed: () => _openLibrary(type),
+                          child: Text(type),
+                        ),
+                    ],
+                  ),
                 ],
-              ));
-              return wide ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Expanded(flex: 3, child: settings), const SizedBox(width: 24),
-                Expanded(flex: 2, child: storage),
-              ]) : Column(crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [settings, const SizedBox(height: 24), storage]);
-            }),
+              ),
+            ),
+            const SizedBox(height: 32),
+            LayoutBuilder(
+              builder: (context, bounds) {
+                final wide = bounds.maxWidth >= 900;
+                final settings = WebSurface(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        '설정과 도움말',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: WebPalette.of(context).ink,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _webLink(
+                        '프로필 및 로그인 정보',
+                        '이메일, 로그인 방식과 보안 설정',
+                        Icons.person_outline,
+                        _openAccountSettings,
+                      ),
+                      _webLink(
+                        '알림 설정',
+                        '서비스와 주문 알림 확인',
+                        Icons.notifications_none,
+                        () => Navigator.push(
+                          context,
+                          snapFitRoute(
+                            page: const NotificationSettingsScreen(),
+                          ),
+                        ),
+                      ),
+                      _webLink(
+                        '알림함',
+                        '앨범 초대·새 댓글·주문 진행 소식',
+                        Icons.inbox_outlined,
+                        () => Navigator.push(
+                          context,
+                          snapFitRoute(
+                            page: const NotificationScreen(),
+                            settings: const WebAppRouteSettings(
+                              WebAppLocation.notifications,
+                            ),
+                          ),
+                        ),
+                      ),
+                      _webLink(
+                        '고객센터',
+                        '서비스 이용 문의와 도움말',
+                        Icons.chat_bubble_outline,
+                        () => Navigator.push(
+                          context,
+                          snapFitRoute(page: const SupportInquiryScreen()),
+                        ),
+                      ),
+                      _webLink(
+                        '이용 안내',
+                        '이용약관과 개인정보처리방침',
+                        Icons.description_outlined,
+                        () => Navigator.push(
+                          context,
+                          snapFitRoute(page: const TermsPolicyScreen()),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const WebThemeSetting(),
+                    ],
+                  ),
+                );
+                final storage = WebSurface(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        '내 저장 공간',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: WebPalette.of(context).ink,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      quota.when(
+                        data: (q) => q.userId != userInfo.id
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '계정의 저장 공간을 다시 확인해주세요.',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: WebPalette.of(context).muted,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  OutlinedButton.icon(
+                                    onPressed: () =>
+                                        ref.invalidate(myStorageQuotaProvider),
+                                    icon: const Icon(Icons.refresh, size: 18),
+                                    label: const Text('저장 공간 다시 확인'),
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${(q.usedBytes / 1048576).toStringAsFixed(1)} MB 사용',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w700,
+                                      color: WebPalette.of(context).ink,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: LinearProgressIndicator(
+                                      value: q.hardLimitBytes > 0
+                                          ? (q.usedBytes / q.hardLimitBytes)
+                                                .clamp(0.0, 1.0)
+                                                .toDouble()
+                                          : 0,
+                                      color: WebPalette.of(context).brand,
+                                      backgroundColor: WebPalette.of(
+                                        context,
+                                      ).canvas,
+                                      minHeight: 6,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    q.hardLimitBytes > 0
+                                        ? '전체 ${(q.hardLimitBytes / 1048576).toStringAsFixed(0)} MB'
+                                        : '계정의 저장 한도를 확인하고 있습니다.',
+                                    style: TextStyle(
+                                      color: WebPalette.of(context).muted,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                        loading: () => Text(
+                          '저장 공간을 확인하고 있습니다.',
+                          style: TextStyle(color: WebPalette.of(context).muted),
+                        ),
+                        error: (_, __) => TextButton.icon(
+                          onPressed: () =>
+                              ref.invalidate(myStorageQuotaProvider),
+                          icon: const Icon(Icons.refresh, size: 18),
+                          label: const Text('저장 공간 다시 확인'),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        '앨범에 사용하는 사진과 편집 내용은 계정에 보관됩니다.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.7,
+                          color: WebPalette.of(context).muted,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+                return wide
+                    ? Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(flex: 3, child: settings),
+                          const SizedBox(width: 24),
+                          Expanded(flex: 2, child: storage),
+                        ],
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          settings,
+                          const SizedBox(height: 24),
+                          storage,
+                        ],
+                      );
+              },
+            ),
             const SizedBox(height: 32),
           ],
         ),
@@ -753,34 +1034,94 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     );
   }
 
-  Widget _webMetric(String label, String value, String unit,
-      String action, VoidCallback onTap) => WebSurface(
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label, style: TextStyle(fontSize: 13, color: WebPalette.of(context).muted)),
-      const SizedBox(height: 18),
-      Text.rich(TextSpan(text: value,
-        style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600, color: WebPalette.of(context).ink),
-        children: [TextSpan(text: ' $unit', style: TextStyle(fontSize: 14,
-          fontWeight: FontWeight.w400, color: WebPalette.of(context).muted))])),
-      const SizedBox(height: 12),
-      TextButton(onPressed: onTap, child: Text(action)),
-    ]),
+  Widget _webMetric(
+    String label,
+    String value,
+    String unit,
+    String action,
+    VoidCallback onTap,
+  ) => WebSurface(
+    padding: const EdgeInsets.all(24),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 13, color: WebPalette.of(context).muted),
+        ),
+        const SizedBox(height: 18),
+        Text.rich(
+          TextSpan(
+            text: value,
+            style: TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.w700,
+              color: WebPalette.of(context).ink,
+            ),
+            children: [
+              TextSpan(
+                text: ' $unit',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: WebPalette.of(context).muted,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextButton(onPressed: onTap, child: Text(action)),
+      ],
+    ),
   );
 
-  Widget _webLink(String title, String detail, IconData icon, VoidCallback onTap) =>
-    InkWell(onTap: onTap, borderRadius: BorderRadius.circular(8),
-      child: Padding(padding: const EdgeInsets.symmetric(vertical: 18),
-        child: Row(children: [
-          Icon(icon, size: 21, color: WebPalette.of(context).muted), const SizedBox(width: 16),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,
-              color: WebPalette.of(context).ink)), const SizedBox(height: 5),
-            Text(detail, style: TextStyle(fontSize: 12, color: WebPalette.of(context).muted)),
-          ])),
-          Icon(Icons.arrow_forward, size: 18, color: WebPalette.of(context).muted),
-        ]),
+  Widget _webLink(
+    String title,
+    String detail,
+    IconData icon,
+    VoidCallback onTap,
+  ) => InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(SnapFitRadius.md),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      child: Row(
+        children: [
+          Icon(icon, size: 21, color: WebPalette.of(context).muted),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: WebPalette.of(context).ink,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  detail,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: WebPalette.of(context).muted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.arrow_forward,
+            size: 18,
+            color: WebPalette.of(context).muted,
+          ),
+        ],
       ),
-    );
+    ),
+  );
 
   Widget _buildProfileHero(
     BuildContext context,
@@ -803,26 +1144,27 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
             child: SnapFitPressable(
               onTap: () => _openProfileImageViewer(context, profileUrl),
               child: CircleAvatar(
-                radius: compact ? 20 : 27,
-                backgroundColor: SnapFitColors.accentLight,
+                radius: compact ? 20 : 28,
+                backgroundColor: ExperienceFormStyle.selection(context),
+                foregroundColor: ExperienceFormStyle.selectionInk(context),
                 child: ClipOval(
                   child: SizedBox(
-                    width: compact ? 40 : 54,
-                    height: compact ? 40 : 54,
+                    width: compact ? 40 : 56,
+                    height: compact ? 40 : 56,
                     child: profileUrl != null && profileUrl.isNotEmpty
                         ? Image.network(
                             profileUrl,
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) =>
-                                const Icon(Icons.person_outline, size: 32),
+                                const Icon(Icons.person_outline, size: 26),
                           )
-                        : const Icon(Icons.person_outline, size: 32),
+                        : const Icon(Icons.person_outline, size: 26),
                   ),
                 ),
               ),
             ),
           ),
-          SizedBox(width: compact ? 12 : 18),
+          SizedBox(width: compact ? 10 : 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -832,8 +1174,8 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: ExperienceStyle.text(
-                    compact ? 18 : 22,
-                    weight: FontWeight.w600,
+                    compact ? 17 : 21,
+                    weight: compact ? FontWeight.w600 : FontWeight.w700,
                     color: textColor,
                   ),
                 ),
@@ -842,7 +1184,10 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                   _displayEmail(userInfo),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: ExperienceStyle.text(12, color: subColor),
+                  style: ExperienceStyle.text(
+                    compact ? 11 : 12,
+                    color: subColor,
+                  ),
                 ),
               ],
             ),
@@ -850,7 +1195,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           IconButton(
             tooltip: '계정 설정',
             onPressed: _openAccountSettings,
-            icon: const Icon(Icons.edit_outlined, size: 20),
+            icon: const ExperienceIcon('Pencil', size: 19),
             color: subColor,
           ),
         ],
@@ -858,13 +1203,83 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     );
   }
 
-  Widget _sectionTitle(BuildContext context, String title) => Text(
-    title,
-    style: ExperienceFormStyle.text(
-      context,
-      12,
-      weight: FontWeight.w600,
-      secondary: true,
+  Widget _sectionTitle(BuildContext context, String title) => Padding(
+    padding: const EdgeInsets.only(bottom: 4),
+    child: Text(
+      title,
+      style: ExperienceFormStyle.text(
+        context,
+        11,
+        weight: FontWeight.w700,
+        secondary: true,
+      ).copyWith(letterSpacing: 0.6),
+    ),
+  );
+
+  Widget _accountRow({
+    required String icon,
+    required String title,
+    String? subtitle,
+    required VoidCallback onTap,
+  }) => Material(
+    color: Colors.transparent,
+    child: InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 11),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: ExperienceFormStyle.surface(context),
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: Center(
+                child: ExperienceIcon(
+                  icon,
+                  size: 19,
+                  color: ExperienceFormStyle.ink(context),
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: ExperienceFormStyle.text(
+                      context,
+                      14,
+                      weight: FontWeight.w500,
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: ExperienceFormStyle.text(
+                        context,
+                        12,
+                        secondary: true,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            ExperienceIcon(
+              'ChevronRight',
+              size: 17,
+              color: ExperienceFormStyle.muted(context),
+            ),
+          ],
+        ),
+      ),
     ),
   );
 
@@ -957,9 +1372,9 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     return Container(
       padding: EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
-        color: SnapFitColors.surfaceOf(context),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+        color: ExperienceFormStyle.surface(context),
+        borderRadius: BorderRadius.circular(SnapFitRadius.lg),
+        border: Border.all(color: ExperienceFormStyle.line(context)),
       ),
       child: Column(
         children: [
@@ -983,7 +1398,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                 ),
               );
             },
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(SnapFitRadius.md),
             child: Row(
               children: [
                 Text(
@@ -1037,8 +1452,10 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: SnapFitColors.overlayLightOf(context),
-                              borderRadius: BorderRadius.circular(12),
+                              color: ExperienceFormStyle.selection(context),
+                              borderRadius: BorderRadius.circular(
+                                SnapFitRadius.md,
+                              ),
                             ),
                             child: Icon(s.$1, size: 20, color: textColor),
                           ),
@@ -1107,9 +1524,9 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     return Container(
       padding: EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
-        color: SnapFitColors.surfaceOf(context),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+        color: ExperienceFormStyle.surface(context),
+        borderRadius: BorderRadius.circular(SnapFitRadius.lg),
+        border: Border.all(color: ExperienceFormStyle.line(context)),
       ),
       child: storageQuotaAsync.when(
         skipLoadingOnRefresh: true,
@@ -1177,15 +1594,15 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: SnapFitStylePalette.gray,
-                      borderRadius: BorderRadius.circular(999),
+                      color: ExperienceFormStyle.selection(context),
+                      borderRadius: BorderRadius.circular(SnapFitRadius.pill),
                     ),
                     child: Text(
                       quota.planCode,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: SnapFitColors.textSecondaryOf(context),
+                        color: ExperienceFormStyle.selectionInk(context),
                       ),
                     ),
                   ),
@@ -1202,7 +1619,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
               ),
               SizedBox(height: 8),
               ClipRRect(
-                borderRadius: BorderRadius.circular(999),
+                borderRadius: BorderRadius.circular(SnapFitRadius.pill),
                 child: LinearProgressIndicator(
                   value: progress,
                   minHeight: 8,
@@ -1271,7 +1688,9 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
       useSafeArea: true,
       backgroundColor: SnapFitColors.surfaceOf(context),
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(SnapFitRadius.lg),
+        ),
       ),
       builder: (sheetContext) => ConstrainedBox(
         constraints: BoxConstraints(
@@ -1389,8 +1808,13 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
 
     if (kIsWeb) {
       if (ownerId == null) return;
-      showWebAwareDialog<void>(context: context, maxWidth: 800, maxHeight: 760,
-        builder: (_) => _WebProfileImageViewer(imageUrl: trimmed, ownerId: ownerId));
+      showWebAwareDialog<void>(
+        context: context,
+        maxWidth: 800,
+        maxHeight: 760,
+        builder: (_) =>
+            _WebProfileImageViewer(imageUrl: trimmed, ownerId: ownerId),
+      );
       return;
     }
 
@@ -1410,21 +1834,50 @@ class _WebProfileImageViewer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ownerCurrent = ref.watch(visibleOrderOwnerProvider) == ownerId;
-    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Padding(padding: const EdgeInsets.fromLTRB(24, 16, 12, 16),
-        child: Row(children: [
-          Expanded(child: Text('프로필 사진', style: TextStyle(fontSize: 18,
-            fontWeight: FontWeight.w600, color: WebPalette.of(context).ink))),
-          IconButton(onPressed: () => Navigator.maybePop(context),
-            tooltip: '사진 닫기', icon: const Icon(Icons.close)),
-        ])),
-      const Divider(height: 1),
-      Expanded(child: ownerCurrent
-        ? InteractiveViewer(minScale: 1, maxScale: 4,
-            child: Center(child: Image.network(imageUrl, fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => const Text('프로필 사진을 불러오지 못했어요.'))))
-        : const Center(child: Text('로그인 계정이 변경되었어요. 이 창을 닫아주세요.'))),
-    ]);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 16, 12, 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '프로필 사진',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: WebPalette.of(context).ink,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.maybePop(context),
+                tooltip: '사진 닫기',
+                icon: const Icon(Icons.close),
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 1),
+        Expanded(
+          child: ownerCurrent
+              ? InteractiveViewer(
+                  minScale: 1,
+                  maxScale: 4,
+                  child: Center(
+                    child: Image.network(
+                      imageUrl,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) =>
+                          const Text('프로필 사진을 불러오지 못했어요.'),
+                    ),
+                  ),
+                )
+              : const Center(child: Text('로그인 계정이 변경되었어요. 이 창을 닫아주세요.')),
+        ),
+      ],
+    );
   }
 }
 

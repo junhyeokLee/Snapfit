@@ -120,6 +120,7 @@ flutter:
     - assets/sticker/studio/
     - assets/templates/
     - assets/templates/original_editorial/images/
+    - assets/templates/atelier_editions_2026/
     - assets/frame_preview/
     - assets/catalog_thumbnails/
     - assets/templates/premium_wind_atlas/
@@ -310,12 +311,13 @@ flutter:
           weight: 800
 
 flutter_native_splash:
+  # 웹은 로그인/내 앨범 화면으로 바로 진입하며 이미지 스플래시를 생성하지 않음.
+  web: false
   color: "#101F22"
   # 전체 화면 스플래시는 교체한 사진 이미지를 사용
   image: assets/splash.png
   android_gravity: fill
   ios_content_mode: scaleAspectFill
-  web_image_mode: cover
   android_12:
     # Android 12 이상 시스템 스플래시는 정사각형 앱 아이콘만 지원
     color: "#0AB5D1"

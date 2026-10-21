@@ -20,9 +20,14 @@ import '../../../domain/entities/layer.dart';
 import 'template_apply_preview.dart';
 
 class DesignTemplatePanel extends ConsumerStatefulWidget {
-  const DesignTemplatePanel({super.key, this.closeOnApply = true});
+  const DesignTemplatePanel({
+    super.key,
+    this.closeOnApply = true,
+    this.showHeader = true,
+  });
 
   final bool closeOnApply;
+  final bool showHeader;
 
   @override
   ConsumerState<DesignTemplatePanel> createState() =>
@@ -118,13 +123,19 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
     _warmUpPreviewThumbs(templates);
 
     return Container(
-      height: kIsWeb ? double.infinity : MediaQuery.of(context).size.height * 0.9,
+      height: kIsWeb
+          ? double.infinity
+          : MediaQuery.of(context).size.height * 0.9,
       decoration: BoxDecoration(
-        color: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.surfaceOf(context),
-        borderRadius: kIsWeb ? BorderRadius.circular(12) : BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
+        color: kIsWeb
+            ? WebPalette.of(context).surface
+            : SnapFitColors.surfaceOf(context),
+        borderRadius: kIsWeb
+            ? BorderRadius.circular(12)
+            : BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
       ),
       child: SafeArea(
         top: false,
@@ -132,32 +143,47 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!kIsWeb) ...[
-            SizedBox(height: 12),
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: SnapFitColors.textPrimaryOf(
-                    context,
-                  ).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2),
+              SizedBox(height: 12),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: SnapFitColors.textPrimaryOf(
+                      context,
+                    ).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 16),
+              SizedBox(height: 16),
             ],
-            if (!kIsWeb || widget.closeOnApply) Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Row(children: [Expanded(child: Text(
-                '앨범 분위기 고르기',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: kIsWeb ? FontWeight.w600 : FontWeight.w900,
-                  color: SnapFitColors.textPrimaryOf(context),
+            if (widget.showHeader && (!kIsWeb || widget.closeOnApply))
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '앨범 분위기 고르기',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: kIsWeb
+                              ? FontWeight.w700
+                              : FontWeight.w900,
+                          color: SnapFitColors.textPrimaryOf(context),
+                        ),
+                      ),
+                    ),
+                    if (kIsWeb)
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        tooltip: '템플릿 닫기',
+                        icon: const Icon(Icons.close, size: 20),
+                      ),
+                  ],
                 ),
-              )), if (kIsWeb) IconButton(onPressed: () => Navigator.pop(context), tooltip: '템플릿 닫기', icon: const Icon(Icons.close, size: 20))]),
-            ),
+              ),
             SizedBox(height: 10),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
@@ -349,29 +375,39 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
   }) {
     return SnapFitPressable(
       onTap: onTap,
+      semanticLabel: '${template.name} 템플릿 미리보기',
+      selected: isSelected,
       pressedScale: 0.98,
       borderRadius: BorderRadius.circular(kIsWeb ? 12 : 8),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: SnapFitMotion.settle,
         decoration: BoxDecoration(
-          color: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.surfaceOf(context),
+          color: kIsWeb
+              ? WebPalette.of(context).surface
+              : SnapFitColors.surfaceOf(context),
           borderRadius: BorderRadius.circular(kIsWeb ? 12 : 8),
           border: Border.all(
             color: isSelected
-                ? kIsWeb ? WebPalette.of(context).brandInk : SnapFitColors.accent
-                : kIsWeb ? WebPalette.of(context).line : SnapFitColors.overlayLightOf(context),
+                ? kIsWeb
+                      ? WebPalette.of(context).brandInk
+                      : SnapFitColors.accent
+                : kIsWeb
+                ? WebPalette.of(context).line
+                : SnapFitColors.overlayLightOf(context),
             width: isSelected ? 2 : 1,
           ),
-          boxShadow: kIsWeb ? const [] : [
-            BoxShadow(
-              color: Colors.black.withOpacity(
-                SnapFitColors.isDark(context) ? 0.24 : 0.07,
-              ),
-              blurRadius: isSelected ? 22 : 14,
-              offset: const Offset(0, 9),
-            ),
-          ],
+          boxShadow: kIsWeb
+              ? const []
+              : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(
+                      SnapFitColors.isDark(context) ? 0.24 : 0.07,
+                    ),
+                    blurRadius: isSelected ? 22 : 14,
+                    offset: const Offset(0, 9),
+                  ),
+                ],
         ),
         child: Padding(
           padding: EdgeInsets.fromLTRB(10, 10, 10, 11),
@@ -447,13 +483,17 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                               Icon(
                                 Icons.check_rounded,
                                 size: 12,
-                                color: kIsWeb ? WebPalette.of(context).onBrand : Colors.white,
+                                color: kIsWeb
+                                    ? WebPalette.of(context).onBrand
+                                    : Colors.white,
                               ),
                               SizedBox(width: 3),
                               Text(
                                 '선택',
                                 style: TextStyle(
-                                  color: kIsWeb ? WebPalette.of(context).onBrand : Colors.white,
+                                  color: kIsWeb
+                                      ? WebPalette.of(context).onBrand
+                                      : Colors.white,
                                   fontSize: 9.5,
                                   fontWeight: FontWeight.w900,
                                 ),
@@ -506,10 +546,20 @@ class _FilterPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = kIsWeb ? selected ? WebPalette.of(context).softBrand : WebPalette.of(context).surface : selected
+    final bg = kIsWeb
+        ? selected
+              ? WebPalette.of(context).softBrand
+              : WebPalette.of(context).surface
+        : selected
         ? const Color(0xFF132331)
         : SnapFitColors.surfaceOf(context);
-    final fg = kIsWeb ? selected ? WebPalette.of(context).brandInk : WebPalette.of(context).muted : selected ? Colors.white : SnapFitColors.textSecondaryOf(context);
+    final fg = kIsWeb
+        ? selected
+              ? WebPalette.of(context).brandInk
+              : WebPalette.of(context).muted
+        : selected
+        ? Colors.white
+        : SnapFitColors.textSecondaryOf(context);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -531,7 +581,11 @@ class _FilterPill extends StatelessWidget {
                   ]
                 : null,
             border: Border.all(
-              color: kIsWeb ? selected ? WebPalette.of(context).brandInk : WebPalette.of(context).line : selected
+              color: kIsWeb
+                  ? selected
+                        ? WebPalette.of(context).brandInk
+                        : WebPalette.of(context).line
+                  : selected
                   ? const Color(0xFF20384D)
                   : SnapFitColors.overlayMediumOf(context),
             ),
@@ -553,7 +607,9 @@ class _FilterPill extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: kIsWeb ? WebPalette.of(context).surface : selected
+                    color: kIsWeb
+                        ? WebPalette.of(context).surface
+                        : selected
                         ? Colors.white.withValues(alpha: 0.18)
                         : SnapFitColors.overlayLightOf(context),
                     borderRadius: BorderRadius.circular(999),
@@ -563,7 +619,9 @@ class _FilterPill extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 10.5,
                       fontWeight: FontWeight.w700,
-                      color: kIsWeb ? WebPalette.of(context).brandInk : selected
+                      color: kIsWeb
+                          ? WebPalette.of(context).brandInk
+                          : selected
                           ? Colors.white
                           : SnapFitColors.textSecondaryOf(context),
                       height: 1,

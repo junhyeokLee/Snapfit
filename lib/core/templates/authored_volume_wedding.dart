@@ -10,17 +10,27 @@ void _volumeWedding(_VolumeAuthor b) {
     b.end();
     b.page('invitation-handwritten-list', '#F0F1E7');
     b.heading('기쁜 소식을 전하며');
-    b.stock(.12, .24, .73, .50, '#FBFAF2');
+    b.paper('atelierWritingVow', .075, .21, .56, .57);
     b.text(
-      '직접 만나 건넨 날,\n멀리서 축하를 보내 준 사람,\n함께 와 주겠다는 약속.',
-      .21,
+      '한 사람씩 떠올리며\n봉투에 이름을 적었다.\n\n직접 만나 건넨 날과\n멀리서 도착한 축하도.',
+      .13,
+      .29,
+      .44,
       .34,
-      .56,
-      .28,
       size: .029,
-      leading: 1.8,
+      leading: 1.6,
     );
-    b.paper('studioRoseSilk', .68, .69, .21, .20);
+    b.photo(
+      'petal_details',
+      .68,
+      .29,
+      .24,
+      .24,
+      natural: false,
+      frame: 'materialSlideMount',
+    );
+    b.paper('heirloomVowSeal', .72, .65, .15, .15);
+    b.text('마음을 건네는 순서', .10, .82, .79, .07, size: .024);
     b.end();
   });
   b.reversedSpread('꽃과 리본을 골라', 2, () {
@@ -39,11 +49,20 @@ void _volumeWedding(_VolumeAuthor b) {
     b.paper('studioOlivePress', .73, .59, .15, .22);
     b.end();
     b.page('floral-preparation-note', '#F0EFE6');
-    b.paper('heirloomVowPaper', .12, .11, .77, .76);
-    b.stock(.20, .29, .60, .40, '#F4F3EA');
-    b.text('하나씩 고르던 시간', .25, .33, .49, .09, size: .035);
-    b.text('서로 좋아하는 색을 말하고,\n함께 어울리는 것을 찾았다.', .25, .51, .49, .15, size: .027);
-    b.paper('heirloomVowSeal', .73, .75, .13, .13);
+    b.text(
+      '하나씩\n고르던 시간',
+      .09,
+      .15,
+      .82,
+      .22,
+      size: .062,
+      font: 'BookMyungjo',
+      leading: 1.2,
+    );
+    b.paper('heirloomVowPaper', .08, .43, .84, .40);
+    b.photo('petal_bouquet', .13, .48, .36, .25, frame: 'materialLaceMount');
+    b.text('서로 좋아하는 색을 말하고,\n함께 어울리는 것을 찾았다.', .56, .49, .30, .26, size: .027);
+    b.paper('heirloomVowSeal', .75, .78, .11, .11);
     b.end();
   });
   b.spread('입장 전 마지막 준비', 4, () {
@@ -54,17 +73,18 @@ void _volumeWedding(_VolumeAuthor b) {
     b.end();
     b.page('ready-message-slip', '#F1F0E7');
     b.heading('떨리는 마음을 나누며');
-    b.stock(.12, .25, .74, .46, '#FCFBF3');
+    b.photo('petal_details', .09, .23, .50, .39, frame: 'atelierFolio');
     b.text(
-      '준비됐냐고 묻고,\n눈을 맞추고 웃었다.\n이제 같이 걸어가자.',
-      .21,
-      .34,
-      .56,
+      '눈을 맞추고\n웃었다.\n\n이제 같이\n걸어가자.',
+      .67,
       .27,
+      .24,
+      .35,
       size: .030,
-      leading: 1.8,
+      leading: 1.5,
     );
-    b.paper('studioRoseSilk', .65, .68, .23, .21);
+    b.paper('atelierWritingVow', .10, .68, .79, .20);
+    b.text('입장 전, 서로에게 건넨 한마디', .17, .73, .65, .09, size: .026);
     b.end();
   }, extra: true);
   b.reversedSpread('축하를 건네 준 얼굴들', 6, () {

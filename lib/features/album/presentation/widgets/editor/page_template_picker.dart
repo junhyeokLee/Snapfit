@@ -21,12 +21,15 @@ class PageTemplatePicker extends StatefulWidget {
     if (kIsWeb) {
       return showWebAwareDialog<void>(
         context: context,
+        useRootNavigator: false,
         maxWidth: 960,
         maxHeight: 740,
-        builder: (dialogContext) => PageTemplatePicker(onSelect: (template) {
-          onSelect(template);
-          Navigator.pop(dialogContext);
-        }),
+        builder: (dialogContext) => PageTemplatePicker(
+          onSelect: (template) {
+            onSelect(template);
+            Navigator.pop(dialogContext);
+          },
+        ),
       );
     }
     return showModalBottomSheet<void>(
@@ -59,32 +62,63 @@ class _PageTemplatePickerState extends State<PageTemplatePicker> {
       onlyFavorites: _favoritesOnly,
     );
     if (kIsWeb) {
-      return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        ListTile(
-          contentPadding: const EdgeInsets.fromLTRB(24, 12, 12, 12),
-          title: const Text('페이지 레이아웃', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w600)),
-          subtitle: const Text('쪽 안에서 사진이 놓일 구성을 고르세요.'),
-          trailing: IconButton(onPressed: () => Navigator.pop(context), tooltip: '닫기', icon: const Icon(Icons.close, size: 20)),
-        ),
-        Divider(height: 1, color: WebPalette.of(context).line),
-        Padding(padding: const EdgeInsets.fromLTRB(24, 16, 24, 8), child: CatalogFavoriteFilter(selected: _favoritesOnly, onChanged: (value) => setState(() => _favoritesOnly = value))),
-        Expanded(child: templates.isEmpty
-            ? CatalogFavoritesEmpty(onShowAll: () => setState(() => _favoritesOnly = false))
-            : GridView.builder(
-                padding: const EdgeInsets.all(24),
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 230, mainAxisExtent: 220, mainAxisSpacing: 18, crossAxisSpacing: 18),
-                itemCount: templates.length,
-                itemBuilder: (context, index) {
-                  final template = templates[index];
-                  return CatalogFavoriteTile(
-                    key: ValueKey(template.id),
-                    itemKey: CatalogFavoriteKeys.layout(template.id),
-                    label: template.name,
-                    child: RepaintBoundary(child: _TemplateCard(template: template, onTap: () => widget.onSelect(template))),
-                  );
-                },
-              )),
-      ]);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ListTile(
+            contentPadding: const EdgeInsets.fromLTRB(24, 12, 12, 12),
+            title: const Text(
+              '페이지 레이아웃',
+              style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
+            ),
+            subtitle: const Text('쪽 안에서 사진이 놓일 구성을 고르세요.'),
+            trailing: IconButton(
+              onPressed: () => Navigator.pop(context),
+              tooltip: '닫기',
+              icon: const Icon(Icons.close, size: 20),
+            ),
+          ),
+          Divider(height: 1, color: WebPalette.of(context).line),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+            child: CatalogFavoriteFilter(
+              selected: _favoritesOnly,
+              onChanged: (value) => setState(() => _favoritesOnly = value),
+            ),
+          ),
+          Expanded(
+            child: templates.isEmpty
+                ? CatalogFavoritesEmpty(
+                    onShowAll: () => setState(() => _favoritesOnly = false),
+                  )
+                : GridView.builder(
+                    padding: const EdgeInsets.all(24),
+                    gridDelegate:
+                        const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 230,
+                          mainAxisExtent: 220,
+                          mainAxisSpacing: 18,
+                          crossAxisSpacing: 18,
+                        ),
+                    itemCount: templates.length,
+                    itemBuilder: (context, index) {
+                      final template = templates[index];
+                      return CatalogFavoriteTile(
+                        key: ValueKey(template.id),
+                        itemKey: CatalogFavoriteKeys.layout(template.id),
+                        label: template.name,
+                        child: RepaintBoundary(
+                          child: _TemplateCard(
+                            template: template,
+                            onTap: () => widget.onSelect(template),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      );
     }
     final media = MediaQuery.of(context);
     final isLandscape = media.size.width > media.size.height;

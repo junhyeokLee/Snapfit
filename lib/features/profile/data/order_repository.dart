@@ -339,6 +339,7 @@ class OrderRepository {
     'reviewedRevision': request.reviewedRevision,
     'reviewedSpecRevision': request.reviewedSpecRevision,
     'expectedAmount': request.amount,
+    if (request.consent != null) 'consent': request.consent!.toJson(),
     'recipient': {
       'name': request.recipientName,
       'phone': request.recipientPhone,
@@ -753,9 +754,25 @@ class OrderQuoteResult {
   final bool packagingCostVerified;
   final String pricePolicyVersion;
   final String priceNotice;
+  final String retailPriceStatus;
   final bool specMissing;
 
-  bool get hasPlannedRetailPrice => supplierCostVerified && amount > 0;
+  /// Missing status is accepted only as a legacy planned price. Explicit
+  /// pending/unknown states must never expose an unconfirmed server estimate.
+  bool get hasPlannedRetailPrice =>
+      supplierCostVerified &&
+      amount > 0 &&
+      (retailPriceStatus.isEmpty ||
+          retailPriceStatus == 'PLANNED' ||
+          retailPriceStatus == 'FINAL');
+
+  /// Price approval is separate from whether production payments are open.
+  bool get hasFinalRetailPrice =>
+      retailPriceStatus == 'FINAL' &&
+      hasPlannedRetailPrice &&
+      !priceIsEstimate &&
+      shippingCostVerified &&
+      packagingCostVerified;
 
   const OrderQuoteResult({
     required this.pageCount,
@@ -779,6 +796,7 @@ class OrderQuoteResult {
     this.packagingCostVerified = false,
     this.pricePolicyVersion = '',
     this.priceNotice = '',
+    this.retailPriceStatus = '',
     this.specMissing = false,
   });
 
@@ -812,6 +830,8 @@ class OrderQuoteResult {
       packagingCostVerified: json['packagingCostVerified'] == true,
       pricePolicyVersion: json['pricePolicyVersion']?.toString() ?? '',
       priceNotice: json['priceNotice']?.toString() ?? '',
+      retailPriceStatus:
+          json['retailPriceStatus']?.toString().trim().toUpperCase() ?? '',
       specMissing: json['specMissing'] == true,
     );
   }

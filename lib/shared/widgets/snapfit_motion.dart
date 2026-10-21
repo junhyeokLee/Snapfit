@@ -1,21 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-/// Shared motion primitives for SnapFit's premium-feeling interactions.
-///
-/// Keep durations short and curves soft so motion supports the content instead
-/// of making album/template editing feel slow.
-class SnapFitMotion {
-  static const Duration fast = Duration(milliseconds: 160);
-  static const Duration medium = Duration(milliseconds: 260);
-  static const Duration slow = Duration(milliseconds: 420);
-  static const Duration pageTurn = Duration(milliseconds: 390);
-  static const Duration pageTurnFast = Duration(milliseconds: 220);
-
-  static const Curve entrance = Curves.easeOutCubic;
-  static const Curve settle = Curves.easeOutQuart;
-  static const Curve pageTurnCurve = Curves.easeOutQuart;
-  static const Curve pageTurnExitCurve = Curves.easeInCubic;
-}
+import '../../core/theme/snapfit_design_tokens.dart';
+export '../../core/theme/snapfit_design_tokens.dart' show SnapFitMotion;
 
 class SnapFitFadeIn extends StatelessWidget {
   final Widget child;
@@ -33,6 +20,8 @@ class SnapFitFadeIn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (SnapFitMotion.reduced(context) || duration == Duration.zero)
+      return child;
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
       duration: delay + duration,
@@ -65,6 +54,8 @@ class SnapFitPressable extends StatefulWidget {
   final VoidCallback? onTap;
   final double pressedScale;
   final BorderRadius? borderRadius;
+  final String? semanticLabel;
+  final bool? selected;
 
   const SnapFitPressable({
     super.key,
@@ -72,6 +63,8 @@ class SnapFitPressable extends StatefulWidget {
     this.onTap,
     this.pressedScale = 0.975,
     this.borderRadius,
+    this.semanticLabel,
+    this.selected,
   });
 
   @override
@@ -80,6 +73,8 @@ class SnapFitPressable extends StatefulWidget {
 
 class _SnapFitPressableState extends State<SnapFitPressable> {
   bool _pressed = false;
+  bool _focused = false;
+  bool _showFocus = false;
 
   void _setPressed(bool value) {
     if (_pressed == value) return;
@@ -89,37 +84,81 @@ class _SnapFitPressableState extends State<SnapFitPressable> {
   @override
   Widget build(BuildContext context) {
     final child = AnimatedScale(
-      scale: _pressed ? widget.pressedScale : 1,
-      duration: SnapFitMotion.fast,
+      scale: _pressed && !SnapFitMotion.reduced(context)
+          ? widget.pressedScale
+          : 1,
+      duration: SnapFitMotion.duration(context, SnapFitMotion.fast),
       curve: SnapFitMotion.settle,
       child: widget.child,
     );
 
-    return MouseRegion(
-      cursor: widget.onTap == null
-          ? SystemMouseCursors.basic
-          : SystemMouseCursors.click,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: widget.onTap,
-        onTapDown: widget.onTap == null ? null : (_) => _setPressed(true),
-        onTapCancel: widget.onTap == null ? null : () => _setPressed(false),
-        onTapUp: widget.onTap == null ? null : (_) => _setPressed(false),
-        child: widget.borderRadius == null
-            ? child
-            : ClipRRect(borderRadius: widget.borderRadius!, child: child),
+    final enabled = widget.onTap != null;
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      focusable: enabled,
+      focused: _focused,
+      selected: widget.selected,
+      label: widget.semanticLabel,
+      onTap: widget.onTap,
+      child: FocusableActionDetector(
+        enabled: enabled,
+        includeFocusSemantics: false,
+        mouseCursor: enabled
+            ? SystemMouseCursors.click
+            : SystemMouseCursors.basic,
+        onFocusChange: (value) => setState(() => _focused = value),
+        onShowFocusHighlight: (value) => setState(() => _showFocus = value),
+        shortcuts: const <ShortcutActivator, Intent>{
+          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        },
+        actions: <Type, Action<Intent>>{
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) {
+              widget.onTap?.call();
+              return null;
+            },
+          ),
+        },
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          excludeFromSemantics: true,
+          onTap: widget.onTap,
+          onTapDown: enabled ? (_) => _setPressed(true) : null,
+          onTapCancel: enabled ? () => _setPressed(false) : null,
+          onTapUp: enabled ? (_) => _setPressed(false) : null,
+          child: DecoratedBox(
+            position: DecorationPosition.foreground,
+            decoration: BoxDecoration(
+              borderRadius:
+                  widget.borderRadius ??
+                  BorderRadius.circular(SnapFitRadius.sm),
+              border: _showFocus && enabled
+                  ? Border.all(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      width: 2,
+                    )
+                  : null,
+            ),
+            child: widget.borderRadius == null
+                ? child
+                : ClipRRect(borderRadius: widget.borderRadius!, child: child),
+          ),
+        ),
       ),
     );
   }
 }
 
 PageRoute<T> snapFitRoute<T>({required Widget page, RouteSettings? settings}) {
-  return PageRouteBuilder<T>(
+  return _SnapFitPageRoute<T>(
     settings: settings,
     transitionDuration: SnapFitMotion.medium,
     reverseTransitionDuration: SnapFitMotion.fast,
     pageBuilder: (_, __, ___) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      if (SnapFitMotion.reduced(context)) return child;
       final curved = CurvedAnimation(
         parent: animation,
         curve: SnapFitMotion.entrance,
@@ -139,16 +178,38 @@ PageRoute<T> snapFitRoute<T>({required Widget page, RouteSettings? settings}) {
   );
 }
 
+class _SnapFitPageRoute<T> extends PageRouteBuilder<T> {
+  _SnapFitPageRoute({
+    required super.pageBuilder,
+    required super.transitionsBuilder,
+    super.settings,
+    super.transitionDuration,
+    super.reverseTransitionDuration,
+  });
+
+  bool get _reduceMotion =>
+      navigator != null && SnapFitMotion.reduced(navigator!.context);
+
+  @override
+  Duration get transitionDuration =>
+      _reduceMotion ? Duration.zero : super.transitionDuration;
+
+  @override
+  Duration get reverseTransitionDuration =>
+      _reduceMotion ? Duration.zero : super.reverseTransitionDuration;
+}
+
 PageRoute<T> snapFitAlbumOpenRoute<T>({
   required Widget page,
   RouteSettings? settings,
 }) {
-  return PageRouteBuilder<T>(
+  return _SnapFitPageRoute<T>(
     settings: settings,
     transitionDuration: SnapFitMotion.slow,
     reverseTransitionDuration: SnapFitMotion.fast,
     pageBuilder: (_, __, ___) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      if (SnapFitMotion.reduced(context)) return child;
       final curved = CurvedAnimation(
         parent: animation,
         curve: Curves.easeOutQuart,

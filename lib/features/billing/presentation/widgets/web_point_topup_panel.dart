@@ -128,7 +128,7 @@ class _WebPointTopupPanelState extends ConsumerState<WebPointTopupPanel> with Wi
       Container(padding: const EdgeInsets.all(20), decoration: BoxDecoration(
         color: colors.softBrand, borderRadius: BorderRadius.circular(12)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(_live ? '포인트 충전' : '웹 포인트 충전 준비 중', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: colors.ink)),
+          Text(_live ? '포인트 충전' : '웹 포인트 충전 준비 중', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: colors.ink)),
           const SizedBox(height: 8),
           Text(_live ? '결제 금액과 지급 포인트를 확인해주세요. 포인트는 서버에서 결제가 확인된 뒤 반영됩니다.' :
             '실제 결제는 아직 열리지 않았어요. 현재 포인트는 모바일 앱에서 충전할 수 있어요.',
@@ -141,7 +141,7 @@ class _WebPointTopupPanelState extends ConsumerState<WebPointTopupPanel> with Wi
         ])),
       if (_sourceEnabled) ...[
         const SizedBox(height: 24),
-        Row(children: [Expanded(child: Text(_live ? '충전 상품' : 'TEST 충전', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: colors.ink))),
+        Row(children: [Expanded(child: Text(_live ? '충전 상품' : 'TEST 충전', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: colors.ink))),
           OutlinedButton.icon(onPressed: _busy || _loading ? null : () => unawaited(_load()),
             icon: const Icon(Icons.refresh, size: 18), label: Text(_loading ? '확인 중' : '상태 새로고침'))]),
         if (_loading && _catalog == null) const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator())),
@@ -189,7 +189,7 @@ class _WebPointTopupPanelState extends ConsumerState<WebPointTopupPanel> with Wi
         ],
         if (_history.isNotEmpty) ...[
           const SizedBox(height: 32),
-          Text(_live ? '충전 기록' : 'TEST 충전 기록', style: TextStyle(color: colors.ink, fontSize: 18, fontWeight: FontWeight.w600)),
+          Text(_live ? '충전 기록' : 'TEST 충전 기록', style: TextStyle(color: colors.ink, fontSize: 18, fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
           Text('TEST 표시가 있는 기록은 실제 잔액·이용내역과 별도로 보관됩니다.', style: TextStyle(color: colors.muted)),
           for (final topup in _history) Container(padding: const EdgeInsets.symmetric(vertical: 16),

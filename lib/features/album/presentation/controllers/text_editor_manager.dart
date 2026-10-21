@@ -88,6 +88,7 @@ class TextEditorManager {
     if (kIsWeb) {
       await showWebAwareDialog<void>(
         context: context,
+        useRootNavigator: false,
         maxWidth: 1100,
         maxHeight: 760,
         builder: (dialogContext) => EditTextOverlay(

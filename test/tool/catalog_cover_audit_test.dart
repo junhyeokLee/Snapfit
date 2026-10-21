@@ -37,7 +37,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   test(
-    'all 51 cached covers are visually distinct, not renamed duplicates',
+    'all 68 cached covers are visually distinct, not renamed duplicates',
     () async {
       final fingerprints = <String, Uint8List>{};
       for (final template in publishedCreationTemplates) {
@@ -52,7 +52,7 @@ void main() {
         }
         fingerprints[template.title] = pixels;
       }
-      expect(fingerprints, hasLength(51));
+      expect(fingerprints, hasLength(68));
     },
   );
 

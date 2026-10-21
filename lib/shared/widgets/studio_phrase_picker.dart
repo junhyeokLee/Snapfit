@@ -16,23 +16,25 @@ class StudioPhrasePicker extends ConsumerStatefulWidget {
   const StudioPhrasePicker({super.key, required this.onSelect});
   final ValueChanged<StudioPhrase> onSelect;
 
-  static Future<StudioPhrase?> show(BuildContext context) =>
-      kIsWeb ? showWebAwareDialog<StudioPhrase>(
-        context: context,
-        maxWidth: 1000,
-        maxHeight: 740,
-        builder: (_) => const _StudioPhraseSheet(),
-      ) : showModalBottomSheet<StudioPhrase>(
-        context: context,
-        isScrollControlled: true,
-        useSafeArea: true,
-        constraints: const BoxConstraints(maxWidth: 960),
-        backgroundColor: ExperienceFormStyle.surface(context),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
-        ),
-        builder: (_) => const _StudioPhraseSheet(),
-      );
+  static Future<StudioPhrase?> show(BuildContext context) => kIsWeb
+      ? showWebAwareDialog<StudioPhrase>(
+          context: context,
+          useRootNavigator: false,
+          maxWidth: 1000,
+          maxHeight: 740,
+          builder: (_) => const _StudioPhraseSheet(),
+        )
+      : showModalBottomSheet<StudioPhrase>(
+          context: context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          constraints: const BoxConstraints(maxWidth: 960),
+          backgroundColor: ExperienceFormStyle.surface(context),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+          ),
+          builder: (_) => const _StudioPhraseSheet(),
+        );
 
   @override
   ConsumerState<StudioPhrasePicker> createState() => _StudioPhrasePickerState();
@@ -59,10 +61,9 @@ class _StudioPhraseSheetState extends State<_StudioPhraseSheet> {
     padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
     child: LayoutBuilder(
       builder: (context, box) => SizedBox(
-        height: kIsWeb ? box.maxHeight : math.min(
-          box.maxHeight,
-          MediaQuery.sizeOf(context).height * .94,
-        ),
+        height: kIsWeb
+            ? box.maxHeight
+            : math.min(box.maxHeight, MediaQuery.sizeOf(context).height * .94),
         child: SafeArea(
           top: false,
           child: Column(

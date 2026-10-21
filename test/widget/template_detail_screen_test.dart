@@ -7,14 +7,33 @@ import 'package:network_image_mock/network_image_mock.dart';
 import 'package:snap_fit/features/store/data/api/template_provider.dart';
 import 'package:snap_fit/features/store/domain/entities/premium_template.dart';
 import 'package:snap_fit/features/store/presentation/views/template_detail_screen.dart';
+import 'package:snap_fit/features/point_shop/data/point_shop_provider.dart';
+import 'package:snap_fit/features/point_shop/domain/point_shop_product.dart';
 
 import '../helpers/mock_repositories.dart';
 
 Widget _wrap(Widget child) {
-  return ScreenUtilInit(
-    designSize: const Size(390, 844),
-    minTextAdapt: true,
-    builder: (_, __) => MaterialApp(home: child),
+  return ProviderScope(
+    overrides: [
+      pointShopCatalogProvider.overrideWith(
+        (_) async => [
+          const PointShopProduct(
+            productKey: 'template:server-1',
+            kind: 'template',
+            assetId: 'server-1',
+            title: '검수용 무료 템플릿',
+            pointPrice: 0,
+            isActive: true,
+          ),
+        ],
+      ),
+      ownedPointShopKeysProvider.overrideWith((_) async => <String>{}),
+    ],
+    child: ScreenUtilInit(
+      designSize: const Size(390, 844),
+      minTextAdapt: true,
+      builder: (_, __) => MaterialApp(home: child),
+    ),
   );
 }
 
@@ -152,7 +171,7 @@ void main() {
   });
 
   testWidgets(
-    'template detail keeps hero title meta and CTA in first viewport',
+    'template detail keeps artwork title and CTA visible while full metadata scrolls',
     (tester) async {
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1.0;
@@ -186,10 +205,21 @@ void main() {
           find.byKey(const ValueKey('template-detail-use')),
         );
 
-        expect(titleRect.top, lessThan(560));
-        expect(heroMetaRect.bottom, lessThan(ctaRect.top));
+        final stageRect = tester.getRect(
+          find.byKey(const ValueKey('template-detail-stage')),
+        );
+        expect(titleRect.top, greaterThanOrEqualTo(stageRect.bottom));
+        expect(titleRect.bottom, lessThan(heroMetaRect.top));
+        expect(titleRect.bottom, lessThan(ctaRect.top));
         expect(ctaRect.bottom, lessThanOrEqualTo(844));
         expect(ctaRect.top, greaterThan(700));
+        await tester.ensureVisible(find.text('24쪽'));
+        await tester.pumpAndSettle();
+        expect(find.text('24쪽').hitTestable(), findsOneWidget);
+        expect(
+          tester.getRect(find.byKey(const ValueKey('template-detail-use'))),
+          ctaRect,
+        );
       });
     },
   );

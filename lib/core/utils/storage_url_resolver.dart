@@ -1,4 +1,5 @@
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/painting.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseStorageUri {
@@ -42,4 +43,17 @@ Future<String> resolveStorageImageUrl(
   }
 
   return urlOrStorageUri;
+}
+
+/// Resolves persisted private image references before handing them to Flutter's
+/// network decoder. Bundled assets retain their existing local render path.
+Future<ImageProvider> resolveStorageImageProvider(
+  String source, {
+  Future<String> Function(String)? resolveStorageUrl,
+}) async {
+  if (source.startsWith('asset:')) {
+    return AssetImage(source.substring('asset:'.length));
+  }
+  final url = await (resolveStorageUrl ?? resolveStorageImageUrl)(source);
+  return NetworkImage(url);
 }

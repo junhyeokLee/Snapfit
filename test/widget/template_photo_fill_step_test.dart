@@ -21,6 +21,9 @@ void main() {
       );
       final photo = _Photo();
       when(() => photo.id).thenReturn('selected-photo');
+      when(() => photo.width).thenReturn(0);
+      when(() => photo.height).thenReturn(0);
+      when(() => photo.orientation).thenReturn(0);
       when(
         () => photo.file,
       ).thenAnswer((_) async => File('assets/snapfit_home_square.jpg'));
@@ -42,6 +45,11 @@ void main() {
           ),
         ),
       );
+      expect(
+        tester.widget(find.byKey(const ValueKey('fill-add-photos'))),
+        isA<FilledButton>(),
+      );
+      expect(find.widgetWithText(TextButton, '나중에 채우기'), findsOneWidget);
       await tester.tap(find.text('사진 추가'));
       await tester.pumpAndSettle();
       final filled = pages.first.where((l) => l.type.name == 'image').single;

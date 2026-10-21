@@ -285,7 +285,11 @@ void main() {
         final result = await service.generate(
           theme: AlbumTheme.custom,
           range: AiPhotoRange.manualSelection,
-          designBrief: const AiTemplateBrief(prompt: '산책', pageCount: 4),
+          designBrief: const AiTemplateBrief(
+            prompt: '산책',
+            pageCount: 4,
+            designVersion: 2,
+          ),
         );
         expect(
           result.status,

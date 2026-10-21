@@ -69,7 +69,7 @@ void main() {
       final gateSource = source.substring(gateStart, gateEnd);
       expect(gateSource, contains("claims['email_verified']"));
       expect(gateSource, contains("claims['verified_email']"));
-      expect(gateSource, contains('await supabase?.auth.signOut()'));
+      expect(gateSource, contains('await _discardRejectedSession(session)'));
       expect(gateSource, contains('인증된 이메일이 필요합니다'));
     },
   );

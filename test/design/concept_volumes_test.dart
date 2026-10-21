@@ -35,7 +35,7 @@ void main() {
   });
   test('approved designs and new candidates stay outside the free catalog', () {
     expect(ConceptVolume.values, hasLength(7));
-    expect(authoredCollections, hasLength(37));
+    expect(authoredCollections, hasLength(42));
     expect(premiumStudyEntries, hasLength(7));
     expect(allPremiumStudyEntries, hasLength(14));
     for (final v in ConceptVolume.values) {

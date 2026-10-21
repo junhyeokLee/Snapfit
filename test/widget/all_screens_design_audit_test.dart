@@ -124,6 +124,9 @@ void main() {
     'ALL_SCREENS_REVISION',
     defaultValue: '-after',
   );
+  final textScale = double.tryParse(
+    const String.fromEnvironment('ALL_SCREENS_TEXT_SCALE'),
+  );
   final observations = <Map<String, Object?>>[];
   setUpAll(() async {
     await loadCreationFonts();
@@ -308,7 +311,7 @@ void main() {
                     builder: (context, child) => MediaQuery(
                       data: MediaQuery.of(context).copyWith(
                         textScaler: TextScaler.linear(
-                          size.width == 648 ? 1.3 : 1,
+                          textScale ?? (size.width == 648 ? 1.3 : 1),
                         ),
                       ),
                       child: child!,

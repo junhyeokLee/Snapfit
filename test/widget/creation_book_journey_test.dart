@@ -533,13 +533,10 @@ void main() {
       await tester.pumpWidget(_app(review(_pages)));
       await tester.pumpAndSettle();
       expect(
-        tester
-            .widget<FilterChip>(
-              find.byKey(const ValueKey('creation-review-missing-filter')),
-            )
-            .selected,
-        isFalse,
+        find.byKey(const ValueKey('creation-review-missing-filter')),
+        findsNothing,
       );
+      expect(find.text('사진 채움 완료'), findsOneWidget);
       final grid = tester.widget<GridView>(
         find.byKey(const ValueKey('creation-review-pages')),
       );
@@ -551,74 +548,90 @@ void main() {
     },
   );
 
-  testWidgets(
-    'late photo-file lookup cannot overwrite a replacement in review',
-    (tester) async {
-      _size(tester, const Size(390, 844));
-      final pending = Completer<File?>();
-      final old = _Photo(), replacement = _Photo();
-      await tester.pumpWidget(_app(const SizedBox()));
-      await tester.runAsync(
-        () => precacheImage(
-          ResizeImage(
-            FileImage(File('assets/snapfit_home_square.jpg')),
-            width: 320,
+  for (final preview in [false, true])
+    testWidgets(
+      'late photo-file lookup cannot overwrite a replacement in ${preview ? 'document preview' : 'review'}',
+      (tester) async {
+        _size(tester, const Size(390, 844));
+        final pending = Completer<File?>();
+        final old = _Photo(), replacement = _Photo();
+        await tester.pumpWidget(_app(const SizedBox()));
+        await tester.runAsync(
+          () => precacheImage(
+            ResizeImage(
+              FileImage(File('assets/snapfit_home_square.jpg')),
+              width: 320,
+            ),
+            tester.element(find.byType(Scaffold)),
           ),
-          tester.element(find.byType(Scaffold)),
-        ),
-      );
-      when(() => old.file).thenAnswer((_) => pending.future);
-      when(
-        () => replacement.file,
-      ).thenAnswer((_) async => File('assets/snapfit_home_square.jpg'));
-      var photo = old;
-      late StateSetter update;
-      await tester.pumpWidget(
-        _app(
-          StatefulBuilder(
-            builder: (context, setState) {
-              update = setState;
-              return SizedBox(
-                height: 650,
-                child: AlbumCreationReviewSheet(
-                  pages: [
-                    [
-                      LayerModel(
-                        id: 'photo',
-                        type: LayerType.image,
-                        position: Offset.zero,
-                        width: 500,
-                        height: 500,
-                        asset: photo,
-                      ),
-                    ],
+        );
+        when(() => old.file).thenAnswer((_) => pending.future);
+        when(
+          () => replacement.file,
+        ).thenAnswer((_) async => File('assets/snapfit_home_square.jpg'));
+        var photo = old;
+        late StateSetter update;
+        await tester.pumpWidget(
+          _app(
+            StatefulBuilder(
+              builder: (context, setState) {
+                update = setState;
+                final photoPages = [
+                  [
+                    LayerModel(
+                      id: 'photo',
+                      type: LayerType.image,
+                      position: Offset.zero,
+                      width: 500,
+                      height: 500,
+                      asset: photo,
+                    ),
                   ],
-                  innerPageCount: 0,
-                  canvasSize: const Size(500, 500),
-                ),
-              );
-            },
+                ];
+                return SizedBox(
+                  height: 650,
+                  child: preview
+                      ? CreationDocumentPreview(
+                          pages: photoPages,
+                          canvas: const Size(500, 500),
+                          showBookMaterial: true,
+                          showThumbnails: false,
+                        )
+                      : AlbumCreationReviewSheet(
+                          pages: photoPages,
+                          innerPageCount: 0,
+                          canvasSize: const Size(500, 500),
+                        ),
+                );
+              },
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      update(() => photo = replacement);
-      await _paint(tester);
-      pending.complete(File('assets/snapfit_home_portrait.jpg'));
-      await _paint(tester);
-      final rendered = tester.widgetList<TemplatePageRenderer>(
-        find.byType(TemplatePageRenderer),
-      );
-      expect(rendered, isNotEmpty);
-      expect(
-        rendered.every(
-          (page) =>
-              page.localFiles?['photo']?.path ==
-              'assets/snapfit_home_square.jpg',
-        ),
-        isTrue,
-      );
-      expect(tester.takeException(), isNull);
-    },
-  );
+        );
+        await tester.pumpAndSettle();
+        update(() => photo = replacement);
+        await tester.pump();
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 10)),
+        );
+        await tester.pumpAndSettle();
+        pending.complete(File('assets/snapfit_home_portrait.jpg'));
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 10)),
+        );
+        await tester.pumpAndSettle();
+        final rendered = tester.widgetList<TemplatePageRenderer>(
+          find.byType(TemplatePageRenderer),
+        );
+        expect(rendered, isNotEmpty);
+        expect(
+          rendered.every(
+            (page) =>
+                page.localFiles?['photo']?.path ==
+                'assets/snapfit_home_square.jpg',
+          ),
+          isTrue,
+        );
+        expect(tester.takeException(), isNull);
+      },
+    );
 }

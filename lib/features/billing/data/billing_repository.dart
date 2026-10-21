@@ -143,8 +143,8 @@ class PointLedgerEntry {
 
   String get subtitle {
     return switch (reason) {
-      'POINT_PURCHASE' => relatedEntityType == 'web_point_topup'
-          ? '웹 결제 확인 완료' : '스토어 결제 확인 완료',
+      'POINT_PURCHASE' =>
+        relatedEntityType == 'web_point_topup' ? '웹 결제 확인 완료' : '스토어 결제 확인 완료',
       'POINT_PURCHASE_REFUND' => '환불된 구매의 지급 포인트 회수',
       'DIGITAL_ITEM_PURCHASE' => '구매한 상품은 계속 사용할 수 있어요',
       'AI_ALBUM_DRAFT_CHARGE' => '초안이 만들어지고 리뷰 가능할 때만 차감',
@@ -317,6 +317,7 @@ class BillingRepository {
 
       final response = await supabase!.rpc(
         'record_ai_album_draft_success',
+        // An expected amount is only a consent check; the server record owns the price.
         params: {'p_draft_id': normalizedDraftId, 'p_point_cost': pointCost},
       );
       final row = response is List && response.isNotEmpty
@@ -327,7 +328,7 @@ class BillingRepository {
       rethrow;
     } on PostgrestException catch (error) {
       final message = error.message.toLowerCase();
-      if (error.code == 'P0001' || message.contains('insufficient points')) {
+      if (message.contains('insufficient points')) {
         throw AiAlbumDraftPointUsageException(
           AiAlbumDraftPointUsageFailure.insufficientPoints,
           error.message,
@@ -362,6 +363,18 @@ class BillingRepository {
       return (row?['balance'] as num?)?.toInt() ?? 0;
     }
     throw Exception('Supabase 포인트 조회 환경이 준비되지 않았습니다.');
+  }
+
+  Future<bool> getIsFirstAiDraftFree() async {
+    final client = supabase;
+    final user = client?.auth.currentUser;
+    if (client == null || user == null) return false;
+    final claim = await client
+        .from('ai_album_free_draft_claims')
+        .select('user_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+    return claim == null;
   }
 
   Future<List<PointLedgerEntry>> getMyPointLedger({int limit = 5}) async {

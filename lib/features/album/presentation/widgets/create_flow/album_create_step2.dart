@@ -9,9 +9,14 @@ import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../../../shared/widgets/experience_icon.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/constants/cover_size.dart';
+import '../../../../../core/theme/snapfit_design_tokens.dart'
+    show SnapFitRadius;
 import '../../../../../core/utils/screen_logger.dart';
 import '../../../data/api/album_provider.dart';
 import '../../../service/album_invite_service.dart';
+import '../../../domain/entities/layer.dart';
+import 'creation_document_preview.dart';
+import 'creation_workspace.dart';
 
 /// 스텝3: 친구 초대 기능 (딥링크)
 class AlbumCreateStep2 extends ConsumerStatefulWidget {
@@ -21,6 +26,8 @@ class AlbumCreateStep2 extends ConsumerStatefulWidget {
   final bool allowEditing;
   final ValueChanged<bool>? onAllowEditingChanged;
   final int? albumId;
+  final List<List<LayerModel>>? documentPages;
+  final Size? documentCanvas;
   final VoidCallback onNext;
   final VoidCallback onBack;
 
@@ -32,6 +39,8 @@ class AlbumCreateStep2 extends ConsumerStatefulWidget {
     this.allowEditing = true,
     this.onAllowEditingChanged,
     this.albumId,
+    this.documentPages,
+    this.documentCanvas,
     required this.onNext,
     required this.onBack,
   });
@@ -45,6 +54,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
   int? _albumId;
   String? _inviteLink;
   bool _isCreatingInvite = false;
+  final _bookKey = GlobalKey();
 
   @override
   void initState() {
@@ -63,7 +73,74 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
     return _buildContent();
   }
 
-  Widget _buildContent() => SafeArea(
+  Widget _buildContent() {
+    if (kIsWeb) return _buildLegacyContent();
+    final pages = widget.documentPages;
+    return CreationWorkspace(
+      stage: CreationPaperStage(
+        title: widget.albumTitle,
+        detail:
+            '${widget.selectedCover.displayName} · ${widget.selectedPageCount}쪽',
+        child: KeyedSubtree(
+          key: _bookKey,
+          child: pages?.isNotEmpty == true
+              ? CreationDocumentPreview(
+                  pages: pages!,
+                  canvas:
+                      widget.documentCanvas ??
+                      coverCanvasBaseSize(widget.selectedCover),
+                  showBookMaterial: true,
+                  showThumbnails: false,
+                  spreadInLandscape: true,
+                  preserveTypography: true,
+                )
+              : CreationBlankBook(
+                  cover: widget.selectedCover,
+                  title: widget.albumTitle,
+                ),
+        ),
+      ),
+      fields: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            '함께 만드는 앨범',
+            style: ExperienceFormStyle.text(
+              context,
+              20,
+              weight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${widget.albumTitle} · ${widget.selectedCover.coverType.label}',
+            style: ExperienceFormStyle.text(context, 12, secondary: true),
+          ),
+          const SizedBox(height: 24),
+          _sharingControls(),
+        ],
+      ),
+      actions: Row(
+        children: [
+          IconButton(
+            tooltip: '이전',
+            onPressed: widget.onBack,
+            icon: const ExperienceIcon('ArrowLeft'),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: FilledButton(
+              onPressed: _confirmSkipInviteBeforeNext,
+              style: CreationStyle.primary(context),
+              child: const Text('편집 시작'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLegacyContent() => SafeArea(
     top: false,
     child: Column(
       children: [
@@ -75,6 +152,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
                 constraints: const BoxConstraints(maxWidth: 900),
                 child: LayoutBuilder(
                   builder: (context, box) {
+                    final wide = box.maxWidth >= 640;
                     final summary = Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -83,7 +161,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
                           style: ExperienceFormStyle.text(
                             context,
                             22,
-                            weight: FontWeight.w600,
+                            weight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -112,153 +190,24 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
                         ),
                       ],
                     );
-                    final sharing = Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        SizedBox(
-                          height: 52,
-                          child: ElevatedButton.icon(
-                            onPressed: _isCreatingInvite
-                                ? null
-                                : _inviteViaKakaoTalk,
-                            icon: SvgPicture.asset(
-                              'assets/social/kakaotalk.svg',
-                              width: 20,
-                              height: 20,
-                            ),
-                            label: const Text('카카오톡으로 초대'),
-                            style: ElevatedButton.styleFrom(
-                              elevation: 0,
-                              backgroundColor: const Color(0xFFFEE500),
-                              foregroundColor: const Color(0xFF191919),
-                              textStyle: ExperienceFormStyle.text(
-                                context,
-                                14,
-                                weight: FontWeight.w600,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(kIsWeb ? 12 : 6),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.fromLTRB(14, 10, 4, 10),
-                          decoration: BoxDecoration(
-                            color: ExperienceFormStyle.surface(context),
-                            borderRadius: BorderRadius.circular(kIsWeb ? 12 : 6),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '링크 복사하기',
-                                      style: ExperienceFormStyle.text(
-                                        context,
-                                        13,
-                                        weight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      _inviteLink ??
-                                          (_isCreatingInvite
-                                              ? '초대 링크 생성 중...'
-                                              : '초대 링크를 만들 수 있어요'),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: ExperienceFormStyle.text(
-                                        context,
-                                        12,
-                                        secondary: true,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              IconButton(
-                                tooltip: '초대 링크 복사',
-                                onPressed: _isCreatingInvite
-                                    ? null
-                                    : _copyInviteLink,
-                                icon: Icon(
-                                  Icons.content_copy_outlined,
-                                  size: 21,
-                                  color: ExperienceFormStyle.ink(context),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Divider(color: ExperienceFormStyle.line(context)),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '편집 권한 허용',
-                                    style: ExperienceFormStyle.text(
-                                      context,
-                                      14,
-                                      weight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    _allowEditing
-                                        ? '사진과 페이지를 함께 편집'
-                                        : '앨범 보기만 허용',
-                                    style: ExperienceFormStyle.text(
-                                      context,
-                                      12,
-                                      secondary: true,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Switch(
-                              value: _allowEditing,
-                              onChanged: _isCreatingInvite
-                                  ? null
-                                  : (value) {
-                                      setState(() {
-                                        _allowEditing = value;
-                                        _inviteLink = null;
-                                      });
-                                      widget.onAllowEditingChanged?.call(value);
-                                      _createInviteLink();
-                                    },
-                              activeTrackColor: SnapFitColors.accent,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 14),
-                        Text(
-                          '초대는 나중에도 할 수 있어요.',
-                          style: ExperienceFormStyle.text(
-                            context,
-                            12,
-                            secondary: true,
-                          ),
-                        ),
-                      ],
-                    );
-                    return box.maxWidth >= 640
+                    final sharing = _sharingControls();
+                    return wide
                         ? Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(flex: 4, child: kIsWeb ? WebSurface(child: summary) : summary),
-                              const SizedBox(width: 40),
-                              Expanded(flex: 6, child: kIsWeb ? WebSurface(child: sharing) : sharing),
+                              Expanded(
+                                flex: 4,
+                                child: kIsWeb
+                                    ? WebSurface(child: summary)
+                                    : summary,
+                              ),
+                              SizedBox(width: kIsWeb ? 40 : 24),
+                              Expanded(
+                                flex: 6,
+                                child: kIsWeb
+                                    ? WebSurface(child: sharing)
+                                    : sharing,
+                              ),
                             ],
                           )
                         : Column(
@@ -296,10 +245,21 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: FilledButton(
-                      onPressed: _confirmSkipInviteBeforeNext,
-                      style: ExperienceFormStyle.primary(context),
-                      child: const Text('편집 시작'),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: kIsWeb ? double.infinity : 420,
+                        ),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: FilledButton(
+                            onPressed: _confirmSkipInviteBeforeNext,
+                            style: CreationStyle.primary(context),
+                            child: const Text('편집 시작'),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -309,6 +269,131 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
         ),
       ],
     ),
+  );
+
+  Widget _sharingControls() => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 52),
+        child: ElevatedButton.icon(
+          onPressed: _isCreatingInvite ? null : _inviteViaKakaoTalk,
+          icon: SvgPicture.asset(
+            'assets/social/kakaotalk.svg',
+            width: 20,
+            height: 20,
+          ),
+          label: const Text('카카오톡으로 초대'),
+          style: ElevatedButton.styleFrom(
+            elevation: 0,
+            backgroundColor: const Color(0xFFFEE500),
+            foregroundColor: const Color(0xFF191919),
+            textStyle: ExperienceFormStyle.text(
+              context,
+              14,
+              weight: FontWeight.w600,
+            ),
+            shape: const StadiumBorder(),
+          ),
+        ),
+      ),
+      const SizedBox(height: 16),
+      Container(
+        padding: const EdgeInsets.fromLTRB(14, 10, 4, 10),
+        decoration: BoxDecoration(
+          color: ExperienceFormStyle.surface(context),
+          borderRadius: BorderRadius.circular(SnapFitRadius.lg),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '링크 복사하기',
+                    style: ExperienceFormStyle.text(
+                      context,
+                      13,
+                      weight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _inviteLink ??
+                        (_isCreatingInvite
+                            ? '초대 링크 생성 중...'
+                            : '초대 링크를 만들 수 있어요'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: ExperienceFormStyle.text(
+                      context,
+                      12,
+                      secondary: true,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              tooltip: '초대 링크 복사',
+              onPressed: _isCreatingInvite ? null : _copyInviteLink,
+              icon: Icon(
+                Icons.content_copy_outlined,
+                size: 21,
+                color: ExperienceFormStyle.ink(context),
+              ),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 20),
+      Divider(color: ExperienceFormStyle.line(context)),
+      Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '편집 권한 허용',
+                  style: ExperienceFormStyle.text(
+                    context,
+                    14,
+                    weight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _allowEditing ? '사진과 페이지를 함께 편집' : '앨범 보기만 허용',
+                  style: ExperienceFormStyle.text(context, 12, secondary: true),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: _allowEditing,
+            onChanged: _isCreatingInvite
+                ? null
+                : (value) {
+                    setState(() {
+                      _allowEditing = value;
+                      _inviteLink = null;
+                    });
+                    widget.onAllowEditingChanged?.call(value);
+                    _createInviteLink();
+                  },
+            activeTrackColor: SnapFitColors.accent,
+          ),
+        ],
+      ),
+      const SizedBox(height: 14),
+      Text(
+        '초대는 나중에도 할 수 있어요.',
+        style: ExperienceFormStyle.text(context, 12, secondary: true),
+      ),
+    ],
   );
 
   /// 초대 링크 생성
@@ -407,12 +492,19 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
           SnackBar(
             content: Row(
               children: [
-                Icon(Icons.check_circle, color: kIsWeb ? WebPalette.of(context).onBrand : Colors.white, size: 20.sp),
+                Icon(
+                  Icons.check_circle,
+                  color: kIsWeb ? WebPalette.of(context).onBrand : Colors.white,
+                  size: 20.sp,
+                ),
                 SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
                     '카카오톡 공유 화면을 열었어요.',
-                    style: TextStyle(fontSize: 14.sp, color: kIsWeb ? WebPalette.of(context).onBrand : null),
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: kIsWeb ? WebPalette.of(context).onBrand : null,
+                    ),
                   ),
                 ),
               ],
@@ -454,12 +546,19 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
         SnackBar(
           content: Row(
             children: [
-              Icon(Icons.check_circle, color: kIsWeb ? WebPalette.of(context).onBrand : Colors.white, size: 20.sp),
+              Icon(
+                Icons.check_circle,
+                color: kIsWeb ? WebPalette.of(context).onBrand : Colors.white,
+                size: 20.sp,
+              ),
               SizedBox(width: 8.w),
               Expanded(
                 child: Text(
                   '초대 링크가 클립보드에 복사되었습니다.',
-                  style: TextStyle(fontSize: 14.sp, color: kIsWeb ? WebPalette.of(context).onBrand : null),
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: kIsWeb ? WebPalette.of(context).onBrand : null,
+                  ),
                 ),
               ),
             ],
@@ -476,7 +575,9 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
     final goNext = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.surfaceOf(context),
+        backgroundColor: kIsWeb
+            ? WebPalette.of(context).surface
+            : SnapFitColors.surfaceOf(context),
         title: Text(
           '초대를 건너뛸까요?',
           style: TextStyle(
@@ -509,7 +610,9 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
             child: Text(
               '건너뛰고 다음',
               style: TextStyle(
-                color: kIsWeb ? WebPalette.of(context).brandInk : SnapFitColors.accent,
+                color: kIsWeb
+                    ? WebPalette.of(context).brandInk
+                    : SnapFitColors.accent,
                 fontWeight: FontWeight.w700,
               ),
             ),

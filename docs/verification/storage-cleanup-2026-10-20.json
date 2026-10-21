@@ -1,0 +1,96 @@
+{
+  "recordedAt": "2026-10-20T18:08:20.808455+09:00",
+  "scope": "SnapFit customer/admin generated previews, build products and safely idle development caches",
+  "removedDiskBytesApprox": 15531594711,
+  "removedDecimalGBApprox": 15.5,
+  "freeDiskBytesAtVerification": 23782047744,
+  "freeDecimalGBAtVerification": 23.8,
+  "removedPreviewFiles": 10709,
+  "additionalGeneratedFilesRemoved": 147,
+  "protectedSourceAssetAndGoldenFilesVerifiedUnchanged": 2258,
+  "implementationChanged": false,
+  "preserved": [
+    "Application source, assets and Figma reference originals",
+    "Golden baseline images and test source",
+    "Printing PDF regression fixtures and provider originals",
+    "Design archive JSON, AI responses, supplier quotes CSV/JSON, SQL and utility source",
+    "Git repositories and history",
+    "Auth/document browser profiles, package downloads, Flutter SDK and Xcode caches used by other projects"
+  ],
+  "stopped": [
+    "SnapFit local static preview on port 8136",
+    "Gradle daemon 45606 only after --status confirmed IDLE and no active Gradle client was present"
+  ],
+  "removed": [
+    {
+      "path": "/Users/devsheep/SnapFit/SnapFit/build",
+      "diskBytes": 4470730752
+    },
+    {
+      "path": "/Users/devsheep/SnapFit/SnapFitAdmin/build",
+      "diskBytes": 778313728
+    },
+    {
+      "path": "/Users/devsheep/SnapFit/SnapFit/.dart_tool/flutter_build",
+      "diskBytes": 139042816
+    },
+    {
+      "path": "/Users/devsheep/SnapFit/SnapFit/.dart_tool/build",
+      "diskBytes": 19918848
+    },
+    {
+      "path": "/Users/devsheep/SnapFit/SnapFit/.dart_tool/hooks_runner",
+      "diskBytes": 23076864
+    },
+    {
+      "path": "/Users/devsheep/SnapFit/SnapFit/.dart_tool/pub/bin",
+      "diskBytes": 27172864
+    },
+    {
+      "path": "/Users/devsheep/SnapFit/SnapFitAdmin/.dart_tool/hooks_runner",
+      "diskBytes": 11743232
+    },
+    {
+      "path": "/Users/devsheep/SnapFit/SnapFit/tool/brand_studio/node_modules",
+      "diskBytes": 29618176
+    },
+    {
+      "path": "/Users/devsheep/.gradle/caches/8.14.1/transforms",
+      "diskBytes": 7239172096,
+      "reason": "regenerable transformed artifacts; only idle Gradle daemon stopped, no active Gradle client"
+    },
+    {
+      "path": "/Users/devsheep/Library/Caches/JetBrains/IntelliJIdea2026.1/index",
+      "diskBytes": 234631168,
+      "reason": "inactive IDE rebuildable index/cache; local history preserved"
+    },
+    {
+      "path": "/Users/devsheep/Library/Caches/JetBrains/IntelliJIdea2026.1/caches",
+      "diskBytes": 164634624,
+      "reason": "inactive IDE rebuildable index/cache; local history preserved"
+    },
+    {
+      "path": "generated golden failure comparisons, admin preview PNGs and build resolver cache",
+      "files": 147,
+      "diskBytes": 20570112
+    },
+    {
+      "path": "confirmed generated preview images and videos",
+      "files": 10709,
+      "diskBytesEstimate": 2372969431,
+      "measurementPrecisionGiB": 0.01
+    }
+  ],
+  "nextWork": [
+    "Normal builds regenerate their own caches. No Flutter SDK or package reinstall was performed or required.",
+    "Use python3 tool/build_web.py to recreate the local web release when needed.",
+    "Screenshot export/proof tools may require regenerating the source renders first. For Atelier use flutter test --dart-define=EXPORT_ATELIER=true test/tool/atelier_editions_export_test.dart before composition-proof export.",
+    "Optional brand preview tool: run npm ci in tool/brand_studio before reuse; package.json and lockfile were preserved."
+  ],
+  "verification": "Compared pre-cleanup SHA-256 for all protected source/assets/goldens. No builds/tests were rerun after cleanup to avoid immediately regenerating the removed outputs.",
+  "git": {
+    "historyRewritten": false,
+    "changesStaged": false,
+    "note": "Tracked generated preview PNGs were intentionally removed from the working tree. Source changes were preserved; no git clean/reset was used."
+  }
+}

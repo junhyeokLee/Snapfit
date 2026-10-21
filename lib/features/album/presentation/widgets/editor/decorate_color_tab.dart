@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
@@ -106,12 +107,20 @@ class _DecorateColorTabState extends ConsumerState<DecorateColorTab> {
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
-      padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 20.h),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 6,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-      ),
+      padding: kIsWeb
+          ? const EdgeInsets.all(24)
+          : EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 20.h),
+      gridDelegate: kIsWeb
+          ? const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 72,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+            )
+          : const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 6,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+            ),
       // +1: 맨 앞에 "배경 없음" 옵션 추가
       itemCount: _colorsAll.length + 1,
       itemBuilder: (context, index) {
@@ -119,6 +128,7 @@ class _DecorateColorTabState extends ConsumerState<DecorateColorTab> {
         if (index == 0) {
           final bool isSelected = _selectedColorIndex == null;
           return GestureDetector(
+            key: const ValueKey('editor-background-color-0'),
             onTap: () {
               setState(() {
                 _selectedColorIndex = null;
@@ -160,6 +170,7 @@ class _DecorateColorTabState extends ConsumerState<DecorateColorTab> {
         final color = _colorsAll[index - 1];
         final isSelected = _selectedColorIndex == index - 1;
         return GestureDetector(
+          key: ValueKey('editor-background-color-$index'),
           onTap: () {
             setState(() {
               _selectedColorIndex = index - 1;

@@ -1,0 +1,135 @@
+{
+  "recorded_at_utc": "2026-10-20T09:33:42.163189+00:00",
+  "status": "completed_and_test_caches_removed",
+  "completed_items": [
+    "Narrow web inspector supports drag, buttons, keyboard and accessibility height adjustment; artwork zoom and preferred height survive layout changes.",
+    "Manual, AI and template starts have distinct code-painted examples, preserved price/free conditions, aligned horizontal actions and responsive vertical layouts.",
+    "Selected home album shows saved page progress, completion and viewer access; lock metadata is not presented as verified editing activity."
+  ],
+  "validation": {
+    "runs": [
+      {
+        "name": "native_home_and_creation_journeys",
+        "passed": 109,
+        "log": "/private/tmp/snapfit-final-three-home-journey.log",
+        "log_sha256": "04d9a4de43bf2b180ff13959bf8334f846d3bc2852ce85543517eff3af5930c2"
+      },
+      {
+        "name": "native_final_home",
+        "passed": 71,
+        "log": "/private/tmp/snapfit-final-three-home.log",
+        "log_sha256": "ecded6127306e93d371cfac7b87395fba521653abc473f20c23a733a32c2e215"
+      },
+      {
+        "name": "native_workspace",
+        "passed": 26,
+        "log": "/private/tmp/snapfit-final-three-panel.log",
+        "log_sha256": "32a61ccd083bb08a513ec3073d58c43cafb1dca91ce93798f2940889f2a16bc8"
+      },
+      {
+        "name": "native_final_creation_examples",
+        "passed": 8,
+        "log": "/private/tmp/snapfit-final-three-creation.log",
+        "log_sha256": "a6e7e35295ea8f15f92cdf440d5a6bcb135e3a9d5738df11ca8243f405f9debc"
+      },
+      {
+        "name": "chrome_workspace_and_examples",
+        "passed": 34,
+        "log": "/private/tmp/snapfit-final-three-chrome.log",
+        "log_sha256": "033261ee6d175a87dc13dec328cd05bdac43cc04b38885a14433628d07feb1a2"
+      },
+      {
+        "name": "existing_creation_functions_and_golden_comparison",
+        "passed": 8,
+        "log": "/private/tmp/snapfit-final-three-golden-compare.log",
+        "log_sha256": "acb591ec37c21a59abdc86360c361e5c5730ce4231b34fd0d9f3c19d8c3cfccb"
+      }
+    ],
+    "counts_overlap_do_not_sum": true,
+    "viewport_tests_passed_in_initial_combined_run": 9,
+    "viewport_log": "/private/tmp/snapfit-final-three-focused.log",
+    "analysis_files": 7,
+    "analysis_result": "No issues found",
+    "analysis_log": "/private/tmp/snapfit-final-three-analysis.log",
+    "analysis_log_sha256": "e2a42dff3e64462a621d8908638fb320fd340199e604ec2ac2f80065333ac77d",
+    "visual_review": "Existing 320, 390 and 844 creation golden baselines inspected without making extra preview files."
+  },
+  "source_and_test_sha256": {
+    "lib/features/album/presentation/widgets/web/web_album_workspace.dart": "5a9d56861e7a057089f803f9248e552e8c4c60e4cb3432c9c54ef1c8d5657307",
+    "lib/features/album/presentation/widgets/create_flow/ai_album_start_step.dart": "281c7e418b4233b76f3c1d03a0c186d72732358dacb06008bde8faa0386af891",
+    "lib/features/album/presentation/widgets/home/home_album_slider.dart": "beaa573c44b9d4a38872059e7e1423917007a245414f8fa8fab2ce7010e309bc",
+    "lib/features/album/presentation/views/home_screen.dart": "fb48e247edd7876e00c2f8b5351591e2deab1f6994704d5077aa88f49b859457",
+    "test/widget/web_album_workspaces_design_test.dart": "4e074cf5ea56ea16c984b37f1f7e7cb2c3547da75d998826e385aecc0310b005",
+    "test/widget/creation_start_examples_test.dart": "d19814997f029b6709ec4e309a14de013aeb4108a06f73842e1e466acab28086",
+    "test/widget/home_book_depth_test.dart": "a9709d672e1549667fc191b5881090788f6ea3f4480bf5862ad5f27dfa9039e0",
+    "test/widget/ai_album_start_step_test.dart": "89ee979650b748e458affb6786819b4f03776d5ff489d701ecf0d3f97b1498a8",
+    "test/widget/ai_album_split_flow_goldens_test.dart": "9ec313a70d5b37bed9c2f7a7ef8a15cc54521ed64b3cfd24ec49c9a0bc997e4a",
+    "docs/all_screen_design_audit.md": "4b724744b594392b284da8ce863102f5788c3ac4038f52ed8872042bc0219394",
+    "docs/web-development.md": "292a788f171b301335cf3c7645e93f95d1ba92abe6d1123d333afdafe7b69df6"
+  },
+  "media_inventory": {
+    "before_count": 340,
+    "after_count": 340,
+    "added": [],
+    "removed": [],
+    "changed_existing_goldens": [
+      {
+        "path": "SnapFit/test/widget/goldens/ai_album_start_split_390x844.png",
+        "before_bytes": 16886,
+        "after_bytes": 21979,
+        "sha256": "b353244a453b220d273d9afe72ba784d04f1c14812d9f274eece63a6e27bb474"
+      },
+      {
+        "path": "SnapFit/test/widget/goldens/creation_hub_320x568.png",
+        "before_bytes": 227676,
+        "after_bytes": 80212,
+        "sha256": "b07a703fe7fe06575df5d6536cd405578aebe8c6e108e8129a360ee3f06e4e18"
+      },
+      {
+        "path": "SnapFit/test/widget/goldens/creation_hub_390x844.png",
+        "before_bytes": 471622,
+        "after_bytes": 406066,
+        "sha256": "4aede546dd825cf57b67dc5d68682190addf2b3d399ba79507f72dab262d0afd"
+      },
+      {
+        "path": "SnapFit/test/widget/goldens/creation_hub_844x390.png",
+        "before_bytes": 331388,
+        "after_bytes": 325366,
+        "sha256": "9aca3b1c36256b888b8d479873446fe1eae06e760eb426fd5f665c3fceb8dac3"
+      }
+    ],
+    "other_original_media_unchanged": true
+  },
+  "storage": {
+    "new_preview_images": 0,
+    "new_preview_videos": 0,
+    "release_web_build_created": false,
+    "test_caches_removed": [
+      {
+        "path": "/Users/devsheep/SnapFit/SnapFit/build",
+        "logical_bytes_removed": 871488981
+      },
+      {
+        "path": "/Users/devsheep/SnapFit/SnapFit/.dart_tool/flutter_build",
+        "logical_bytes_removed": 17695
+      },
+      {
+        "path": "/Users/devsheep/SnapFit/SnapFit/.dart_tool/hooks_runner",
+        "logical_bytes_removed": 11772041
+      }
+    ],
+    "logical_bytes_removed": 883278717,
+    "preserved": [
+      "Source and app assets",
+      "Existing golden baselines",
+      "Original print/design/quote fixtures",
+      "SDK and dependency packages",
+      "Browser-local chrome-device data"
+    ]
+  },
+  "deployment_performed": false,
+  "limitations": [
+    "No production account, payment, print order or live AI generation was exercised.",
+    "Chrome structural tests omit explicit golden-only FontLoader setup; native tests retain bundled font validation."
+  ]
+}

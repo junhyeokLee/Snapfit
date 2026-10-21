@@ -1,12 +1,23 @@
 import 'studio_decoration_catalog.dart';
-import 'template_document_pages.dart';
+import 'template_material_layers.dart';
 import 'template_visual_material_inventory.dart';
 
-const freeTemplateMaterialPolicyRevision = 'free-materials-2026-10-07';
+const freeTemplateMaterialPolicyRevision = 'free-materials-2026-10-16-writing';
 
 /// Deliberate free starter kit. A missing price is not a free classification.
 /// These keys must remain 0P; changing a tier requires a new material identity.
 const freeTemplateMaterialProductKeys = {
+  'sticker:atelierWritingVow',
+  'sticker:atelierWritingReceipt',
+  'sticker:atelierWritingLetter',
+  'sticker:atelierWritingRecord',
+  'sticker:editionGardenPaper',
+  'sticker:editionRailPaper',
+  'sticker:editionHerbariumPaper',
+  'sticker:editionOrbitPaper',
+  'sticker:editionKitchenPaper',
+  'sticker:editionCinemaPaper',
+  'sticker:editionWalkPaper',
   'frame:studioArch',
   'frame:studioCapsule',
   'frame:studioDeckle',
@@ -70,60 +81,55 @@ Set<String> freeTemplateMaterialIssues(Map<String, dynamic> document) {
     for (final spec in studioDecorations) spec.insertionValue: spec,
   };
   final byId = {for (final spec in studioDecorations) spec.id: spec};
-  void inspect(Map<String, dynamic> data) {
-    for (final page in templateDocumentPages(data)) {
-      for (final layer
-          in (page['layers'] as List? ?? const []).whereType<Map>()) {
-        final type = layer['type']?.toString().toLowerCase();
-        final image = layer['imageUrl']?.toString();
-        final background = layer['imageBackground'];
-        final style = background ?? layer['style'];
-        // A sold decoration must not be disguised as an ordinary photo slot.
-        final material = byValue[image] ?? byId[style];
-        if (material != null) {
-          final key = 'sticker:${material.id}';
-          if (!freeTemplateMaterialProductKeys.contains(key)) issues.add(key);
-        } else if (type == 'sticker' || type == 'decoration') {
-          if (image != null && !freeTemplateArtworkPaths.contains(image)) {
-            issues.add('unreviewed-artwork:$image');
-          }
-          if (style != null &&
-              style is! Map &&
-              !photoCoverShadeStyles.contains(style)) {
-            issues.add('unreviewed-decoration:$style');
-          }
-        }
-        if (type == 'image') {
-          final frame = background ?? layer['frame'];
-          if (frame != null &&
-              frame != '' &&
-              frame != 'none' &&
-              !freeTemplateMaterialProductKeys.contains('frame:$frame')) {
-            issues.add('frame:$frame');
-          }
-        }
-        final fill = layer['textFillImageUrl'];
-        if (fill != null && !freeTemplateArtworkPaths.contains(fill)) {
-          issues.add('unreviewed-text-fill:$fill');
-        }
-        final wordArt = layer['wordArtId'];
-        if (wordArt != null &&
-            !freeTemplateMaterialProductKeys.contains(
-              'phrase:collage-$wordArt',
-            )) {
-          issues.add('phrase:collage-$wordArt');
-        }
+  for (final layer in templateMaterialLayers(document)) {
+    final type = layer['type'];
+    final style = layer['style'];
+    final images = templateMaterialImageReferences(layer);
+    final approvedRasterCover =
+        style == 'rasterCover' &&
+        images.isNotEmpty &&
+        images.every(freeTemplateArtworkPaths.contains);
+    final decoration = byId[style];
+    if (decoration != null) {
+      final key = 'sticker:${decoration.id}';
+      if (!freeTemplateMaterialProductKeys.contains(key)) issues.add(key);
+    } else if ((type == 'sticker' || type == 'decoration') &&
+        style != null &&
+        style is! Map &&
+        !approvedRasterCover &&
+        !photoCoverShadeStyles.contains(style)) {
+      issues.add('unreviewed-decoration:$style');
+    }
+    // A sold decoration must not be disguised as an ordinary photo slot.
+    for (final image in images) {
+      final material = byValue[image];
+      if (material != null) {
+        final key = 'sticker:${material.id}';
+        if (!freeTemplateMaterialProductKeys.contains(key)) issues.add(key);
+      } else if ((type == 'sticker' || type == 'decoration') &&
+          !freeTemplateArtworkPaths.contains(image)) {
+        issues.add('unreviewed-artwork:$image');
       }
     }
-    final variants = data['variants'];
-    if (variants is Map) {
-      for (final variant in variants.values.whereType<Map>()) {
-        inspect(Map<String, dynamic>.from(variant));
+    if (type == 'image') {
+      final frame = layer['frame'];
+      if (frame != null &&
+          frame != '' &&
+          frame != 'none' &&
+          !freeTemplateMaterialProductKeys.contains('frame:$frame')) {
+        issues.add('frame:$frame');
       }
+    }
+    final fill = layer['textFillImageUrl'];
+    if (fill != null && !freeTemplateArtworkPaths.contains(fill)) {
+      issues.add('unreviewed-text-fill:$fill');
+    }
+    final wordArt = layer['wordArtId'];
+    if (wordArt != null &&
+        !freeTemplateMaterialProductKeys.contains('phrase:collage-$wordArt')) {
+      issues.add('phrase:collage-$wordArt');
     }
   }
-
-  inspect(document);
   return Set.unmodifiable(issues);
 }
 

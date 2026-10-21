@@ -63,19 +63,41 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('creation-topic-여행')));
+    final travel = find.byKey(const ValueKey('creation-topic-여행'));
+    await tester.ensureVisible(travel);
     await tester.pumpAndSettle();
+    expect(travel.hitTestable(), findsOneWidget);
+    await tester.tap(travel);
+    await tester.pumpAndSettle();
+    expect(tester.widget<ChoiceChip>(travel).selected, isTrue);
     expect(find.byKey(const ValueKey('creation-template-3')), findsNothing);
+    await tester.ensureVisible(find.text('유료').first);
+    await tester.pumpAndSettle();
     await tester.tap(find.text('유료').first);
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('creation-template-1')), findsNothing);
     expect(find.byKey(const ValueKey('creation-template-2')), findsOneWidget);
+    await tester.ensureVisible(find.byTooltip('즐겨찾기만 보기'));
+    await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('즐겨찾기만 보기'));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('creation-template-2')), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const ValueKey('creation-topic-웨딩')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('creation-topic-웨딩')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('전체 보기'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('creation-template-3')),
+      120,
+      scrollable: find
+          .descendant(
+            of: find.byType(CustomScrollView).first,
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('creation-template-1')), findsOneWidget);
     expect(find.byKey(const ValueKey('creation-template-3')), findsOneWidget);

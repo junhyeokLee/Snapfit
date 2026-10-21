@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/navigation/web_app_location.dart';
 import 'package:flutter/foundation.dart' show ValueListenable;
 import '../../../../../shared/widgets/album_stage_style.dart';
+import '../../../../../shared/widgets/album_navigation_dock.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../../../core/constants/cover_theme.dart';
@@ -498,6 +499,10 @@ class _AlbumReaderSinglePageViewState
     if (!mounted) return;
     final album = ref.read(albumEditorViewModelProvider.notifier).album;
     if (album?.allowsEditing == false) return;
+    final editingPage =
+        _isAnimatingToRequestedSpread && _animatedTargetSpread != null
+        ? _focusPageForSpread(_animatedTargetSpread!)
+        : _focusPageIndex;
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -507,7 +512,7 @@ class _AlbumReaderSinglePageViewState
               )
             : null,
         builder: (_) => PageEditorScreen(
-          initialPageIndex: _focusPageIndex,
+          initialPageIndex: editingPage,
           returnToPreviousOnSave: true,
         ),
       ),
@@ -1579,7 +1584,7 @@ class _PremiumSpreadStage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final floorShadowAlpha = hidePaper ? 0.0 : (isLandscape ? 0.11 : 0.075);
-    final contactShadowAlpha = hidePaper ? 0.0 : (isLandscape ? 0.13 : 0.09);
+    final contactShadowAlpha = hidePaper ? 0.0 : (isLandscape ? 0.07 : 0.05);
     final cardShadowAlpha = hidePaper ? 0.0 : (isLandscape ? 0.055 : 0.052);
     final spineWidth = isLandscape ? 58.0 : 42.0;
     final spineCreaseWidth = isLandscape ? 18.0 : 13.0;
@@ -1684,7 +1689,13 @@ class _PremiumSpreadStage extends StatelessWidget {
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(999),
-                  color: Colors.black.withValues(alpha: contactShadowAlpha),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: contactShadowAlpha),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -1853,115 +1864,48 @@ class _FocusReaderControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screen = MediaQuery.sizeOf(context);
-    final isLandscape = screen.width > screen.height;
-    final controlHeight = isLandscape ? 44.0 : 44.0;
-    final sideButtonSize = isLandscape ? 38.0 : 38.0;
-    final primaryWidth = isLandscape ? 72.0 : 64.0;
-    final primaryHeight = isLandscape ? 34.0 : 32.0;
-    final editFontSize = isLandscape ? 12.0 : 12.0;
-    final iconSize = isLandscape ? 25.0 : 24.0;
-
-    Widget action({
-      required IconData icon,
-      required bool enabled,
-      required VoidCallback onTap,
-      bool primary = false,
-      required String label,
-    }) {
-      return Semantics(
-        button: true,
-        enabled: enabled,
-        label: label,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: enabled ? onTap : null,
-          child: AnimatedOpacity(
-            duration: const Duration(milliseconds: 160),
-            opacity: enabled ? 1 : 0.28,
-            child: Center(
+    return AlbumNavigationDock(
+      onPrevious: canGoBack ? onPrevious : null,
+      onNext: canGoForward ? onNext : null,
+      primary: Tooltip(
+        message: canEdit ? '현재 페이지 편집' : '보기 전용 앨범',
+        child: Semantics(
+          button: true,
+          enabled: canEdit,
+          label: canEdit ? '현재 페이지 편집' : '보기 전용 앨범',
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: canEdit ? onEdit : null,
+              borderRadius: BorderRadius.circular(8),
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 160),
-                width: primary ? primaryWidth : sideButtonSize,
-                height: primary ? primaryHeight : sideButtonSize,
+                duration: MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : const Duration(milliseconds: 160),
+                width: 76,
+                height: 44,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: primary
-                      ? AlbumStageStyle.controlFill(context)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(primary ? 99.r : 99.r),
-                  border: primary
-                      ? Border.all(color: AlbumStageStyle.line(context))
-                      : null,
+                  color: AlbumStageStyle.controlFill(context),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AlbumStageStyle.line(context)),
                 ),
-                child: primary
-                    ? Center(
-                        child: Text(
-                          canEdit ? '편집' : '보기',
-                          style: TextStyle(
-                            color: AlbumStageStyle.ink(context),
-                            fontSize: editFontSize,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      )
-                    : Icon(
-                        icon,
-                        color: AlbumStageStyle.ink(context),
-                        size: iconSize,
-                      ),
+                child: Text(
+                  canEdit ? '편집' : '보기',
+                  style: TextStyle(
+                    color: AlbumStageStyle.ink(
+                      context,
+                    ).withValues(alpha: canEdit ? 1 : .45),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0,
+                  ),
+                ),
               ),
             ),
           ),
         ),
-      );
-    }
-
-    final children = [
-      Expanded(
-        child: action(
-          icon: Icons.chevron_left_rounded,
-          enabled: canGoBack,
-          onTap: onPrevious,
-          label: '이전 페이지',
-        ),
       ),
-      Expanded(
-        child: action(
-          icon: Icons.edit_outlined,
-          enabled: canEdit,
-          onTap: onEdit,
-          primary: true,
-          label: canEdit ? '현재 페이지 편집' : '보기 전용 앨범',
-        ),
-      ),
-      Expanded(
-        child: action(
-          icon: Icons.chevron_right_rounded,
-          enabled: canGoForward,
-          onTap: onNext,
-          label: '다음 페이지',
-        ),
-      ),
-    ];
-
-    return Container(
-      height: controlHeight,
-      padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(
-        color: AlbumStageStyle.glass(context),
-        borderRadius: BorderRadius.circular(99.r),
-        border: Border.all(color: AlbumStageStyle.line(context)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(
-              alpha: SnapFitColors.isDark(context) ? .10 : .06,
-            ),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(children: children),
     );
   }
 }

@@ -1,10 +1,11 @@
 part of 'layer_builder.dart';
 
-// The editor's Material canvas inherits the app's bodyMedium typography. Keep
-// that light-canvas baseline in the artwork itself so print/reader surfaces and
-// dark UI chrome cannot substitute another spacing, weight, or line height.
-final _albumTextFallbackStyle = SnapFitTheme.light().textTheme.bodyMedium!
-    .copyWith(inherit: false);
+// Preserve the legacy document baseline from before interface typography was
+// unified. Missing saved text properties must stay identical on editor,
+// reader and print surfaces when the app's UI theme changes.
+final _albumTextFallbackStyle = ThemeData.light(
+  useMaterial3: true,
+).textTheme.apply(fontFamily: 'NotoSans').bodyMedium!.copyWith(inherit: false);
 
 Widget _buildTextImpl(
   LayerBuilder builder,
@@ -595,6 +596,7 @@ class _ImageClipTextState extends State<_ImageClipText> {
   ui.Image? _image;
   ImageStream? _stream;
   ImageStreamListener? _listener;
+  int _request = 0;
 
   @override
   void initState() {
@@ -607,12 +609,14 @@ class _ImageClipTextState extends State<_ImageClipText> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.imageUrl != widget.imageUrl) {
       _removeListener();
+      _image = null;
       _resolveImage();
     }
   }
 
   @override
   void dispose() {
+    _request++;
     _removeListener();
     super.dispose();
   }
@@ -625,24 +629,31 @@ class _ImageClipTextState extends State<_ImageClipText> {
     _listener = null;
   }
 
-  void _resolveImage() {
-    final provider = widget.imageUrl.startsWith('asset:')
-        ? AssetImage(widget.imageUrl.substring('asset:'.length))
-        : NetworkImage(widget.imageUrl) as ImageProvider;
-    final stream = provider.resolve(const ImageConfiguration());
-    final listener = ImageStreamListener(
-      (info, _) {
-        if (!mounted) return;
-        setState(() => _image = info.image);
-      },
-      onError: (_, __) {
-        if (!mounted) return;
-        setState(() => _image = null);
-      },
-    );
-    stream.addListener(listener);
-    _stream = stream;
-    _listener = listener;
+  Future<void> _resolveImage() async {
+    final request = ++_request;
+    try {
+      // Saved photo layers use private Storage markers. Resolve those just as
+      // ordinary photo layers do, rather than requesting a supabase:// URL.
+      final provider = await resolveStorageImageProvider(widget.imageUrl);
+      if (!mounted || request != _request) return;
+      final stream = provider.resolve(const ImageConfiguration());
+      final listener = ImageStreamListener(
+        (info, _) {
+          if (!mounted || request != _request) return;
+          setState(() => _image = info.image);
+        },
+        onError: (_, __) {
+          if (!mounted || request != _request) return;
+          setState(() => _image = null);
+        },
+      );
+      _stream = stream;
+      _listener = listener;
+      stream.addListener(listener);
+    } catch (_) {
+      if (!mounted || request != _request) return;
+      setState(() => _image = null);
+    }
   }
 
   @override

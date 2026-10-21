@@ -38,7 +38,8 @@ Future<void> _capture(WidgetTester tester, GlobalKey key, String name) async {
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
     final dir = Directory('output/all-screens-qa')..createSync(recursive: true);
     File(
-      '${dir.path}/responsive-$name.png',
+      '${dir.path}/responsive-$name'
+      '${const String.fromEnvironment('DESIGN_SYSTEM_REVISION')}.png',
     ).writeAsBytesSync(bytes!.buffer.asUint8List());
     image.dispose();
   });

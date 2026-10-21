@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/constants/snapfit_colors.dart';
-import '../../../../../core/theme/snapfit_design_tokens.dart';
+import 'creation_workspace.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../domain/entities/layer.dart';
 import 'creation_document_preview.dart';
@@ -20,6 +20,7 @@ class CreationTemplatePreview extends StatelessWidget {
     this.preserveTypography = false,
     this.favoriteKey,
     this.accessBadge,
+    this.profileSummary,
   });
   final String title;
   final bool isPremium;
@@ -31,20 +32,13 @@ class CreationTemplatePreview extends StatelessWidget {
   final bool preserveTypography;
   final String? favoriteKey;
   final Widget? accessBadge;
+  final Widget? profileSummary;
 
   Widget _use(BuildContext context) => FilledButton(
     onPressed: isUsing || pages.isEmpty ? null : onUse,
-    style: FilledButton.styleFrom(
-      backgroundColor: SnapFitColors.textPrimaryOf(context),
-      foregroundColor: SnapFitColors.backgroundOf(context),
-      minimumSize: const Size(144, 48),
-      textStyle: const TextStyle(
-        fontFamily: SnapFitFonts.body,
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-    ),
+    style: CreationStyle.primary(
+      context,
+    ).copyWith(minimumSize: const WidgetStatePropertyAll(Size(144, 48))),
     child: isUsing
         ? const SizedBox.square(
             dimension: 20,
@@ -132,34 +126,71 @@ class CreationTemplatePreview extends StatelessWidget {
       body: SafeArea(
         top: false,
         bottom: wide,
-        child: Column(
-          children: [
-            Expanded(
-              child: pages.isEmpty
-                  ? Center(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('디자인을 불러오지 못했어요'),
-                            const SizedBox(height: 12),
-                            TextButton.icon(
-                              onPressed: onRetry,
-                              icon: const Icon(Icons.refresh),
-                              label: const Text('다시 불러오기'),
-                            ),
-                          ],
-                        ),
+        child: LayoutBuilder(
+          builder: (context, bounds) {
+            final summary = profileSummary;
+            final summaryExtent = summary != null && !wide
+                ? (bounds.maxHeight * .28).clamp(0.0, 180.0)
+                : 0.0;
+            // Short displays keep the book and page controls ahead of the rail.
+            final showThumbnails =
+                summary == null ||
+                bounds.maxHeight - summaryExtent >=
+                    240 + MediaQuery.textScalerOf(context).scale(16);
+            final document = pages.isEmpty
+                ? Center(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('디자인을 불러오지 못했어요'),
+                          const SizedBox(height: 12),
+                          TextButton.icon(
+                            onPressed: onRetry,
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('다시 불러오기'),
+                          ),
+                        ],
                       ),
-                    )
-                  : CreationDocumentPreview(
-                      pages: pages,
-                      canvas: canvas,
-                      preserveTypography: preserveTypography,
-                      showBookMaterial: true,
                     ),
-            ),
-          ],
+                  )
+                : CreationDocumentPreview(
+                    pages: pages,
+                    canvas: canvas,
+                    preserveTypography: preserveTypography,
+                    showBookMaterial: true,
+                    spreadInLandscape: true,
+                    showThumbnails: showThumbnails,
+                  );
+            if (summary == null) return document;
+            if (wide) {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: document),
+                  SizedBox(
+                    width: (bounds.maxWidth * .3).clamp(200.0, 280.0),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(12),
+                      child: summary,
+                    ),
+                  ),
+                ],
+              );
+            }
+            return Column(
+              children: [
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: summaryExtent),
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                    child: summary,
+                  ),
+                ),
+                Expanded(child: document),
+              ],
+            );
+          },
         ),
       ),
     );

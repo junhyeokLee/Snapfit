@@ -5,8 +5,8 @@ class AppRootRouteSettings extends RouteSettings {
   const AppRootRouteSettings();
 }
 
-/// Order links must wait until Splash has replaced itself with the app root.
-/// Otherwise Splash's replacement could remove an already opened order page.
+/// Order links wait for the stable app root: the web opens it directly, while
+/// native Splash replaces itself first so it cannot remove an order page.
 class AppRootRouteObserver extends NavigatorObserver {
   AppRootRouteObserver({required this.onReady});
   final VoidCallback onReady;

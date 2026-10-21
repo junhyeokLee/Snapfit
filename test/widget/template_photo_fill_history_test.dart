@@ -29,6 +29,10 @@ late Map<String, List<int>> _thumbnails;
 AssetEntity _photo(String id, {String image = 'alpine_lake'}) {
   final photo = _Photo();
   when(() => photo.id).thenReturn(id);
+  // These history fixtures model photos whose EXIF dimensions are unavailable.
+  when(() => photo.width).thenReturn(0);
+  when(() => photo.height).thenReturn(0);
+  when(() => photo.orientation).thenReturn(0);
   when(
     () => photo.file,
   ).thenAnswer((_) async => File('assets/frame_preview/$image.jpg'));
@@ -751,9 +755,7 @@ void main() {
       final undo = tester.getRect(
         find.byKey(const ValueKey('photo-fill-undo')),
       );
-      final footer = tester.getRect(
-        find.widgetWithText(ElevatedButton, '나중에 채우기'),
-      );
+      final footer = tester.getRect(find.widgetWithText(TextButton, '나중에 채우기'));
       expect(undo.width, greaterThanOrEqualTo(44));
       expect(footer.bottom, lessThanOrEqualTo(size.height - 24));
       expect(tester.takeException(), isNull);

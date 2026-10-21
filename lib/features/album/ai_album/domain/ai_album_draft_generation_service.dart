@@ -1,11 +1,16 @@
 import 'ai_album_curation_engine.dart';
 import 'ai_album_models.dart';
 import 'ai_template_text_preflight.dart';
+import 'ai_template_job.dart';
 
 typedef AiPhotoCandidateLoader =
     Future<List<PhotoCandidate>> Function(AiPhotoRange range);
 typedef AdvancedAiAlbumPreviewPreparer =
     Future<List<PhotoCandidate>> Function(List<PhotoCandidate> candidates);
+
+abstract interface class AiAlbumDraftFailureCode {
+  String get code;
+}
 
 abstract class AiAlbumDraftProvider {
   const AiAlbumDraftProvider();
@@ -175,12 +180,42 @@ class AiAlbumDraftGenerationResult {
 
   factory AiAlbumDraftGenerationResult.templateFailed({
     bool qualityFailure = false,
+    String? code,
   }) {
+    final explanation = switch (code) {
+      'ai_generation_auth_required' => '로그인 상태를 확인한 뒤 다시 시도해 주세요.',
+      'ai_generation_insufficient_points' =>
+        '포인트가 부족해 생성을 시작하지 않았어요. 포인트를 확인해 주세요.',
+      'ai_generation_in_progress' => '이미 템플릿을 생성하고 있어요. 잠시 후 결과를 확인해 주세요.',
+      'ai_generation_rate_limited' ||
+      'ai_generation_capacity_limited' ||
+      'template_provider_rate_limited' ||
+      'template_provider_capacity_unavailable' =>
+        'AI 사용 한도에 도달했어요. 사용량이 초기화된 뒤 다시 시도해 주세요.',
+      'template_provider_not_configured' ||
+      'template_provider_model_unavailable' ||
+      'template_provider_model_not_supported' ||
+      'template_provider_free_only' ||
+      'template_provider_invalid_config' ||
+      'template_provider_unsupported' => 'AI 연결을 준비 중이에요. 요청 내용은 그대로 남겨두었어요.',
+      'ai_generation_privacy_review_required' =>
+        'AI의 개인정보 처리 설정을 검토 중이에요. 요청 내용은 AI에 보내지 않았어요.',
+      'template_generation_timeout' =>
+        '디자인 생성이 오래 걸려 처리 결과를 받지 못했어요. 요청 내용은 그대로 남겨두었어요. 잠시 후 다시 확인해 주세요.',
+      'ai_generation_v3_not_validated' =>
+        '새 AI 디자인 엔진을 검수 중이에요. 요청 내용은 그대로 남겨두었어요.',
+      'ai_generation_price_changed' ||
+      'ai_generation_price_confirmation_required' =>
+        '무료 혜택이나 사용 포인트를 다시 확인한 뒤 시도해 주세요. 생성을 시작하지 않았어요.',
+      _ => null,
+    };
     return AiAlbumDraftGenerationResult._(
       status: AiAlbumDraftGenerationStatus.failed,
       shouldChargePoints: false,
       failureTitle: qualityFailure ? '디자인을 조금 더 다듬어야 해요' : 'AI 템플릿을 만들지 못했어요',
-      failureMessage: qualityFailure
+      failureMessage: explanation != null
+          ? '$explanation 포인트는 차감되지 않았어요.'
+          : qualityFailure
           ? '페이지 배치나 가독성이 기준에 맞지 않아 전달하지 않았어요. 요청을 다듬어 다시 시도해 주세요. 포인트는 차감되지 않았어요.'
           : '지금 디자인을 생성하지 못했어요. 요청 내용은 그대로 남겨두었어요. 잠시 후 다시 시도해 주세요. 포인트는 차감되지 않았어요.',
       primaryCtaLabel: '디자인 요청 다시 보기',
@@ -218,24 +253,80 @@ class AiAlbumDraftGenerationService {
   final AdvancedAiAlbumPreviewPreparer? _prepareAdvancedPreviews;
   final int _minimumPhotoCount;
 
+  AiTemplateJobProvider? get jobs => _templateProvider is AiTemplateJobProvider
+      ? _templateProvider as AiTemplateJobProvider
+      : null;
+
+  Future<AiAlbumDraftGenerationResult> resume(
+    AiTemplateJob job, {
+    AiTemplatePollingToken? token,
+    void Function(AiTemplateJob)? onProgress,
+  }) async {
+    final provider = jobs;
+    if (provider == null) return AiAlbumDraftGenerationResult.failed();
+    try {
+      final draft = await provider.resumeTemplateJob(
+        job,
+        token: token,
+        onProgress: onProgress,
+      );
+      return _validateTemplate(job.brief.publicBrief, draft);
+    } catch (error) {
+      return AiAlbumDraftGenerationResult.templateFailed(
+        code: error is AiAlbumDraftFailureCode ? error.code : null,
+      );
+    }
+  }
+
+  AiAlbumDraftGenerationResult _validateTemplate(
+    AiTemplateBrief brief,
+    AlbumRecommendationDraft draft,
+  ) {
+    if (draft.design == null ||
+        (brief.designVersion == 3 && draft.design!.version != 3) ||
+        draft.pageCount != brief.pageCount ||
+        draft.design!.aspect != brief.aspect) {
+      return AiAlbumDraftGenerationResult.templateFailed(qualityFailure: true);
+    }
+    if (draft.design!.version == 3) {
+      draft.design!.compositionPlan!.validateRequest(
+        brief.publicBrief,
+        copy: draft.design!.pages
+            .expand((page) => page.elements)
+            .where((element) => element.kind == 'text')
+            .map((element) => element.text!),
+      );
+      if (draft.design!.printProduct?['id'] != brief.printProductId) {
+        return AiAlbumDraftGenerationResult.templateFailed(
+          qualityFailure: true,
+        );
+      }
+    }
+    validateAiTemplateText(draft.design!);
+    return AiAlbumDraftGenerationResult.success(draft);
+  }
+
   Future<AiAlbumDraftGenerationResult> generate({
     required AlbumTheme theme,
     required AiPhotoRange range,
     AiTemplateBrief? designBrief,
+    String? generationRequestId,
+    AiTemplatePollingToken? token,
+    void Function(AiTemplateJob)? onProgress,
   }) async {
     try {
       if (designBrief != null) {
-        final draft = await (_templateProvider ?? _draftProvider)
-            .createTemplate(designBrief);
-        if (draft.design == null ||
-            draft.pageCount != designBrief.pageCount ||
-            draft.design!.aspect != designBrief.aspect) {
-          return AiAlbumDraftGenerationResult.templateFailed(
-            qualityFailure: true,
-          );
-        }
-        validateAiTemplateText(draft.design!);
-        return AiAlbumDraftGenerationResult.success(draft);
+        final provider = _templateProvider ?? _draftProvider;
+        final draft =
+            provider is AiTemplateJobProvider && generationRequestId != null
+            ? await (provider as AiTemplateJobProvider).createTemplateJob(
+                designBrief.publicBrief,
+                requestId: generationRequestId,
+                token: token,
+                onProgress: onProgress,
+              )
+            : await provider.createTemplate(designBrief.publicBrief);
+        return _validateTemplate(designBrief.publicBrief, draft);
       }
       final candidates = await _collectCandidates(range);
       if (candidates.length < _minimumPhotoCount) {
@@ -285,6 +376,7 @@ class AiAlbumDraftGenerationService {
     } catch (error) {
       if (designBrief != null) {
         return AiAlbumDraftGenerationResult.templateFailed(
+          code: error is AiAlbumDraftFailureCode ? error.code : null,
           qualityFailure:
               error is FormatException ||
               error.toString().contains('template_quality_failed'),

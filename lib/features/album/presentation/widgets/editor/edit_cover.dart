@@ -639,6 +639,14 @@ class EditCoverState extends ConsumerState<EditCover> {
                                                 sortedByZ: _interaction.sortByZ,
                                                 theme: selectedTheme,
                                                 showEmptyGuide: true,
+                                                selectionOverlayBuilder:
+                                                    _interaction
+                                                        .enableWebTransforms
+                                                    ? () => _interaction
+                                                          .buildSelectionOverlay(
+                                                            layers,
+                                                          )
+                                                    : null,
                                               ),
                                             ),
                                           ),

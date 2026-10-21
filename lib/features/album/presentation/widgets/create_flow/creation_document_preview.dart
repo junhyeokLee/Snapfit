@@ -9,7 +9,7 @@ import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../shared/widgets/album_stage_style.dart';
 import '../../../../../shared/widgets/experience_icon.dart';
 import '../../../../store/presentation/widgets/template_book_artwork.dart';
-import '../../../../store/presentation/widgets/template_page_renderer.dart';
+import 'creation_document_page.dart';
 import '../../../domain/entities/layer.dart';
 
 /// Read-only document inspection. It never changes layers or assigns photos.
@@ -138,33 +138,44 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
   Future<void> _inspect(int page) async {
     var selected = page;
     Widget inspector(BuildContext context) => Scaffold(
-          backgroundColor: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.backgroundOf(context),
-          appBar: AppBar(
-            backgroundColor: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.backgroundOf(context),
-            surfaceTintColor: Colors.transparent,
-            leading: IconButton(
-              tooltip: '확대 보기 닫기',
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close_rounded),
-            ),
-            title: const Text('디자인 미리보기', style: TextStyle(fontSize: 16)),
-          ),
-          body: SafeArea(
-            top: false,
-            child: CreationDocumentPreview(
-              pages: widget.pages,
-              canvas: widget.canvas,
-              preserveTypography: widget.preserveTypography,
-              initialPage: page,
-              inspection: true,
-              onPageChanged: (value) => selected = value,
-            ),
-          ),
-        );
+      backgroundColor: kIsWeb
+          ? WebPalette.of(context).surface
+          : SnapFitColors.backgroundOf(context),
+      appBar: AppBar(
+        backgroundColor: kIsWeb
+            ? WebPalette.of(context).surface
+            : SnapFitColors.backgroundOf(context),
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          tooltip: '확대 보기 닫기',
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.close_rounded),
+        ),
+        title: const Text('디자인 미리보기', style: TextStyle(fontSize: 16)),
+      ),
+      body: SafeArea(
+        top: false,
+        child: CreationDocumentPreview(
+          pages: widget.pages,
+          canvas: widget.canvas,
+          preserveTypography: widget.preserveTypography,
+          initialPage: page,
+          inspection: true,
+          onPageChanged: (value) => selected = value,
+        ),
+      ),
+    );
     if (kIsWeb) {
-      await showWebAwareDialog<void>(context: context, maxWidth: 1240, maxHeight: 900, builder: inspector);
+      await showWebAwareDialog<void>(
+        context: context,
+        maxWidth: 1240,
+        maxHeight: 900,
+        builder: inspector,
+      );
     } else {
-      await Navigator.of(context).push<void>(MaterialPageRoute(fullscreenDialog: true, builder: inspector));
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute(fullscreenDialog: true, builder: inspector),
+      );
     }
     if (mounted) _go(selected);
   }
@@ -247,7 +258,9 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
   }
 
   Widget _stage(List<int> indices) {
-    final stageColor = kIsWeb ? WebPalette.of(context).canvas : SnapFitColors.isDark(context)
+    final stageColor = kIsWeb
+        ? WebPalette.of(context).canvas
+        : SnapFitColors.isDark(context)
         ? const Color(0xFF222626)
         : const Color(0xFFEEF1F0);
     return DecoratedBox(
@@ -402,22 +415,20 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
   }) => RepaintBoundary(
     child: ColoredBox(
       color: Colors.white,
-      child: TemplatePageRenderer(
+      child: CreationDocumentPage(
         layers: widget.pages[index],
         width: width,
         height: width / widget.canvas.aspectRatio,
-        designCanvasSize: widget.canvas,
+        canvas: widget.canvas,
         preserveTypography: widget.preserveTypography,
-        wrapSpineArtwork: wrapSpine,
-        cacheNetworkImages: widget.showBookMaterial,
+        wrapSpine: wrapSpine,
         // A portrait crop needs more source pixels than its displayed width.
-        imageDecodeWidth:
+        decodeWidth:
             (math.max(width, width / widget.canvas.aspectRatio) *
                     MediaQuery.devicePixelRatioOf(context) *
                     (widget.inspection ? 4 : 2))
                 .ceil()
                 .clamp(64, 2048),
-        showCanvasChrome: false,
       ),
     ),
   );

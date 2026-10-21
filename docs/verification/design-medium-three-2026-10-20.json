@@ -1,0 +1,228 @@
+{
+  "recorded_at_utc": "2026-10-20T10:55:07.757763+00:00",
+  "status": "complete",
+  "implemented": {
+    "public_design_information": {
+      "facts": "Actual document interior count, available page options, design shapes and matching-ratio print sizes; usage and separate print/shipping terms.",
+      "pricing": "Read-only existing repository.loadCatalog contract in a shared public-only provider; 12 second timeout and manual retry; only registered active 0P entries are described as free.",
+      "private_access": "Public widgets never read ownership, balance, auth state or access/purchase RPCs; signed-in use still revalidates existing terms."
+    },
+    "photo_date_navigation": {
+      "query": "Inclusive local calendar range is applied to the selected native album query before existing 40-asset pagination; no full-library scan.",
+      "retention": "Selection/order, album switching, selected-only review and refresh remain; all-date recovery and same-range retry are available.",
+      "safety": "Late results ignored; permission/album initialization preserves a changed range; scoped editor navigator retained."
+    },
+    "empty_search_recovery": {
+      "recovery": "Reset search and topic together or choose up to three actual published topics; distinguish empty catalog.",
+      "accessibility": "Visual counts update immediately; live-region counts wait for 500ms of stable query/filters without moving focus.",
+      "privacy": "Search/filter debounce state stays in memory and is not added to URLs or login-return storage."
+    }
+  },
+  "validation": {
+    "final_native": {
+      "passed": 44,
+      "file_count": 7,
+      "log": "/private/tmp/snapfit-medium-final-native-complete.log"
+    },
+    "final_chrome": {
+      "passed": 24,
+      "file_count": 5,
+      "log": "/private/tmp/snapfit-medium-final-chrome.log",
+      "selection": "One native-only return-intent test excluded by name; it passes in native. Four web-specific routing/guest-material tests run in Chrome, including lookup failure to login."
+    },
+    "gallery_matrix": {
+      "initial_passed": 48,
+      "initial_failed": 1,
+      "initial_log": "/private/tmp/snapfit-medium-gallery-native.log",
+      "resolved_cancel_test_passed": 1,
+      "large_text_actual_input_rechecks_passed": 2,
+      "added_album_initialization_race_passed_in_final_notifier_group": true,
+      "final_unique_gallery_scope": 50,
+      "overlap": "The 14 notifier tests are also in final_native; rechecks are not additional unique tests."
+    },
+    "existing_product_regression": {
+      "initial_passed": 42,
+      "initial_failed": 1,
+      "log": "/private/tmp/snapfit-medium-public-native.log",
+      "failure": "Public timeout automatically retried by Riverpod and hid the recovery state. Public-only provider now disables retry; all eight public-information tests pass in final native and Chrome."
+    },
+    "search_focused": {
+      "passed": 9,
+      "log": "/private/tmp/snapfit-medium-search-recovery-native.log"
+    },
+    "analysis": {
+      "files": 18,
+      "result": "No issues found",
+      "log": "/private/tmp/snapfit-medium-three-analysis.log",
+      "after_final_scroll_test_change": "/private/tmp/snapfit-medium-search-final-analysis.log"
+    },
+    "format": {
+      "files": 18,
+      "changed": 0,
+      "exit_code": 0
+    },
+    "diff_check_exit_code": 0,
+    "diagnostics_resolved": [
+      "Target-limited build_runner initially removed other generated outputs. Full generation restored standard outputs, custom AI composition was regenerated from its existing contract and checked, final full generation completed, no missing Dart parts or tracked Dart deletions remain.",
+      "Concurrent native-hook asset creation collided; final native and Chrome runs were sequential.",
+      "Public provider fixture migration import corrected before final passing run.",
+      "Gallery cancellation uses the actual close control; lazy search recovery slivers and subsequent search-field assertions use real scrolling before interaction. No production assertions were skipped or weakened."
+    ],
+    "custom_composition_check_exit_code": 0,
+    "missing_dart_parts": [],
+    "overlap_policy": "Do not add initial, focused, native and Chrome counts as a unique-test total."
+  },
+  "source_and_test_sha256": {
+    "lib/features/album/domain/models/gallery_date_range.dart": "1b57e9dcd52b7111773e102e20e45bc0b0935418ac2969f8a077a99b39dfe25a",
+    "lib/features/album/presentation/viewmodels/gallery_notifier.dart": "aabe0d7aa427a6e065cdf6de72ebb90b5f921386664aca0a0e7a3924f7f6a27d",
+    "lib/features/album/presentation/viewmodels/gallery_notifier.freezed.dart": "e779aae9ac3614001ae91d092be2a9ce826fb10b4360631d68fee146d90193e7",
+    "lib/features/album/presentation/viewmodels/gallery_notifier.g.dart": "1e7c242f4e1fc03cecea6c06a2b91b039c752143ab5dcbf7d2dea483e2886f86",
+    "lib/shared/widgets/album_bottom_sheet.dart": "a76446d7dab5c383284ba7967cb311ffafae640ea6b05faa30c48817f53ecf63",
+    "lib/features/store/presentation/views/public_discovery_screen.dart": "1440bf95261b6737154d211690086c23876e1fad1f11b1cb0bc9c9994334edb2",
+    "lib/features/store/presentation/views/template_detail_screen.dart": "32f7a2fbf0cee3aa3391c66423cd458e608884c2b0ed06ca82a2eb2469caccd0",
+    "lib/features/store/presentation/widgets/public_template_information.dart": "aa81e364e1262373428f0844b6cdb0869a5da652869b0bb4c85a3bbc9961e9ef",
+    "lib/features/store/presentation/widgets/public_catalog_empty_state.dart": "f11daf2366a28fc75b56fd73604624a783907758ce7ace28883b2ec1c8c91f82",
+    "lib/features/store/presentation/widgets/web/web_catalog_toolbar.dart": "59a3b86cc2c15c123185fcb0db86cc8a93db7ca5f2975f694c3d5625d05d9152",
+    "lib/shared/widgets/catalog_result_status.dart": "20eef546ed788f5d41943aa2181485731cd8bd333b9fd71d9741431d7ec930b3",
+    "test/unit/gallery_date_range_test.dart": "a06f16bacde1de35dc5e17e1f55ad987fe67bcc106aea2c610d4641621890db0",
+    "test/unit/gallery_notifier_test.dart": "b98c7d0046caf9d8c96cf2a3fc66a13732b1363d84f29793329074377b1871ed",
+    "test/unit/gallery_repository_impl_test.dart": "de52ca3ad3f2b13c724df87defbb02f4c571c7235d4147d81b1955ba1ca4f2ed",
+    "test/widget/gallery_picker_refinement_test.dart": "ca17a5238ca6d06cb6f7250cbc93e402193f5e5ca9972a0745aa0281a9bba6c9",
+    "test/widget/public_template_information_test.dart": "213fa9ed8e1a2bb20d619fd4c77079f806f1eaef8b377b5f901eb31124338be3",
+    "test/widget/public_discovery_test.dart": "2dfcf8a58d24abd5acea7f3485302075e9d62641574b19e2f8b8ca6317f809e0",
+    "test/widget/catalog_result_status_test.dart": "667dfc787dd1b1a08ac9c68e6a4f4c753c9bfc2ac2377e1bcbf15dd372f872f4",
+    "test/widget/web_public_discovery_flow_test.dart": "6bea22b4ee51c76fcf1d585098da0b6c592d22918c3d08d7491f238ef63fa33e",
+    "test/widget/auth_gate_test.dart": "79077b4998a8c79879a61e5ffa2484834feacdaf38bfd646d1384c51c4dc4ae3",
+    "docs/all_screen_design_audit.md": "6db4c82b990ad9fcb38fb939b7f549c2a465209f8ff0b53c6d5f249c9663a6fc",
+    "docs/web-development.md": "ef0a8433a0fcd7165c5c68bed967a1608c82ba22eaafb230b1048aaf37a40afb"
+  },
+  "previous_high_priority_hash_comparison": {
+    "checked": 30,
+    "changed_only_in_authorized_medium_scope": [
+      "lib/shared/widgets/album_bottom_sheet.dart",
+      "docs/all_screen_design_audit.md"
+    ]
+  },
+  "media_inventory": {
+    "baseline_count": 340,
+    "final_count": 340,
+    "unchanged": true,
+    "added": [],
+    "removed": [],
+    "changed": [],
+    "scope": [
+      "SnapFit/output",
+      "SnapFit/test",
+      "SnapFitAdmin/output",
+      "SnapFitAdmin/test"
+    ],
+    "baseline_file": "/private/tmp/snapfit-medium-three-media-before.json"
+  },
+  "storage": {
+    "removed_reproducible_caches": [
+      {
+        "path": "build",
+        "removed_logical_bytes": 902804573
+      },
+      {
+        "path": ".dart_tool/flutter_build",
+        "removed_logical_bytes": 17695
+      },
+      {
+        "path": ".dart_tool/build",
+        "removed_logical_bytes": 21706629
+      },
+      {
+        "path": ".dart_tool/hooks_runner",
+        "removed_logical_bytes": 11771664
+      },
+      {
+        "path": ".dart_tool/pub/bin",
+        "removed_logical_bytes": 27172616
+      },
+      {
+        "path": ".dart_tool/build_resolvers",
+        "removed_logical_bytes": 3702140
+      }
+    ],
+    "removed_logical_bytes": 967175317,
+    "free_bytes_before": 15093760000,
+    "free_bytes_after": 16063975424,
+    "free_space_note": "System-wide free-space readings also reflect other apps and operating-system swap. Removed logical bytes are not a claim of equivalent physical space reclaimed.",
+    "preserved": [
+      "customer source, original assets, goldens and print PDF inputs",
+      "package configuration and dependency graph",
+      "existing browser profile/drafts",
+      "SDK and global dependency caches",
+      "other projects and processes"
+    ]
+  },
+  "artifacts": {
+    "preview_images_or_video_created": false,
+    "goldens_updated": false,
+    "release_or_web_build_created": false,
+    "pdf_files_created": false,
+    "build_cache_removed": true
+  },
+  "deployed": false,
+  "production_account_photo_ai_payment_or_server_changes": false,
+  "test_scope": "Local fixture/fake repositories and photo channel mocks; actual headless Chrome widget execution. No real mobile photo permissions or photo library access.",
+  "logs": {
+    "/private/tmp/snapfit-medium-final-native-complete.log": {
+      "bytes": 11322,
+      "sha256": "6a29749240c7eb73db8e3012fdaaa2ef426427e05c57c8747f56855f8d05eb2b"
+    },
+    "/private/tmp/snapfit-medium-final-chrome.log": {
+      "bytes": 3523,
+      "sha256": "915fc22b9df9c7253943a60f6b8cc3346e9144b23bbdd05e912e1c6f095da6b4"
+    },
+    "/private/tmp/snapfit-medium-gallery-native.log": {
+      "bytes": 10453,
+      "sha256": "b2b7dd559937ff59a9414fb026ab6402059920cceac3cd72e5d02e2f72ddd636"
+    },
+    "/private/tmp/snapfit-medium-gallery-date-focused-retry.log": {
+      "bytes": 246,
+      "sha256": "ab69f3fcc49b0416b188a928e2ea91e23fad4275dd7051b596d2d29cead08c3d"
+    },
+    "/private/tmp/snapfit-medium-gallery-date-large.log": {
+      "bytes": 291,
+      "sha256": "4dfc0ae5724086fd810bdeafb6d1b6504ca86f4e6b80afdb0a074ea640b690da"
+    },
+    "/private/tmp/snapfit-medium-public-native.log": {
+      "bytes": 12261,
+      "sha256": "197aa2b3efb752867a0b95ab7ac8c0693b00e72444c804c61aba2a0d52d8e46f"
+    },
+    "/private/tmp/snapfit-medium-public-timeout.log": {
+      "bytes": 2045,
+      "sha256": "0cb4807b4ef006951e48b79e0e656af1bfbd712b64deafd8f830cee715eb7e9a"
+    },
+    "/private/tmp/snapfit-medium-search-recovery-native.log": {
+      "bytes": 1595,
+      "sha256": "1291a2f42569f212d3989b8f779fe732b51463963f254e31ea8be7616f9355b7"
+    },
+    "/private/tmp/snapfit-medium-three-analysis.log": {
+      "bytes": 570,
+      "sha256": "07d48aaff22c498298e2f447ddf58614339df8c477dc15dd9ec9ce8df43548fc"
+    },
+    "/private/tmp/snapfit-medium-search-final-analysis.log": {
+      "bytes": 57,
+      "sha256": "8c43ff2d158aa320fbec843a65f12506c27cc2499a887cd9133eaf108240b63c"
+    },
+    "/private/tmp/snapfit-medium-format-check.log": {
+      "bytes": 48,
+      "sha256": "0b96fc9d72a26d86960d7a76e98f954e263dc7690c9c3fa637bf1d3a17f49dd9"
+    },
+    "/private/tmp/snapfit-medium-diff-check.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/private/tmp/snapfit-medium-gallery-codegen-recovery.log": {
+      "bytes": 2128,
+      "sha256": "75ff446a856c526f976dc018e44d2adee1d6cba0dc7113937d528bd16ba43ad2"
+    },
+    "/private/tmp/snapfit-medium-codegen-final.log": {
+      "bytes": 1646,
+      "sha256": "320ea6cfccae88aa70a87eb70995c6421968115fab278fffba38e08dc5225ef9"
+    }
+  }
+}

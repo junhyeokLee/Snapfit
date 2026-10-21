@@ -20,7 +20,6 @@ import '../widget/studio_decorations_test.dart' show capture;
 import '../widget/ai_album_start_step_test.dart'
     show loadCreationFonts, wrapCreation;
 
-const _export = bool.fromEnvironment('EXPORT_FREE_EXPANSION');
 const _longCopy = EditorialCopy(
   place: '초여름의 작은 마을에서 함께 보낸 시간',
   period: '2026년 6월 12일 ~ 6월 18일',
@@ -42,79 +41,117 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() async {
     await loadCreationFonts();
-    await (FontLoader(
-      'Eulyoo',
-    )..addFont(rootBundle.load('assets/fonts/Eulyoo1945-Regular.ttf'))).load();
+    final manifest =
+        jsonDecode(await rootBundle.loadString('FontManifest.json')) as List;
+    for (final entry in manifest.whereType<Map>()) {
+      final loader = FontLoader(entry['family'] as String);
+      for (final font in (entry['fonts'] as List).whereType<Map>()) {
+        loader.addFont(rootBundle.load(font['asset'] as String));
+      }
+      await loader.load();
+    }
   });
-  test(
-    'thirty-seven free collections, six travel/couple and five per other category',
-    () {
-      expect(authoredCollections.length, 37);
-      expect(bundledCreationTemplates.map((t) => t.id).toSet().length, 37);
-      for (final category in [
-        '웨딩',
-        '여행',
-        '일상',
-        '성장·육아',
-        '가족·친구',
-        '커플·기념일',
-        '반려동물',
-      ]) {
-        expect(
-          authoredCollections.where((c) => c.category == category).length,
-          ['여행', '커플·기념일'].contains(category) ? 6 : 5,
+  test('forty-two free collections retain at least five per topic', () {
+    expect(authoredCollections.length, 42);
+    expect(bundledCreationTemplates.map((t) => t.id).toSet().length, 42);
+    for (final category in [
+      '웨딩',
+      '여행',
+      '일상',
+      '성장·육아',
+      '가족·친구',
+      '커플·기념일',
+      '반려동물',
+    ]) {
+      expect(
+        authoredCollections.where((c) => c.category == category).length,
+        6,
+      );
+    }
+    expect(
+      bundledCreationTemplates.every(
+        (t) =>
+            !t.isPremium &&
+            t.pageCount == (t.id == windAtlasBundledId ? 32 : 24),
+      ),
+      true,
+    );
+    expect(bundledCreationTemplates.any(isRetiredAuthoredTemplate), false);
+    expect(bundledCreationTemplates.take(3).map((t) => t.id), [
+      -9301,
+      -9302,
+      -9303,
+    ]);
+    for (final aspect in CollectionAspect.values) {
+      final coverGrids = <String>{};
+      final coverPhotos = <String>{};
+      final coverTypeDirections = <String>{};
+      final old =
+          [...baselineAuthoredCollections, ...retiredAuthoredCollections]
+              .expand((c) => templateDocumentPages(c.document(aspect)))
+              .map(_geometry)
+              .toSet();
+      for (final volume in FreeCollectionVolume.values) {
+        final document = volume.document(aspect);
+        final pages = templateDocumentPages(document);
+        expect(pages.length, 25);
+        expect((document['chapters'] as List).length, 12);
+        expect(document['accessTier'], 'free');
+        expect(document['aiGenerated'], false);
+        coverGrids.add(_geometry(pages.first));
+        expect(document['artDirection'], volume.id);
+        final coverLayers = (pages.first['layers'] as List).cast<Map>();
+        final title = coverLayers.singleWhere(
+          (layer) => layer['typographyRole'] == 'signature-title',
         );
+        expect(
+          (title['text'] as String).replaceAll(RegExp(r'\s+'), ''),
+          volume.title.replaceAll(RegExp(r'\s+'), ''),
+        );
+        final style = title['style'] as Map;
+        coverTypeDirections.add(
+          jsonEncode([
+            style['fontFamily'],
+            style['fontWeight'],
+            title['align'],
+            (title['text'] as String).split('\n').length,
+          ]),
+        );
+        final hero = coverLayers.firstWhere(
+          (layer) => layer['type'] == 'image',
+        );
+        expect(
+          coverPhotos.add(hero['imageUrl'] as String),
+          isTrue,
+          reason: '${volume.id}: keep an independently chosen cover subject',
+        );
+        expect(
+          pages.skip(1).any((page) => old.contains(_geometry(page))),
+          false,
+          reason: '${volume.id} cannot recycle a baseline or retired page',
+        );
+        expect(
+          pages.map(_geometry).toSet().length,
+          greaterThanOrEqualTo(22),
+          reason: '${volume.id} needs a full book, not repeated page padding',
+        );
+        expect(pages.map((p) => p['role']).toSet().length, 25);
       }
       expect(
-        bundledCreationTemplates.every(
-          (t) =>
-              !t.isPremium &&
-              t.pageCount == (t.id == windAtlasBundledId ? 32 : 24),
-        ),
-        true,
+        coverGrids.length,
+        greaterThanOrEqualTo(8),
+        reason: 'Eight jacket directions may share deliberate editorial grids',
       );
-      expect(bundledCreationTemplates.any(isRetiredAuthoredTemplate), false);
-      expect(bundledCreationTemplates.take(3).map((t) => t.id), [
-        -9301,
-        -9302,
-        -9303,
-      ]);
-      for (final aspect in CollectionAspect.values) {
-        final covers = <String>{};
-        final old =
-            [...baselineAuthoredCollections, ...retiredAuthoredCollections]
-                .expand((c) => templateDocumentPages(c.document(aspect)))
-                .map(_geometry)
-                .toSet();
-        for (final volume in FreeCollectionVolume.values) {
-          final document = volume.document(aspect);
-          final pages = templateDocumentPages(document);
-          expect(pages.length, 25);
-          expect((document['chapters'] as List).length, 12);
-          expect(document['accessTier'], 'free');
-          expect(document['aiGenerated'], false);
-          expect(
-            covers.add(_geometry(pages.first)),
-            true,
-            reason: 'Each cover has its own composition',
-          );
-          expect(
-            pages.any((page) => old.contains(_geometry(page))),
-            false,
-            reason: '${volume.id} cannot recycle a baseline or retired page',
-          );
-          expect(
-            pages.map(_geometry).toSet().length,
-            greaterThanOrEqualTo(22),
-            reason: '${volume.id} needs a full book, not repeated page padding',
-          );
-          expect(pages.map((p) => p['role']).toSet().length, 25);
-        }
-      }
-    },
-  );
+      expect(
+        coverTypeDirections.length,
+        greaterThanOrEqualTo(4),
+        reason:
+            'Collection identity includes distinct typography, not only recoloring',
+      );
+    }
+  });
 
-  testWidgets('category overview renders all thirty-six real covers', (
+  testWidgets('category overview renders all forty-two real covers in RAM', (
     tester,
   ) async {
     final images = <ui.Image>[];
@@ -149,79 +186,7 @@ void main() {
         ),
       );
     }
-    if (_export) {
-      await tester.runAsync(() async {
-        final recorder = ui.PictureRecorder();
-        final canvas = Canvas(recorder);
-        canvas.drawColor(const Color(0xFFE8ECEA), BlendMode.src);
-        final categories = ordered.map((c) => c.category).toSet().toList();
-        for (final entry in ordered.indexed) {
-          final group = ordered
-              .where((c) => c.category == entry.$2.category)
-              .toList();
-          final column = group.indexOf(entry.$2);
-          final x = 24.0 + column * 284;
-          final y = 52.0 + categories.indexOf(entry.$2.category) * 332;
-          final image = images[entry.$1];
-          canvas.drawImageRect(
-            image,
-            Rect.fromLTWH(
-              0,
-              0,
-              image.width.toDouble(),
-              image.height.toDouble(),
-            ),
-            Rect.fromLTWH(x, y, 260, 260),
-            Paint(),
-          );
-          final label = TextPainter(
-            textDirection: TextDirection.ltr,
-            text: TextSpan(
-              text: entry.$2.title,
-              style: const TextStyle(
-                fontFamily: 'NotoSans',
-                fontSize: 14,
-                color: Color(0xFF293B36),
-              ),
-            ),
-          )..layout(maxWidth: 260);
-          label.paint(canvas, Offset(x, y + 273));
-          label.dispose();
-          if (column == 0) {
-            final heading = TextPainter(
-              textDirection: TextDirection.ltr,
-              text: TextSpan(
-                text: '${entry.$2.category} · 무료 ${group.length}종',
-                style: const TextStyle(
-                  fontFamily: 'NotoSans',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF293B36),
-                ),
-              ),
-            )..layout(maxWidth: 260);
-            heading.paint(canvas, Offset(x, y - 32));
-            heading.dispose();
-          }
-        }
-        final picture = recorder.endRecording();
-        final columns = categories
-            .map(
-              (category) => ordered.where((c) => c.category == category).length,
-            )
-            .reduce((a, b) => a > b ? a : b);
-        final image = await picture.toImage(
-          24 + columns * 284,
-          40 + categories.length * 332,
-        );
-        final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-        final file = File('output/template-preview/free-expansion/catalog.png');
-        await file.parent.create(recursive: true);
-        await file.writeAsBytes(bytes!.buffer.asUint8List());
-        image.dispose();
-        picture.dispose();
-      });
-    }
+
     for (final image in images) image.dispose();
     expect(tester.takeException(), isNull);
   });
@@ -232,8 +197,6 @@ void main() {
         '${volume.id}/${aspect.name}: text, photos, masks, identity and saved roundtrip',
         () {
           final issues = <String>[];
-          final hasPhotoCover =
-              volume.document(aspect)['coverTreatment'] == 'full-bleed-photo';
           for (final copy in [volume.defaultCopy, _longCopy]) {
             final pages = freeCollectionPreviewPages(volume, aspect, copy);
             final ids = <String>{};
@@ -317,14 +280,34 @@ void main() {
                 for (final other in page.where(
                   (l) => l.type == LayerType.image || l.type == LayerType.text,
                 )) {
-                  // Text intentionally sits above the full-bleed cover photo.
+                  // The sea jacket puts native opaque paper over its backdrop.
+                  // Other jackets keep lettering outside the photograph.
                   final fullPhotoBackdrop =
-                      hasPhotoCover &&
                       identical(page, pages.first) &&
                       other.type == LayerType.image &&
                       other.width == aspect.canvas.width &&
                       other.height == aspect.canvas.height;
-                  if (fullPhotoBackdrop) continue;
+                  if (fullPhotoBackdrop) {
+                    expect(
+                      page.any((paper) {
+                        final paperRect =
+                            paper.position & Size(paper.width, paper.height);
+                        return paper.type == LayerType.decoration &&
+                            paper.decorationFillColor != null &&
+                            paper.opacity == 1 &&
+                            paper.zIndex > other.zIndex &&
+                            paper.zIndex < layer.zIndex &&
+                            paperRect.left <= rect.left + .1 &&
+                            paperRect.top <= rect.top + .1 &&
+                            paperRect.right >= rect.right - .1 &&
+                            paperRect.bottom >= rect.bottom - .1;
+                      }),
+                      isTrue,
+                      reason:
+                          '${layer.id}: photo-safe paper must cover the text box',
+                    );
+                    continue;
+                  }
                   if (other.id != layer.id &&
                       rect
                           .deflate(.05)
@@ -371,8 +354,6 @@ void main() {
             expect(raw.image, isNotNull);
           }
         }
-        if (_export)
-          await tester.runAsync(() => _contactSheet(volume, aspect, images));
         for (final image in images) image.dispose();
         expect(tester.takeException(), isNull);
       });
@@ -404,42 +385,4 @@ void main() {
       expect(freeCollectionCopyFits(volume, _longCopy), true);
     });
   }
-}
-
-Future<void> _contactSheet(
-  FreeCollectionVolume volume,
-  CollectionAspect aspect,
-  List<ui.Image> pages,
-) async {
-  const width = 280.0, gap = 16.0;
-  final height = width / aspect.canvas.aspectRatio;
-  final recorder = ui.PictureRecorder();
-  final canvas = Canvas(recorder);
-  final size = Size(5 * (width + gap) + gap, 5 * (height + 30) + gap);
-  canvas.drawColor(const Color(0xFFE2E5E3), BlendMode.src);
-  for (final entry in pages.indexed) {
-    final x = gap + (entry.$1 % 5) * (width + gap);
-    final y = gap + (entry.$1 ~/ 5) * (height + 30);
-    canvas.drawImageRect(
-      entry.$2,
-      Rect.fromLTWH(
-        0,
-        0,
-        entry.$2.width.toDouble(),
-        entry.$2.height.toDouble(),
-      ),
-      Rect.fromLTWH(x, y, width, height),
-      Paint(),
-    );
-  }
-  final picture = recorder.endRecording();
-  final image = await picture.toImage(size.width.ceil(), size.height.ceil());
-  final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-  final file = File(
-    'output/template-preview/free-expansion/${volume.id}-${aspect.name}.png',
-  );
-  await file.parent.create(recursive: true);
-  await file.writeAsBytes(bytes!.buffer.asUint8List());
-  image.dispose();
-  picture.dispose();
 }

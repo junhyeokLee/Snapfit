@@ -24,6 +24,8 @@ import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_albu
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_template_generating_step.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_template_design_review.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/album_create_step1.dart';
+import 'package:snap_fit/features/album/presentation/widgets/create_flow/cover_size_picker.dart';
+import 'package:snap_fit/features/album/presentation/widgets/create_flow/album_create_step2.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/album_creation_review_sheet.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/creation_template_preview.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/creation_document_preview.dart';
@@ -278,6 +280,10 @@ void main() {
         expect(manual, 1);
         expect(ai, 1);
         expect(selected, 1);
+        await tap(tester, find.text('템플릿 고르기'));
+        expect(find.text('템플릿').hitTestable(), findsOneWidget);
+        expect(selected, 1, reason: 'Browsing never selects or buys a design');
+        await capture(tester, 'creation-atelier-catalog', size, dark);
         await mount(
           tester,
           setup(manual: true, next: () => next++),
@@ -320,6 +326,12 @@ void main() {
           greaterThanOrEqualTo(64),
         );
         await capture(tester, 'creation-atelier-settings', size, dark);
+        if (size.width > size.height) {
+          final art = tester.getRect(key('creation-workspace-preview'));
+          final action = tester.getRect(key('creation-setup-next'));
+          expect(art.right, lessThanOrEqualTo(action.left));
+          expect(art.bottom, greaterThan(action.top));
+        }
         await tap(tester, find.byTooltip('다음 페이지'));
         if (size.width > size.height) {
           expect(key('template-book-spread-1'), findsOneWidget);
@@ -406,9 +418,39 @@ void main() {
         );
         await tester.pumpAndSettle();
         await capture(tester, 'creation-atelier-review', size, dark);
+        if (size.width > size.height) {
+          await tap(tester, find.byTooltip('다음 페이지'));
+          expect(key('template-book-spread-1'), findsOneWidget);
+          await capture(tester, 'creation-atelier-review-spread', size, dark);
+          metrics(tester, const Size(390, 844));
+          await tester.pumpAndSettle();
+          metrics(tester, size);
+          await tester.pumpAndSettle();
+          expect(key('template-book-spread-1'), findsOneWidget);
+        }
         safe(tester, key('creation-review-start'), size);
         await tap(tester, key('creation-review-start'));
         expect(await result, -1);
+        await mount(
+          tester,
+          AlbumCreateStep2(
+            albumTitle: '오래 기억하고 싶은 우리의 여름',
+            selectedCover: defaultCoverSize,
+            selectedPageCount: 24,
+            documentPages: pages,
+            documentCanvas: canvas,
+            onNext: () {},
+            onBack: () {},
+          ),
+          dark: dark,
+        );
+        await capture(tester, 'creation-atelier-invite', size, dark);
+        await tap(tester, find.byTooltip('다음 페이지'));
+        await capture(tester, 'creation-atelier-invite-spread', size, dark);
+        await tester.ensureVisible(find.byType(Switch));
+        await tester.pumpAndSettle();
+        expect(find.byType(Switch).hitTestable(), findsOneWidget);
+        await capture(tester, 'creation-atelier-invite-options', size, dark);
         expect(tester.takeException(), isNull);
       });
       testWidgets(
@@ -541,9 +583,103 @@ void main() {
           isNot('표지'),
         );
         expect(tester.takeException(), isNull);
+        metrics(tester, size);
+        await mount(
+          tester,
+          AlbumCreateStep2(
+            albumTitle: '우리의 여름',
+            selectedCover: defaultCoverSize,
+            selectedPageCount: 24,
+            documentPages: pages,
+            documentCanvas: canvas,
+            onNext: () {},
+            onBack: () {},
+          ),
+          dark: true,
+          scale: 1.8,
+        );
+        safe(tester, find.widgetWithText(FilledButton, '편집 시작'), size);
+        await tester.ensureVisible(find.byType(Switch));
+        await tester.pumpAndSettle();
+        expect(find.byType(Switch).hitTestable(), findsOneWidget);
+        expect(tester.takeException(), isNull);
       },
     );
   }
+  for (final size in [const Size(390, 844), const Size(844, 390)]) {
+    testWidgets(
+      'native creation paths retain manual settings and unfinished AI request $size',
+      (tester) async {
+        reset(tester);
+        metrics(tester, size);
+        final dark = size.width > size.height;
+        await mount(
+          tester,
+          const AlbumCreateFlowScreen(),
+          dark: dark,
+          scale: 1.3,
+        );
+        await capture(tester, 'creation-journey-entry', size, dark);
+        await tap(tester, find.text('직접 만들기'));
+        final title = key('creation-album-title');
+        await tester.ensureVisible(title);
+        await tester.enterText(title, '우리의 주말 기록');
+        FocusManager.instance.primaryFocus?.unfocus();
+        await tester.pumpAndSettle();
+        await tap(tester, key('print-cover-hard'));
+        await tap(tester, find.byTooltip('페이지 늘리기'));
+        await capture(tester, 'creation-journey-configure', size, dark);
+        await tap(tester, find.byTooltip('시작 방식 변경'));
+        await tap(tester, find.text('AI 템플릿'));
+        final prompt = find.byKey(const Key('ai_template_brief'));
+        await tester.ensureVisible(prompt);
+        const request = '봄날의 주말 기록. 초록 포인트, 겹친 종이 프레임, 짧은 문구.';
+        await tester.enterText(prompt, request);
+        FocusManager.instance.primaryFocus?.unfocus();
+        await tester.pumpAndSettle();
+        await tap(tester, key('print-cover-hard'));
+        await tap(tester, key('print-size-REDP_250X200_SOFT'));
+        await tap(tester, find.byTooltip('2쪽 늘리기'));
+        await tap(tester, find.byTooltip('2쪽 늘리기'));
+        await tap(tester, find.byTooltip('뒤로가기'));
+        await tap(tester, find.text('직접 만들기'));
+        final manual = tester.widget<AlbumCreateStep1>(
+          find.byType(AlbumCreateStep1),
+        );
+        expect(manual.albumTitle, '우리의 주말 기록');
+        expect(manual.selectedPageCount, 22);
+        expect(manual.selectedCover!.coverType, PrintCoverType.hard);
+        await tap(tester, find.byTooltip('시작 방식 변경'));
+        await tap(tester, find.text('AI 템플릿'));
+        final restored = tester.widget<AiTemplateBriefStep>(
+          find.byType(AiTemplateBriefStep),
+        );
+        expect(restored.initialBrief!.prompt, request);
+        expect(restored.initialBrief!.pageCount, 24);
+        expect(restored.initialBrief!.printProductId, 'REDP_250X200_HARD');
+        expect(
+          tester
+              .widget<CoverSizePicker>(find.byType(CoverSizePicker))
+              .selectedCover!
+              .ratio,
+          1.25,
+        );
+        final input = tester.widget<TextField>(prompt).controller!;
+        expect(input.text, request);
+        final other = size.width > size.height
+            ? const Size(390, 844)
+            : const Size(844, 390);
+        metrics(tester, other);
+        await tester.pumpAndSettle();
+        expect(tester.widget<TextField>(prompt).controller, same(input));
+        expect(input.text, request);
+        expect(tester.takeException(), isNull);
+        await capture(tester, 'creation-journey-ai-resume', other, dark);
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+  }
+
   testWidgets(
     'filtered catalog removes the featured artwork and unavailable templates never become AI output',
     (tester) async {

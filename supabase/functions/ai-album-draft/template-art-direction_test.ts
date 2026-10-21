@@ -1,4 +1,9 @@
-import { assert, assertEquals, assertThrows } from "jsr:@std/assert";
+import {
+  assert,
+  assertEquals,
+  assertRejects,
+  assertThrows,
+} from "jsr:@std/assert";
 import fixture from "../../../test/fixtures/ai_template_v2.json" with {
   type: "json",
 };
@@ -7,7 +12,8 @@ import {
   validateArtDirection,
   validateDirectedTemplate,
 } from "./template-art-direction.ts";
-import { handleAiAlbumDraftRequest } from "./index.ts";
+import { openAiContractEnv } from "./test-support.ts";
+import { createOriginalTemplate } from "./index.ts";
 
 const brief = parseTemplateBrief(fixture.brief);
 const fresh = () => structuredClone(fixture);
@@ -35,7 +41,11 @@ Deno.test("version negotiation preserves old clients and rejects unsupported ver
   const { designVersion: _, ...legacy } = fixture.brief;
   assertEquals(parseTemplateBrief(legacy), legacy);
   assertEquals(parseTemplateBrief(fixture.brief).designVersion, 2);
-  assertThrows(() => parseTemplateBrief({ ...legacy, designVersion: 3 }));
+  assertEquals(
+    parseTemplateBrief({ ...legacy, designVersion: 3 }).designVersion,
+    3,
+  );
+  assertThrows(() => parseTemplateBrief({ ...legacy, designVersion: 4 }));
 });
 
 Deno.test("a typography-only cover is valid without inventing an extra photo slot", () => {
@@ -170,12 +180,6 @@ Deno.test("returned direction is server-owned, not replaceable by geometry outpu
   );
 });
 
-function request() {
-  return new Request("https://example.test/ai-album-draft", {
-    method: "POST",
-    body: JSON.stringify({ designBrief: brief, candidates: [] }),
-  });
-}
 function response(output: unknown, finish = "stop") {
   return new Response(
     JSON.stringify({
@@ -186,12 +190,12 @@ function response(output: unknown, finish = "stop") {
     }),
   );
 }
-const env = (key: string) => key === "OPENAI_API_KEY" ? "test-key" : undefined;
+const env = openAiContractEnv("test-key");
 
 Deno.test("v2 plans then composes without photos, catalog layouts or fallback", async () => {
   let calls = 0;
   let signal: AbortSignal | null | undefined;
-  const result = await handleAiAlbumDraftRequest(request(), {
+  const body: any = await createOriginalTemplate(brief, {
     env,
     fetch: async (_, init) => {
       const body = JSON.parse(String(init?.body));
@@ -209,8 +213,6 @@ Deno.test("v2 plans then composes without photos, catalog layouts or fallback", 
       return response(fresh().output);
     },
   });
-  assertEquals(result.status, 200);
-  const body = await result.json();
   assertEquals(calls, 2);
   assertEquals(body.design.version, 2);
   assertEquals(body.design.artDirection, plan());
@@ -221,7 +223,7 @@ Deno.test("v2 plans then composes without photos, catalog layouts or fallback", 
 
 Deno.test("layout repair retains the validated plan and never repeats planning", async () => {
   let calls = 0;
-  const result = await handleAiAlbumDraftRequest(request(), {
+  const result = await createOriginalTemplate(brief, {
     env,
     fetch: async (_, init) => {
       if (++calls === 1) return response(fresh().plan);
@@ -233,39 +235,47 @@ Deno.test("layout repair retains the validated plan and never repeats planning",
     },
   });
   assertEquals(calls, 3);
-  assertEquals(result.status, 200);
+  assertEquals(result.design?.version, 2);
 });
 
 Deno.test("one shared repair budget prevents runaway plan plus layout retries", async () => {
   let calls = 0;
-  const result = await handleAiAlbumDraftRequest(request(), {
-    env,
-    fetch: async () => {
-      calls++;
-      return response(calls === 2 ? fresh().plan : {});
-    },
-  });
+  await assertRejects(
+    () =>
+      createOriginalTemplate(brief, {
+        env,
+        fetch: async () => {
+          calls++;
+          return response(calls === 2 ? fresh().plan : {});
+        },
+      }),
+    Error,
+    "template_quality_failed",
+  );
   assertEquals(calls, 3);
-  assertEquals(result.status, 500);
-  const body = await result.json();
-  assertEquals(body.error, "template_quality_failed");
-  assertEquals(body.design, undefined);
 });
 
 for (const mode of ["http", "incomplete", "credentials"] as const) {
   Deno.test(`v2 ${mode} failure does not return a substitute`, async () => {
     let calls = 0;
-    const result = await handleAiAlbumDraftRequest(request(), {
-      env: mode === "credentials" ? () => undefined : env,
-      fetch: async () => {
-        calls++;
-        return mode === "http"
-          ? new Response("error", { status: 429 })
-          : response(fresh().plan, "length");
-      },
-    });
+    await assertRejects(
+      () =>
+        createOriginalTemplate(brief, {
+          env: mode === "credentials" ? () => undefined : env,
+          fetch: async () => {
+            calls++;
+            return mode === "http"
+              ? new Response("error", { status: 429 })
+              : response(fresh().plan, "length");
+          },
+        }),
+      Error,
+      mode === "http"
+        ? "template_provider_rate_limited"
+        : mode === "incomplete"
+        ? "template_generation_incomplete"
+        : "template_provider_not_configured",
+    );
     assertEquals(calls, mode === "credentials" ? 0 : 1);
-    assertEquals(result.status, 500);
-    assertEquals((await result.json()).design, undefined);
   });
 }

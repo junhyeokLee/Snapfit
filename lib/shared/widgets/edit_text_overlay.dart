@@ -674,7 +674,7 @@ class _EditTextOverlayState extends State<EditTextOverlay> {
           padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
           child: Row(children: [
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('문구 편집', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: WebPalette.of(context).ink)),
+              Text('문구 편집', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: WebPalette.of(context).ink)),
               SizedBox(height: 5),
               Text('내용과 스타일을 확인한 뒤 적용하세요.', style: TextStyle(fontSize: 13, color: WebPalette.of(context).muted)),
             ])),

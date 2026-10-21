@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:snap_fit/core/templates/studio_decoration_catalog.dart';
 import 'package:snap_fit/core/templates/studio_photo_frame_catalog.dart';
+import 'package:snap_fit/core/templates/frame_preview_photos.dart';
 import 'package:snap_fit/core/templates/studio_word_art_catalog.dart';
 import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
 import 'package:snap_fit/shared/widgets/studio_material.dart';
@@ -23,6 +24,7 @@ class _LuminousMaterialsState extends State<LuminousMaterials> {
       keepsakeDecorations.length +
       keepsakePhotoFrames.length +
       atelierEditionPhotoFrames.length +
+      atelierSignaturePhotoFrames.length +
       atelierWordArts.length;
   @override
   Widget build(BuildContext context) => DefaultTabController(
@@ -122,6 +124,7 @@ class _LuminousMaterialsState extends State<LuminousMaterials> {
                     (s) =>
                         keepsakePhotoFrames.contains(s.key) ||
                         atelierEditionPhotoFrames.contains(s.key) ||
+                        atelierSignaturePhotoFrames.contains(s.key) ||
                         (!widget.newOnly && editionPhotoFrames.contains(s.key)),
                   ))
                 _Piece(
@@ -130,7 +133,7 @@ class _LuminousMaterialsState extends State<LuminousMaterials> {
                   () => StudioMaterial(
                     style: s.key,
                     child: Image.asset(
-                      'assets/templates/original_editorial/images/petal_evening.png',
+                      framePreviewPhotos[s.key]!,
                       fit: BoxFit.cover,
                     ),
                   ),

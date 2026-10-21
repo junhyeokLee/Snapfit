@@ -122,7 +122,7 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
       )),
     );
     return ListView(padding: const EdgeInsets.all(28), children: [
-      const Text('참고할 사진 범위', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+      const Text('참고할 사진 범위', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
       const SizedBox(height: 10),
       Text('가져온 사진에서 참고할 범위를 선택하세요. 제안된 사진은 다음 단계에서 확인하고 바꿀 수 있습니다.', style: TextStyle(fontSize: 14, height: 1.7, color: WebPalette.of(context).muted)),
       const SizedBox(height: 24),

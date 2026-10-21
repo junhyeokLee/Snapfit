@@ -136,6 +136,44 @@ void main() {
   );
 
   test(
+    'local import reports each file including duplicates and errors',
+    () async {
+      final bytes = browserPhotoFixture();
+      final repository = BrowserGalleryRepository(
+        currentOwner: () => 'owner-a',
+      );
+      final progress = <BrowserPhotoImportProgress>[];
+      await repository.importFiles([
+        for (final name in ['first.png', 'again.png'])
+          BrowserPhotoFile(
+            name: name,
+            size: bytes.length,
+            readBytes: () async => bytes,
+          ),
+        BrowserPhotoFile(
+          name: 'too-big.jpg',
+          size: 50000001,
+          readBytes: () => throw StateError('must not read oversize file'),
+        ),
+      ], onProgress: progress.add);
+      expect(
+        progress.where((item) => item.isComplete).map((item) => item.state),
+        [
+          BrowserPhotoImportState.ready,
+          BrowserPhotoImportState.duplicate,
+          BrowserPhotoImportState.failed,
+        ],
+      );
+      expect(progress.map((item) => item.total), everyElement(3));
+      expect(
+        progress.where((item) => item.isComplete).map((item) => item.fileName),
+        ['first.png', 'again.png', 'too-big.jpg'],
+      );
+      expect(progress.last.message, contains('50MB'));
+    },
+  );
+
+  test(
     'an account change during browser file read cannot expose or import the previous owner photo',
     () async {
       String? owner = 'owner-a';

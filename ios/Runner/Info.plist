@@ -49,6 +49,13 @@
 		<string>사진을 선택하기 위해 접근이 필요합니다.</string>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>GIDClientID</key>
+		<string>$(GOOGLE_IOS_CLIENT_ID)</string>
+		<key>GIDServerClientID</key>
+		<string>$(GOOGLE_SERVER_CLIENT_ID)</string>
+		<!-- app_links owns custom links, including deferred notification targets. -->
+		<key>FlutterDeepLinkingEnabled</key>
+		<false/>
 		<key>CFBundleURLTypes</key>
 		<array>
 			<dict>

@@ -1,0 +1,254 @@
+{
+  "recorded_at_utc": "2026-10-20 15:12:53 UTC",
+  "status": "production_web_and_backend_deployed_verified_live_provider_temporarily_unavailable",
+  "implemented": {
+    "request_reduction": [
+      "Gemini free-only; no paid provider fallback or billing upgrade",
+      "One model transport per worker invocation; exact stored response replay",
+      "No in-memory retry burst; project-wide lease and at least 65 seconds between starts",
+      "Status/latest polls never call a model; long quota waits reduce client polling"
+    ],
+    "privacy": [
+      "Only closed safeDesign enums and validated public book dimensions",
+      "Server-authored generic Korean instructions; raw briefs and extra fields rejected",
+      "Personal notes and partial text edits remain in account-scoped device storage",
+      "Legacy photo/preview external analysis disabled"
+    ],
+    "resume": [
+      "Seven-day durable owner-bound job and source/model/schema checkpoint v2",
+      "Quota/transient errors persist next retry and global cooldown",
+      "Daily quota waits for Pacific midnight including DST",
+      "Same intent/draft ID across restart; stale leases fenced",
+      "Consumed draft recovery reuses existing idempotent acceptance receipt"
+    ],
+    "quality": [
+      "Existing original full-book validators and two shared corrections remain",
+      "Every cached response re-enters validation; malformed/truncated transport output is terminal",
+      "Typography, contrast, material, geometry, facing-page rhythm and evidence-backed editorial review remain required",
+      "READY only after all quality gates; no copied paid catalog geometry"
+    ]
+  },
+  "validation": {
+    "server": {
+      "passed": 148,
+      "failed": 0,
+      "log": "/private/tmp/snapfit-free-generation-server-tests-final.log"
+    },
+    "database": {
+      "passed": 22,
+      "failed": 0,
+      "log": "/private/tmp/snapfit-free-ai-jobs-sql-final-v3.log",
+      "note": "14 new job/Cron and 8 existing billing tests; PGlite plus source ordering checks, not a multiconnection Postgres concurrency stress test"
+    },
+    "native": {
+      "passed": 97,
+      "files": 15,
+      "failed": 0,
+      "golden_tests_executed": 0,
+      "log": "/tmp/snapfit-ai-free-client-checks-20261021.txt"
+    },
+    "chrome": {
+      "passed": 20,
+      "failed": 0,
+      "all_test_bodies_executed": true,
+      "scope": "safe options, provider, device store",
+      "custom_test_font_loader": "native only"
+    },
+    "operational": {
+      "customer_unauthenticated_status": 401,
+      "worker_without_hmac_status": 401,
+      "valid_one_use_hmac_no_work_status": 200,
+      "replayed_nonce_status": 401,
+      "source_readback_exact": true,
+      "automatic_cron_retry_confirmed": true
+    },
+    "live": {
+      "mode": "actual production worker with isolated synthetic account and public safeDesign",
+      "model_attempts": 4,
+      "gemini_3_6_attempts": 3,
+      "gemini_3_8_attempts": 1,
+      "completed_model_responses": 0,
+      "accepted_books": 0,
+      "last_error": "template_provider_unavailable",
+      "persisted_waiting": true,
+      "automatic_retries": 3,
+      "charged_usages": 0,
+      "first_free_claims": 0,
+      "synthetic_fixture_removed": true,
+      "premium_visual_comparison": "not run: no newly completed accepted book",
+      "preview_files_created": 0
+    },
+    "security": {
+      "new_warnings": 0,
+      "intentional_new_info_findings": 3,
+      "note": "Private service-only tables keep RLS enabled with no client policies and no anon/authenticated grants"
+    },
+    "analysis": {
+      "issues": 0,
+      "scope": "13 client production files and owned changed tests",
+      "manifest": "/tmp/snapfit-ai-free-client-manifest-20261021.json"
+    },
+    "overlap": "Native/Chrome and focused runs overlap; counts are not summed as unique checks.",
+    "diff_check": {
+      "files": 53,
+      "exit_code": 0
+    }
+  },
+  "production": {
+    "supabase_project": "rrbhxdtriummqpztpjrk",
+    "previous_main_version": 40,
+    "main": {
+      "version": 43,
+      "verify_jwt": true,
+      "files": 17,
+      "sha256": "924571c9569197335f3b17255ab020e5c60d1e94824f117f065a64a939944d37"
+    },
+    "worker": {
+      "version": 2,
+      "verify_jwt": false,
+      "own_hmac_and_nonce_required": true,
+      "files": 16,
+      "sha256": "fa0cb888059acbf4efcfecb6caf930676ca7de16cb79ab7bf0999d15016c297a"
+    },
+    "migrations": [
+      {
+        "path": "supabase/migrations/20261020144824_ai_template_free_resumable_jobs.sql",
+        "sha256": "fe7db9ba9c610f53ec5f1df9b446369a231cccb269e26a7e59db1c6ab640a509"
+      },
+      {
+        "path": "supabase/migrations/20261020144841_ai_template_free_worker_cron.sql",
+        "sha256": "a77e518e607d725473575d7544d77c85bb030847b9ad586e3a4802459dad44ce"
+      }
+    ],
+    "safe_jobs_enabled": true,
+    "ai_cron_active": true,
+    "raw_v3_enabled": false,
+    "configured_model": "gemini-3.8-flash",
+    "free_only": true,
+    "worker_secret": "dedicated server-only secret; temporary provisioning file removed",
+    "web": {
+      "url": "https://snapfit-c719d.web.app",
+      "status": "deployed_and_verified",
+      "metadata": {
+        "main_sha256": "d7c938f222fd8b6a11c1caf3f529ddb6d7ce28f9e9148d589e0fb68aeec7f70d",
+        "main_file": "main.d7c938f222fd8b6a11c1.dart.js",
+        "bootstrap_sha256": "b0835608b6fba5d76be5aacb019a67da1c9da5f5da0741ae1f2238151fb63d70",
+        "bootstrap_file": "flutter_bootstrap.b0835608b6fba5d76be5.js"
+      },
+      "fileChecks": {
+        "main": {
+          "sha256": "d7c938f222fd8b6a11c1caf3f529ddb6d7ce28f9e9148d589e0fb68aeec7f70d",
+          "cacheControl": "public,max-age=31536000,immutable"
+        },
+        "bootstrap": {
+          "sha256": "b0835608b6fba5d76be5aacb019a67da1c9da5f5da0741ae1f2238151fb63d70",
+          "cacheControl": "no-cache"
+        }
+      },
+      "htmlReferencesCurrentBootstrap": true,
+      "headers": {
+        "cacheControl": "no-store",
+        "robots": "noindex, nofollow"
+      },
+      "verified": true,
+      "public_catalog_boot_verified": true,
+      "build_log": "/private/tmp/snapfit-free-production-web-build.log",
+      "deploy_log": "/private/tmp/snapfit-free-production-web-deploy.log"
+    },
+    "native_store_release": false,
+    "native_store_release_limitation": "No Android release signing configuration or existing Fastlane/store upload pipeline; source version remains 1.0.0+1. Web Hosting does not update installed native apps."
+  },
+  "official_references": [
+    "https://ai.google.dev/gemini-api/docs/pricing",
+    "https://ai.google.dev/gemini-api/docs/rate-limits",
+    "https://ai.google.dev/gemini-api/terms",
+    "https://supabase.com/docs/guides/functions/schedule-functions",
+    "https://supabase.com/docs/guides/functions/limits"
+  ],
+  "storage": {
+    "preview_files_created": 0,
+    "existing_media_baseline_count": 340,
+    "original_media_unchanged": true,
+    "build_cache_cleanup": "complete",
+    "removed": [
+      {
+        "path": "build",
+        "bytes": 1638972075
+      },
+      {
+        "path": ".dart_tool/flutter_build",
+        "bytes": 69835503
+      },
+      {
+        "path": ".dart_tool/hooks_runner",
+        "bytes": 23007937
+      }
+    ],
+    "bytesRemoved": 1731815515,
+    "preserved": {
+      ".dart_tool/package_config.json": true,
+      ".dart_tool/package_graph.json": true,
+      "lib": true,
+      "assets": true,
+      "test": true
+    },
+    "freeBytes": 18835267584,
+    "existing_media_current_count": 340,
+    "new_media_files": 0,
+    "changed_or_missing_media_files": 0
+  },
+  "source_and_test_sha256": {
+    "docs/ai_template_evaluation.md": "e8165ffd07dd81dfeb1a39c07bb644b3a6cfcec4251a995988aad1eb8351ec65",
+    "docs/ai_template_original_design.md": "674f1ea67da6ef4b9b20bc0366ab4a07b0c9287a95de9914dce025a21cb8f119",
+    "docs/all_screen_design_audit.md": "2222d254c9d99633619000ee7d6e0a437eb81161bba6d105b071d080b060aefa",
+    "docs/web-development.md": "81841ecc3b280d37155d5abe66b3faee20ee0d3a0be86f7af69e6343007e5818",
+    "lib/features/album/ai_album/data/ai_template_device_store.dart": "164f1467b223e2c342077d1574ae2a816b02074cf3cacf08d09799a307052c3c",
+    "lib/features/album/ai_album/data/supabase_ai_album_draft_provider.dart": "6563d2cc3cf9a0aee3005b1f7b8717d3d08861aecfaf25b1162992ee88a6ca86",
+    "lib/features/album/ai_album/domain/ai_album_draft_generation_service.dart": "e2166ec246223ca538eee45c4a1bbfe9e24823444f18612581883e888bbd1bd8",
+    "lib/features/album/ai_album/domain/ai_template_design.dart": "022ae9152e9bebd2c01728071417b03c6f4af675b50a1553affde09a94431912",
+    "lib/features/album/ai_album/domain/ai_template_job.dart": "1ca9ce8dc0f16bb95563413dbb5975eab8d7f6c6270bf4ed1a2fa5a1947a73d5",
+    "lib/features/album/ai_album/domain/ai_template_safe_options.dart": "18dfc250d49693bc9f5b2f47706d239181da7c3ca20a1f6e57245a8387d17e9b",
+    "lib/features/album/data/api/album_provider.dart": "b2f18e4a7bcfb54532c709305de55712f4e27f1a1316b6b708b0cddb7ac30a4c",
+    "lib/features/album/presentation/views/album_create_flow_screen.dart": "9e235b25013591f7f13c63c33ec02976bab7737a72ca218abfb4999019a3851b",
+    "lib/features/album/presentation/widgets/create_flow/ai_album_point_confirmation_step.dart": "eaf9f24cc29254b71d94128e87c860e5ee36ec066f1cc3f4e39817ba39d572fe",
+    "lib/features/album/presentation/widgets/create_flow/ai_album_recommendation_review_step.dart": "c65a76f31e157ebeec095cb0f48cd5c1a966475a735b40a620ca2ef471eca6dd",
+    "lib/features/album/presentation/widgets/create_flow/ai_template_brief_step.dart": "2f935a7b2c746bca47e07184bd729d7617aeb6fe8fabc506f02f33f6c6ca7e50",
+    "lib/features/album/presentation/widgets/create_flow/ai_template_design_review.dart": "f599ed65fe7110980fee634f01b4eb1c98dcbfba43a14719af53909663c0f35b",
+    "lib/features/album/presentation/widgets/create_flow/ai_template_generating_step.dart": "8beb421fed11f1d7113e0ebbcba6751cad6f8966506104fc42bd0c5007caea80",
+    "supabase/ai-template.env.example": "52dc3b44641b2cdda5ccfa7c6ca2069570fa885a94a9b297da287070e2a92498",
+    "supabase/config.toml": "bcba229f12fccaa7e78cb0620361528d3e6b8003ce38b1013c2a38f92b7fd242",
+    "supabase/functions/ai-album-draft/free-template-jobs.ts": "43db131d9593bb41109fa07a4b7e98f14a39968d2a59c7ac25b232b90c994f09",
+    "supabase/functions/ai-album-draft/free-template-jobs_test.ts": "7dd2d8f903333b7d23b26fb98fcbc97bd1d580b4639e5d3a8cec626ed2843b25",
+    "supabase/functions/ai-album-draft/generation-guard.ts": "dae1b4f7eaa19463e2f47ed79274a745f3b9c9ce45f93b0aa160838eee2677ac",
+    "supabase/functions/ai-album-draft/generation-guard_test.ts": "de89cc69ef5bc4f0c4e3db22cdf16f48ea41a27dac0055a12106e13c585b2818",
+    "supabase/functions/ai-album-draft/index.ts": "5a3386ec58452029c58b6515bb79e279b604d5d32e22b6b67793a4deee9920f1",
+    "supabase/functions/ai-album-draft/index_test.ts": "13678c5821cd0b7bf5c63c1aaa44a908b3e42812a18208c3b6c2c7b1e93e26ea",
+    "supabase/functions/ai-album-draft/template-art-direction_test.ts": "d82f75427140dd02b2fe0269178d994aa46852bf160b29efb14ac9b6548a49de",
+    "supabase/functions/ai-album-draft/template-book-engine.ts": "bfaac320b685522893aa4d18cdf477711ba808c7864f76d64e0a1ddb0f207382",
+    "supabase/functions/ai-album-draft/template-book-engine_test.ts": "8f74ccc270f52f68f88fea9758d3c1c3bab29b8b802162abd9acd5e9a2f6f9b6",
+    "supabase/functions/ai-album-draft/template-design_test.ts": "498ea1dfc473f86e01eeb139722b5e1ff54a747eaf6e0725bc27c7b7b555911c",
+    "supabase/functions/ai-album-draft/template-editorial-quality_test.ts": "568b189c2c18f9924bd6c24dccb4c03c5961d072a797019f5381c3b8ef518308",
+    "supabase/functions/ai-album-draft/template-free-step.ts": "7a38b4e8520260cf1dc5f0a63fff527bbdc9bf5c24159954ebcd4dc001f03c3e",
+    "supabase/functions/ai-album-draft/template-free-step_test.ts": "18295723d6a17d6e44f5e72f1c7019b2b22ae7fee99eb0407c753ec3d22d7d1e",
+    "supabase/functions/ai-album-draft/template-model-checkpoint_test.ts": "a5fa2762357b74dd9bdda440bbf6af11adff5b1cf1c823ea579ce3ef52eae19d",
+    "supabase/functions/ai-album-draft/template-model-provider.ts": "1a22de80b2b62eced8f4e2a4fa521da9836d8866b8a9a48f7e9b4ed69dc41514",
+    "supabase/functions/ai-album-draft/template-model-provider_test.ts": "44ccee4dcb5f3f778283d661d287565ff27dea8a17f08e6498a45b4f8a8d3ad6",
+    "supabase/functions/ai-album-draft/template-page-expansion_test.ts": "9cf8851185648e364920f0ae4b252267018d7d99f125cc115a44d335c37fdff3",
+    "supabase/functions/ai-album-draft/template-safe-options.ts": "6b41fb9e79322754908eb5279c238b8f068e9ff7f344a5e5d4fadc544e20279a",
+    "supabase/functions/ai-album-draft/template-safe-options_test.ts": "7946cdeb82c78ac7f014b869495226d5d3b4cbbfdcd0b749a1193931985ca1ce",
+    "supabase/functions/ai-template-worker/handler.ts": "5ca6e3e35059b7eebd3f1005406d17b6376974e51bf6e5a12a7057d0df3436ac",
+    "supabase/functions/ai-template-worker/handler_test.ts": "e47c29d053109f54ee62e9571b027e26903c9c58241cb646b35b4b2c796ad2a0",
+    "supabase/functions/ai-template-worker/index.ts": "cdb2b2309812082bbdb4b469b7a716f677abba91b4d5025dc32e63b42e0094e7",
+    "supabase/migrations/20261020144824_ai_template_free_resumable_jobs.sql": "fe7db9ba9c610f53ec5f1df9b446369a231cccb269e26a7e59db1c6ab640a509",
+    "supabase/migrations/20261020144841_ai_template_free_worker_cron.sql": "a77e518e607d725473575d7544d77c85bb030847b9ad586e3a4802459dad44ce",
+    "test/fixtures/ai_template_v3_fixture.dart": "f1d407ba1805165d17b620d91404d69499538b5fc6b36e0851b2e45f26ee97a0",
+    "test/server/ai_template_free_jobs_sql.test.mjs": "002c4e0edea44a90acc58c34f37697e5c30d18de9e6124ee535bba4cb9adea2e",
+    "test/unit/ai_album_draft_generation_service_test.dart": "6c83ce2d98cf4af1e1490b993ae39eb2d8cb54651903ae371499980d981c5f32",
+    "test/unit/ai_template_device_store_test.dart": "191d747d4d78cca0ff19b014454bafe5c73bdf5e4e1d00d0dbb8e8ad17fb26a7",
+    "test/unit/ai_template_safe_options_test.dart": "41d7bfe592840e84299ab2691c11c0ad49fb8371e6f06421dd53fa92a9816577",
+    "test/unit/supabase_ai_album_draft_provider_test.dart": "e9efe3ee6f69b0c610d2d715e086baa82e901e881f094de7aa0fa8393a86891a",
+    "test/widget/ai_template_design_flow_test.dart": "f4fe134d42a4ffe44c90b494bd262851e5f1005f7a54bd3274b9eb24b8677b6b",
+    "test/widget/ai_template_persistent_job_test.dart": "105093dc73b8895f97d8264f8a2003139f8877e27ab5308736f3bebae7b15abd",
+    "test/widget/album_create_flow_ai_server_mode_test.dart": "7e3af0a4ac51f1e709d3663b315b6da44972be89d1b1885b45988e207bcfd0a7"
+  }
+}

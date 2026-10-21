@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
 
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/theme/snapfit_design_tokens.dart' show SnapFitRadius;
 import '../../../../core/utils/app_error_mapper.dart';
 import '../../domain/order_visibility_owner.dart';
 import '../../data/order_repository.dart';
@@ -19,6 +20,8 @@ import '../../../album/presentation/views/print_order_complete_screen.dart';
 import '../../domain/entities/order_history_item.dart';
 import 'print_order_request_screen.dart';
 import '../widgets/order_album_artwork.dart';
+import '../widgets/order_journey_progress.dart';
+import '../widgets/web_order_history_row.dart';
 import '../../../../shared/widgets/experience_icon.dart';
 import '../../../../shared/web/web_design.dart';
 import 'customer_print_test_order_history.dart';
@@ -139,11 +142,17 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
     if (currentOwner != null && _ownerId == null) _ownerId = currentOwner;
     if (currentOwner == null || currentOwner != _ownerId) {
       if (kIsWeb) {
-        return SnapFitWebShell(showNavigation: false,
-          child: WebSurface(child: _orderAccessNotice(context,
-            currentOwner == null
-              ? '로그인한 계정을 확인한 뒤 주문 내역을 볼 수 있어요.'
-              : '로그인 계정이 변경되었어요. 주문 내역을 다시 열어주세요.')));
+        return SnapFitWebShell(
+          showNavigation: false,
+          child: WebSurface(
+            child: _orderAccessNotice(
+              context,
+              currentOwner == null
+                  ? '로그인한 계정을 확인한 뒤 주문 내역을 볼 수 있어요.'
+                  : '로그인 계정이 변경되었어요. 주문 내역을 다시 열어주세요.',
+            ),
+          ),
+        );
       }
       return Scaffold(
         backgroundColor: SnapFitColors.backgroundOf(context),
@@ -221,28 +230,21 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
     );
     const labels = ['전체', '결제/준비', '제작중', '배송중', '완료/취소'];
     if (kIsWeb) return _webHistory(pages, labels, canViewTest);
-    Widget heading({bool compact = false}) => Row(
-      children: [
-        Expanded(
-          child: Text(
-            compact ? '내 주문' : '내 앨범 주문',
-            style: ExperienceFormStyle.text(
-              context,
-              18,
-              weight: FontWeight.w600,
-            ),
-          ),
-        ),
-        IconButton(
-          tooltip: '새로고침',
-          onPressed: _refreshOrders,
-          icon: const ExperienceIcon('RefreshCw', size: 21),
-        ),
-      ],
-    );
     return Scaffold(
       backgroundColor: SnapFitColors.backgroundOf(context),
-      appBar: const ExperienceHeader(title: '주문 내역', themeAware: true),
+      appBar: ExperienceHeader(
+        title: '주문 내역',
+        themeAware: true,
+        showDivider: false,
+        showNotifications: false,
+        actions: [
+          IconButton(
+            tooltip: '새로고침',
+            onPressed: _refreshOrders,
+            icon: const ExperienceIcon('RefreshCw', size: 21),
+          ),
+        ],
+      ),
       body: SafeArea(
         top: false,
         child: Column(
@@ -293,7 +295,14 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
                                     crossAxisAlignment:
                                         CrossAxisAlignment.stretch,
                                     children: [
-                                      heading(compact: true),
+                                      Text(
+                                        '진행 상태',
+                                        style: ExperienceFormStyle.text(
+                                          context,
+                                          13,
+                                          secondary: true,
+                                        ),
+                                      ),
                                       const SizedBox(height: 12),
                                       for (var i = 0; i < labels.length; i++)
                                         Semantics(
@@ -357,10 +366,6 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
                           );
                         return Column(
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(20, 8, 12, 0),
-                              child: heading(),
-                            ),
                             TabBar(
                               controller: _tabController,
                               isScrollable: true,
@@ -368,17 +373,17 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
                               labelPadding: const EdgeInsets.symmetric(
                                 horizontal: 14,
                               ),
-                              indicatorColor: ExperienceFormStyle.ink(context),
+                              indicatorColor: ExperienceFormStyle.selectionInk(context),
                               indicatorSize: TabBarIndicatorSize.label,
                               dividerColor: Colors.transparent,
-                              labelColor: ExperienceFormStyle.ink(context),
+                              labelColor: ExperienceFormStyle.selectionInk(context),
                               unselectedLabelColor: ExperienceFormStyle.muted(
                                 context,
                               ),
                               labelStyle: ExperienceFormStyle.text(
                                 context,
                                 14,
-                                weight: FontWeight.w600,
+                                weight: FontWeight.w700,
                               ),
                               tabs: [
                                 for (final label in labels) Tab(text: label),
@@ -399,133 +404,247 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
   Widget _webHistory(Widget pages, List<String> labels, bool canViewTest) {
     final summary = ref.watch(myOrderSummaryProvider);
     final orderSummary = summary.asData?.value;
-    final counts = orderSummary == null ? null : [
-      orderSummary.paymentPending + orderSummary.paymentCompleted,
-      orderSummary.inProduction,
-      orderSummary.shipping,
-      orderSummary.delivered,
-    ];
+    final counts = orderSummary == null
+        ? null
+        : [
+            orderSummary.paymentPending + orderSummary.paymentCompleted,
+            orderSummary.inProduction,
+            orderSummary.shipping,
+            orderSummary.delivered,
+          ];
     final showTest = _showTestHistory && canViewTest;
     final compactWindow = MediaQuery.sizeOf(context).height < 760;
+    final palette = WebPalette.of(context);
     return SnapFitWebShell(
       section: WebSection.orders,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        WebPageHeading(eyebrow: 'ORDERS', title: '주문내역',
-          description: '앨범 제작과 배송 진행 상황을 확인하세요.',
-          trailing: OutlinedButton.icon(onPressed: _refreshOrders,
-            icon: const Icon(Icons.refresh, size: 18), label: const Text('새로고침'))),
-        const SizedBox(height: 24),
-        if (!showTest && !compactWindow) LayoutBuilder(builder: (context, bounds) {
-          final columns = bounds.maxWidth >= 760 ? 4 : 2;
-          return Wrap(spacing: 16, runSpacing: 16, children: [
-            for (var index = 0; index < 4; index++)
-              SizedBox(width: (bounds.maxWidth - (columns - 1) * 16) / columns,
-                child: WebSurface(padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
-                  child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Text(const ['결제·준비', '제작 중', '배송 중', '배송 완료'][index],
-                      style: TextStyle(fontSize: 13, color: WebPalette.of(context).muted)),
-                    Text(counts == null ? '—' : '${counts[index]}',
-                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.w600,
-                        color: WebPalette.of(context).ink)),
-                  ]))),
-          ]);
-        }),
-        const SizedBox(height: 24),
-        if (canViewTest) Align(alignment: Alignment.centerLeft,
-          child: SegmentedButton<bool>(
-            key: const ValueKey('order-history-mode'),
-            segments: const [
-              ButtonSegment(value: false, label: Text('일반 주문')),
-              ButtonSegment(value: true, label: Text('TEST 주문')),
-            ], selected: {_showTestHistory},
-            onSelectionChanged: (value) => setState(() => _showTestHistory = value.single),
-          )),
-        if (canViewTest) const SizedBox(height: 20),
-        if (!showTest) Wrap(spacing: 8, runSpacing: 8, children: [
-          for (var index = 0; index < labels.length; index++)
-            Semantics(selected: _selectedTab == index, child: TextButton(
-              key: ValueKey('personal-order-filter-$index'),
-              onPressed: () => _tabController.animateTo(index),
-              style: TextButton.styleFrom(
-                backgroundColor: _selectedTab == index ? WebPalette.of(context).brand : Colors.transparent,
-                foregroundColor: _selectedTab == index ? WebPalette.of(context).onBrand : WebPalette.of(context).muted,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              child: Text(labels[index]),
-            )),
-        ]),
-        const SizedBox(height: 16),
-        Expanded(child: WebSurface(padding: EdgeInsets.zero,
+      child: NestedScrollView(
+        key: const ValueKey('web-order-history-scroll'),
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                WebPageHeading(
+                  title: '주문내역',
+                  description: '앨범 제작과 배송 진행 상황을 확인하세요.',
+                  trailing: OutlinedButton.icon(
+                    onPressed: _refreshOrders,
+                    icon: const Icon(Icons.refresh, size: 18),
+                    label: const Text('새로고침'),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                if (!showTest && !compactWindow) ...[
+                  LayoutBuilder(
+                    builder: (context, bounds) {
+                      final columns = bounds.maxWidth >= 760
+                          ? 4
+                          : bounds.maxWidth >= 440
+                          ? 2
+                          : 1;
+                      return Wrap(
+                        spacing: 16,
+                        runSpacing: 16,
+                        children: [
+                          for (var index = 0; index < 4; index++)
+                            SizedBox(
+                              width:
+                                  (bounds.maxWidth - (columns - 1) * 16) /
+                                  columns,
+                              child: WebSurface(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 16,
+                                ),
+                                child: Wrap(
+                                  spacing: 16,
+                                  runSpacing: 8,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: [
+                                    Text(
+                                      const [
+                                        '결제·준비',
+                                        '제작 중',
+                                        '배송 중',
+                                        '배송 완료',
+                                      ][index],
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: palette.muted,
+                                      ),
+                                    ),
+                                    Text(
+                                      counts == null ? '—' : '${counts[index]}',
+                                      style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.w700,
+                                        color: palette.ink,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                ],
+                if (canViewTest) ...[
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SegmentedButton<bool>(
+                      key: const ValueKey('order-history-mode'),
+                      segments: const [
+                        ButtonSegment(value: false, label: Text('일반 주문')),
+                        ButtonSegment(value: true, label: Text('TEST 주문')),
+                      ],
+                      selected: {_showTestHistory},
+                      onSelectionChanged: (value) =>
+                          setState(() => _showTestHistory = value.single),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+                if (!showTest) ...[
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        for (var index = 0; index < labels.length; index++)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Semantics(
+                              selected: _selectedTab == index,
+                              child: TextButton(
+                                key: ValueKey('personal-order-filter-$index'),
+                                onPressed: () =>
+                                    _tabController.animateTo(index),
+                                style: TextButton.styleFrom(
+                                  backgroundColor: _selectedTab == index
+                                      ? palette.brand
+                                      : Colors.transparent,
+                                  foregroundColor: _selectedTab == index
+                                      ? palette.onBrand
+                                      : palette.muted,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 18,
+                                    vertical: 14,
+                                  ),
+                                  shape: const StadiumBorder(),
+                                ),
+                                child: Text(labels[index]),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ],
+            ),
+          ),
+        ],
+        body: WebSurface(
+          padding: EdgeInsets.zero,
           child: showTest
-            ? CustomerPrintTestOrderHistory(ownerId: _ownerId!, initialRunId: widget.initialTestRunId)
-            : Column(children: [
-                LayoutBuilder(builder: (context, bounds) => bounds.maxWidth >= 980
-                  ? Container(padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 17),
-                      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: WebPalette.of(context).line))),
-                      child: Row(children: [
-                        Expanded(flex: 4, child: Text('주문 앨범', style: TextStyle(fontSize: 12, color: WebPalette.of(context).muted))),
-                        Expanded(flex: 2, child: Text('제작 구성', style: TextStyle(fontSize: 12, color: WebPalette.of(context).muted))),
-                        SizedBox(width: 110, child: Text('주문일', style: TextStyle(fontSize: 12, color: WebPalette.of(context).muted))),
-                        SizedBox(width: 110, child: Text('금액', style: TextStyle(fontSize: 12, color: WebPalette.of(context).muted))),
-                        SizedBox(width: 170, child: Text('진행 상태', style: TextStyle(fontSize: 12, color: WebPalette.of(context).muted))),
-                        SizedBox(width: 26),
-                      ])) : const SizedBox.shrink()),
-                Expanded(child: pages),
-              ]),
-        )),
-      ]),
+              ? CustomerPrintTestOrderHistory(
+                  ownerId: _ownerId!,
+                  initialRunId: widget.initialTestRunId,
+                )
+              : Column(
+                  children: [
+                    LayoutBuilder(
+                      builder: (context, bounds) =>
+                          WebOrderHistoryRow.useTable(context, bounds.maxWidth)
+                          ? Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 17,
+                              ),
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(color: palette.line),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    flex: 4,
+                                    child: Text(
+                                      '주문 앨범',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: palette.muted,
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 2,
+                                    child: Text(
+                                      '제작 구성',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: palette.muted,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 100,
+                                    child: Text(
+                                      '주문일',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: palette.muted,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 110,
+                                    child: Text(
+                                      '금액',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: palette.muted,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 190,
+                                    child: Text(
+                                      '진행 상태 · 배송',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: palette.muted,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 18),
+                                ],
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                    Expanded(child: pages),
+                  ],
+                ),
+        ),
+      ),
     );
   }
 
   Widget _orderCard(BuildContext context, OrderHistoryItem order) {
     if (kIsWeb) {
-      return LayoutBuilder(builder: (context, bounds) {
-        if (bounds.maxWidth >= 980) {
-          return InkWell(
-            key: ValueKey('personal-order-${order.orderId}'),
-            onTap: () => _showOrderDetailSheet(context, order),
-            hoverColor: WebPalette.of(context).background,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
-              decoration: BoxDecoration(border: Border(bottom: BorderSide(color: WebPalette.of(context).line))),
-              child: Row(children: [
-                Expanded(flex: 4, child: Row(children: [
-                  ClipRRect(borderRadius: BorderRadius.circular(8),
-                    child: SizedBox(width: 54, height: 64,
-                      child: OrderAlbumArtwork(albumId: order.albumId))),
-                  const SizedBox(width: 16),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(order.title, maxLines: 2, overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,
-                        color: WebPalette.of(context).ink)),
-                    const SizedBox(height: 6),
-                    Text(order.orderId, maxLines: 1, overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 11, color: WebPalette.of(context).muted)),
-                  ])),
-                  const SizedBox(width: 20),
-                ])),
-                Expanded(flex: 2, child: Padding(padding: const EdgeInsets.only(right: 20),
-                  child: Text('${order.printProductLabel}\n${order.pageCount ?? '—'}페이지 · 1권',
-                    style: TextStyle(fontSize: 12, height: 1.7, color: WebPalette.of(context).muted)))),
-                SizedBox(width: 110, child: Text(_formatDate(order.orderedAt),
-                  style: TextStyle(fontSize: 12, color: WebPalette.of(context).muted))),
-                SizedBox(width: 110, child: Text('${_formatAmount(order.amount)}원',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,
-                    color: WebPalette.of(context).ink))),
-                SizedBox(width: 170, child: Align(alignment: Alignment.centerLeft,
-                  child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                    decoration: BoxDecoration(color: WebPalette.of(context).softBrand,
-                      borderRadius: BorderRadius.circular(6)),
-                    child: Text(order.customerStatusLabel,
-                      style: TextStyle(fontSize: 12, color: WebPalette.of(context).brandInk))))),
-                SizedBox(width: 26, child: Icon(Icons.chevron_right, size: 18, color: WebPalette.of(context).muted)),
-              ]),
-            ),
-          );
-        }
-        return _compactOrderCard(context, order);
-      });
+      return WebOrderHistoryRow(
+        key: ValueKey('personal-order-${order.orderId}'),
+        order: order,
+        amountLabel: '${_formatAmount(order.amount)}원',
+        dateLabel: _formatDate(order.orderedAt),
+        artwork: OrderAlbumArtwork(albumId: order.albumId),
+        onTap: () => _showOrderDetailSheet(context, order),
+      );
     }
     return _compactOrderCard(context, order);
   }
@@ -535,7 +654,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
       key: ValueKey('personal-order-${order.orderId}'),
       onTap: () => _showOrderDetailSheet(context, order),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 19),
+        padding: const EdgeInsets.symmetric(vertical: 20),
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(color: ExperienceFormStyle.line(context)),
@@ -544,8 +663,8 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
         child: Row(
           children: [
             SizedBox(
-              width: 88,
-              height: 106,
+              width: MediaQuery.sizeOf(context).width < 360 ? 92 : 112,
+              height: 136,
               child: OrderAlbumArtwork(albumId: order.albumId),
             ),
             const SizedBox(width: 16),
@@ -554,16 +673,37 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
+                    order.customerStatusLabel,
+                    style: ExperienceFormStyle.text(
+                      context,
+                      12,
+                      weight: FontWeight.w600,
+                      color: ExperienceFormStyle.selectionInk(context),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
                     order.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: ExperienceFormStyle.text(
                       context,
-                      16,
+                      15,
                       weight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${order.pageCount ?? '-'}쪽 · ${order.printProductLabel}',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: ExperienceFormStyle.text(
+                      context,
+                      11,
+                      secondary: true,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
                   Text(
                     _formatDate(order.orderedAt),
                     style: ExperienceFormStyle.text(
@@ -572,21 +712,13 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
                       secondary: true,
                     ),
                   ),
+                  const SizedBox(height: 6),
                   Text(
                     '${_formatAmount(order.amount)}원',
                     style: ExperienceFormStyle.text(
                       context,
                       14,
                       weight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    order.customerStatusLabel,
-                    style: ExperienceFormStyle.text(
-                      context,
-                      12,
-                      color: ExperienceFormStyle.selectionInk(context),
                     ),
                   ),
                 ],
@@ -607,29 +739,37 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
   }) {
     if (!_ownerCurrent) return;
     if (kIsWeb) {
-      unawaited(showDialog<void>(
-        context: context,
-        builder: (dialogContext) => Dialog(
-          backgroundColor: WebPalette.of(dialogContext).surface,
-          surfaceTintColor: Colors.transparent,
-          insetPadding: const EdgeInsets.all(32),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: SizedBox(width: 1080,
-            height: MediaQuery.sizeOf(dialogContext).height * .88,
-            child: _LiveOrderDetail(
-              initialOrder: order, ownerId: _ownerId!,
-              initialOrderIsFresh: initialOrderIsFresh,
-              navigationContext: context,
-              onChanged: () {
-                if (!mounted || !_ownerCurrent) return;
-                ref.invalidate(myOrderHistoryProvider);
-                ref.invalidate(myOrderSummaryProvider);
-                _refreshOrders();
-              },
+      unawaited(
+        showDialog<void>(
+          context: context,
+          builder: (dialogContext) => Dialog(
+            backgroundColor: WebPalette.of(dialogContext).surface,
+            surfaceTintColor: Colors.transparent,
+            insetPadding: const EdgeInsets.all(32),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: SizedBox(
+              width: 1080,
+              height: MediaQuery.sizeOf(dialogContext).height * .88,
+              child: _LiveOrderDetail(
+                initialOrder: order,
+                ownerId: _ownerId!,
+                initialOrderIsFresh: initialOrderIsFresh,
+                navigationContext: context,
+                onChanged: () {
+                  if (!mounted || !_ownerCurrent) return;
+                  ref.invalidate(myOrderHistoryProvider);
+                  ref.invalidate(myOrderSummaryProvider);
+                  _refreshOrders();
+                },
+              ),
             ),
           ),
-        ),
-      ).then((_) { if (mounted && _ownerCurrent) _refreshOrders(); }));
+        ).then((_) {
+          if (mounted && _ownerCurrent) _refreshOrders();
+        }),
+      );
       return;
     }
     unawaited(
@@ -640,7 +780,9 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
         backgroundColor: SnapFitColors.backgroundOf(context),
         constraints: const BoxConstraints(maxWidth: 920),
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(SnapFitRadius.lg),
+          ),
         ),
         builder: (_) => _LiveOrderDetail(
           initialOrder: order,
@@ -832,6 +974,8 @@ class _LiveOrderDetailState extends ConsumerState<_LiveOrderDetail>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Divider(height: 1, color: ExperienceFormStyle.line(ctx)),
+          const SizedBox(height: 18),
           Text(
             title,
             style: ExperienceFormStyle.text(ctx, 15, weight: FontWeight.w600),
@@ -865,7 +1009,7 @@ class _LiveOrderDetailState extends ConsumerState<_LiveOrderDetail>
                     key: const ValueKey('order-detail-refresh'),
                     tooltip: '주문 상태 새로고침',
                     onPressed: _loading ? null : _refresh,
-                    icon: const Icon(Icons.refresh, size: 22),
+                    icon: const ExperienceIcon('RefreshCw', size: 21),
                   ),
                   IconButton(
                     tooltip: '닫기',
@@ -900,6 +1044,7 @@ class _LiveOrderDetailState extends ConsumerState<_LiveOrderDetail>
                     key: const ValueKey('order-status-description'),
                     style: ExperienceFormStyle.text(ctx, 13, secondary: true),
                   ),
+                  OrderJourneyProgress(order: order),
                   if (_refreshError != null) ...[
                     const SizedBox(height: 8),
                     Text(
@@ -913,7 +1058,7 @@ class _LiveOrderDetailState extends ConsumerState<_LiveOrderDetail>
                     order.title,
                     style: ExperienceFormStyle.text(
                       ctx,
-                      22,
+                      20,
                       weight: FontWeight.w600,
                     ),
                   ),
@@ -944,7 +1089,7 @@ class _LiveOrderDetailState extends ConsumerState<_LiveOrderDetail>
                     children: [
                       OutlinedButton.icon(
                         onPressed: () => _copy(order.orderId, '주문번호'),
-                        icon: const Icon(Icons.copy_outlined, size: 17),
+                        icon: const ExperienceIcon('Copy', size: 17),
                         label: const Text('주문번호 복사'),
                       ),
                       if (order.trackingNumber?.trim().isNotEmpty == true)
@@ -1187,6 +1332,7 @@ class _LiveOrderDetailState extends ConsumerState<_LiveOrderDetail>
                         navigationContext,
                         orderId: order.orderId,
                         albumTitle: order.title,
+                        albumId: order.albumId,
                       );
                       widget.onChanged();
                     },
@@ -1490,11 +1636,28 @@ class _OrderPagedTabState extends ConsumerState<_OrderPagedTab> {
         );
       }
       return Center(
-        child: Text(
-          '주문 내역이 없습니다.',
-          style: TextStyle(
-            fontSize: 12,
-            color: SnapFitColors.textSecondaryOf(context),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ExperienceIcon(
+                  'BookOpen',
+                  size: 32,
+                  color: ExperienceFormStyle.muted(context),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '주문 내역이 없습니다.',
+                  style: ExperienceFormStyle.text(
+                    context,
+                    16,
+                    weight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -1504,7 +1667,9 @@ class _OrderPagedTabState extends ConsumerState<_OrderPagedTab> {
       onRefresh: _loadFirst,
       child: ListView.separated(
         controller: _scrollController,
-        padding: kIsWeb ? EdgeInsets.zero : const EdgeInsets.fromLTRB(20, 14, 20, 20),
+        padding: kIsWeb
+            ? EdgeInsets.zero
+            : const EdgeInsets.fromLTRB(20, 14, 20, 20),
         physics: const AlwaysScrollableScrollPhysics(),
         itemCount: _items.length + (_hasNext || _loadError != null ? 1 : 0),
         separatorBuilder: (_, __) => SizedBox(height: kIsWeb ? 0 : 10),

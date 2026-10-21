@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:snap_fit/features/album/presentation/providers/home_ui_state_provider.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -153,6 +154,9 @@ void main() {
           key: key,
           child: ProviderScope(
             overrides: [
+              homeUiStateProvider.overrideWith(
+                () => HomeUiStateNotifier(initialIndex: 0),
+              ),
               albumRepositoryProvider.overrideWithValue(repo),
               authViewModelProvider.overrideWith(
                 () => home_fixture.FakeAuthViewModel(
@@ -389,6 +393,26 @@ void main() {
           '우리 가족의 여름 기록',
         );
         await tester.pumpAndSettle();
+        if (find
+            .byKey(const Key('ai_template_brief_continue'))
+            .evaluate()
+            .isEmpty) {
+          // A low landscape keyboard gives the focused input the full workspace.
+          expect(
+            find.byKey(const Key('ai_template_brief')).hitTestable(),
+            findsOneWidget,
+          );
+          FocusManager.instance.primaryFocus?.unfocus();
+          tester.view.viewInsets = const FakeViewPadding();
+          await tester.pumpAndSettle();
+          expect(
+            tester
+                .widget<TextField>(find.byKey(const Key('ai_template_brief')))
+                .controller!
+                .text,
+            '우리 가족의 여름 기록',
+          );
+        }
         await tester.tap(find.byKey(const Key('ai_template_brief_continue')));
         expect(result?.prompt, '우리 가족의 여름 기록');
         expect(tester.takeException(), isNull);

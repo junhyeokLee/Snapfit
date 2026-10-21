@@ -40,7 +40,7 @@ class HomeErrorState extends StatelessWidget {
                     style: ExperienceFormStyle.text(
                       context,
                       20,
-                      weight: FontWeight.w600,
+                      weight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 10),

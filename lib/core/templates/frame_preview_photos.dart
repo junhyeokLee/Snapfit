@@ -1,5 +1,24 @@
 // Stable editorial preview assignments: one distinct photograph per frame.
 const framePreviewPhotos = <String, String>{
+  'storyVowGate':
+      'assets/templates/atelier_editions_2026/velvet-vow-reading.png',
+  'storyVowCotton':
+      'assets/templates/atelier_editions_2026/velvet-vow-archive.png',
+  'storyDiscoverySlide':
+      'assets/templates/atelier_editions_2026/little-explorer-drawing.png',
+  'storyDiscoveryStitch':
+      'assets/templates/atelier_editions_2026/little-explorer-finds.png',
+  'signatureVowPocket': 'assets/templates/atelier_editions_2026/night-vows.png',
+  'signatureRailWallet': 'assets/templates/atelier_editions_2026/slow-rail.png',
+  'signatureHerbariumSleeve':
+      'assets/templates/atelier_editions_2026/green-hours.png',
+  'signatureOrbitQuilt':
+      'assets/templates/atelier_editions_2026/first-orbit.png',
+  'signatureKitchenFold':
+      'assets/templates/atelier_editions_2026/family-recipe-book.png',
+  'signatureCinemaGate':
+      'assets/templates/atelier_editions_2026/private-cinema.png',
+  'signatureTrailPocket': 'assets/templates/atelier_editions_2026/walk-map.png',
   'materialLaceMount':
       'assets/templates/original_editorial/images/petal_veil.png',
   'materialLinenOval':
@@ -129,7 +148,7 @@ const framePreviewPhotos = <String, String>{
   'atelierOxford': 'assets/frame_preview/wardrobe.jpg',
   'atelierWeave': 'assets/frame_preview/quiet_room.jpg',
   'atelierDeco':
-      'assets/templates/soft_babybook/images/approved_stock/field_baby.jpg',
+      'assets/templates/atelier_editions_2026/little-explorer-play.png',
   'atelierAccordion':
       'assets/templates/soft_babybook/images/approved_stock/parent_back.jpg',
   'atelierCornerFold':

@@ -1,6 +1,6 @@
 import 'studio_decoration_catalog.dart';
 import 'studio_photo_frame_catalog.dart';
-import 'template_document_pages.dart';
+import 'template_material_layers.dart';
 
 /// Editorial inventory only. A trusted server release manifest must authorize
 /// bundle ownership; customer-supplied layers never grant paid products.
@@ -10,34 +10,28 @@ Set<String> templateVisualMaterialKeys(Map<String, dynamic> document) {
     for (final spec in studioDecorations) spec.insertionValue: spec,
   };
   final byId = {for (final spec in studioDecorations) spec.id: spec};
-  void inspect(Map<String, dynamic> data) {
-    for (final page in templateDocumentPages(data)) {
-      for (final layer
-          in (page['layers'] as List? ?? const []).whereType<Map>()) {
-        final type = layer['type']?.toString().toLowerCase();
-        if (type == 'sticker' || type == 'decoration') {
-          final style = layer['imageBackground'] ?? layer['style'];
-          final spec = byValue[layer['imageUrl']] ?? byId[style];
-          if (spec != null) result.add('sticker:${spec.id}');
-        }
-        if (type == 'image') {
-          final frame = layer['imageBackground'] ?? layer['frame'];
-          if (studioPhotoFrames.contains(frame)) {
-            result.add('frame:$frame');
-            final included = keepsakeFrameIncludedMaterials[frame];
-            if (included != null) result.add(included);
-          }
-        }
-      }
+  for (final layer in templateMaterialLayers(document)) {
+    final style = layer['style'];
+    final decoration = byId[style];
+    if (decoration != null) result.add('sticker:${decoration.id}');
+    for (final value in {
+      ...templateMaterialImageReferences(layer),
+      if (layer['textFillImageUrl'] case final String fill) fill,
+    }) {
+      final spec = byValue[value];
+      if (spec != null) result.add('sticker:${spec.id}');
     }
-    final variants = data['variants'];
-    if (variants is Map) {
-      for (final variant in variants.values.whereType<Map>()) {
-        inspect(Map<String, dynamic>.from(variant));
+    if (layer['wordArtId'] case final String wordArt) {
+      result.add('phrase:collage-$wordArt');
+    }
+    if (layer['type'] == 'image') {
+      final frame = layer['frame'];
+      if (studioPhotoFrames.contains(frame)) {
+        result.add('frame:$frame');
+        final included = keepsakeFrameIncludedMaterials[frame];
+        if (included != null) result.add(included);
       }
     }
   }
-
-  inspect(document);
   return Set.unmodifiable(result);
 }

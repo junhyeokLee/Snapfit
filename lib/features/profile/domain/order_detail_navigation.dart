@@ -9,6 +9,16 @@ class OrderDetailNavigation {
 
   bool get hasPending => _pendingId != null;
 
+  /// Another destination supersedes this request. A later deliberate return
+  /// to the same order must not inherit the previous duplicate window.
+  void cancel() {
+    _pendingId = null;
+    _pendingOwner = null;
+    _lastId = null;
+    _lastOwner = null;
+    _lastOpenedAt = null;
+  }
+
   void receive(String orderId, {String? ownerId}) {
     final id = orderId.trim();
     if (id.isEmpty || id.length > 200) return;

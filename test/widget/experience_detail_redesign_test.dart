@@ -505,6 +505,16 @@ void main() {
           type: '스티커',
           preview: (_) => const SizedBox(),
         ),
+        catalog: () async => const [
+          PointShopProduct(
+            productKey: 'sticker:qa',
+            kind: 'sticker',
+            assetId: 'qa',
+            title: '테스트 소재',
+            pointPrice: 300,
+            isActive: true,
+          ),
+        ],
         gate: (context, ref, {required productKey, required title}) {
           calls++;
           return decision.future;

@@ -537,9 +537,7 @@ void main() {
         cover: defaultCoverSize,
         captureKey: key,
       );
-      final buttons = find.byWidgetPredicate(
-        (w) => w is Icon && w.icon == Icons.chevron_right_rounded,
-      );
+      final buttons = find.byTooltip('다음 페이지');
       expect(buttons, findsOneWidget);
       await tester.tap(buttons);
       await tester.pump();

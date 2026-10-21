@@ -21,7 +21,17 @@ const conceptVolumeCatalogIds = {
   ConceptVolume.littleCompanion: -9517,
 };
 
+final atelierEditionCatalogIds = {
+  for (final edition in AtelierEdition.values) edition: edition.catalogId,
+};
+
 String? publishedPremiumProductKey(int catalogId) {
+  for (final edition in StudioEdition.values.where((e) => e.premium)) {
+    if (edition.catalogId == catalogId) return edition.productKey;
+  }
+  for (final edition in AtelierEdition.values) {
+    if (edition.catalogId == catalogId) return edition.productKey;
+  }
   for (final entry in premiumVolumeCatalogIds.entries) {
     if (entry.value == catalogId) return 'template:${entry.key.id}';
   }
@@ -41,17 +51,33 @@ Map<String, dynamic> premiumCatalogDocument(
   PremiumVolume volume, {
   int? innerPages,
 }) => {
-  ...volume.document(CollectionAspect.square, innerPages: innerPages),
+  ...refinePaidCatalogDocument(
+    volume.id,
+    CollectionAspect.square,
+    volume.document(CollectionAspect.square, innerPages: innerPages),
+  ),
   'variants': {
     for (final aspect in CollectionAspect.values)
-      aspect.name: volume.document(aspect, innerPages: innerPages),
+      aspect.name: refinePaidCatalogDocument(
+        volume.id,
+        aspect,
+        volume.document(aspect, innerPages: innerPages),
+      ),
   },
 };
 
 Map<String, dynamic> conceptCatalogDocument(ConceptVolume volume) => {
-  ...volume.document(CollectionAspect.square),
+  ...refinePaidCatalogDocument(
+    volume.id,
+    CollectionAspect.square,
+    volume.document(CollectionAspect.square),
+  ),
   'variants': {
     for (final aspect in CollectionAspect.values)
-      aspect.name: volume.document(aspect),
+      aspect.name: refinePaidCatalogDocument(
+        volume.id,
+        aspect,
+        volume.document(aspect),
+      ),
   },
 };

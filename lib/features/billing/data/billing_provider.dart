@@ -65,6 +65,17 @@ final myPointBalanceProvider = FutureProvider<int>((ref) async {
       .timeout(const Duration(seconds: 8));
 });
 
+final isFirstAiDraftFreeProvider = FutureProvider.autoDispose<bool>((ref) async {
+  try {
+    return await ref
+        .watch(billingRepositoryProvider)
+        .getIsFirstAiDraftFree()
+        .timeout(const Duration(seconds: 8));
+  } catch (_) {
+    return false;
+  }
+});
+
 final myPointLedgerProvider = FutureProvider<List<PointLedgerEntry>>((
   ref,
 ) async {

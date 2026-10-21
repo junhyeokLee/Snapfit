@@ -10,6 +10,7 @@ import 'travel_stationery.dart';
 import 'heirloom_stationery.dart';
 import 'keepsake_stationery.dart';
 import 'atelier_composition_paper.dart';
+import 'atelier_layered_paper.dart';
 import 'life_concept_paper.dart';
 
 Widget? photoCoverShadeForStyle(String? style) {
@@ -66,6 +67,8 @@ class StudioDecoration extends StatelessWidget {
       );
     }
     if (spec.id.startsWith('material')) return KeepsakeStationery(id: spec.id);
+    if (atelierLayeredDecorations.any((s) => s.id == spec.id))
+      return AtelierLayeredPaper(id: spec.id);
     if (lifeVarietyPapers.any((s) => s.id == spec.id))
       return LifeConceptPaper(id: spec.id);
     if (atelierCompositionDecorations.any((s) => s.id == spec.id))

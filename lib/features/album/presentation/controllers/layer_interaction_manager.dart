@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' show PointerDeviceKind;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/utils/app_logger.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,7 @@ import '../../../../core/constants/cover_size.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
 import '../../domain/entities/layer.dart';
 import '../widgets/editor/selection_frame.dart';
+import 'layer_transform_geometry.dart';
 
 /// 스타일 레이어 인터랙션 관리자
 /// 이미지/텍스트 레이어의 드래그, 회전, 확대/축소를 처리.
@@ -34,11 +36,16 @@ class LayerInteractionManager {
   /// 선택 핸들 표시 여부 (false면 테두리만 표시)
   final bool showHandles;
 
+  /// Opt-in desktop controls. Native editors and frozen print previews keep
+  /// their existing gesture/render path unless explicitly enabled by the host.
+  final bool enableWebTransforms;
+
   // ==================== 레이어 상태 저장소 ====================
   final Map<String, Offset> _pos = {}; // 레이어 위치 (좌상단 기준)
   final Map<String, double> _scale = {}; // 레이어 배율 (1.0 = 원본 크기)
   final Map<String, double> _rot = {}; // 레이어 회전 (라디안)
   final Map<String, Size> _refBaseSize = {}; // 레이어 원본 크기
+  final Map<String, (Offset, double, double)> _transformSources = {};
   final Map<String, int> _z = {}; // Z-index (레이어 쌓임 순서)
   final Map<String, GlobalKey> _layerKeys =
       {}; // 각 레이어의 Transform 노드용 키 (글로벌 좌표 계산용)
@@ -49,13 +56,20 @@ class LayerInteractionManager {
   String? _editingLayerId; // 현재 편집 중인 레이어 ID (텍스트만)
 
   /// 현재 제스처(이동/확대/회전) 중인지 여부
-  bool get isInteractingNow => _gestureStates.isNotEmpty;
+  bool get isInteractingNow =>
+      _gestureStates.isNotEmpty ||
+      (enableWebTransforms && (_resizeState != null || _rotationState != null));
   bool get isPreviewMode => _isPreviewMode;
+  bool get isPrintPreview => _ref == null;
+  bool _disposed = false;
 
   /// Stop pending frame callbacks when the owning editor leaves the screen.
   void dispose() {
+    _disposed = true;
     _stopAnimation();
     _gestureStates.clear();
+    _resizeState = null;
+    _rotationState = null;
   }
 
   // ==================== 제스처 추적 ====================
@@ -63,6 +77,7 @@ class LayerInteractionManager {
 
   /// 리사이즈(핸들 드래그) 상태
   _ResizeState? _resizeState;
+  _RotationState? _rotationState;
 
   /// 이미지 슬롯 안에서 "사진만" 이동시키는 모드 (툴바 토글)
   bool _imagePanMode = false;
@@ -129,6 +144,7 @@ class LayerInteractionManager {
     bool isPreviewMode = false,
     this.showSelectionControls = true,
     this.showHandles = true,
+    this.enableWebTransforms = false,
   }) : _ref = ref,
        _isPreviewMode = isPreviewMode;
 
@@ -143,7 +159,8 @@ class LayerInteractionManager {
       onTapPlaceholder = null,
       _isPreviewMode = true,
       showSelectionControls = false,
-      showHandles = false;
+      showHandles = false,
+      enableWebTransforms = false;
 
   static void _noPrintState(void Function() callback) {}
   static void _noPrintEdit(LayerModel layer) {}
@@ -339,6 +356,179 @@ class LayerInteractionManager {
   /// 레이어의 기본 크기 설정 (초기화 시 호출)
   void setBaseSize(String id, Size baseSize) => _refBaseSize[id] = baseSize;
 
+  Size baseSizeFor(LayerModel layer) =>
+      _refBaseSize[layer.id] ?? Size(layer.width, layer.height);
+
+  bool _hasActiveTransform(String id) =>
+      _gestureStates.containsKey(id) ||
+      (enableWebTransforms &&
+          (_resizeState?.layerId == id || _rotationState?.layerId == id));
+
+  void _syncTransformSource(LayerModel layer) {
+    if (_hasActiveTransform(layer.id)) return;
+    final source = (layer.position, layer.scale, layer.rotation);
+    if (_transformSources[layer.id] == source && _pos.containsKey(layer.id))
+      return;
+    _transformSources[layer.id] = source;
+    _pos[layer.id] = layer.position;
+    _scale[layer.id] = layer.scale;
+    _rot[layer.id] = layer.rotation * math.pi / 180;
+  }
+
+  /// Current model geometry, including uncommitted pointer movement. Width and
+  /// height remain base dimensions; visible dimensions are baseSizeFor * scale.
+  LayerModel currentTransformFor(LayerModel layer) {
+    _syncTransformSource(layer);
+    return layer.copyWith(
+      position: _pos[layer.id] ?? layer.position,
+      scale: _scale[layer.id] ?? layer.scale,
+      rotation:
+          (_rot[layer.id] ?? layer.rotation * math.pi / 180) * 180 / math.pi,
+    );
+  }
+
+  LayerModel? _currentLayer(String id) {
+    final layers = _ref?.read(albumEditorViewModelProvider).value?.layers;
+    if (layers == null) return null;
+    for (final layer in layers) {
+      if (layer.id == id) return layer;
+    }
+    return null;
+  }
+
+  LayerTransformGeometry _geometryFor(LayerModel layer) {
+    final current = currentTransformFor(layer);
+    return LayerTransformGeometry(
+      position: current.position,
+      baseSize: baseSizeFor(layer),
+      scale: current.scale,
+      rotation: current.rotation * math.pi / 180,
+    );
+  }
+
+  /// Inspector dimensions are visible sizes before rotation. A width (or a
+  /// height if width is absent) changes uniform scale, preserving render centre.
+  /// Invalid input, no-ops and edits during a pointer transform are ignored.
+  void updateTransform(
+    LayerModel layer, {
+    double? x,
+    double? y,
+    double? width,
+    double? height,
+    double? rotation,
+  }) {
+    if (_disposed || _isPreviewMode || !enableWebTransforms || isInteractingNow)
+      return;
+    final values = [x, y, width, height, rotation].whereType<double>();
+    if (values.any((value) => !value.isFinite) ||
+        (width != null && width <= 0) ||
+        (height != null && height <= 0))
+      return;
+    // onBlur may hold a model from before undo, a page change or another edit.
+    final latest = _currentLayer(layer.id);
+    if (latest == null) return;
+    final base = baseSizeFor(latest);
+    if (!base.width.isFinite ||
+        !base.height.isFinite ||
+        base.width <= 0 ||
+        base.height <= 0)
+      return;
+    final current = currentTransformFor(latest);
+    final scale = width != null
+        ? width / base.width
+        : height != null
+        ? height / base.height
+        : current.scale;
+    final next = latest.copyWith(
+      position: Offset(x ?? current.position.dx, y ?? current.position.dy),
+      scale: scale.clamp(_minScale, _maxScale).toDouble(),
+      rotation: rotation ?? current.rotation,
+    );
+    if (_sameTransform(current, next)) return;
+    setState(() {
+      _pos[next.id] = next.position;
+      _scale[next.id] = next.scale;
+      _rot[next.id] = next.rotation * math.pi / 180;
+    });
+    ref.read(albumEditorViewModelProvider.notifier).updateLayer(next);
+  }
+
+  bool _sameTransform(LayerModel a, LayerModel b) =>
+      (a.position - b.position).distance < .000001 &&
+      (a.scale - b.scale).abs() < .000001 &&
+      (a.rotation - b.rotation).abs() < .000001;
+
+  /// Insert last in the logical canvas Stack, outside the clipped layer artwork.
+  /// Only the individual handle boxes hit-test; empty canvas remains available.
+  Widget buildSelectionOverlay(List<LayerModel> layers) {
+    if (!enableWebTransforms ||
+        _isPreviewMode ||
+        !showSelectionControls ||
+        _selectedLayerId == null ||
+        _editingLayerId == _selectedLayerId)
+      return const SizedBox.shrink();
+    LayerModel? selected;
+    for (final layer in layers) {
+      if (layer.id == _selectedLayerId) selected = layer;
+    }
+    if (selected == null) return const SizedBox.shrink();
+    final layer = selected;
+    final base = baseSizeFor(layer);
+    return Positioned.fill(
+      child: WebSelectionFrame(
+        key: ValueKey('web-selection-${layer.id}'),
+        layerId: layer.id,
+        geometry: _geometryFor(layer),
+        canvasSize: getCoverSize(),
+        viewportScale: _getParentScale,
+        showHandles: showHandles,
+        onResizeStart: (corner, details) =>
+            _handleResizeStart(layer, corner, details),
+        onResizeUpdate: (corner, details) => _handleResizeUpdate(
+          layer,
+          corner,
+          details,
+          base.width,
+          base.height,
+        ),
+        onResizeEnd: (corner, details) =>
+            _handleResizeEnd(layer, corner, details),
+        onRotateStart: (details) => _handleRotationStart(layer, details),
+        onRotateUpdate: (details) => _handleRotationUpdate(layer, details),
+        onRotateEnd: (_) => _finishWebTransform(layer.id),
+        onCancel: () {
+          if (_disposed) return;
+          setState(_cancelActiveTransforms);
+        },
+      ),
+    );
+  }
+
+  Offset _canvasPoint(Offset globalPoint) {
+    final box = coverKey.currentContext?.findRenderObject();
+    if (box is RenderBox && box.attached && box.hasSize)
+      return box.globalToLocal(globalPoint);
+    return globalPoint;
+  }
+
+  void _cancelActiveTransforms() {
+    _stopAnimation();
+    final ids = <String>{
+      ..._gestureStates.keys,
+      if (_resizeState != null) _resizeState!.layerId,
+      if (_rotationState != null) _rotationState!.layerId,
+    };
+    _gestureStates.clear();
+    _resizeState = null;
+    _rotationState = null;
+    for (final id in ids) {
+      final source = _currentLayer(id);
+      if (source == null) continue;
+      _transformSources.remove(id);
+      _syncTransformSource(source);
+    }
+  }
+
   // ==================== 유틸리티 메서드 ====================
   /// 주어진 글로벌 좌표가 커버 영역 안에 있는지 확인
   bool isInCover(Offset globalPosition) {
@@ -432,6 +622,7 @@ class LayerInteractionManager {
   /// 레이어 선택
   void setSelectedLayer(String layerId) {
     setState(() {
+      if (_selectedLayerId != layerId) _cancelActiveTransforms();
       _selectedLayerId = layerId;
       // 새 레이어를 선택할 때는 항상 사진 위치 조정 모드를 초기화
       _imagePanMode = false;
@@ -441,6 +632,7 @@ class LayerInteractionManager {
   /// 선택 해제 및 가이드라인 숨김
   void clearSelection() {
     setState(() {
+      _cancelActiveTransforms();
       _selectedLayerId = null;
       _editingLayerId = null;
       // 선택이 해제되면 사진 위치 조정 모드도 항상 OFF
@@ -458,6 +650,7 @@ class LayerInteractionManager {
   void resetForPageChange() {
     _stopAnimation();
     setState(() {
+      _cancelActiveTransforms();
       _selectedLayerId = null;
       _editingLayerId = null;
       _imagePanMode = false;
@@ -472,6 +665,7 @@ class LayerInteractionManager {
       _rot.clear();
       _z.clear();
       _refBaseSize.clear();
+      _transformSources.clear();
       _layerKeys.clear();
       _zCounter = 0;
     });
@@ -481,6 +675,7 @@ class LayerInteractionManager {
   void deleteSelected() {
     final id = _selectedLayerId;
     if (id == null) return;
+    _cancelActiveTransforms();
 
     // ViewModel에서 레이어 제거
     ref.read(albumEditorViewModelProvider.notifier).removeLayerById(id);
@@ -491,6 +686,7 @@ class LayerInteractionManager {
       _scale.remove(id);
       _rot.remove(id);
       _refBaseSize.remove(id);
+      _transformSources.remove(id);
       _z.remove(id);
       _gestureStates.remove(id);
       _selectedLayerId = null;
@@ -509,12 +705,17 @@ class LayerInteractionManager {
 
     if (inactiveIds.isNotEmpty) {
       setState(() {
+        if (inactiveIds.contains(_resizeState?.layerId) ||
+            inactiveIds.contains(_rotationState?.layerId)) {
+          _cancelActiveTransforms();
+        }
         for (final id in inactiveIds) {
           _pos.remove(id);
           _scale.remove(id);
           _rot.remove(id);
           _z.remove(id);
           _refBaseSize.remove(id);
+          _transformSources.remove(id);
           _gestureStates.remove(id);
           if (_selectedLayerId == id) _selectedLayerId = null;
           if (_editingLayerId == id) _editingLayerId = null;
@@ -535,13 +736,17 @@ class LayerInteractionManager {
   }) {
     // [Fix] putIfAbsent 대신 실시간 동기화.
     // 현재 제스처 중이 아니거나 프리뷰 모드라면 VM의 최신 상태(rescale 결과 등)를 강제 반영함.
-    final bool isInteracting =
-        _selectedLayerId == layer.id && _gestureStates.containsKey(layer.id);
+    final bool isInteracting = _hasActiveTransform(layer.id);
 
     if (!isInteracting || _isPreviewMode) {
       _pos[layer.id] = layer.position;
       _scale[layer.id] = layer.scale;
       _rot[layer.id] = layer.rotation * math.pi / 180;
+      _transformSources[layer.id] = (
+        layer.position,
+        layer.scale,
+        layer.rotation,
+      );
     }
     _z.putIfAbsent(layer.id, () => ++_zCounter);
 
@@ -639,10 +844,15 @@ class LayerInteractionManager {
                         },
                         onScaleStart: (d) {
                           _handleScaleStart(
-                            _resolveTopTouchTarget(
-                              fallback: layer,
-                              globalPoint: d.focalPoint,
-                            ),
+                            // Mouse recognition starts after drag slop. Keep
+                            // the layer hit on pointer-down even if the pointer
+                            // has already crossed a neighbouring element.
+                            enableWebTransforms
+                                ? (_currentLayer(layer.id) ?? layer)
+                                : _resolveTopTouchTarget(
+                                    fallback: layer,
+                                    globalPoint: d.focalPoint,
+                                  ),
                             d,
                           );
                         },
@@ -659,7 +869,10 @@ class LayerInteractionManager {
                         ),
                         child: SelectionFrame(
                           isSelected:
-                              isSelected && !isEditing && showSelectionControls,
+                              isSelected &&
+                              !isEditing &&
+                              showSelectionControls &&
+                              !enableWebTransforms,
                           showHandles: showHandles,
                           onDelete: deleteSelected,
                           onResizeStart: (pos, d) =>
@@ -730,6 +943,8 @@ class LayerInteractionManager {
 
   /// 제스처 시작 이벤트 처리 (손가락을 댄 순간)
   void _handleScaleStart(LayerModel layer, ScaleStartDetails details) {
+    if (_disposed) return;
+    if (enableWebTransforms) _cancelActiveTransforms();
     _stopAnimation(); // 진행 중인 애니메이션 중지
 
     // 제스처 시작 시점의 상태 저장 (상대적 변화 계산에 사용)
@@ -926,8 +1141,10 @@ class LayerInteractionManager {
 
     // 현재 레이어 중심점 계산
     Offset center = Offset(
-      _pos[layer.id]!.dx + (baseSize.width * _scale[layer.id]!) / 2,
-      _pos[layer.id]!.dy + (baseSize.height * _scale[layer.id]!) / 2,
+      _pos[layer.id]!.dx +
+          baseSize.width * (enableWebTransforms ? 1 : _scale[layer.id]!) / 2,
+      _pos[layer.id]!.dy +
+          baseSize.height * (enableWebTransforms ? 1 : _scale[layer.id]!) / 2,
     );
 
     // 새로운 중심점 = 현재 중심점 + 이동 변화량
@@ -1122,8 +1339,10 @@ class LayerInteractionManager {
       baseSize.height * targetScale,
     );
     Offset newPos = Offset(
-      newCenter.dx - childSize.width / 2,
-      newCenter.dy - childSize.height / 2,
+      newCenter.dx -
+          (enableWebTransforms ? baseSize.width : childSize.width) / 2,
+      newCenter.dy -
+          (enableWebTransforms ? baseSize.height : childSize.height) / 2,
     );
 
     // 경계 내로 제한
@@ -1174,6 +1393,7 @@ class LayerInteractionManager {
 
   /// 제스처 종료 이벤트 처리
   void _handleScaleEnd(LayerModel layer, ScaleEndDetails details) {
+    if (_disposed || !_gestureStates.containsKey(layer.id)) return;
     final scale = _scale[layer.id]!;
     final rotation = _rot[layer.id]!;
 
@@ -1220,6 +1440,26 @@ class LayerInteractionManager {
     ResizeHandlePosition handle,
     DragStartDetails details,
   ) {
+    if (_disposed) return;
+    if (enableWebTransforms) {
+      _cancelActiveTransforms();
+      final latest = _currentLayer(layer.id);
+      if (latest == null) return;
+      final geometry = _geometryFor(latest);
+      _resizeState = _ResizeState(
+        layerId: latest.id,
+        handle: handle,
+        initialScale: geometry.scale,
+        baseSize: geometry.baseSize,
+        geometry: geometry,
+        initialPointer: _canvasPoint(details.globalPosition),
+      );
+      setState(() {
+        _selectedLayerId = latest.id;
+        _editingLayerId = null;
+      });
+      return;
+    }
     // 현재 스케일/위치 기준으로 리사이즈 시작 상태 저장
     final baseSize = _refBaseSize[layer.id] ?? Size(layer.width, layer.height);
     _resizeState = _ResizeState(
@@ -1244,6 +1484,21 @@ class LayerInteractionManager {
   }) {
     final state = _resizeState;
     if (state == null || state.layerId != layer.id) return;
+    if (enableWebTransforms) {
+      if (state.geometry == null || state.initialPointer == null) return;
+      final next = state.geometry!.resize(
+        handle: state.handle,
+        displacement:
+            _canvasPoint(details.globalPosition) - state.initialPointer!,
+        minScale: _minScale,
+        maxScale: _maxScale,
+      );
+      setState(() {
+        _pos[layer.id] = next.position;
+        _scale[layer.id] = next.scale;
+      });
+      return;
+    }
 
     // 드래그 거리의 크기에 비례해서 스케일을 변경 (단일 축이 아닌 균일 스케일)
     // corner 방향 드래그 기준: x, y 이동을 모두 반영하되 과도한 변화는 클램프
@@ -1290,6 +1545,10 @@ class LayerInteractionManager {
     ResizeHandlePosition handle,
     DragEndDetails details,
   ) {
+    if (enableWebTransforms) {
+      if (_resizeState?.layerId == layer.id) _finishWebTransform(layer.id);
+      return;
+    }
     final state = _resizeState;
     _resizeState = null;
     if (state == null || state.layerId != layer.id) return;
@@ -1304,6 +1563,50 @@ class LayerInteractionManager {
       rotation: rotation * 180 / math.pi,
     );
     ref.read(albumEditorViewModelProvider.notifier).updateLayer(updatedLayer);
+  }
+
+  void _handleRotationStart(LayerModel layer, DragStartDetails details) {
+    if (_disposed) return;
+    _cancelActiveTransforms();
+    final latest = _currentLayer(layer.id);
+    if (latest == null) return;
+    final geometry = _geometryFor(latest);
+    _rotationState = _RotationState(
+      layerId: latest.id,
+      geometry: geometry,
+      initialPointer: _canvasPoint(details.globalPosition),
+    );
+    setState(() {
+      _selectedLayerId = latest.id;
+      _editingLayerId = null;
+    });
+  }
+
+  void _handleRotationUpdate(LayerModel layer, DragUpdateDetails details) {
+    final state = _rotationState;
+    if (_disposed || state == null || state.layerId != layer.id) return;
+    final radians = state.geometry.rotationAt(
+      initialPointer: state.initialPointer,
+      pointer: _canvasPoint(details.globalPosition),
+      snap: HardwareKeyboard.instance.isShiftPressed,
+    );
+    if (!radians.isFinite) return;
+    setState(() => _rot[layer.id] = radians);
+  }
+
+  void _finishWebTransform(String id) {
+    if (_disposed ||
+        (_resizeState?.layerId != id && _rotationState?.layerId != id))
+      return;
+    final latest = _currentLayer(id);
+    final next = latest == null ? null : currentTransformFor(latest);
+    setState(() {
+      _resizeState = null;
+      _rotationState = null;
+    });
+    if (latest != null && next != null && !_sameTransform(latest, next)) {
+      ref.read(albumEditorViewModelProvider.notifier).updateLayer(next);
+    }
   }
 
   // ==================== 애니메이션 메서드 ====================
@@ -1409,6 +1712,12 @@ class LayerInteractionManager {
   }
 
   Rect? _getLayerBoundsInCanvas(LayerModel layer) {
+    if (enableWebTransforms) {
+      final geometry = _geometryFor(layer);
+      if (geometry.visibleSize.width <= 0 || geometry.visibleSize.height <= 0)
+        return null;
+      return geometry.bounds;
+    }
     final pos = _pos[layer.id] ?? layer.position;
     final base = _refBaseSize[layer.id] ?? Size(layer.width, layer.height);
     final scale = _scale[layer.id] ?? layer.scale;
@@ -1480,13 +1789,28 @@ class _ResizeState {
   final ResizeHandlePosition handle;
   final double initialScale;
   final Size baseSize;
+  final LayerTransformGeometry? geometry;
+  final Offset? initialPointer;
 
   _ResizeState({
     required this.layerId,
     required this.handle,
     required this.initialScale,
     required this.baseSize,
+    this.geometry,
+    this.initialPointer,
   });
+}
+
+class _RotationState {
+  const _RotationState({
+    required this.layerId,
+    required this.geometry,
+    required this.initialPointer,
+  });
+  final String layerId;
+  final LayerTransformGeometry geometry;
+  final Offset initialPointer;
 }
 
 class _GuideCandidate {

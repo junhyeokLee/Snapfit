@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../shared/web/web_design.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/widgets/album_bottom_sheet.dart';
+import '../../../../shared/widgets/editor_modal_scope.dart';
 import '../../../../shared/widgets/image_template_picker.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import '../widgets/editor/edit_cover_theme.dart';
@@ -46,16 +47,31 @@ class ToolbarActionHandler {
   }
 
   Future<void> openCoverTheme() async {
+    if (!context.mounted || ModalRoute.of(context)?.isCurrent == false) return;
+    final editorScope = ProviderScope.containerOf(context, listen: false);
     if (kIsWeb) {
-      if (!context.mounted || ModalRoute.of(context)?.isCurrent == false) return;
-      await showWebAwareDialog<void>(context: context, maxWidth: 1000, maxHeight: 740, builder: (_) => const EditCoverTheme());
+      await showWebAwareDialog<void>(
+        context: context,
+        useRootNavigator: false,
+        routeSettings: editorModalRouteSettings(context),
+        maxWidth: 1000,
+        maxHeight: 740,
+        builder: (_) => UncontrolledProviderScope(
+          container: editorScope,
+          child: const EditCoverTheme(),
+        ),
+      );
       return;
     }
     await showModalBottomSheet(
       context: context,
+      routeSettings: editorModalRouteSettings(context),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => const EditCoverTheme(),
+      builder: (_) => UncontrolledProviderScope(
+        container: editorScope,
+        child: const EditCoverTheme(),
+      ),
     );
   }
 

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:snap_fit/features/point_shop/domain/point_shop_known_products.dart';
 import 'package:snap_fit/features/point_shop/domain/point_shop_launch_pricing.dart';
 import 'package:snap_fit/features/point_shop/domain/premium_volume_registration.dart';
+import 'package:snap_fit/features/point_shop/domain/point_shop_catalog_release.dart';
 
 /// Explicit owner-approved catalog update. Exporting does not execute SQL.
 List<Map<String, dynamic>> pointShopPriceApplicationRows() {
@@ -16,7 +17,9 @@ List<Map<String, dynamic>> pointShopPriceApplicationRows() {
         'kind': known[entry.key]!.kind,
         'title': known[entry.key]!.title,
         'point_price': entry.value.points,
-        'is_active': !isPendingTemplateProduct(entry.key),
+        'is_active':
+            !isPendingTemplateProduct(entry.key) &&
+            !isPendingAtelierMaterialProduct(entry.key),
       },
   ];
 }
@@ -24,9 +27,13 @@ List<Map<String, dynamic>> pointShopPriceApplicationRows() {
 String pointShopPriceApplicationSql(
   List<Map<String, dynamic>> rows, {
   bool protectPaidPrices = false,
+  bool activateOnly = false,
 }) {
-  final json = jsonEncode(rows).replaceAll("'", "''");
-  final paidPriceGuard = protectPaidPrices
+  final selected = activateOnly
+      ? rows.where((row) => row['is_active'] == true).toList()
+      : rows;
+  final json = jsonEncode(selected).replaceAll("'", "''");
+  final paidPriceGuard = protectPaidPrices || activateOnly
       ? '''
   if exists (
     select 1 from public.point_shop_products p
@@ -39,9 +46,18 @@ String pointShopPriceApplicationSql(
   end if;
 '''
       : '';
+  final update = activateOnly
+      ? '''point_price = coalesce(p.point_price, excluded.point_price),
+  is_active = true
+where not p.is_active;'''
+      : '''title = excluded.title,
+  point_price = excluded.point_price,
+  is_active = excluded.is_active
+where (p.title, p.point_price, p.is_active)
+  is distinct from (excluded.title, excluded.point_price, excluded.is_active);''';
   return '''-- Owner-approved prices: $pointShopPricingRevision.
 -- Only the explicit keys below change. Wallets and ownership are untouched.
-begin;
+${activateOnly ? '-- Activation only: existing configured prices and active listings are preserved.\n' : ''}begin;
 set local lock_timeout = '5s';
 set local statement_timeout = '30s';
 do \$check\$
@@ -52,7 +68,7 @@ begin
       as s(product_key text, asset_id text, kind text, is_active boolean)
       on s.product_key = p.product_key
     where p.kind <> s.kind or p.asset_id <> s.asset_id
-      or (s.kind = 'template' and not s.is_active and p.is_active)
+      or (not s.is_active and p.is_active)
   ) then
     raise exception 'catalog_identity_or_active_template_changed';
   end if;
@@ -66,12 +82,22 @@ from jsonb_to_recordset('$json'::jsonb)
   as s(product_key text, asset_id text, kind text, title text,
        point_price integer, is_active boolean)
 on conflict (product_key) do update set
-  title = excluded.title,
-  point_price = excluded.point_price,
-  is_active = excluded.is_active
-where (p.title, p.point_price, p.is_active)
-  is distinct from (excluded.title, excluded.point_price, excluded.is_active);
+  $update
 commit;
+''';
+}
+
+String pointShopActivationVerificationSql(List<Map<String, dynamic>> rows) {
+  final approved = rows.where((row) => row['is_active'] == true).toList();
+  final json = jsonEncode(approved).replaceAll("'", "''");
+  return '''select s.product_key, p.point_price, p.is_active,
+  p.product_key is not null and p.kind = s.kind and p.asset_id = s.asset_id
+    and p.is_active and p.point_price is not null
+    and (s.point_price <> 0 or p.point_price = 0) as matches_expected
+from jsonb_to_recordset('$json'::jsonb)
+  as s(product_key text, asset_id text, kind text, point_price integer)
+left join public.point_shop_products p on p.product_key = s.product_key
+order by s.product_key;
 ''';
 }
 
@@ -96,6 +122,12 @@ Map<String, dynamic> exportPriceApplication(Directory output) {
     'revision': pointShopPricingRevision,
     'targetProject': 'rrbhxdtriummqpztpjrk',
     'status': 'prepared-not-executed',
+    'ownerApprovalRevision': pointShopCatalogApprovalRevision,
+    'previouslyHeldProductKeys': ownerApprovedCatalogProductKeys.toList()
+      ..sort(),
+    'activeProductCount': rows.where((row) => row['is_active'] == true).length,
+    'remoteVerified': false,
+    'activationPreservesConfiguredPrices': true,
     'changesWallets': false,
     'grantsIncludedMaterials': false,
     'rows': rows,
@@ -110,5 +142,11 @@ Map<String, dynamic> exportPriceApplication(Directory output) {
   File(
     '${output.path}/verify-prices.sql',
   ).writeAsStringSync(pointShopPriceVerificationSql(rows));
+  File(
+    '${output.path}/activate-products.sql',
+  ).writeAsStringSync(pointShopPriceApplicationSql(rows, activateOnly: true));
+  File(
+    '${output.path}/verify-activation.sql',
+  ).writeAsStringSync(pointShopActivationVerificationSql(rows));
   return data;
 }

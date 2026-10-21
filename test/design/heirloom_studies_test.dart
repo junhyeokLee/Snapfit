@@ -40,7 +40,7 @@ void main() {
     () {
       expect(premiumStudyEntries.map((e) => e.category), templateTopicOrder);
       expect(premiumStudyEntries.map((e) => e.id).toSet().length, 7);
-      expect(authoredCollections.length, 37);
+      expect(authoredCollections.length, 42);
       expect(heirloomDecorations.length, 6);
       expect(studioDecorations, containsAll(heirloomDecorations));
       for (final study in HeirloomStudy.values) {

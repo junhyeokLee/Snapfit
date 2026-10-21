@@ -11,22 +11,97 @@ import '../../../core/interceptors/token_storage.dart';
 import '../../../core/notifications/fcm_notification_service.dart';
 import '../data/dto/auth_response.dart';
 import 'web_oauth.dart';
+import 'account_deletion_request.dart';
 
 /// 인증 서비스 (로그인/토큰 저장/로그아웃)
 class AuthService {
+  static const _authRequestTimeout = Duration(seconds: 20);
+
   AuthService({
     required this.tokenStorage,
     this.supabase,
-    Future<bool> Function(OAuthProvider, String)? webOAuthLauncher,
+    Future<bool> Function(OAuthProvider, String, String?)? webOAuthLauncher,
     Future<bool> Function(OAuthProvider)? webProviderEnabled,
     Uri Function()? browserUri,
+    Future<void> Function()? prepareLogout,
   }) : _webOAuthLauncher = webOAuthLauncher,
        _webProviderEnabled = webProviderEnabled ?? isWebOAuthProviderEnabled,
-       _browserUri = browserUri ?? (() => Uri.base);
+       _browserUri = browserUri ?? (() => Uri.base),
+       _prepareLogout = prepareLogout ?? _prepareLogoutPushState;
 
-  final Future<bool> Function(OAuthProvider, String)? _webOAuthLauncher;
+  final Future<bool> Function(OAuthProvider, String, String?)?
+  _webOAuthLauncher;
   final Future<bool> Function(OAuthProvider) _webProviderEnabled;
   final Uri Function() _browserUri;
+  final Future<void> Function() _prepareLogout;
+  Future<void> _authStorageQueue = Future<void>.value();
+  ({String email, String userId})? _pendingEmailConfirmation;
+
+  // Auth events can start synchronization while a login is still writing its
+  // tokens. Serialize these multi-key writes with clears so a late signed-out
+  // observation cannot delete half of a newer account's stored session.
+  Future<void> _mutateAuthStorage(Future<void> Function() mutation) {
+    final result = Completer<void>();
+    _authStorageQueue = _authStorageQueue.then((_) async {
+      try {
+        await mutation();
+        result.complete();
+      } catch (error, stack) {
+        result.completeError(error, stack);
+      }
+    });
+    return result.future;
+  }
+
+  Future<void> _clearSignedOutAuth({String? expectedOwner}) =>
+      _mutateAuthStorage(() async {
+        if (supabase?.auth.currentSession != null) return;
+        if (expectedOwner != null &&
+            await tokenStorage.getUserId() != expectedOwner)
+          return;
+        if (supabase?.auth.currentSession != null) return;
+        await tokenStorage.clear();
+      });
+
+  Future<void> _saveCurrentAuth(AuthResponse auth) =>
+      _mutateAuthStorage(() async {
+        _sameSessionOwner(auth.user.id);
+        await tokenStorage.saveAuth(auth);
+        if (supabase?.auth.currentSession?.user.id != auth.user.id) {
+          if (await tokenStorage.getUserId() == auth.user.id) {
+            await tokenStorage.clear();
+          }
+          throw const WebOAuthException('web_auth_owner_changed');
+        }
+      });
+
+  Future<void> _discardRejectedSession(Session rejected) async {
+    final client = supabase;
+    final current = client?.auth.currentSession;
+    if (client == null ||
+        current?.user.id != rejected.user.id ||
+        current?.accessToken != rejected.accessToken)
+      return;
+    // The SDK removes its local session before contacting Auth. An unavailable
+    // logout response must not keep a server-rejected account on the device.
+    unawaited(
+      client.auth.signOut(scope: SignOutScope.local).catchError((Object _) {}),
+    );
+    await _clearSignedOutAuth(
+      expectedOwner: rejected.user.id,
+    ).timeout(_authRequestTimeout);
+  }
+
+  // A generic 401/bad_jwt may only mean the access token needs refreshing.
+  // Discard a whole session only when Auth explicitly rejects its owner/session.
+  bool _isRejectedSession(AuthException error) =>
+      error is! AuthRetryableFetchException &&
+      const {
+        'user_not_found',
+        'session_not_found',
+        'session_expired',
+        'user_banned',
+      }.contains(error.code);
 
   String get _authRedirectUrl => kIsWeb
       ? webAuthRedirectUri(
@@ -50,9 +125,14 @@ class AuthService {
     if (!await _webProviderEnabled(provider)) {
       throw const WebOAuthException('web_auth_provider_disabled');
     }
+    final scopes = provider == OAuthProvider.kakao ? 'account_email' : null;
     final launched = _webOAuthLauncher != null
-        ? await _webOAuthLauncher(provider, redirect)
-        : await client.auth.signInWithOAuth(provider, redirectTo: redirect);
+        ? await _webOAuthLauncher(provider, redirect, scopes)
+        : await client.auth.signInWithOAuth(
+            provider,
+            redirectTo: redirect,
+            scopes: scopes,
+          );
     if (!launched) throw const WebOAuthException('web_auth_launch_failed');
     // A launched browser is not an authenticated user. The returned Supabase
     // session must pass synchronizeSupabaseSession after the OAuth redirect.
@@ -86,10 +166,28 @@ class AuthService {
     }
     final initial = client.auth.currentSession;
     if (initial == null) {
-      await tokenStorage.clear();
+      await _clearSignedOutAuth().timeout(_authRequestTimeout);
+      if (kIsWeb) {
+        final callbackError = failedWebAuthCallback(
+          _browserUri(),
+          current: _browserUri(),
+          configured: Env.authWebRedirectUrl,
+        );
+        if (callbackError != null) throw callbackError;
+      }
       return null;
     }
-    final verifiedUser = (await client.auth.getUser(initial.accessToken)).user;
+    User? verifiedUser;
+    try {
+      verifiedUser =
+          (await client.auth
+                  .getUser(initial.accessToken)
+                  .timeout(_authRequestTimeout))
+              .user;
+    } on AuthException catch (error) {
+      if (_isRejectedSession(error)) await _discardRejectedSession(initial);
+      rethrow;
+    }
     if (verifiedUser == null || verifiedUser.id != initial.user.id) {
       throw const WebOAuthException('web_auth_session_invalid');
     }
@@ -106,7 +204,8 @@ class AuthService {
         .from('profiles')
         .select('name,avatar_url')
         .eq('id', verifiedUser.id)
-        .maybeSingle();
+        .maybeSingle()
+        .timeout(_authRequestTimeout);
     _sameSessionOwner(verifiedUser.id);
     if (profile != null) {
       final name = profile['name'];
@@ -122,15 +221,9 @@ class AuthService {
         ),
       );
     }
-    await _upsertSupabaseProfile(auth.user);
+    await _upsertSupabaseProfile(auth.user).timeout(_authRequestTimeout);
     _sameSessionOwner(verifiedUser.id);
-    await tokenStorage.saveAuth(auth);
-    if (client.auth.currentSession?.user.id != verifiedUser.id) {
-      if (await tokenStorage.getUserId() == verifiedUser.id) {
-        await tokenStorage.clear();
-      }
-      throw const WebOAuthException('web_auth_owner_changed');
-    }
+    await _saveCurrentAuth(auth).timeout(_authRequestTimeout);
     return auth;
   }
 
@@ -219,24 +312,22 @@ class AuthService {
         _truthy(metadata['is_email_verified']);
 
     if (email == null || !emailVerified) {
-      try {
-        await supabase?.auth.signOut();
-      } catch (_) {}
-      throw Exception(
+      await _discardRejectedSession(session);
+      throw AuthException(
         '$provider 로그인은 인증된 이메일이 필요합니다. 이메일 제공/인증 동의 후 다시 시도해주세요.',
+        code: 'provider_email_needs_verification',
       );
     }
   }
 
   bool _hasConfirmedEmail(User user) {
-    return user.emailConfirmedAt?.trim().isNotEmpty == true;
+    return user.email?.trim().isNotEmpty == true &&
+        user.emailConfirmedAt?.trim().isNotEmpty == true;
   }
 
   Future<void> _requireConfirmedEmailSession(Session session) async {
     if (_hasConfirmedEmail(session.user)) return;
-    try {
-      await supabase?.auth.signOut();
-    } catch (_) {}
+    await _discardRejectedSession(session);
     throw const AuthException(
       '이메일 인증을 완료한 뒤 다시 로그인해주세요.',
       code: 'email_not_confirmed',
@@ -258,13 +349,19 @@ class AuthService {
     String accessToken, {
     String? idToken,
   }) async {
+    if (accessToken.trim().isEmpty) {
+      throw const AuthException(
+        '카카오 로그인 토큰을 가져올 수 없습니다.',
+        code: 'kakao_token_unavailable',
+      );
+    }
     if (supabase != null && idToken != null && idToken.isNotEmpty) {
       final response = await supabase!.auth.signInWithIdToken(
         provider: OAuthProvider.kakao,
         idToken: idToken,
-        // accessToken 생략: Supabase가 Kakao userinfo 엔드포인트를 호출해
-        // 미인증 이메일을 받으면 422(provider_email_needs_verification) 발생.
-        // idToken의 sub 클레임으로 사용자를 식별한다.
+        // Let Supabase verify at_hash when the Kakao ID token contains it.
+        // Both tokens must come from the same SDK login/consent response.
+        accessToken: accessToken,
       );
       final session = response.session;
       if (session == null) {
@@ -275,9 +372,10 @@ class AuthService {
         provider: '카카오',
         idToken: idToken,
       );
+      await _requireConfirmedEmailSession(session);
       final auth = _fromSupabaseSession(session, provider: 'KAKAO');
       await _upsertSupabaseProfile(auth.user);
-      await tokenStorage.saveAuth(auth);
+      await _saveCurrentAuth(auth);
       return auth;
     }
     throw Exception(
@@ -300,9 +398,10 @@ class AuthService {
         provider: '구글',
         idToken: idToken,
       );
+      await _requireConfirmedEmailSession(session);
       final auth = _fromSupabaseSession(session, provider: 'GOOGLE');
       await _upsertSupabaseProfile(auth.user);
-      await tokenStorage.saveAuth(auth);
+      await _saveCurrentAuth(auth);
       return auth;
     }
     throw Exception('Supabase Google 로그인 환경이 준비되지 않았습니다.');
@@ -312,19 +411,21 @@ class AuthService {
     required String email,
     required String password,
   }) async {
+    if (_pendingEmailConfirmation?.email != email.trim().toLowerCase()) {
+      _pendingEmailConfirmation = null;
+    }
     if (supabase != null) {
-      final response = await supabase!.auth.signInWithPassword(
-        email: email.trim(),
-        password: password,
-      );
+      final response = await supabase!.auth
+          .signInWithPassword(email: email.trim(), password: password)
+          .timeout(_authRequestTimeout);
       final session = response.session;
       if (session == null) {
         throw Exception('Supabase 이메일 로그인 세션을 가져올 수 없습니다.');
       }
       await _requireConfirmedEmailSession(session);
       final auth = _fromSupabaseSession(session, provider: 'EMAIL');
-      await _upsertSupabaseProfile(auth.user);
-      await tokenStorage.saveAuth(auth);
+      await _upsertSupabaseProfile(auth.user).timeout(_authRequestTimeout);
+      await _saveCurrentAuth(auth).timeout(_authRequestTimeout);
       return auth;
     }
     throw Exception('Supabase 이메일 로그인 환경이 준비되지 않았습니다.');
@@ -335,34 +436,161 @@ class AuthService {
     required String email,
     required String password,
   }) async {
+    _pendingEmailConfirmation = null;
     if (supabase != null) {
-      final response = await supabase!.auth.signUp(
-        email: email.trim(),
-        password: password,
-        emailRedirectTo: _authRedirectUrl,
-        data: {'name': name.trim(), 'full_name': name.trim()},
-      );
+      final response = await supabase!.auth
+          .signUp(
+            email: email.trim(),
+            password: password,
+            emailRedirectTo: _authRedirectUrl,
+            data: {'name': name.trim(), 'full_name': name.trim()},
+          )
+          .timeout(_authRequestTimeout);
       final session = response.session;
       if (session == null) {
-        // Supabase email confirmation enabled: no session yet. The UI should
-        // move to the email-confirmation state and wait for the user to verify.
+        final user = response.user;
+        final identities = user?.identities;
+        if (user == null ||
+            identities == null ||
+            user.email?.trim().toLowerCase() != email.trim().toLowerCase()) {
+          throw const AuthException(
+            'Email signup response could not be verified.',
+            code: 'signup_response_invalid',
+          );
+        }
+        // With confirmation enabled, Auth can return a sanitized existing
+        // account with a fresh ID/timestamp and identities: [] instead of an
+        // error. This includes accounts originally created through OAuth.
+        // A null session alone is therefore not evidence of an email request.
+        if (identities.isEmpty ||
+            user.emailConfirmedAt?.trim().isNotEmpty == true ||
+            !identities.any((identity) => identity.provider == 'email')) {
+          throw const AuthException(
+            'User already registered',
+            code: 'user_already_exists',
+          );
+        }
+        // Only a real unconfirmed email identity reaches the waiting screen.
+        _pendingEmailConfirmation = (
+          email: email.trim().toLowerCase(),
+          userId: user.id,
+        );
         return null;
       }
       await _requireConfirmedEmailSession(session);
       final auth = _fromSupabaseSession(session, provider: 'EMAIL');
-      await _upsertSupabaseProfile(auth.user);
-      await tokenStorage.saveAuth(auth);
+      await _upsertSupabaseProfile(auth.user).timeout(_authRequestTimeout);
+      await _saveCurrentAuth(auth).timeout(_authRequestTimeout);
       return auth;
     }
     throw Exception('Supabase 이메일 가입 환경이 준비되지 않았습니다.');
   }
 
-  Future<void> requestPasswordReset(String email) async {
-    if (supabase != null) {
-      await supabase!.auth.resetPasswordForEmail(
-        email.trim(),
-        redirectTo: _authRedirectUrl,
+  Future<AuthResponse> verifyEmailConfirmation({
+    required String email,
+    required String token,
+  }) async {
+    final client = supabase;
+    if (client == null) {
+      throw const AuthException(
+        'Email confirmation is unavailable.',
+        code: 'email_confirmation_unavailable',
       );
+    }
+    final normalizedEmail = email.trim().toLowerCase();
+    final normalizedToken = token.trim();
+    // This project issues eight digits. Do not silently remove characters from
+    // a pasted code or accept a link token/password-recovery token here.
+    if (!RegExp(r'^[0-9]{8}$').hasMatch(normalizedToken)) {
+      throw const AuthException(
+        'Enter the eight-digit confirmation code.',
+        code: 'email_confirmation_code_invalid',
+      );
+    }
+    if (normalizedEmail.isEmpty) {
+      throw const AuthException('Invalid email.', code: 'invalid_email');
+    }
+    final pending = _pendingEmailConfirmation;
+    if (pending != null && pending.email != normalizedEmail) {
+      throw const AuthException(
+        'The confirmation email changed.',
+        code: 'email_confirmation_email_changed',
+      );
+    }
+    bool matchesExpectedUser(User user) =>
+        user.email?.trim().toLowerCase() == normalizedEmail &&
+        (pending == null || user.id == pending.userId);
+
+    final existing = client.auth.currentSession;
+    if (existing != null && !matchesExpectedUser(existing.user)) {
+      throw const AuthException(
+        'A different account is already signed in.',
+        code: 'email_confirmation_session_changed',
+      );
+    }
+    final response = await client.auth
+        .verifyOTP(
+          email: normalizedEmail,
+          token: normalizedToken,
+          // Unlike the general `email` type, `signup` only checks the server's
+          // confirmation token and cannot consume a recovery/magic-link OTP.
+          type: OtpType.signup,
+        )
+        .timeout(_authRequestTimeout);
+    final initial = response.session;
+    if (initial == null ||
+        response.user?.id != initial.user.id ||
+        !matchesExpectedUser(initial.user) ||
+        !_hasConfirmedEmail(initial.user)) {
+      if (initial != null) await _discardRejectedSession(initial);
+      throw const AuthException(
+        'Email confirmation response could not be verified.',
+        code: 'email_confirmation_response_invalid',
+      );
+    }
+
+    User? verifiedUser;
+    try {
+      verifiedUser =
+          (await client.auth
+                  .getUser(initial.accessToken)
+                  .timeout(_authRequestTimeout))
+              .user;
+    } on AuthException catch (error) {
+      if (_isRejectedSession(error)) await _discardRejectedSession(initial);
+      rethrow;
+    }
+    if (verifiedUser == null ||
+        verifiedUser.id != initial.user.id ||
+        !matchesExpectedUser(verifiedUser) ||
+        !_hasConfirmedEmail(verifiedUser)) {
+      await _discardRejectedSession(initial);
+      throw const AuthException(
+        'Confirmed email session could not be verified.',
+        code: 'email_confirmation_response_invalid',
+      );
+    }
+    // The response may refresh while getUser is in flight; use the SDK's current
+    // token only after checking that it still belongs to the confirmed owner.
+    _sameSessionOwner(verifiedUser.id);
+    final session = client.auth.currentSession!.copyWith(user: verifiedUser);
+    await _requireConfirmedEmailSession(session);
+    final auth = _fromSupabaseSession(session, provider: 'EMAIL');
+    await _upsertSupabaseProfile(auth.user).timeout(_authRequestTimeout);
+    _sameSessionOwner(verifiedUser.id);
+    await _saveCurrentAuth(auth).timeout(_authRequestTimeout);
+    if (_pendingEmailConfirmation == pending) {
+      _pendingEmailConfirmation = null;
+    }
+    return auth;
+  }
+
+  Future<void> requestPasswordReset(String email) async {
+    _pendingEmailConfirmation = null;
+    if (supabase != null) {
+      await supabase!.auth
+          .resetPasswordForEmail(email.trim(), redirectTo: _authRedirectUrl)
+          .timeout(_authRequestTimeout);
       return;
     }
     throw Exception('Supabase 비밀번호 재설정 환경이 준비되지 않았습니다.');
@@ -370,11 +598,16 @@ class AuthService {
 
   Future<void> resendEmailConfirmation(String email) async {
     if (supabase != null) {
-      await supabase!.auth.resend(
-        email: email.trim(),
-        type: OtpType.signup,
-        emailRedirectTo: _authRedirectUrl,
-      );
+      await supabase!.auth
+          .resend(
+            email: email.trim(),
+            type: OtpType.signup,
+            emailRedirectTo: _authRedirectUrl,
+          )
+          .timeout(_authRequestTimeout);
+      if (_pendingEmailConfirmation?.email != email.trim().toLowerCase()) {
+        _pendingEmailConfirmation = null;
+      }
       return;
     }
     throw Exception('Supabase 인증 메일 재전송 환경이 준비되지 않았습니다.');
@@ -406,7 +639,7 @@ class AuthService {
       }
       final auth = _fromSupabaseSession(session, provider: 'EMAIL');
       await _upsertSupabaseProfile(auth.user);
-      await tokenStorage.saveAuth(auth);
+      await _saveCurrentAuth(auth);
       return auth;
     }
     throw Exception('Supabase 비밀번호 변경 환경이 준비되지 않았습니다.');
@@ -420,7 +653,7 @@ class AuthService {
         final provider = await tokenStorage.getProvider() ?? 'SUPABASE';
         final auth = _fromSupabaseSession(session, provider: provider);
         await _upsertSupabaseProfile(auth.user);
-        await tokenStorage.saveAuth(auth);
+        await _saveCurrentAuth(auth);
         return auth;
       }
     }
@@ -428,14 +661,19 @@ class AuthService {
   }
 
   Future<void> logout() async {
-    await FcmNotificationService.clearDevicePushState();
-    await FcmNotificationService.clearLocalNotificationPrefs();
+    final session = supabase?.auth.currentSession;
+    await _prepareLogout();
+    if (supabase?.auth.currentSession?.user.id != session?.user.id ||
+        supabase?.auth.currentSession?.accessToken != session?.accessToken) {
+      return;
+    }
     try {
       await supabase?.auth.signOut();
     } catch (_) {}
 
     // 1) 로컬 토큰/유저정보 삭제 (즉시 반영)
-    await tokenStorage.clear();
+    await _clearSignedOutAuth(expectedOwner: session?.user.id);
+    if (supabase?.auth.currentSession != null) return;
 
     // Browser OAuth sessions are owned by Supabase, not native plugins.
     if (kIsWeb) return;
@@ -447,18 +685,32 @@ class AuthService {
     unawaited(unlinkKakao());
   }
 
-  Future<void> deleteAccount() async {
-    if (supabase != null) {
-      try {
-        await supabase!.functions.invoke('account-delete');
-        await logout();
-        return;
-      } catch (e) {
-        throw Exception('Supabase 계정 탈퇴 처리에 실패했습니다: $e');
-      }
-    }
+  static Future<void> _prepareLogoutPushState() async {
+    await FcmNotificationService.clearDevicePushState();
+    await FcmNotificationService.clearLocalNotificationPrefs();
+  }
 
-    throw Exception('Supabase 계정 탈퇴 기능을 사용할 수 없습니다.');
+  Future<void> deleteAccount() async {
+    throw Exception('계정 설정의 삭제 요청을 이용해 주세요. 자동 즉시 삭제는 제공하지 않습니다.');
+  }
+
+  Future<AccountDeletionRequest> requestAccountDeletion() async {
+    final client = supabase;
+    if (client == null)
+      throw Exception('삭제 요청을 접수할 수 없습니다. 문의: junhyeoklee616@gmail.com');
+    try {
+      final response = await client.functions.invoke(
+        'account-delete',
+        body: {'action': 'REQUEST_REVIEW'},
+      );
+      return AccountDeletionRequest.fromJson(
+        Map<String, dynamic>.from(response.data as Map),
+      );
+    } catch (_) {
+      throw Exception(
+        '삭제 요청을 접수하지 못했습니다. 잠시 후 다시 시도하거나 junhyeoklee616@gmail.com으로 문의해 주세요.',
+      );
+    }
   }
 
   Future<void> syncConsentIfPresent() async {

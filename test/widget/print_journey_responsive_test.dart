@@ -193,6 +193,30 @@ void main() {
     expect(find.text('주문 내용 확인'), findsOneWidget);
   }
 
+  const consentKeys = [
+    'print-checkout-agreement',
+    'print-checkout-policy-agreement',
+    'print-checkout-custom-production-agreement',
+  ];
+
+  Future<void> agree(WidgetTester tester) async {
+    final payment = find.byKey(const ValueKey('print-checkout-payment'));
+    expect(tester.widget<FilledButton>(payment).onPressed, isNull);
+    for (var index = 0; index < consentKeys.length; index++) {
+      final checkbox = find.byKey(ValueKey(consentKeys[index]));
+      await visible(tester, checkbox);
+      expect(tester.widget<CheckboxListTile>(checkbox).value, isFalse);
+      await tester.tap(checkbox);
+      await tester.pumpAndSettle();
+      expect(tester.widget<CheckboxListTile>(checkbox).value, isTrue);
+      expect(
+        tester.widget<FilledButton>(payment).onPressed,
+        index == consentKeys.length - 1 ? isNotNull : isNull,
+        reason: '결제에는 주문 확인과 정책·주문제작의 별도 동의가 모두 필요합니다.',
+      );
+    }
+  }
+
   Future<void> capture(
     WidgetTester tester,
     String name,
@@ -240,13 +264,7 @@ void main() {
           lessThanOrEqualTo(size.height - (size.width > size.height ? 24 : 34)),
         );
         await visible(tester, payment);
-        expect(tester.widget<FilledButton>(payment).onPressed, isNull);
-        final agreement = find.byKey(
-          const ValueKey('print-checkout-agreement'),
-        );
-        await visible(tester, agreement);
-        await tester.tap(agreement);
-        await tester.pumpAndSettle();
+        await agree(tester);
         expect(tester.widget<FilledButton>(payment).onPressed, isNotNull);
         expect(paymentAttempts, 0);
 
@@ -321,12 +339,7 @@ void main() {
             await mount(tester, checkout(), dark: true, scale: 1.8);
             await fill(tester);
             await review(tester);
-            final agreement = find.byKey(
-              const ValueKey('print-checkout-agreement'),
-            );
-            await visible(tester, agreement);
-            await tester.tap(agreement);
-            await tester.pumpAndSettle();
+            await agree(tester);
             final payment = find.byKey(
               const ValueKey('print-checkout-payment'),
             );
@@ -401,14 +414,22 @@ void main() {
       metrics(tester, const Size(648, 320));
       await tester.pumpAndSettle();
       await review(tester);
-      final agreement = find.byKey(const ValueKey('print-checkout-agreement'));
-      await visible(tester, agreement);
-      await tester.tap(agreement);
-      await tester.pumpAndSettle();
+      await agree(tester);
       metrics(tester, const Size(390, 844));
       await tester.pumpAndSettle();
-      await visible(tester, agreement);
-      expect(tester.widget<CheckboxListTile>(agreement).value, isTrue);
+      for (final key in consentKeys) {
+        final checkbox = find.byKey(ValueKey(key));
+        await visible(tester, checkbox);
+        expect(tester.widget<CheckboxListTile>(checkbox).value, isTrue);
+      }
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.byKey(const ValueKey('print-checkout-payment')),
+            )
+            .onPressed,
+        isNotNull,
+      );
       expect(find.text('주문 내용 확인'), findsOneWidget);
       expect(find.textContaining('김하늘'), findsOneWidget);
       expect(paymentAttempts, 0);

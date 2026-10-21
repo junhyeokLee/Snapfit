@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/core/notifications/fcm_notification_service.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
 import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
+import 'package:snap_fit/features/auth/domain/account_deletion_request.dart';
 import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
 import 'package:snap_fit/features/auth/presentation/views/login_screen.dart';
 import 'package:snap_fit/features/profile/presentation/views/account_settings_screen.dart';
@@ -41,9 +42,13 @@ class _Auth extends AuthViewModel {
   FutureOr<UserInfo?> build() => user;
   void switchAccount() => state = AsyncData(user.copyWith(id: 'other-account'));
   @override
-  Future<void> deleteAccount() async {
+  Future<AccountDeletionRequest> requestAccountDeletion() async {
     deletes++;
     await pendingDelete;
+    return const AccountDeletionRequest(
+      reference: 'DEL-1',
+      alreadyRequested: false,
+    );
   }
 
   @override
@@ -423,7 +428,9 @@ void main() {
       expect(find.byType(AccountSettingsScreen), findsOneWidget);
       pending.complete();
       await tester.pumpAndSettle();
-      expect(find.byType(AccountSettingsScreen), findsNothing);
+      expect(find.byType(AccountSettingsScreen), findsOneWidget);
+      expect(find.textContaining('접수번호 DEL-1'), findsOneWidget);
+      expect(auth.logouts, 0);
       expect(tester.takeException(), isNull);
     },
   );

@@ -1,0 +1,6 @@
+{
+  "reason": "Actual Flutter render review found overly heavy cover display type, a Korean spelling error, and fixed red/blue airmail accents clashing with the quiet white/deep-green brief. Preserve all generated geometry and photo counts; refine only typography, frame finish and the specified copy. These are explicit editorial edits after AI generation, not extra model output.",
+  "displayWeight": 400,
+  "frames": { "studioPostcard": "studioDoubleMat" },
+  "texts": { "p0_e2": "파도 사이", "p6_e2": "수평선 너머", "p20_text_1": "다시, 바다" }
+}

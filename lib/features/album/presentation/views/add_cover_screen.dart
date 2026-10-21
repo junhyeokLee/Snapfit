@@ -24,6 +24,9 @@ import '../controllers/layer_interaction_manager.dart';
 import '../controllers/toolbar_action_handler.dart';
 import '../controllers/text_editor_manager.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
+import '../../../../shared/widgets/album_stage_style.dart';
+import '../../../../shared/widgets/experience_icon.dart';
+import '../widgets/create_flow/creation_workspace.dart';
 import '../../../../shared/web/web_design.dart';
 import '../controllers/photo_frame_editor.dart';
 import '../controllers/photo_crop_editor.dart';
@@ -347,7 +350,9 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
         }
         return Scaffold(
           resizeToAvoidBottomInset: false,
-          backgroundColor: SnapFitColors.backgroundOf(context),
+          backgroundColor: isCreateFlow
+              ? AlbumStageStyle.top(context)
+              : SnapFitColors.backgroundOf(context),
           body: Stack(
             children: [
               Column(
@@ -357,6 +362,7 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                       enabled: isCreateFlow,
                       child: EditCover(
                         key: _coverEditorKey,
+                        flatPresentation: isCreateFlow,
                         editAlbum: widget.editAlbum,
                         isFromCreateFlow: widget.isFromCreateFlow,
                         albumTitle: widget.albumTitle,
@@ -462,21 +468,38 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
 
   Widget _webModePanel(EditorMode mode, List<LayerModel> layers) {
     return switch (mode) {
-      EditorMode.sticker => const DecoratePanel(mode: DecorateSheetMode.sticker),
-      EditorMode.backgroundColor => const DecoratePanel(mode: DecorateSheetMode.backgroundColor),
-      EditorMode.layer => LayerManagerPanel(layers: layers, interaction: _interaction),
+      EditorMode.sticker => const DecoratePanel(
+        mode: DecorateSheetMode.sticker,
+      ),
+      EditorMode.backgroundColor => const DecoratePanel(
+        mode: DecorateSheetMode.backgroundColor,
+      ),
+      EditorMode.layer => LayerManagerPanel(
+        layers: layers,
+        interaction: _interaction,
+      ),
       EditorMode.layout => const TemplateSelectionPanel(title: '레이아웃'),
       EditorMode.template => const DesignTemplatePanel(),
       _ => const SizedBox.shrink(),
     };
   }
 
-  Widget _webCoverWorkspace(List<LayerModel> layers, {required bool canUndo, required bool canRedo}) {
-    Widget tool(String label, IconData icon, EditorMode mode) => TextButton.icon(
-      onPressed: () => _handleModeChange(mode, layers),
-      icon: Icon(icon, size: 18),
-      label: Text(label),
+  Widget _webCoverWorkspace(
+    List<LayerModel> layers, {
+    required bool canUndo,
+    required bool canRedo,
+  }) {
+    final toolStyle = TextButton.styleFrom(
+      minimumSize: const Size(0, 44),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
     );
+    Widget tool(String label, IconData icon, EditorMode mode) =>
+        TextButton.icon(
+          onPressed: () => _handleModeChange(mode, layers),
+          icon: Icon(icon, size: 18),
+          label: Text(label),
+          style: toolStyle,
+        );
     final canvas = ColoredBox(
       color: WebPalette.of(context).canvas,
       child: Padding(
@@ -502,67 +525,204 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
     );
     final inspector = SingleChildScrollView(
       padding: const EdgeInsets.all(24),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Text('표지 구성', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: WebPalette.of(context).ink)),
-        const SizedBox(height: 12),
-        Text('${_selectedCover.displayName} · ${_selectedCover.coverType.label}', style: TextStyle(fontSize: 13, height: 1.6, color: WebPalette.of(context).muted)),
-        const SizedBox(height: 24),
-        Divider(color: WebPalette.of(context).line),
-        const SizedBox(height: 20),
-        if (_interaction.selectedLayerId == null)
-          Text('사진이나 글을 클릭하면 해당 요소의 편집 도구를 사용할 수 있습니다. 배치와 여백을 확인한 뒤 상단의 전체 확인을 눌러주세요.', style: TextStyle(fontSize: 13, height: 1.8, color: WebPalette.of(context).muted))
-        else ...[
-          const Text('선택한 요소', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 12),
-          LayerActionPanel(
-            layers: layers,
-            interaction: _interaction,
-            textEditor: TextEditorManager(context, ref.read(albumEditorViewModelProvider.notifier)),
-            onRefresh: () => setState(() {}),
-            onOpenGallery: (layer) => _openGalleryForSelected(layer),
-            onOpenPhotoCrop: (layer) => editPhotoCrop(context, ref, layer, layerBuilder: LayerBuilder(_interaction, () => coverCanvasBaseSize(_selectedCover))),
-            onOpenDecorateSheet: _openDecorateSheetForLayer,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            '표지 구성',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: WebPalette.of(context).ink,
+            ),
           ),
+          const SizedBox(height: 12),
+          Text(
+            '${_selectedCover.displayName} · ${_selectedCover.coverType.label}',
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.6,
+              color: WebPalette.of(context).muted,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Divider(color: WebPalette.of(context).line),
+          const SizedBox(height: 20),
+          if (_interaction.selectedLayerId == null)
+            Text(
+              '사진이나 글을 클릭하면 해당 요소의 편집 도구를 사용할 수 있습니다. 배치와 여백을 확인한 뒤 아래의 전체 확인을 눌러주세요.',
+              style: TextStyle(
+                fontSize: 13,
+                height: 1.8,
+                color: WebPalette.of(context).muted,
+              ),
+            )
+          else ...[
+            const Text(
+              '선택한 요소',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 12),
+            LayerActionPanel(
+              layers: layers,
+              interaction: _interaction,
+              textEditor: TextEditorManager(
+                context,
+                ref.read(albumEditorViewModelProvider.notifier),
+              ),
+              onRefresh: () => setState(() {}),
+              onOpenGallery: (layer) => _openGalleryForSelected(layer),
+              onOpenPhotoCrop: (layer) => editPhotoCrop(
+                context,
+                ref,
+                layer,
+                layerBuilder: LayerBuilder(
+                  _interaction,
+                  () => coverCanvasBaseSize(_selectedCover),
+                ),
+              ),
+              onOpenDecorateSheet: _openDecorateSheetForLayer,
+            ),
+          ],
         ],
-      ]),
-    );
-    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(color: WebPalette.of(context).surface, border: Border(bottom: BorderSide(color: WebPalette.of(context).line))),
-        child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, spacing: 4, runSpacing: 4, children: [
-          TextButton.icon(onPressed: () => _toolbarActionHandler.addPhoto(coverCanvasBaseSize(_selectedCover)), icon: const Icon(Icons.add_photo_alternate_outlined, size: 18), label: const Text('사진 추가')),
-          tool('글', Icons.text_fields, EditorMode.text),
-          TextButton.icon(onPressed: () => _toolbarActionHandler.openCoverTheme(), icon: const Icon(Icons.style_outlined, size: 18), label: const Text('표지 테마')),
-          tool('레이아웃', Icons.dashboard_customize_outlined, EditorMode.layout),
-          tool('템플릿', Icons.auto_awesome_mosaic_outlined, EditorMode.template),
-          tool('꾸미기', Icons.emoji_emotions_outlined, EditorMode.sticker),
-          tool('배경', Icons.palette_outlined, EditorMode.backgroundColor),
-          tool('레이어', Icons.layers_outlined, EditorMode.layer),
-          IconButton(tooltip: '실행 취소', onPressed: canUndo ? () {
-            ref.read(albumEditorViewModelProvider.notifier).undo();
-            _interaction.clearSelection();
-            setState(() {});
-          } : null, icon: const Icon(Icons.undo, size: 19)),
-          IconButton(tooltip: '다시 실행', onPressed: canRedo ? () {
-            ref.read(albumEditorViewModelProvider.notifier).redo();
-            _interaction.clearSelection();
-            setState(() {});
-          } : null, icon: const Icon(Icons.redo, size: 19)),
-        ]),
       ),
-      Expanded(child: LayoutBuilder(builder: (context, bounds) {
-        if (bounds.maxWidth < 900) return Column(children: [
-          Expanded(child: canvas),
-          if (_interaction.selectedLayerId != null) SizedBox(height: 150, child: inspector),
-        ]);
-        return Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Expanded(child: canvas),
-          VerticalDivider(width: 1, color: WebPalette.of(context).line),
-          SizedBox(width: 280, child: inspector),
-        ]);
-      })),
-    ]);
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          key: const ValueKey('web-cover-toolbar'),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: WebPalette.of(context).surface,
+            border: Border(
+              bottom: BorderSide(color: WebPalette.of(context).line),
+            ),
+          ),
+          child: SizedBox(
+            height: (MediaQuery.textScalerOf(context).scale(14) * 1.5 + 20)
+                .clamp(48.0, 120.0)
+                .toDouble(),
+            child: Row(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    key: const ValueKey('web-cover-tools-scroll'),
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        TextButton.icon(
+                          onPressed: () => _toolbarActionHandler.addPhoto(
+                            coverCanvasBaseSize(_selectedCover),
+                          ),
+                          icon: const Icon(
+                            Icons.add_photo_alternate_outlined,
+                            size: 18,
+                          ),
+                          label: const Text('사진 추가'),
+                          style: toolStyle,
+                        ),
+                        tool('글', Icons.text_fields, EditorMode.text),
+                        TextButton.icon(
+                          onPressed: () =>
+                              _toolbarActionHandler.openCoverTheme(),
+                          icon: const Icon(Icons.style_outlined, size: 18),
+                          label: const Text('표지 테마'),
+                          style: toolStyle,
+                        ),
+                        tool(
+                          '레이아웃',
+                          Icons.dashboard_customize_outlined,
+                          EditorMode.layout,
+                        ),
+                        tool(
+                          '템플릿',
+                          Icons.auto_awesome_mosaic_outlined,
+                          EditorMode.template,
+                        ),
+                        tool(
+                          '꾸미기',
+                          Icons.emoji_emotions_outlined,
+                          EditorMode.sticker,
+                        ),
+                        tool(
+                          '배경',
+                          Icons.palette_outlined,
+                          EditorMode.backgroundColor,
+                        ),
+                        tool('레이어', Icons.layers_outlined, EditorMode.layer),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  height: 28,
+                  child: VerticalDivider(
+                    width: 1,
+                    color: WebPalette.of(context).line,
+                  ),
+                ),
+                Row(
+                  key: const ValueKey('web-cover-history-actions'),
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      tooltip: '실행 취소',
+                      onPressed: canUndo
+                          ? () {
+                              ref
+                                  .read(albumEditorViewModelProvider.notifier)
+                                  .undo();
+                              _interaction.clearSelection();
+                              setState(() {});
+                            }
+                          : null,
+                      icon: const Icon(Icons.undo, size: 19),
+                    ),
+                    IconButton(
+                      tooltip: '다시 실행',
+                      onPressed: canRedo
+                          ? () {
+                              ref
+                                  .read(albumEditorViewModelProvider.notifier)
+                                  .redo();
+                              _interaction.clearSelection();
+                              setState(() {});
+                            }
+                          : null,
+                      icon: const Icon(Icons.redo, size: 19),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, bounds) {
+              if (bounds.maxWidth < 900)
+                return Column(
+                  children: [
+                    Expanded(child: canvas),
+                    if (_interaction.selectedLayerId != null)
+                      SizedBox(height: 150, child: inspector),
+                  ],
+                );
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: canvas),
+                  VerticalDivider(width: 1, color: WebPalette.of(context).line),
+                  SizedBox(width: 280, child: inspector),
+                ],
+              );
+            },
+          ),
+        ),
+      ],
+    );
   }
 
   Future<void> _openGalleryForSelected(LayerModel layer) async {
@@ -755,12 +915,12 @@ class _CoverAtelierActionBarState extends State<_CoverAtelierActionBar>
       IconButton(
         tooltip: '실행 취소',
         onPressed: widget.canUndo ? widget.onUndo : null,
-        icon: const Icon(Icons.undo_rounded, size: 20),
+        icon: const ExperienceIcon('Undo2', size: 20),
       ),
       IconButton(
         tooltip: '다시 실행',
         onPressed: widget.canRedo ? widget.onRedo : null,
-        icon: const Icon(Icons.redo_rounded, size: 20),
+        icon: const ExperienceIcon('Redo2', size: 20),
       ),
     ];
     final primary = _CoverAtelierPressScale(
@@ -769,7 +929,7 @@ class _CoverAtelierActionBarState extends State<_CoverAtelierActionBar>
         width: double.infinity,
         child: ElevatedButton(
           onPressed: widget.onStartEditing,
-          style: ExperienceFormStyle.primary(context),
+          style: CreationStyle.primary(context),
           child: Text(widget.primaryLabel),
         ),
       ),
@@ -786,7 +946,7 @@ class _CoverAtelierActionBarState extends State<_CoverAtelierActionBar>
             key: const Key('coverAtelierActionBar'),
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             decoration: BoxDecoration(
-              color: SnapFitColors.backgroundOf(context),
+              color: AlbumStageStyle.bottom(context),
               border: Border(
                 top: BorderSide(color: ExperienceFormStyle.line(context)),
               ),

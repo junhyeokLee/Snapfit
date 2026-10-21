@@ -7,11 +7,24 @@ void main() {
   const run = '85e8ce97-1d30-41ee-892b-4c43ee5546f3';
   final cases = <String, WebAppLocation>{
     '/': WebAppLocation.home,
+    '/login': WebAppLocation.login,
+    '/designs': WebAppLocation.designs,
+    '/designs/templates/-9403': const WebAppLocation(
+      WebAppPage.template,
+      '-9403',
+    ),
+    '/albums': WebAppLocation.albums,
     '/create': WebAppLocation.create,
     '/albums/69': const WebAppLocation(WebAppPage.album, '69'),
     '/albums/69/edit': const WebAppLocation(WebAppPage.editor, '69'),
     '/albums/69/print': const WebAppLocation(WebAppPage.print, '69'),
     '/orders': WebAppLocation.orders,
+    '/print-products': WebAppLocation.printProducts,
+    '/policies/terms': const WebAppLocation(WebAppPage.policy, 'terms'),
+    '/policies/refund': const WebAppLocation(WebAppPage.policy, 'refund'),
+    '/policies/privacy': const WebAppLocation(WebAppPage.policy, 'privacy'),
+    '/policies/shipping': const WebAppLocation(WebAppPage.policy, 'shipping'),
+    '/policies/seller': const WebAppLocation(WebAppPage.policy, 'seller'),
     '/orders/order_ABC-123': const WebAppLocation(
       WebAppPage.order,
       'order_ABC-123',
@@ -62,6 +75,8 @@ void main() {
       '/albums/69/delete',
       '/albums/69/edit/more',
       '/unknown',
+      '/policies/unknown',
+      '/policies/terms/private',
       '/orders/a%2Fb',
       '/orders/a%40example.com',
       '/orders/${'a' * 201}',
@@ -148,5 +163,31 @@ void main() {
     expect(album, isNot(const WebAppLocation(WebAppPage.editor, '69')));
     expect(album, isNot(const WebAppLocation(WebAppPage.album, '70')));
     expect(const WebAppRouteSettings(album).location, album);
+  });
+
+  test('discovery is public while customer documents remain authenticated', () {
+    expect(WebAppLocation.printProducts.isPublic, isTrue);
+    for (final slug in WebAppLocation.policySlugs) {
+      expect(WebAppLocation(WebAppPage.policy, slug).isPublic, isTrue);
+    }
+    expect(
+      const WebAppLocation(WebAppPage.policy, 'unknown').isPublic,
+      isFalse,
+    );
+    for (final page in WebAppPage.values.where(
+      (page) => ![
+        WebAppPage.home,
+        WebAppPage.login,
+        WebAppPage.designs,
+        WebAppPage.template,
+        WebAppPage.printProducts,
+        WebAppPage.policy,
+      ].contains(page),
+    )) {
+      expect(WebAppLocation(page, '69').isPublic, isFalse);
+    }
+    expect(WebAppLocation.designs.isPublic, isTrue);
+    expect(WebAppLocation.login.isPublic, isTrue);
+    expect(const WebAppLocation(WebAppPage.template, '-9403').isPublic, isTrue);
   });
 }

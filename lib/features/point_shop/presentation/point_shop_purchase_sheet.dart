@@ -300,7 +300,7 @@ class _AmountRow extends StatelessWidget {
     final valueStyle = ExperienceFormStyle.text(
       context,
       prominent ? 22 : 14,
-      weight: FontWeight.w600,
+      weight: prominent ? FontWeight.w700 : FontWeight.w600,
       color: highlighted ? ExperienceFormStyle.selectionInk(context) : null,
     );
     return Semantics(

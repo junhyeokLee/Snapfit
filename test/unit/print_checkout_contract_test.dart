@@ -7,6 +7,7 @@ import 'package:snap_fit/core/interceptors/token_storage.dart';
 import 'package:snap_fit/features/profile/data/order_repository.dart';
 import 'package:snap_fit/features/profile/domain/entities/order_history_item.dart';
 import 'package:snap_fit/features/profile/domain/print_checkout.dart';
+import 'package:snap_fit/features/profile/domain/print_checkout_consent.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class _Tokens extends Mock implements TokenStorage {}
@@ -266,6 +267,51 @@ void main() {
           'albumId': 9,
           'pageCount': 20,
         });
+      },
+    );
+
+    test(
+      'checkout sends versioned separate consent beside the frozen order conditions',
+      () async {
+        const consent = PrintCheckoutConsent(
+          orderReviewed: true,
+          policyAccepted: true,
+          customProductionAccepted: true,
+        );
+        const requestId = '00000000-0000-4000-8000-000000000000';
+        final review = printCheckoutRevision(_snapshot());
+        final spec = printSpecRevision({});
+        response = {
+          'environment': 'production',
+          'status': 'PREPARED',
+          'orderId': 'ordp_$requestId',
+          'paymentId': 'SFP_$requestId',
+          'requestId': requestId,
+          'albumId': 9,
+          'totalAmount': 49900,
+          'reviewedSpecRevision': spec,
+        };
+        await repository.preparePrintPayment(
+          requestId: requestId,
+          request: PrintCheckoutRequest(
+            albumId: 9,
+            reviewedRevision: review,
+            reviewedSpecRevision: spec,
+            amount: 49900,
+            recipientName: '수령인',
+            recipientPhone: '01000000000',
+            zipCode: '12345',
+            addressLine1: '테스트 도로',
+            addressLine2: '테스트 호수',
+            consent: consent,
+          ),
+        );
+        final sent = jsonDecode(calls.single.body) as Map;
+        expect(sent['consent'], consent.toJson());
+        expect(sent['reviewedRevision'], review);
+        expect(sent['reviewedSpecRevision'], spec);
+        expect(sent['expectedAmount'], 49900);
+        expect((sent['consent'] as Map).containsKey('acceptedAt'), isFalse);
       },
     );
 

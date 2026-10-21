@@ -7,9 +7,12 @@ import '../../../domain/entities/album.dart';
 import 'home_album_actions.dart';
 import 'home_album_slider_card.dart';
 import 'home_album_shelf.dart';
+import 'home_album_helpers.dart';
 import 'album_open_origin.dart';
 import '../../../../../shared/widgets/album_stage_style.dart';
+import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../../../shared/widgets/experience_icon.dart';
+import '../../../../../shared/widgets/album_navigation_dock.dart';
 
 /// One floating album with a visual bookshelf for selection.
 class HomeAlbumSlider extends ConsumerStatefulWidget {
@@ -130,6 +133,12 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
       begin: from,
       end: to,
     ).chain(CurveTween(curve: Curves.easeOutCubic)).animate(_slideController);
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _slideController.stop();
+      _slideAnimation = null;
+      _visualPage = to;
+      return;
+    }
     _slideController.forward(from: 0);
   }
 
@@ -166,7 +175,42 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
     builder: (context, constraints) {
       final landscape = constraints.maxWidth > constraints.maxHeight;
       final compact = constraints.maxHeight < 580;
-      final headerHeight = landscape || compact ? 48.0 : 56.0;
+      final showWordmark =
+          widget.albums.isEmpty ||
+          MediaQuery.textScalerOf(context).scale(11) <= 12.1;
+      final focusedAlbum = widget.albums.isEmpty
+          ? null
+          : widget.albums[_clampIndex(_focusedIndex)];
+      final focusedTitle = focusedAlbum == null
+          ? '내 앨범'
+          : focusedAlbum.title.trim().isEmpty
+          ? '제목 없는 앨범'
+          : focusedAlbum.title;
+      final focusedStatus = focusedAlbum == null
+          ? null
+          : _albumStatusLabel(focusedAlbum);
+      final titleStyle = ExperienceFormStyle.text(
+        context,
+        showWordmark ? 11 : 12,
+        secondary: true,
+      );
+      final statusStyle = ExperienceFormStyle.text(
+        context,
+        11,
+        weight: FontWeight.w500,
+      ).copyWith(height: 1.2);
+      final metadataHeight = focusedAlbum == null
+          ? 0.0
+          : (showWordmark
+                    ? MediaQuery.textScalerOf(context).scale(18) * 1.2 + 2
+                    : 0) +
+                _lineHeight(context, focusedTitle, titleStyle) +
+                2 +
+                _lineHeight(context, focusedStatus!, statusStyle);
+      final headerHeight = math.max(
+        landscape || compact ? 48.0 : 56.0,
+        metadataHeight.ceilToDouble(),
+      );
       final thumbnailSide = ((constraints.maxWidth - 68) / 4).clamp(44.0, 92.0);
       final shelf = HomeAlbumShelf(
         albums: widget.albums,
@@ -177,6 +221,21 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
       final open = _ShelfOpenButton(
         size: landscape || compact ? 48 : 60,
         onTap: widget.albums.isEmpty ? null : _openFocusedAlbum,
+      );
+      final navigation = SizedBox(
+        width: landscape ? 220 : 244,
+        child: AlbumNavigationDock(
+          height: landscape || compact ? 48 : 60,
+          primary: open,
+          previousLabel: '이전 앨범',
+          nextLabel: '다음 앨범',
+          onPrevious: _focusedIndex > 0
+              ? () => _animateToIndex(_focusedIndex - 1)
+              : null,
+          onNext: _focusedIndex < widget.albums.length - 1
+              ? () => _animateToIndex(_focusedIndex + 1)
+              : null,
+        ),
       );
       return Stack(
         children: [
@@ -196,27 +255,65 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
                         padding: EdgeInsets.symmetric(
                           horizontal: widget.onResumeDraft == null ? 56 : 100,
                         ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Semantics(
-                            container: true,
-                            label: 'snapfit',
-                            excludeSemantics: true,
-                            child: Text(
-                              's n a p f i t',
-                              key: const ValueKey('home-bookshelf-wordmark'),
-                              maxLines: 1,
-                              softWrap: false,
-                              style: TextStyle(
-                                fontFamily: 'Poppins',
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0,
-                                height: 1.2,
-                                color: AlbumStageStyle.ink(context),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (showWordmark)
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Semantics(
+                                  container: true,
+                                  label: 'snapfit',
+                                  excludeSemantics: true,
+                                  child: Text(
+                                    's n a p f i t',
+                                    key: const ValueKey(
+                                      'home-bookshelf-wordmark',
+                                    ),
+                                    maxLines: 1,
+                                    softWrap: false,
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0,
+                                      height: 1.2,
+                                      color: AlbumStageStyle.ink(context),
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
+                            if (widget.albums.isNotEmpty) ...[
+                              if (showWordmark) const SizedBox(height: 2),
+                              Tooltip(
+                                message: focusedTitle,
+                                child: Text(
+                                  focusedTitle,
+                                  key: const ValueKey(
+                                    'home-focused-album-title',
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: titleStyle,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Tooltip(
+                                message: focusedStatus!,
+                                excludeFromSemantics: true,
+                                child: Text(
+                                  focusedStatus,
+                                  key: const ValueKey(
+                                    'home-focused-album-status',
+                                  ),
+                                  semanticsLabel: '앨범 상태, $focusedStatus',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: statusStyle,
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                       Row(
@@ -269,7 +366,7 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
                                 ),
                                 SizedBox(
                                   height: 64,
-                                  child: Center(child: open),
+                                  child: Center(child: navigation),
                                 ),
                               ],
                             ),
@@ -282,7 +379,30 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
                           SizedBox(height: thumbnailSide + 22, child: shelf),
                           SizedBox(
                             height: compact ? 64 : 124,
-                            child: Center(child: open),
+                            child: Stack(
+                              children: [
+                                Center(child: navigation),
+                                if (!compact &&
+                                    MediaQuery.textScalerOf(
+                                          context,
+                                        ).scale(11) <=
+                                        16)
+                                  Positioned(
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 8,
+                                    child: Text(
+                                      '앨범 보기',
+                                      textAlign: TextAlign.center,
+                                      style: ExperienceFormStyle.text(
+                                        context,
+                                        11,
+                                        secondary: true,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -293,6 +413,25 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
       );
     },
   );
+
+  double _lineHeight(BuildContext context, String text, TextStyle style) {
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textScaler: MediaQuery.textScalerOf(context),
+      textDirection: Directionality.of(context),
+      maxLines: 1,
+    )..layout();
+    final height = painter.height;
+    painter.dispose();
+    return height;
+  }
+
+  String _albumStatusLabel(Album album) => [
+    if (!album.allowsEditing) '보기 전용',
+    isCompletedAlbum(album)
+        ? '완성한 앨범'
+        : calculateAlbumProgress(album).pageProgressLabel,
+  ].join(' · ');
 
   Widget _buildAlbumStage() => LayoutBuilder(
     builder: (context, constraints) {
@@ -458,8 +597,13 @@ class _ShelfOpenButtonState extends State<_ShelfOpenButton> {
               height: widget.size,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.transparent,
-                border: Border.all(color: AlbumStageStyle.line(context)),
+                color: enabled
+                    ? AlbumStageStyle.controlFill(context)
+                    : Colors.transparent,
+                border: Border.all(
+                  color: AlbumStageStyle.line(context),
+                  width: enabled ? 0 : 1,
+                ),
               ),
               child: Center(
                 child: ExperienceIcon(

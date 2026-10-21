@@ -4,6 +4,65 @@ import 'package:snap_fit/core/navigation/app_root_route_observer.dart';
 import 'package:snap_fit/features/profile/domain/order_detail_navigation.dart';
 
 void main() {
+  testWidgets('web starts on a stable root without a splash replacement', (
+    tester,
+  ) async {
+    final nav = GlobalKey<NavigatorState>();
+    final pending = OrderDetailNavigation()
+      ..receive('web-order', ownerId: 'owner');
+    var rootReady = false;
+    var readyCalls = 0;
+    final observer = AppRootRouteObserver(
+      onReady: () {
+        rootReady = true;
+        readyCalls++;
+      },
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorKey: nav,
+        navigatorObservers: [observer],
+        onGenerateRoute: (_) => MaterialPageRoute<void>(
+          settings: const AppRootRouteSettings(),
+          builder: (_) => const Scaffold(body: Text('계정 확인')),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(rootReady, isTrue);
+    expect(readyCalls, 1);
+    expect(nav.currentState!.canPop(), isFalse);
+    expect(
+      pending.take(
+        ownerId: null,
+        navigatorReady: rootReady,
+        now: DateTime.utc(2026, 10, 18),
+      ),
+      isNull,
+    );
+    expect(pending.hasPending, isTrue);
+
+    final order = pending.take(
+      ownerId: 'owner',
+      navigatorReady: rootReady,
+      now: DateTime.utc(2026, 10, 18),
+    );
+    nav.currentState!.push<void>(
+      MaterialPageRoute(
+        builder: (_) => Scaffold(body: Text('주문 상세 $order')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('주문 상세 web-order'), findsOneWidget);
+    expect(readyCalls, 1);
+
+    nav.currentState!.pop();
+    await tester.pumpAndSettle();
+    expect(find.text('계정 확인'), findsOneWidget);
+    expect(nav.currentState!.canPop(), isFalse);
+  });
+
   testWidgets('a cold-start order survives replacement of the splash route', (
     tester,
   ) async {

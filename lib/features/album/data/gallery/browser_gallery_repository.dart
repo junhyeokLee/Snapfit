@@ -4,6 +4,26 @@ import '../../domain/repositories/gallery_repository.dart';
 import 'browser_photo_asset.dart';
 import 'browser_photo_files.dart';
 
+enum BrowserPhotoImportState { reading, ready, duplicate, failed }
+
+/// Local browser import status. Original bytes are not sent to a server here.
+class BrowserPhotoImportProgress {
+  const BrowserPhotoImportProgress({
+    required this.index,
+    required this.total,
+    required this.fileName,
+    required this.state,
+    this.message,
+  });
+
+  final int index;
+  final int total;
+  final String fileName;
+  final BrowserPhotoImportState state;
+  final String? message;
+  bool get isComplete => state != BrowserPhotoImportState.reading;
+}
+
 class BrowserPhotoImportResult {
   const BrowserPhotoImportResult(this.added, this.messages);
   final List<BrowserPhotoAsset> added;
@@ -30,8 +50,9 @@ class BrowserGalleryRepository implements GalleryRepository {
   }
 
   Future<BrowserPhotoImportResult> importFiles(
-    List<BrowserPhotoFile> files,
-  ) async {
+    List<BrowserPhotoFile> files, {
+    void Function(BrowserPhotoImportProgress progress)? onProgress,
+  }) async {
     _syncOwner();
     final owner = _owner;
     if (owner == null || owner.isEmpty) {
@@ -40,19 +61,40 @@ class BrowserGalleryRepository implements GalleryRepository {
     final added = <BrowserPhotoAsset>[], messages = <String>[];
     if (files.length > browserPhotoMaxCount)
       messages.add('파일은 한 번에 최대 100장까지 가져옵니다. 나머지는 나누어 선택해주세요.');
+    var index = 0;
+    final total = files.length.clamp(0, browserPhotoMaxCount);
     for (final file in files.take(browserPhotoMaxCount)) {
+      final fileIndex = index++;
+      void report(BrowserPhotoImportState state, [String? message]) =>
+          onProgress?.call(
+            BrowserPhotoImportProgress(
+              index: fileIndex,
+              total: total,
+              fileName: file.name,
+              state: state,
+              message: message,
+            ),
+          );
+      report(BrowserPhotoImportState.reading);
       if (_photos.length >= browserPhotoMaxCount) {
-        messages.add('한 번에 보관할 사진은 최대 100장이에요. 앨범을 저장한 뒤 선택 목록을 비워주세요.');
+        const message = '한 번에 보관할 사진은 최대 100장이에요. 앨범을 저장한 뒤 선택 목록을 비워주세요.';
+        messages.add(message);
+        report(BrowserPhotoImportState.failed, message);
         break;
       }
       if (file.size <= 0 || file.size > browserPhotoMaxFileBytes) {
-        messages.add('${file.name}: 사진 한 장은 50MB 이하로 선택해주세요.');
+        const message = '사진 한 장은 50MB 이하로 선택해주세요.';
+        messages.add('${file.name}: $message');
+        report(BrowserPhotoImportState.failed, message);
         continue;
       }
       if (_photos.fold<int>(0, (sum, photo) => sum + photo.byteLength) +
               file.size >
           browserPhotoMaxTotalBytes) {
-        messages.add('선택한 원본 사진은 총 250MB까지 보관할 수 있어요. 앨범을 저장한 뒤 선택 목록을 비워주세요.');
+        const message =
+            '선택한 원본 사진은 총 250MB까지 보관할 수 있어요. 앨범을 저장한 뒤 선택 목록을 비워주세요.';
+        messages.add(message);
+        report(BrowserPhotoImportState.failed, message);
         break;
       }
       try {
@@ -71,18 +113,24 @@ class BrowserGalleryRepository implements GalleryRepository {
           throw const BrowserPhotoException('로그인 계정이 변경되어 사진 선택을 중단했어요.');
         if (_photos.any(
           (existing) => existing.contentSha256 == photo.contentSha256,
-        ))
+        )) {
+          report(BrowserPhotoImportState.duplicate, '이미 선택 목록에 있는 사진');
           continue;
+        }
         _photos.add(photo);
         added.add(photo);
+        report(BrowserPhotoImportState.ready);
       } on BrowserPhotoException catch (error) {
         if (currentOwner() != owner) {
           _syncOwner();
           rethrow;
         }
         messages.add('${file.name}: ${error.message}');
+        report(BrowserPhotoImportState.failed, error.message);
       } catch (_) {
-        messages.add('${file.name}: 파일을 읽지 못했어요. 다시 선택해주세요.');
+        const message = '파일을 읽지 못했어요. 다시 선택해주세요.';
+        messages.add('${file.name}: $message');
+        report(BrowserPhotoImportState.failed, message);
       }
     }
     return BrowserPhotoImportResult(

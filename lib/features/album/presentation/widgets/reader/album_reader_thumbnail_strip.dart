@@ -1,34 +1,20 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../../../core/utils/screen_logger.dart';
+import '../../../../../core/constants/cover_size.dart';
+import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../shared/widgets/album_stage_style.dart';
 import '../../../domain/entities/album_page.dart';
 import '../../controllers/layer_builder.dart';
 import '../../controllers/layer_interaction_manager.dart';
 import '../../viewmodels/album_editor_view_model.dart';
-import 'album_reader_page_content.dart';
-import '../../../../../core/constants/cover_size.dart';
 import '../cover/cover.dart';
 import '../home/home_album_helpers.dart';
+import 'album_reader_page_content.dart';
 
-/// 앨범 보기 화면: 하단 썸네일 스트립 (스프레드 단위)
-///
-/// - 아이템 0       : 커버 (단독)
-/// - 아이템 1       : 내지 1-2 페이지 (두 페이지 나란히)
-/// - 아이템 2       : 내지 3-4 페이지 (두 페이지 나란히)
-/// - ...
-///
-/// pageController 인덱스 = spreadIndex (0=커버, 1=1-2, 2=3-4 ...)
-class AlbumReaderThumbnailStrip extends ConsumerWidget {
-  final List<AlbumPage> pages;
-  final PageController? pageController;
-  final LayerBuilder previewBuilder;
-  final Size baseCanvasSize;
-  final double height;
-  final int? currentSpreadIndex;
-  final ValueChanged<int>? onSpreadSelected;
-
+/// Real cover and paired inner-page previews, with a readable spread index.
+class AlbumReaderThumbnailStrip extends ConsumerStatefulWidget {
   const AlbumReaderThumbnailStrip({
     super.key,
     required this.pages,
@@ -39,190 +25,261 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
     this.currentSpreadIndex,
     this.onSpreadSelected,
   });
+  final List<AlbumPage> pages;
+  final PageController? pageController;
+  final LayerBuilder previewBuilder;
+  final Size baseCanvasSize;
+  final double height;
+  final int? currentSpreadIndex;
+  final ValueChanged<int>? onSpreadSelected;
 
-  static bool _logged = false;
+  static List<List<int>> spreads(int count) => [
+    if (count > 0) [0],
+    for (var i = 1; i < count; i += 2) [i, if (i + 1 < count) i + 1],
+  ];
 
-  // 스프레드 아이템 목록 빌드
-  // 아이템[0] = 커버 페이지 인덱스 목록 [0]
-  // 아이템[1] = [1, 2], 아이템[2] = [3, 4] ...
-  static List<List<int>> _buildSpreadItems(int pageCount) {
-    if (pageCount == 0) return [];
-    final result = <List<int>>[];
-    // 커버
-    result.add([0]);
-    // 내지 (pages[1] 이후)
-    for (int i = 1; i < pageCount; i += 2) {
-      if (i + 1 < pageCount) {
-        result.add([i, i + 1]);
+  static String label(List<int> pages) => pages.first == 0
+      ? '표지'
+      : pages.length == 1
+      ? '${pages.first}'
+      : '${pages.first}-${pages.last}';
+
+  @override
+  ConsumerState<AlbumReaderThumbnailStrip> createState() =>
+      _ThumbnailStripState();
+}
+
+class _ThumbnailStripState extends ConsumerState<AlbumReaderThumbnailStrip> {
+  final _scroll = ScrollController();
+  int _active = -1;
+  double _viewport = 0, _coverWidth = 0, _spreadWidth = 0;
+  static const _gap = 12.0;
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  void _align(bool animate) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scroll.hasClients) return;
+      final left = _active == 0
+          ? 16.0
+          : 16 + _coverWidth + _gap + (_active - 1) * (_spreadWidth + _gap);
+      final width = _active == 0 ? _coverWidth : _spreadWidth;
+      final target = (left + width / 2 - _viewport / 2).clamp(
+        0.0,
+        _scroll.position.maxScrollExtent,
+      );
+      if ((target - _scroll.offset).abs() < 1) return;
+      if (animate && !MediaQuery.disableAnimationsOf(context)) {
+        _scroll.animateTo(
+          target,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+        );
       } else {
-        result.add([i]);
+        _scroll.jumpTo(target);
       }
-    }
-    return result;
+    });
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (!_logged) {
-      _logged = true;
-      ScreenLogger.widget(
-        'AlbumReaderThumbnailStrip',
-        '앨범 리더 썸네일 스트립 · 스프레드 뷰',
-      );
-    }
-
-    final double aspect = baseCanvasSize.width / baseCanvasSize.height;
-    final Size logicalInnerSize = Size(
-      kCoverReferenceWidth,
-      kCoverReferenceWidth / aspect,
-    );
-    final Size logicalCoverSize = Size(
-      kCoverReferenceWidth,
-      kCoverReferenceWidth / aspect,
-    );
-
-    // 커버 썸네일은 LayerBuilder(프레임 포함)로 동일 렌더링
+  Widget build(BuildContext context) {
+    final items = AlbumReaderThumbnailStrip.spreads(widget.pages.length);
+    if (items.isEmpty) return const SizedBox.shrink();
+    final aspect = widget.baseCanvasSize.width / widget.baseCanvasSize.height;
+    final logical = Size(kCoverReferenceWidth, kCoverReferenceWidth / aspect);
     final coverInteraction = LayerInteractionManager.preview(
       ref,
-      () => logicalCoverSize,
+      () => logical,
     );
-    final coverBuilder = LayerBuilder(coverInteraction, () => logicalCoverSize);
+    final coverBuilder = LayerBuilder(coverInteraction, () => logical);
+    final theme =
+        ref.watch(
+          albumEditorViewModelProvider.select(
+            (value) => value.value?.selectedTheme,
+          ),
+        ) ??
+        resolveCoverTheme(null);
+    final singleWidth = widget.height * aspect;
+    final spreadWidth = singleWidth * 2 + 1;
+    final captionHeight = MediaQuery.textScalerOf(context).scale(10) * 1.4;
 
-    // 단일 썸네일 너비
-    final double singleThumbW = height * aspect;
-    // 스프레드(2페이지) 썸네일 너비 = 단일 x2 + 가운데 구분선 0.5
-    final double spreadThumbW = singleThumbW * 2 + 1;
+    Widget artwork(List<int> indices) => RepaintBoundary(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(2),
+        child: indices.first == 0
+            ? FittedBox(
+                fit: BoxFit.contain,
+                child: SizedBox(
+                  width: logical.width,
+                  height: logical.height,
+                  child: CoverLayout(
+                    aspect: aspect,
+                    layers: widget.pages.first.layers,
+                    isInteracting: false,
+                    leftSpine: 0,
+                    backgroundColor: widget.pages.first.backgroundColor == null
+                        ? null
+                        : Color(
+                            widget.pages.first.backgroundColor!,
+                          ).withAlpha(255),
+                    onCoverSizeChanged: (_) {},
+                    buildImage: (layer) =>
+                        coverBuilder.buildImage(layer, isCover: true),
+                    buildText: (layer) =>
+                        coverBuilder.buildText(layer, isCover: true),
+                    sortedByZ: coverInteraction.sortByZ,
+                    theme: theme,
+                  ),
+                ),
+              )
+            : Row(
+                children: [
+                  for (var slot = 0; slot < 2; slot++) ...[
+                    if (slot > 0)
+                      SizedBox(
+                        width: 1,
+                        child: ColoredBox(color: AlbumStageStyle.line(context)),
+                      ),
+                    Expanded(
+                      child: slot >= indices.length
+                          ? ColoredBox(
+                              color: AlbumStageStyle.controlFill(context),
+                            )
+                          : AlbumReaderPageContent(
+                              layers: widget.pages[indices[slot]].layers,
+                              targetW: singleWidth,
+                              targetH: widget.height,
+                              previewBuilder: widget.previewBuilder,
+                              baseCanvasSize: logical,
+                              backgroundColor:
+                                  widget.pages[indices[slot]].backgroundColor ==
+                                      null
+                                  ? null
+                                  : Color(
+                                      widget
+                                          .pages[indices[slot]]
+                                          .backgroundColor!,
+                                    ),
+                            ),
+                    ),
+                  ],
+                ],
+              ),
+      ),
+    );
 
-    final spreadItems = _buildSpreadItems(pages.length);
-
-    if (pageController != null || onSpreadSelected != null) {
-      return SizedBox(
-        height: height + 12.h,
-        child: AnimatedBuilder(
-          animation: pageController ?? const AlwaysStoppedAnimation(0),
-          builder: (context, _) {
-            final spreadIdx =
-                currentSpreadIndex ??
-                (pageController?.hasClients == true
-                    ? (pageController!.page?.round() ?? 0)
-                    : 0);
-
+    return SizedBox(
+      height: widget.height + captionHeight + 14,
+      child: AnimatedBuilder(
+        animation: widget.pageController ?? const AlwaysStoppedAnimation(0),
+        builder: (context, _) => LayoutBuilder(
+          builder: (context, box) {
+            final active =
+                (widget.currentSpreadIndex ??
+                        (widget.pageController?.hasClients == true
+                            ? widget.pageController!.page?.round() ?? 0
+                            : 0))
+                    .clamp(0, items.length - 1);
+            final coverSlot = math.max(44.0, singleWidth);
+            final spreadSlot = math.max(44.0, spreadWidth);
+            if (_active != active ||
+                _viewport != box.maxWidth ||
+                _coverWidth != coverSlot ||
+                _spreadWidth != spreadSlot) {
+              final animate = _active >= 0 && _active != active;
+              _active = active;
+              _viewport = box.maxWidth;
+              _coverWidth = coverSlot;
+              _spreadWidth = spreadSlot;
+              _align(animate);
+            }
             return ListView.builder(
+              key: const ValueKey('reader-spread-strip'),
+              controller: _scroll,
               scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-              itemCount: spreadItems.length,
-              itemBuilder: (context, i) {
-                final pageIndices = spreadItems[i];
-                final isSelected = i == spreadIdx;
-                final isCover = i == 0;
-
-                return GestureDetector(
-                  onTap: () {
-                    final callback = onSpreadSelected;
-                    if (callback != null) {
-                      callback(i);
-                      return;
-                    }
-                    pageController?.animateToPage(
-                      i,
-                      duration: const Duration(milliseconds: 280),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              cacheExtent: spreadSlot * 2,
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                final indices = items[index];
+                final selected = index == active;
+                final label = AlbumReaderThumbnailStrip.label(indices);
+                final enabled =
+                    widget.onSpreadSelected != null ||
+                    widget.pageController != null;
+                void select() {
+                  if (index == active) return;
+                  if (widget.onSpreadSelected != null) {
+                    widget.onSpreadSelected!(index);
+                  } else if (widget.pageController?.hasClients == true) {
+                    widget.pageController!.animateToPage(
+                      index,
+                      duration: MediaQuery.disableAnimationsOf(context)
+                          ? Duration.zero
+                          : const Duration(milliseconds: 280),
                       curve: Curves.easeOutCubic,
                     );
-                  },
-                  child: Container(
-                    width: isCover ? singleThumbW : spreadThumbW,
-                    height: height,
-                    margin: EdgeInsets.only(right: 8.w),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(6.r),
-                      border: Border.all(
-                        color: isSelected ? Colors.white : Colors.white24,
-                        width: isSelected ? 2 : 1,
-                      ),
-                      color: Colors.white,
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(5.r),
-                      child: isCover
-                          // ── 커버 썸네일 ──
-                          ? FittedBox(
-                              fit: BoxFit.contain,
-                              child: SizedBox(
-                                width: logicalCoverSize.width,
-                                height: logicalCoverSize.height,
-                                child: CoverLayout(
-                                  aspect:
-                                      logicalCoverSize.width /
-                                      logicalCoverSize.height,
-                                  layers: pages[0].layers,
-                                  isInteracting: false,
-                                  leftSpine: 0,
-                                  backgroundColor:
-                                      pages[0].backgroundColor != null
-                                      ? Color(
-                                          pages[0].backgroundColor!,
-                                        ).withAlpha(0xFF)
-                                      : null,
-                                  onCoverSizeChanged: (_) {},
-                                  buildImage: (layer) => coverBuilder
-                                      .buildImage(layer, isCover: true),
-                                  buildText: (layer) => coverBuilder.buildText(
-                                    layer,
-                                    isCover: true,
+                  }
+                }
+
+                return Semantics(
+                  label: index == 0 ? label : '$label쪽',
+                  selected: selected,
+                  button: enabled,
+                  excludeSemantics: true,
+                  onTap: enabled ? select : null,
+                  child: GestureDetector(
+                    key: ValueKey('reader-spread-$index'),
+                    behavior: HitTestBehavior.opaque,
+                    onTap: enabled ? select : null,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: _gap),
+                      child: SizedBox(
+                        width: index == 0 ? coverSlot : spreadSlot,
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              width: index == 0 ? singleWidth : spreadWidth,
+                              height: widget.height,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(3),
+                                  border: Border.all(
+                                    color: selected
+                                        ? SnapFitColors.accent
+                                        : AlbumStageStyle.line(context),
+                                    width: 1.5,
                                   ),
-                                  sortedByZ: coverInteraction.sortByZ,
-                                  theme:
-                                      ref
-                                          .watch(albumEditorViewModelProvider)
-                                          .value
-                                          ?.selectedTheme ??
-                                      resolveCoverTheme(null),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(1.5),
+                                  child: artwork(indices),
                                 ),
                               ),
-                            )
-                          // ── 스프레드 썸네일 (1~2페이지 나란히) ──
-                          : Row(
-                              children: [
-                                for (
-                                  int pi = 0;
-                                  pi < pageIndices.length;
-                                  pi++
-                                ) ...[
-                                  if (pi > 0)
-                                    // 페이지 사이 구분선
-                                    Container(
-                                      width: 1,
-                                      height: height,
-                                      color: Colors.grey.shade300,
-                                    ),
-                                  Expanded(
-                                    child: AlbumReaderPageContent(
-                                      layers: pages[pageIndices[pi]].layers,
-                                      targetW: singleThumbW,
-                                      targetH: height,
-                                      previewBuilder: previewBuilder,
-                                      baseCanvasSize: logicalInnerSize,
-                                      backgroundColor:
-                                          pages[pageIndices[pi]]
-                                                  .backgroundColor !=
-                                              null
-                                          ? Color(
-                                              pages[pageIndices[pi]]
-                                                  .backgroundColor!,
-                                            )
-                                          : null,
-                                    ),
-                                  ),
-                                ],
-                                // 홀수 내지(마지막 스프레드에 페이지 1개만 있을 때) 빈 공간
-                                if (pageIndices.length == 1)
-                                  Expanded(
-                                    child: Container(
-                                      color: Colors.grey.shade100,
-                                    ),
-                                  ),
-                              ],
                             ),
+                            const SizedBox(height: 6),
+                            Text(
+                              label,
+                              maxLines: 1,
+                              style: TextStyle(
+                                fontSize: 10,
+                                height: 1.4,
+                                letterSpacing: 0,
+                                fontWeight: selected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: AlbumStageStyle.ink(
+                                  context,
+                                ).withValues(alpha: selected ? 1 : .6),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 );
@@ -230,92 +287,6 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
             );
           },
         ),
-      );
-    }
-
-    // pageController 없는 정적 버전
-    return SizedBox(
-      height: height + 12.h,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-        itemCount: spreadItems.length,
-        itemBuilder: (context, i) {
-          final pageIndices = spreadItems[i];
-          final isCover = i == 0;
-
-          return Container(
-            width: isCover ? singleThumbW : spreadThumbW,
-            height: height,
-            margin: EdgeInsets.only(right: 8.w),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(6.r),
-              border: Border.all(color: Colors.white24, width: 1),
-              color: Colors.white,
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(5.r),
-              child: isCover
-                  ? FittedBox(
-                      fit: BoxFit.contain,
-                      child: SizedBox(
-                        width: logicalCoverSize.width,
-                        height: logicalCoverSize.height,
-                        child: CoverLayout(
-                          aspect:
-                              logicalCoverSize.width / logicalCoverSize.height,
-                          layers: pages[0].layers,
-                          isInteracting: false,
-                          leftSpine: 0,
-                          onCoverSizeChanged: (_) {},
-                          buildImage: (layer) =>
-                              coverBuilder.buildImage(layer, isCover: true),
-                          buildText: (layer) =>
-                              coverBuilder.buildText(layer, isCover: true),
-                          sortedByZ: coverInteraction.sortByZ,
-                          theme:
-                              ref
-                                  .watch(albumEditorViewModelProvider)
-                                  .value
-                                  ?.selectedTheme ??
-                              resolveCoverTheme(null),
-                        ),
-                      ),
-                    )
-                  : Row(
-                      children: [
-                        for (int pi = 0; pi < pageIndices.length; pi++) ...[
-                          if (pi > 0)
-                            Container(
-                              width: 1,
-                              height: height,
-                              color: Colors.grey.shade300,
-                            ),
-                          Expanded(
-                            child: AlbumReaderPageContent(
-                              layers: pages[pageIndices[pi]].layers,
-                              targetW: singleThumbW,
-                              targetH: height,
-                              previewBuilder: previewBuilder,
-                              baseCanvasSize: logicalInnerSize,
-                              backgroundColor:
-                                  pages[pageIndices[pi]].backgroundColor != null
-                                  ? Color(
-                                      pages[pageIndices[pi]].backgroundColor!,
-                                    )
-                                  : null,
-                            ),
-                          ),
-                        ],
-                        if (pageIndices.length == 1)
-                          Expanded(
-                            child: Container(color: Colors.grey.shade100),
-                          ),
-                      ],
-                    ),
-            ),
-          );
-        },
       ),
     );
   }

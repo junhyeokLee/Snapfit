@@ -17,13 +17,16 @@ class SnapFitColors {
   @Deprecated('Use backgroundOf(context) for theme-aware colors.')
   static const Color backgroundDark = Color(0xFF0E0E0E);
 
-  /// 액센트: Vibrant Cyan (텍스트/아이콘)
-  /// 디자인 명세: #00C2E0
-  static const Color accent = Color(0xFF08B8D0);
+  /// 액센트: Muted Sage-Teal (텍스트/아이콘)
+  /// 디자인 명세: #14AAA8
+  static const Color accent = Color(0xFF14AAA8);
 
-  /// 세컨드 액센트: Solid Very Light Cyan (배경/버튼)
-  /// 디자인 명세: #E3F9FD
-  static const Color accentLight = Color(0xFFEAFBFD);
+  /// Text and icons on the brand action fill, shared by light and dark UI.
+  static const Color onAccent = Color(0xFF063740);
+
+  /// 세컨드 액센트: Soft Sage Tint (배경/버튼)
+  /// 디자인 명세: #E4F4F3
+  static const Color accentLight = Color(0xFFE4F4F3);
 
   /// 패널/서피스 (기존 스냅핏 컬러 유지)
   static const Color surface = Color(0xFF162A2E);

@@ -1,15 +1,16 @@
-import 'dart:io';
-import '../../../data/gallery/browser_photo_asset.dart';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../../../core/theme/snapfit_design_tokens.dart'
+    show SnapFitRadius;
 import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../../../shared/web/web_design.dart';
 import '../../../../../shared/widgets/experience_icon.dart';
 import '../../../../store/presentation/widgets/template_book_artwork.dart';
-import '../../../../store/presentation/widgets/template_page_renderer.dart';
 import '../../../domain/entities/layer.dart';
 import 'creation_workspace.dart';
+import 'creation_document_preview.dart';
+import 'creation_document_page.dart';
 
 /// -1 starts the editor; a nonnegative result opens that page for corrections.
 Future<int?> showAlbumCreationReview(
@@ -17,34 +18,47 @@ Future<int?> showAlbumCreationReview(
   required List<List<LayerModel>> pages,
   required int innerPageCount,
   required Size canvasSize,
-}) => kIsWeb ? showDialog<int>(
-  context: context,
-  builder: (dialogContext) => Dialog(
-    backgroundColor: WebPalette.of(dialogContext).surface,
-    surfaceTintColor: Colors.transparent,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    insetPadding: const EdgeInsets.all(32),
-    child: SizedBox(
-      width: 1000,
-      height: math.min(760.0, math.max(280.0, MediaQuery.sizeOf(dialogContext).height - 64)),
-      child: AlbumCreationReviewSheet(pages: pages, innerPageCount: innerPageCount, canvasSize: canvasSize),
-    ),
-  ),
-) : showModalBottomSheet<int>(
-  context: context,
-  isScrollControlled: true,
-  useSafeArea: true,
-  constraints: const BoxConstraints(maxWidth: 1000),
-  shape: const RoundedRectangleBorder(
-    borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
-  ),
-  backgroundColor: ExperienceFormStyle.surface(context),
-  builder: (_) => AlbumCreationReviewSheet(
-    pages: pages,
-    innerPageCount: innerPageCount,
-    canvasSize: canvasSize,
-  ),
-);
+}) => kIsWeb
+    ? showDialog<int>(
+        context: context,
+        builder: (dialogContext) => Dialog(
+          backgroundColor: WebPalette.of(dialogContext).surface,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          insetPadding: const EdgeInsets.all(32),
+          child: SizedBox(
+            width: 1000,
+            height: math.min(
+              760.0,
+              math.max(280.0, MediaQuery.sizeOf(dialogContext).height - 64),
+            ),
+            child: AlbumCreationReviewSheet(
+              pages: pages,
+              innerPageCount: innerPageCount,
+              canvasSize: canvasSize,
+            ),
+          ),
+        ),
+      )
+    : showModalBottomSheet<int>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        constraints: const BoxConstraints(maxWidth: 1000),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(SnapFitRadius.lg),
+          ),
+        ),
+        backgroundColor: ExperienceFormStyle.surface(context),
+        builder: (_) => AlbumCreationReviewSheet(
+          pages: pages,
+          innerPageCount: innerPageCount,
+          canvasSize: canvasSize,
+        ),
+      );
 
 class AlbumCreationReviewSheet extends StatefulWidget {
   const AlbumCreationReviewSheet({
@@ -64,6 +78,8 @@ class AlbumCreationReviewSheet extends StatefulWidget {
 
 class _AlbumCreationReviewSheetState extends State<AlbumCreationReviewSheet> {
   bool _missingOnly = false;
+  int _previewPage = 0;
+  final _previewKey = GlobalKey();
   List<List<LayerModel>> get pages => widget.pages;
   int get innerPageCount => widget.innerPageCount;
   Size get canvasSize => widget.canvasSize;
@@ -85,21 +101,41 @@ class _AlbumCreationReviewSheetState extends State<AlbumCreationReviewSheet> {
     spacing: 8,
     runSpacing: 4,
     children: [
-      FilterChip(
-        key: const ValueKey('creation-review-missing-filter'),
-        selected: _missingOnly,
-        onSelected: missingPages.isEmpty
-            ? null
-            : (selected) => setState(() => _missingOnly = selected),
-        label: Text(
-          '빈 사진 있는 쪽 ${missingPages.length}쪽',
-          style: ExperienceFormStyle.text(context, 12),
+      if (missingPages.isEmpty)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const ExperienceIcon('Check', size: 16),
+              const SizedBox(width: 8),
+              Text(
+                pages
+                        .expand((page) => page)
+                        .any((layer) => layer.type == LayerType.image)
+                    ? '사진 채움 완료'
+                    : '사진 자리 없음',
+                style: ExperienceFormStyle.text(context, 12, secondary: true),
+              ),
+            ],
+          ),
+        )
+      else
+        FilterChip(
+          key: const ValueKey('creation-review-missing-filter'),
+          selected: _missingOnly,
+          onSelected: missingPages.isEmpty
+              ? null
+              : (selected) => setState(() => _missingOnly = selected),
+          label: Text(
+            '빈 사진 있는 쪽 ${missingPages.length}쪽',
+            style: ExperienceFormStyle.text(context, 12),
+          ),
+          selectedColor: ExperienceFormStyle.selection(context),
+          backgroundColor: ExperienceFormStyle.surface(context),
+          side: BorderSide(color: ExperienceFormStyle.line(context)),
+          shape: const StadiumBorder(),
         ),
-        selectedColor: ExperienceFormStyle.selection(context),
-        backgroundColor: ExperienceFormStyle.surface(context),
-        side: BorderSide(color: ExperienceFormStyle.line(context)),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-      ),
       if (missingPages.isNotEmpty)
         TextButton.icon(
           key: const ValueKey('creation-review-first-missing'),
@@ -133,6 +169,23 @@ class _AlbumCreationReviewSheetState extends State<AlbumCreationReviewSheet> {
     final indices = _missingOnly
         ? missingPages
         : List.generate(innerPageCount + 1, (index) => index);
+    final start = ElevatedButton(
+      key: const ValueKey('creation-review-start'),
+      style: CreationStyle.primary(context),
+      onPressed: () => Navigator.pop(context, -1),
+      child: const Text('편집 시작'),
+    );
+    final preview = CreationDocumentPreview(
+      key: _previewKey,
+      pages: pages,
+      canvas: canvasSize,
+      preserveTypography: true,
+      showBookMaterial: true,
+      showThumbnails: false,
+      spreadInLandscape: true,
+      initialPage: _previewPage,
+      onPageChanged: (page) => _previewPage = page,
+    );
     return FractionallySizedBox(
       heightFactor: .94,
       child: SafeArea(
@@ -347,34 +400,66 @@ class _AlbumCreationReviewSheetState extends State<AlbumCreationReviewSheet> {
                         );
                       },
                     );
-                    if (!wide || pages.isEmpty) return grid;
+                    if (!wide || pages.isEmpty) {
+                      if (kIsWeb ||
+                          pages.isEmpty ||
+                          _missingOnly ||
+                          constraints.maxHeight < 340)
+                        return grid;
+                      return Column(
+                        children: [
+                          SizedBox(
+                            key: const ValueKey('creation-review-overview'),
+                            height: (constraints.maxHeight * .46).clamp(
+                              150.0,
+                              260.0,
+                            ),
+                            child: preview,
+                          ),
+                          const SizedBox(height: 12),
+                          Expanded(child: grid),
+                        ],
+                      );
+                    }
                     return Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Expanded(
-                          flex: 38,
-                          child: CreationPaperStage(
-                            title: '표지',
-                            child: Center(
-                              child: AspectRatio(
-                                aspectRatio: canvasSize.aspectRatio,
-                                child: _ReviewPage(
-                                  layers: pages.first,
-                                  canvasSize: canvasSize,
-                                  cover: true,
+                          flex: kIsWeb ? 38 : 6,
+                          child: kIsWeb
+                              ? CreationPaperStage(
+                                  title: '표지',
+                                  child: Center(
+                                    child: AspectRatio(
+                                      aspectRatio: canvasSize.aspectRatio,
+                                      child: _ReviewPage(
+                                        layers: pages.first,
+                                        canvasSize: canvasSize,
+                                        cover: true,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : KeyedSubtree(
+                                  key: const ValueKey(
+                                    'creation-review-preview',
+                                  ),
+                                  child: preview,
                                 ),
-                              ),
-                            ),
-                          ),
                         ),
-                        const SizedBox(width: 24),
+                        const SizedBox(width: 20),
                         Expanded(
-                          flex: 62,
+                          flex: kIsWeb ? 62 : 5,
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               _filters(missingPages),
                               const SizedBox(height: 8),
                               Expanded(child: grid),
+                              if (!kIsWeb) ...[
+                                const SizedBox(height: 12),
+                                start,
+                              ],
                             ],
                           ),
                         ),
@@ -383,19 +468,16 @@ class _AlbumCreationReviewSheetState extends State<AlbumCreationReviewSheet> {
                   },
                 ),
               ),
-              const SizedBox(height: 12),
-              Align(
-                alignment: Alignment.centerRight,
-                child: SizedBox(
-                width: kIsWeb ? 220 : double.infinity,
-                child: ElevatedButton(
-                  key: const ValueKey('creation-review-start'),
-                  style: ExperienceFormStyle.primary(context),
-                  onPressed: () => Navigator.pop(context, -1),
-                  child: const Text('편집 시작'),
+              if (!wide || kIsWeb || pages.isEmpty) ...[
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: SizedBox(
+                    width: kIsWeb ? 220 : double.infinity,
+                    child: start,
+                  ),
                 ),
-                ),
-              ),
+              ],
             ],
           ),
         ),
@@ -404,7 +486,7 @@ class _AlbumCreationReviewSheetState extends State<AlbumCreationReviewSheet> {
   }
 }
 
-class _ReviewPage extends StatefulWidget {
+class _ReviewPage extends StatelessWidget {
   const _ReviewPage({
     required this.layers,
     required this.canvasSize,
@@ -414,77 +496,25 @@ class _ReviewPage extends StatefulWidget {
   final Size canvasSize;
   final bool cover;
   @override
-  State<_ReviewPage> createState() => _ReviewPageState();
-}
-
-class _ReviewPageState extends State<_ReviewPage> {
-  final Map<String, File> _files = {};
-  int _generation = 0;
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  @override
-  void didUpdateWidget(covariant _ReviewPage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (!identical(oldWidget.layers, widget.layers)) {
-      _files.clear();
-      _load();
-    }
-  }
-
-  Future<void> _load() async {
-    final generation = ++_generation;
-    final files = <String, File>{};
-    for (final layer in widget.layers) {
-      if (layer.asset == null || layer.asset is BrowserPhotoAsset) continue;
-      try {
-        final file = await layer.asset!.file;
-        if (!mounted || generation != _generation) return;
-        if (file != null) files[layer.id] = file;
-      } catch (_) {
-        // Unavailable originals remain visible as empty photo placeholders.
-      }
-    }
-    if (mounted && generation == _generation && files.isNotEmpty) {
-      setState(() => _files.addAll(files));
-    }
-  }
-
-  Widget _artwork(double width, double height, {bool wrap = false}) =>
-      TemplatePageRenderer(
-        layers: widget.layers,
-        width: width,
-        height: height,
-        designCanvasSize: widget.canvasSize,
-        localFiles: _files,
-        imageDecodeWidth:
-            (math.max(width, height) *
-                    MediaQuery.devicePixelRatioOf(context) *
-                    1.5)
-                .ceil()
-                .clamp(320, 1200),
-        showCanvasChrome: false,
-        wrapSpineArtwork: wrap,
-        cacheNetworkImages: true,
-        preserveTypography: true,
-      );
-
-  @override
   Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) => widget.cover
+    builder: (context, constraints) => cover
         ? TemplateBookArtwork(
-            canvas: widget.canvasSize,
+            canvas: canvasSize,
             firstPage: 0,
             paired: false,
-            pageBuilder: (index, wrap) => _artwork(
-              constraints.maxWidth,
-              constraints.maxHeight,
-              wrap: wrap,
+            pageBuilder: (index, wrap) => CreationDocumentPage(
+              layers: layers,
+              canvas: canvasSize,
+              width: constraints.maxWidth,
+              height: constraints.maxHeight,
+              wrapSpine: wrap,
             ),
           )
-        : _artwork(constraints.maxWidth, constraints.maxHeight),
+        : CreationDocumentPage(
+            layers: layers,
+            canvas: canvasSize,
+            width: constraints.maxWidth,
+            height: constraints.maxHeight,
+          ),
   );
 }

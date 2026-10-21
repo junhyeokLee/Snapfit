@@ -21,28 +21,36 @@ Future<int?> showTemplateEditionSheet(
   required String productKey,
   required int initialCount,
   String? previewVariant,
-}) => kIsWeb ? showWebAwareDialog<int>(
-  context: context,
-  maxWidth: 1040,
-  maxHeight: 820,
-  builder: (_) => TemplateEditionSheet(volume: volume, title: title, productKey: productKey, initialCount: initialCount, previewVariant: previewVariant),
-) : showModalBottomSheet<int>(
-  context: context,
-  isScrollControlled: true,
-  useSafeArea: true,
-  backgroundColor: SnapFitColors.backgroundOf(context),
-  constraints: const BoxConstraints(maxWidth: 840),
-  shape: const RoundedRectangleBorder(
-    borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
-  ),
-  builder: (_) => TemplateEditionSheet(
-    volume: volume,
-    title: title,
-    productKey: productKey,
-    initialCount: initialCount,
-    previewVariant: previewVariant,
-  ),
-);
+}) => kIsWeb
+    ? showWebAwareDialog<int>(
+        context: context,
+        maxWidth: 1040,
+        maxHeight: 820,
+        builder: (_) => TemplateEditionSheet(
+          volume: volume,
+          title: title,
+          productKey: productKey,
+          initialCount: initialCount,
+          previewVariant: previewVariant,
+        ),
+      )
+    : showModalBottomSheet<int>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        backgroundColor: SnapFitColors.backgroundOf(context),
+        constraints: const BoxConstraints(maxWidth: 840),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+        ),
+        builder: (_) => TemplateEditionSheet(
+          volume: volume,
+          title: title,
+          productKey: productKey,
+          initialCount: initialCount,
+          previewVariant: previewVariant,
+        ),
+      );
 
 class TemplateEditionSheet extends StatefulWidget {
   const TemplateEditionSheet({
@@ -76,7 +84,11 @@ class _TemplateEditionSheetState extends State<TemplateEditionSheet> {
             .where((aspect) => aspect.name == widget.previewVariant)
             .firstOrNull ??
         CollectionAspect.square;
-    final shown = widget.volume.document(aspect, innerPages: _count);
+    final shown = refinePaidCatalogDocument(
+      widget.volume.id,
+      aspect,
+      widget.volume.document(aspect, innerPages: _count),
+    );
     final canvas = Size(
       (shown['designWidth'] as num).toDouble(),
       (shown['designHeight'] as num).toDouble(),
@@ -150,9 +162,7 @@ class _TemplateEditionSheetState extends State<TemplateEditionSheet> {
             foregroundColor: ExperienceFormStyle.ink(context),
             selectedForegroundColor: ExperienceFormStyle.selectionInk(context),
             side: BorderSide(color: ExperienceFormStyle.line(context)),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(6),
-            ),
+            shape: const StadiumBorder(),
           ),
         ),
       ),
@@ -203,7 +213,7 @@ class _TemplateEditionSheetState extends State<TemplateEditionSheet> {
                               style: ExperienceFormStyle.text(
                                 context,
                                 18,
-                                weight: FontWeight.w600,
+                                weight: FontWeight.w700,
                               ),
                             ),
                             Text(

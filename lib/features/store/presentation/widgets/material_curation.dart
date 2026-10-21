@@ -11,10 +11,12 @@ class MaterialCurationItem {
     required this.type,
     required this.preview,
     required this.onOpen,
+    this.favoriteKey,
   });
   final String key, title, type;
   final Widget preview;
   final VoidCallback onOpen;
+  final String? favoriteKey;
 }
 
 /// Smaller than the album selection: materials stay readable at their own scale.
@@ -34,17 +36,17 @@ class MaterialCuration extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SizedBox(height: 24),
+        const SizedBox(height: 22),
         Text(
-          'THE MATERIAL EDIT',
+          '소재 컬렉션',
           style: ExperienceFormStyle.text(
             context,
             10,
-            secondary: true,
-            weight: FontWeight.w600,
+            weight: FontWeight.w700,
+            color: ExperienceFormStyle.selectionInk(context),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         Row(
           children: [
             Expanded(
@@ -52,11 +54,12 @@ class MaterialCuration extends StatelessWidget {
                 selection.title,
                 style: ExperienceFormStyle.text(
                   context,
-                  19,
-                  weight: FontWeight.w600,
+                  21,
+                  weight: FontWeight.w700,
                 ),
               ),
             ),
+            const SizedBox(width: 10),
             Text(
               '${selected.length}종',
               style: ExperienceFormStyle.text(context, 11, secondary: true),
@@ -72,7 +75,7 @@ class MaterialCuration extends StatelessWidget {
         ],
         const SizedBox(height: 17),
         SizedBox(
-          height: 132 + scale.scale(13) * 2.9 + 46,
+          height: MaterialCatalogTile.extent(156, scale, showCommerce: false),
           child: ListView.separated(
             key: const ValueKey('material-curation-shelf'),
             scrollDirection: Axis.horizontal,
@@ -89,7 +92,9 @@ class MaterialCuration extends StatelessWidget {
                   type: item.type,
                   preview: item.preview,
                   onOpen: item.onOpen,
+                  favoriteKey: item.favoriteKey,
                   compact: true,
+                  showCommerce: false,
                 ),
               );
             },

@@ -216,9 +216,24 @@ void main() {
   );
 
   testWidgets(
-    'missing saved typography uses the same app baseline on all surfaces',
+    'missing saved typography preserves the legacy document baseline across UI themes',
     (tester) async {
-      final fallback = SnapFitTheme.light().textTheme.bodyMedium!;
+      final fallback = ThemeData.light(
+        useMaterial3: true,
+      ).textTheme.apply(fontFamily: 'NotoSans').bodyMedium!;
+      final dark = SnapFitTheme.dark();
+      final restyled = dark.copyWith(
+        textTheme: dark.textTheme.copyWith(
+          bodyMedium: const TextStyle(
+            fontFamily: 'FigmaHand',
+            fontSize: 31,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 4,
+            height: 2.2,
+            color: Colors.lime,
+          ),
+        ),
+      );
       const canvas = Size(500, 375);
       final layer = LayerModel(
         id: 'legacy-paragraph',
@@ -236,35 +251,44 @@ void main() {
         ),
       );
       List<Rect>? reference;
-      for (final theme in [SnapFitTheme.light(), SnapFitTheme.dark()]) {
-        for (final print in [false, true]) {
-          final paragraph = await _paint(
-            tester,
-            layer,
-            canvas,
-            print: print,
-            theme: theme,
-          );
-          final style = paragraph.text.style!;
-          expect(style.inherit, isFalse);
-          expect(style.fontFamily, 'NotoSans');
-          expect(style.fontSize, 12);
-          expect(style.fontWeight, fallback.fontWeight);
-          expect(style.letterSpacing, fallback.letterSpacing);
-          expect(style.height, fallback.height);
-          expect(style.leadingDistribution, fallback.leadingDistribution);
-          expect(style.color, fallback.color);
-          final boxes = paragraph
-              .getBoxesForSelection(
-                const TextSelection(baseOffset: 0, extentOffset: _prose.length),
-              )
-              .map((box) => box.toRect())
-              .toList();
-          expect(boxes.map((box) => box.top).toSet().length, greaterThan(3));
-          if (reference == null) {
-            reference = boxes;
-          } else {
-            expect(boxes, reference);
+      for (final theme in [SnapFitTheme.light(), dark, restyled]) {
+        for (final textScale in [1.0, 1.8]) {
+          for (final print in [false, true]) {
+            final paragraph = await _paint(
+              tester,
+              layer,
+              canvas,
+              print: print,
+              theme: theme,
+              textScale: textScale,
+            );
+            final style = paragraph.text.style!;
+            expect(style.inherit, isFalse);
+            expect(style.fontFamily, 'NotoSans');
+            expect(style.fontSize, 12);
+            expect(style.fontWeight, fallback.fontWeight);
+            expect(style.letterSpacing, fallback.letterSpacing);
+            expect(style.height, fallback.height);
+            expect(style.leadingDistribution, fallback.leadingDistribution);
+            expect(style.color!.toARGB32(), fallback.color!.toARGB32());
+            expect(paragraph.textScaler.scale(12), 12);
+            expect(paragraph.textAlign, TextAlign.left);
+            expect(paragraph.size.width, closeTo(layer.width, .001));
+            final boxes = paragraph
+                .getBoxesForSelection(
+                  const TextSelection(
+                    baseOffset: 0,
+                    extentOffset: _prose.length,
+                  ),
+                )
+                .map((box) => box.toRect())
+                .toList();
+            expect(boxes.map((box) => box.top).toSet().length, greaterThan(3));
+            if (reference == null) {
+              reference = boxes;
+            } else {
+              expect(boxes, reference);
+            }
           }
         }
       }
@@ -315,7 +339,7 @@ void main() {
     },
   );
 
-  for (final textScale in [1.5, 2.0]) {
+  for (final textScale in [1.5, 1.8, 2.0]) {
     testWidgets(
       'artwork keeps print typography at $textScale while UI scales',
       (tester) async {

@@ -1,0 +1,28 @@
+{
+  "generatedAt": "2026-10-16",
+  "method": "built-in-image_gen",
+  "use": "replaceable sample photographs, not flattened templates",
+  "commercialRightsReview": "pending-owner-review",
+  "assets": [
+    {
+      "asset": "saturday-together.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: full-bleed editable photo-album cover photograph, not a book mockup or a collage. A candid Saturday picnic in a green park, a small multigenerational Korean family and two adult friends seated informally at the edge of an off-white picnic blanket, food containers and a basket kept small, natural laughter and relaxed gestures. An ordinary affectionate phone snapshot elevated with clear exposure, accurate human anatomy and real skin. Square composition crop-safe for portrait and wide album covers: people occupy the lower central half and a soft sunlit lawn with subtle tree shadows fills the top left for typography added later. Fresh leafy green, warm white, small tomato-red accents, not beige-dominated. Clear photographic detail without fake bokeh, stock-photo posing, text, watermarks, logos or borders. Entire output is the actual photographic scene.",
+      "source": "exec-d9a6a016-ae5c-415e-8ad7-fee4e8e1562d.png"
+    },
+    {
+      "asset": "summer-keepsake-box.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: full-bleed editable premium photo-album cover photograph, not a mockup, no printed design. A candid summer family-and-friends holiday on a quiet Korean coast. Three casually dressed adults and a young child, seen from behind, wading ankle-deep in clear pale turquoise sea near a small orange and off-white striped beach umbrella at the lower left. Real coastal rock and a narrow timber walkway, not tropical fantasy. Main people and umbrella in central-lower 60 percent so both square, portrait and landscape crops work. Generous calm aqua water and quieter sky in the upper left for editable serif lettering later, warm sun with natural defined shadows, photo details sharp and readable rather than atmospheric blur. Refined sea-green, marigold orange and ivory accents, natural everyday phone-photo warmth, accurate anatomy, joyful but unposed. No text, logos, watermarks, borders, paper, collage, camera frame or book.",
+      "source": "exec-932ba09e-2bf5-4660-a054-3be938bee023.png"
+    },
+    {
+      "asset": "summer-bench.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: replaceable photo inside a premium summer family photo book. Close candid still-life on a real weathered timber seaside picnic bench: blue-and-ivory striped cotton towel partly folded, a clear drinking glass with water, a small tangerine with a torn peel, a smooth translucent sea-glass pebble and a plain unprinted paper card tucked under a sunglasses case. A casually dressed adult's hand entering at one edge, turquoise water and rocks discernible beyond bench. Believable unstyled phone travel photograph, crisp tactile natural textures, sunny side light and real soft shadows, not artificial product render, not an arrangement of scrapbook graphics. Landscape crop-safe composition with main objects centered. Muted aqua, ink blue and citrus accents; no oversaturation, no text, no labels, logos, watermarks, borders, drawn elements or collage.",
+      "source": "exec-1971bd35-9ea6-4ca9-b7dc-a4e563edeb45.png"
+    },
+    {
+      "asset": "summer-evening.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: editable interior sample photograph for a family-and-friends summer memory album. Candid ordinary Korean family holiday evening, three adults and a school-age child sitting around a small wooden table playing a simple board game in a modest seaside rental house. A partly open window shows deep blue sea evening; the room lit by one warm domestic lamp. Focus on the real lively hands and relaxed interaction, include one older adult. Imperfect natural phone snapshot composition with clear believable exposure, not a magazine interior or studio portrait. Landscape framing, people and table in central 75 percent safe to crop square. Navy, olive and small amber accents, realistic skin and anatomy, no readable words or numbers on game pieces, no text, no logos, watermarks, blur, fake bokeh, borders, collage, paper layout or graphic elements.",
+      "source": "exec-7b5f4c6d-9604-41c1-a560-75a1c49802e9.png"
+    }
+  ]
+}

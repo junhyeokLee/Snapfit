@@ -23,7 +23,6 @@ import '../widgets/reader/album_reader_thumbnail_strip.dart';
 import '../widgets/reader/album_reader_page_content.dart';
 import '../widgets/reader/album_reader_more_options_sheet.dart';
 import '../widgets/reader/album_completion_confirmation.dart';
-import '../widgets/reader/album_frozen_screen.dart';
 import '../widgets/web/web_album_workspace.dart';
 import '../viewmodels/home_view_model.dart';
 import '../../data/api/album_provider.dart';
@@ -61,9 +60,9 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     kCoverReferenceWidth,
   ); // 초기값, initState에서 갱신됨
   Size _coverSize = Size.zero;
-  bool _isFrozen = false; // 제작확정 여부
   bool _isDeleting = false; // 삭제 진행 중 UI 잠금
   late int _focusPageIndex;
+  int? _requestedSpreadFocus;
 
   @override
   void initState() {
@@ -186,11 +185,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         },
         onConfirm: () {
           Navigator.pop(ctx);
-          if (kIsWeb) {
-            unawaited(_orderWebAlbum());
-          } else {
-            _showConfirmDialog();
-          }
+          unawaited(_prepareBookOrder());
         },
         onDelete: vm.album?.allowsManagement == false
             ? null
@@ -286,7 +281,9 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.surfaceOf(context),
+        backgroundColor: kIsWeb
+            ? WebPalette.of(context).surface
+            : SnapFitColors.surfaceOf(context),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(kIsWeb ? 12 : 20.r),
         ),
@@ -400,13 +397,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     }
   }
 
-  // 제작확정 확인 다이얼로그
-  Future<void> _showConfirmDialog() async {
-    final confirmed = await showAlbumCompletionConfirmation(context);
-    if (mounted && confirmed) setState(() => _isFrozen = true);
-  }
-
-  Future<void> _openWebEditor() async {
+  Future<void> _openAlbumEditor() async {
     if (_isDeleting) return;
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     if (vm.album?.allowsEditing == false) return;
@@ -414,9 +405,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     await _pushAdaptiveRoute<bool>(
       MaterialPageRoute(
         settings: albumId != null && albumId > 0
-            ? WebAppRouteSettings(
-                WebAppLocation(WebAppPage.editor, '$albumId'),
-              )
+            ? WebAppRouteSettings(WebAppLocation(WebAppPage.editor, '$albumId'))
             : null,
         builder: (_) => PageEditorScreen(
           initialPageIndex: _focusPageIndex,
@@ -430,7 +419,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     setState(() {});
   }
 
-  Future<void> _orderWebAlbum() async {
+  Future<void> _prepareBookOrder() async {
     if (_isDeleting) return;
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     if (vm.album?.allowsEditing == false) return;
@@ -438,7 +427,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     if (!mounted || !confirmed) return;
     final album = ref.read(albumEditorViewModelProvider.notifier).album;
     if (album == null || album.id <= 0 || !album.allowsEditing) return;
-    await _pushAdaptiveRoute<String>(
+    final result = await _pushAdaptiveRoute<String>(
       MaterialPageRoute(
         settings: WebAppRouteSettings(
           WebAppLocation(WebAppPage.print, '${album.id}'),
@@ -449,7 +438,12 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         ),
       ),
     );
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    if (result == 'edit_album') {
+      await _openAlbumEditor();
+    } else {
+      setState(() {});
+    }
   }
 
   Future<void> _inviteFromWeb() async {
@@ -472,16 +466,18 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     final pages = vm.pages.skip(1).toList();
     if (pages.isEmpty) return;
-    await _pushAdaptiveRoute<void>(MaterialPageRoute(
-      builder: (_) => AlbumReaderInnerDetailScreen(
-        innerPages: pages,
-        initialPageIndex: (_focusPageIndex - 1).clamp(0, pages.length - 1),
-        singlePageW: kCoverReferenceWidth,
-        singlePageH: kCoverReferenceWidth / vm.selectedCover.ratio,
-        interaction: _interaction,
-        layerBuilder: _layerBuilder,
+    await _pushAdaptiveRoute<void>(
+      MaterialPageRoute(
+        builder: (_) => AlbumReaderInnerDetailScreen(
+          innerPages: pages,
+          initialPageIndex: (_focusPageIndex - 1).clamp(0, pages.length - 1),
+          singlePageW: kCoverReferenceWidth,
+          singlePageH: kCoverReferenceWidth / vm.selectedCover.ratio,
+          interaction: _interaction,
+          layerBuilder: _layerBuilder,
+        ),
       ),
-    ));
+    );
     if (mounted) setState(() {});
   }
 
@@ -516,10 +512,12 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
 
     Widget document() {
       if (pages.isEmpty) {
-        return Center(child: Text(
-          '아직 페이지가 없어요.',
-          style: TextStyle(color: WebPalette.of(context).muted),
-        ));
+        return Center(
+          child: Text(
+            '아직 페이지가 없어요.',
+            style: TextStyle(color: WebPalette.of(context).muted),
+          ),
+        );
       }
       final page = pages[focus];
       return LayoutBuilder(
@@ -565,9 +563,11 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
               title: album?.title.trim().isNotEmpty == true
                   ? album!.title
                   : '스냅핏 앨범',
-              description: '${cover.displayName}'
+              description:
+                  '${cover.displayName}'
                   '${cover.productId == null ? '' : ' · ${cover.coverType.label}'}'
-                  ' · 내지 ${math.max(0, pages.length - 1)}쪽',
+                  ' · 내지 ${math.max(0, pages.length - 1)}쪽'
+                  '${album?.allowsEditing == false ? ' · 보기 전용' : ''}',
               pageLabel: focus == 0
                   ? '표지'
                   : '내지 $focus / ${math.max(0, pages.length - 1)}쪽',
@@ -578,15 +578,17 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
               onBack: () => Navigator.maybePop(context),
               onEdit: album?.allowsEditing == false
                   ? null
-                  : () => unawaited(_openWebEditor()),
+                  : () => unawaited(_openAlbumEditor()),
               onOrder: album == null || album.id <= 0 || !album.allowsEditing
                   ? null
-                  : () => unawaited(_orderWebAlbum()),
+                  : () => unawaited(_prepareBookOrder()),
               onPrevious: focus > 0 ? () => selectPage(focus - 1) : null,
               onNext: focus + 1 < pages.length
                   ? () => selectPage(focus + 1)
                   : null,
-              onDetail: focus > 0 ? () => unawaited(_openWebPageDetail()) : null,
+              onDetail: focus > 0
+                  ? () => unawaited(_openWebPageDetail())
+                  : null,
               managementMenu: album?.allowsManagement == false
                   ? null
                   : PopupMenuButton<String>(
@@ -635,7 +637,8 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(
-                width: 28, height: 28,
+                width: 28,
+                height: 28,
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
               const SizedBox(height: 18),
@@ -643,7 +646,10 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                 state?.isCreatingInBackground == true
                     ? '앨범을 준비하고 있습니다'
                     : '앨범을 불러오고 있습니다',
-                style: TextStyle(color: WebPalette.of(context).muted, fontSize: 13),
+                style: TextStyle(
+                  color: WebPalette.of(context).muted,
+                  fontSize: 13,
+                ),
               ),
             ],
           ),
@@ -682,49 +688,6 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
       );
     }
 
-    // 제작확정 완료 화면
-    if (_isFrozen && !kIsWeb) {
-      return AlbumFrozenScreen(
-        album: vm.album?.copyWith(
-          ratio: vm.selectedCover.ratio.toString(),
-          coverTheme: vm.selectedTheme.label,
-          coverLayersJson: vm.exportFullAlbumLayersJson(null),
-        ),
-        onClose: () {
-          Navigator.pop(context, true); // 홈 갱신 필요
-          ref.read(homeViewModelProvider.notifier).refresh();
-        },
-        onOrder: () {
-          final album = vm.album;
-          if (album == null || album.id <= 0) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('주문할 앨범 정보를 찾을 수 없습니다.')),
-            );
-            return;
-          }
-
-          unawaited(() async {
-            final result = await _pushAdaptiveRoute<String>(
-              MaterialPageRoute(
-                settings: WebAppRouteSettings(
-                  WebAppLocation(WebAppPage.print, '${album.id}'),
-                ),
-                builder: (_) => PrintOrderPreviewScreen(
-                  albumId: album.id,
-                  albumTitle: album.title.trim().isEmpty
-                      ? '스냅핏 앨범'
-                      : album.title,
-                ),
-              ),
-            );
-            if (mounted && result == 'edit_album') {
-              setState(() => _isFrozen = false);
-            }
-          }());
-        },
-      );
-    }
-
     vm.ensureCoverPage();
     final allPages = vm.pages;
 
@@ -748,6 +711,10 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
       media.viewPadding.right,
       media.viewInsets.right,
     );
+    final leftSystemInset = math.max(
+      media.viewPadding.left,
+      media.viewInsets.left,
+    );
 
     int spreadForFocusPage(int pageIndex) {
       if (pageIndex <= 0) return 0;
@@ -757,52 +724,33 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     void selectSpread(int spread) {
       final pageIndex = spread <= 0 ? 0 : 1 + ((spread - 1) * 2);
       final target = pageIndex.clamp(0, allPages.length - 1) as int;
-      setState(() => _focusPageIndex = target);
+      setState(() {
+        _requestedSpreadFocus = target;
+        _focusPageIndex = target;
+      });
     }
 
-    Widget buildReaderMetaPill() {
+    Widget buildReaderPosition() {
       final isCover = _focusPageIndex == 0;
       final totalInner = allPages.length - 1;
+      final left = isCover ? 0 : 1 + ((_focusPageIndex - 1) ~/ 2) * 2;
+      final right = math.min(left + 1, totalInner);
       final label = isCover
-          ? '커버'
-          : '${_focusPageIndex.toString().padLeft(2, '0')} / ${totalInner.toString().padLeft(2, '0')}';
-      return Container(
-        height: 30,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: BoxDecoration(
-          color: AlbumStageStyle.glass(context),
-          borderRadius: BorderRadius.circular(999.r),
-          border: Border.all(color: AlbumStageStyle.line(context)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 14,
-              offset: const Offset(0, 7),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 6,
-              height: 6,
-              decoration: const BoxDecoration(
-                color: SnapFitColors.accent,
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: AlbumStageStyle.ink(context),
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 0,
-              ),
-            ),
-          ],
+          ? '표지'
+          : '${left == right ? left : '$left-$right'} / $totalInner';
+      return Semantics(
+        liveRegion: true,
+        child: Text(
+          label,
+          key: const ValueKey('reader-page-position'),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: AlbumStageStyle.ink(context),
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0,
+          ),
         ),
       );
     }
@@ -852,14 +800,23 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         },
         onPageChanged: (index) {
           final nextFocus = index <= 0 ? 0 : 1 + ((index - 1) * 2);
-          setState(
-            () => _focusPageIndex =
-                nextFocus.clamp(0, allPages.length - 1) as int,
-          );
+          // Riffle frames must not pull the picker away from its chosen target.
+          if (_requestedSpreadFocus != null &&
+              nextFocus != _requestedSpreadFocus)
+            return;
+          setState(() {
+            _focusPageIndex = nextFocus.clamp(0, allPages.length - 1) as int;
+            _requestedSpreadFocus = null;
+          });
         },
         onFocusPageChanged: (index) {
-          if (_focusPageIndex == index) return;
-          setState(() => _focusPageIndex = index);
+          if (_requestedSpreadFocus != null && index != _requestedSpreadFocus)
+            return;
+          if (_focusPageIndex == index && _requestedSpreadFocus == null) return;
+          setState(() {
+            _focusPageIndex = index;
+            _requestedSpreadFocus = null;
+          });
         },
         onStateChanged: () {
           if (mounted) setState(() {});
@@ -904,20 +861,22 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                                     ),
                                   ),
                                 Positioned(
-                                  left: 10,
+                                  left: 10 + leftSystemInset,
                                   top: 10,
-                                  child: _LandscapeReaderButton(
+                                  child: _ReaderHeaderButton(
                                     icon: platformBackIcon(),
+                                    tooltip: '앨범 목록으로 돌아가기',
                                     onTap: _isDeleting
                                         ? () {}
                                         : () => Navigator.pop(context),
                                   ),
                                 ),
                                 Positioned(
-                                  right: 14,
+                                  right: 14 + rightSystemInset,
                                   top: 10,
-                                  child: _LandscapeReaderButton(
+                                  child: _ReaderHeaderButton(
                                     icon: Icons.more_horiz_rounded,
+                                    tooltip: '앨범 메뉴',
                                     onTap: _showMoreOptions,
                                   ),
                                 ),
@@ -939,20 +898,22 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                                     child: Row(
                                       children: [
                                         // 뒤로가기
-                                        AlbumReaderCircleBtn(
+                                        _ReaderHeaderButton(
                                           icon: platformBackIcon(),
+                                          tooltip: '앨범 목록으로 돌아가기',
                                           onTap: _isDeleting
                                               ? () {}
                                               : () => Navigator.pop(context),
                                         ),
                                         Expanded(
                                           child: Center(
-                                            child: buildReaderMetaPill(),
+                                            child: buildReaderPosition(),
                                           ),
                                         ),
                                         // ... 메뉴
-                                        AlbumReaderCircleBtn(
+                                        _ReaderHeaderButton(
                                           icon: Icons.more_horiz_rounded,
+                                          tooltip: '앨범 메뉴',
                                           onTap: _showMoreOptions,
                                         ),
                                       ],
@@ -1012,7 +973,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
   }
 }
 
-class _LandscapePageRail extends StatelessWidget {
+class _LandscapePageRail extends StatefulWidget {
   const _LandscapePageRail({
     required this.pages,
     required this.focusPageIndex,
@@ -1027,12 +988,58 @@ class _LandscapePageRail extends StatelessWidget {
   final Size baseCanvasSize;
   final ValueChanged<int> onSpreadSelected;
 
+  @override
+  State<_LandscapePageRail> createState() => _LandscapePageRailState();
+}
+
+class _LandscapePageRailState extends State<_LandscapePageRail> {
+  final _scroll = ScrollController();
+  String? _alignment;
+  List<AlbumPage> get pages => widget.pages;
+  int get focusPageIndex => widget.focusPageIndex;
+  Size get baseCanvasSize => widget.baseCanvasSize;
+  LayerBuilder get previewBuilder => widget.previewBuilder;
+  ValueChanged<int> get onSpreadSelected => widget.onSpreadSelected;
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  void _alignSelection(BuildContext context) {
+    final aspect = baseCanvasSize.width / baseCanvasSize.height;
+    final caption = MediaQuery.textScalerOf(context).scale(10) * 1.4;
+    final signature =
+        '$_selectedSpread:$aspect:$caption:${MediaQuery.sizeOf(context)}:${MediaQuery.viewPaddingOf(context)}:${MediaQuery.viewInsetsOf(context)}:${pages.length}';
+    if (_alignment == signature) return;
+    final animate = _alignment != null;
+    _alignment = signature;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scroll.hasClients) return;
+      final coverExtent = math.max(44.0, 30 / aspect) + caption + 16;
+      final spreadExtent = math.max(44.0, 22 / aspect) + caption + 16;
+      final top = _selectedSpread == 0
+          ? 3.0
+          : 3 + coverExtent + (_selectedSpread - 1) * spreadExtent;
+      final extent = _selectedSpread == 0 ? coverExtent : spreadExtent;
+      final target = (top + extent / 2 - _scroll.position.viewportDimension / 2)
+          .clamp(0.0, _scroll.position.maxScrollExtent);
+      if ((target - _scroll.offset).abs() < 1) return;
+      if (animate && !MediaQuery.disableAnimationsOf(context)) {
+        _scroll.animateTo(
+          target,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+        );
+      } else {
+        _scroll.jumpTo(target);
+      }
+    });
+  }
+
   String get _pageLabel {
-    if (pages.isEmpty || focusPageIndex <= 0) return '커버';
-    final totalInner = pages.length - 1;
-    final left = focusPageIndex.clamp(1, totalInner);
-    final right = (left + 1).clamp(1, totalInner);
-    return right > left ? '$left-$right\n/$totalInner' : '$left\n/$totalInner';
+    return '${math.max(0, pages.length - 1)}쪽';
   }
 
   int get _selectedSpread {
@@ -1040,31 +1047,15 @@ class _LandscapePageRail extends StatelessWidget {
     return 1 + ((focusPageIndex - 1) ~/ 2);
   }
 
-  List<List<int>> get _spreadItems {
-    if (pages.isEmpty) return const [];
-    final items = <List<int>>[
-      [0],
-    ];
-    for (var i = 1; i < pages.length; i += 2) {
-      items.add(i + 1 < pages.length ? [i, i + 1] : [i]);
-    }
-    return items;
-  }
+  List<List<int>> get _spreadItems =>
+      AlbumReaderThumbnailStrip.spreads(pages.length);
 
   @override
   Widget build(BuildContext context) {
+    _alignSelection(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AlbumStageStyle.glass(context),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AlbumStageStyle.line(context)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.07),
-            blurRadius: 16,
-            offset: const Offset(0, 7),
-          ),
-        ],
+        border: Border(left: BorderSide(color: AlbumStageStyle.line(context))),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 7),
@@ -1072,94 +1063,141 @@ class _LandscapePageRail extends StatelessWidget {
           children: [
             Container(
               width: 44,
-              height: 34,
               alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AlbumStageStyle.ink(context),
-                borderRadius: BorderRadius.circular(999),
-              ),
               child: Text(
                 _pageLabel,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AlbumStageStyle.top(context),
+                  color: AlbumStageStyle.ink(context).withValues(alpha: .65),
                   fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  height: 1.05,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0,
+                  height: 1.4,
                 ),
               ),
             ),
             const SizedBox(height: 7),
             Expanded(
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.zero,
                 child: ListView.builder(
+                  key: const ValueKey('reader-spread-rail'),
+                  controller: _scroll,
                   scrollDirection: Axis.vertical,
                   padding: const EdgeInsets.symmetric(vertical: 3),
                   itemCount: _spreadItems.length,
                   itemBuilder: (context, index) {
                     final pageIndices = _spreadItems[index];
                     final isSelected = index == _selectedSpread;
-                    final thumbHeight = 38.0;
                     final aspect = baseCanvasSize.width / baseCanvasSize.height;
-                    final singleWidth = 22.0;
-                    final slotCount = pageIndices.length == 1 ? 1 : 2;
-                    final itemHeight = pageIndices.length == 1
-                        ? singleWidth / aspect
-                        : thumbHeight;
+                    final slotCount = index == 0 ? 1 : 2;
+                    final previewWidth = index == 0 ? 30.0 : 44.0;
+                    final singleWidth = previewWidth / slotCount;
+                    final itemHeight = singleWidth / aspect;
+                    final label = AlbumReaderThumbnailStrip.label(pageIndices);
 
-                    return GestureDetector(
-                      behavior: HitTestBehavior.opaque,
+                    return Semantics(
+                      label: index == 0 ? label : '$label쪽',
+                      button: true,
+                      selected: isSelected,
+                      excludeSemantics: true,
                       onTap: () => onSpreadSelected(index),
-                      child: Container(
-                        width: 44,
-                        height: itemHeight,
-                        margin: const EdgeInsets.only(bottom: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isSelected
-                                ? SnapFitColors.accent
-                                : Colors.white.withValues(alpha: 0.34),
-                            width: isSelected ? 2 : 1,
-                          ),
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: Row(
-                          children: [
-                            for (var slot = 0; slot < slotCount; slot++) ...[
-                              if (slot > 0)
-                                Container(
-                                  width: 1,
-                                  color: Colors.black.withValues(alpha: 0.08),
+                      child: GestureDetector(
+                        key: ValueKey('reader-rail-spread-$index'),
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => onSpreadSelected(index),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Column(
+                            children: [
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  minHeight: 44,
                                 ),
-                              Expanded(
-                                child: slot < pageIndices.length
-                                    ? AlbumReaderPageContent(
-                                        layers: pages[pageIndices[slot]].layers,
-                                        targetW: singleWidth,
-                                        targetH: itemHeight,
-                                        previewBuilder: previewBuilder,
-                                        baseCanvasSize: baseCanvasSize,
-                                        backgroundColor:
-                                            pages[pageIndices[slot]]
-                                                    .backgroundColor !=
-                                                null
-                                            ? Color(
-                                                pages[pageIndices[slot]]
-                                                    .backgroundColor!,
-                                              )
-                                            : null,
-                                      )
-                                    : ColoredBox(
-                                        color: const Color(0xFFFFFCF5),
+                                child: Center(
+                                  child: Container(
+                                    width: previewWidth,
+                                    height: itemHeight,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(3),
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? SnapFitColors.accent
+                                            : AlbumStageStyle.line(context),
+                                        width: 1.5,
                                       ),
+                                    ),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: Row(
+                                      children: [
+                                        for (
+                                          var slot = 0;
+                                          slot < slotCount;
+                                          slot++
+                                        ) ...[
+                                          if (slot > 0)
+                                            Container(
+                                              width: 1,
+                                              color: Colors.black.withValues(
+                                                alpha: 0.08,
+                                              ),
+                                            ),
+                                          Expanded(
+                                            child: slot < pageIndices.length
+                                                ? AlbumReaderPageContent(
+                                                    layers:
+                                                        pages[pageIndices[slot]]
+                                                            .layers,
+                                                    targetW: singleWidth,
+                                                    targetH: itemHeight,
+                                                    previewBuilder:
+                                                        previewBuilder,
+                                                    baseCanvasSize:
+                                                        baseCanvasSize,
+                                                    backgroundColor:
+                                                        pages[pageIndices[slot]]
+                                                                .backgroundColor !=
+                                                            null
+                                                        ? Color(
+                                                            pages[pageIndices[slot]]
+                                                                .backgroundColor!,
+                                                          )
+                                                        : null,
+                                                  )
+                                                : ColoredBox(
+                                                    color: const Color(
+                                                      0xFFFFFCF5,
+                                                    ),
+                                                  ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                label,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  height: 1.4,
+                                  letterSpacing: 0,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                  color: AlbumStageStyle.ink(
+                                    context,
+                                  ).withValues(alpha: isSelected ? 1 : .6),
+                                ),
                               ),
                             ],
-                          ],
+                          ),
                         ),
                       ),
                     );
@@ -1174,26 +1212,24 @@ class _LandscapePageRail extends StatelessWidget {
   }
 }
 
-class _LandscapeReaderButton extends StatelessWidget {
-  const _LandscapeReaderButton({required this.icon, required this.onTap});
+class _ReaderHeaderButton extends StatelessWidget {
+  const _ReaderHeaderButton({
+    required this.icon,
+    required this.onTap,
+    required this.tooltip,
+  });
 
   final IconData icon;
   final VoidCallback onTap;
+  final String tooltip;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AlbumStageStyle.glass(context),
-      shape: const CircleBorder(),
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onTap,
-        child: SizedBox(
-          width: 44,
-          height: 44,
-          child: Icon(icon, size: 24, color: AlbumStageStyle.ink(context)),
-        ),
-      ),
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onTap,
+      constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+      icon: Icon(icon, size: 24, color: AlbumStageStyle.ink(context)),
     );
   }
 }

@@ -29,6 +29,8 @@
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
+            <!-- app_links owns custom links; avoid a second named-route push. -->
+            <meta-data android:name="flutter_deeplinking_enabled" android:value="false" />
             <!-- Specifies an Android theme to apply to this Activity as soon as
                  the Android process has started. This theme is visible to the user
                  while the Flutter UI initializes. After that, this theme continues
@@ -63,7 +65,7 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-        <activity android:name="com.kakao.sdk.flutter.AuthCodeCustomTabsActivity"
+        <activity android:name="com.kakao.sdk.flutter.auth.AuthCodeHandlerActivity"
             android:exported="true">
             <intent-filter android:label="flutter_web_auth">
                 <action android:name="android.intent.action.VIEW" />

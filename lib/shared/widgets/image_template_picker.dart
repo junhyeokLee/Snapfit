@@ -24,6 +24,7 @@ class ImageTemplatePicker extends StatefulWidget {
     if (kIsWeb) {
       return showWebAwareDialog<String>(
         context: context,
+        useRootNavigator: false,
         maxWidth: 840,
         maxHeight: 720,
         builder: (dialogContext) => ImageTemplatePicker(
@@ -87,8 +88,12 @@ class _ImageTemplatePickerState extends State<ImageTemplatePicker> {
           ),
         ),
         decoration: BoxDecoration(
-          color: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.backgroundOf(context),
-          borderRadius: kIsWeb ? BorderRadius.circular(12) : const BorderRadius.vertical(top: Radius.circular(8)),
+          color: kIsWeb
+              ? WebPalette.of(context).surface
+              : SnapFitColors.backgroundOf(context),
+          borderRadius: kIsWeb
+              ? BorderRadius.circular(12)
+              : const BorderRadius.vertical(top: Radius.circular(8)),
         ),
         child: SafeArea(
           top: false,
@@ -167,7 +172,9 @@ class _ImageTemplatePickerState extends State<ImageTemplatePicker> {
                               : ExperienceFormStyle.surface(context),
                           borderRadius: BorderRadius.circular(kIsWeb ? 12 : 6),
                           child: InkWell(
-                            borderRadius: BorderRadius.circular(kIsWeb ? 12 : 6),
+                            borderRadius: BorderRadius.circular(
+                              kIsWeb ? 12 : 6,
+                            ),
                             onTap: () => _finish(template.key),
                             child: Padding(
                               padding: const EdgeInsets.all(12),

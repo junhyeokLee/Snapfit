@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 part 'keepsake_material_catalog.dart';
 part 'atelier_composition_catalog.dart';
 part 'concept_wave_material_catalog.dart';
+part 'atelier_edition_material_catalog.dart';
 
 /// Basic photo legibility effects, not independently purchasable materials.
 const photoCoverShadeStyles = {'photoCoverShadeTop', 'photoCoverShadeBottom'};
@@ -51,6 +52,7 @@ class StudioDecorationSpec {
 
 /// Stable keys are stored in album documents. Keep old decorations untouched.
 const studioDecorations = [
+  ...atelierEditionDecorations,
   ...conceptWaveDecorations,
   ...keepsakeDecorations,
   ...atelierCompositionDecorations,

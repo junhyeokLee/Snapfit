@@ -93,7 +93,7 @@ class TemplatePurchaseOverview extends ConsumerWidget {
         .length;
     return Container(
       key: const ValueKey('template-purchase-overview'),
-      padding: const EdgeInsets.symmetric(vertical: 20),
+      padding: const EdgeInsets.symmetric(vertical: 24),
       decoration: BoxDecoration(
         border: Border.symmetric(
           horizontal: BorderSide(color: ExperienceFormStyle.line(context)),
@@ -103,28 +103,71 @@ class TemplatePurchaseOverview extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Text(
                   isPublishedFree ? '무료 템플릿 안내' : '템플릿 구매 안내',
                   style: ExperienceFormStyle.text(
                     context,
-                    15,
+                    17,
                     weight: FontWeight.w600,
                   ),
                 ),
               ),
               Flexible(
-                child: PointShopProductBadge(
-                  key: const ValueKey('template-overview-price'),
-                  productKey: productKey,
-                  unlistedLabel: isPublishedFree ? '무료' : '판매 준비 중',
-                  compact: false,
+                child: Align(
+                  alignment: Alignment.topRight,
+                  child: PointShopProductBadge(
+                    key: const ValueKey('template-overview-price'),
+                    productKey: productKey,
+                    unlistedLabel: isPublishedFree ? '무료' : '판매 준비 중',
+                    compact: false,
+                    fontSize: 20,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          if (materialKeys.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: ExperienceFormStyle.surface(context),
+                border: Border(
+                  left: BorderSide(
+                    color: ExperienceFormStyle.selectionInk(context),
+                    width: 2,
+                  ),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Wrap(
+                  spacing: 24,
+                  runSpacing: 14,
+                  children: [
+                    for (final kind in const {
+                      'frame': '사진 프레임',
+                      'sticker': '종이·스티커',
+                      'phrase': '문구 디자인',
+                    }.entries)
+                      if (materialKeys.any(
+                        (key) => key.startsWith('${kind.key}:'),
+                      ))
+                        _MaterialCount(
+                          title: kind.value,
+                          count: materialKeys
+                              .where((key) => key.startsWith('${kind.key}:'))
+                              .length,
+                        ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 22),
           _UsageLine(
             icon: 'BookOpen',
             title: '내 사진으로 만드는 앨범',
@@ -147,6 +190,7 @@ class TemplatePurchaseOverview extends ConsumerWidget {
                   ? '현재 ${materialKeys.length}종 모두 무료 또는 보유한 소재로, 다른 앨범에도 추가할 수 있어요.'
                   : '현재 재사용 가능 $reusable종 · 나머지 ${materialKeys.length - reusable}종은 소재별 가격과 보유 권한을 확인해 주세요.',
             ),
+            const SizedBox(height: 8),
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton(
@@ -171,6 +215,29 @@ class TemplatePurchaseOverview extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _MaterialCount extends StatelessWidget {
+  const _MaterialCount({required this.title, required this.count});
+  final String title;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        '$count종',
+        style: ExperienceFormStyle.text(context, 20, weight: FontWeight.w700),
+      ),
+      const SizedBox(height: 4),
+      Text(
+        title,
+        style: ExperienceFormStyle.text(context, 11, secondary: true),
+      ),
+    ],
+  );
 }
 
 class _UsageLine extends StatelessWidget {

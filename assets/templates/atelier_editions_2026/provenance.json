@@ -1,0 +1,62 @@
+{
+  "revision": "atelier-category-2026-10-16",
+  "generationMethod": "built-in image_gen; model is tool-managed and not exposed",
+  "assets": [
+    {
+      "file": "night-vows.png",
+      "provider": "OpenAI built-in image_gen",
+      "createdDate": "2026-10-16",
+      "use": "AI-generated sample photograph; users replace it with their own photo",
+      "status": "generated-needs-owner-review",
+      "prompt": "Use case: photorealistic-natural. Asset type: full-bleed cover photograph for an original premium Korean wedding photo album titled '밤에 피어난 약속' (title will be added later as editable typography, do not render any text). Generate one high resolution square candid editorial wedding photograph, not a book mockup. A newly married adult couple seen from behind and in partial profile walks closely together through an intimate outdoor garden wedding dinner at blue hour; bride in a simple ivory dress, groom in black dinner suit. The couple occupies lower middle-right, candlelit dinner table and subtle white flowers in foreground lower left, deep moss foliage and midnight blue sky in the upper third with quiet negative space suitable for a pale title. Natural film photographic texture, sophisticated indigo, deep forest green and warm small candle lights, believable intimate moment, not a posed stock photo. A large single coherent photo with crisp fabric, beautiful real lighting, no bokeh blobs as decoration. No identifiable faces, no logos, no text, no watermarks, no collage, no border."
+    },
+    {
+      "file": "slow-rail.png",
+      "provider": "OpenAI built-in image_gen",
+      "createdDate": "2026-10-16",
+      "use": "AI-generated sample photograph; users replace it with their own photo",
+      "status": "generated-needs-owner-review",
+      "prompt": "Use case: photorealistic-natural. Asset type: single square full-bleed photograph for a premium travel scrapbook cover '느린 열차의 기록', editable title will be added in the app later. A candid photograph from inside a vintage European regional train: open window at right, blue mountain lake and cream station glimpsed beyond, an adult traveler seen from the back in an oatmeal shirt leaning gently toward the window at lower left, a folded paper map without readable text and two simple rail tickets on a dark cherry-red seat. The scene tells a real personal train holiday. Daylight, distinct warm red, glacier cyan and ivory palette, subtle 35mm film grain, rich tactile seat fabric. Large quiet view/light wall in the upper left for a dark title, subject in lower half. Photorealistic editorial, sharp details, natural lighting, no artificial heavy blur, no stock pose, no visible brands, no readable words, no watermark, no border, no collage, not a book mockup."
+    },
+    {
+      "file": "green-hours.png",
+      "provider": "OpenAI built-in image_gen",
+      "createdDate": "2026-10-16",
+      "use": "AI-generated sample photograph; users replace it with their own photo",
+      "status": "generated-needs-owner-review",
+      "prompt": "Use case: photorealistic-natural. Asset type: square full-bleed photograph for a premium everyday botanical diary album cover '초록을 돌보는 날'. Generate a single intimate candid photo, not a book or designed layout. An adult woman seen from behind, with loose dark hair and a pale yellow cotton shirt, tending potted herbs on a sunlit home balcony, one hand gently moving a terracotta pot, naturally correct anatomy. Rich vivid leaf green with gentle butter yellow and terracotta accents, real morning light across a muted green plaster wall. Lower half contains basil, geranium leaves, a small unbranded watering can and a folded notebook without visible writing. Upper left wall leaves clean negative space for later editable typography. Premium independent lifestyle magazine photography, tactile film grain, recognizable daily life, sharp natural details. No recognizable face, no logos, no legible text, no watermark, no fake collage, no ornamental bokeh, no borders."
+    },
+    {
+      "file": "first-orbit.png",
+      "provider": "OpenAI built-in image_gen",
+      "createdDate": "2026-10-16",
+      "use": "AI-generated sample photograph; users replace it with their own photo",
+      "status": "generated-needs-owner-review",
+      "prompt": "Use case: photorealistic-natural. Asset type: square full-bleed cover photograph for premium first-year baby album '너의 첫 번째 행성'. A tender overhead close photographic moment: a peacefully sleeping real-looking infant seen mostly from behind/side so face is not identifiable, tiny hand naturally curled resting against a parent's adult hand at lower right, wrapped in a dusty sky-blue muslin blanket on an ivory quilt. A small handmade felt moon and a simple knitted peach ball sit to the lower left, no kitschy graphics, no printed patterns or letters. Late morning natural soft daylight, crisp tactile cotton weave and very natural skin texture. Large quiet pale blue muslin space in upper third for later editable typography. Elegant editorial family snapshot, blue, butter-yellow and warm ivory, emotionally genuine, not glossy advertising. No text, no logo, no watermark, no border, not a book mockup, not a collage. Baby is fully clothed/wrapped."
+    },
+    {
+      "file": "family-recipe-book.png",
+      "provider": "OpenAI built-in image_gen",
+      "createdDate": "2026-10-16",
+      "use": "AI-generated sample photograph; users replace it with their own photo",
+      "status": "generated-needs-owner-review",
+      "prompt": "Use case: photorealistic-natural. Asset type: square full-bleed photograph for premium family-and-friends cooking memory book '우리 집의 한 접시'. A beautiful lively overhead candid of a real home kitchen table as family prepares dinner: two adult hands passing an earthenware bowl, one child's small hand rolling dough at lower right, sliced tomatoes, fresh herbs, ceramic plates, homemade pasta on an imperfect pale flour-dusted table, folded red-and-ivory striped cloth in lower left. No faces in view. The table's upper third has relatively quiet pale surface and a small folded linen for later editable dark typography. Colorful natural tomato-red, sage leaves, butter-yellow dough and pale warm tabletop, sharp tactile real food and hands, calm yet abundant, independent food magazine photograph but personal not commercial studio. No text, no watermarks, no logos, no border, no collage, not a book mockup, hands anatomically credible."
+    },
+    {
+      "file": "private-cinema.png",
+      "provider": "OpenAI built-in image_gen",
+      "createdDate": "2026-10-16",
+      "use": "AI-generated sample photograph; users replace it with their own photo",
+      "status": "generated-needs-owner-review",
+      "prompt": "Use case: photorealistic-natural. Asset type: square full-bleed photograph for premium couple memory album '둘만의 상영관', typography added later. A candid intimate adult couple seen from behind sitting close together in a small independent cinema with deep oxblood red upholstered seats, sharing a small unbranded paper tub of popcorn, one hand resting naturally on the other's hand. Focus on their shoulders and joined hands in the lower right two-thirds, a softly illuminated blank warm pale cinema screen occupies upper left/top third with enough quiet dark space nearby for editable pale title. Cinematic but believable personal snapshot with sharp tactile velvet, soft warm projected light and subtle film grain, rich red, charcoal and amber, sophisticated not childish, no glossy reflections. No identifiable face, no writing, no movie stills on screen, no logos, no watermark, no border, no collage, not a photo book mockup."
+    },
+    {
+      "file": "walk-map.png",
+      "provider": "OpenAI built-in image_gen",
+      "createdDate": "2026-10-16",
+      "use": "AI-generated sample photograph; users replace it with their own photo",
+      "status": "generated-needs-owner-review",
+      "prompt": "Use case: photorealistic-natural. Asset type: square full-bleed cover photo for premium dog walking memory album '너와 걷는 지도'. One coherent candid photograph at a real sunlit park: a medium small healthy golden-brown dog seen from back/three-quarter at lower center eagerly walking along a gravel path, the lower legs of an adult owner beside it at right, a simple moss green woven lead connects naturally to the dog's harness. Lush wild grasses and white flowers, a pale lilac walking jacket tied at the owner's waist, late spring light with clear tactile fur, joyful calm personal photo instead of a studio portrait. Upper third a pale sky/soft foliage area for editable dark green typography. Main colors lilac, fresh green, honey fur, off-white path. Natural photographic detail, no extreme lens blur, no identifiable people, no text, no logo, no watermark, no frame, no collage, no book mockup."
+    }
+  ]
+}

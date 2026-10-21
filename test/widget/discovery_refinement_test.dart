@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../support/store_catalog_navigation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
 import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
@@ -219,8 +220,7 @@ void main() {
           'store-grid-${size.width.toInt()}-${dark ? 'dark' : 'light'}',
         );
         expect(tester.takeException(), isNull);
-        await tester.tap(find.text('꾸밈소재'));
-        await tester.pumpAndSettle();
+        await selectStoreCatalog(tester, 1);
         final materialScroll = tester
             .widget<CustomScrollView>(
               find.byKey(const ValueKey('material-catalog-scroll')),
@@ -440,6 +440,7 @@ void main() {
         final controller = PageController(initialPage: 2);
         addTearDown(controller.dispose);
         var current = 2;
+        final edits = <int>[];
         Widget gallery() => StatefulBuilder(
           builder: (context, update) => ReaderPageGallery(
             title: '우리의 기록',
@@ -448,6 +449,7 @@ void main() {
             pageCount: 8,
             onPageChanged: (value) => update(() => current = value),
             onMore: () {},
+            onEdit: () => edits.add(current),
             pageBuilder: (_, i) => AspectRatio(
               aspectRatio: ratio,
               child: ColoredBox(
@@ -469,14 +471,25 @@ void main() {
         await tester.pump(const Duration(milliseconds: 90));
         await tester.tapAt(p);
         await tester.pump();
+        await tester.pump(const Duration(milliseconds: 130));
         final transform = tester
             .widget<InteractiveViewer>(viewer)
             .transformationController!;
         expect(transform.value.getMaxScaleOnAxis(), greaterThan(1));
+        expect(transform.value.getMaxScaleOnAxis(), lessThan(2));
+        await tester.pumpAndSettle();
+        expect(transform.value.getMaxScaleOnAxis(), closeTo(2, .001));
+        await tester.tap(find.byTooltip('페이지 맞춤'));
+        await tester.pumpAndSettle();
+        expect(transform.value.getMaxScaleOnAxis(), closeTo(1, .001));
         await tester.tap(find.byTooltip('다음 페이지'));
         await tester.pumpAndSettle();
         expect(current, 3);
         expect(find.text('4 / 8'), findsOneWidget);
+        await tester.tap(find.byTooltip('현재 페이지 편집'));
+        expect(edits, [3]);
+        await tester.tap(find.byTooltip('페이지 확대'));
+        await tester.pumpAndSettle();
         tester.view.physicalSize = const Size(844, 390);
         tester.view.padding = const FakeViewPadding(
           left: 32,
@@ -486,6 +499,22 @@ void main() {
         await tester.pumpAndSettle();
         expect(current, 3);
         expect(controller.page, closeTo(3, .01));
+        final rotated = tester
+            .widget<InteractiveViewer>(find.byType(InteractiveViewer).first)
+            .transformationController!;
+        expect(rotated.value.getMaxScaleOnAxis(), closeTo(2, .001));
+        await tester.drag(
+          find.byType(InteractiveViewer).first,
+          const Offset(-80, 30),
+        );
+        await tester.pumpAndSettle();
+        expect(
+          current,
+          3,
+          reason: 'A zoomed page pans instead of changing pages',
+        );
+        await tester.tap(find.byTooltip('페이지 맞춤'));
+        await tester.pumpAndSettle();
         await capture(tester, 'focus-${ratio.toStringAsFixed(2)}-landscape');
         await tester.tap(find.byTooltip('이전 페이지'));
         await tester.pumpAndSettle();

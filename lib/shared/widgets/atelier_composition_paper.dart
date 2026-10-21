@@ -39,6 +39,74 @@ class _CompositionPaper extends CustomPainter {
     );
     final paper = Path()..addRect(r);
     switch (id) {
+      case 'atelierWritingVow':
+        fill(paper, const Color(0xFFF4F1E9));
+        for (final d in [13.0, 20.0]) {
+          stroke(
+            Path()..addRect(r.deflate(d)),
+            const Color(0x667B8876),
+            d == 13 ? 1 : .6,
+          );
+        }
+        for (var y = 31.0; y < h - 25; y += 16) {
+          line(Offset(14, y), Offset(20, y + 3), const Color(0x88657968), .8);
+        }
+      case 'atelierWritingReceipt':
+        final edge = Path()..moveTo(5, 11);
+        for (var x = 5.0; x < 495; x += 12) {
+          edge.lineTo(x + 6, 5);
+          edge.lineTo(x + 12, 11);
+        }
+        edge.lineTo(495, h - 11);
+        for (var x = 495.0; x > 5; x -= 12) {
+          edge.lineTo(x - 6, h - 5);
+          edge.lineTo(x - 12, h - 11);
+        }
+        edge.close();
+        fill(edge, const Color(0xFFF3F2E8));
+        for (var x = 30.0; x < 470; x += 10) {
+          line(Offset(x, 31), Offset(x + 4, 31), const Color(0x77738B7D));
+          line(
+            Offset(x, h - 31),
+            Offset(x + 4, h - 31),
+            const Color(0x77738B7D),
+          );
+        }
+      case 'atelierWritingLetter':
+        fill(paper, const Color(0xFFF0E7E5));
+        c.save();
+        c.clipRect(r);
+        for (var x = -30.0; x < 530; x += 36) {
+          for (final y in [8.0, h - 18]) {
+            line(
+              Offset(x, y),
+              Offset(x + 17, y + 10),
+              const Color(0x997D4855),
+              6,
+            );
+            line(
+              Offset(x + 18, y),
+              Offset(x + 35, y + 10),
+              const Color(0x9977898C),
+              6,
+            );
+          }
+        }
+        c.restore();
+        stroke(Path()..addRect(r.deflate(18)), const Color(0x447F7570), .7);
+      case 'atelierWritingRecord':
+        fill(paper, const Color(0xFFE5EBE6));
+        stroke(Path()..addRect(r.deflate(13)), const Color(0x556A8075), .8);
+        for (var y = 52.0; y < h - 30; y += 34) {
+          line(Offset(28, y), Offset(470, y), const Color(0x205B7764), .6);
+        }
+        for (final y in [32.0, h / 2, h - 32]) {
+          c.drawCircle(
+            Offset(15, y),
+            2.2,
+            Paint()..color = const Color(0x66748976),
+          );
+        }
       case 'atelierTitlePlate':
         fill(paper, const Color(0xFFF4F1E9));
         for (final d in [14.0, 20.0]) {

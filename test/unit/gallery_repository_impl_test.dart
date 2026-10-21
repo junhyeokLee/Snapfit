@@ -105,4 +105,38 @@ void main() {
       },
     );
   }
+  test(
+    'native pages retain inclusive date bounds and other album options',
+    () async {
+      final start = DateTime(2023, 4, 2);
+      final end = DateTime(
+        2023,
+        4,
+        5,
+      ).subtract(const Duration(milliseconds: 1));
+      final filter = FilterOptionGroup(
+        includeHiddenAssets: false,
+        createTimeCond: DateTimeCond(min: start, max: end),
+      );
+      final album = AssetPathEntity(
+        id: 'trip',
+        name: '여행',
+        type: RequestType.image,
+        filterOption: filter,
+      );
+      await GalleryRepositoryImpl().loadImagesPaged(album, 0, 40);
+      expectLatestFirst(calls.single);
+      final option = (calls.single.arguments as Map)['option'] as Map;
+      final dates = (option['child'] as Map)['createDate'] as Map;
+      expect(dates, {
+        'min': start.millisecondsSinceEpoch,
+        'max': end.millisecondsSinceEpoch,
+        'ignore': false,
+      });
+      expect((calls.single.arguments as Map)['size'], 40);
+      expect(filter.createTimeCond.min, start);
+      expect(filter.createTimeCond.max, end);
+      expect(filter.includeHiddenAssets, isFalse);
+    },
+  );
 }

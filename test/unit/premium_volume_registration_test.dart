@@ -26,7 +26,7 @@ void main() {
         false,
       );
     }
-    expect(bundledCreationTemplates, hasLength(37));
+    expect(bundledCreationTemplates, hasLength(42));
     expect(pendingPremiumVolumeForKey('template:lightbound'), isNull);
     expect(pendingPremiumVolumeForKey('template:server-1'), isNull);
     expect(pendingConceptVolumeProducts, hasLength(7));

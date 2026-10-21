@@ -30,19 +30,21 @@ class HomeEmptyState extends StatelessWidget {
             style: ExperienceFormStyle.text(
               context,
               22,
-              weight: FontWeight.w600,
+              weight: FontWeight.w700,
             ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '사진을 골라 나만의 앨범을 만들어보세요',
+            textAlign: wide ? TextAlign.start : TextAlign.center,
+            style: ExperienceFormStyle.text(context, 14, secondary: true),
           ),
           const SizedBox(height: 24),
           FilledButton.icon(
             key: const ValueKey('empty-home-create'),
             onPressed: onCreate,
             style: ExperienceFormStyle.primary(context),
-            icon: ExperienceIcon(
-              'BookOpen',
-              size: 20,
-              color: ExperienceFormStyle.ink(context),
-            ),
+            icon: const ExperienceIcon('BookOpen', size: 20, color: Colors.white),
             label: const Text('앨범 만들기'),
           ),
           if (onResumeDraft != null)

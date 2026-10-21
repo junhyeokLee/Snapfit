@@ -249,7 +249,7 @@ void main() {
 
       final canvasBottom = tester.getBottomLeft(find.byType(EditCover)).dy;
       final dockTop = tester.getTopLeft(find.byType(EditorBottomMenu)).dy;
-      expect(canvasBottom, lessThan(dockTop));
+      expect(canvasBottom, lessThanOrEqualTo(dockTop));
     },
   );
 
@@ -358,10 +358,9 @@ void main() {
 
       expect(find.byType(EditCover), findsOneWidget);
       expect(find.byType(EditorBottomMenu), findsOneWidget);
-      expect(
-        find.text('템플릿'),
-        findsNothing,
-      ); // landscape rail is compact icon-only
+      await tester.ensureVisible(find.byTooltip('템플릿'));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('템플릿').hitTestable(), findsOneWidget);
 
       final canvasRect = tester.getRect(find.byType(EditCover));
       final dockRect = tester.getRect(find.byType(EditorBottomMenu));

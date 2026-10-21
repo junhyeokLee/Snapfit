@@ -34,7 +34,7 @@ class AlbumCompletionConfirmation extends StatelessWidget {
         Icon(Icons.auto_stories_outlined,
           color: WebPalette.of(context).brandInk, size: 28),
         const SizedBox(height: 20),
-        Text('책 주문을 준비할까요?', style: TextStyle(
+        Text('책으로 만들까요?', style: TextStyle(
           fontSize: 22, fontWeight: FontWeight.w700, color: WebPalette.of(context).ink,
         )),
         const SizedBox(height: 14),
@@ -56,7 +56,7 @@ class AlbumCompletionConfirmation extends StatelessWidget {
             FilledButton(
               key: const ValueKey('album-completion-confirm'),
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('주문 준비 계속'),
+              child: const Text('인쇄 검토하기'),
             ),
           ],
         ),
@@ -66,29 +66,29 @@ class AlbumCompletionConfirmation extends StatelessWidget {
     constraints: const BoxConstraints(maxWidth: 520),
     scrollable: true,
     backgroundColor: SnapFitColors.surfaceOf(context),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     title: Row(
       children: [
         const Icon(
-          Icons.lock_outline_rounded,
+          Icons.auto_stories_outlined,
           color: SnapFitColors.accent,
           size: 22,
         ),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            '앨범 완성',
+            '책으로 만들까요?',
             style: ExperienceFormStyle.text(
               context,
               18,
-              weight: FontWeight.w600,
+              weight: FontWeight.w700,
             ),
           ),
         ),
       ],
     ),
     content: Text(
-      '완성한 앨범을 확인하고 책으로 주문할 준비를 할 수 있어요.\n앨범은 이후에도 계속 수정할 수 있습니다.',
+      '앨범 전체 구성과 제작 금액을 확인한 뒤 배송지를 입력해요.\n아직 주문이나 결제가 이루어지지 않으며, 앨범은 계속 수정할 수 있어요.',
       style: ExperienceFormStyle.text(
         context,
         14,
@@ -103,7 +103,7 @@ class AlbumCompletionConfirmation extends StatelessWidget {
       TextButton(
         key: const ValueKey('album-completion-confirm'),
         onPressed: () => Navigator.pop(context, true),
-        child: const Text('확정하기', style: TextStyle(fontSize: 14)),
+        child: const Text('인쇄 검토하기', style: TextStyle(fontSize: 14)),
       ),
     ],
   );

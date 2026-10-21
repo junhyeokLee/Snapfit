@@ -1,0 +1,537 @@
+{
+  "recorded_at_utc": "2026-10-20T14:16:50.499087+00:00",
+  "status": "production_code_deployed_live_quality_verification_blocked",
+  "completed": [
+    "Actual synthetic-only Gemini API evaluations; raw unmodified results retained",
+    "Fixed observed line-height request/schema mismatch",
+    "Calculated valid 4.5:1 foreground/background palette pairs without changing the generated colors",
+    "Shared validator text-fit mathematics with model instructions, including automatic wrapping",
+    "Added natural Korean wording/context proofreading while preserving exact requested copy",
+    "Web production deployment and remote entrypoint hash verification",
+    "AI server v39 deployment with all 14 runtime files read back exactly and JWT protection retained",
+    "Temporary evaluation endpoint deleted and absent from function list",
+    "No new preview/media/golden files; build and test caches removed"
+  ],
+  "not_completed": [
+    "No new complete 20-interior Gemini book was accepted",
+    "No current-output native visual comparison or premium-equivalence approval",
+    "No customer AI opening or native app-store release"
+  ],
+  "actual_model_evaluations": {
+    "reports": [
+      {
+        "path": "output/ai-template-evaluations/live-server-2026-10-20T13-42-58Z-travel-square/run.json",
+        "model": "gemini-3.6-flash",
+        "sourceFingerprint": "80f1709baca0c5696940bc8fec001b53d2985a7295c3e9e0b0e2c647c32a6acf",
+        "status": "rejected",
+        "reason": "UNAVAILABLE",
+        "calls": 3,
+        "continuation": {
+          "resumed": false,
+          "cacheHits": 0
+        },
+        "checkpointResumeCount": null,
+        "httpStatuses": [
+          503,
+          503,
+          503
+        ],
+        "validationErrors": [],
+        "sha256": "7d07493521c7a235dbe1f74501e204e83ac44cc84429c792881363ec5f71a227"
+      },
+      {
+        "path": "output/ai-template-evaluations/live-server-2026-10-20T13-45-57Z-travel-square/run.json",
+        "model": "gemini-3.8-flash",
+        "sourceFingerprint": "80f1709baca0c5696940bc8fec001b53d2985a7295c3e9e0b0e2c647c32a6acf",
+        "status": "rejected",
+        "reason": "template_generation_timeout",
+        "calls": 2,
+        "continuation": {
+          "resumed": false,
+          "cacheHits": 0
+        },
+        "checkpointResumeCount": 0,
+        "httpStatuses": [
+          200,
+          null
+        ],
+        "validationErrors": [
+          "template_design_invalid_geometry"
+        ],
+        "sha256": "80220e810c25a5c719842e098f2f690f90f8cbea1be2d19985241b37967cf075"
+      },
+      {
+        "path": "output/ai-template-evaluations/live-server-2026-10-20T13-51-44Z-travel-square/run.json",
+        "model": "gemini-3.8-flash",
+        "sourceFingerprint": "821a49cc59f8b586f763b66240b8c9719d9f7166c89b2b2037411bbe2a333978",
+        "status": "rejected",
+        "reason": "template_generation_timeout",
+        "calls": 4,
+        "continuation": {
+          "resumed": false,
+          "cacheHits": 0
+        },
+        "checkpointResumeCount": 0,
+        "httpStatuses": [
+          200,
+          503,
+          503,
+          null
+        ],
+        "validationErrors": [],
+        "sha256": "19834d7a4fd2b1fbaa3754dbdbf3593f0f5dbbbc5ca280985a133722dd2f034b"
+      },
+      {
+        "path": "output/ai-template-evaluations/live-server-2026-10-20T13-54-19Z-travel-square/run.json",
+        "model": "gemini-3.8-flash",
+        "sourceFingerprint": "821a49cc59f8b586f763b66240b8c9719d9f7166c89b2b2037411bbe2a333978",
+        "status": "rejected",
+        "reason": "template_generation_timeout",
+        "calls": 2,
+        "continuation": {
+          "resumed": true,
+          "cacheHits": 1
+        },
+        "checkpointResumeCount": 1,
+        "httpStatuses": [
+          200,
+          null
+        ],
+        "validationErrors": [
+          "template_design_low_contrast"
+        ],
+        "sha256": "7ef3f8825390d9f08d7abb2e84aa4d8561181e885c9950fcb183f2d8a6576f62"
+      },
+      {
+        "path": "output/ai-template-evaluations/live-server-2026-10-20T14-00-25Z-travel-square/run.json",
+        "model": "gemini-3.8-flash",
+        "sourceFingerprint": "c8f5c6eb2989f6a6edcca9ca6469c87b98179aa0271e2612b8a037902dee428b",
+        "status": "rejected",
+        "reason": "UNAVAILABLE",
+        "calls": 3,
+        "continuation": {
+          "resumed": true,
+          "cacheHits": 1
+        },
+        "checkpointResumeCount": 2,
+        "httpStatuses": [
+          503,
+          503,
+          503
+        ],
+        "validationErrors": [],
+        "sha256": "518ebf7c19b1386c2bc2104371d7a80f364f8ce19ad0b2d3b8967b890a459bd0"
+      },
+      {
+        "path": "output/ai-template-evaluations/live-server-2026-10-20T14-03-19Z-travel-square/run.json",
+        "model": "gemini-3.8-flash",
+        "sourceFingerprint": "c8f5c6eb2989f6a6edcca9ca6469c87b98179aa0271e2612b8a037902dee428b",
+        "status": "rejected",
+        "reason": "UNAVAILABLE",
+        "calls": 5,
+        "continuation": {
+          "resumed": true,
+          "cacheHits": 1
+        },
+        "checkpointResumeCount": 3,
+        "httpStatuses": [
+          503,
+          503,
+          200,
+          200,
+          503
+        ],
+        "validationErrors": [
+          "template_design_text_overflow"
+        ],
+        "sha256": "e39749d8f8e1b21df3ce8904f96d826ba66a70a34b7bdf108d5e9a500588df85"
+      },
+      {
+        "path": "output/ai-template-evaluations/live-server-2026-10-20T14-10-44Z-travel-square/run.json",
+        "model": "gemini-3.8-flash",
+        "sourceFingerprint": "437c88d331cb09bbf99f0dc0dcc8cac2d28407b30bea44cebcbb0e6b32c6e51f",
+        "status": "rejected",
+        "reason": "RESOURCE_EXHAUSTED",
+        "calls": 4,
+        "continuation": {
+          "resumed": false,
+          "cacheHits": 0
+        },
+        "checkpointResumeCount": null,
+        "httpStatuses": [
+          200,
+          503,
+          503,
+          429
+        ],
+        "validationErrors": [],
+        "sha256": "f1834a6c54033a9346848186907cb2631baa746e109cffdc1745fff368c9c47a"
+      }
+    ],
+    "totalActualTransportCalls": 23,
+    "http200": 6,
+    "http503": 13,
+    "http429": 1,
+    "abortedOrTransportUnknown": 3,
+    "acceptedCompleteBooks": 0,
+    "knownReportedUsage": {
+      "inputTokens": 15110,
+      "outputTokens": 13413,
+      "thinkingTokens": 2191
+    },
+    "usageCaveat": "Failed or aborted calls may have unreported usage. These are partial token totals, not a billing statement.",
+    "stopReason": "RESOURCE_EXHAUSTED; no further calls, provider/key switches or checkpoint resumption after the quota response."
+  },
+  "final_evaluation_source_fingerprint": "437c88d331cb09bbf99f0dc0dcc8cac2d28407b30bea44cebcbb0e6b32c6e51f",
+  "quality_change_boundaries": {
+    "contrast_threshold": 4.5,
+    "line_height_maximum": 1.6,
+    "body_line_height_minimum": 1.2,
+    "token_limits_changed": false,
+    "timeout_ms": 120000,
+    "repair_budget_changed": false,
+    "coordinates_or_fonts_auto_corrected": false,
+    "raw_model_documents_rewritten": false,
+    "quota_bypass_or_further_calls_after_429": false,
+    "resume_count_reset": false
+  },
+  "premium_reference_catalog": {
+    "source": "read-only public.point_shop_products query",
+    "products": [
+      {
+        "key": "template:luminous-edition",
+        "presentation_id": -9502,
+        "title": "둘만의 여행",
+        "point_price": 2500,
+        "is_active": true
+      },
+      {
+        "key": "template:shore-days",
+        "presentation_id": -9512,
+        "title": "해변에서 보낸 날",
+        "point_price": 1800,
+        "is_active": true
+      }
+    ],
+    "comparison_completed_for_new_output": false
+  },
+  "native_in_memory_renderer": {
+    "file": "test/design/ai_template_live_quality_memory_test.dart",
+    "default_without_input": "explicit skip; no model call",
+    "historical_control_passed": 1,
+    "control_run_id": "live-server-2026-10-19T06-27-20-213Z-travel-square",
+    "control_books": [
+      {
+        "id": "generated-travel-square",
+        "page_count": 21,
+        "rendered_pages": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20
+        ],
+        "text_issue_count": 0,
+        "save_load_max_drift": 2.842170943040401e-14
+      },
+      {
+        "id": "premium-9502",
+        "page_count": 25,
+        "rendered_pages": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          23,
+          24
+        ],
+        "text_issue_count": 0,
+        "save_load_max_drift": 5.684341886080802e-14
+      },
+      {
+        "id": "premium-9512",
+        "page_count": 25,
+        "rendered_pages": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          23,
+          24
+        ],
+        "text_issue_count": 0,
+        "save_load_max_drift": 5.684341886080802e-14
+      }
+    ],
+    "control_is_not_new_generator_quality_evidence": true,
+    "current_new_book_render_executed": false,
+    "images_written_to_disk": false,
+    "memory_image_protocol_prepared_but_unused_for_new_book": true
+  },
+  "validation": {
+    "typed_server_and_evaluation_tests_passed": 132,
+    "dart_analysis_files": 19,
+    "dart_analysis_issues": 0,
+    "dart_format_files": 19,
+    "dart_format_changes": 0,
+    "previous_native_135_and_chrome_25": {
+      "verification": "docs/verification/ai-result-quality-2026-10-20.json",
+      "runtime_dart_sources_unchanged": true,
+      "unchanged_dart_files": 18,
+      "rerun_this_followup": false
+    },
+    "counts_are_not_summed_across_overlapping_suites": true
+  },
+  "production": {
+    "ai_server": {
+      "project_id": "rrbhxdtriummqpztpjrk",
+      "function": "ai-album-draft",
+      "version": 39,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "ezbr_sha256": "792856d9c54f0cde0b19673d02892698523d4cea6bcc5c516479c9cd4151faa4",
+      "file_count": 14,
+      "all_local_file_contents_match": true,
+      "previous_version": 36,
+      "final_unauthenticated_http_status": 401
+    },
+    "web": {
+      "verifiedAtUtc": "2026-10-20T13:53:12.482128+00:00",
+      "url": "https://snapfit-c719d.web.app/",
+      "metadata_matches_local": true,
+      "html_uses_fingerprinted_bootstrap": true,
+      "files": {
+        "bootstrap": {
+          "file": "flutter_bootstrap.494c545fdae66049bb33.js",
+          "sha256": "494c545fdae66049bb338870caa9b15913115e67493218bf7d3a1e7740dcb7e1",
+          "bytes": 14512,
+          "cache_control": "no-cache"
+        },
+        "main": {
+          "file": "main.c7c510491cc8168a4d17.dart.js",
+          "sha256": "c7c510491cc8168a4d17231f6ec6e2e23630952f48b55624ab27697743bdfe61",
+          "bytes": 7225251,
+          "cache_control": "public,max-age=31536000,immutable"
+        }
+      },
+      "root_headers": {
+        "Cache-Control": "no-store",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "X-Content-Type-Options": "nosniff",
+        "X-Robots-Tag": "noindex, nofollow"
+      }
+    },
+    "web_previous_build": {
+      "main_sha256": "01c9bb28ea0a4111f54b6a8fdd4d2d0352e34a2dcd1ac7b371a22af79b6a68e8",
+      "main_file": "main.01c9bb28ea0a4111f54b.dart.js",
+      "bootstrap_sha256": "a2e450eddc8a5042329abac2be5d8269d0afff9499301ec99807bf1ac734a33c",
+      "bootstrap_file": "flutter_bootstrap.a2e450eddc8a5042329a.js"
+    },
+    "web_ui_smoke": {
+      "public_catalog_visible": true,
+      "search_term": "해변에서 보낸 날",
+      "matching_product_price": "1,800P",
+      "detail_route": "#/designs/templates/-9512",
+      "usage_information_visible": true,
+      "login_route": "#/login",
+      "account_login_performed": false,
+      "screenshot_files_saved": false
+    },
+    "settings_before": {
+      "provider": "gemini",
+      "model": "gemini-3.6-flash",
+      "freeOnly": true,
+      "minIntervalMs": 1200,
+      "timeoutMs": 120000,
+      "transientRetries": 2,
+      "allowUnpaidUserData": false,
+      "keyConfigured": true
+    },
+    "settings_after": {
+      "provider": "gemini",
+      "model": "gemini-3.6-flash",
+      "freeOnly": true,
+      "minIntervalMs": 1200,
+      "timeoutMs": 120000,
+      "transientRetries": 2,
+      "allowUnpaidUserData": false,
+      "keyConfigured": true
+    },
+    "v3_enabled": false,
+    "generation_policy_enabled": true,
+    "customer_privacy_approval_enabled": false,
+    "model_or_secret_values_changed": false,
+    "private_policy_limits": {
+      "user_daily": 6,
+      "project_daily": 100,
+      "concurrent": 4
+    },
+    "point_costs_unchanged": {
+      "20_pages": 500,
+      "80_pages": 1100
+    },
+    "database_writes_performed": false,
+    "customer_data_sent_to_model": false,
+    "point_wallet_mutations": false,
+    "user_confirmed_google_project_is_unpaid": true,
+    "temporary_probe": {
+      "name": "ai-template-quality-20261020-46fa2b",
+      "jwt_verification": true,
+      "deleted": true,
+      "absence_verified": true,
+      "capability_runtime_state_deleted": true
+    }
+  },
+  "rollback_source": {
+    "path": "output/ai-template-evaluations/production-before-2026-10-20.json",
+    "sha256": "40fa2529e7c79150028e39a4e6cbbacefb5faeb9008b3453815c6afe7481be55",
+    "version": 36,
+    "files": 13,
+    "server_secret_values_present": false
+  },
+  "source_and_test_sha256": {
+    "lib/features/album/ai_album/domain/ai_template_paper_tone.dart": "a0c13ecd2880048d18916e048169fb76ac5b8bf6c1d75d0d8989e3ad33e52940",
+    "lib/features/album/ai_album/domain/ai_template_text_edit.dart": "156b2989d3b110a3af4a41a69c23b0dae0af3bc1b57779f7fd246b88fa1f893a",
+    "lib/features/album/presentation/widgets/create_flow/ai_template_text_edit_dialog.dart": "4a3d9029773fc626f85b78c7b13174775aa0928c4ead26a936965a727ea15f86",
+    "lib/features/album/presentation/widgets/create_flow/ai_template_design_review.dart": "50b3c78577fa4ee3bf9d208c72e90de3d76d9a01e2f650d4430cf0601074ec02",
+    "lib/features/album/presentation/widgets/create_flow/ai_album_recommendation_review_step.dart": "3b946d4d1a2c971af8b36415c52c9576946aec3db3fb6ccd28d4b9c7c56ab749",
+    "lib/features/album/presentation/views/album_create_flow_screen.dart": "8d5987f1b0860978d2e92cb0b598360d2f1408590df67e415070c603344d9821",
+    "lib/features/album/presentation/widgets/create_flow/cover_size_picker.dart": "ea9f5286aafbbb0b4b04d6735dba636e0f003ec3990d2a6501000fe218ad50ce",
+    "lib/features/album/presentation/widgets/create_flow/print_cover_type_picker.dart": "6edc3d9352a7e47d5e35c5de410a766cb78d62f556b3556795dc42ad55fdcfde",
+    "lib/features/album/presentation/widgets/create_flow/album_create_step1.dart": "50403e42977468d403e43d6c3b9d9e49e9665912fcebf6f177ffb1e672c39c40",
+    "lib/features/album/presentation/widgets/create_flow/template_photo_fill_step.dart": "59bab51cfa71f8d68889405627d8c5b4813ddabc11bb38be5206a627b71378d0",
+    "test/fixtures/ai_template_local_edit_fixture.dart": "4e1e1a9c9f9adf71cc9965a7c76ebb6227867643b29803f88fcaf96e5396337c",
+    "test/unit/ai_template_local_edit_test.dart": "9b4b5c836b93348dda96c32abd137ccc93b54890930817138ebf3b1a4538fe57",
+    "test/widget/ai_template_local_edit_test.dart": "2ff24878ef82999c668bbc708347d4d54a33405fb64f7c365f2ff05f14075ea1",
+    "test/widget/album_create_flow_ai_server_mode_test.dart": "1b2fed1b427e8598910b5c3ca1f12d4a62f8889786233d3a1efe3e5f3fdbd033",
+    "test/widget/creation_selection_feedback_test.dart": "6e6cb4c513ea8611756117fbc0e74038c42aa4580f492d6f16fbc5e37e85a034",
+    "test/unit/ai_album_pricing_test.dart": "001d5d63505602b6f223f29645d70fe6951ee10a940b59d797aa457536e696b3",
+    "test/unit/ai_template_historical_local_edit_test.dart": "624ee01775bea2ac897df2647958314f37f4cd54f040d4820d7f692a26ab5850",
+    "supabase/functions/ai-album-draft/index.ts": "c0201a1f964d6e45a5c84fe5ccf86ecb90e90205bef00aee6b9eec3a0b89ceab",
+    "supabase/functions/ai-album-draft/template-editorial-quality.ts": "bbcfa6b1e6a77773d44808beca2c8298b5f089d758628dac827fde5233c73374",
+    "supabase/functions/ai-album-draft/template-editorial-quality_test.ts": "262afc5fb7085712ae05079cb1882ef33b3af258c25819b5403c73a2fea1c2c7",
+    "supabase/functions/ai-album-draft/template-composition.ts": "b9ddedb30b326a8f36d2b52f5dc1b3e398404fadbcc0a6a02bdcd82d73abdaee",
+    "supabase/functions/ai-album-draft/template-book-engine.ts": "854d3801ac376d4874415b91a70f13df112a1a721cfb4ae13dece6a211fa670e",
+    "supabase/functions/ai-album-draft/template-book-engine_test.ts": "8f74ccc270f52f68f88fea9758d3c1c3bab29b8b802162abd9acd5e9a2f6f9b6",
+    "supabase/functions/ai-album-draft/test-support.ts": "66ca61ecc0f91199c6ddf3da88dd29aeea21a491edff894cd48d37f6215860f6",
+    "supabase/functions/ai-album-draft/template-model-provider_test.ts": "bb1c7968d964f21bd2985e65f1bee737074aad6806f92de891c932f3e2b0c600",
+    "supabase/functions/ai-album-draft/template-model-checkpoint_test.ts": "a5fa2762357b74dd9bdda440bbf6af11adff5b1cf1c823ea579ce3ef52eae19d",
+    "tool/ai_template_eval/evaluate_test.ts": "01a0f5068a77c712ac3e0ab19d0fe6ff89efbce2ae57137e87ed437e74f4fb24",
+    "tool/ai_template_eval/run.ts": "a63251b718c3ea6f1a3b108afbf7b8e922656222bd651346e7caf2a0bc72e37a",
+    "docs/all_screen_design_audit.md": "ee20f6223aa55aa11cd79b911479f0874921cd1dcc0133fabbcdcfd59de3027a",
+    "docs/ai_template_evaluation.md": "3db53680bc29dbafc2c3fca52ffcdcff047a45cc0a9ddd9ab4f5a0a89b0ce17f",
+    "test/fixtures/ai_template_gemini_historical_book.json": "4bc0925049b4935551f6d2efb490f941742086626a35f9e0a983d7eef4a0da56",
+    "lib/features/album/presentation/widgets/create_flow/creation_workspace.dart": "f9d7a1bcca555d7639377f45447a715ac7093852ede4508ab14503b84c253abe",
+    "test/design/ai_template_live_quality_memory_test.dart": "e3a727026b2e6146b74c34995c8ad25697315214bcff27a52217c3a860de91ec",
+    "docs/web-development.md": "b4b16918a1ffe5298a979b5067386d7e4fb5046a06dec9e7a4343f350d308267"
+  },
+  "media_inventory": {
+    "before_count": 340,
+    "after_count": 340,
+    "added": [],
+    "deleted": [],
+    "changed": []
+  },
+  "storage": {
+    "free_bytes_before": 11752734720,
+    "removed": [
+      {
+        "path": "/Users/devsheep/SnapFit/SnapFit/build",
+        "logical_bytes": 1549157517
+      },
+      {
+        "path": "/Users/devsheep/SnapFit/SnapFit/.dart_tool/flutter_build",
+        "logical_bytes": 69731105
+      },
+      {
+        "path": "/Users/devsheep/SnapFit/SnapFit/.dart_tool/hooks_runner",
+        "logical_bytes": 23008497
+      }
+    ],
+    "absent": [
+      ".dart_tool/build",
+      ".dart_tool/pub/bin",
+      ".dart_tool/build_resolvers"
+    ],
+    "preserved": [
+      "source",
+      "assets",
+      "original live model JSON",
+      "small rollback source snapshot",
+      "existing goldens and print inputs",
+      "package config and dependency metadata",
+      ".dart_tool/chrome-device",
+      "SDK/global caches",
+      "other active projects"
+    ],
+    "logical_bytes_removed": 1641897119,
+    "free_bytes_after": 13399986176,
+    "free_space_caveat": "macOS swap and other applications affect actual free space; removed logical bytes are recorded separately.",
+    "temporary_capability_state_removed": true
+  },
+  "external_references": [
+    "https://ai.google.dev/gemini-api/docs/structured-output",
+    "https://ai.google.dev/gemini-api/terms",
+    "https://supabase.com/changelog/cbc-tls-ciphers-deprecated",
+    "https://firebase.google.com/docs/hosting/quickstart"
+  ],
+  "logs": {
+    "server": {
+      "path": "/private/tmp/snapfit-composition-textfit-server-final.log",
+      "sha256": "b73285a11fdc1578aeebc2354fcb347a4f40e74f83585a94397460b69a03b69a"
+    },
+    "analysis": {
+      "path": "/private/tmp/snapfit-ai-live-quality-final-analysis.log",
+      "sha256": "c7cec1c75f26c98a23cfa916d8851755f0beee3b4a1e0b91fd4eb5cd8c1275aa"
+    },
+    "format": {
+      "path": "/private/tmp/snapfit-ai-live-quality-final-format.log",
+      "sha256": "1c27c680e3bae6f0e2322507b7f516e0415e997fa2857e3c78563c0ef9a23738"
+    },
+    "historical_renderer_control": {
+      "path": "/private/tmp/snapfit-historical-control-memory-test.log",
+      "sha256": "9faa8b865a455ae7e0a170bdf88e1ba1c2caae336c47bff5992c09c3f26c12b7"
+    },
+    "web_build": {
+      "path": "/private/tmp/snapfit-ai-quality-production-web-build.log",
+      "sha256": "23e55959c87e471fde6f112c9f988cd5db13974ec27d9e8e26a6ad84292e368a"
+    },
+    "web_deploy": {
+      "path": "/private/tmp/snapfit-ai-quality-web-deploy.log",
+      "sha256": "534911d13ef189c12daffa7a8e81e843fa59f221b89bcfaac24d3e06635aea4e"
+    },
+    "probe_delete": {
+      "path": "/private/tmp/snapfit-ai-quality-probe-delete.log",
+      "sha256": "feb7ede9698548feb913963da70ceb5f005828025594ab04bc3a8597bad9675f"
+    },
+    "final_unauthenticated_gateway": {
+      "path": "/private/tmp/snapfit-ai-quality-unauth-status.txt",
+      "sha256": "5d94ef1d04a57469912deb42e29ecee5168b983c775efa906cb9268596ba9f84"
+    },
+    "final_diff_check": {
+      "path": "/private/tmp/snapfit-ai-live-quality-final-diff-check.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "scope_files": 34
+    }
+  },
+  "next_required_evidence": "After provider quota and availability recover, obtain a complete current-source live book and run the in-memory actual-font comparison. Keep release and privacy gates closed until their review is satisfied."
+}

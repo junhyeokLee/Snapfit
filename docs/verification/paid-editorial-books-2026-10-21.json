@@ -1,0 +1,2184 @@
+{
+  "recordedAtUtc": "2026-10-21T06:13:38.359Z",
+  "status": "paid_editorial_books_web_deployed_verified",
+  "scope": {
+    "paidProducts": 26,
+    "editionChoices": 31,
+    "aspects": [
+      "portrait",
+      "square",
+      "landscape"
+    ],
+    "books": 93,
+    "covers": 93,
+    "interiors": 2664,
+    "totalPageVariants": 2757,
+    "freeProductsUnchanged": 42,
+    "pricesAndReleaseGatesUnchanged": true,
+    "savedAlbumsRewritten": false
+  },
+  "implemented": [
+    "Full-bleed editable photographic jackets with 26 explicit art directions and compact opaque high-contrast typography panels",
+    "Paid-only photo-led interior compositions with series palettes, original display fonts, handwriting and independent signature materials",
+    "Larger editorial headlines, original-ratio photographs, sentence-aware body typography and source-aligned record rows",
+    "All 68 current store covers and spreads use editable layers with bounded 18-book parsed caches",
+    "Both the edition selection preview and selected 24/extended documents use the refined three-aspect catalog"
+  ],
+  "permittedPresentationExceptions": [
+    {
+      "product": "summer-keepsake-box",
+      "aspect": "portrait",
+      "page": 0,
+      "change": "imageOffsetRatio.x=0.16; original source transform retained; four face/hat bounds independently verified"
+    },
+    {
+      "product": "shared-seasons",
+      "page": 11,
+      "change": "vertical single-character title displayed horizontally as 비 오는 주말; exact original in editorialSourceText"
+    },
+    {
+      "product": "little-companion",
+      "page": 11,
+      "change": "vertical single-character title displayed horizontally as 간식 시간; exact original in editorialSourceText"
+    }
+  ],
+  "validation": {
+    "paidSourceAndQuality": {
+      "passed": 98,
+      "failed": 0,
+      "metrics": {
+        "products": 26,
+        "editionChoices": 31,
+        "books": 93,
+        "pages": 2757,
+        "covers": 93,
+        "interiors": 2664,
+        "protectedFreeProducts": 42,
+        "layoutCounts": {
+          "vow-opening": 12,
+          "vow-photographic-folio": 33,
+          "vow-margin-story": 30,
+          "vow-statement": 21,
+          "vow-scene-and-note": 27,
+          "vow-title-and-scene": 18,
+          "vow-record-sheet": 6,
+          "vow-master-and-detail": 6,
+          "vow-two-scene-dialogue": 6,
+          "vow-closing": 6,
+          "vow-photo-register": 3,
+          "postcard-opening": 6,
+          "postcard-photo-register": 24,
+          "postcard-margin-story": 18,
+          "postcard-statement": 60,
+          "postcard-scene-and-note": 21,
+          "postcard-title-and-scene": 15,
+          "postcard-photographic-folio": 18,
+          "postcard-closing": 12,
+          "postcard-record-sheet": 6,
+          "cabinet-opening": 6,
+          "cabinet-scene-and-note": 9,
+          "cabinet-record-sheet": 6,
+          "cabinet-title-and-scene": 12,
+          "cabinet-statement": 15,
+          "cabinet-photographic-folio": 9,
+          "cabinet-margin-story": 9,
+          "cabinet-master-and-detail": 3,
+          "cabinet-closing": 3,
+          "first-year-opening": 6,
+          "first-year-photo-register": 18,
+          "first-year-title-and-scene": 24,
+          "first-year-statement": 42,
+          "first-year-photographic-folio": 21,
+          "first-year-margin-story": 24,
+          "first-year-scene-and-note": 18,
+          "first-year-record-sheet": 12,
+          "first-year-closing": 12,
+          "first-year-master-and-detail": 3,
+          "table-opening": 12,
+          "table-photographic-folio": 15,
+          "table-statement": 57,
+          "table-margin-story": 21,
+          "table-scene-and-note": 18,
+          "table-photo-register": 15,
+          "table-record-sheet": 9,
+          "table-title-and-scene": 15,
+          "table-two-scene-dialogue": 6,
+          "tickets-statement": 78,
+          "tickets-two-scene-dialogue": 6,
+          "tickets-margin-story": 21,
+          "tickets-scene-and-note": 24,
+          "tickets-title-and-scene": 15,
+          "tickets-photographic-folio": 18,
+          "tickets-closing": 6,
+          "walk-ledger-opening": 6,
+          "walk-ledger-scene-and-note": 9,
+          "walk-ledger-statement": 24,
+          "walk-ledger-title-and-scene": 9,
+          "walk-ledger-photographic-folio": 6,
+          "walk-ledger-record-sheet": 6,
+          "walk-ledger-margin-story": 9,
+          "walk-ledger-closing": 3,
+          "silk-statement": 9,
+          "silk-opening": 3,
+          "silk-two-scene-dialogue": 3,
+          "silk-photo-register": 6,
+          "silk-title-and-scene": 15,
+          "silk-photographic-folio": 6,
+          "silk-margin-story": 9,
+          "silk-master-and-detail": 6,
+          "silk-scene-and-note": 12,
+          "silk-closing": 3,
+          "coast-statement": 15,
+          "coast-opening": 3,
+          "coast-title-and-scene": 9,
+          "coast-master-and-detail": 9,
+          "coast-photographic-folio": 9,
+          "coast-margin-story": 9,
+          "coast-record-sheet": 6,
+          "coast-scene-and-note": 6,
+          "coast-photo-register": 3,
+          "coast-closing": 3,
+          "reading-statement": 18,
+          "reading-opening": 3,
+          "reading-photographic-folio": 6,
+          "reading-margin-story": 9,
+          "reading-scene-and-note": 12,
+          "reading-title-and-scene": 6,
+          "reading-two-scene-dialogue": 3,
+          "reading-photo-register": 3,
+          "reading-master-and-detail": 3,
+          "reading-contact-story": 3,
+          "reading-record-sheet": 3,
+          "reading-closing": 3,
+          "wardrobe-record-sheet": 6,
+          "wardrobe-opening": 3,
+          "wardrobe-margin-story": 9,
+          "wardrobe-master-and-detail": 6,
+          "wardrobe-scene-and-note": 6,
+          "wardrobe-photo-register": 9,
+          "wardrobe-statement": 9,
+          "wardrobe-title-and-scene": 6,
+          "wardrobe-photographic-folio": 12,
+          "wardrobe-contact-story": 3,
+          "wardrobe-closing": 3,
+          "picnic-statement": 12,
+          "picnic-opening": 3,
+          "picnic-photo-register": 3,
+          "picnic-scene-and-note": 15,
+          "picnic-title-and-scene": 12,
+          "picnic-photographic-folio": 9,
+          "picnic-margin-story": 9,
+          "picnic-master-and-detail": 3,
+          "picnic-contact-story": 3,
+          "picnic-closing": 3,
+          "correspondence-statement": 12,
+          "correspondence-opening": 3,
+          "correspondence-title-and-scene": 12,
+          "correspondence-photographic-folio": 15,
+          "correspondence-margin-story": 12,
+          "correspondence-scene-and-note": 9,
+          "correspondence-master-and-detail": 3,
+          "correspondence-contact-story": 3,
+          "correspondence-closing": 3,
+          "companion-statement": 15,
+          "companion-opening": 3,
+          "companion-photo-register": 3,
+          "companion-photographic-folio": 12,
+          "companion-margin-story": 15,
+          "companion-scene-and-note": 12,
+          "companion-title-and-scene": 3,
+          "companion-record-sheet": 3,
+          "companion-master-and-detail": 3,
+          "companion-closing": 3,
+          "garden-vow-opening": 3,
+          "garden-vow-statement": 18,
+          "garden-vow-two-scene-dialogue": 9,
+          "garden-vow-margin-story": 18,
+          "garden-vow-title-and-scene": 9,
+          "garden-vow-photographic-folio": 3,
+          "garden-vow-photo-register": 18,
+          "garden-vow-record-sheet": 6,
+          "garden-vow-master-and-detail": 3,
+          "garden-vow-scene-and-note": 6,
+          "garden-vow-closing": 3,
+          "rail-opening": 6,
+          "rail-photo-register": 24,
+          "rail-record-sheet": 6,
+          "rail-scene-and-note": 15,
+          "rail-master-and-detail": 3,
+          "rail-statement": 9,
+          "rail-photographic-folio": 15,
+          "rail-two-scene-dialogue": 3,
+          "rail-margin-story": 3,
+          "rail-title-and-scene": 6,
+          "rail-closing": 6,
+          "botanical-opening": 6,
+          "botanical-scene-and-note": 18,
+          "botanical-title-and-scene": 15,
+          "botanical-photo-register": 21,
+          "botanical-margin-story": 15,
+          "botanical-master-and-detail": 6,
+          "botanical-statement": 9,
+          "botanical-record-sheet": 3,
+          "botanical-closing": 3,
+          "orbit-statement": 15,
+          "orbit-opening": 3,
+          "orbit-title-and-scene": 21,
+          "orbit-two-scene-dialogue": 6,
+          "orbit-margin-story": 9,
+          "orbit-photo-register": 15,
+          "orbit-record-sheet": 9,
+          "orbit-scene-and-note": 9,
+          "orbit-photographic-folio": 6,
+          "orbit-master-and-detail": 3,
+          "recipe-opening": 6,
+          "recipe-photo-register": 15,
+          "recipe-record-sheet": 9,
+          "recipe-master-and-detail": 9,
+          "recipe-statement": 9,
+          "recipe-two-scene-dialogue": 3,
+          "recipe-scene-and-note": 12,
+          "recipe-photographic-folio": 18,
+          "recipe-margin-story": 6,
+          "recipe-title-and-scene": 3,
+          "recipe-closing": 6,
+          "cinema-opening": 6,
+          "cinema-photo-register": 15,
+          "cinema-record-sheet": 9,
+          "cinema-two-scene-dialogue": 9,
+          "cinema-scene-and-note": 3,
+          "cinema-title-and-scene": 15,
+          "cinema-statement": 15,
+          "cinema-margin-story": 12,
+          "cinema-photographic-folio": 6,
+          "cinema-master-and-detail": 3,
+          "cinema-closing": 3,
+          "walk-statement": 12,
+          "walk-opening": 3,
+          "walk-two-scene-dialogue": 9,
+          "walk-title-and-scene": 9,
+          "walk-photo-register": 12,
+          "walk-record-sheet": 12,
+          "walk-margin-story": 15,
+          "walk-scene-and-note": 9,
+          "walk-photographic-folio": 6,
+          "walk-master-and-detail": 3,
+          "walk-closing": 6,
+          "after-hours-statement": 9,
+          "after-hours-opening": 3,
+          "after-hours-photographic-folio": 18,
+          "after-hours-margin-story": 18,
+          "after-hours-scene-and-note": 15,
+          "after-hours-two-scene-dialogue": 3,
+          "after-hours-title-and-scene": 9,
+          "after-hours-master-and-detail": 12,
+          "after-hours-contact-story": 6,
+          "after-hours-closing": 3,
+          "summer-archive-opening": 3,
+          "summer-archive-master-and-detail": 15,
+          "summer-archive-scene-and-note": 18,
+          "summer-archive-photo-register": 3,
+          "summer-archive-photographic-folio": 12,
+          "summer-archive-statement": 9,
+          "summer-archive-contact-story": 9,
+          "summer-archive-title-and-scene": 12,
+          "summer-archive-two-scene-dialogue": 6,
+          "summer-archive-margin-story": 6,
+          "summer-archive-closing": 3,
+          "companion-issue-statement": 18,
+          "companion-issue-opening": 3,
+          "companion-issue-photographic-folio": 12,
+          "companion-issue-master-and-detail": 9,
+          "companion-issue-contact-story": 6,
+          "companion-issue-scene-and-note": 12,
+          "companion-issue-title-and-scene": 9,
+          "companion-issue-margin-story": 9,
+          "companion-issue-record-sheet": 3,
+          "companion-issue-photo-register": 3,
+          "companion-issue-two-scene-dialogue": 9,
+          "companion-issue-closing": 3,
+          "velvet-vow-opening": 6,
+          "velvet-vow-statement": 21,
+          "velvet-vow-margin-story": 21,
+          "velvet-vow-scene-and-note": 9,
+          "velvet-vow-title-and-scene": 18,
+          "velvet-vow-photographic-folio": 9,
+          "velvet-vow-two-scene-dialogue": 9,
+          "velvet-vow-closing": 3,
+          "explorer-opening": 6,
+          "explorer-record-sheet": 3,
+          "explorer-photo-register": 3,
+          "explorer-photographic-folio": 15,
+          "explorer-statement": 18,
+          "explorer-margin-story": 12,
+          "explorer-scene-and-note": 12,
+          "explorer-title-and-scene": 12,
+          "explorer-master-and-detail": 9,
+          "explorer-specimen-sequence": 3,
+          "explorer-two-scene-dialogue": 3
+        }
+      }
+    },
+    "freeSourceAndQuality": {
+      "passed": 129,
+      "failed": 0,
+      "pages": 3174
+    },
+    "coverDiversityAndLiveContracts": {
+      "passed": 17,
+      "failed": 0,
+      "note": "The initial combined run also contained four passing thumbnail tests and one obsolete single-renderer assertion. The final five thumbnail checks pass within the 181-check store group."
+    },
+    "storeCommerceEditionSelectionAndThumbnail": {
+      "passed": 181,
+      "failed": 0
+    },
+    "chrome": {
+      "passed": 10,
+      "failed": 0
+    },
+    "analysis": {
+      "files": 14,
+      "issues": 0
+    },
+    "independentIntegrationReview": {
+      "findings": 0,
+      "scope": "catalog-only boundaries, free and saved documents, short-edition delivery, canonical bitmap bypass and bounded caches"
+    },
+    "diagnosticRam": {
+      "passed": 39,
+      "failed": 0,
+      "metrics": {
+        "products": 26,
+        "editionChoices": 31,
+        "books": 31,
+        "scope": "visual-diagnosis",
+        "pages": 217,
+        "decodedImages": 226,
+        "sourceAspectChecks": 151,
+        "previewFiles": 0
+      },
+      "elapsedMs": 32904,
+      "reviewedSheets": [
+        "paid-editorial-웨딩",
+        "paid-editorial-여행",
+        "paid-editorial-일상",
+        "paid-editorial-성장·육아",
+        "paid-editorial-가족·친구",
+        "paid-editorial-커플·기념일",
+        "paid-editorial-반려동물"
+      ]
+    },
+    "completeRam": {
+      "passed": 101,
+      "failed": 0,
+      "products": 26,
+      "editionChoices": 31,
+      "books": 93,
+      "scope": "complete-catalogue",
+      "pages": 2757,
+      "decodedImages": 3129,
+      "sourceAspectChecks": 2358,
+      "previewFiles": 0,
+      "elapsedMs": 117244,
+      "perBook": [
+        {
+          "book": "-9501/24/portrait",
+          "product": "template:vow-keepsake",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 40,
+          "sourceAspectChecks": 23,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9501/24/square",
+          "product": "template:vow-keepsake",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 40,
+          "sourceAspectChecks": 23,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9501/24/landscape",
+          "product": "template:vow-keepsake",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 40,
+          "sourceAspectChecks": 23,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9501/32/portrait",
+          "product": "template:vow-keepsake",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 49,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        {
+          "book": "-9501/32/square",
+          "product": "template:vow-keepsake",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 49,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        {
+          "book": "-9501/32/landscape",
+          "product": "template:vow-keepsake",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 49,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        {
+          "book": "-9511/24/portrait",
+          "product": "template:silk-vows",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 33,
+          "sourceAspectChecks": 24,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            11,
+            12
+          ]
+        },
+        {
+          "book": "-9511/24/square",
+          "product": "template:silk-vows",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 33,
+          "sourceAspectChecks": 24,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            11,
+            12
+          ]
+        },
+        {
+          "book": "-9511/24/landscape",
+          "product": "template:silk-vows",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 33,
+          "sourceAspectChecks": 24,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            11,
+            12
+          ]
+        },
+        {
+          "book": "-9521/32/portrait",
+          "product": "template:night-vows",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 37,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9521/32/square",
+          "product": "template:night-vows",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 37,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9521/32/landscape",
+          "product": "template:night-vows",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 37,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9534/32/portrait",
+          "product": "template:velvet-vow-archive",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 36,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        {
+          "book": "-9534/32/square",
+          "product": "template:velvet-vow-archive",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 36,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        {
+          "book": "-9534/32/landscape",
+          "product": "template:velvet-vow-archive",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 36,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        {
+          "book": "-9502/24/portrait",
+          "product": "template:luminous-edition",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 24,
+          "sourceAspectChecks": 18,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            17,
+            18
+          ]
+        },
+        {
+          "book": "-9502/24/square",
+          "product": "template:luminous-edition",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 24,
+          "sourceAspectChecks": 18,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            17,
+            18
+          ]
+        },
+        {
+          "book": "-9502/24/landscape",
+          "product": "template:luminous-edition",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 24,
+          "sourceAspectChecks": 18,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            17,
+            18
+          ]
+        },
+        {
+          "book": "-9502/36/portrait",
+          "product": "template:luminous-edition",
+          "innerPages": 36,
+          "scope": "complete-book",
+          "pages": 37,
+          "decodedImages": 32,
+          "sourceAspectChecks": 24,
+          "representativePages": [
+            0,
+            1,
+            2,
+            17,
+            18,
+            25,
+            26
+          ]
+        },
+        {
+          "book": "-9502/36/square",
+          "product": "template:luminous-edition",
+          "innerPages": 36,
+          "scope": "complete-book",
+          "pages": 37,
+          "decodedImages": 32,
+          "sourceAspectChecks": 24,
+          "representativePages": [
+            0,
+            1,
+            2,
+            17,
+            18,
+            25,
+            26
+          ]
+        },
+        {
+          "book": "-9502/36/landscape",
+          "product": "template:luminous-edition",
+          "innerPages": 36,
+          "scope": "complete-book",
+          "pages": 37,
+          "decodedImages": 32,
+          "sourceAspectChecks": 24,
+          "representativePages": [
+            0,
+            1,
+            2,
+            17,
+            18,
+            25,
+            26
+          ]
+        },
+        {
+          "book": "-9512/24/portrait",
+          "product": "template:shore-days",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 23,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "book": "-9512/24/square",
+          "product": "template:shore-days",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 23,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "book": "-9512/24/landscape",
+          "product": "template:shore-days",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 23,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "book": "-9522/32/portrait",
+          "product": "template:slow-rail",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 36,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9522/32/square",
+          "product": "template:slow-rail",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 36,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9522/32/landscape",
+          "product": "template:slow-rail",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 36,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9531/32/portrait",
+          "product": "template:city-afterglow",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 39,
+          "sourceAspectChecks": 38,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            31,
+            32
+          ]
+        },
+        {
+          "book": "-9531/32/square",
+          "product": "template:city-afterglow",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 39,
+          "sourceAspectChecks": 38,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            31,
+            32
+          ]
+        },
+        {
+          "book": "-9531/32/landscape",
+          "product": "template:city-afterglow",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 39,
+          "sourceAspectChecks": 38,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            31,
+            32
+          ]
+        },
+        {
+          "book": "-9503/24/portrait",
+          "product": "template:daily-cabinet",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 28,
+          "sourceAspectChecks": 18,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "book": "-9503/24/square",
+          "product": "template:daily-cabinet",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 28,
+          "sourceAspectChecks": 18,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "book": "-9503/24/landscape",
+          "product": "template:daily-cabinet",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 28,
+          "sourceAspectChecks": 18,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "book": "-9513/24/portrait",
+          "product": "template:reading-room",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 21,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            11,
+            12
+          ]
+        },
+        {
+          "book": "-9513/24/square",
+          "product": "template:reading-room",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 21,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            11,
+            12
+          ]
+        },
+        {
+          "book": "-9513/24/landscape",
+          "product": "template:reading-room",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 21,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            11,
+            12
+          ]
+        },
+        {
+          "book": "-9523/32/portrait",
+          "product": "template:green-hours",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 42,
+          "sourceAspectChecks": 31,
+          "representativePages": [
+            0,
+            1,
+            2,
+            7,
+            8,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9523/32/square",
+          "product": "template:green-hours",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 42,
+          "sourceAspectChecks": 31,
+          "representativePages": [
+            0,
+            1,
+            2,
+            7,
+            8,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9523/32/landscape",
+          "product": "template:green-hours",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 42,
+          "sourceAspectChecks": 31,
+          "representativePages": [
+            0,
+            1,
+            2,
+            7,
+            8,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9504/24/portrait",
+          "product": "template:first-year-keepsake",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 28,
+          "sourceAspectChecks": 20,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "book": "-9504/24/square",
+          "product": "template:first-year-keepsake",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 28,
+          "sourceAspectChecks": 20,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "book": "-9504/24/landscape",
+          "product": "template:first-year-keepsake",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 28,
+          "sourceAspectChecks": 20,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "book": "-9504/36/portrait",
+          "product": "template:first-year-keepsake",
+          "innerPages": 36,
+          "scope": "complete-book",
+          "pages": 37,
+          "decodedImages": 42,
+          "sourceAspectChecks": 27,
+          "representativePages": [
+            0,
+            1,
+            2,
+            17,
+            18,
+            23,
+            24
+          ]
+        },
+        {
+          "book": "-9504/36/square",
+          "product": "template:first-year-keepsake",
+          "innerPages": 36,
+          "scope": "complete-book",
+          "pages": 37,
+          "decodedImages": 42,
+          "sourceAspectChecks": 27,
+          "representativePages": [
+            0,
+            1,
+            2,
+            17,
+            18,
+            23,
+            24
+          ]
+        },
+        {
+          "book": "-9504/36/landscape",
+          "product": "template:first-year-keepsake",
+          "innerPages": 36,
+          "scope": "complete-book",
+          "pages": 37,
+          "decodedImages": 42,
+          "sourceAspectChecks": 27,
+          "representativePages": [
+            0,
+            1,
+            2,
+            17,
+            18,
+            23,
+            24
+          ]
+        },
+        {
+          "book": "-9514/24/portrait",
+          "product": "template:first-wardrobe",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 24,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "book": "-9514/24/square",
+          "product": "template:first-wardrobe",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 24,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "book": "-9514/24/landscape",
+          "product": "template:first-wardrobe",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 24,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "book": "-9524/32/portrait",
+          "product": "template:first-orbit",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 38,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            13,
+            14,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9524/32/square",
+          "product": "template:first-orbit",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 38,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            13,
+            14,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9524/32/landscape",
+          "product": "template:first-orbit",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 38,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            13,
+            14,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9535/32/portrait",
+          "product": "template:little-explorer-book",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 37,
+          "sourceAspectChecks": 33,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            31,
+            32
+          ]
+        },
+        {
+          "book": "-9535/32/square",
+          "product": "template:little-explorer-book",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 37,
+          "sourceAspectChecks": 33,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            31,
+            32
+          ]
+        },
+        {
+          "book": "-9535/32/landscape",
+          "product": "template:little-explorer-book",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 37,
+          "sourceAspectChecks": 33,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            31,
+            32
+          ]
+        },
+        {
+          "book": "-9505/24/portrait",
+          "product": "template:table-stories",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 24,
+          "sourceAspectChecks": 16,
+          "representativePages": [
+            0,
+            1,
+            2,
+            9,
+            10,
+            11,
+            12
+          ]
+        },
+        {
+          "book": "-9505/24/square",
+          "product": "template:table-stories",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 24,
+          "sourceAspectChecks": 16,
+          "representativePages": [
+            0,
+            1,
+            2,
+            9,
+            10,
+            11,
+            12
+          ]
+        },
+        {
+          "book": "-9505/24/landscape",
+          "product": "template:table-stories",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 24,
+          "sourceAspectChecks": 16,
+          "representativePages": [
+            0,
+            1,
+            2,
+            9,
+            10,
+            11,
+            12
+          ]
+        },
+        {
+          "book": "-9505/32/portrait",
+          "product": "template:table-stories",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 31,
+          "sourceAspectChecks": 20,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9505/32/square",
+          "product": "template:table-stories",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 31,
+          "sourceAspectChecks": 20,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9505/32/landscape",
+          "product": "template:table-stories",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 31,
+          "sourceAspectChecks": 20,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9515/24/portrait",
+          "product": "template:sunday-picnic",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 30,
+          "sourceAspectChecks": 23,
+          "representativePages": [
+            0,
+            1,
+            2,
+            7,
+            8,
+            11,
+            12
+          ]
+        },
+        {
+          "book": "-9515/24/square",
+          "product": "template:sunday-picnic",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 30,
+          "sourceAspectChecks": 23,
+          "representativePages": [
+            0,
+            1,
+            2,
+            7,
+            8,
+            11,
+            12
+          ]
+        },
+        {
+          "book": "-9515/24/landscape",
+          "product": "template:sunday-picnic",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 30,
+          "sourceAspectChecks": 23,
+          "representativePages": [
+            0,
+            1,
+            2,
+            7,
+            8,
+            11,
+            12
+          ]
+        },
+        {
+          "book": "-9525/32/portrait",
+          "product": "template:family-recipe-book",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 40,
+          "sourceAspectChecks": 31,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9525/32/square",
+          "product": "template:family-recipe-book",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 40,
+          "sourceAspectChecks": 31,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9525/32/landscape",
+          "product": "template:family-recipe-book",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 40,
+          "sourceAspectChecks": 31,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9532/32/portrait",
+          "product": "template:summer-keepsake-box",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 49,
+          "sourceAspectChecks": 47,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            31,
+            32
+          ]
+        },
+        {
+          "book": "-9532/32/square",
+          "product": "template:summer-keepsake-box",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 49,
+          "sourceAspectChecks": 47,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            31,
+            32
+          ]
+        },
+        {
+          "book": "-9532/32/landscape",
+          "product": "template:summer-keepsake-box",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 49,
+          "sourceAspectChecks": 47,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            31,
+            32
+          ]
+        },
+        {
+          "book": "-9506/24/portrait",
+          "product": "template:two-tickets",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 19,
+          "sourceAspectChecks": 14,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "book": "-9506/24/square",
+          "product": "template:two-tickets",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 19,
+          "sourceAspectChecks": 14,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "book": "-9506/24/landscape",
+          "product": "template:two-tickets",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 19,
+          "sourceAspectChecks": 14,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "book": "-9506/32/portrait",
+          "product": "template:two-tickets",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 25,
+          "sourceAspectChecks": 18,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            31,
+            32
+          ]
+        },
+        {
+          "book": "-9506/32/square",
+          "product": "template:two-tickets",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 25,
+          "sourceAspectChecks": 18,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            31,
+            32
+          ]
+        },
+        {
+          "book": "-9506/32/landscape",
+          "product": "template:two-tickets",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 25,
+          "sourceAspectChecks": 18,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            31,
+            32
+          ]
+        },
+        {
+          "book": "-9516/24/portrait",
+          "product": "template:shared-seasons",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 33,
+          "sourceAspectChecks": 23,
+          "representativePages": [
+            0,
+            1,
+            2,
+            7,
+            8,
+            11,
+            12
+          ]
+        },
+        {
+          "book": "-9516/24/square",
+          "product": "template:shared-seasons",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 33,
+          "sourceAspectChecks": 23,
+          "representativePages": [
+            0,
+            1,
+            2,
+            7,
+            8,
+            11,
+            12
+          ]
+        },
+        {
+          "book": "-9516/24/landscape",
+          "product": "template:shared-seasons",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 33,
+          "sourceAspectChecks": 23,
+          "representativePages": [
+            0,
+            1,
+            2,
+            7,
+            8,
+            11,
+            12
+          ]
+        },
+        {
+          "book": "-9526/32/portrait",
+          "product": "template:private-cinema",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 34,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9526/32/square",
+          "product": "template:private-cinema",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 34,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9526/32/landscape",
+          "product": "template:private-cinema",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 34,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9507/24/portrait",
+          "product": "template:walk-and-nap",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 20,
+          "sourceAspectChecks": 14,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "book": "-9507/24/square",
+          "product": "template:walk-and-nap",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 20,
+          "sourceAspectChecks": 14,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "book": "-9507/24/landscape",
+          "product": "template:walk-and-nap",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 20,
+          "sourceAspectChecks": 14,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "book": "-9517/24/portrait",
+          "product": "template:little-companion",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 27,
+          "sourceAspectChecks": 19,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            13,
+            14
+          ]
+        },
+        {
+          "book": "-9517/24/square",
+          "product": "template:little-companion",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 27,
+          "sourceAspectChecks": 19,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            13,
+            14
+          ]
+        },
+        {
+          "book": "-9517/24/landscape",
+          "product": "template:little-companion",
+          "innerPages": 24,
+          "scope": "complete-book",
+          "pages": 25,
+          "decodedImages": 27,
+          "sourceAspectChecks": 19,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            13,
+            14
+          ]
+        },
+        {
+          "book": "-9527/32/portrait",
+          "product": "template:walk-map",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 38,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            7,
+            8,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9527/32/square",
+          "product": "template:walk-map",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 38,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            7,
+            8,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9527/32/landscape",
+          "product": "template:walk-map",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 38,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            7,
+            8,
+            15,
+            16
+          ]
+        },
+        {
+          "book": "-9533/32/portrait",
+          "product": "template:companion-journal",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 39,
+          "sourceAspectChecks": 36,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            27,
+            28
+          ]
+        },
+        {
+          "book": "-9533/32/square",
+          "product": "template:companion-journal",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 39,
+          "sourceAspectChecks": 36,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            27,
+            28
+          ]
+        },
+        {
+          "book": "-9533/32/landscape",
+          "product": "template:companion-journal",
+          "innerPages": 32,
+          "scope": "complete-book",
+          "pages": 33,
+          "decodedImages": 39,
+          "sourceAspectChecks": 36,
+          "representativePages": [
+            0,
+            1,
+            2,
+            15,
+            16,
+            27,
+            28
+          ]
+        }
+      ],
+      "reviewedSheets": [
+        "paid-editorial-웨딩",
+        "paid-editorial-여행",
+        "paid-editorial-일상",
+        "paid-editorial-성장·육아",
+        "paid-editorial-가족·친구",
+        "paid-editorial-커플·기념일",
+        "paid-editorial-반려동물"
+      ]
+    },
+    "coverRam": {
+      "passed": 86,
+      "failed": 0,
+      "products": 26,
+      "editionChoices": 26,
+      "books": 78,
+      "scope": "cover-crop-review",
+      "pages": 78,
+      "covers": 78,
+      "decodedImages": 78,
+      "sourceAspectChecks": 0,
+      "previewFiles": 0,
+      "elapsedMs": 24487,
+      "reviewedSheets": [
+        "paid-editorial-covers-웨딩",
+        "paid-editorial-covers-여행",
+        "paid-editorial-covers-일상",
+        "paid-editorial-covers-성장·육아",
+        "paid-editorial-covers-가족·친구",
+        "paid-editorial-covers-커플·기념일",
+        "paid-editorial-covers-반려동물"
+      ]
+    },
+    "previousAiContract": {
+      "unchangedSourceAndTestHashes": 52
+    }
+  },
+  "sourceAndTestSha256": {
+    "lib/core/templates/authored_collections.dart": "397fc28f6811cb2aa67d3e23f66c3dc66f7c8d38e8e5a05ac69ec94e66ffd2d3",
+    "lib/core/templates/published_premium_templates.dart": "9b7d6360eeac7dc1dad31abe9766fabf0082f0f0c18dc6227e564fadb560ecb9",
+    "lib/core/templates/authored_paid_immersive_covers.dart": "e7b5b35809702ca8f26bcd5de87ccf8ca483cba9bcc06d8a4f1a07c80153df36",
+    "lib/core/templates/authored_paid_editorial_interiors.dart": "51fed44ded6438bd6cab5f95d43eddec375c91ea3de05e84d58a9483d037a833",
+    "lib/core/templates/authored_atelier_editions.dart": "c563d3edc7c8cf2ccfbc946efae9a68d5375bc17fff0ee3f18c07f4d521bae11",
+    "lib/core/templates/authored_studio_editions.dart": "3ebc56da12022b3a815f46fc994cb18863923316ac636a28a928fb31aa7f3e6a",
+    "lib/features/album/presentation/widgets/create_flow/creation_catalog_cover.dart": "15e5fbb5bcfad56feae4ca2ee60851309f5327f109055d1e6ab3da4ee06ce311",
+    "lib/features/store/presentation/widgets/catalog_edition_artwork.dart": "d64de01fa0fbc39961cb933123eb9f0ddb66c753b244f1096ba2fd1b97ff74f6",
+    "lib/features/store/presentation/widgets/template_edition_sheet.dart": "912a60e53d34f4e3b0703b1f3b3a2bcf476b7af53eec778264f6972470fcff07",
+    "lib/core/templates/authored_free_immersive_covers.dart": "6e61cb279b0602d039cce609c2c3d74829cb246087d978e67f0ee83140ac0e5b",
+    "lib/core/templates/authored_free_editorial_interiors.dart": "fc08915a66933aee981de2e705732252fadc1b19577a90fdf4681d6fc8c8f463",
+    "lib/features/album/data/bundled_creation_templates.dart": "90ccc1704829eb9292e2dc37c701ec86c8faf6c9feff8312755deb4e10132e56",
+    "test/unit/paid_editorial_book_quality_test.dart": "1d30ec62830ee1d88bd561e5e5621e33a4d67044ec3c5f196daf2fc2686d6e36",
+    "test/design/paid_editorial_book_memory_test.dart": "05608766eeca5d11e86bd492447ac1f1bab392196340a81afcf66d18aab40179",
+    "test/unit/free_editorial_book_quality_test.dart": "1149f38fc65bd4a1e3f863fcd3bbcc4f784c381048095eb4f49a192bb0e492c3",
+    "test/widget/wind_atlas_live_catalog_test.dart": "330f9c3a00231339ccb80233de90f5ab447991816d33056286eb22fa5c67d33a",
+    "test/widget/catalog_thumbnail_test.dart": "84e79a7515b4d0f018e3e042b41501925fc2b9e63926676e3b59200f4bdbcdd5"
+  },
+  "production": {
+    "status": "hosting_deployed_https_bytes_verified",
+    "hostingUrl": "https://snapfit-c719d.web.app/",
+    "build": {
+      "main_sha256": "5994674273e85c61f5ad1d6d76a3d329dd2f023400d6aeba7face80eaf71238e",
+      "main_file": "main.5994674273e85c61f5ad.dart.js",
+      "bootstrap_sha256": "95751e9365255c5caafa49b16ee03cdc6eff83e55294696337bac9aad8f338b8",
+      "bootstrap_file": "flutter_bootstrap.95751e9365255c5caafa.js"
+    },
+    "mainBytes": 7381970,
+    "sourceParityFiles": 17,
+    "verifiedAtUtc": "2026-10-21T06:18:05.494262+00:00",
+    "httpsChecks": {
+      "indexReferencesBootstrap": true,
+      "bootstrapReferencesMain": true,
+      "mainSha256MatchesBuild": true,
+      "bootstrapSha256MatchesBuild": true,
+      "paidAndFreeRevisionMarkers": true
+    },
+    "uiChecks": {
+      "url": "https://snapfit-c719d.web.app/#/designs/templates/-9522",
+      "templateId": -9522,
+      "title": "느린 열차의 기록",
+      "coverPhotoAndOpaqueTitleVisible": true,
+      "spread": "3–4",
+      "spreadPhotoLoaded": true,
+      "alignedJourneyRecordRowsVisible": true,
+      "pricePoints": 2800,
+      "previewScreenshotFilesWritten": 0
+    }
+  },
+  "storage": {
+    "baselineMediaFiles": 340,
+    "baselineMediaBytes": 522862670,
+    "previewFilesCreated": 0,
+    "mediaFilesUnchanged": 340,
+    "mediaBytesUnchanged": 522862670,
+    "removedGeneratedPaths": [
+      {
+        "path": "build",
+        "logicalBytes": 1864397651
+      },
+      {
+        "path": ".dart_tool/flutter_build",
+        "logicalBytes": 70333419
+      },
+      {
+        "path": ".dart_tool/hooks_runner",
+        "logicalBytes": 23009065
+      },
+      {
+        "path": "/private/tmp/snapfit-paid-editorial-book-baseline.json",
+        "logicalBytes": 5116202
+      },
+      {
+        "path": "/private/tmp/snapfit-paid-design-storage-baseline.json",
+        "logicalBytes": 56309
+      },
+      {
+        "path": "/private/tmp/snapfit-paid-editorial-source-freeze.json",
+        "logicalBytes": 2169
+      }
+    ],
+    "removedLogicalBytes": 1962914815,
+    "freeBytesBeforeCleanup": 23888031744,
+    "freeBytesAfterCleanup": 25857404928
+  },
+  "completedAtUtc": "2026-10-21T06:21:56.659830+00:00"
+}

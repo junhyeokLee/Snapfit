@@ -31,6 +31,22 @@ void main() {
   });
 
   test(
+    'frame composition uses product identity, not the localized type label',
+    () {
+      for (final type in ['프레임', '사진 프레임']) {
+        final plan = MaterialPreviewComposition.forProduct(
+          'frame:storyVowGate',
+          type,
+        );
+        expect(plan.placement, MaterialPreviewPlacement.frame);
+        expect(plan.photoRect, isNull);
+        expect(plan.photoAsset, isNull);
+        expect(plan.materialRect, const Rect.fromLTWH(36, 30, 528, 528));
+      }
+    },
+  );
+
+  test(
     'every decoration keeps its aspect, visible boundaries and caption space',
     () {
       final bounds = (Offset.zero & MaterialPreviewComposition.canvas).inflate(
@@ -152,6 +168,47 @@ void main() {
       if (phrase.category == '성장·육아')
         expect(plan.photoAsset, contains('growth_'));
       if (phrase.category == '반려동물') expect(plan.photoAsset, contains('pet_'));
+    }
+  });
+
+  test('atelier kits use actual apertures, supports and topic photographs', () {
+    final subjects = {
+      'editionGardenMount': 'petal_',
+      'editionRailMount': 'travel_|journey_',
+      'editionHerbariumMount': 'daily_book',
+      'editionOrbitMount': 'growth_',
+      'editionKitchenMount': 'family_|daily_friends',
+      'editionCinemaMount': 'couple_',
+      'editionWalkMount': 'pet_',
+    };
+    for (final spec in atelierLayeredDecorations) {
+      final plan = MaterialPreviewComposition.forProduct(
+        'sticker:${spec.id}',
+        typeOf(spec),
+      );
+      if (spec.id.endsWith('Mount')) {
+        expect(plan.placement, MaterialPreviewPlacement.frame);
+        final window = atelierMountWindow(spec.id),
+            material = plan.materialRect;
+        expect(
+          plan.photoRect,
+          rectMoreOrLessEquals(
+            Rect.fromLTWH(
+              material.left + window.left * material.width,
+              material.top + window.top * material.height,
+              window.width * material.width,
+              window.height * material.height,
+            ),
+            epsilon: .00001,
+          ),
+        );
+        expect(plan.circularPhoto, spec.id == 'editionOrbitMount');
+        if (subjects[spec.id] case final String pattern) {
+          expect(plan.photoAsset, contains(RegExp(pattern)));
+        }
+      } else if (spec.id.endsWith('Paper')) {
+        expect(plan.materialBelowPhoto, true);
+      }
     }
   });
 

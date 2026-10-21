@@ -1,0 +1,183 @@
+{
+  "status": "production_web_deployed_verified",
+  "date": "2026-10-21",
+  "scope": [
+    "Public first twelve designs contain seven subjects and both publication tiers without changing prices or availability",
+    "Mobile web detail stage fits the selected cover or spread; one fixed use action and public price remain outside content scroll",
+    "Native full screen supports pinch, double tap, zoom pan, reset and accessible page movement"
+  ],
+  "preserved": {
+    "coverAndInteriorAuthoringSourcesUnchanged": true,
+    "originalMediaFiles": 340,
+    "originalMediaBytes": 522862670,
+    "noPreviewFilesCreated": true,
+    "privateAccountReadsForbiddenInGuestJourneyTests": true,
+    "existingPurchaseAndLoginGatesRetained": true,
+    "originalNativePageCounterRetained": true,
+    "originalMediaInventoryUnchanged": true
+  },
+  "files": {
+    "lib/features/store/presentation/views/public_discovery_screen.dart": "7226a097d9270a6f717e5623cb1fffde535bf734ee3e2533dc9c3e8e3b7b5f2f",
+    "lib/features/store/presentation/views/template_detail_screen.dart": "ac71c59a48ece6f67ed761a7989d41a3e5d476312ec67f6df918fc63fa0f7069",
+    "lib/features/store/presentation/views/template_full_screen_view.dart": "73491b33d297cbba57f4006f44b7d29a2575faeb53942f573e8c4b97038216e5",
+    "lib/features/store/presentation/widgets/web/web_design_detail_layout.dart": "dce8fae8e50fba9ce353383d12741f0966943dbe374313ddacc7fb00796ea87b",
+    "test/widget/web_catalog_design_layout_test.dart": "4fb52b046e8ee5f54d5d016b4351e323c92754cac165757c573ae54bcba78aea",
+    "test/widget/template_detail_screen_test.dart": "ba8c446ff7fd5b66cf94ec526d3c99fa03fd0aba6c9db1ef163722dce14bcdac",
+    "lib/features/store/domain/public_discovery_ordering.dart": "06af7756831c262eec24878bea62851a7adda1877ef18009720ba8129011b537",
+    "test/unit/public_discovery_ordering_test.dart": "e7011b8d692cb2362dcb4bcca1180e7eafd16e9dc6ee9be5dc2816148b9d29a5",
+    "test/widget/web_template_detail_workspace_test.dart": "df9e7b9f2a8a01a35c4bcc91704015c9405a99e276c19d8797de6a11f839c88e",
+    "test/widget/public_discovery_ordering_test.dart": "457f1d8fd000f5fec5f0b3d851d952a004c8f36db9fe087e69970a230466f51a",
+    "test/widget/template_native_zoom_test.dart": "92f469eb25dec94b3028c3967ca19d532ed956cffab3b5f1f1d1c5f076907408"
+  },
+  "validation": {
+    "analysis": {
+      "files": 11,
+      "issues": 0
+    },
+    "nativeRegression": {
+      "passed": 88,
+      "failed": 0,
+      "files": [
+        "template_detail_screen_test",
+        "template_book_detail_test",
+        "store_detail_continuation_test",
+        "template_edition_journey_test",
+        "public_discovery_ordering_test",
+        "template_design_comparison_test",
+        "template_comparison_journey_test",
+        "template_comparison_price_refresh_test"
+      ]
+    },
+    "nativeModelAndLayout": {
+      "passed": 15,
+      "failed": 0,
+      "modelTests": 6,
+      "layoutTests": 9
+    },
+    "nativeZoomWithRamInspection": {
+      "passed": 15,
+      "failed": 0,
+      "functionalCases": 14,
+      "ramVisualCase": 1,
+      "ramImages": 2,
+      "imageFilesWritten": 0,
+      "cases": [
+        "one finger swipe at 1x",
+        "double tap focal anchor",
+        "two finger horizontal pinch before page drag slop",
+        "pan bounds on actual fitted portrait and landscape pages in both orientations",
+        "zoom reset on explicit page movement",
+        "last viewed page after closing",
+        "200 percent controls at small and short sizes",
+        "rotation resets zoom while preserving page"
+      ]
+    },
+    "browserDetailFocused": {
+      "passed": 5,
+      "failed": 0,
+      "cases": [
+        "cover to spread height reduction and persistent use action",
+        "scroll-to-end unmount then return restores both first interior and late 27–28 spread with selected thumbnail",
+        "320x568 at 200 percent text",
+        "844x390 short window",
+        "1440x1000 desktop"
+      ]
+    },
+    "browserSurroundingJourneys": {
+      "passed": 10,
+      "failed": 0,
+      "files": [
+        "web_public_discovery_flow_test (4)",
+        "public_discovery_ordering_test (2)",
+        "template_comparison_journey_test (4)"
+      ],
+      "detail": "These ten cases passed before the compact action label fix; the four focused detail cases passed again after that fix."
+    },
+    "adjustmentsAfterChecks": [
+      "Shortened mobile use labels and removed the icon to fit the complete button at 200 percent text on 320x568",
+      "Kept existing cover-inclusive page counter for native continuation compatibility",
+      "Updated a pre-existing native viewport test to scroll full metadata while asserting the original fixed action position",
+      "Added distinct stable PageStorage keys for the spread pager and thumbnail rail after production visual QA found the artwork returned to cover when scrolling back; tested real rail drags to the late 27–28 spread and full preview unmount/remount."
+    ],
+    "afterPageStorageFixNativeRegression": {
+      "passed": 72,
+      "failed": 0,
+      "files": [
+        "template_detail_screen_test",
+        "template_book_detail_test",
+        "store_detail_continuation_test",
+        "template_edition_journey_test"
+      ]
+    },
+    "finalChangedFilesAnalysis": {
+      "files": 2,
+      "issues": 0
+    }
+  },
+  "frozenInputFiles": 2034,
+  "storage": {
+    "freeBytesAtStart": 22133932032,
+    "supersededBuildRemovedBytes": 769176448,
+    "generatedCachesRemoved": [
+      {
+        "path": "build",
+        "bytes": 1731524703
+      },
+      {
+        "path": ".dart_tool/flutter_build",
+        "bytes": 70464487
+      },
+      {
+        "path": ".dart_tool/hooks_runner",
+        "bytes": 23008508
+      }
+    ],
+    "generatedCachesRemovedBytes": 1824997698,
+    "totalGeneratedRemovedBytes": 2594174146,
+    "originalMediaFileCountAfter": 340,
+    "originalMediaBytesAfter": 522862670,
+    "freeBytesAfterCleanup": 27352563712,
+    "ramImagesReleased": true
+  },
+  "supersededDuringVerification": {
+    "url": "https://snapfit-c719d.web.app/",
+    "deployment": "firebase hosting only",
+    "files": 829,
+    "main_sha256": "cd6feb484a19b411fcd34869fa8e626ab63901d413ff3166069b1e68f0c5ab2a",
+    "main_file": "main.cd6feb484a19b411fcd3.dart.js",
+    "bootstrap_sha256": "1adefb4b16b1dd08c605fb1106456a2218932c81c41845b2cc91e9aa3943d994",
+    "bootstrap_file": "flutter_bootstrap.1adefb4b16b1dd08c605.js",
+    "mainBytes": 7435101,
+    "tlsVerified": true,
+    "indexToBootstrapToMainVerified": true,
+    "frozenInputsMatchedAfterBuild": true
+  },
+  "production": {
+    "url": "https://snapfit-c719d.web.app/",
+    "deployment": "firebase hosting only",
+    "files": 829,
+    "main_sha256": "c0c3bb2d7c3ebc7d8fa0115a46b1682fd1f5ac4e152a87ade272356eea525e90",
+    "main_file": "main.c0c3bb2d7c3ebc7d8fa0.dart.js",
+    "bootstrap_sha256": "8551d08d587e2b6e55202d53bb6fcadbbf6bf3629781e7c3ac415ed9e3699f3e",
+    "bootstrap_file": "flutter_bootstrap.8551d08d587e2b6e5520.js",
+    "mainBytes": 7435246,
+    "tlsVerified": true,
+    "indexToBootstrapToMainVerified": true,
+    "frozenInputsMatchedAfterBuild": true,
+    "scrollRestoreMarkersPresent": true
+  },
+  "verifiedAtUtc": "2026-10-21T09:21:34.009407+00:00",
+  "productionVisual": {
+    "route": "/#/designs/templates/-9522",
+    "viewportWidth": 373,
+    "theme": "dark",
+    "observations": [
+      "Actual cover uses more available width and its original aspect ratio",
+      "Inner spread stage shrinks to actual book geometry without large blank bands",
+      "Price and the enabled login/start action remain fixed when reading full information",
+      "After scrolling the preview fully out and returning, both the 1–2 page label and actual two-page artwork remain selected",
+      "Original boxless cover and interior artwork retained"
+    ],
+    "imageFilesWritten": 0
+  }
+}

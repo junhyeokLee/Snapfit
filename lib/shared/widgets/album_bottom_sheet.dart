@@ -5,9 +5,11 @@ import 'package:photo_manager/photo_manager.dart';
 import '../../core/constants/snapfit_colors.dart';
 import '../../features/album/data/api/album_provider.dart';
 import '../../features/album/presentation/viewmodels/gallery_notifier.dart';
+import '../../features/album/domain/models/gallery_date_range.dart';
 import 'gallery_thumb_tile.dart';
 import 'experience_form_style.dart';
 import 'browser_photo_selection_sheet.dart';
+import 'editor_modal_scope.dart';
 
 class GalleryEmptyOrErrorPanel extends StatelessWidget {
   const GalleryEmptyOrErrorPanel({
@@ -95,14 +97,12 @@ class GalleryEmptyOrErrorPanel extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
                       backgroundColor: SnapFitColors.accent,
-                      foregroundColor: Colors.white,
+                      foregroundColor: SnapFitColors.onAccent,
                       textStyle: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w900,
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
+                      shape: const StadiumBorder(),
                     ),
                   ),
                 ),
@@ -124,9 +124,7 @@ class GalleryEmptyOrErrorPanel extends StatelessWidget {
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
+                    shape: const StadiumBorder(),
                   ),
                 ),
               ),
@@ -171,14 +169,27 @@ Future<List<AssetEntity>?> _showPhotoSheet(
         .read(galleryProvider.notifier)
         .fetchInitialData(albumId: current.selectedAlbum?.id);
   }
+  final photoScope = ProviderScope.containerOf(context, listen: false);
   return showModalBottomSheet<List<AssetEntity>>(
     context: context,
+    routeSettings: editorModalRouteSettings(context),
     isScrollControlled: true,
     useSafeArea: true,
     constraints: const BoxConstraints(maxWidth: 760),
     backgroundColor: Colors.transparent,
-    builder: (context) => _ResizablePhotoSheet(maxSelection: maxSelection),
+    builder: (context) => UncontrolledProviderScope(
+      container: photoScope,
+      child: _ResizablePhotoSheet(maxSelection: maxSelection),
+    ),
   );
+}
+
+String _galleryDateLabel(GalleryDateRange? range) {
+  if (range == null) return '전체 기간';
+  String date(DateTime value) => '${value.year}.${value.month}.${value.day}';
+  return range.start == range.end
+      ? date(range.start)
+      : '${date(range.start)}–${date(range.end)}';
 }
 
 String _albumName(AssetPathEntity? album) {
@@ -300,17 +311,53 @@ class _PhotoSelectionSheetState extends ConsumerState<_PhotoSelectionSheet> {
   }
 
   Future<void> _chooseAlbum(GalleryState state) async {
+    final photoScope = ProviderScope.containerOf(context, listen: false);
     final selected = await showModalBottomSheet<AssetPathEntity>(
       context: context,
+      routeSettings: editorModalRouteSettings(context),
       isScrollControlled: true,
       useSafeArea: true,
       constraints: const BoxConstraints(maxWidth: 760),
       backgroundColor: SnapFitColors.surfaceOf(context),
-      builder: (context) => _GalleryAlbumSelectionSheet(state: state),
+      builder: (context) => UncontrolledProviderScope(
+        container: photoScope,
+        child: _GalleryAlbumSelectionSheet(state: state),
+      ),
     );
     if (!mounted || selected == null) return;
     if (widget.controller.hasClients) widget.controller.jumpTo(0);
     await ref.read(galleryProvider.notifier).selectAlbum(selected);
+  }
+
+  Future<void> _chooseDateRange(GalleryState state) async {
+    final range = state.dateRange;
+    final selected = await showDateRangePicker(
+      context: context,
+      useRootNavigator: false,
+      routeSettings: editorModalRouteSettings(context),
+      firstDate: DateTime(1),
+      lastDate: DateTime(9999, 12, 31),
+      initialDateRange: range == null
+          ? null
+          : DateTimeRange(start: range.start, end: range.end),
+      helpText: '사진 날짜 범위',
+      saveText: '적용',
+      confirmText: '적용',
+      cancelText: '취소',
+      fieldStartLabelText: '시작 날짜',
+      fieldEndLabelText: '종료 날짜',
+      errorInvalidRangeText: '종료 날짜는 시작 날짜 이후로 선택해주세요.',
+    );
+    if (!mounted || selected == null) return;
+    if (widget.controller.hasClients) widget.controller.jumpTo(0);
+    await ref
+        .read(galleryProvider.notifier)
+        .setDateRange(GalleryDateRange(selected.start, selected.end));
+  }
+
+  void _clearDateRange() {
+    if (widget.controller.hasClients) widget.controller.jumpTo(0);
+    ref.read(galleryProvider.notifier).setDateRange(null);
   }
 
   @override
@@ -450,7 +497,7 @@ class _PhotoSelectionSheetState extends ConsumerState<_PhotoSelectionSheet> {
                         }),
                         icon: const Icon(Icons.deselect_outlined, size: 20),
                       )
-                    else
+                    else ...[
                       Text(
                         '최신순',
                         style: ExperienceFormStyle.text(
@@ -459,6 +506,47 @@ class _PhotoSelectionSheetState extends ConsumerState<_PhotoSelectionSheet> {
                           secondary: true,
                         ),
                       ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Tooltip(
+                          message:
+                              '사진 날짜 범위: ${_galleryDateLabel(state.dateRange)}',
+                          child: TextButton.icon(
+                            key: const ValueKey('gallery-date-range'),
+                            onPressed: () => _chooseDateRange(state),
+                            style: TextButton.styleFrom(
+                              foregroundColor: state.dateRange == null
+                                  ? ExperienceFormStyle.ink(context)
+                                  : ExperienceFormStyle.selectionInk(context),
+                              minimumSize: const Size(44, 44),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                              ),
+                            ),
+                            icon: const Icon(
+                              Icons.date_range_outlined,
+                              size: 19,
+                            ),
+                            label: Text(
+                              _galleryDateLabel(state.dateRange),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (state.dateRange != null)
+                        IconButton(
+                          key: const ValueKey('gallery-clear-date-range'),
+                          tooltip: '날짜 범위 초기화, 전체 기간 보기',
+                          onPressed: _clearDateRange,
+                          icon: const Icon(
+                            Icons.filter_alt_off_outlined,
+                            size: 20,
+                          ),
+                        ),
+                    ],
                   ],
                 ),
               ),
@@ -507,14 +595,41 @@ class _PhotoSelectionSheetState extends ConsumerState<_PhotoSelectionSheet> {
                                             strokeWidth: 2,
                                           ),
                                         )
-                                      : Text(
-                                          state.error == null
-                                              ? '이 사진첩에 사진이 없어요'
-                                              : '사진을 불러오지 못했어요',
-                                          style: ExperienceFormStyle.text(
-                                            context,
-                                            14,
-                                            secondary: true,
+                                      : Padding(
+                                          padding: const EdgeInsets.all(16),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Semantics(
+                                                liveRegion: true,
+                                                child: Text(
+                                                  state.error != null
+                                                      ? '사진을 불러오지 못했어요'
+                                                      : state.dateRange !=
+                                                                null &&
+                                                            !_selectedOnly
+                                                      ? '선택한 기간에 사진이 없어요'
+                                                      : '이 사진첩에 사진이 없어요',
+                                                  textAlign: TextAlign.center,
+                                                  style:
+                                                      ExperienceFormStyle.text(
+                                                        context,
+                                                        14,
+                                                        secondary: true,
+                                                      ),
+                                                ),
+                                              ),
+                                              if (state.dateRange != null &&
+                                                  state.error == null &&
+                                                  !_selectedOnly)
+                                                TextButton(
+                                                  key: const ValueKey(
+                                                    'gallery-empty-clear-date-range',
+                                                  ),
+                                                  onPressed: _clearDateRange,
+                                                  child: const Text('전체 기간 보기'),
+                                                ),
+                                            ],
                                           ),
                                         ),
                                 ),

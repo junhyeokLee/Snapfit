@@ -8,6 +8,7 @@ import 'package:snap_fit/core/templates/studio_photo_frame_catalog.dart';
 import 'package:snap_fit/core/templates/studio_word_art_catalog.dart';
 import 'package:snap_fit/features/point_shop/domain/point_shop_launch_pricing.dart';
 import 'package:snap_fit/features/point_shop/domain/point_shop_known_products.dart';
+import 'package:snap_fit/features/point_shop/domain/point_shop_catalog_release.dart';
 import 'package:snap_fit/features/point_shop/domain/premium_volume_registration.dart';
 import 'package:snap_fit/features/point_shop/domain/point_shop_template_key.dart';
 import 'package:snap_fit/core/templates/template_visual_material_inventory.dart';
@@ -16,7 +17,7 @@ import '../../tool/template_studio/export_price_application.dart';
 
 void main() {
   test(
-    'price book covers 111 materials, 37 free and 14 premium collections',
+    'price book covers approved catalog without client-side live pricing',
     () {
       final expected = {
         ...freeTemplateMaterialProductKeys,
@@ -24,25 +25,39 @@ void main() {
           ...conceptWaveDecorations,
           ...keepsakeDecorations,
           ...atelierCompositionDecorations,
+          ...atelierEditionDecorations,
         ].map((s) => 'sticker:${s.id}'),
         ...[
           ...keepsakePhotoFrames,
           ...atelierEditionPhotoFrames,
+          ...atelierSignaturePhotoFrames,
+          ...atelierStoryPhotoFrames,
         ].map((s) => 'frame:$s'),
         ...atelierWordArts.map((a) => a.productKey),
         ...pendingPremiumVolumeProducts.map((p) => p.productKey),
         ...pendingConceptVolumeProducts.map((p) => p.productKey),
+        ...pendingAtelierEditionProducts.map((p) => p.productKey),
+        ...pendingStudioEditionProducts.map((p) => p.productKey),
         ...authoredCollections.map(pointShopAuthoredTemplateKey),
       };
-      expect(expected, hasLength(162));
+      expect(expected, hasLength(222));
       expect(pointShopLaunchPrices.keys.toSet(), expected);
       expect(
         pointShopLaunchPrices.values.where((p) => p.points == 0),
-        hasLength(77),
+        hasLength(93),
       );
       for (final e in pointShopLaunchPrices.entries) {
         expect(e.value.reason, isNotEmpty);
-        expect({0, 100, 200, 300, 400, 1800, 2500}, contains(e.value.points));
+        expect({
+          0,
+          100,
+          200,
+          300,
+          400,
+          1800,
+          2500,
+          2800,
+        }, contains(e.value.points));
         final product = pointShopKnownProducts.singleWhere(
           (p) => p.productKey == e.key,
         );
@@ -91,7 +106,7 @@ void main() {
     expect(result['changesCustomerAccess'], false);
     expect(result['grantsIncludedMaterials'], false);
     expect(result['marketValidated'], false);
-    expect(result['products'], hasLength(162));
+    expect(result['products'], hasLength(222));
     expect(
       jsonDecode(File('${out.path}/prices.json').readAsStringSync()),
       result,
@@ -123,12 +138,37 @@ void main() {
 
   test('owner application includes delivered premium books', () {
     final rows = pointShopPriceApplicationRows();
-    expect(rows, hasLength(162));
-    expect(rows.map((r) => r['product_key']).toSet(), hasLength(162));
-    expect(rows.where((r) => r['point_price'] == 0), hasLength(77));
-    expect(rows.where((r) => r['is_active'] == true), hasLength(162));
+    expect(rows, hasLength(222));
+    expect(rows.map((r) => r['product_key']).toSet(), hasLength(222));
+    expect(rows.where((r) => r['point_price'] == 0), hasLength(93));
+    expect(rows.where((r) => r['is_active'] == true), hasLength(222));
+    expect(ownerApprovedCatalogProductKeys, hasLength(44));
+    expect(
+      ownerApprovedCatalogProductKeys.where(
+        (key) => key.startsWith('template:'),
+      ),
+      hasLength(12),
+    );
+    expect(
+      ownerApprovedCatalogProductKeys.where(
+        (key) => !key.startsWith('template:'),
+      ),
+      hasLength(32),
+    );
+    for (final key in ownerApprovedCatalogProductKeys) {
+      expect(
+        rows.singleWhere((row) => row['product_key'] == key)['is_active'],
+        true,
+      );
+      expect(pointShopLaunchPrices[key]!.points, greaterThan(0));
+      expect(freeTemplateMaterialProductKeys, isNot(contains(key)));
+    }
     for (final row in rows) {
-      expect(row['is_active'], true);
+      expect(
+        row['is_active'],
+        !isPendingTemplateProduct(row['product_key'] as String) &&
+            !isPendingAtelierMaterialProduct(row['product_key'] as String),
+      );
     }
     final sql = pointShopPriceApplicationSql(rows);
     expect(sql, contains('on conflict (product_key) do update'));
@@ -137,16 +177,33 @@ void main() {
     expect(sql, isNot(contains('point_wallets')));
     expect(sql, isNot(contains('point_shop_ownership')));
     expect(sql.toLowerCase(), isNot(contains('delete from')));
+    final activation = pointShopPriceApplicationSql(rows, activateOnly: true);
+    expect(
+      activation,
+      contains('coalesce(p.point_price, excluded.point_price)'),
+    );
+    expect(activation, contains('where not p.is_active'));
+    expect(activation, contains('free_catalog_paid_price_conflict'));
+    expect(activation, isNot(contains('point_wallets')));
+    expect(activation, isNot(contains('point_shop_ownership')));
     const export = bool.fromEnvironment('EXPORT_PRICE_APPLICATION');
     final out = export
-        ? Directory('output/pricing/catalog-2026-09-10')
+        ? Directory('output/pricing/catalog-2026-10-18')
         : Directory.systemTemp.createTempSync('snapfit-price-application-');
     if (!export) addTearDown(() => out.deleteSync(recursive: true));
     final data = exportPriceApplication(out);
     expect(data['status'], 'prepared-not-executed');
+    expect(data['remoteVerified'], false);
+    expect(data['activeProductCount'], 222);
+    expect(data['ownerApprovalRevision'], pointShopCatalogApprovalRevision);
+    expect(data['activationPreservesConfiguredPrices'], true);
     expect(data['changesWallets'], false);
     expect(data['rows'], rows);
     expect(File('${out.path}/apply-prices.sql').readAsStringSync(), sql);
+    expect(
+      File('${out.path}/activate-products.sql').readAsStringSync(),
+      activation,
+    );
     expect(
       File('${out.path}/verify-prices.sql').readAsStringSync(),
       pointShopPriceVerificationSql(rows),

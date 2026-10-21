@@ -1,1 +1,27 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"snapfit-c719d","appId":"1:360727043538:android:b8219efd5d02b20a01bc0b","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"snapfit-c719d","appId":"1:360727043538:ios:612effd366b2cdc301bc0b","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"macos":{"default":{"projectId":"snapfit-c719d","appId":"1:360727043538:ios:52da1665b10ae0f301bc0b","uploadDebugSymbols":false,"fileOutput":"macos/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"snapfit-c719d","configurations":{"android":"1:360727043538:android:b8219efd5d02b20a01bc0b","ios":"1:360727043538:ios:612effd366b2cdc301bc0b","macos":"1:360727043538:ios:52da1665b10ae0f301bc0b","web":"1:360727043538:web:5fdf9ea75042a3ce01bc0b","windows":"1:360727043538:web:b3e8bc406a990b4001bc0b"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {"default": {"projectId": "snapfit-c719d", "appId": "1:360727043538:android:b8219efd5d02b20a01bc0b", "fileOutput": "android/app/google-services.json"}},
+      "ios": {"default": {"projectId": "snapfit-c719d", "appId": "1:360727043538:ios:612effd366b2cdc301bc0b", "uploadDebugSymbols": false, "fileOutput": "ios/Runner/GoogleService-Info.plist"}},
+      "macos": {"default": {"projectId": "snapfit-c719d", "appId": "1:360727043538:ios:52da1665b10ae0f301bc0b", "uploadDebugSymbols": false, "fileOutput": "macos/Runner/GoogleService-Info.plist"}},
+      "dart": {"lib/firebase_options.dart": {"projectId": "snapfit-c719d", "configurations": {"android": "1:360727043538:android:b8219efd5d02b20a01bc0b", "ios": "1:360727043538:ios:612effd366b2cdc301bc0b", "macos": "1:360727043538:ios:52da1665b10ae0f301bc0b", "web": "1:360727043538:web:5fdf9ea75042a3ce01bc0b", "windows": "1:360727043538:web:b3e8bc406a990b4001bc0b"}}}
+    }
+  },
+  "hosting": {
+    "site": "snapfit-c719d",
+    "public": "build/review-web",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**", "**/*.map"],
+    "headers": [
+      {"source": "**", "headers": [
+        {"key": "X-Robots-Tag", "value": "noindex, nofollow"},
+        {"key": "X-Content-Type-Options", "value": "nosniff"},
+        {"key": "Referrer-Policy", "value": "strict-origin-when-cross-origin"}
+      ]},
+      {"source": "/index.html", "headers": [{"key": "Cache-Control", "value": "no-store"}]},
+      {"source": "/", "headers": [{"key": "Cache-Control", "value": "no-store"}]},
+      {"source": "/flutter_bootstrap*.js", "headers": [{"key": "Cache-Control", "value": "no-cache"}]},
+      {"source": "/main.*.dart.js", "headers": [{"key": "Cache-Control", "value": "public,max-age=31536000,immutable"}]},
+      {"source": "/firebase-messaging-sw.js", "headers": [{"key": "Cache-Control", "value": "no-cache"}]}
+    ]
+  }
+}

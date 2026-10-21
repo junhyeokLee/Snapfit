@@ -43,48 +43,21 @@ HomeAlbumTabPreparedData buildHomeAlbumTabData({
   required Set<int> favoriteAlbumIds,
   required int albumTabIndex,
 }) {
-  final allSortedAlbums = List<Album>.from(allAlbums)
+  // Favorites first, then remaining sorted by latest
+  final favorites = allAlbums
+      .where((a) => favoriteAlbumIds.contains(a.id))
+      .toList()
     ..sort(compareAlbumByLatestDesc);
-  final normalizedUserId = currentUserId.trim();
-  final inProgressAlbums = List<Album>.from(
-    allAlbums.where((a) => isLiveEditingAlbum(a)),
-  )..sort(compareAlbumByLatestDesc);
-  final completedAlbums = List<Album>.from(
-    allAlbums.where((a) => isCompletedAlbum(a)),
-  )..sort(compareAlbumByLatestDesc);
-  final favoriteAlbums = List<Album>.from(
-    allAlbums.where((a) => favoriteAlbumIds.contains(a.id)),
-  )..sort(compareAlbumByLatestDesc);
-  final sharedAlbums = normalizedUserId.isEmpty
-      ? <Album>[]
-      : (List<Album>.from(
-          allAlbums.where(
-            (a) =>
-                a.userId.trim().isNotEmpty &&
-                a.userId.trim() != normalizedUserId,
-          ),
-        )..sort(compareAlbumByLatestDesc));
-
-  final tabAlbums = switch (albumTabIndex) {
-    1 => inProgressAlbums,
-    2 => completedAlbums,
-    3 => favoriteAlbums,
-    4 => sharedAlbums,
-    _ => allSortedAlbums,
-  };
-
-  final tabLabel = switch (albumTabIndex) {
-    1 => '진행중',
-    2 => '완료',
-    3 => '즐겨찾기',
-    4 => '공유',
-    _ => '전체',
-  };
+  final rest = allAlbums
+      .where((a) => !favoriteAlbumIds.contains(a.id))
+      .toList()
+    ..sort(compareAlbumByLatestDesc);
+  final sortedAlbums = [...favorites, ...rest];
 
   return HomeAlbumTabPreparedData(
-    allAlbums: allSortedAlbums,
-    tabAlbums: tabAlbums,
-    tabLabel: tabLabel,
+    allAlbums: sortedAlbums,
+    tabAlbums: sortedAlbums,
+    tabLabel: '나의 기록',
   );
 }
 

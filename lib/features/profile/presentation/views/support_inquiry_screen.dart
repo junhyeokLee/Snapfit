@@ -8,6 +8,7 @@ import '../../../../core/utils/app_error_mapper.dart';
 import '../../data/support_inquiry_repository.dart';
 import '../../domain/order_visibility_owner.dart';
 import '../widgets/customer_web_page.dart';
+import '../widgets/inquiry_exit_guard.dart';
 
 class SupportInquiryScreen extends ConsumerStatefulWidget {
   const SupportInquiryScreen({
@@ -31,13 +32,18 @@ class _SupportInquiryScreenState extends ConsumerState<SupportInquiryScreen> {
     'BUG',
   ];
 
-  late String _category = _categories.contains(widget.initialCategory)
+  late final _initialCategory = _categories.contains(widget.initialCategory)
       ? widget.initialCategory
       : _categories.first;
-  late final _subjectController = TextEditingController(
-    text: widget.initialSubject,
-  );
+  late String _category = _initialCategory;
+  late final _initialSubject = widget.initialSubject;
+  late final _subjectController = TextEditingController(text: _initialSubject);
   final _messageController = TextEditingController();
+  late final _draftEdits = Listenable.merge([
+    _subjectController,
+    _messageController,
+  ]);
+  final _exitGuardKey = GlobalKey<InquiryExitGuardState>();
   final _subjectFocus = FocusNode();
   final _messageFocus = FocusNode();
   bool _submitting = false;
@@ -52,8 +58,14 @@ class _SupportInquiryScreenState extends ConsumerState<SupportInquiryScreen> {
   Size? _lastSize;
   double? _lastInset;
   String? _webOwnerId;
-  bool get _webOwnerCurrent => _webOwnerId != null &&
-      ref.read(visibleOrderOwnerProvider) == _webOwnerId;
+  bool get _webOwnerCurrent =>
+      _webOwnerId != null && ref.read(visibleOrderOwnerProvider) == _webOwnerId;
+  bool get _hasDraftChanges =>
+      !_sent &&
+      (!kIsWeb || _webOwnerCurrent) &&
+      (_category != _initialCategory ||
+          _subjectController.text != _initialSubject ||
+          _messageController.text.isNotEmpty);
 
   void _ensureFocusedInput() {
     if (_focusQueued) return;
@@ -96,7 +108,7 @@ class _SupportInquiryScreenState extends ConsumerState<SupportInquiryScreen> {
     if (!mounted || _submitting || ModalRoute.of(context)?.isCurrent == false) {
       return;
     }
-    Navigator.maybePop(context);
+    _exitGuardKey.currentState?.requestClose();
   }
 
   Future<void> _submit() async {
@@ -167,9 +179,15 @@ class _SupportInquiryScreenState extends ConsumerState<SupportInquiryScreen> {
       final owner = ref.watch(visibleOrderOwnerProvider);
       if (owner != null && _webOwnerId == null) _webOwnerId = owner;
       if (owner == null || owner != _webOwnerId) {
-        return CustomerWebPage(title: '고객센터', eyebrow: 'SUPPORT',
-          showNavigation: false, allowBack: !_submitting,
-          child: const Center(child: Text('로그인 계정이 변경되었어요. 이 화면을 닫고 문의를 다시 작성해주세요.')));
+        return CustomerWebPage(
+          title: '고객센터',
+          eyebrow: 'SUPPORT',
+          showNavigation: false,
+          allowBack: !_submitting,
+          child: const Center(
+            child: Text('로그인 계정이 변경되었어요. 이 화면을 닫고 문의를 다시 작성해주세요.'),
+          ),
+        );
       }
       return _webInquiry(labels);
     }
@@ -180,8 +198,11 @@ class _SupportInquiryScreenState extends ConsumerState<SupportInquiryScreen> {
         style: ExperienceFormStyle.text(context, 13, weight: FontWeight.w600),
       ),
     );
-    return PopScope(
-      canPop: !_submitting,
+    return InquiryExitGuard(
+      key: _exitGuardKey,
+      edits: _draftEdits,
+      hasUnsavedChanges: () => _hasDraftChanges,
+      busy: _submitting,
       child: Scaffold(
         backgroundColor: SnapFitColors.backgroundOf(context),
         appBar: ExperienceHeader(title: '문의', themeAware: true, onBack: _close),
@@ -224,7 +245,7 @@ class _SupportInquiryScreenState extends ConsumerState<SupportInquiryScreen> {
                                     style: ExperienceFormStyle.text(
                                       context,
                                       22,
-                                      weight: FontWeight.w600,
+                                      weight: FontWeight.w700,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
@@ -334,6 +355,7 @@ class _SupportInquiryScreenState extends ConsumerState<SupportInquiryScreen> {
                                         hint: '불편한 점을 알려 주세요.',
                                       ).copyWith(
                                         errorMaxLines: 3,
+                                        counterText: compactInput ? '' : null,
                                         contentPadding: compactInput
                                             ? const EdgeInsets.symmetric(
                                                 horizontal: 14,
@@ -504,62 +526,122 @@ class _SupportInquiryScreenState extends ConsumerState<SupportInquiryScreen> {
     );
   }
 
-  Widget _webInquiry(Map<String, String> labels) => PopScope(
-    canPop: !_submitting,
+  Widget _webInquiry(Map<String, String> labels) => InquiryExitGuard(
+    key: _exitGuardKey,
+    edits: _draftEdits,
+    hasUnsavedChanges: () => _hasDraftChanges,
+    busy: _submitting,
     child: CustomerWebPage(
-      title: '고객센터', eyebrow: 'SUPPORT',
+      title: '고객센터',
       description: '궁금한 내용이나 이용 중 불편했던 점을 남겨주세요.',
       showNavigation: false,
-      allowBack: !_submitting, onBack: _close, scrollBody: true,
-      sidebar: const CustomerWebNote(title: '문의 작성 안내',
-        message: '앨범 이름, 주문번호와 문제가 발생한 상황을 함께 적어주시면 내용을 확인하는 데 도움이 됩니다.\n\n취소·환불은 주문내역에서 해당 주문의 문의 기능을 이용해주세요.'),
-      child: AbsorbPointer(absorbing: _submitting,
-        child: Form(key: _formKey, child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Text('문의 작성', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 28),
-            DropdownButtonFormField<String>(
-              key: const ValueKey('support-category'), initialValue: _category,
-              isExpanded: true,
-              decoration: const InputDecoration(labelText: '문의 유형'),
-              items: _categories.map((category) => DropdownMenuItem(
-                value: category, child: Text(labels[category]!))).toList(),
-              onChanged: _sent ? null : (category) {
-                if (mounted && !_submitting && category != null) {
-                  setState(() => _category = category);
-                }
-              },
-            ),
-            const SizedBox(height: 24),
-            TextFormField(key: const ValueKey('support-subject'),
-              controller: _subjectController, focusNode: _subjectFocus,
-              enabled: !_sent, maxLength: 80,
-              decoration: const InputDecoration(labelText: '제목',
-                hintText: '문의 제목을 입력해주세요.'),
-              validator: (value) => value?.trim().isNotEmpty == true
-                ? null : '제목을 입력해주세요.',
-            ),
-            const SizedBox(height: 20),
-            TextFormField(key: const ValueKey('support-message'),
-              controller: _messageController, focusNode: _messageFocus,
-              enabled: !_sent, minLines: 8, maxLines: 16, maxLength: 1000,
-              keyboardType: TextInputType.multiline,
-              decoration: const InputDecoration(labelText: '문의 내용',
-                hintText: '확인이 필요한 내용을 자세히 적어주세요.', alignLabelWithHint: true),
-              validator: (value) => value?.trim().isNotEmpty == true
-                ? null : '문의 내용을 입력해주세요.',
-            ),
-            if (_submissionError != null) Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Text(_submissionError!, key: const ValueKey('support-error'),
-                style: TextStyle(color: Theme.of(context).colorScheme.error))),
-            const SizedBox(height: 20),
-            Align(alignment: Alignment.centerRight,
-              child: FilledButton.icon(key: const ValueKey('support-submit'),
-                onPressed: _submitting ? null : _sent ? _close : _submit,
-                icon: Icon(_sent ? Icons.check : Icons.send_outlined, size: 18),
-                label: Text(_submitting ? '접수 중' : _sent ? '확인하고 닫기' : '문의 접수하기'))),
-          ])),
+      allowBack: !_submitting,
+      onBack: _close,
+      scrollBody: true,
+      sidebar: const CustomerWebNote(
+        title: '문의 작성 안내',
+        message:
+            '앨범 이름, 주문번호와 문제가 발생한 상황을 함께 적어주시면 내용을 확인하는 데 도움이 됩니다.\n\n취소·환불은 주문내역에서 해당 주문의 문의 기능을 이용해주세요.',
+      ),
+      child: AbsorbPointer(
+        absorbing: _submitting,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('문의 작성', style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 28),
+              DropdownButtonFormField<String>(
+                key: const ValueKey('support-category'),
+                initialValue: _category,
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: '문의 유형'),
+                items: _categories
+                    .map(
+                      (category) => DropdownMenuItem(
+                        value: category,
+                        child: Text(labels[category]!),
+                      ),
+                    )
+                    .toList(),
+                onChanged: _sent
+                    ? null
+                    : (category) {
+                        if (mounted && !_submitting && category != null) {
+                          setState(() => _category = category);
+                        }
+                      },
+              ),
+              const SizedBox(height: 24),
+              TextFormField(
+                key: const ValueKey('support-subject'),
+                controller: _subjectController,
+                focusNode: _subjectFocus,
+                enabled: !_sent,
+                maxLength: 80,
+                decoration: const InputDecoration(
+                  labelText: '제목',
+                  hintText: '문의 제목을 입력해주세요.',
+                ),
+                validator: (value) =>
+                    value?.trim().isNotEmpty == true ? null : '제목을 입력해주세요.',
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                key: const ValueKey('support-message'),
+                controller: _messageController,
+                focusNode: _messageFocus,
+                enabled: !_sent,
+                minLines: 6,
+                maxLines: 16,
+                maxLength: 1000,
+                keyboardType: TextInputType.multiline,
+                decoration: const InputDecoration(
+                  labelText: '문의 내용',
+                  hintText: '확인이 필요한 내용을 자세히 적어주세요.',
+                  alignLabelWithHint: true,
+                ),
+                validator: (value) =>
+                    value?.trim().isNotEmpty == true ? null : '문의 내용을 입력해주세요.',
+              ),
+              if (_submissionError != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Text(
+                    _submissionError!,
+                    key: const ValueKey('support-error'),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 20),
+              Align(
+                alignment: Alignment.centerRight,
+                child: FilledButton.icon(
+                  key: const ValueKey('support-submit'),
+                  onPressed: _submitting
+                      ? null
+                      : _sent
+                      ? _close
+                      : _submit,
+                  icon: Icon(
+                    _sent ? Icons.check : Icons.send_outlined,
+                    size: 18,
+                  ),
+                  label: Text(
+                    _submitting
+                        ? '접수 중'
+                        : _sent
+                        ? '확인하고 닫기'
+                        : '문의 접수하기',
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     ),
   );

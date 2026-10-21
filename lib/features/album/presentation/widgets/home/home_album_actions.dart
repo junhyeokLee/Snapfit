@@ -167,7 +167,8 @@ class HomeAlbumActions {
           : selectedCover.ratio > 1.12
           ? 'assets/snapfit_home_landscape.jpg'
           : 'assets/snapfit_home_square.jpg';
-      final openOverlay = !kIsWeb && album is Album
+      final openOverlay =
+          !kIsWeb && album is Album && !SnapFitMotion.reduced(context)
           ? HomeAlbumPaperOpenOverlay.show(
               context,
               album: album,
@@ -192,9 +193,8 @@ class HomeAlbumActions {
           kIsWeb
               ? MaterialPageRoute<Object?>(
                   settings: readerSettings,
-                  builder: (_) => AlbumReaderScreen(
-                    initialSpreadIndex: initialSpreadIndex,
-                  ),
+                  builder: (_) =>
+                      AlbumReaderScreen(initialSpreadIndex: initialSpreadIndex),
                 )
               : openOverlay == null
               ? snapFitAlbumOpenRoute<Object?>(

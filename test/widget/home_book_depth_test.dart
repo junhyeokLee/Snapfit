@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 
 import 'package:book_page_flip/book_page_flip.dart';
 import 'package:flutter/material.dart';
+import 'package:snap_fit/features/album/presentation/providers/home_ui_state_provider.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -13,6 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
+import 'package:snap_fit/core/constants/snapfit_colors.dart';
 import 'package:snap_fit/core/constants/cover_theme.dart';
 import 'package:snap_fit/features/album/data/api/album_provider.dart';
 import 'package:snap_fit/features/album/domain/entities/album.dart';
@@ -21,6 +23,9 @@ import 'package:snap_fit/features/album/domain/entities/layer_export_mapper.dart
 import 'package:snap_fit/features/album/presentation/viewmodels/home_view_model.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
 import 'package:snap_fit/features/album/presentation/views/album_reader_screen.dart';
+import 'package:snap_fit/features/album/presentation/views/print_order_preview_screen.dart';
+import 'package:snap_fit/features/album/presentation/widgets/reader/album_frozen_screen.dart';
+import 'package:snap_fit/features/profile/data/order_repository.dart';
 import 'package:snap_fit/features/album/presentation/views/home_screen.dart';
 import 'package:snap_fit/features/album/presentation/widgets/cover/cover.dart';
 import 'package:snap_fit/features/album/presentation/widgets/cover/album_spine_image.dart';
@@ -50,15 +55,23 @@ class _PaintBinding extends AutomatedTestWidgetsFlutterBinding {
   bool get disableShadows => false;
 }
 
+class _UnavailablePrintOrders extends Mock implements OrderRepository {}
+
 class _ChangingHome extends FakeHomeViewModel {
   _ChangingHome(super.albums);
 
   void replaceAlbums(List<Album> albums) => state = AsyncData(albums);
 }
 
-Album _album(double ratio, String shape, {String? photoAsset}) {
+Album _album(
+  double ratio,
+  String shape, {
+  String? photoAsset,
+  int innerPages = 4,
+  bool varied = false,
+}) {
   final canvas = Size(500, 500 / ratio);
-  final pages = List.generate(5, (index) {
+  final pages = List.generate(innerPages + 1, (index) {
     final cover = index == 0;
     final photo = LayerModel(
       id: 'image-$index',
@@ -66,7 +79,8 @@ Album _album(double ratio, String shape, {String? photoAsset}) {
       position: Offset(cover ? 14 : 0, 0),
       width: cover ? 486 : 500,
       height: canvas.height,
-      imageUrl: 'asset:${photoAsset ?? 'assets/snapfit_home_$shape.jpg'}',
+      imageUrl:
+          'asset:${varied && !cover ? ['assets/snapfit_home_square.jpg', 'assets/snapfit_home_landscape.jpg', 'assets/snapfit_home_portrait.jpg'][index % 3] : photoAsset ?? 'assets/snapfit_home_$shape.jpg'}',
     );
     return {
       'index': index,
@@ -79,9 +93,9 @@ Album _album(double ratio, String shape, {String? photoAsset}) {
   return fakeAlbum(
     id: 17,
     ratio: '$ratio',
-    totalPages: 5,
+    totalPages: innerPages + 1,
     coverLayersJson: jsonEncode({'pages': pages}),
-  ).copyWith(title: '우리의 순간', targetPages: 4);
+  ).copyWith(title: '우리의 순간', targetPages: innerPages);
 }
 
 Future<GlobalKey> _boot(
@@ -91,6 +105,9 @@ Future<GlobalKey> _boot(
   double ratio,
   String shape, {
   List<Album>? catalog,
+  bool reduceMotion = false,
+  bool accessibleNavigation = false,
+  OrderRepository? printOrders,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -117,7 +134,12 @@ Future<GlobalKey> _boot(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        homeUiStateProvider.overrideWith(
+          () => HomeUiStateNotifier(initialIndex: 0),
+        ),
         albumRepositoryProvider.overrideWithValue(repo),
+        if (printOrders != null)
+          orderRepositoryProvider.overrideWithValue(printOrders),
         storageServiceProvider.overrideWithValue(FakeStorageService()),
         albumPersistenceServiceProvider.overrideWithValue(
           FakeAlbumPersistenceService(),
@@ -139,6 +161,8 @@ Future<GlobalKey> _boot(
           theme: dark ? SnapFitTheme.dark() : SnapFitTheme.light(),
           builder: (context, child) => MediaQuery(
             data: MediaQuery.of(context).copyWith(
+              disableAnimations: reduceMotion,
+              accessibleNavigation: accessibleNavigation,
               padding: const EdgeInsets.only(top: 24, bottom: 24),
               viewPadding: const EdgeInsets.only(top: 24, bottom: 24),
             ),
@@ -196,7 +220,9 @@ Future<void> _save(
       );
     }
     final bytes = await capture.toByteData(format: ui.ImageByteFormat.png);
-    final file = File('output/home-book-depth-qa/$name.png');
+    final file = File(
+      '${const String.fromEnvironment('HOME_BOOK_QA_OUTPUT', defaultValue: 'output/home-book-depth-qa')}/$name.png',
+    );
     file.parent.createSync(recursive: true);
     file.writeAsBytesSync(bytes!.buffer.asUint8List());
     if (capture != image) capture.dispose();
@@ -245,6 +271,279 @@ void main() {
     await CatalogFavorites.instance.load();
   });
   tearDown(() => CatalogFavorites.instance.dispose());
+
+  testWidgets(
+    'reduced motion freezes float and album controls select immediately',
+    (tester) async {
+      final album = _album(1, 'square');
+      await _boot(
+        tester,
+        const Size(390, 844),
+        false,
+        1,
+        'square',
+        catalog: [album, album.copyWith(id: 18), album.copyWith(id: 19)],
+        reduceMotion: true,
+      );
+      final card = tester.widget<HomeAlbumSliderCard>(
+        find.byKey(const ValueKey('home_album_17')),
+      );
+      final before = List<double>.of(
+        AlbumOpenOrigin.capture(card.coverOriginKey!)!.transform.storage,
+      );
+      await tester.pump(const Duration(seconds: 1));
+      expect(
+        AlbumOpenOrigin.capture(card.coverOriginKey!)!.transform.storage,
+        before,
+      );
+      await tester.tap(find.byTooltip('다음 앨범'));
+      await tester.pump();
+      expect(
+        tester
+            .widget<HomeAlbumShelf>(find.byType(HomeAlbumShelf))
+            .selectedIndex,
+        1,
+      );
+      expect(
+        tester
+            .widget<HomeAlbumSliderCard>(
+              find.byKey(const ValueKey('home_album_18')),
+            )
+            .pagePosition!
+            .value,
+        1,
+      );
+      await tester.tap(find.byTooltip('이전 앨범'));
+      await tester.pump();
+      expect(
+        tester
+            .widget<HomeAlbumShelf>(find.byType(HomeAlbumShelf))
+            .selectedIndex,
+        0,
+      );
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  for (final accessible in [false, true]) {
+    testWidgets(
+      'opening skips the moving cover for accessibility: screenReader=$accessible',
+      (tester) async {
+        await _boot(
+          tester,
+          const Size(390, 844),
+          false,
+          1,
+          'square',
+          reduceMotion: !accessible,
+          accessibleNavigation: accessible,
+        );
+        await tester.tap(find.byKey(const ValueKey('home-bookshelf-open')));
+        for (
+          var i = 0;
+          i < 30 && find.byType(AlbumReaderScreen).evaluate().isEmpty;
+          i++
+        ) {
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+        final reader = tester.widget<AlbumReaderScreen>(
+          find.byType(AlbumReaderScreen),
+        );
+        expect(reader.openingCoverKey, isNull);
+        expect(reader.openingCoverVisible, isNull);
+        expect(tester.takeException(), isNull);
+        Navigator.of(tester.element(find.byType(AlbumReaderScreen))).pop();
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+  }
+
+  testWidgets(
+    'mobile book preparation opens print review directly and cancellation keeps the reader',
+    (tester) async {
+      final orders = _UnavailablePrintOrders();
+      when(
+        () => orders.fetchPrintCheckoutReadiness(albumId: 17),
+      ).thenAnswer((_) async => throw StateError('offline review fixture'));
+      when(
+        () => orders.fetchPrintPreviewSnapshot(albumId: 17),
+      ).thenAnswer((_) async => throw StateError('offline review fixture'));
+      await _boot(
+        tester,
+        const Size(390, 844),
+        false,
+        1,
+        'square',
+        reduceMotion: true,
+        printOrders: orders,
+      );
+      await tester.tap(find.byKey(const ValueKey('home-bookshelf-open')));
+      for (
+        var i = 0;
+        i < 30 && find.byType(AlbumReaderScreen).evaluate().isEmpty;
+        i++
+      ) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.byTooltip('앨범 메뉴'));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.ensureVisible(find.text('책으로 만들기'));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.text('책으로 만들기'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('책으로 만들까요?'), findsOneWidget);
+      expect(find.byIcon(Icons.lock_outline_rounded), findsNothing);
+      await tester.tap(find.text('취소'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(AlbumReaderScreen), findsOneWidget);
+      verifyNever(() => orders.fetchPrintCheckoutReadiness(albumId: 17));
+      await tester.tap(find.byTooltip('앨범 메뉴'));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.ensureVisible(find.text('책으로 만들기'));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.text('책으로 만들기'));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.byKey(const ValueKey('album-completion-confirm')));
+      for (
+        var i = 0;
+        i < 40 && find.byType(PrintOrderPreviewScreen).evaluate().isEmpty;
+        i++
+      ) {
+        await tester.pump(const Duration(milliseconds: 25));
+      }
+      expect(find.byType(PrintOrderPreviewScreen), findsOneWidget);
+      expect(find.byType(AlbumFrozenScreen), findsNothing);
+      expect(
+        tester
+            .widget<PrintOrderPreviewScreen>(
+              find.byType(PrintOrderPreviewScreen),
+            )
+            .albumId,
+        17,
+      );
+      verify(() => orders.fetchPrintCheckoutReadiness(albumId: 17)).called(1);
+      Navigator.of(tester.element(find.byType(PrintOrderPreviewScreen))).pop();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(AlbumReaderScreen), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      Navigator.of(tester.element(find.byType(AlbumReaderScreen))).pop();
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  for (final size in [const Size(390, 844), const Size(844, 390)]) {
+    for (final dark in [false, true]) {
+      testWidgets(
+        'spread navigator selects, follows and survives rotation $size dark=$dark',
+        (tester) async {
+          final album = _album(1, 'square', innerPages: 24, varied: true);
+          final key = await _boot(
+            tester,
+            size,
+            dark,
+            1,
+            'square',
+            catalog: [album],
+          );
+          await tester.tap(find.byKey(const ValueKey('home-bookshelf-open')));
+          await tester.pump();
+          for (var i = 0; i < 160; i++) {
+            await tester.runAsync(
+              () => Future<void>.delayed(const Duration(milliseconds: 8)),
+            );
+            await tester.pump(const Duration(milliseconds: 24));
+            if (find.byType(BookFlip).evaluate().isNotEmpty &&
+                tester
+                    .widget<BookFlip>(find.byType(BookFlip))
+                    .controller!
+                    .isReady &&
+                find.byType(HomeAlbumCoverThumbnail).evaluate().isEmpty)
+              break;
+          }
+          final controller = tester
+              .widget<BookFlip>(find.byType(BookFlip))
+              .controller!;
+          expect(controller.isReady, isTrue);
+          final landscape = size.width > size.height;
+          final list = find.byKey(
+            ValueKey(landscape ? 'reader-spread-rail' : 'reader-spread-strip'),
+          );
+          final target = find.byKey(
+            ValueKey(landscape ? 'reader-rail-spread-12' : 'reader-spread-12'),
+          );
+          await tester.scrollUntilVisible(
+            target,
+            200,
+            scrollable: find
+                .descendant(of: list, matching: find.byType(Scrollable))
+                .first,
+            maxScrolls: 25,
+          );
+          await tester.ensureVisible(target);
+          await tester.pump(const Duration(milliseconds: 300));
+          await tester.tap(target);
+          for (var i = 0; i < 200; i++) {
+            await tester.pump(const Duration(milliseconds: 24));
+            await tester.runAsync(
+              () => Future<void>.delayed(const Duration(milliseconds: 2)),
+            );
+            if (controller.currentSpread == 12 && !controller.isAnimating)
+              break;
+          }
+          await tester.pump(const Duration(milliseconds: 320));
+          await tester.pumpAndSettle(const Duration(milliseconds: 40));
+          expect(controller.currentSpread, 12);
+          expect(target.hitTestable(), findsOneWidget);
+          expect(find.text('23-24'), findsWidgets);
+          if (!landscape) {
+            expect(
+              tester
+                  .widget<Text>(
+                    find.byKey(const ValueKey('reader-page-position')),
+                  )
+                  .data,
+              '23-24 / 24',
+            );
+          }
+          await _save(
+            tester,
+            key,
+            'reader-spread-${size.width.toInt()}-${dark ? 'dark' : 'light'}',
+          );
+          tester.view.physicalSize = Size(size.height, size.width);
+          await tester.pump();
+          for (var i = 0; i < 100; i++) {
+            await tester.runAsync(
+              () => Future<void>.delayed(const Duration(milliseconds: 8)),
+            );
+            await tester.pump(const Duration(milliseconds: 24));
+            if (find.byType(BookFlip).evaluate().isNotEmpty &&
+                tester
+                    .widget<BookFlip>(find.byType(BookFlip))
+                    .controller!
+                    .isReady)
+              break;
+          }
+          expect(find.byType(BookFlip), findsOneWidget);
+          expect(
+            tester
+                .widget<BookFlip>(find.byType(BookFlip))
+                .controller!
+                .currentSpread,
+            12,
+          );
+          expect(tester.takeException(), isNull);
+          Navigator.of(tester.element(find.byType(AlbumReaderScreen))).pop();
+          await tester.pump(const Duration(milliseconds: 600));
+          await tester.pumpWidget(const SizedBox());
+        },
+      );
+    }
+  }
 
   test('cover themes never reference a removed image asset', () {
     for (final theme in CoverTheme.values) {
@@ -887,8 +1186,11 @@ void main() {
         expect(find.byIcon(Icons.chevron_left_rounded), findsNothing);
         expect(find.byIcon(Icons.chevron_right_rounded), findsNothing);
         expect(
-          find.byWidgetPredicate(
-            (widget) => widget is ExperienceIcon && widget.name == 'BookOpen',
+          find.descendant(
+            of: find.byType(HomeAlbumSlider),
+            matching: find.byWidgetPredicate(
+              (widget) => widget is ExperienceIcon && widget.name == 'BookOpen',
+            ),
           ),
           findsOneWidget,
         );
@@ -896,7 +1198,7 @@ void main() {
           find.byKey(const ValueKey('home-bookshelf-wordmark')),
         );
         expect(wordmark.style!.fontFamily, 'Poppins');
-        expect(wordmark.style!.fontWeight, FontWeight.w600);
+        expect(wordmark.style!.fontWeight, FontWeight.w700);
         expect(wordmark.style!.fontSize, 18);
         expect(wordmark.style!.letterSpacing, 0);
         for (final name in ['Menu', 'Plus']) {
@@ -939,7 +1241,7 @@ void main() {
           );
           expect(
             (line.decoration! as BoxDecoration).color,
-            const Color(0xFF08B8D0),
+            SnapFitColors.accent,
           );
         }
         expect(tester.takeException(), isNull);
@@ -952,8 +1254,11 @@ void main() {
         tester,
       ) async {
         await _boot(tester, size, dark, 1, 'square');
-        final iconFinder = find.byWidgetPredicate(
-          (widget) => widget is ExperienceIcon && widget.name == 'BookOpen',
+        final iconFinder = find.descendant(
+          of: find.byType(HomeAlbumSlider),
+          matching: find.byWidgetPredicate(
+            (widget) => widget is ExperienceIcon && widget.name == 'BookOpen',
+          ),
         );
         final icon = tester.widget<ExperienceIcon>(iconFinder);
         expect(tester.getSize(iconFinder), const Size(26, 26));
@@ -962,11 +1267,11 @@ void main() {
           find.ancestor(of: iconFinder, matching: find.byType(Container)).first,
         );
         final decoration = surface.decoration! as BoxDecoration;
-        expect(decoration.color, Colors.transparent);
+        expect(decoration.color, AlbumStageStyle.controlFill(context));
         expect(decoration.boxShadow, isNull);
         expect(decoration.border, isNotNull);
         final inkLuminance = icon.color!.computeLuminance();
-        final fillLuminance = AlbumStageStyle.top(context).computeLuminance();
+        final fillLuminance = decoration.color!.computeLuminance();
         final contrast = dark
             ? (inkLuminance + .05) / (fillLuminance + .05)
             : (fillLuminance + .05) / (inkLuminance + .05);
@@ -1124,6 +1429,131 @@ void main() {
           }
         }
       }
+    } finally {
+      semantics.dispose();
+    }
+  });
+
+  testWidgets('selected album status follows saved progress and access', (
+    tester,
+  ) async {
+    final working = _album(1, 'square', innerPages: 2).copyWith(targetPages: 8);
+    final completed = _album(1, 'square').copyWith(id: 18, title: '두 번째 앨범');
+    await _boot(
+      tester,
+      const Size(390, 844),
+      false,
+      1,
+      'square',
+      catalog: [working, completed],
+      reduceMotion: true,
+    );
+    final status = find.byKey(const ValueKey('home-focused-album-status'));
+    String label() => tester.widget<Text>(status).data!;
+    expect(label(), '3/8 페이지 진행 중');
+    await tester.tap(find.byTooltip('다음 앨범'));
+    await tester.pump();
+    expect(label(), '완성한 앨범');
+    expect(
+      tester
+          .widget<Text>(find.byKey(const ValueKey('home-focused-album-title')))
+          .data,
+      '두 번째 앨범',
+    );
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HomeAlbumSlider)),
+    );
+    final home =
+        container.read(homeViewModelProvider.notifier) as _ChangingHome;
+    for (final state in [
+      (working.copyWith(id: 18, targetPages: 0), '3 페이지 진행 중'),
+      (working.copyWith(id: 18, memberRole: 'VIEWER'), '보기 전용 · 3/8 페이지 진행 중'),
+      (
+        working.copyWith(id: 18, lockedById: 'other', lockedBy: '함께 만드는 사람'),
+        '3/8 페이지 진행 중',
+      ),
+    ]) {
+      home.replaceAlbums([working, state.$1]);
+      await tester.pumpAndSettle();
+      expect(label(), state.$2);
+      final shelf = tester.widget<HomeAlbumShelf>(find.byType(HomeAlbumShelf));
+      expect(shelf.albums[shelf.selectedIndex].id, 18);
+      expect(tester.takeException(), isNull);
+    }
+    expect(tester.widget<Text>(status).semanticsLabel, '앨범 상태, 3/8 페이지 진행 중');
+    home.replaceAlbums(const []);
+    await tester.pumpAndSettle();
+    expect(status, findsNothing);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('selected album status fits large text and landscape controls', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final album = _album(
+      1,
+      'square',
+      innerPages: 2,
+    ).copyWith(targetPages: 8, title: '긴 이름으로 남긴 우리의 앨범', memberRole: 'VIEWER');
+    final semantics = tester.ensureSemantics();
+    try {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: ScreenUtilInit(
+            designSize: const Size(390, 844),
+            builder: (_, __) => MaterialApp(
+              theme: SnapFitTheme.light(),
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaler: TextScaler.linear(2),
+                  disableAnimations: true,
+                ),
+                child: child!,
+              ),
+              home: HomeAlbumSlider(
+                albums: [album],
+                onOpenAlbumTab: () {},
+                onCreateAlbum: () {},
+                onResumeDraft: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      for (final size in [const Size(320, 568), const Size(648, 320)]) {
+        tester.view.physicalSize = size;
+        await tester.pumpAndSettle();
+        final title = find.byKey(const ValueKey('home-focused-album-title'));
+        final status = find.byKey(const ValueKey('home-focused-album-status'));
+        final statusBounds = tester.getRect(status);
+        expect(tester.getRect(title).overlaps(statusBounds), isFalse);
+        expect(
+          statusBounds.bottom,
+          lessThanOrEqualTo(
+            tester
+                .getRect(find.byKey(const ValueKey('home-bookshelf-stage')))
+                .top,
+          ),
+        );
+        for (final tooltip in ['앨범 목록', '새 앨범', '이어 만들기']) {
+          expect(
+            tester.getRect(find.byTooltip(tooltip)).overlaps(statusBounds),
+            isFalse,
+          );
+        }
+        expect(
+          tester.getSemantics(status).getSemanticsData().label,
+          contains('보기 전용 · 3/8 페이지 진행 중'),
+        );
+        expect(tester.takeException(), isNull);
+      }
+      await tester.pumpWidget(const SizedBox());
     } finally {
       semantics.dispose();
     }
@@ -1304,7 +1734,7 @@ void main() {
   testWidgets('selected shelf cover opens the matching reader', (tester) async {
     final albums = [
       _album(1, 'square'),
-      _album(.75, 'portrait').copyWith(id: 18),
+      _album(.75, 'portrait').copyWith(id: 18, title: '두 번째 앨범'),
     ];
     await _boot(
       tester,
@@ -1317,6 +1747,12 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('home-shelf-album-18')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
+    expect(
+      tester
+          .widget<Text>(find.byKey(const ValueKey('home-focused-album-title')))
+          .data,
+      '두 번째 앨범',
+    );
     await tester.tap(find.byKey(const ValueKey('home-bookshelf-open')));
     await tester.pump();
     for (

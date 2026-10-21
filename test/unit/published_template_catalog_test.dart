@@ -50,6 +50,11 @@ const _publishedIds = [
   -9465,
   -9304,
   -9305,
+  -9471,
+  -9472,
+  -9473,
+  -9474,
+  -9475,
   -9501,
   -9502,
   -9503,
@@ -64,6 +69,18 @@ const _publishedIds = [
   -9515,
   -9516,
   -9517,
+  -9521,
+  -9522,
+  -9523,
+  -9524,
+  -9525,
+  -9526,
+  -9527,
+  -9531,
+  -9532,
+  -9533,
+  -9534,
+  -9535,
 ];
 
 void main() {
@@ -106,15 +123,15 @@ void main() {
       expect(result.map((t) => t.id), _publishedIds);
       expect(result.first.title, source.title);
       expect(result.first.templateJson, source.templateJson);
-      expect(result.where((t) => !t.isPremium), hasLength(37));
-      expect(result.where((t) => t.isPremium), hasLength(14));
+      expect(result.where((t) => !t.isPremium), hasLength(42));
+      expect(result.where((t) => t.isPremium), hasLength(26));
       expect(stale.templateJson, '{bad');
     },
   );
 
   for (final offline in [false, true]) {
     test(
-      'store, feed, runtime and editor publish all 51, offline=$offline',
+      'store, feed, runtime and editor expose all 68, offline=$offline',
       () async {
         final scope = container(offline: offline);
         final subscription = scope.listen(
@@ -122,7 +139,7 @@ void main() {
           (_, __) {},
         );
         addTearDown(subscription.close);
-        expect(scope.read(storeTemplateFeedProvider).items.length, 51);
+        expect(scope.read(storeTemplateFeedProvider).items.length, 68);
         for (var refresh = 0; refresh < 3; refresh++) {
           final catalog = await scope.read(templateListProvider.future);
           expect(catalog.map((t) => t.id), _publishedIds);

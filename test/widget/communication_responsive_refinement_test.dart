@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:snap_fit/core/commerce/commerce_policy.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
 import 'package:snap_fit/features/album/data/api/album_provider.dart';
 import 'package:snap_fit/features/album/data/dto/response/invite_accept_response.dart';
@@ -62,6 +63,7 @@ const _user = UserInfo(
   provider: 'EMAIL',
 );
 const _title = '우리의 여름, 오래 간직할 장면들';
+final _privacyDocument = CommercePolicy.document(CommercePolicyKind.privacy);
 const _link = InviteLinkResponse(
   albumId: 7,
   token: 'review-editor',
@@ -397,7 +399,7 @@ void main() {
         );
         await capture(tester, 'communication-policy', size, dark);
         await tester.scrollUntilVisible(
-          find.text('7. 개인정보 보호책임자'),
+          find.text(_privacyDocument.sections.last.heading),
           200,
           scrollable: find
               .descendant(
@@ -407,7 +409,10 @@ void main() {
               .first,
         );
         await tester.pumpAndSettle();
-        expect(find.text('이메일: privacy@snapfit.app'), findsOneWidget);
+        expect(
+          find.text(_privacyDocument.sections.last.content),
+          findsOneWidget,
+        );
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox());
       });
@@ -466,7 +471,7 @@ void main() {
           scale: 1.8,
         );
         await tester.scrollUntilVisible(
-          find.text('7. 개인정보 보호책임자'),
+          find.text(_privacyDocument.sections.last.heading),
           200,
           scrollable: find
               .descendant(

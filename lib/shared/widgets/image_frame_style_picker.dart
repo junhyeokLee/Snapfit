@@ -10,6 +10,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/constants/snapfit_colors.dart';
 import '../../core/templates/frame_preview_photos.dart';
+import '../../core/templates/studio_photo_frame_catalog.dart'
+    show atelierSignaturePhotoFrames, atelierStoryPhotoFrames;
 import 'studio_material.dart';
 import 'catalog_favorite_widgets.dart';
 
@@ -31,6 +33,31 @@ class ImageFrameStyle {
 /// 사용 가능한 이미지 프레임 스타일 목록
 const List<ImageFrameStyle> imageFrameStyles = [
   ImageFrameStyle(key: '', label: '기본', subtitle: '원본 그대로', category: 'basic'),
+  ...atelierSignatureFrameStyles,
+  ImageFrameStyle(
+    key: 'storyVowGate',
+    label: '벨벳 양문 접지',
+    subtitle: '이중 접지와 글라신 모서리',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
+    key: 'storyVowCotton',
+    label: '코튼 압인 카메오',
+    subtitle: '타원 사진 창과 압인된 코튼 테두리',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
+    key: 'storyDiscoverySlide',
+    label: '발견 색인 슬라이드',
+    subtitle: '코발트 색인과 레몬 포토 창',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'storyDiscoveryStitch',
+    label: '탐험 접지 스티치',
+    subtitle: '물결 절개와 코랄 바느질',
+    category: 'artistic',
+  ),
   ImageFrameStyle(
     key: 'materialLaceMount',
     label: '자수 코너 매트',
@@ -565,6 +592,51 @@ const atelierEditionFrameStyles = [
   ),
 ];
 
+const atelierSignatureFrameStyles = [
+  ImageFrameStyle(
+    key: 'signatureVowPocket',
+    label: '서약 글라신 포켓',
+    subtitle: '코튼 매트와 반투명 접지',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
+    key: 'signatureRailWallet',
+    label: '기차표 보관 지갑',
+    subtitle: '티켓 반권과 사선 포켓',
+    category: 'vintage',
+  ),
+  ImageFrameStyle(
+    key: 'signatureHerbariumSleeve',
+    label: '식물 표본 슬리브',
+    subtitle: '보관 탭과 반투명 종이',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'signatureOrbitQuilt',
+    label: '첫해의 코튼 퀼트',
+    subtitle: '물결 재단과 섬세한 봉제',
+    category: 'pastel',
+  ),
+  ImageFrameStyle(
+    key: 'signatureKitchenFold',
+    label: '접어 둔 키친 레시피',
+    subtitle: '체크 원단과 접힌 사진 매트',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'signatureCinemaGate',
+    label: '둘만의 필름 게이트',
+    subtitle: '필름 천공과 극장 프로그램',
+    category: 'vintage',
+  ),
+  ImageFrameStyle(
+    key: 'signatureTrailPocket',
+    label: '산책 기록 포켓',
+    subtitle: '패브릭 봉제와 사선 덮개',
+    category: 'artistic',
+  ),
+];
+
 const _frameCategories = [
   {'key': 'all', 'label': '전체'},
   {'key': 'classic', 'label': '클래식'},
@@ -600,31 +672,34 @@ class ImageFrameStylePicker extends ConsumerStatefulWidget {
     WidgetBuilder? photoBuilder,
     double photoAspectRatio = 1,
     Widget Function(BuildContext context, String frameKey)? framedPhotoBuilder,
-  }) => kIsWeb ? showWebAwareDialog<String>(
-    context: context,
-    maxWidth: 1080,
-    maxHeight: 760,
-    builder: (dialogContext) => ImageFrameStylePicker(
-      selectedKey: currentKey,
-      photoBuilder: photoBuilder,
-      photoAspectRatio: photoAspectRatio,
-      framedPhotoBuilder: framedPhotoBuilder,
-      onSelect: (key) => Navigator.pop(dialogContext, key),
-    ),
-  ) : showModalBottomSheet<String>(
-    context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    constraints: const BoxConstraints(maxWidth: 960),
-    backgroundColor: Colors.transparent,
-    builder: (ctx) => ImageFrameStylePicker(
-      selectedKey: currentKey,
-      photoBuilder: photoBuilder,
-      photoAspectRatio: photoAspectRatio,
-      framedPhotoBuilder: framedPhotoBuilder,
-      onSelect: (key) => Navigator.pop(ctx, key),
-    ),
-  );
+  }) => kIsWeb
+      ? showWebAwareDialog<String>(
+          context: context,
+          useRootNavigator: false,
+          maxWidth: 1080,
+          maxHeight: 760,
+          builder: (dialogContext) => ImageFrameStylePicker(
+            selectedKey: currentKey,
+            photoBuilder: photoBuilder,
+            photoAspectRatio: photoAspectRatio,
+            framedPhotoBuilder: framedPhotoBuilder,
+            onSelect: (key) => Navigator.pop(dialogContext, key),
+          ),
+        )
+      : showModalBottomSheet<String>(
+          context: context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          constraints: const BoxConstraints(maxWidth: 960),
+          backgroundColor: Colors.transparent,
+          builder: (ctx) => ImageFrameStylePicker(
+            selectedKey: currentKey,
+            photoBuilder: photoBuilder,
+            photoAspectRatio: photoAspectRatio,
+            framedPhotoBuilder: framedPhotoBuilder,
+            onSelect: (key) => Navigator.pop(ctx, key),
+          ),
+        );
 
   @override
   ConsumerState<ImageFrameStylePicker> createState() =>
@@ -720,7 +795,8 @@ class _ImageFrameStylePickerState extends ConsumerState<ImageFrameStylePicker> {
               : media.size.height - media.padding.top;
           final height = available.clamp(0.0, 680.0);
           final scale = media.textScaler.scale(12) / 12;
-          final wide = constraints.maxWidth >= (kIsWeb ? 720 : 540) &&
+          final wide =
+              constraints.maxWidth >= (kIsWeb ? 720 : 540) &&
               (kIsWeb || media.orientation == Orientation.landscape);
           final products = {
             for (final p
@@ -831,10 +907,12 @@ class _ImageFrameStylePickerState extends ConsumerState<ImageFrameStylePicker> {
           return SizedBox(
             height: height,
             child: Material(
-              color: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.surfaceOf(context),
-              borderRadius: kIsWeb ? BorderRadius.circular(12) : const BorderRadius.vertical(
-                top: Radius.circular(8),
-              ),
+              color: kIsWeb
+                  ? WebPalette.of(context).surface
+                  : SnapFitColors.surfaceOf(context),
+              borderRadius: kIsWeb
+                  ? BorderRadius.circular(12)
+                  : const BorderRadius.vertical(top: Radius.circular(8)),
               clipBehavior: Clip.antiAlias,
               child: SafeArea(
                 top: false,
@@ -975,8 +1053,12 @@ class _FrameStyleItem extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: isSelected
-                  ? kIsWeb ? WebPalette.of(context).brandInk : SnapFitColors.accent
-                  : kIsWeb ? WebPalette.of(context).line : SnapFitColors.overlayMediumOf(context),
+                  ? kIsWeb
+                        ? WebPalette.of(context).brandInk
+                        : SnapFitColors.accent
+                  : kIsWeb
+                  ? WebPalette.of(context).line
+                  : SnapFitColors.overlayMediumOf(context),
               width: 1.5,
             ),
           ),
@@ -1028,7 +1110,14 @@ class _FrameStyleItem extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               if (style.key.isNotEmpty)
-                PointShopProductBadge(productKey: 'frame:${style.key}')
+                PointShopProductBadge(
+                  productKey: 'frame:${style.key}',
+                  unlistedLabel:
+                      (atelierSignaturePhotoFrames.contains(style.key) ||
+                          atelierStoryPhotoFrames.contains(style.key))
+                      ? '판매 준비 중'
+                      : null,
+                )
               else
                 const Text('무료', style: TextStyle(fontSize: 11)),
               const SizedBox(height: 10),

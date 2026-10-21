@@ -26,7 +26,7 @@ Widget _buildImageImpl(
       isCover: isCover,
       child: Opacity(
         opacity: layer.opacity,
-        child: builder._buildDecoration(layer),
+        child: builder._isolateArtwork(builder._buildDecoration(layer)),
       ),
     );
   }
@@ -40,7 +40,7 @@ Widget _buildImageImpl(
       builder.printImages == null;
 
   Widget framePhoto(Widget photo) => curveSpine
-      ? _buildFramedImageImpl(builder, layer, photo)
+      ? builder._isolateArtwork(_buildFramedImageImpl(builder, layer, photo))
       : builder._buildFramedImage(layer, photo);
 
   Widget previewPhoto(ImageProvider provider) => curveSpine
@@ -158,7 +158,10 @@ Widget _buildImageImpl(
           urlOrGs: url,
           fit: fit,
           alignment: alignment,
-          imageBuilder: curveSpine
+          // Keep web photos equally smooth before and after saving. The
+          // cached provider and URL stay unchanged; only sampling matches the
+          // existing local preview instead of CachedNetworkImage's low default.
+          imageBuilder: curveSpine || kIsWeb
               ? (context, provider) => previewPhoto(provider)
               : null,
         ),

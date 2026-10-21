@@ -52,12 +52,17 @@ class MaterialApplicationPreview extends StatelessWidget {
               if (composition.photoRect case final Rect photoRect)
                 Positioned.fromRect(
                   rect: photoRect,
-                  child: Image.asset(
-                    composition.photoAsset!,
-                    key: const ValueKey('application-photo'),
-                    fit: BoxFit.cover,
-                    alignment: composition.photoAlignment,
-                    cacheWidth: 1024,
+                  child: ClipOval(
+                    clipBehavior: composition.circularPhoto
+                        ? Clip.antiAlias
+                        : Clip.none,
+                    child: Image.asset(
+                      composition.photoAsset!,
+                      key: const ValueKey('application-photo'),
+                      fit: BoxFit.cover,
+                      alignment: composition.photoAlignment,
+                      cacheWidth: 1024,
+                    ),
                   ),
                 ),
               if (!composition.materialBelowPhoto) materialLayer,
@@ -77,7 +82,7 @@ class MaterialApplicationPreview extends StatelessWidget {
                         fontSize: composition.serif ? 32 : 30,
                         height: 1.65,
                         letterSpacing: 0,
-                        color: const Color(0xFF3D524B),
+                        color: composition.sampleTextColor,
                       ),
                     ),
                   ),
@@ -89,7 +94,9 @@ class MaterialApplicationPreview extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        type == '프레임' ? '기억하고 싶은 한 장' : composition.caption,
+                        productKey.startsWith('frame:')
+                            ? '기억하고 싶은 한 장'
+                            : composition.caption,
                         textScaler: TextScaler.noScaling,
                         style: ExperienceStyle.text(
                           captionRect.height < 40 ? 18 : 28,

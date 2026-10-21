@@ -723,18 +723,25 @@ void main() {
         find.byType(PageEditorCanvas),
       );
       final context = tester.element(find.byType(PageEditorCanvas));
+      Widget sourceWithin(Widget widget) {
+        if (widget is Image || widget is SnapfitImage) return widget;
+        if (widget is Builder) return sourceWithin(widget.builder(context));
+        if (widget is DefaultTextStyle) return sourceWithin(widget.child);
+        if (widget is PhotoCropViewport) return sourceWithin(widget.child);
+        if (widget is SingleChildRenderObjectWidget && widget.child != null) {
+          return sourceWithin(widget.child!);
+        }
+        throw StateError('Unexpected frame wrapper: ${widget.runtimeType}');
+      }
+
       Widget photoContent(LayerModel photo) {
-        final frame =
-            EditorPhotoFramePreview(
-                  layer: photo,
-                  frameKey: '',
-                  layerBuilder: canvas.layerBuilder,
-                ).build(context)
-                as FittedBox;
-        final box = frame.child! as SizedBox;
-        final opacity = box.child! as Opacity;
-        final framed = opacity.child as SizedBox;
-        return (framed.child as PhotoCropViewport).child;
+        return sourceWithin(
+          EditorPhotoFramePreview(
+            layer: photo,
+            frameKey: '',
+            layerBuilder: canvas.layerBuilder,
+          ).build(context),
+        );
       }
 
       final local = AssetEntity(

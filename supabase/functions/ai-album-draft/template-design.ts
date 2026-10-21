@@ -2,7 +2,7 @@ export type TemplateBrief = {
   prompt: string;
   pageCount: number;
   aspect: "portrait" | "square" | "landscape";
-  designVersion?: 1 | 2;
+  designVersion?: 1 | 2 | 3;
   printProduct?: { id: string; trimWidthMm: number; trimHeightMm: number };
 };
 
@@ -81,7 +81,7 @@ export function parseTemplateBrief(value: unknown): TemplateBrief {
   }
   if (
     raw.designVersion != null && raw.designVersion !== 1 &&
-    raw.designVersion !== 2
+    raw.designVersion !== 2 && raw.designVersion !== 3
   ) {
     throw new Error("template_brief_invalid_version");
   }
@@ -112,7 +112,7 @@ export function parseTemplateBrief(value: unknown): TemplateBrief {
     aspect: raw.aspect as TemplateBrief["aspect"],
     ...(raw.designVersion == null
       ? {}
-      : { designVersion: raw.designVersion as 1 | 2 }),
+      : { designVersion: raw.designVersion as 1 | 2 | 3 }),
   };
 }
 

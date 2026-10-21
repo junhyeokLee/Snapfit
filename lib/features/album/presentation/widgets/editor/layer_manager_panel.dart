@@ -25,12 +25,14 @@ class LayerManagerPanel extends ConsumerStatefulWidget {
   final List<LayerModel> layers;
   final LayerInteractionManager interaction;
   final bool showHandle;
+  final ValueChanged<LayerModel>? onLayerSelected;
 
   const LayerManagerPanel({
     super.key,
     required this.layers,
     required this.interaction,
     this.showHandle = true,
+    this.onLayerSelected,
   });
 
   @override
@@ -272,7 +274,9 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
                   ModalRoute.of(context)?.isCurrent == false)
                 return;
               widget.interaction.setSelectedLayer(layer.id);
-              if (widget.showHandle) {
+              if (widget.onLayerSelected != null) {
+                widget.onLayerSelected!(layer);
+              } else if (widget.showHandle) {
                 _close();
               } else {
                 setState(() {});

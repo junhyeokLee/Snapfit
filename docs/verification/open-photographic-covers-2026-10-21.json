@@ -1,0 +1,139 @@
+{
+  "recordedAtUtc": "2026-10-21T08:17:19.837043+00:00",
+  "status": "production_web_deployed_verified",
+  "scope": {
+    "freeProducts": 42,
+    "paidProducts": 26,
+    "aspects": [
+      "portrait",
+      "square",
+      "landscape"
+    ],
+    "coverVariants": 204,
+    "textBackgroundPanels": 0,
+    "photoScrims": 0,
+    "savedAlbumsRewritten": false,
+    "previewFilesCreated": 0
+  },
+  "implemented": [
+    "Removed all cover title and metadata background plates, top/bottom photographic scrims and companion mounts",
+    "Individual photo-aware dark/light ink and typography placement; original full-bleed photography, editable text and distinctive fonts retained",
+    "Corrected title collisions with window frames, fabric, denim, foliage and faces across aspect ratios",
+    "Optional subtle single text shadow persists and scales through catalog, creation, JSON save and restore",
+    "Comparison tray removal now exposes enabled 48px named buttons instead of disabled chip semantics"
+  ],
+  "permittedTextReflow": [
+    "daily-paw-walk: 오늘도 산책! breaks between words",
+    "still-us: 오래도록 우리 one-line heading",
+    "slow-rail: 느린 열차의 기록 on three lines; exact original retained in editorialSourceText"
+  ],
+  "validation": {
+    "native": {
+      "passed": 305,
+      "failed": 0
+    },
+    "ram": {
+      "freeCovers": 126,
+      "paidCovers": 78,
+      "allFontsAndSourcePhotosDecoded": true,
+      "allPhotoCropAspectVariantsReviewed": true,
+      "realShadows": true,
+      "filesWritten": 0
+    },
+    "analysis": {
+      "files": 16,
+      "issues": 0
+    },
+    "preservation": {
+      "existingBuildInputs": 569,
+      "changedInputs": [
+        "lib/core/templates/authored_free_immersive_covers.dart",
+        "lib/core/templates/authored_paid_immersive_covers.dart",
+        "lib/core/templates/data_template_engine.dart",
+        "lib/features/album/domain/entities/album_creation_template.dart",
+        "lib/features/album/domain/entities/layer_export_mapper.dart",
+        "lib/features/store/presentation/widgets/template_design_comparison.dart",
+        "lib/features/store/presentation/widgets/template_page_renderer.dart"
+      ],
+      "allOtherExistingInputsUnchanged": true,
+      "interiorAuthoringSourcesUnchanged": true,
+      "freeAiSourceAndTestFilesUnchanged": 52
+    },
+    "browser": {
+      "passed": 18,
+      "failed": 0,
+      "comparisonComponents": 9,
+      "comparisonJourney": 4,
+      "priceRefresh": 1,
+      "canonicalPublicRouter": 4
+    }
+  },
+  "sourceAndTestSha256": {
+    "lib/core/templates/authored_free_immersive_covers.dart": "08e706623a7c8a44e99bdc69f8cbf873d9b84d4091795ee9aea6aa27fae29bc1",
+    "lib/core/templates/authored_paid_immersive_covers.dart": "526387955eb0c6fb670304589e2294e10e8c5071414b65ec929ee1a4e50b57df",
+    "lib/core/templates/data_template_engine.dart": "65a6ff02541fe7af4681f127ff42ad00952bbdeac86e51541f1232cb02e0721c",
+    "lib/core/utils/text_shadow_codec.dart": "ad0f98c9128a882726478cfff17811a2b9f900f0251d36ed1b2c33cfd815122d",
+    "lib/features/album/domain/entities/album_creation_template.dart": "72bfce6ea3fac437713f38fb573469859f88295d09ad4149c9dfc63fcaa226d8",
+    "lib/features/album/domain/entities/layer_export_mapper.dart": "730ea30e812e76f413c8911d56f6478b86c322bc44a10e5a0e97c2771c25cd24",
+    "lib/features/store/presentation/widgets/template_design_comparison.dart": "e5d63fbdd3e0433b996e962417ebc518aa0c29517e982e2c3327a0d573429460",
+    "lib/features/store/presentation/widgets/template_page_renderer.dart": "00532ea027f14f160ee334949c8a7864879e1e500dd766fb465c71e0898df612",
+    "test/design/free_catalog_signature_memory_test.dart": "8799911f06f8525145f1ac7ff6c3296ad690f6122175454a9004b8e89d83ad6a",
+    "test/design/paid_editorial_book_memory_test.dart": "474dfc5ce907e779d01e3df5eac305360718525239cc61333251090c24f44873",
+    "test/unit/free_catalog_signature_quality_test.dart": "f42ee470541f45ec13ea069af5d5d273d7f34fb2ef2896aecf5ba4149267c783",
+    "test/unit/free_editorial_book_quality_test.dart": "b3a6f5653ae3a3d8ec9fb7c35bc093bdd2c1c48a2a32c95214a62c46878b727c",
+    "test/unit/paid_editorial_book_quality_test.dart": "8c5d8dd09d707b59138620b068bdbde01b5806851bf2252073859e3ef4f2d4e3",
+    "test/unit/template_cover_diversity_test.dart": "9dc19b6449de777ff6b377b06d168ac90525a4a07451cc8def8f672a60b72941",
+    "test/unit/text_shadow_persistence_test.dart": "964bb16b716cdd12743f92bf5c729319f27897d0ec93e046953bb7e3e144ae12",
+    "test/widget/template_design_comparison_test.dart": "872c2d23533de0bd02f6a5bfb1e2a0999589dd674e71e77db0a2506874a20169"
+  },
+  "frozenBuildInputs": {
+    "files": 570,
+    "sha256": "4bed65d49ddbac1e109776ce768f03ea4b1cf8935515637e88fc721b849224bb"
+  },
+  "production": {
+    "url": "https://snapfit-c719d.web.app/",
+    "build": {
+      "main_sha256": "b344ae080786281e9d4c8efe36459e375f29ba87f0aac5536a9e37624b8423c6",
+      "main_file": "main.b344ae080786281e9d4c.dart.js",
+      "bootstrap_sha256": "e5b250a41092bba6188012bb2af97c1faefda51ece1f34ff33cffe27928997fe",
+      "bootstrap_file": "flutter_bootstrap.e5b250a41092bba61880.js"
+    },
+    "mainBytes": 7431615,
+    "sourceFreezeMatched": true,
+    "bothCoverRevisionMarkersPresent": true,
+    "httpsMainAndBootstrapMatch": true,
+    "verifiedHttpsAtUtc": "2026-10-21T08:21:37.847998+00:00",
+    "visualReview": {
+      "publicCatalogNewCoversSeen": true,
+      "paidSlowRailBoxlessCoverSeen": true,
+      "narrowViewportObserved": true,
+      "comparisonRemovalEnabledInAccessibilityTree": true,
+      "comparisonRemovalClickedAndSelectionCleared": true,
+      "screenshotFilesWritten": 0
+    }
+  },
+  "storage": {
+    "newPreviewFiles": 0,
+    "originalMediaFiles": 340,
+    "originalMediaBytes": 522862670,
+    "originalMediaSha256Matched": true,
+    "removedGeneratedCaches": [
+      {
+        "path": "build",
+        "bytes": 1891846113
+      },
+      {
+        "path": ".dart_tool/flutter_build",
+        "bytes": 70439275
+      },
+      {
+        "path": ".dart_tool/hooks_runner",
+        "bytes": 23008731
+      }
+    ],
+    "removedGeneratedCacheBytes": 1985294119,
+    "freeBytesBeforeCleanup": 23027081216,
+    "freeBytesAfterCleanup": 25019269120
+  },
+  "completedAtUtc": "2026-10-21T08:30:05.618789+00:00"
+}

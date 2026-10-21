@@ -39,7 +39,19 @@ void main() {
       final selectedIds = const String.fromEnvironment(
         'EXPORT_TEMPLATE_IDS',
       ).split(',').where((s) => s.isNotEmpty).map(int.parse).toSet();
-      final partial = selectedIds.isNotEmpty;
+      final selectedMaterials = const String.fromEnvironment(
+        'EXPORT_MATERIAL_KEYS',
+      ).split(',').where((s) => s.isNotEmpty).toSet();
+      final partial = selectedIds.isNotEmpty || selectedMaterials.isNotEmpty;
+      expect(
+        selectedMaterials.difference({
+          ...studioDecorations.map((s) => 'sticker:${s.id}'),
+          ...imageFrameStyles
+              .where((f) => f.key.isNotEmpty)
+              .map((f) => 'frame:${f.key}'),
+        }),
+        isEmpty,
+      );
       expect(
         selectedIds.difference(
           publishedCreationTemplates.map((t) => t.id).toSet(),
@@ -53,13 +65,18 @@ void main() {
         ))
           'template:${t.id}': () =>
               CreationCatalogCover(template: t, useThumbnail: false),
-        for (final spec in partial ? [] : studioDecorations)
+        for (final spec in studioDecorations.where(
+          (s) => !partial || selectedMaterials.contains('sticker:${s.id}'),
+        ))
           'sticker:${spec.id}': () => MaterialOriginalPreview(
             productKey: 'sticker:${spec.id}',
             child: StudioDecoration(spec: spec, imageDecodeWidth: 768),
           ),
         for (final frame in imageFrameStyles.where(
-          (f) => !partial && !materialsOnly && f.key.isNotEmpty,
+          (f) =>
+              !materialsOnly &&
+              f.key.isNotEmpty &&
+              (!partial || selectedMaterials.contains('frame:${f.key}')),
         ))
           'frame:${frame.key}': () => ImageFramePreview(
             style: frame,

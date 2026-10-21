@@ -1,9 +1,16 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/cover_size.dart';
 import '../../../../core/constants/album_page_policy.dart';
 import '../../domain/entities/layer.dart';
 import 'ai_template_art_direction.dart';
+import 'ai_template_composition.g.dart';
+import 'ai_template_safe_options.dart';
+
+export 'ai_template_safe_options.dart';
+
+part 'ai_template_composition.dart';
 
 enum AiTemplateAspect { portrait, square, landscape }
 
@@ -13,12 +20,28 @@ class AiTemplateBrief {
     this.pageCount = 8,
     this.aspect = AiTemplateAspect.square,
     this.printProductId,
+    this.designVersion = 3,
+    this.expectedPointCost,
+    this.safeOptions = const AiTemplateSafeOptions(),
   });
 
+  /// Private device memo. Network requests serialize only [toSafeDesignJson].
   final String prompt;
   final int pageCount;
   final AiTemplateAspect aspect;
   final String? printProductId;
+  final int designVersion;
+  final int? expectedPointCost;
+  final AiTemplateSafeOptions safeOptions;
+  AiTemplateBrief withExpectedPointCost(int cost) => AiTemplateBrief(
+    prompt: prompt,
+    pageCount: pageCount,
+    aspect: aspect,
+    printProductId: printProductId,
+    designVersion: designVersion,
+    expectedPointCost: cost,
+    safeOptions: safeOptions,
+  );
   CoverSize get coverSize =>
       coverSizeForProduct(printProductId) ??
       newAlbumCoverSize(legacyCoverSizes[aspect.index]);
@@ -27,9 +50,73 @@ class AiTemplateBrief {
     'prompt': prompt.trim(),
     'pageCount': pageCount,
     'aspect': aspect.name,
-    'designVersion': 2,
+    'designVersion': designVersion,
     if (printProductId != null) 'printProduct': coverSize.printProduct,
   };
+
+  Map<String, Object?> toSafeDesignJson() {
+    if (!AlbumPagePolicy.isValid(pageCount) || pageCount < 20) {
+      throw const FormatException('Invalid safe design page count');
+    }
+    if (printProductId != null) {
+      final product = coverSizeForProduct(printProductId);
+      if (product == null ||
+          (product.ratio > 1
+                  ? AiTemplateAspect.landscape
+                  : AiTemplateAspect.square) !=
+              aspect) {
+        throw const FormatException('Invalid print product');
+      }
+    }
+    return {
+      ...safeOptions.toJson(),
+      'pageCount': pageCount,
+      'aspect': aspect.name,
+      if (printProductId != null) 'printProduct': coverSize.printProduct,
+    };
+  }
+
+  AiTemplateBrief get publicBrief => AiTemplateBrief(
+    prompt: safeOptions.publicDescription,
+    pageCount: pageCount,
+    aspect: aspect,
+    printProductId: printProductId,
+    designVersion: 3,
+    expectedPointCost: expectedPointCost,
+    safeOptions: safeOptions,
+  );
+
+  factory AiTemplateBrief.fromSafeDesign(Map value, {String localMemo = ''}) {
+    final count = value['pageCount'];
+    if (count is! int || !AlbumPagePolicy.isValid(count) || count < 20) {
+      throw const FormatException('Invalid safe design page count');
+    }
+    final aspect = AiTemplateAspect.values.byName(value['aspect'] as String);
+    final rawProduct = value['printProduct'];
+    String? productId;
+    if (rawProduct != null) {
+      if (rawProduct is! Map)
+        throw const FormatException('Invalid print product');
+      final cover = coverSizeForProduct(rawProduct['id'] as String?);
+      if (cover == null ||
+          rawProduct['trimWidthMm'] != cover.printProduct!['trimWidthMm'] ||
+          rawProduct['trimHeightMm'] != cover.printProduct!['trimHeightMm'] ||
+          (cover.ratio > 1
+                  ? AiTemplateAspect.landscape
+                  : AiTemplateAspect.square) !=
+              aspect) {
+        throw const FormatException('Invalid print product');
+      }
+      productId = cover.productId;
+    }
+    return AiTemplateBrief(
+      prompt: localMemo,
+      pageCount: count,
+      aspect: aspect,
+      printProductId: productId,
+      safeOptions: AiTemplateSafeOptions.fromJson(value),
+    );
+  }
 }
 
 /// Records bounded AI generation separately from the final printed page count.
@@ -68,6 +155,8 @@ class AiTemplateDesign {
     this.artDirection,
     this.printProduct,
     this.layoutExpansion,
+    this.version = 1,
+    this.compositionPlan,
   });
 
   final String concept;
@@ -77,6 +166,8 @@ class AiTemplateDesign {
   final AiTemplateArtDirection? artDirection;
   final Map<String, dynamic>? printProduct;
   final AiTemplateLayoutExpansion? layoutExpansion;
+  final int version;
+  final AiTemplateCompositionPlan? compositionPlan;
 
   CoverSize get coverSize =>
       coverSizeForProduct(printProduct?['id'] as String?) ??
@@ -94,7 +185,8 @@ class AiTemplateDesign {
     final aspect = AiTemplateAspect.values
         .where((v) => v.name == json['aspect'])
         .firstOrNull;
-    final directed = json['version'] == 2;
+    final original = json['version'] == 3;
+    final directed = original || json['version'] == 2;
     Map<String, dynamic>? printProduct;
     if (json['printProduct'] != null) {
       final raw = json['printProduct'];
@@ -124,11 +216,14 @@ class AiTemplateDesign {
     final expansion = json['layoutExpansion'] != null
         ? AiTemplateLayoutExpansion.fromJson(json['layoutExpansion'], pageCount)
         : null;
-    if (pageCount > 16 && expansion == null) {
+    if (pageCount > 16 && expansion == null && !original) {
       throw const FormatException('Missing template page expansion');
     }
     final direction = directed
         ? AiTemplateArtDirection.fromJson(json['artDirection'], pageCount)
+        : null;
+    final compositionPlan = original
+        ? AiTemplateCompositionPlan.fromJson(json, pageCount)
         : null;
     if (direction != null &&
         (json['concept'] != direction.concept ||
@@ -144,7 +239,12 @@ class AiTemplateDesign {
           final elements = page['elements'];
           if (elements is! List ||
               elements.isEmpty ||
-              elements.length > (directed ? 16 : 12))
+              elements.length >
+                  (original
+                      ? 24
+                      : directed
+                      ? 16
+                      : 12))
             throw const FormatException('Invalid design elements');
           if (direction != null &&
               (!direction.palette.contains(_hex(background).toUpperCase()) ||
@@ -162,7 +262,11 @@ class AiTemplateDesign {
                   final kind = e['kind'];
                   if (!ids.add(id) ||
                       (directed && id.startsWith('ai_paper_')) ||
-                      !['photo', 'text', 'shape'].contains(kind))
+                      !(original
+                              ? ['photo', 'text', 'paper']
+                              : ['photo', 'text', 'shape'])
+                          .contains(kind) ||
+                      (original && !id.startsWith('p${index}_')))
                     throw const FormatException('Invalid design element');
                   final rect = Rect.fromLTWH(
                     _number(e['x'], 0, 1),
@@ -183,7 +287,12 @@ class AiTemplateDesign {
                       'width',
                       'height',
                       'color',
-                      if (kind == 'text') ...['text', 'typography', 'align'],
+                      if (kind == 'text' || original) ...[
+                        'text',
+                        'typography',
+                        'align',
+                      ],
+                      if (original) ...['style', 'rotation', 'zIndex'],
                     };
                     if (e.keys.any((key) => !allowed.contains(key)))
                       throw const FormatException('Unsupported design field');
@@ -211,11 +320,44 @@ class AiTemplateDesign {
                         throw const FormatException('Unsupported font script');
                     }
                   }
+                  final materialStyle = original
+                      ? _text(e['style'], 40)
+                      : 'plain';
+                  if (compositionPlan != null) {
+                    if ((kind == 'photo' &&
+                            !compositionPlan.frames.contains(materialStyle)) ||
+                        (kind == 'paper' &&
+                            !compositionPlan.papers.contains(materialStyle)) ||
+                        (kind == 'text' &&
+                            !['plain', 'outline'].contains(materialStyle))) {
+                      throw const FormatException('Unlicensed AI material');
+                    }
+                    if (kind != 'text' &&
+                        (e['text'] != null ||
+                            e['typography'] != null ||
+                            e['align'] != null)) {
+                      throw const FormatException('Unexpected nontext content');
+                    }
+                  }
+                  final rotation = original
+                      ? _number(e['rotation'], -.12, .12)
+                      : 0.0;
+                  final z = original ? _number(e['zIndex'], 1, 99) : null;
+                  if (original &&
+                      (z != z!.roundToDouble() ||
+                          (kind == 'text' && rotation != 0))) {
+                    throw const FormatException(
+                      'Invalid AI stacking or text rotation',
+                    );
+                  }
                   return AiTemplateDesignElement(
                     id: id,
                     kind: kind! as String,
                     rect: rect,
                     color: color,
+                    style: materialStyle,
+                    rotation: rotation,
+                    zIndex: z?.toInt(),
                     text: kind == 'text' ? _text(e['text'], 160) : null,
                     fontFamily: type?.fontFamily,
                     lineHeight: type?.lineHeight ?? 1.3,
@@ -252,7 +394,7 @@ class AiTemplateDesign {
           throw const FormatException('Photo plan changed');
       }
     }
-    return AiTemplateDesign(
+    final design = AiTemplateDesign(
       concept: _text(json['concept'], 80),
       rationale: _text(json['rationale'], 300),
       aspect: aspect,
@@ -260,7 +402,11 @@ class AiTemplateDesign {
       artDirection: direction,
       printProduct: printProduct,
       layoutExpansion: expansion,
+      version: json['version']! as int,
+      compositionPlan: compositionPlan,
     );
+    if (original) _validateOriginalComposition(design);
+    return design;
   }
 
   List<List<LayerModel>> buildLayers({Size? targetSize}) {
@@ -295,9 +441,17 @@ class AiTemplateDesign {
                 ),
                 width: e.rect.width * size.width,
                 height: e.rect.height * size.height,
-                text: e.kind == 'shape' ? 'rect' : e.text,
+                text: e.kind == 'shape' || e.kind == 'paper' ? 'rect' : e.text,
                 imageTemplate: e.kind == 'photo' ? 'free' : null,
-                imageBackground: e.kind == 'photo' ? 'none' : null,
+                imageBackground: version == 3 && e.kind != 'text'
+                    ? e.style
+                    : e.kind == 'photo'
+                    ? 'none'
+                    : null,
+                rotation: e.rotation,
+                textFillMode: version == 3 && e.kind == 'text'
+                    ? (e.style == 'outline' ? 'outline' : 'solid')
+                    : null,
                 decorationFillColor: _hex(e.color),
                 decorationCornerRadius: 0,
                 textStyleType: TextStyleType.none,
@@ -313,7 +467,7 @@ class AiTemplateDesign {
                             .values[(e.weight ~/ 100 - 1).clamp(0, 8)],
                       )
                     : null,
-                zIndex: (e.kind == 'shape' ? 1 : 20) + order,
+                zIndex: e.zIndex ?? (e.kind == 'shape' ? 1 : 20) + order,
               );
             }),
           ];
@@ -346,6 +500,9 @@ class AiTemplateDesignElement {
     this.fontFamily,
     this.lineHeight = 1.3,
     this.typographyRole,
+    this.style = 'plain',
+    this.rotation = 0,
+    this.zIndex,
   });
   final String id;
   final String kind;
@@ -358,6 +515,9 @@ class AiTemplateDesignElement {
   final String? fontFamily;
   final double lineHeight;
   final String? typographyRole;
+  final String style;
+  final double rotation;
+  final int? zIndex;
 }
 
 String _text(Object? value, int max) {

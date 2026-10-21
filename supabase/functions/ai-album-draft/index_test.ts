@@ -1,888 +1,145 @@
 import { assertEquals, assertExists } from "jsr:@std/assert";
-import {
-  buildDraftResponse,
-  handleAiAlbumDraftRequest,
-  type PhotoCandidatePayload,
-} from "./index.ts";
+import { buildDraftResponse, type PhotoCandidatePayload } from "./index.ts";
+import { handleAiAlbumDraftRequest } from "./test-support.ts";
 
-const candidates: PhotoCandidatePayload[] = [
-  {
-    assetId: "photo-1",
-    createdAt: "2026-08-20T09:00:00.000",
-    width: 4000,
-    height: 3000,
-    orientation: "landscape",
-    albumName: "제주",
-    isScreenshot: false,
-  },
-  {
-    assetId: "photo-2",
-    createdAt: "2026-08-20T13:00:00.000",
-    width: 3000,
-    height: 4000,
-    orientation: "portrait",
-    albumName: "제주",
-    isScreenshot: false,
-  },
-  {
-    assetId: "photo-3",
-    createdAt: "2026-08-21T10:00:00.000",
-    width: 4000,
-    height: 4000,
-    orientation: "square",
-    albumName: "제주",
-    isScreenshot: true,
-  },
-];
+const candidates: PhotoCandidatePayload[] = [1, 2, 3].map((i) => ({
+  assetId: `photo-${i}`,
+  createdAt: "2026-08-20T09:00:00.000",
+  width: 4000,
+  height: 3000,
+  orientation: "landscape",
+  albumName: "개인 앨범명",
+  isScreenshot: false,
+}));
+const request = (body: unknown) =>
+  new Request("https://example.test/ai-album-draft", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 
-Deno.test("buildDraftResponse returns reviewable AI template contract without auto-selecting photos", () => {
+Deno.test("metadata curation remains reviewable and never auto-selects customer photos", () => {
   const draft = buildDraftResponse({
     theme: "travel",
     range: "limitedLibrary",
     candidates,
   });
-
   assertExists(draft.draftId);
   assertEquals(draft.title, "여행의 장면들");
-  assertEquals(draft.pageCount, 6);
   assertEquals(draft.requiresUserReview, true);
   assertEquals(draft.alreadyCreatedAlbum, false);
   assertEquals(draft.recommendedPhotos, []);
   assertEquals(draft.excludedPhotos, []);
   assertEquals(draft.templateSlots[0].slotId, "cover-main");
-  assertEquals(draft.templateSlots[0].hint.includes("직접"), true);
-  assertEquals(draft.reviewCtaLabel, "이 템플릿으로 시작하기");
-  assertEquals(draft.summary.includes("템플릿"), true);
 });
-
-Deno.test("handleAiAlbumDraftRequest rejects malformed candidate payload", async () => {
-  const response = await handleAiAlbumDraftRequest(
-    new Request("https://example.test/ai-album-draft", {
-      method: "POST",
-      body: JSON.stringify({
-        theme: "daily",
-        range: "recent30Days",
-        candidates: [],
-      }),
-    }),
+Deno.test("CORS and method handling never need a provider", async () => {
+  assertEquals(
+    (await handleAiAlbumDraftRequest(
+      new Request("https://example.test", { method: "OPTIONS" }),
+    )).status,
+    200,
   );
-  const body = await response.json();
-
+  assertEquals(
+    (await handleAiAlbumDraftRequest(new Request("https://example.test")))
+      .status,
+    405,
+  );
+});
+Deno.test("insufficient candidates are rejected", async () => {
+  const response = await handleAiAlbumDraftRequest(
+    request({ theme: "daily", candidates: [] }),
+  );
   assertEquals(response.status, 400);
-  assertEquals(body.error, "insufficient_candidates");
+  assertEquals((await response.json()).error, "insufficient_candidates");
 });
-
-Deno.test("handleAiAlbumDraftRequest handles CORS preflight", async () => {
-  const response = await handleAiAlbumDraftRequest(
-    new Request("https://example.test/ai-album-draft", { method: "OPTIONS" }),
-  );
-
-  assertEquals(response.status, 200);
-  assertEquals(response.headers.get("Access-Control-Allow-Origin"), "*");
-});
-
-Deno.test("handleAiAlbumDraftRequest uses metadata provider by default", async () => {
-  const response = await handleAiAlbumDraftRequest(
-    new Request("https://example.test/ai-album-draft", {
-      method: "POST",
-      body: JSON.stringify({
-        theme: "travel",
-        range: "limitedLibrary",
-        candidates,
-      }),
-    }),
-    {
-      env: () => undefined,
-    },
-  );
-  const body = await response.json();
-
-  assertEquals(response.status, 200);
-  assertEquals(body.provider, "metadata");
-  assertEquals(body.fallbackUsed, false);
-  assertEquals(body.requiresUserReview, true);
-  assertEquals(body.alreadyCreatedAlbum, false);
-});
-
-Deno.test("handleAiAlbumDraftRequest falls back to metadata provider when advanced provider times out", async () => {
-  const response = await handleAiAlbumDraftRequest(
-    new Request("https://example.test/ai-album-draft", {
-      method: "POST",
-      body: JSON.stringify({
-        theme: "travel",
-        range: "limitedLibrary",
-        candidates,
-      }),
-    }),
-    {
-      env: (key) => {
-        if (key === "AI_ALBUM_DRAFT_PROVIDER") return "advanced";
-        if (key === "AI_ALBUM_DRAFT_TIMEOUT_MS") return "1";
-        return undefined;
-      },
-      providers: {
-        advanced: () =>
-          new Promise((resolve) => {
-            setTimeout(() =>
-              resolve(buildDraftResponse({
-                theme: "travel",
-                range: "limitedLibrary",
-                candidates,
-              })), 20);
-          }),
-      },
-    },
-  );
-  const body = await response.json();
-
-  assertEquals(response.status, 200);
-  assertEquals(body.provider, "metadata");
-  assertEquals(body.fallbackUsed, true);
-  assertEquals(body.fallbackReason, "advanced_provider_timeout");
-  assertEquals(body.requiresUserReview, true);
-  assertEquals(body.alreadyCreatedAlbum, false);
-});
-
-Deno.test("handleAiAlbumDraftRequest returns advanced provider draft when it succeeds", async () => {
-  const response = await handleAiAlbumDraftRequest(
-    new Request("https://example.test/ai-album-draft", {
-      method: "POST",
-      body: JSON.stringify({
-        theme: "family",
-        range: "manualSelection",
-        candidates,
-      }),
-    }),
-    {
-      env: (key) => key === "AI_ALBUM_DRAFT_PROVIDER" ? "advanced" : undefined,
-      providers: {
-        advanced: (request) =>
-          Promise.resolve({
-            ...buildDraftResponse(request),
-            draftId: "advanced-draft-1",
-            title: "가족의 따뜻한 오후",
-            curationNotes: ["작은 미리보기로 분위기를 살펴봤어요."],
-          }),
-      },
-    },
-  );
-  const body = await response.json();
-
-  assertEquals(response.status, 200);
-  assertEquals(body.provider, "advanced");
-  assertEquals(body.fallbackUsed, false);
-  assertEquals(body.draftId, "advanced-draft-1");
-  assertEquals(body.title, "가족의 따뜻한 오후");
-  assertEquals(body.requiresUserReview, true);
-  assertEquals(body.alreadyCreatedAlbum, false);
-});
-
-Deno.test("handleAiAlbumDraftRequest passes preview storage references to advanced provider", async () => {
-  let receivedPreview: string | undefined;
-  const response = await handleAiAlbumDraftRequest(
-    new Request("https://example.test/ai-album-draft", {
-      method: "POST",
-      body: JSON.stringify({
-        theme: "family",
-        range: "limitedLibrary",
-        candidates: [
-          {
-            ...candidates[0],
-            previewStorageUri:
-              "supabase://ai-album-previews/user/draft/photo-1.jpg",
+for (const provider of [undefined, "metadata", "advanced", "hybrid"]) {
+  Deno.test(`customer photo curation is local metadata only even with legacy ${provider} provider configuration`, async () => {
+    let externalCalls = 0, suppliedProviderCalls = 0;
+    const response = await handleAiAlbumDraftRequest(
+      request({ theme: "travel", range: "manualSelection", candidates }),
+      {
+        env: (key) =>
+          key === "AI_ALBUM_DRAFT_PROVIDER" ? provider : "must-not-be-read",
+        fetch: () => {
+          externalCalls++;
+          throw new Error("customer data must not leave server");
+        },
+        providers: {
+          advanced: () => {
+            suppliedProviderCalls++;
+            throw new Error("not allowed");
           },
-          candidates[1],
-          candidates[2],
-        ],
-      }),
-    }),
-    {
-      env: (key) => key === "AI_ALBUM_DRAFT_PROVIDER" ? "advanced" : undefined,
-      providers: {
-        advanced: (request) => {
-          receivedPreview = request.candidates[0].previewStorageUri;
-          return buildDraftResponse(request);
+          hybrid: () => {
+            suppliedProviderCalls++;
+            throw new Error("not allowed");
+          },
         },
       },
-    },
-  );
-
-  assertEquals(response.status, 200);
-  assertEquals(
-    receivedPreview,
-    "supabase://ai-album-previews/user/draft/photo-1.jpg",
-  );
-});
-
-Deno.test("default advanced provider downloads previews and maps model JSON", async () => {
-  const calls: string[] = [];
-  const methods: string[] = [];
-  const response = await handleAiAlbumDraftRequest(
-    new Request("https://example.test/ai-album-draft", {
-      method: "POST",
-      body: JSON.stringify({
-        theme: "travel",
-        range: "limitedLibrary",
-        candidates: [
-          {
-            ...candidates[0],
-            previewStorageUri:
-              "supabase://ai-album-previews/user/draft/photo-1.jpg",
-          },
-          {
-            ...candidates[1],
-            previewStorageUri:
-              "supabase://ai-album-previews/user/draft/photo-2.jpg",
-          },
-          candidates[2],
-        ],
+    );
+    assertEquals(response.status, 200);
+    assertEquals((await response.json()).provider, "metadata");
+    assertEquals(externalCalls, 0);
+    assertEquals(suppliedProviderCalls, 0);
+  });
+}
+for (const rawDataFlag of ["false", "true"]) {
+  Deno.test(`free-form HTTP briefs are blocked before model or reservation even with obsolete flag ${rawDataFlag}`, async () => {
+    let calls = 0;
+    const response = await handleAiAlbumDraftRequest(
+      request({
+        designBrief: {
+          prompt: "김개인 010-0000-0000 주소",
+          pageCount: 20,
+          aspect: "square",
+          designVersion: 3,
+        },
       }),
+      {
+        env: () => rawDataFlag,
+        fetch: () => {
+          calls++;
+          throw new Error("never transmit raw input");
+        },
+      },
+    );
+    assertEquals(response.status, 400);
+    assertEquals(
+      (await response.json()).error,
+      "ai_generation_private_input_forbidden",
+    );
+    assertEquals(calls, 0);
+  });
+}
+Deno.test("old preview references never trigger Storage or external downloads", async () => {
+  let calls = 0;
+  const response = await handleAiAlbumDraftRequest(
+    request({
+      theme: "travel",
+      candidates: candidates.map((c) => ({
+        ...c,
+        previewStorageUri:
+          `supabase://ai-album-previews/user/public/${c.assetId}.jpg`,
+      })),
     }),
     {
-      env: (key) => {
-        const values: Record<string, string> = {
-          AI_ALBUM_DRAFT_PROVIDER: "advanced",
-          OPENAI_API_KEY: "test-openai-key",
-          OPENAI_MODEL: "gpt-test-vision",
-          SUPABASE_URL: "https://project.supabase.co",
-          SUPABASE_SERVICE_ROLE_KEY: "test-service-role",
-        };
-        return values[key];
-      },
-      fetch: async (input, init) => {
-        const url = input.toString();
-        calls.push(url);
-        methods.push(`${init?.method ?? "GET"} ${url}`);
-        if (
-          url.includes("/storage/v1/object/authenticated/ai-album-previews/") &&
-          init?.method === "DELETE"
-        ) {
-          return new Response(null, { status: 200 });
-        }
-        if (
-          url.includes("/storage/v1/object/authenticated/ai-album-previews/")
-        ) {
-          assertEquals(
-            init?.headers instanceof Headers
-              ? init.headers.get("Authorization")
-              : undefined,
-            "Bearer test-service-role",
-          );
-          return new Response(new Uint8Array([1, 2, 3]), {
-            status: 200,
-            headers: { "content-type": "image/jpeg" },
-          });
-        }
-        if (url === "https://api.openai.com/v1/chat/completions") {
-          const body = JSON.parse(init?.body?.toString() ?? "{}");
-          assertEquals(body.model, "gpt-test-vision");
-          assertEquals(body.response_format.type, "json_object");
-          return Response.json({
-            choices: [
-              {
-                message: {
-                  content: JSON.stringify({
-                    title: "제주의 푸른 장면",
-                    pageCount: 8,
-                    templateTone: "fresh-travel",
-                    summary: "미리보기로 여행의 흐름을 정리했어요.",
-                    recommendedPhotos: [
-                      {
-                        assetId: "photo-2",
-                        score: 0.96,
-                        reasons: [
-                          {
-                            type: "coverCandidate",
-                            message: "대표 장면이에요",
-                          },
-                        ],
-                      },
-                      {
-                        assetId: "photo-1",
-                        score: 0.91,
-                        reasons: [
-                          { type: "dateFlow", message: "여행 흐름을 이어줘요" },
-                        ],
-                      },
-                    ],
-                    excludedPhotos: [
-                      {
-                        assetId: "photo-3",
-                        reasons: [
-                          {
-                            type: "screenshotExcluded",
-                            message: "스크린샷은 제외했어요",
-                          },
-                        ],
-                      },
-                    ],
-                    storySections: [
-                      {
-                        title: "제주 첫날",
-                        description: "바다에서 시작하는 흐름",
-                        photoAssetIds: ["photo-2", "photo-1"],
-                      },
-                    ],
-                    curationNotes: ["작은 미리보기로 분위기를 살펴봤어요."],
-                  }),
-                },
-              },
-            ],
-          });
-        }
-        return new Response("unexpected", { status: 500 });
+      env: (key) => key === "AI_ALBUM_DRAFT_PROVIDER" ? "advanced" : "unused",
+      fetch: () => {
+        calls++;
+        throw new Error("no preview download");
       },
     },
   );
-  const body = await response.json();
-
   assertEquals(response.status, 200);
-  assertEquals(body.provider, "advanced");
-  assertEquals(body.fallbackUsed, false);
-  assertEquals(body.title, "제주의 푸른 장면");
-  assertEquals(
-    body.recommendedPhotos.map((photo: { assetId: string }) => photo.assetId),
-    ["photo-2", "photo-1"],
-  );
-  assertEquals(calls.some((url) => url.includes("photo-1.jpg")), true);
-  assertEquals(calls.some((url) => url.includes("photo-2.jpg")), true);
-  assertEquals(
-    methods.some((call) =>
-      call.startsWith("DELETE ") && call.includes("photo-1.jpg")
-    ),
-    true,
-  );
-  assertEquals(
-    methods.some((call) =>
-      call.startsWith("DELETE ") && call.includes("photo-2.jpg")
-    ),
-    true,
-  );
+  assertEquals(calls, 0);
 });
 
-Deno.test("default advanced provider falls back when preview references are missing", async () => {
-  const response = await handleAiAlbumDraftRequest(
-    new Request("https://example.test/ai-album-draft", {
-      method: "POST",
-      body: JSON.stringify({
-        theme: "travel",
-        range: "limitedLibrary",
-        candidates,
-      }),
-    }),
-    {
-      env: (key) => {
-        const values: Record<string, string> = {
-          AI_ALBUM_DRAFT_PROVIDER: "advanced",
-          OPENAI_API_KEY: "test-openai-key",
-          SUPABASE_URL: "https://project.supabase.co",
-          SUPABASE_SERVICE_ROLE_KEY: "test-service-role",
-        };
-        return values[key];
-      },
-      fetch: () =>
-        Promise.resolve(new Response("should not fetch", { status: 500 })),
-    },
-  );
-  const body = await response.json();
-
-  assertEquals(response.status, 200);
-  assertEquals(body.provider, "metadata");
-  assertEquals(body.fallbackUsed, true);
-  assertEquals(body.fallbackReason, "advanced_preview_required");
-});
-
-Deno.test("hybrid provider keeps safe fallback reason when Anthropic finalizer fails", async () => {
-  const response = await handleAiAlbumDraftRequest(
-    new Request("https://example.test/ai-album-draft", {
-      method: "POST",
-      body: JSON.stringify({
-        theme: "family",
-        range: "limitedLibrary",
-        candidates: [
-          {
-            ...candidates[0],
-            previewStorageUri:
-              "supabase://ai-album-previews/user/draft/photo-1.jpg",
-          },
-          candidates[1],
-          candidates[2],
-        ],
-      }),
-    }),
-    {
-      env: (key) => {
-        const values: Record<string, string> = {
-          AI_ALBUM_DRAFT_PROVIDER: "hybrid",
-          OPENAI_API_KEY: "test-openai-key",
-          ANTHROPIC_API_KEY: "test-anthropic-key",
-          SUPABASE_URL: "https://project.supabase.co",
-          SUPABASE_SERVICE_ROLE_KEY: "test-service-role",
-        };
-        return values[key];
-      },
-      fetch: async (input, init) => {
-        const url = input.toString();
-        if (
-          url.includes("/storage/v1/object/authenticated/ai-album-previews/")
-        ) {
-          return new Response(new Uint8Array([1, 2, 3]), {
-            status: 200,
-            headers: { "content-type": "image/jpeg" },
-          });
-        }
-        if (url === "https://api.openai.com/v1/chat/completions") {
-          return Response.json({
-            choices: [{
-              message: { content: JSON.stringify({ photoInsights: [] }) },
-            }],
-          });
-        }
-        if (url === "https://api.anthropic.com/v1/messages") {
-          return new Response("provider unavailable", { status: 503 });
-        }
-        return new Response("unexpected", { status: 500 });
-      },
-    },
-  );
-  const body = await response.json();
-
-  assertEquals(response.status, 200);
-  assertEquals(body.provider, "metadata");
-  assertEquals(body.fallbackUsed, true);
-  assertEquals(body.fallbackReason, "hybrid_finalizer_failed");
-});
-
-Deno.test("hybrid finalizer receives slot-first AI template rules", async () => {
-  let finalizerPrompt = "";
-  const response = await handleAiAlbumDraftRequest(
-    new Request("https://example.test/ai-album-draft", {
-      method: "POST",
-      body: JSON.stringify({
-        theme: "couple",
-        range: "manualSelection",
-        candidates: [
-          {
-            ...candidates[0],
-            assetId: "couple-preview-1",
-            previewStorageUri:
-              "supabase://ai-album-previews/user/draft/couple-1.jpg",
-          },
-          {
-            ...candidates[1],
-            assetId: "couple-preview-2",
-            previewStorageUri:
-              "supabase://ai-album-previews/user/draft/couple-2.jpg",
-          },
-          candidates[2],
-        ],
-      }),
-    }),
-    {
-      env: (key) => {
-        const values: Record<string, string> = {
-          AI_ALBUM_DRAFT_PROVIDER: "hybrid",
-          OPENAI_API_KEY: "test-openai-key",
-          ANTHROPIC_API_KEY: "test-anthropic-key",
-          SUPABASE_URL: "https://project.supabase.co",
-          SUPABASE_SERVICE_ROLE_KEY: "test-service-role",
-        };
-        return values[key];
-      },
-      fetch: async (input, init) => {
-        const url = input.toString();
-        if (
-          url.includes("/storage/v1/object/authenticated/ai-album-previews/")
-        ) {
-          if (init?.method === "DELETE") {
-            return new Response(null, { status: 200 });
-          }
-          return new Response(new Uint8Array([1, 2, 3]), {
-            status: 200,
-            headers: { "content-type": "image/jpeg" },
-          });
-        }
-        if (url === "https://api.openai.com/v1/chat/completions") {
-          return Response.json({
-            choices: [{
-              message: { content: JSON.stringify({ photoInsights: [] }) },
-            }],
-          });
-        }
-        if (url === "https://api.anthropic.com/v1/messages") {
-          const body = JSON.parse(init?.body?.toString() ?? "{}");
-          finalizerPrompt = JSON.stringify(body.messages);
-          return Response.json({
-            content: [{
-              type: "text",
-              text: JSON.stringify({
-                title: "둘만의 기록",
-                pageCount: 8,
-                templateTone: "커플 중심",
-                summary: "사진은 직접 넣고, AI는 커플 템플릿만 잡았어요.",
-                recommendedPhotos: [],
-                excludedPhotos: [],
-                templateSlots: [{
-                  slotId: "cover-main",
-                  pageIndex: 0,
-                  role: "cover",
-                  hint: "둘이 함께 나온 대표 사진을 직접 넣어주세요",
-                }],
-                storySections: [{
-                  title: "둘의 장면",
-                  description: "함께한 사진을 직접 채워요.",
-                  photoAssetIds: [],
-                }],
-                curationNotes: ["사진첩에서 사진을 자동으로 고르지 않았어요."],
-              }),
-            }],
-          });
-        }
-        return new Response("unexpected", { status: 500 });
-      },
-    },
-  );
-  const body = await response.json();
-
-  assertEquals(response.status, 200);
-  assertEquals(body.provider, "hybrid");
-  assertEquals(finalizerPrompt.includes("templateSlots"), true);
-  assertEquals(finalizerPrompt.includes("커플"), true);
-  assertEquals(finalizerPrompt.includes("Do not choose photos"), true);
-  assertEquals(
-    finalizerPrompt.includes("Never imply the album is finished"),
-    true,
-  );
-});
-
-Deno.test("hybrid provider falls back to slot-first template when photo selection is unsafe", async () => {
-  const response = await handleAiAlbumDraftRequest(
-    new Request("https://example.test/ai-album-draft", {
-      method: "POST",
-      body: JSON.stringify({
-        theme: "travel",
-        range: "manualSelection",
-        candidates: [
-          {
-            ...candidates[0],
-            assetId: "home-selfie",
-            previewStorageUri:
-              "supabase://ai-album-previews/user/draft/home-selfie.jpg",
-          },
-          {
-            ...candidates[1],
-            assetId: "receipt",
-            previewStorageUri:
-              "supabase://ai-album-previews/user/draft/receipt.jpg",
-          },
-          candidates[2],
-        ],
-      }),
-    }),
-    {
-      env: (key) => {
-        const values: Record<string, string> = {
-          AI_ALBUM_DRAFT_PROVIDER: "hybrid",
-          OPENAI_API_KEY: "test-openai-key",
-          ANTHROPIC_API_KEY: "test-anthropic-key",
-          SUPABASE_URL: "https://project.supabase.co",
-          SUPABASE_SERVICE_ROLE_KEY: "test-service-role",
-        };
-        return values[key];
-      },
-      fetch: async (input, init) => {
-        const url = input.toString();
-        if (
-          url.includes("/storage/v1/object/authenticated/ai-album-previews/")
-        ) {
-          return new Response(new Uint8Array([1, 2, 3]), {
-            status: 200,
-            headers: { "content-type": "image/jpeg" },
-          });
-        }
-        if (url === "https://api.openai.com/v1/chat/completions") {
-          return Response.json({
-            choices: [{
-              message: { content: JSON.stringify({ photoInsights: [] }) },
-            }],
-          });
-        }
-        if (url === "https://api.anthropic.com/v1/messages") {
-          return Response.json({
-            content: [{
-              type: "text",
-              text: JSON.stringify({
-                title: "여행 후보 없음",
-                pageCount: 8,
-                templateTone: "travel",
-                summary: "여행 장면을 찾지 못했어요.",
-                recommendedPhotos: [],
-                excludedPhotos: [
-                  {
-                    assetId: "home-selfie",
-                    themeFitScore: 0.2,
-                    reasons: [{
-                      type: "weakThemeFitExcluded",
-                      message: "여행지/이동/풍경 장면으로 보기 어려워 뺐어요",
-                    }],
-                  },
-                  {
-                    assetId: "receipt",
-                    themeFitScore: 0.1,
-                    reasons: [{
-                      type: "weakThemeFitExcluded",
-                      message: "여행 앨범에 넣을 대표 사진이 아니에요",
-                    }],
-                  },
-                ],
-                storySections: [],
-                curationNotes: [
-                  "테마와 맞는 사진이 없어 초안을 만들지 않았어요.",
-                ],
-              }),
-            }],
-          });
-        }
-        return new Response("unexpected", { status: 500 });
-      },
-    },
-  );
-  const body = await response.json();
-
-  assertEquals(response.status, 200);
-  assertEquals(body.fallbackUsed, true);
-  assertEquals(body.provider, "metadata");
-  assertEquals(body.recommendedPhotos, []);
-  assertEquals(body.templateSlots[0].slotId, "cover-main");
-});
-
-Deno.test("hybrid provider uses OpenAI vision insights and Anthropic final curation", async () => {
-  const calls: string[] = [];
-  const response = await handleAiAlbumDraftRequest(
-    new Request("https://example.test/ai-album-draft", {
-      method: "POST",
-      body: JSON.stringify({
-        theme: "family",
-        range: "limitedLibrary",
-        candidates: [
-          {
-            ...candidates[0],
-            previewStorageUri:
-              "supabase://ai-album-previews/user/draft/photo-1.jpg",
-          },
-          {
-            ...candidates[1],
-            previewStorageUri:
-              "supabase://ai-album-previews/user/draft/photo-2.jpg",
-          },
-          candidates[2],
-        ],
-      }),
-    }),
-    {
-      env: (key) => {
-        const values: Record<string, string> = {
-          AI_ALBUM_DRAFT_PROVIDER: "hybrid",
-          OPENAI_API_KEY: "test-openai-key",
-          OPENAI_MODEL: "gpt-4o",
-          ANTHROPIC_API_KEY: "test-anthropic-key",
-          ANTHROPIC_MODEL: "claude-sonnet-4-5",
-          SUPABASE_URL: "https://project.supabase.co",
-          SUPABASE_SERVICE_ROLE_KEY: "test-service-role",
-        };
-        return values[key];
-      },
-      fetch: async (input, init) => {
-        const url = input.toString();
-        calls.push(url);
-        if (
-          url.includes("/storage/v1/object/authenticated/ai-album-previews/")
-        ) {
-          if (init?.method === "DELETE") {
-            return new Response(null, { status: 200 });
-          }
-          return new Response(new Uint8Array([1, 2, 3]), {
-            status: 200,
-            headers: { "content-type": "image/jpeg" },
-          });
-        }
-        if (url === "https://api.openai.com/v1/chat/completions") {
-          return Response.json({
-            choices: [
-              {
-                message: {
-                  content: JSON.stringify({
-                    photoInsights: [
-                      {
-                        assetId: "photo-1",
-                        scene: "바다",
-                        mood: "밝음",
-                        quality: "cover",
-                      },
-                      {
-                        assetId: "photo-2",
-                        scene: "가족",
-                        mood: "따뜻함",
-                        quality: "story",
-                      },
-                    ],
-                  }),
-                },
-              },
-            ],
-          });
-        }
-        if (url === "https://api.anthropic.com/v1/messages") {
-          const body = JSON.parse(init?.body?.toString() ?? "{}");
-          assertEquals(body.model, "claude-sonnet-4-5");
-          assertEquals(body.system.includes("Korean photobook"), true);
-          assertEquals(
-            JSON.stringify(body.messages).includes("photoInsights"),
-            true,
-          );
-          return Response.json({
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify({
-                  title: "가족의 제주 기록",
-                  pageCount: 10,
-                  templateTone: "warm-family-travel",
-                  summary: "가족의 표정과 여행 장면을 따뜻하게 엮었어요.",
-                  recommendedPhotos: [
-                    {
-                      assetId: "photo-2",
-                      score: 0.98,
-                      reasons: [{
-                        type: "coverCandidate",
-                        message: "가족 분위기가 가장 잘 보여요",
-                      }],
-                    },
-                    {
-                      assetId: "photo-1",
-                      score: 0.92,
-                      reasons: [{
-                        type: "dateFlow",
-                        message: "여행의 시작을 자연스럽게 열어요",
-                      }],
-                    },
-                  ],
-                  excludedPhotos: [
-                    {
-                      assetId: "photo-3",
-                      reasons: [{
-                        type: "screenshotExcluded",
-                        message: "앨범 분위기와 달라 잠시 뺐어요",
-                      }],
-                    },
-                  ],
-                  storySections: [
-                    {
-                      title: "제주에서 함께",
-                      description: "가족 장면을 먼저 보여주는 흐름",
-                      photoAssetIds: ["photo-2", "photo-1"],
-                    },
-                  ],
-                  curationNotes: ["장면 이해와 감성 구성을 나눠서 만들었어요."],
-                }),
-              },
-            ],
-          });
-        }
-        return new Response("unexpected", { status: 500 });
-      },
-    },
-  );
-  const body = await response.json();
-
-  assertEquals(response.status, 200);
-  assertEquals(body.provider, "hybrid");
-  assertEquals(body.fallbackUsed, false);
-  assertEquals(body.title, "가족의 제주 기록");
-  assertEquals(
-    calls.includes("https://api.openai.com/v1/chat/completions"),
-    true,
-  );
-  assertEquals(calls.includes("https://api.anthropic.com/v1/messages"), true);
-});
-
-Deno.test("hybrid provider cleans preview objects even when finalizer fails", async () => {
-  const methods: string[] = [];
-  const response = await handleAiAlbumDraftRequest(
-    new Request("https://example.test/ai-album-draft", {
-      method: "POST",
-      body: JSON.stringify({
-        theme: "family",
-        range: "limitedLibrary",
-        candidates: [
-          {
-            ...candidates[0],
-            previewStorageUri:
-              "supabase://ai-album-previews/user/draft/cleanup-1.jpg",
-          },
-          {
-            ...candidates[1],
-            previewStorageUri:
-              "supabase://ai-album-previews/user/draft/cleanup-2.jpg",
-          },
-          candidates[2],
-        ],
-      }),
-    }),
-    {
-      env: (key) => {
-        const values: Record<string, string> = {
-          AI_ALBUM_DRAFT_PROVIDER: "hybrid",
-          OPENAI_API_KEY: "test-openai-key",
-          ANTHROPIC_API_KEY: "test-anthropic-key",
-          SUPABASE_URL: "https://project.supabase.co",
-          SUPABASE_SERVICE_ROLE_KEY: "test-service-role",
-        };
-        return values[key];
-      },
-      fetch: async (input, init) => {
-        const url = input.toString();
-        methods.push(`${init?.method ?? "GET"} ${url}`);
-        if (
-          url.includes("/storage/v1/object/authenticated/ai-album-previews/")
-        ) {
-          if (init?.method === "DELETE") {
-            return new Response(null, { status: 200 });
-          }
-          return new Response(new Uint8Array([1, 2, 3]), {
-            status: 200,
-            headers: { "content-type": "image/jpeg" },
-          });
-        }
-        if (url === "https://api.openai.com/v1/chat/completions") {
-          return Response.json({
-            choices: [{
-              message: { content: JSON.stringify({ photoInsights: [] }) },
-            }],
-          });
-        }
-        if (url === "https://api.anthropic.com/v1/messages") {
-          return new Response("provider unavailable", { status: 503 });
-        }
-        return new Response("unexpected", { status: 500 });
-      },
-    },
-  );
-  const body = await response.json();
-
-  assertEquals(response.status, 200);
-  assertEquals(body.provider, "metadata");
-  assertEquals(body.fallbackReason, "hybrid_finalizer_failed");
-  assertEquals(
-    methods.some((call) =>
-      call.startsWith("DELETE ") && call.includes("cleanup-1.jpg")
-    ),
-    true,
-  );
-  assertEquals(
-    methods.some((call) =>
-      call.startsWith("DELETE ") && call.includes("cleanup-2.jpg")
-    ),
-    true,
-  );
+Deno.test("invalid safe design dimensions are client errors before queue admission", async () => {
+  for (const safeDesign of [null, {version: 1, topic: "travel", mood: "editorial", palette: "neutral", density: "balanced", pageCount: 21, aspect: "square"}]) {
+    let rpcCalls = 0;
+    const result = await handleAiAlbumDraftRequest(request({action: "create", generationRequestId: "11111111-1111-4111-8111-111111111111", expectedPointCost: 0, safeDesign}), {
+      freeJobDatabase: {rpc: () => {rpcCalls++; throw new Error("No queue admission");}},
+    });
+    assertEquals(result.status, 400);
+    assertEquals((await result.json()).error, "ai_generation_invalid_request");
+    assertEquals(rpcCalls, 0);
+  }
 });

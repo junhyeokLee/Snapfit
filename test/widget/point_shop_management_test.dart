@@ -45,6 +45,53 @@ Widget admin(FakeShop repository, {bool allowed = true}) => ProviderScope(
 );
 
 void main() {
+  for (final product in const {
+    'template:night-vows': 2800,
+    'template:velvet-vow-archive': 2800,
+    'frame:storyVowGate': 400,
+    'sticker:editionNightSeal': 300,
+  }.entries) {
+    for (final size in [const Size(390, 844), const Size(844, 390)]) {
+      testWidgets('owner-approved ${product.key} can activate at $size', (
+        tester,
+      ) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final repository = FakeShop();
+        await tester.pumpWidget(admin(repository));
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.widgetWithText(TextField, '상품 찾기'),
+          product.key.split(':').last,
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.byKey(ValueKey('point-shop-admin-${product.key}')),
+        );
+        await tester.pumpAndSettle();
+        expect(
+          tester.widget<SwitchListTile>(find.byType(SwitchListTile)).onChanged,
+          isNotNull,
+        );
+        expect(repository.saved, isEmpty);
+        await tester.ensureVisible(
+          find.byKey(const ValueKey('point-shop-use-launch-price')),
+        );
+        await tester.tap(
+          find.byKey(const ValueKey('point-shop-use-launch-price')),
+        );
+        await tester.ensureVisible(find.byType(SwitchListTile));
+        await tester.tap(find.byType(SwitchListTile));
+        await tester.tap(find.widgetWithText(FilledButton, '저장'));
+        await tester.pumpAndSettle();
+        expect(repository.saved.single.pointPrice, product.value);
+        expect(repository.saved.single.isActive, true);
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
+
   for (final key in ['frame:studioGallery', 'template:our-vows']) {
     testWidgets('free publication cannot be repriced as paid: $key', (
       tester,
@@ -222,7 +269,7 @@ void main() {
       'vow-keepsake',
     );
     await tester.pumpAndSettle();
-    expect(find.textContaining('가격 미설정 · 출시 대기'), findsOneWidget);
+    expect(find.textContaining('미등록 · 가격 및 판매 상태 확인 필요'), findsOneWidget);
     expect(find.textContaining('내지 24·32쪽'), findsOneWidget);
     await tester.tap(
       find.byKey(const ValueKey('point-shop-admin-template:vow-keepsake')),
@@ -256,7 +303,7 @@ void main() {
       'shared-seasons',
     );
     await tester.pumpAndSettle();
-    expect(find.textContaining('가격 미설정 · 출시 대기'), findsOneWidget);
+    expect(find.textContaining('미등록 · 가격 및 판매 상태 확인 필요'), findsOneWidget);
     await tester.tap(
       find.byKey(const ValueKey('point-shop-admin-template:shared-seasons')),
     );
@@ -295,7 +342,7 @@ void main() {
       await tester.pumpWidget(admin(repository));
       await tester.pumpAndSettle();
       expect(repository.saved, isEmpty);
-      expect(find.textContaining('현재 무료 · 가격 미설정'), findsWidgets);
+      expect(find.textContaining('미등록 · 가격 및 판매 상태 확인 필요'), findsWidgets);
       await tester.tap(
         find.byKey(const ValueKey('point-shop-admin-template:lightbound')),
       );

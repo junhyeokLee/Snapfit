@@ -4,6 +4,7 @@ import { OrderPaymentError } from './order-types.ts'
 import { assertFulfillmentAssetSources } from './print-fulfillment-assets.ts'
 import { queryPortOnePrintPaymentState, PortOnePrintPaymentError } from './portone-print-payment.ts'
 import { publicPrintSpec as publicSpec, publicPrintQuoteField } from './print-public-quote.ts'
+import { validPrintCheckoutConsent } from './print-checkout-consent.ts'
 
 export type ProductionPrintDatabase = { rpc(name: string, params: Record<string, unknown>): PromiseLike<{data: unknown; error: unknown}> }
 export type ProductionPrintPaymentConfiguration = { enabled: boolean; environment: string; storeId: string; channelKey: string; apiSecret: string; supabaseUrl?: string }
@@ -28,7 +29,8 @@ const testChannel = 'channel-key-34782ac7-e644-4234-ad27-2767b6904f88'
 const reply = (body: unknown, status = 200) => Response.json(body, {status, headers: {...corsHeaders, 'Cache-Control': 'no-store'}})
 const safeDbErrors = new Set(['print_checkout_request_conflict','print_sales_not_ready','print_album_changed','print_quote_changed',
   'invalid_print_checkout_request','invalid_delivery_address','print_delivery_quote_required','print_payment_receipt_invalid',
-  'print_payment_receipt_conflict','print_payment_state_changed','print_checkout_immutable','print_files_not_ready'])
+  'print_payment_receipt_conflict','print_payment_state_changed','print_checkout_immutable','print_files_not_ready',
+  'print_checkout_consent_required','print_checkout_consent_conflict'])
 async function rpc(db: ProductionPrintDatabase, name: string, params: Record<string, unknown>) {
   const {data,error} = await db.rpc(name,params)
   if (error) {
@@ -186,9 +188,10 @@ export function createProductionPrintCheckoutHandler(deps: ProductionPrintChecko
         (body.paymentId!=null&&!paymentId(body.paymentId))||(body.requestId!=null&&!uuid(body.requestId))||
         (body.orderId!=null&&!orderId(body.orderId)))) throw new ProductionPrintCheckoutError('invalid_print_checkout_request',400)
       if (action==='readiness'||action==='prepare') {
-        if (!keys(body,action==='readiness'?['action','albumId','pageCount']:['action','albumId','pageCount','requestId','reviewedRevision','reviewedSpecRevision','expectedAmount','recipient'])||
+        if (!keys(body,action==='readiness'?['action','albumId','pageCount']:['action','albumId','pageCount','requestId','reviewedRevision','reviewedSpecRevision','expectedAmount','recipient','consent'])||
           !integer(body.albumId)||(body.pageCount!=null&&(!integer(body.pageCount,20)||body.pageCount>80||body.pageCount%2))||
           (action==='prepare'&&(!uuid(body.requestId)||!/^[a-f0-9]{64}$/.test(body.reviewedRevision)||!/^[a-f0-9]{64}$/.test(body.reviewedSpecRevision)||!integer(body.expectedAmount)))) throw new ProductionPrintCheckoutError('invalid_print_checkout_request',400)
+        if (action==='prepare'&&!validPrintCheckoutConsent(body.consent)) throw new ProductionPrintCheckoutError('print_checkout_consent_required',400)
       }
       const db=deps.createAdminDatabase(),config=deps.configuration(),now=deps.now?.()??Date.now()
       if (action==='status') {
@@ -212,6 +215,7 @@ export function createProductionPrintCheckoutHandler(deps: ProductionPrintChecko
               (body.pageCount!=null&&existing.page_count!==body.pageCount)||JSON.stringify(canonicalPrintReview(existing.delivery_snapshot))!==JSON.stringify(canonicalPrintReview(recipient))) {
             throw new ProductionPrintCheckoutError('print_checkout_request_conflict')
           }
+          await rpc(db,'record_print_checkout_consent',{p_actor:actor,p_payment_id:existing.payment_id,p_consent:body.consent})
           if(existing.print_file_source==='APP_UPLOADED'&&existing.prepayment_package_ready===true&&existing.launch_ready===true&&
               existing.status==='PREPARED'&&existing.request_hold!==true&&Date.parse(existing.expires_at)>now&&liveConfig(config)) {
             existing=checkedIntent(await rpc(db,'authorize_print_app_pdf_checkout',{p_actor:actor,p_payment_id:existing.payment_id}),actor)
@@ -229,8 +233,8 @@ export function createProductionPrintCheckoutHandler(deps: ProductionPrintChecko
       if (body.reviewedRevision!==revision) throw new ProductionPrintCheckoutError('print_album_changed')
       if (body.reviewedSpecRevision!==specRevision) throw new ProductionPrintCheckoutError('print_quote_changed')
       if (body.expectedAmount!==quote.amount) throw new ProductionPrintCheckoutError('print_quote_changed')
-      const i=checkedIntent(await rpc(db,'prepare_production_print_checkout',{p_actor:actor,p_request_id:body.requestId,p_album_id:body.albumId,
-        p_source_digest:ctx.sourceDigest,p_reviewed_revision:revision,p_reviewed_spec_revision:specRevision,p_expected_amount:quote.amount,p_page_count:quote.pageCount,p_recipient:recipient}),actor)
+      const i=checkedIntent(await rpc(db,'prepare_production_print_checkout_with_consent',{p_actor:actor,p_request_id:body.requestId,p_album_id:body.albumId,
+        p_source_digest:ctx.sourceDigest,p_reviewed_revision:revision,p_reviewed_spec_revision:specRevision,p_expected_amount:quote.amount,p_page_count:quote.pageCount,p_recipient:recipient,p_consent:body.consent}),actor)
       return reply(envelope({...i,launch_ready:canPay},config,now,true))
     } catch(error) {
       if (error instanceof ProductionPrintCheckoutError||error instanceof PortOnePrintPaymentError) return reply({error:error.code,retryable:error.retryable},error.status)

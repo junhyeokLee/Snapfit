@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/theme/snapfit_design_tokens.dart' show SnapFitRadius;
 import '../../../../core/utils/app_error_mapper.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/widgets/experience_style.dart';
@@ -26,6 +27,7 @@ class AccountSettingsScreen extends ConsumerStatefulWidget {
 
 class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
   bool _busy = false;
+  bool _confirmingSessionAction = false;
 
   void _message(String message) {
     if (!mounted) return;
@@ -45,31 +47,48 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
       if (owner == null) return Future.value(false);
       return showDialog<bool>(
         context: context,
-        builder: (_) => Consumer(builder: (dialogContext, dialogRef, _) => Dialog(
+        builder: (_) => Consumer(
+          builder: (dialogContext, dialogRef, _) => Dialog(
             backgroundColor: WebPalette.of(context).surface,
             surfaceTintColor: Colors.transparent,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 560),
               child: dialogRef.watch(visibleOrderOwnerProvider) == owner
-                ? child
-                : Padding(padding: const EdgeInsets.all(24),
-                    child: Column(mainAxisSize: MainAxisSize.min, children: [
-                      const Text('로그인 계정이 변경되었어요. 이 창을 닫아주세요.'),
-                      const SizedBox(height: 16),
-                      OutlinedButton(onPressed: () => Navigator.pop(dialogContext, false),
-                        child: const Text('닫기')),
-                    ])),
+                  ? child
+                  : Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('로그인 계정이 변경되었어요. 이 창을 닫아주세요.'),
+                          const SizedBox(height: 16),
+                          OutlinedButton(
+                            onPressed: () =>
+                                Navigator.pop(dialogContext, false),
+                            child: const Text('닫기'),
+                          ),
+                        ],
+                      ),
+                    ),
             ),
-          )),
+          ),
+        ),
       );
     }
     return showModalBottomSheet<bool>(
-      context: context, isScrollControlled: true, useSafeArea: true,
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
       constraints: const BoxConstraints(maxWidth: 760),
       backgroundColor: SnapFitColors.backgroundOf(context),
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(8))),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(SnapFitRadius.lg),
+        ),
+      ),
       builder: (_) => child,
     );
   }
@@ -88,22 +107,32 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
   }
 
   Future<void> _endSession(UserInfo user, {bool delete = false}) async {
-    if (_busy || !await _confirm(user, delete: delete) || !mounted) return;
+    if (_busy || _confirmingSessionAction) return;
+    _confirmingSessionAction = true;
+    var confirmed = false;
+    try {
+      confirmed = await _confirm(user, delete: delete);
+    } finally {
+      _confirmingSessionAction = false;
+    }
+    if (!confirmed || !mounted || !_sameAccount(user)) return;
     setState(() => _busy = true);
     try {
       final auth = ref.read(authViewModelProvider.notifier);
       if (delete) {
-        await auth.deleteAccount();
+        final result = await auth.requestAccountDeletion();
+        if (mounted && _sameAccount(user)) {
+          _message(
+            '${result.alreadyRequested ? '이미 접수한 삭제 요청이 있어요.' : '삭제 요청을 접수했어요.'} '
+            '접수번호 ${result.reference}\n담당자 확인 후 처리합니다. 지금 계정·사진은 삭제되지 않았고 로그인도 유지됩니다.',
+          );
+        }
+        return;
       } else {
         await auth.logout();
       }
       if (mounted) {
-        Navigator.pop(
-          context,
-          delete
-              ? AccountSettingsResult.deleted
-              : AccountSettingsResult.signedOut,
-        );
+        Navigator.pop(context, AccountSettingsResult.signedOut);
       }
     } catch (error) {
       _message(AppErrorMapper.toUserMessage(error));
@@ -207,14 +236,17 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
         ),
       ),
     );
-    final profileName = Text(
+    final stackedProfile =
+        compact ||
+        MediaQuery.sizeOf(context).width < 360 ||
+        MediaQuery.textScalerOf(context).scale(16) > 22.4;
+    final profileName = SelectableText(
       user?.name ?? '로그인이 필요해요',
-      maxLines: 2,
-      overflow: TextOverflow.ellipsis,
+      key: const ValueKey('accountProfileName'),
       style: ExperienceFormStyle.text(
         context,
         compact ? 18 : 20,
-        weight: FontWeight.w600,
+        weight: FontWeight.w700,
       ),
     );
     final photoAction = user != null && widget.onChangePhoto != null
@@ -235,7 +267,7 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
         Row(
           children: [
             avatar,
-            if (compact)
+            if (stackedProfile)
               const Spacer()
             else ...[
               const SizedBox(width: 16),
@@ -244,7 +276,7 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
             if (photoAction != null) photoAction,
           ],
         ),
-        if (compact) ...[const SizedBox(height: 12), profileName],
+        if (stackedProfile) ...[const SizedBox(height: 12), profileName],
         SizedBox(height: compact ? 12 : 24),
         _info(
           context,
@@ -286,6 +318,14 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
           ),
           const SizedBox(height: 24),
           Divider(color: ExperienceFormStyle.line(context)),
+          const SizedBox(height: 12),
+          _section(context, '계정·개인정보 삭제 요청'),
+          const SizedBox(height: 8),
+          Text(
+            '삭제 요청을 접수하면 담당자 확인 후 처리해요. 접수 즉시 계정이나 사진이 삭제되지는 않아요.',
+            key: const ValueKey('account-delete-guidance'),
+            style: ExperienceFormStyle.text(context, 13, secondary: true),
+          ),
           Align(
             alignment: Alignment.centerLeft,
             child: TextButton(
@@ -408,117 +448,269 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
 
   Widget _webSettings(UserInfo? user, String providerLabel) {
     if (user == null || ref.watch(visibleOrderOwnerProvider) != user.id) {
-      return const CustomerWebPage(title: '계정 설정', eyebrow: 'ACCOUNT',
+      return const CustomerWebPage(
+        title: '계정 설정',
+        eyebrow: 'ACCOUNT',
         showNavigation: false,
-        child: Center(child: Text('로그인 계정을 확인하고 계정 설정을 다시 열어주세요.')));
+        child: Center(child: Text('로그인 계정을 확인하고 계정 설정을 다시 열어주세요.')),
+      );
     }
     final photo = user.profileImageUrl;
     return PopScope(
       canPop: !_busy,
       child: SnapFitWebShell(
-        title: '계정 설정', section: WebSection.account,
+        title: '계정 설정',
+        section: WebSection.account,
         showNavigation: false,
-        actions: [OutlinedButton.icon(
-          onPressed: _busy ? null : () => Navigator.maybePop(context),
-          icon: const Icon(Icons.arrow_back, size: 18),
-          label: const Text('계정 개요'),
-        )],
+        actions: [
+          OutlinedButton.icon(
+            onPressed: _busy ? null : () => Navigator.maybePop(context),
+            icon: const Icon(Icons.arrow_back, size: 18),
+            label: const Text('계정'),
+          ),
+        ],
         child: AbsorbPointer(
           absorbing: _busy,
           child: SingleChildScrollView(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              const WebPageHeading(eyebrow: 'ACCOUNT SETTINGS', title: '프로필과 보안',
-                description: '프로필과 로그인 정보를 확인하고 계정을 안전하게 관리하세요.'),
-              const SizedBox(height: 28),
-              if (_busy) const LinearProgressIndicator(minHeight: 2),
-              LayoutBuilder(builder: (context, bounds) {
-                final profile = WebSurface(child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text('프로필', style: TextStyle(fontSize: 18,
-                      fontWeight: FontWeight.w600, color: WebPalette.of(context).ink)),
-                    const SizedBox(height: 24),
-                    Row(children: [
-                      ClipRRect(borderRadius: BorderRadius.circular(12),
-                        child: SizedBox(width: 72, height: 72,
-                          child: photo != null && photo.isNotEmpty
-                            ? Image.network(photo, fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => ColoredBox(
-                                  color: WebPalette.of(context).softBrand,
-                                  child: Icon(Icons.person_outline, color: WebPalette.of(context).brandInk)))
-                            : ColoredBox(color: WebPalette.of(context).softBrand,
-                                child: Icon(Icons.person_outline, color: WebPalette.of(context).brandInk)),
-                        )),
-                      const SizedBox(width: 20),
-                      Expanded(child: Text(user.name, style: TextStyle(
-                        fontSize: 22, fontWeight: FontWeight.w600, color: WebPalette.of(context).ink))),
-                    ]),
-                    if (widget.onChangePhoto != null) Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton.icon(onPressed: () => _changePhoto(user),
-                        icon: const Icon(Icons.photo_camera_outlined, size: 18),
-                        label: const Text('프로필 사진 변경')),
-                    ),
-                    const SizedBox(height: 20),
-                    Divider(color: WebPalette.of(context).line),
-                    const SizedBox(height: 20),
-                    Text('로그인 이메일', style: TextStyle(fontSize: 12,
-                      color: WebPalette.of(context).muted)),
-                    const SizedBox(height: 8),
-                    SelectableText(user.email?.isNotEmpty == true ? user.email! : '이메일 미제공',
-                      style: TextStyle(fontSize: 14, color: WebPalette.of(context).ink)),
-                    const SizedBox(height: 24),
-                    Text('로그인 방식', style: TextStyle(fontSize: 12, color: WebPalette.of(context).muted)),
-                    const SizedBox(height: 8),
-                    Text(providerLabel, style: TextStyle(fontSize: 14, color: WebPalette.of(context).ink)),
-                  ],
-                ));
-                final management = Column(crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    WebSurface(child: Column(crossAxisAlignment: CrossAxisAlignment.stretch,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const WebPageHeading(
+                  title: '프로필과 보안',
+                  description: '로그인 정보와 계정 보안 설정을 확인하세요.',
+                ),
+                const SizedBox(height: 24),
+                if (_busy) const LinearProgressIndicator(minHeight: 2),
+                LayoutBuilder(
+                  builder: (context, bounds) {
+                    final profile = WebSurface(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            '프로필',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: WebPalette.of(context).ink,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Row(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: SizedBox(
+                                  width: 72,
+                                  height: 72,
+                                  child: photo != null && photo.isNotEmpty
+                                      ? Image.network(
+                                          photo,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) =>
+                                              ColoredBox(
+                                                color: WebPalette.of(
+                                                  context,
+                                                ).softBrand,
+                                                child: Icon(
+                                                  Icons.person_outline,
+                                                  color: WebPalette.of(
+                                                    context,
+                                                  ).brandInk,
+                                                ),
+                                              ),
+                                        )
+                                      : ColoredBox(
+                                          color: WebPalette.of(
+                                            context,
+                                          ).softBrand,
+                                          child: Icon(
+                                            Icons.person_outline,
+                                            color: WebPalette.of(
+                                              context,
+                                            ).brandInk,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                              const SizedBox(width: 20),
+                              Expanded(
+                                child: Text(
+                                  user.name,
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w700,
+                                    color: WebPalette.of(context).ink,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (widget.onChangePhoto != null)
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: TextButton.icon(
+                                onPressed: () => _changePhoto(user),
+                                icon: const Icon(
+                                  Icons.photo_camera_outlined,
+                                  size: 18,
+                                ),
+                                label: const Text('프로필 사진 변경'),
+                              ),
+                            ),
+                          const SizedBox(height: 20),
+                          Divider(color: WebPalette.of(context).line),
+                          const SizedBox(height: 20),
+                          Text(
+                            '로그인 이메일',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: WebPalette.of(context).muted,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          SelectableText(
+                            user.email?.isNotEmpty == true
+                                ? user.email!
+                                : '이메일 미제공',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: WebPalette.of(context).ink,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            '로그인 방식',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: WebPalette.of(context).muted,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            providerLabel,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: WebPalette.of(context).ink,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                    final management = Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text('로그인과 보안', style: TextStyle(fontSize: 18,
-                          fontWeight: FontWeight.w600, color: WebPalette.of(context).ink)),
-                        const SizedBox(height: 12),
-                        Text(user.provider.toUpperCase() == 'EMAIL'
-                          ? '비밀번호를 변경하려면 로그인 이메일로 재설정 링크를 받아주세요.'
-                          : '$providerLabel 계정의 비밀번호는 해당 서비스에서 관리합니다.',
-                          style: TextStyle(fontSize: 14, height: 1.7, color: WebPalette.of(context).muted)),
-                        const SizedBox(height: 20),
-                        Wrap(spacing: 12, runSpacing: 12, children: [
-                          if (user.provider.toUpperCase() == 'EMAIL' && user.email?.isNotEmpty == true)
-                            OutlinedButton.icon(onPressed: () => _resetPassword(user),
-                              icon: const Icon(Icons.key_outlined, size: 18),
-                              label: const Text('비밀번호 재설정')),
-                          OutlinedButton.icon(onPressed: () => _endSession(user),
-                            icon: const Icon(Icons.logout_outlined, size: 18),
-                            label: const Text('로그아웃')),
-                        ]),
-                      ])),
-                    const SizedBox(height: 24),
-                    WebSurface(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('계정 삭제', style: TextStyle(fontSize: 16,
-                          fontWeight: FontWeight.w600, color: WebPalette.of(context).ink)),
-                        const SizedBox(height: 12),
-                        Text('계정 삭제 시 앨범, 보유 포인트와 구매 이용 권한을 복구할 수 없습니다. 필요한 기록을 먼저 보관해주세요.',
-                          style: TextStyle(fontSize: 13, height: 1.7, color: WebPalette.of(context).muted)),
-                        const SizedBox(height: 12),
-                        TextButton(onPressed: () => _endSession(user, delete: true),
-                          style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
-                          child: const Text('회원 탈퇴')),
-                      ])),
-                  ]);
-                return bounds.maxWidth >= 900
-                  ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Expanded(flex: 2, child: profile), const SizedBox(width: 24),
-                      Expanded(flex: 3, child: management),
-                    ])
-                  : Column(crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [profile, const SizedBox(height: 24), management]);
-              }),
-              const SizedBox(height: 32),
-            ]),
+                        WebSurface(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                '로그인과 보안',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: WebPalette.of(context).ink,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                user.provider.toUpperCase() == 'EMAIL'
+                                    ? '비밀번호를 변경하려면 로그인 이메일로 재설정 링크를 받아주세요.'
+                                    : '$providerLabel 계정의 비밀번호는 해당 서비스에서 관리합니다.',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  height: 1.7,
+                                  color: WebPalette.of(context).muted,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              Wrap(
+                                spacing: 12,
+                                runSpacing: 12,
+                                children: [
+                                  if (user.provider.toUpperCase() == 'EMAIL' &&
+                                      user.email?.isNotEmpty == true)
+                                    OutlinedButton.icon(
+                                      onPressed: () => _resetPassword(user),
+                                      icon: const Icon(
+                                        Icons.key_outlined,
+                                        size: 18,
+                                      ),
+                                      label: const Text('비밀번호 재설정'),
+                                    ),
+                                  OutlinedButton.icon(
+                                    onPressed: () => _endSession(user),
+                                    icon: const Icon(
+                                      Icons.logout_outlined,
+                                      size: 18,
+                                    ),
+                                    label: const Text('로그아웃'),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        WebSurface(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '계정·개인정보 삭제 요청',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: WebPalette.of(context).ink,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                '삭제 요청을 접수하면 담당자가 본인 확인과 보관 의무·공유 자료를 검토한 뒤 처리합니다. 접수 즉시 계정이나 사진이 삭제되지는 않아요. 문의: junhyeoklee616@gmail.com',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  height: 1.7,
+                                  color: WebPalette.of(context).muted,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              TextButton(
+                                onPressed: () =>
+                                    _endSession(user, delete: true),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.error,
+                                ),
+                                child: const Text('회원 탈퇴'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                    return bounds.maxWidth >= 900
+                        ? Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(flex: 2, child: profile),
+                              const SizedBox(width: 24),
+                              Expanded(flex: 3, child: management),
+                            ],
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              profile,
+                              const SizedBox(height: 24),
+                              management,
+                            ],
+                          );
+                  },
+                ),
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
         ),
       ),
@@ -573,8 +765,8 @@ class _AccountConfirmationState extends State<_AccountConfirmation> {
 
   @override
   Widget build(BuildContext context) => _AccountActionSheet(
-    title: widget.delete ? '계정을 삭제할까요?' : '로그아웃할까요?',
-    confirmLabel: widget.delete ? '계정 삭제' : '로그아웃',
+    title: widget.delete ? '계정·개인정보 삭제를 요청할까요?' : '로그아웃할까요?',
+    confirmLabel: widget.delete ? '삭제 요청 접수' : '로그아웃',
     destructive: widget.delete,
     canConfirm: () => !widget.delete || _acknowledged,
     child: Column(
@@ -587,7 +779,9 @@ class _AccountConfirmationState extends State<_AccountConfirmation> {
         const SizedBox(height: 12),
         Text(
           widget.delete
-              ? '탈퇴하면 계정과 연결된 앨범·프로필 데이터, 보유 포인트와 구매 이용 권한을 복구할 수 없어요. 필요한 앨범을 저장한 뒤 진행해 주세요.'
+              ? '담당자가 요청을 확인한 뒤 삭제 범위와 보관이 필요한 기록을 안내합니다. '
+                    '이 단계에서는 계정·앨범·사진·거래 기록을 삭제하지 않고 로그인을 유지해요. '
+                    '문의: junhyeoklee616@gmail.com'
               : '다시 로그인하면 저장한 앨범과 구매한 템플릿·소재를 이어서 사용할 수 있어요.',
           style: ExperienceFormStyle.text(context, 14, secondary: true),
         ),
@@ -601,7 +795,7 @@ class _AccountConfirmationState extends State<_AccountConfirmation> {
             onChanged: (value) =>
                 setState(() => _acknowledged = value ?? false),
             title: Text(
-              '삭제 후 복구할 수 없음을 확인했어요',
+              '즉시 삭제가 아닌 검토 요청 접수임을 확인했어요',
               style: ExperienceFormStyle.text(context, 13),
             ),
           ),
@@ -674,7 +868,7 @@ class _AccountActionSheetState extends State<_AccountActionSheet> {
                           style: ExperienceFormStyle.text(
                             context,
                             compact ? 18 : 20,
-                            weight: FontWeight.w600,
+                            weight: FontWeight.w700,
                           ),
                         ),
                       ),

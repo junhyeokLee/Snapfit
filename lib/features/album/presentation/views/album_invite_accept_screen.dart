@@ -53,6 +53,7 @@ class _AlbumInviteAcceptScreenState
   String? _acceptedRole;
   AlbumInviteFailure? _failure;
   String? _openError;
+  final _failureKey = GlobalKey();
 
   Future<void> _accept(InviteInfoResponse info) async {
     if (_busy) return;
@@ -100,7 +101,25 @@ class _AlbumInviteAcceptScreenState
           if (_failure!.needsLogin) _loginRequested = true;
         });
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) {
+        setState(() => _busy = false);
+        if (!kIsWeb && _failure != null && !_loginRequested) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted ||
+                _failure == null ||
+                _loginRequested ||
+                ModalRoute.of(context)?.isCurrent != true) return;
+            final errorContext = _failureKey.currentContext;
+            if (errorContext != null) {
+              Scrollable.ensureVisible(
+                errorContext,
+                duration: const Duration(milliseconds: 220),
+                alignment: 0,
+              );
+            }
+          });
+        }
+      }
     }
   }
 
@@ -319,7 +338,7 @@ class _AlbumInviteAcceptScreenState
                                   : 'ArrowRight',
                               size: 19,
                               color: canAct
-                                  ? const Color(0xFF063740)
+                                  ? Colors.white
                                   : ExperienceFormStyle.muted(context),
                             ),
                       label: Text(
@@ -613,7 +632,7 @@ class _AlbumInviteAcceptScreenState
           key: const ValueKey('inviteAcceptTitle'),
           style: ExperienceStyle.text(
             landscape ? 18 : 30,
-            weight: FontWeight.w600,
+            weight: FontWeight.w700,
             color: SnapFitColors.textPrimaryOf(context),
           ),
         ),
@@ -632,6 +651,11 @@ class _AlbumInviteAcceptScreenState
     final details = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (failure != null) ...[
+          const SizedBox(height: 4),
+          _error(failure),
+          const SizedBox(height: 20),
+        ],
         if (!landscape) Divider(color: SnapFitColors.overlayMediumOf(context)),
         _detail(
           editable ? '함께 편집' : '앨범 보기',
@@ -645,8 +669,8 @@ class _AlbumInviteAcceptScreenState
               : joined
               ? '내 앨범에서 언제든 다시 볼 수 있어요.'
               : '초대를 수락하면 내 앨범에 추가돼요.',
+          accountEmail: user?.email,
         ),
-        if (failure != null) ...[const SizedBox(height: 20), _error(failure)],
         if (_openError != null) ...[
           const SizedBox(height: 20),
           Text(
@@ -674,7 +698,7 @@ class _AlbumInviteAcceptScreenState
     );
   }
 
-  Widget _detail(String title, String message) => Padding(
+  Widget _detail(String title, String message, {String? accountEmail}) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 14),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -688,6 +712,17 @@ class _AlbumInviteAcceptScreenState
           ),
         ),
         const SizedBox(height: 4),
+        if (accountEmail?.trim().isNotEmpty == true) ...[
+          SelectableText(
+            accountEmail!.trim(),
+            key: const ValueKey('inviteAcceptAccountEmail'),
+            style: ExperienceStyle.text(
+              13,
+              color: SnapFitColors.textSecondaryOf(context),
+            ),
+          ),
+          const SizedBox(height: 4),
+        ],
         Text(
           message,
           style: ExperienceStyle.text(
@@ -700,6 +735,7 @@ class _AlbumInviteAcceptScreenState
   );
 
   Widget _error(AlbumInviteFailure failure, {bool reload = false}) => Semantics(
+    key: kIsWeb ? null : _failureKey,
     liveRegion: true,
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,

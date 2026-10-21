@@ -13,7 +13,7 @@ void main() {
   test(
     'expanded collections are free, full length, and retain baseline IDs',
     () {
-      expect(bundledCreationTemplates.length, 37);
+      expect(bundledCreationTemplates.length, 42);
       expect(bundledCreationTemplates.take(3).map((t) => t.id), [
         -9301,
         -9302,
@@ -55,7 +55,7 @@ void main() {
       final clones = [
         for (var i = 0; i < old.length; i++) old[i].copyWith(id: 600 + i),
       ];
-      // All other public products are retired, regardless of their title.
+      // Unpublished remote entries cannot re-enter the curated local catalog.
       final unrelated = bundledCreationTemplates.first.copyWith(
         id: 700,
         title: retiredAuthoredCollections.first.title,
@@ -73,8 +73,13 @@ void main() {
       final visible = withBundledCreationTemplates(input);
       expect(
         visible.map((t) => t.id),
+        publishedCreationTemplates.map((t) => t.id),
+      );
+      expect(
+        visible.where((t) => !t.isPremium).map((t) => t.id),
         authoredCollections.map((c) => c.bundledId),
       );
+      expect(visible.any((t) => t.id == 700 || t.id == 701), false);
       expect(input.map((t) => t.templateJson), before);
       expect(old.every(isBundledCreationTemplate), true);
       expect([...old, ...clones].every(isRetiredAuthoredTemplate), true);

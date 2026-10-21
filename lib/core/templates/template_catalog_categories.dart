@@ -54,4 +54,9 @@ const collectionStyleTags = <String, List<String>>{
   'our-walking-promise': ['에디토리얼', '강아지', '산책'],
   'our-little-companion': ['스크랩북', '컬러풀', '고양이', '반려묘'],
   'the-kindest-face': ['미니멀', '에디토리얼', '강아지', '반려견'],
+  'alley-afternoon': ['에디토리얼', '동네산책', '일상기록', '카페'],
+  'saturday-together': ['컬러풀', '소풍', '가족사진', '우정'],
+  'daily-paw-walk': ['컬러풀', '산책', '강아지', '반려견', '일상기록'],
+  'our-first-promise': ['웨딩사진', '로맨틱', '에디토리얼', '서약'],
+  'little-day-discoveries': ['성장앨범', '아기', '육아', '컬러풀', '일상기록'],
 };

@@ -16,13 +16,8 @@ Widget _wrap(Widget child) {
 }
 
 Future<void> _dragDockUntilVisible(WidgetTester tester, String label) async {
-  for (var i = 0; i < 5 && find.text(label).evaluate().isEmpty; i++) {
-    await tester.drag(
-      find.byType(SingleChildScrollView),
-      const Offset(-220, 0),
-    );
-    await tester.pumpAndSettle();
-  }
+  await tester.ensureVisible(find.text(label));
+  await tester.pumpAndSettle();
 }
 
 Future<void> _loadKoreanFonts() async {
@@ -31,6 +26,11 @@ Future<void> _loadKoreanFonts() async {
     ..addFont(rootBundle.load('assets/fonts/NotoSansKR-SemiBold.ttf'))
     ..addFont(rootBundle.load('assets/fonts/NotoSansKR-Bold.ttf'));
   await regular.load();
+  final interface = FontLoader('NotoSans')
+    ..addFont(rootBundle.load('assets/fonts/NotoSansKR-Regular.ttf'))
+    ..addFont(rootBundle.load('assets/fonts/NotoSansKR-SemiBold.ttf'))
+    ..addFont(rootBundle.load('assets/fonts/NotoSansKR-Bold.ttf'));
+  await interface.load();
 }
 
 void main() {
@@ -67,13 +67,14 @@ void main() {
         '레이아웃',
         '템플릿',
         '레이어',
-        '스티커',
+        '꾸미기',
         '배경',
       ]) {
         await _dragDockUntilVisible(tester, label);
         expect(find.text(label), findsOneWidget, reason: label);
       }
 
+      await _dragDockUntilVisible(tester, '사진');
       await tester.tap(find.text('사진'));
       await tester.pump();
       expect(photoTapped, 1);
@@ -112,11 +113,19 @@ void main() {
         ),
       );
 
-      for (final label in ['글', '사진', '레이아웃', '템플릿', '레이어', '스티커', '배경']) {
+      for (final label in ['사진', '글', '템플릿', '꾸미기']) {
+        expect(find.text(label).hitTestable(), findsOneWidget, reason: label);
+      }
+      expect(
+        find.byKey(const ValueKey('editor-advanced-tool-divider')),
+        findsOneWidget,
+      );
+      for (final label in ['글', '사진', '레이아웃', '템플릿', '레이어', '꾸미기', '배경']) {
         await _dragDockUntilVisible(tester, label);
         expect(find.text(label), findsOneWidget, reason: label);
       }
 
+      await _dragDockUntilVisible(tester, '템플릿');
       await tester.tap(find.text('템플릿'));
       await tester.pumpAndSettle();
       expect(selected, contains(EditorMode.template));
@@ -125,6 +134,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(selected.last, EditorMode.none);
 
+      await _dragDockUntilVisible(tester, '레이어');
       await tester.tap(find.text('레이어'));
       await tester.pumpAndSettle();
       expect(selected, contains(EditorMode.layer));

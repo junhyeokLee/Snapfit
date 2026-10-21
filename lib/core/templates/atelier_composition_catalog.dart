@@ -3,6 +3,7 @@ part of 'studio_decoration_catalog.dart';
 const atelierCompositionCollections = ['서체와 압인', '여행 인쇄소', '기록의 도구', '컬러 콜라주'];
 
 const atelierCompositionDecorations = [
+  ...atelierWritingPapers,
   StudioDecorationSpec(
     'atelierTitlePlate',
     '서체용 이중 압인판',
@@ -66,5 +67,41 @@ const atelierCompositionDecorations = [
     1.25,
     .66,
     collection: '컬러 콜라주',
+  ),
+];
+
+/// Blank writing areas, not flattened captions or copies of paid ephemera.
+const atelierWritingPapers = [
+  StudioDecorationSpec(
+    'atelierWritingVow',
+    '서약을 쓰는 이중 코튼지',
+    StudioDecorationCategory.paper,
+    .78,
+    .68,
+    collection: '서체와 압인',
+  ),
+  StudioDecorationSpec(
+    'atelierWritingReceipt',
+    '직접 쓰는 절취 영수지',
+    StudioDecorationCategory.paper,
+    .70,
+    .62,
+    collection: '여행 인쇄소',
+  ),
+  StudioDecorationSpec(
+    'atelierWritingLetter',
+    '문구 없는 편지 인쇄지',
+    StudioDecorationCategory.paper,
+    .84,
+    .68,
+    collection: '둘의 보관함',
+  ),
+  StudioDecorationSpec(
+    'atelierWritingRecord',
+    '직접 기록하는 관찰지',
+    StudioDecorationCategory.paper,
+    .72,
+    .64,
+    collection: '기록의 도구',
   ),
 ];

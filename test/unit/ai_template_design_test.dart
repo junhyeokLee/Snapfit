@@ -6,6 +6,7 @@ import 'package:snap_fit/features/album/ai_album/domain/ai_album_draft_template_
 import 'package:snap_fit/features/album/ai_album/data/supabase_ai_album_draft_provider.dart';
 import 'package:snap_fit/features/album/domain/entities/layer.dart';
 import '../fixtures/ai_template_design_fixture.dart';
+import '../fixtures/ai_template_v3_fixture.dart';
 
 void main() {
   for (final pageCount in [20, 22, 52, 80]) {
@@ -196,7 +197,7 @@ void main() {
                 'hint': '표지',
               },
             ],
-            'design': templateDesignJson(),
+            'design': originalTemplateDesignJson(brief: brief),
           };
         },
       );

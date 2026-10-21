@@ -19,6 +19,11 @@ class PageEditorCanvas extends StatelessWidget {
   final bool isCover;
   final bool flatPresentation;
 
+  /// Editor-only actions; absent callbacks keep an empty page read-only.
+  final VoidCallback? onAddPhoto;
+  final VoidCallback? onChooseDesign;
+  final bool emptyPageActionsEnabled;
+
   const PageEditorCanvas({
     super.key,
     required this.canvasKey,
@@ -31,6 +36,9 @@ class PageEditorCanvas extends StatelessWidget {
     this.backgroundColor,
     this.isCover = false,
     this.flatPresentation = false,
+    this.onAddPhoto,
+    this.onChooseDesign,
+    this.emptyPageActionsEnabled = true,
   });
 
   @override
@@ -55,25 +63,18 @@ class PageEditorCanvas extends StatelessWidget {
     // 커버·내지 공통 스타일 (책 형태 동일하게)
     // 오른쪽 모서리만 둥글게 (왼쪽은 spine/제본 부분이므로 직각)
     const sharedRadius = BorderRadius.only(
-      topRight: Radius.circular(12),
-      bottomRight: Radius.circular(12),
+      topRight: Radius.circular(2),
+      bottomRight: Radius.circular(2),
       topLeft: Radius.zero,
       bottomLeft: Radius.zero,
     );
 
-    // 커버 그림자는 Transform.scale(canvasW/500) 내부에 있어 scale 비율만큼 줄어 보임.
-    // 내지도 시각적으로 동일하게 보이도록 같은 비율(coverScale)을 offset·blurRadius에 적용.
-    final double coverScale = canvasW / kCoverReferenceWidth;
+    // Match the soft contact shadow of the page inspection surface.
     final sharedShadow = [
       BoxShadow(
-        color: Colors.black.withOpacity(0.12),
-        blurRadius: 10 * coverScale,
-        offset: Offset(24 * coverScale, 72 * coverScale),
-      ),
-      BoxShadow(
-        color: const Color(0xFF5c5d8d).withOpacity(0.12),
-        blurRadius: 10 * coverScale,
-        offset: Offset(34 * coverScale, 72 * coverScale),
+        color: Colors.black.withValues(alpha: .12),
+        blurRadius: 22,
+        offset: const Offset(0, 8),
       ),
     ];
 
@@ -87,6 +88,9 @@ class PageEditorCanvas extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: flatPresentation ? BorderRadius.zero : sharedRadius,
+        clipBehavior: interaction.enableWebTransforms
+            ? Clip.none
+            : Clip.antiAlias,
         child: LayoutBuilder(
           builder: (context, constraints) {
             if (constraints.maxWidth > 0 && constraints.maxHeight > 0) {
@@ -96,6 +100,16 @@ class PageEditorCanvas extends StatelessWidget {
               );
             }
             if (layers.isEmpty) {
+              // This guide is interface chrome, never a document layer or part
+              // of the logical canvas exported for saving and printing.
+              if (!interaction.isPreviewMode &&
+                  (onAddPhoto != null || onChooseDesign != null)) {
+                return _EmptyPageGuide(
+                  onAddPhoto: onAddPhoto,
+                  onChooseDesign: onChooseDesign,
+                  enabled: emptyPageActionsEnabled,
+                );
+              }
               return Center(
                 child: Semantics(
                   label: '빈 페이지',
@@ -119,96 +133,111 @@ class PageEditorCanvas extends StatelessWidget {
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    Container(
-                      color: backgroundColor ?? SnapFitColors.pureWhite,
+                    ClipRect(
+                      clipBehavior: interaction.enableWebTransforms
+                          ? Clip.hardEdge
+                          : Clip.none,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            color: backgroundColor ?? SnapFitColors.pureWhite,
+                          ),
+                          ...interaction.sortByZ(layers).map((layer) {
+                            final styleKey = ValueKey(
+                              '${layer.id}_${layer.textBackground ?? ''}_${layer.imageBackground ?? ''}',
+                            );
+                            switch (layer.type) {
+                              case LayerType.image:
+                              case LayerType.sticker:
+                              case LayerType.decoration:
+                                return KeyedSubtree(
+                                  key: styleKey,
+                                  child: layerBuilder.buildImage(
+                                    layer,
+                                    isCover: isCover,
+                                  ),
+                                );
+                              case LayerType.text:
+                                return KeyedSubtree(
+                                  key: styleKey,
+                                  child: layerBuilder.buildText(
+                                    layer,
+                                    isCover: isCover,
+                                  ),
+                                );
+                            }
+                          }),
+                          // 내지 편집 시에도 커버와 동일하게, 드래그/회전 중일 때만
+                          // 중앙 가이드선을 레이어 위에 렌더링. 논리 캔버스와 동일한 크기로 고정해 가운데가 정확히 맞도록 함.
+                          if (interaction.isInteractingNow)
+                            Positioned(
+                              left: 0,
+                              top: 0,
+                              child: IgnorePointer(
+                                child: SizedBox(
+                                  width: effectiveBaseSize.width,
+                                  height: effectiveBaseSize.height,
+                                  child: CustomPaint(
+                                    painter: GridOverlayPainter(
+                                      leftSpine: isCover ? 14.0 : 0.0,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          if (interaction.isInteractingNow &&
+                              (interaction.activeVerticalGuides.isNotEmpty ||
+                                  interaction
+                                      .activeHorizontalGuides
+                                      .isNotEmpty))
+                            Positioned(
+                              left: 0,
+                              top: 0,
+                              child: IgnorePointer(
+                                child: SizedBox(
+                                  width: effectiveBaseSize.width,
+                                  height: effectiveBaseSize.height,
+                                  child: CustomPaint(
+                                    painter: _SnapGuidePainter(
+                                      verticalGuides:
+                                          interaction.activeVerticalGuides,
+                                      horizontalGuides:
+                                          interaction.activeHorizontalGuides,
+                                      leftSpine: isCover ? 14.0 : 0.0,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          // [Spine fix] 에디터에서도 표지 편집 시 좌측의 책등(Spine) 영역을 시각적으로 표시하여 위치 인지 오류 방지
+                          if (isCover && !flatPresentation)
+                            IgnorePointer(
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Container(
+                                  width: 14.0, // kCoverSpineWidth = 14.0
+                                  height: double.infinity,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.centerLeft,
+                                      end: Alignment.centerRight,
+                                      colors: [
+                                        Colors.black.withOpacity(0.18),
+                                        Colors.transparent,
+                                      ],
+                                      stops: const [0.0, 1.0],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                    ...interaction.sortByZ(layers).map((layer) {
-                      final styleKey = ValueKey(
-                        '${layer.id}_${layer.textBackground ?? ''}_${layer.imageBackground ?? ''}',
-                      );
-                      switch (layer.type) {
-                        case LayerType.image:
-                        case LayerType.sticker:
-                        case LayerType.decoration:
-                          return KeyedSubtree(
-                            key: styleKey,
-                            child: layerBuilder.buildImage(
-                              layer,
-                              isCover: isCover,
-                            ),
-                          );
-                        case LayerType.text:
-                          return KeyedSubtree(
-                            key: styleKey,
-                            child: layerBuilder.buildText(
-                              layer,
-                              isCover: isCover,
-                            ),
-                          );
-                      }
-                    }),
-                    // 내지 편집 시에도 커버와 동일하게, 드래그/회전 중일 때만
-                    // 중앙 가이드선을 레이어 위에 렌더링. 논리 캔버스와 동일한 크기로 고정해 가운데가 정확히 맞도록 함.
-                    if (interaction.isInteractingNow)
-                      Positioned(
-                        left: 0,
-                        top: 0,
-                        child: IgnorePointer(
-                          child: SizedBox(
-                            width: effectiveBaseSize.width,
-                            height: effectiveBaseSize.height,
-                            child: CustomPaint(
-                              painter: GridOverlayPainter(
-                                leftSpine: isCover ? 14.0 : 0.0,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    if (interaction.isInteractingNow &&
-                        (interaction.activeVerticalGuides.isNotEmpty ||
-                            interaction.activeHorizontalGuides.isNotEmpty))
-                      Positioned(
-                        left: 0,
-                        top: 0,
-                        child: IgnorePointer(
-                          child: SizedBox(
-                            width: effectiveBaseSize.width,
-                            height: effectiveBaseSize.height,
-                            child: CustomPaint(
-                              painter: _SnapGuidePainter(
-                                verticalGuides:
-                                    interaction.activeVerticalGuides,
-                                horizontalGuides:
-                                    interaction.activeHorizontalGuides,
-                                leftSpine: isCover ? 14.0 : 0.0,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    // [Spine fix] 에디터에서도 표지 편집 시 좌측의 책등(Spine) 영역을 시각적으로 표시하여 위치 인지 오류 방지
-                    if (isCover && !flatPresentation)
-                      IgnorePointer(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Container(
-                            width: 14.0, // kCoverSpineWidth = 14.0
-                            height: double.infinity,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
-                                colors: [
-                                  Colors.black.withOpacity(0.18),
-                                  Colors.transparent,
-                                ],
-                                stops: const [0.0, 1.0],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                    if (interaction.enableWebTransforms)
+                      interaction.buildSelectionOverlay(layers),
                   ],
                 ),
               ),
@@ -216,6 +245,110 @@ class PageEditorCanvas extends StatelessWidget {
           },
         ),
       ),
+    );
+  }
+}
+
+enum _EmptyPageAction { photo, design }
+
+class _EmptyPageGuide extends StatelessWidget {
+  const _EmptyPageGuide({
+    required this.onAddPhoto,
+    required this.onChooseDesign,
+    required this.enabled,
+  });
+
+  final VoidCallback? onAddPhoto, onChooseDesign;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return LayoutBuilder(
+      builder: (context, box) {
+        if (box.maxWidth < 180 || box.maxHeight < 160) {
+          return Center(
+            child: Material(
+              color: colors.surface,
+              shape: const CircleBorder(),
+              child: PopupMenuButton<_EmptyPageAction>(
+                key: const ValueKey('empty-page-actions-menu'),
+                enabled: enabled,
+                tooltip: '빈 페이지 · 사진 넣기 또는 디자인 고르기',
+                icon: Icon(Icons.add, color: colors.onSurface),
+                onSelected: (action) => switch (action) {
+                  _EmptyPageAction.photo => onAddPhoto?.call(),
+                  _EmptyPageAction.design => onChooseDesign?.call(),
+                },
+                itemBuilder: (_) => [
+                  if (onAddPhoto != null)
+                    const PopupMenuItem(
+                      value: _EmptyPageAction.photo,
+                      child: Text('사진 넣기'),
+                    ),
+                  if (onChooseDesign != null)
+                    const PopupMenuItem(
+                      value: _EmptyPageAction.design,
+                      child: Text('디자인 고르기'),
+                    ),
+                ],
+              ),
+            ),
+          );
+        }
+        return Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(12),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 280),
+              child: Material(
+                key: const ValueKey('empty-page-guide'),
+                color: colors.surface.withValues(alpha: .96),
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        '빈 페이지를 채워보세요',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: colors.onSurface,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      if (onAddPhoto != null)
+                        FilledButton(
+                          key: const ValueKey('empty-page-add-photo'),
+                          onPressed: enabled ? onAddPhoto : null,
+                          child: const Text(
+                            '사진 넣기',
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      if (onAddPhoto != null && onChooseDesign != null)
+                        const SizedBox(height: 8),
+                      if (onChooseDesign != null)
+                        OutlinedButton(
+                          key: const ValueKey('empty-page-choose-design'),
+                          onPressed: enabled ? onChooseDesign : null,
+                          child: const Text(
+                            '디자인 고르기',
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

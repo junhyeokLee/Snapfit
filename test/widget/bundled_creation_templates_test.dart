@@ -218,6 +218,9 @@ void main() {
         final slot = originals.firstWhere((l) => l.type == LayerType.image);
         final photo = _Photo();
         when(() => photo.id).thenReturn('photo-${collection.id}');
+        when(() => photo.width).thenReturn(0);
+        when(() => photo.height).thenReturn(0);
+        when(() => photo.orientation).thenReturn(0);
         when(
           () => photo.file,
         ).thenAnswer((_) async => File('assets/snapfit_home_square.jpg'));

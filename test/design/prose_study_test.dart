@@ -40,7 +40,7 @@ void main() {
   });
   tearDown(() => CatalogFavorites.instance.dispose());
   test('prose becomes the 37th free collection with a complete edition', () {
-    expect(bundledCreationTemplates.length, 37);
+    expect(bundledCreationTemplates.length, 42);
     expect(bundledCreationTemplates.every((t) => !t.isPremium), true);
     expect(authoredCollections.any((c) => c.id == proseStudyId), true);
     final doc = buildProseStudy(CollectionAspect.square);

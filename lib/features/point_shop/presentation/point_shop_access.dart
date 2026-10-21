@@ -132,10 +132,14 @@ class PointShopProductBadge extends ConsumerWidget {
     this.freeLabel = '무료',
     this.unlistedLabel,
     this.compact = true,
+    this.fontSize,
+    this.foregroundColor,
   });
   final String productKey, freeLabel;
   final String? unlistedLabel;
   final bool compact;
+  final double? fontSize;
+  final Color? foregroundColor;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -174,9 +178,9 @@ class PointShopProductBadge extends ConsumerWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          fontSize: compact ? 10 : 15,
+          fontSize: fontSize ?? (compact ? 10 : 15),
           fontWeight: FontWeight.w600,
-          color: colors.onSurfaceVariant,
+          color: foregroundColor ?? colors.onSurfaceVariant,
         ),
       ),
     );

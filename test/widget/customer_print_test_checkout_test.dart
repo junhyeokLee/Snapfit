@@ -186,10 +186,16 @@ void main() {
     await visible(tester, find.text('주문 내용 확인하기'));
     await tester.tap(find.text('주문 내용 확인하기'));
     await tester.pumpAndSettle();
-    final agreement = find.byKey(const ValueKey('print-checkout-agreement'));
-    await visible(tester, agreement);
-    await tester.tap(agreement);
-    await tester.pumpAndSettle();
+    for (final key in [
+      'print-checkout-agreement',
+      'print-checkout-policy-agreement',
+      'print-checkout-custom-production-agreement',
+    ]) {
+      final agreement = find.byKey(ValueKey(key));
+      await visible(tester, agreement);
+      await tester.tap(agreement);
+      await tester.pumpAndSettle();
+    }
   }
 
   testWidgets(

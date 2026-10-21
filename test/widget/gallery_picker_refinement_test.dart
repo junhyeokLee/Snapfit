@@ -11,6 +11,8 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
 import 'package:snap_fit/features/album/data/api/album_provider.dart';
 import 'package:snap_fit/features/album/domain/repositories/gallery_repository.dart';
+import 'package:snap_fit/features/album/presentation/viewmodels/gallery_notifier.dart';
+import 'package:snap_fit/shared/widgets/editor_modal_scope.dart';
 import 'package:snap_fit/shared/widgets/album_bottom_sheet.dart';
 
 import 'ai_album_start_step_test.dart' show loadCreationFonts;
@@ -50,6 +52,7 @@ class _Gallery implements GalleryRepository {
   late List<AssetPathEntity> albums;
   final requests = <({String id, int page, int size})>[];
   int refreshes = 0;
+  final dateQueries = <DateTimeCond?>[];
 
   List<AssetEntity> items(String id) => switch (id) {
     'all' => photos,
@@ -74,7 +77,17 @@ class _Gallery implements GalleryRepository {
     int size,
   ) async {
     requests.add((id: album.id, page: page, size: size));
-    return items(album.id).skip(page * size).take(size).toList();
+    final filter = album.filterOption;
+    final dates = filter is FilterOptionGroup ? filter.createTimeCond : null;
+    dateQueries.add(dates);
+    final matching = items(album.id).where(
+      (photo) =>
+          dates == null ||
+          dates.ignore ||
+          (!photo.createDateTime.isBefore(dates.min) &&
+              !photo.createDateTime.isAfter(dates.max)),
+    );
+    return matching.skip(page * size).take(size).toList();
   }
 }
 
@@ -156,6 +169,28 @@ Future<void> _capture(WidgetTester tester, GlobalKey key, String name) async {
     await file.writeAsBytes(data!.buffer.asUint8List());
     image.dispose();
   });
+}
+
+Future<void> _enterDateRange(
+  WidgetTester tester,
+  String start,
+  String end,
+) async {
+  await tester.tap(find.byKey(const ValueKey('gallery-date-range')));
+  await tester.pumpAndSettle();
+  final localizations = MaterialLocalizations.of(
+    tester.element(find.byType(DateRangePickerDialog)),
+  );
+  await tester.tap(find.byTooltip(localizations.inputDateModeButtonLabel));
+  await tester.pumpAndSettle();
+  final fields = find.descendant(
+    of: find.byType(DateRangePickerDialog),
+    matching: find.byType(TextField),
+  );
+  await tester.enterText(fields.at(0), start);
+  await tester.enterText(fields.at(1), end);
+  await tester.tap(find.text('적용').hitTestable());
+  await _paint(tester);
 }
 
 void main() {
@@ -556,4 +591,184 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+  testWidgets(
+    'date search preserves the tray, album switching, refresh and reset',
+    (tester) async {
+      _size(tester, const Size(390, 844));
+      List<AssetEntity>? result;
+      await tester.pumpWidget(
+        _app(gallery, onResult: (value) => result = value),
+      );
+      await tester.tap(find.text('사진 추가'));
+      await _paint(tester);
+      expect(find.text('전체 기간'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('gallery-photo-photo-0')));
+      await _enterDateRange(tester, '10/01/2026', '10/02/2026');
+      expect(find.byKey(const ValueKey('gallery-photo-photo-0')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('gallery-photo-photo-6')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('gallery-photo-photo-7')),
+        findsOneWidget,
+      );
+      expect(gallery.dateQueries.last!.min, DateTime(2026, 10, 1));
+      expect(
+        gallery.dateQueries.last!.max,
+        DateTime(2026, 10, 3).subtract(const Duration(milliseconds: 1)),
+      );
+      await tester.tap(find.byKey(const ValueKey('gallery-photo-photo-7')));
+      await tester.tap(find.byKey(const ValueKey('gallery-selected-only')));
+      await _paint(tester);
+      expect(
+        find.byKey(const ValueKey('gallery-photo-photo-0')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('gallery-photo-photo-7')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('gallery-date-range')), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('gallery-selected-only')));
+      await _paint(tester);
+      await tester.tap(find.byKey(const ValueKey('gallery-album-switch')));
+      await _paint(tester);
+      await tester.tap(find.byKey(const ValueKey('gallery-album-family')));
+      await _paint(tester);
+      expect(find.text('선택한 기간에 사진이 없어요'), findsOneWidget);
+      expect(gallery.requests.last.id, 'family');
+      expect(gallery.dateQueries.last!.min, DateTime(2026, 10, 1));
+      final context = tester.element(
+        find.byKey(const ValueKey('gallery-date-range')),
+      );
+      final container = ProviderScope.containerOf(context);
+      await container
+          .read(galleryProvider.notifier)
+          .fetchInitialData(albumId: 'family');
+      await _paint(tester);
+      expect(gallery.dateQueries.last!.min, DateTime(2026, 10, 1));
+      await tester.tap(
+        find.byKey(const ValueKey('gallery-empty-clear-date-range')),
+      );
+      await _paint(tester);
+      expect(
+        find.byKey(const ValueKey('gallery-photo-photo-8')),
+        findsOneWidget,
+      );
+      expect(find.text('전체 기간'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('confirm-gallery-selection')));
+      await _paint(tester);
+      expect(result!.map((photo) => photo.id), ['photo-0', 'photo-7']);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'cancelled or invalid dates do not query and end day is inclusive',
+    (tester) async {
+      _size(tester, const Size(390, 844));
+      await tester.pumpWidget(_app(gallery, onResult: (_) {}));
+      await tester.tap(find.text('사진 추가'));
+      await _paint(tester);
+      final initialCount = gallery.requests.length;
+      await tester.tap(find.byKey(const ValueKey('gallery-date-range')));
+      await tester.pumpAndSettle();
+      final closeLabel = MaterialLocalizations.of(
+        tester.element(find.byType(DateRangePickerDialog)),
+      ).closeButtonTooltip;
+      await tester.tap(find.byTooltip(closeLabel));
+      await _paint(tester);
+      expect(gallery.requests.length, initialCount);
+      await _enterDateRange(tester, '10/09/2026', '10/08/2026');
+      expect(find.byType(DateRangePickerDialog), findsOneWidget);
+      expect(find.text('종료 날짜는 시작 날짜 이후로 선택해주세요.'), findsOneWidget);
+      expect(gallery.requests.length, initialCount);
+      final fields = find.descendant(
+        of: find.byType(DateRangePickerDialog),
+        matching: find.byType(TextField),
+      );
+      await tester.enterText(fields.at(0), '10/08/2026');
+      await tester.tap(find.text('적용').hitTestable());
+      await _paint(tester);
+      expect(
+        find.byKey(const ValueKey('gallery-photo-photo-0')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('gallery-photo-photo-1')), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  for (final size in [const Size(320, 568), const Size(844, 390)]) {
+    testWidgets('date toolbar and recovery fit large text at ${size.width}', (
+      tester,
+    ) async {
+      _size(tester, size);
+      await tester.pumpWidget(
+        _app(gallery, dark: true, textScale: 2.4, onResult: (_) {}),
+      );
+      await tester.tap(find.text('사진 추가'));
+      await _paint(tester);
+      final context = tester.element(
+        find.byKey(const ValueKey('gallery-date-range')),
+      );
+      final container = ProviderScope.containerOf(context);
+      await _enterDateRange(tester, '01/01/2000', '01/01/2000');
+      expect(find.text('선택한 기간에 사진이 없어요'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('gallery-clear-date-range')).hitTestable(),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const ValueKey('gallery-clear-date-range')));
+      await _paint(tester);
+      expect(container.read(galleryProvider).dateRange, isNull);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('date picker uses the editing navigator and scoped modal name', (
+    tester,
+  ) async {
+    _size(tester, const Size(390, 844));
+    final root = GlobalKey<NavigatorState>();
+    final editor = GlobalKey<NavigatorState>();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [galleryRepositoryProvider.overrideWithValue(gallery)],
+        child: MaterialApp(
+          navigatorKey: root,
+          home: Navigator(
+            key: editor,
+            onGenerateRoute: (_) => MaterialPageRoute<void>(
+              builder: (context) => Scaffold(
+                body: Consumer(
+                  builder: (context, ref, _) => TextButton(
+                    onPressed: () => showPhotosSelectionSheet(context, ref),
+                    child: const Text('열기'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('열기'));
+    await _paint(tester);
+    expect(root.currentState!.canPop(), isFalse);
+    await tester.tap(find.byKey(const ValueKey('gallery-date-range')));
+    await tester.pumpAndSettle();
+    final context = tester.element(find.byType(DateRangePickerDialog));
+    expect(Navigator.of(context), same(editor.currentState));
+    expect(
+      ModalRoute.of(context)!.settings.name,
+      editorModalRouteName(context),
+    );
+    expect(root.currentState!.canPop(), isFalse);
+    editor.currentState!.pop();
+    await _paint(tester);
+    expect(find.byKey(const ValueKey('gallery-date-range')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

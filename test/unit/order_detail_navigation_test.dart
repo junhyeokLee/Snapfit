@@ -89,4 +89,33 @@ void main() {
       'order-a',
     );
   });
+
+  test(
+    'a newer destination cancels both pending order and old duplicate window',
+    () {
+      final navigation = OrderDetailNavigation()
+        ..receive('order-a', ownerId: 'owner');
+      navigation.cancel();
+      expect(navigation.hasPending, false);
+      expect(
+        navigation.take(ownerId: 'owner', navigatorReady: true, now: now),
+        isNull,
+      );
+      navigation.receive('order-a', ownerId: 'owner');
+      expect(
+        navigation.take(ownerId: 'owner', navigatorReady: true, now: now),
+        'order-a',
+      );
+      navigation.cancel();
+      navigation.receive('order-a', ownerId: 'owner');
+      expect(
+        navigation.take(
+          ownerId: 'owner',
+          navigatorReady: true,
+          now: now.add(const Duration(milliseconds: 100)),
+        ),
+        'order-a',
+      );
+    },
+  );
 }

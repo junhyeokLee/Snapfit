@@ -7,6 +7,31 @@ import 'package:snap_fit/features/billing/data/billing_repository.dart';
 class MockTokenStorage extends Mock implements TokenStorage {}
 
 void main() {
+  test(
+    'server protection errors are not incorrectly reported as insufficient points',
+    () async {
+      final repository = BillingRepository(
+        tokenStorage: MockTokenStorage(),
+        recordAiAlbumDraftSuccessRpc:
+            ({required draftId, required pointCost}) async {
+              throw const PostgrestException(
+                message: 'ai_draft_not_reviewable',
+                code: 'P0001',
+              );
+            },
+      );
+      await expectLater(
+        repository.recordAiAlbumDraftSuccess(draftId: 'unverified'),
+        throwsA(
+          isA<AiAlbumDraftPointUsageException>().having(
+            (e) => e.failure,
+            'failure',
+            AiAlbumDraftPointUsageFailure.unavailable,
+          ),
+        ),
+      );
+    },
+  );
   test('records AI album draft success through injected recorder', () async {
     final tokenStorage = MockTokenStorage();
     final repository = BillingRepository(

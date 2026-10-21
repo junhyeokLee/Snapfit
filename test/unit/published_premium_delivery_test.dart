@@ -55,21 +55,23 @@ void main() {
           }
         }
       }
-      expect(keys, hasLength(14));
+      expect(keys, hasLength(26));
     },
   );
 
-  test('sale registration targets only the 14 delivered paid products', () {
+  test('owner-approved sale registration includes every delivered edition', () {
     final keys = publishedPremiumTemplates.map(pointShopTemplateKey).toSet();
     final rows = pointShopPriceApplicationRows()
         .where((row) => keys.contains(row['product_key']))
         .toList();
-    expect(rows, hasLength(14));
+    expect(rows, hasLength(26));
     expect(rows.where((row) => row['point_price'] == 2500), hasLength(7));
     expect(rows.where((row) => row['point_price'] == 1800), hasLength(7));
-    expect(rows.every((row) => row['is_active'] == true), true);
+    expect(rows.where((row) => row['point_price'] == 2800), hasLength(12));
+    expect(rows.where((row) => row['is_active'] == true), hasLength(26));
+    expect(rows.where((row) => row['is_active'] == false), isEmpty);
     if (const bool.fromEnvironment('EXPORT_PREMIUM_SALE')) {
-      final out = Directory('output/premium-registration/sale-2026-09-10')
+      final out = Directory('output/premium-registration/sale-2026-10-18')
         ..createSync(recursive: true);
       File(
         '${out.path}/apply.sql',

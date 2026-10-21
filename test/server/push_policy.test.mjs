@@ -14,6 +14,22 @@ test('server quiet hours use each device offset and expire delayed messages befo
   assert.equal(deliveryPolicy('marketing', null, 0, new Date()).allowed, false);
   assert.equal(deliveryPolicy('new_template', null, 0, new Date()).allowed, true);
 });
+test('quiet-time events never become morning pushes after an outage or retry', () => {
+  const prefs = { night_mute: true };
+  const morning = new Date('2026-10-19T23:00:00Z'); // 08:00 KST.
+  for (const createdAt of ['2026-10-19T13:00:00Z', '2026-10-19T22:59:59Z']) {
+    assert.deepEqual(deliveryPolicy('order', prefs, 540, morning, createdAt),
+      { allowed: false, ttlSeconds: 0 });
+  }
+  assert.equal(deliveryPolicy('order', prefs, 540, morning, '2026-10-19T23:00:00Z').allowed, true);
+  assert.equal(deliveryPolicy('order', prefs, -240, new Date('2026-10-20T13:00:00Z'),
+    '2026-10-19T13:00:00Z').allowed, true, 'the same event is daytime in the western timezone');
+  assert.equal(deliveryPolicy('order', prefs, 540, morning, 'invalid-date').allowed, false);
+  assert.equal(deliveryPolicy('order', { night_mute: false }, 540, morning,
+    '2026-10-19T13:00:00Z').allowed, true, 'the latest night preference still controls delivery');
+  assert.equal(deliveryPolicy('order', prefs, 540, new Date('2026-10-19T12:59:30Z'),
+    '2026-10-19T12:00:00Z').ttlSeconds, 30);
+});
 test('FCM sends only exact device token and cannot overwrite recipient with payload data', () => {
   const now = new Date('2026-09-08T12:59:30Z');
   const { message } = fcmMessage({ id: 10, user_id: 'owner', type: 'order_status', category: 'order',

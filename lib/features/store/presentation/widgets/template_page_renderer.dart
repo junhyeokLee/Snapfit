@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import '../../../../core/utils/text_shadow_codec.dart';
 import '../../../../core/utils/outline_text_style.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../shared/widgets/studio_material.dart';
@@ -416,6 +417,7 @@ class TemplatePageRenderer extends StatelessWidget {
       );
       final baseStyle = style.copyWith(
         fontSize: scaledFont,
+        shadows: TextShadowCodec.scaled(style.shadows, scaleY),
         letterSpacing: preserveTypography ? 0 : style.letterSpacing,
         color: style.color ?? Colors.black,
         height: effectiveHeight,

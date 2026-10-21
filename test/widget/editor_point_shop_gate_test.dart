@@ -131,6 +131,18 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
+        if (kind == 'frame') {
+          // The growing frame catalog is lazy; locate this product by search.
+          await tester.tap(find.byTooltip('소재 검색'));
+          await tester.pumpAndSettle();
+          await tester.enterText(
+            find.byKey(const ValueKey('editor-material-search')),
+            label,
+          );
+          await tester.pumpAndSettle();
+          await tester.tap(find.byTooltip('소재 검색 접기'));
+          await tester.pumpAndSettle();
+        }
         expect(find.text(label), findsOneWidget);
         expect(find.text('120P'), findsOneWidget);
         expect(requests, isEmpty);

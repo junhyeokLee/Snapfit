@@ -35,6 +35,9 @@ class CoverLayout extends StatelessWidget {
   /// Flat document presentation; artwork and its coordinate system stay intact.
   final bool flatPresentation;
 
+  /// Editor controls stay outside the clipped printable artwork.
+  final Widget Function()? selectionOverlayBuilder;
+
   const CoverLayout({
     super.key,
     required this.aspect,
@@ -54,6 +57,7 @@ class CoverLayout extends StatelessWidget {
     this.showEmptyGuide = false,
     this.wrapSpineArtwork = false,
     this.flatPresentation = false,
+    this.selectionOverlayBuilder,
   });
 
   LayerModel _displayLayer(LayerModel layer, Size size) {
@@ -154,6 +158,19 @@ class CoverLayout extends StatelessWidget {
         builder: (context, constraints) {
           final maxW = constraints.maxWidth;
           final maxH = constraints.maxHeight;
+          // Resolve the styled layer sizes before constructing editor controls.
+          // The inner LayoutBuilder runs later, so constructing the controls in
+          // EditCover can otherwise leave them at the previous text size.
+          final fittedSize = maxW / aspect <= maxH
+              ? Size(maxW, maxW / aspect)
+              : Size(maxH * aspect, maxH);
+          final preparedLayers = selectionOverlayBuilder == null
+              ? null
+              : sortedByZ(layers).map((sourceLayer) {
+                  final layer = _displayLayer(sourceLayer, fittedSize);
+                  return _buildLayer(layer, fittedSize);
+                }).toList();
+          final selectionOverlay = selectionOverlayBuilder?.call();
           // scale 계산
           double scale = 1.0;
 
@@ -168,6 +185,9 @@ class CoverLayout extends StatelessWidget {
                   flatPresentation: flatPresentation,
                   child: Stack(
                     fit: StackFit.expand,
+                    clipBehavior: selectionOverlay == null
+                        ? Clip.hardEdge
+                        : Clip.none,
                     children: [
                       Container(),
                       Container(
@@ -180,9 +200,9 @@ class CoverLayout extends StatelessWidget {
                           borderRadius: flatPresentation
                               ? BorderRadius.zero
                               : const BorderRadius.only(
-                            topRight: Radius.circular(12),
-                            bottomRight: Radius.circular(12),
-                          ),
+                                  topRight: Radius.circular(12),
+                                  bottomRight: Radius.circular(12),
+                                ),
                           clipBehavior: Clip.hardEdge,
                           child: LayoutBuilder(
                             builder: (context, coverCts) {
@@ -202,18 +222,20 @@ class CoverLayout extends StatelessWidget {
                                       theme: theme,
                                       backgroundColor: backgroundColor,
                                       showSpine:
-                                          !flatPresentation && !wrapSpineArtwork,
+                                          !flatPresentation &&
+                                          !wrapSpineArtwork,
                                       flatPresentation: flatPresentation,
                                     ),
                                     if (showEmptyGuide && layers.isEmpty)
                                       const _CoverEmptyGuide(),
-                                    ...sortedByZ(layers).map((sourceLayer) {
-                                      final layer = _displayLayer(
-                                        sourceLayer,
-                                        coverSize,
-                                      );
-                                      return _buildLayer(layer, coverSize);
-                                    }),
+                                    ...preparedLayers ??
+                                        sortedByZ(layers).map((sourceLayer) {
+                                          final layer = _displayLayer(
+                                            sourceLayer,
+                                            coverSize,
+                                          );
+                                          return _buildLayer(layer, coverSize);
+                                        }),
                                     if (!flatPresentation &&
                                         !hasCustomBackgroundColor &&
                                         !wrapSpineArtwork)
@@ -268,6 +290,7 @@ class CoverLayout extends StatelessWidget {
                           ),
                         ),
                       ),
+                      if (selectionOverlay != null) selectionOverlay!,
                     ],
                   ),
                 ),
@@ -454,9 +477,9 @@ class _CoverBackground extends StatelessWidget {
             borderRadius: flatPresentation
                 ? BorderRadius.zero
                 : const BorderRadius.only(
-              topRight: Radius.circular(12),
-              bottomRight: Radius.circular(12),
-            ),
+                    topRight: Radius.circular(12),
+                    bottomRight: Radius.circular(12),
+                  ),
             color: backgroundColor,
             image: backgroundColor == null && theme.imageAsset != null
                 ? DecorationImage(

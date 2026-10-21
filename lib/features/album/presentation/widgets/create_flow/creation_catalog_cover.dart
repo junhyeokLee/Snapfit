@@ -11,6 +11,21 @@ import '../../../../../core/templates/catalog_preview_assets.g.dart';
 import '../../../../store/presentation/widgets/template_book_artwork.dart';
 import '../cover/album_spine_image.dart';
 
+/// Published jackets are drawn from their current editable artwork. Old bundled
+/// bitmaps cannot mask a new cover and no replacement preview files are needed.
+bool usesLiveCatalogArtwork(PremiumTemplate? template) {
+  if (template == null) return false;
+  final canonical = publishedCreationTemplates
+      .where((item) => item.id == template.id)
+      .firstOrNull;
+  return canonical != null &&
+      identical(canonical.documentBuilder, template.documentBuilder);
+}
+
+/// Current interiors use their editable layers without generating files.
+bool usesLiveCatalogSpreadArtwork(PremiumTemplate template) =>
+    usesLiveCatalogArtwork(template);
+
 class CreationCatalogCover extends StatefulWidget {
   const CreationCatalogCover({
     super.key,
@@ -29,6 +44,7 @@ class _CreationCatalogCoverState extends State<CreationCatalogCover> {
   String? get _thumbnail {
     if (!widget.useThumbnail || widget.template.documentBuilder == null)
       return null;
+    if (usesLiveCatalogArtwork(widget.template)) return null;
     final canonical = publishedCreationTemplates
         .where((t) => t.id == widget.template.id)
         .firstOrNull;
@@ -106,37 +122,53 @@ class _CreationCatalogCoverState extends State<CreationCatalogCover> {
   Widget build(BuildContext context) {
     final thumbnail = _thumbnail;
     if (thumbnail != null) {
-      if (widget.showBookMaterial) {
-        final provider = ResizeImage(AssetImage(thumbnail), width: 660);
-        return Image(
-          image: provider,
-          fit: BoxFit.contain,
-          frameBuilder: (context, child, _, __) {
-            final bitmap = child is Semantics ? child.child : child;
-            if (bitmap is! RawImage || bitmap.image == null) return child;
-            final decoded = bitmap.image!;
-            return TemplateBookArtwork(
-              canvas: Size(decoded.width.toDouble(), decoded.height.toDouble()),
-              firstPage: 0,
-              paired: false,
-              pageBuilder: (index, wrap) =>
-                  wrap ? AlbumSpineImage(image: provider) : child,
-            );
-          },
-          errorBuilder: (_, __, ___) => CreationCatalogCover(
-            template: widget.template,
-            showBookMaterial: true,
-          ),
-        );
-      }
-      return Image.asset(
-        thumbnail,
-        fit: BoxFit.contain,
-        cacheWidth: 660,
-        errorBuilder: (_, __, ___) =>
-            CreationCatalogCover(template: widget.template),
+      return LayoutBuilder(
+        builder: (context, bounds) {
+          final pixels = bounds.hasBoundedWidth
+              ? bounds.maxWidth * MediaQuery.devicePixelRatioOf(context)
+              : 660.0;
+          final width = ((pixels / 128).ceil() * 128).clamp(128, 1024);
+          return _thumbnailArtwork(thumbnail, width);
+        },
       );
     }
+    return _nativeArtwork();
+  }
+
+  Widget _thumbnailArtwork(String thumbnail, int width) {
+    if (widget.showBookMaterial) {
+      final provider = ResizeImage(AssetImage(thumbnail), width: width);
+      return Image(
+        image: provider,
+        fit: BoxFit.contain,
+        frameBuilder: (context, child, _, __) {
+          final bitmap = child is Semantics ? child.child : child;
+          if (bitmap is! RawImage || bitmap.image == null) return child;
+          final decoded = bitmap.image!;
+          return TemplateBookArtwork(
+            canvas: Size(decoded.width.toDouble(), decoded.height.toDouble()),
+            firstPage: 0,
+            paired: false,
+            pageBuilder: (index, wrap) =>
+                wrap ? AlbumSpineImage(image: provider) : child,
+          );
+        },
+        errorBuilder: (_, __, ___) => CreationCatalogCover(
+          template: widget.template,
+          showBookMaterial: true,
+        ),
+      );
+    }
+    return Image.asset(
+      thumbnail,
+      fit: BoxFit.contain,
+      cacheWidth: width,
+      errorBuilder: (_, __, ___) =>
+          CreationCatalogCover(template: widget.template),
+    );
+  }
+
+  Widget _nativeArtwork() {
     if (_layers == null || _layers!.isEmpty)
       return widget.showBookMaterial
           ? TemplateBookArtwork(

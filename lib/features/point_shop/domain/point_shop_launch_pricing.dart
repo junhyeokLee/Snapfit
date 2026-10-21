@@ -1,7 +1,10 @@
 import '../../../core/templates/authored_collections.dart';
 import '../../../core/templates/free_template_material_policy.dart';
+import '../../../core/templates/studio_decoration_catalog.dart';
+import '../../../core/templates/studio_photo_frame_catalog.dart';
 import 'point_shop_template_key.dart';
 import 'premium_volume_registration.dart';
+import 'point_shop_catalog_release.dart';
 
 /// Editorial launch prices, never a replacement for the server's purchase quote.
 /// Unknown keys remain unreviewed; opening the catalog performs no price writes.
@@ -11,7 +14,15 @@ class PointShopLaunchPrice {
   final String reason;
 }
 
-const pointShopPricingRevision = '2026-10-07-free-material-policy-6';
+const pointShopPricingRevision = pointShopCatalogApprovalRevision;
+
+bool isPendingAtelierMaterialProduct(String key) =>
+    !ownerApprovedCatalogProductKeys.contains(key) &&
+    ((key.startsWith('sticker:') &&
+            (atelierEditionMaterialPrices[key.substring(8)] ?? 0) > 0) ||
+        (key.startsWith('frame:') &&
+            (atelierSignaturePhotoFrames.contains(key.substring(6)) ||
+                atelierStoryPhotoFrames.contains(key.substring(6)))));
 
 bool pointShopRequiresFreePrice(String productKey) =>
     freeTemplateMaterialProductKeys.contains(productKey) ||
@@ -20,12 +31,30 @@ bool pointShopRequiresFreePrice(String productKey) =>
     );
 
 final pointShopLaunchPrices = Map<String, PointShopLaunchPrice>.unmodifiable({
+  for (final frame in atelierStoryPhotoFrames)
+    'frame:$frame': PointShopLaunchPrice(
+      frame.startsWith('storyVow') ? 400 : 300,
+      '사진 교체 가능한 컨셉 전용 절개·접지 구조',
+    ),
+  for (final frame in atelierSignaturePhotoFrames)
+    'frame:$frame': const PointShopLaunchPrice(400, '컨셉 전용 포켓·절개·봉제 구조'),
   for (final key in freeTemplateMaterialProductKeys)
     key: const PointShopLaunchPrice(0, '무료 템플릿 기본 소재 · 별도 구매 없이 사용'),
   for (final collection in authoredCollections)
     pointShopAuthoredTemplateKey(collection): const PointShopLaunchPrice(
       0,
       '기존 무료 완성 템플릿 기준 유지 · 세 규격 포함',
+    ),
+  for (final entry in atelierEditionMaterialPrices.entries)
+    'sticker:${entry.key}': PointShopLaunchPrice(
+      entry.value,
+      entry.value == 0
+          ? '신규 기본 받침 종이 무료 · 기존 무료 소재의 권한 유지'
+          : entry.value == 100
+          ? '주제별 겹침 바인딩 · 편집 가능한 문구와 분리된 장식 띠'
+          : entry.value == 200
+          ? '주제별 절개 창·인쇄·봉제 디테일의 독립 포토 매트'
+          : '투명 경계를 보존한 주제별 복합 꾸밈 오브젝트',
     ),
   'sticker:lifeRattle': const PointShopLaunchPrice(
     200,
@@ -195,4 +224,17 @@ final pointShopLaunchPrices = Map<String, PointShopLaunchPrice>.unmodifiable({
       conceptVolumeLaunchPointPrice,
       '컨셉별 24쪽 조판과 세 규격을 묶은 단일 에디션 출시 가격',
     ),
+  for (final product in pendingAtelierEditionProducts)
+    product.productKey: const PointShopLaunchPrice(
+      atelierEditionProposedPointPrice,
+      '신규 표지 사진·32쪽 조판·세 규격을 묶은 출시 가격',
+    ),
+  for (final product in pendingStudioEditionProducts)
+    product.productKey: PointShopLaunchPrice(2800, switch (product.assetId) {
+      'velvet-vow-archive' => '웨딩 접지·서약문·압인 사진 창 · 내지 32쪽 · 세 규격',
+      'little-explorer-book' => '발견 기록·그림책형 조판·전용 사진 창 · 내지 32쪽 · 세 규격',
+      'companion-journal' => '반려생활 매거진 조판 · 내지 32쪽 · 세 규격',
+      'summer-keepsake-box' => '여름 전용 직조·접지·겹침 조판 · 내지 32쪽 · 세 규격',
+      _ => '도시 전용 포토저널 조판 · 내지 32쪽 · 세 규격',
+    }),
 });

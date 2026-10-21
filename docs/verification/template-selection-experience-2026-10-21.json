@@ -1,0 +1,98 @@
+{
+  "recordedAtUtc": "2026-10-21T07:23:03.491681+00:00",
+  "status": "production_web_deployed_verified_superseded_by_open_photo_cover_release",
+  "scope": {
+    "publishedDesigns": 68,
+    "comparisonLimit": 3,
+    "guestAndSignedStore": true,
+    "actualCurrentDocumentFacts": true
+  },
+  "implemented": [
+    "Same-size source cover and representative spread comparison, live public prices, actual photo slots, inner pages and writing pages",
+    "Selection survives search, categories and store presentation changes; explicit remove and clear actions",
+    "Actual selected-edition composition summary in details and creation preview; lazy inspected-template summary in creation start",
+    "Bounded comparison tray, horizontal narrow-screen comparison, large-text-safe metadata and keyboard close",
+    "Store refresh also invalidates public comparison prices"
+  ],
+  "validation": {
+    "native": {
+      "passed": 106,
+      "failed": 0,
+      "batch105Passed": true,
+      "separatePriceRefreshRegressionPassed": 1
+    },
+    "staticAnalysis": {
+      "issues": 0,
+      "files": 16
+    },
+    "ramVisualReview": {
+      "images": 6,
+      "viewports": [
+        "390x844",
+        "1280x800"
+      ],
+      "bundledFonts": "all FontManifest families",
+      "photoDecodesAwaited": true,
+      "realShadows": true,
+      "allFourJourneyTestsPassed": true,
+      "filesWritten": 0,
+      "note": "Native engine with all bundled fonts and all RawImage decodes awaited; web tests verify behavior without test-only FontLoader."
+    },
+    "preservation": {
+      "paidSourceAndTestFiles": 17,
+      "paidShaMatches": 17,
+      "freeAiSourceAndTestFiles": 52,
+      "freeAiShaMatches": 52,
+      "newPreviewFiles": 0,
+      "originalMediaFiles": 340,
+      "originalMediaBytes": 522862670
+    },
+    "browser": {
+      "passed": 16,
+      "failed": 0,
+      "comparisonJourney": 4,
+      "comparisonComponents": 7,
+      "canonicalPublicRouterJourney": 4,
+      "priceRefreshRegression": 1,
+      "note": "15 passed in grouped run; price refresh passed after exposing the lazy paid card following refresh. Native regression also passed again."
+    },
+    "buildInputFreeze": {
+      "files": 569,
+      "sha256": "400deb00e7a1376b356ccec2ae568cd48236373faa326d505722c20d2e484b4e"
+    }
+  },
+  "sourceAndTestSha256": {
+    "lib/features/store/domain/template_design_profile.dart": "e73d7f606359f609c6996ab47ccba5939978647cfa871af0225e8ebc7be9cc27",
+    "lib/features/store/presentation/widgets/template_design_comparison.dart": "6c5b0cb7ed8344209ad596a1cdc43eb77ae2015351b98ccf571f98c982340c6a",
+    "lib/features/store/presentation/widgets/template_design_profile_summary.dart": "76c0dedf5c0ef6d6277f96f86d133356d6c974ee8117deda7f8565414a327a23",
+    "lib/features/store/presentation/widgets/template_catalog_tile.dart": "2b6d146b744fa900df8f27069c01d6f66a5796e97952eb7a4661bdaade30eb44",
+    "lib/features/store/presentation/widgets/template_editorial_list.dart": "faa843f5d5117157465c7faba576475257b9ccf3374de5f9a01460885eb75451",
+    "lib/features/store/presentation/views/store_screen.dart": "1fcb8f80c00181812328a5a0c8ce8ec34258c308295d8ea64638b22733c5c36e",
+    "lib/features/store/presentation/views/public_discovery_screen.dart": "b5694b6dfa742aff374dc3645f7c7b33d2d7a6c441c36b9d2eeeee5eb06c9f62",
+    "lib/features/store/presentation/views/template_detail_screen.dart": "6cd0b637576c8ad1faa5516c327fcb6dd13f64e56a92dcf43779e5943bad67ff",
+    "lib/features/album/presentation/widgets/create_flow/creation_template_preview.dart": "8760757f5acf106c90cc1b0824b1121e547fbe5c247181fb252e4edec75db4b4",
+    "lib/features/album/presentation/widgets/create_flow/ai_album_start_step.dart": "2272ea68a8fc33f69b451dd4b0eeddc4fb215db6ed205c087414a1c00bffbeee",
+    "test/unit/template_design_profile_test.dart": "ec9ad5c5bed7ab6e1edc1b140cd5e9010e1c1bf3ca283c9ef030b362f7da5cca",
+    "test/widget/template_design_comparison_test.dart": "10a8379ba607ecf5aeab79f860ea608ff84cd3cffde0501c8978c6babfd15ac7",
+    "test/widget/template_design_profile_summary_test.dart": "f8e8315c8043c68aadbeb9705d977badb9bfc8ee154def271f7f713887c515b3",
+    "test/widget/template_comparison_journey_test.dart": "62443d0e4c1c2a55c2bb04d39eb497616db7b283234086a5918af45f9117d94b",
+    "test/widget/template_comparison_price_refresh_test.dart": "54bf6559b4fdd901069201d4bcfb628b72fb73c6a1297bbd025f0aa31f8be8f0",
+    "test/widget/store_main_experience_test.dart": "ed0a7b995bbfa78753e98379ffe0368a6b763401877d469d4cfc08bb0b590b41"
+  },
+  "production": {
+    "url": "https://snapfit-c719d.web.app/",
+    "build": {
+      "main_sha256": "87ff62fb24e0d49dbfc1beba6061d761c8d9b5af6fea8708365a5c22bcfadb7d",
+      "main_file": "main.87ff62fb24e0d49dbfc1.dart.js",
+      "bootstrap_sha256": "0e9a5312ae132d5e45ff01867db79f73e02ea4f45be0d6988d30f76ce809e9eb",
+      "bootstrap_file": "flutter_bootstrap.0e9a5312ae132d5e45ff.js"
+    },
+    "mainBytes": 7430739,
+    "sourceFreezeMatched": true,
+    "comparisonLabelsPresent": true,
+    "verifiedHttpsAtUtc": "2026-10-21T07:36:03.313134+00:00",
+    "httpsMainAndBootstrapMatch": true,
+    "followup": "The next release includes the same comparison/profile journey with enabled accessible removal buttons and the user-requested boxless covers."
+  },
+  "supersedingVerification": "open-photographic-covers-2026-10-21.json"
+}

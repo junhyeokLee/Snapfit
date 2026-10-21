@@ -15,8 +15,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'config/env.dart';
 import 'core/notifications/fcm_notification_service.dart';
 import 'core/navigation/app_root_route_observer.dart';
+import 'core/navigation/notification_content_navigation.dart';
 import 'core/navigation/web_app_location.dart';
 import 'core/navigation/web_app_router.dart';
+import 'core/navigation/web_navigation_return_store.dart';
 import 'core/templates/template_update_notification_service.dart';
 import 'core/theme/snapfit_theme.dart';
 import 'core/theme/theme_mode_controller.dart';
@@ -24,6 +26,7 @@ import 'core/utils/app_logger.dart';
 import 'core/utils/frame_timing_monitor.dart';
 import 'features/album/presentation/views/add_cover_screen.dart';
 import 'features/album/presentation/views/album_create_flow_screen.dart';
+import 'features/album/presentation/web/web_album_library_screen.dart';
 import 'features/album/presentation/views/page_editor_screen.dart';
 import 'features/album/presentation/views/print_order_preview_screen.dart';
 import 'features/album/presentation/viewmodels/album_editor_view_model.dart';
@@ -41,7 +44,10 @@ import 'features/store/data/api/template_provider.dart';
 import 'features/store/presentation/views/template_detail_screen.dart';
 import 'features/store/presentation/views/store_hub_screen.dart';
 import 'features/store/presentation/views/material_catalog_screen.dart';
+import 'features/store/presentation/views/public_discovery_screen.dart';
+import 'features/album/data/bundled_creation_templates.dart';
 import 'features/auth/presentation/viewmodels/auth_view_model.dart';
+import 'features/auth/presentation/views/auth_gate.dart';
 import 'features/auth/presentation/views/login_screen.dart';
 import 'features/auth/domain/web_oauth.dart';
 import 'features/profile/domain/order_deep_link.dart';
@@ -52,6 +58,8 @@ import 'features/profile/data/order_repository.dart';
 import 'features/album/presentation/views/print_order_complete_screen.dart';
 import 'features/profile/presentation/views/order_history_screen.dart';
 import 'features/profile/presentation/views/my_page_screen.dart';
+import 'features/commerce/presentation/public_commerce_screen.dart';
+import 'core/commerce/commerce_policy.dart';
 import 'features/splash/presentation/views/splash_screen.dart';
 import 'firebase_options.dart';
 import 'shared/web/web_design.dart';
@@ -143,6 +151,8 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
   StreamSubscription<AuthState>? _authSub;
   PointPurchaseService? _pointPurchases;
   final _orderDetailNavigation = OrderDetailNavigation();
+  final _notificationContentNavigation = NotificationContentNavigation();
+  bool _notificationContentScheduled = false, _notificationContentBusy = false;
   late final AppRootRouteObserver _appRootRouteObserver;
   bool _appRootInstalled = false;
   bool _orderDetailNavigationScheduled = false;
@@ -150,11 +160,25 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
   bool _printRecoveryNoticeShown = false;
   WebAppRouter? _webRouter;
   WebAppLocation? _pendingWebLocation;
+  WebAppLocation? _openingWebLocation;
   String? _pendingWebOwner;
   int _webNavigationRevision = 0;
   bool _webNavigationScheduled = false;
   bool _webNavigationBusy = false;
   static const _webReturnKey = 'snapfit_web_navigation_return_v1';
+  late final _webReturnStore = WebNavigationReturnStore(
+    read: () async =>
+        (await SharedPreferences.getInstance()).getString(_webReturnKey),
+    write: (value) async {
+      await (await SharedPreferences.getInstance()).setString(
+        _webReturnKey,
+        value,
+      );
+    },
+    remove: () async {
+      await (await SharedPreferences.getInstance()).remove(_webReturnKey);
+    },
+  );
 
   @override
   void initState() {
@@ -169,11 +193,15 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
                 settings: const WebAppRouteSettings(WebAppLocation.create),
                 builder: (_) => const AlbumCreateFlowScreen(),
               )
-            : MaterialPageRoute<void>(builder: (_) => const SplashScreen()),
+            : MaterialPageRoute<void>(
+                settings: const AppRootRouteSettings(),
+                builder: (_) => const AuthGate(),
+              ),
         onLocationRequested: _receiveWebLocation,
       );
     }
     _printRecoveryOwner = Supabase.instance.client.auth.currentUser?.id;
+    _notificationContentNavigation.observeOwner(_printRecoveryOwner);
     WidgetsBinding.instance.addObserver(this);
     if (!kIsWeb) {
       final purchases = ref.read(pointPurchaseServiceProvider);
@@ -193,12 +221,15 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
         ref.invalidate(myOrderSummaryProvider);
         ref.invalidate(myOrderStatusBadgesProvider);
         final owner = event.session?.user.id;
+        _notificationContentNavigation.observeOwner(owner);
         if (_printRecoveryOwner != owner) {
           final previousOwner = _printRecoveryOwner;
           _printRecoveryOwner = owner;
           _printRecoveryNoticeShown = false;
           if (kIsWeb) ref.invalidate(homeViewModelProvider);
           if (previousOwner != null) {
+            final requestedLocation =
+                _pendingWebLocation ?? _openingWebLocation;
             _webNavigationRevision++;
             _pendingWebLocation = null;
             _pendingWebOwner = null;
@@ -206,8 +237,15 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
             // A route can contain a previous customer's delivery/payment data.
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                _navigatorKey.currentState?.popUntil((route) => route.isFirst);
-                _webRouter?.restoreObservedLocation();
+                if (kIsWeb) {
+                  _webRouter?.resetForSessionChange(
+                    pendingLocation: requestedLocation,
+                  );
+                } else {
+                  _navigatorKey.currentState?.popUntil(
+                    (route) => route.isFirst,
+                  );
+                }
               }
             });
             WidgetsBinding.instance.ensureVisualUpdate();
@@ -216,6 +254,7 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
         if (event.session != null) unawaited(_pointPurchases?.recover());
         if (event.session != null) unawaited(_recoverPrintPayment());
         if (event.session != null) _scheduleOrderDetailOpen();
+        if (event.session != null) _scheduleNotificationContentOpen();
         if (kIsWeb && event.event != AuthChangeEvent.initialSession) {
           unawaited(_synchronizeWebAuth(event.event));
         }
@@ -263,6 +302,7 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      _scheduleNotificationContentOpen();
       unawaited(_pointPurchases?.recover());
       unawaited(_recoverPrintPayment());
     }
@@ -309,6 +349,10 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
       final received = ref
           .read(pendingAlbumInviteProvider.notifier)
           .receive(uri);
+      if (received) {
+        _notificationContentNavigation.cancel();
+        _orderDetailNavigation.cancel();
+      }
       if (!received) {
         _messengerKey.currentState?.showSnackBar(
           const SnackBar(content: Text('올바르지 않은 초대 링크예요. 새 링크를 요청해 주세요.')),
@@ -318,7 +362,12 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
     }
 
     final orderId = orderDetailIdFromUri(uri);
-    if (orderId != null) _openOrderDetail(orderId);
+    if (orderId != null) {
+      _openOrderDetail(orderId);
+      return;
+    }
+    final content = NotificationContentTarget.fromUri(uri);
+    if (content != null) _openNotificationContent(content);
   }
 
   Future<void> _recoverPrintPayment() async {
@@ -395,10 +444,12 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
       return;
     final uri = Uri.tryParse(data['deeplink']?.toString() ?? '');
     final webLocation = kIsWeb && uri != null
-        ? WebAppLocation.parse(uri) : null;
+        ? WebAppLocation.parse(uri)
+        : null;
     String? value(String key) =>
         data[key]?.toString() ?? uri?.queryParameters[key];
-    final orderId = value('orderId') ??
+    final orderId =
+        value('orderId') ??
         (uri == null ? null : orderDetailIdFromUri(uri)) ??
         (webLocation?.page == WebAppPage.order ? webLocation!.id : null);
     if (orderId != null && orderId.isNotEmpty) {
@@ -411,49 +462,151 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
       _webRouter?.requestLocation(webLocation!);
       return;
     }
-    try {
-      final albumLocation = webLocation?.page == WebAppPage.album ||
-          webLocation?.page == WebAppPage.editor ||
-          webLocation?.page == WebAppPage.print;
-      final albumId = int.tryParse(value('albumId') ??
-          (albumLocation ? webLocation!.id : null) ?? '');
-      if (albumId != null) {
-        final album = await ref
-            .read(albumRepositoryProvider)
-            .fetchAlbum(albumId.toString());
-        if (mounted &&
-            nav.context.mounted &&
-            Supabase.instance.client.auth.currentUser?.id == user.id) {
-          await HomeAlbumActions.openAlbum(nav.context, ref, album);
-        }
-        return;
-      }
-      final templateId = int.tryParse(value('templateId') ?? '');
-      if (templateId != null) {
-        final template = await ref
-            .read(templateRepositoryProvider)
-            .getTemplate(templateId);
-        if (mounted &&
-            Supabase.instance.client.auth.currentUser?.id == user.id) {
-          unawaited(
-            nav.push(
-              MaterialPageRoute(
-                builder: (_) => TemplateDetailScreen(template: template),
-              ),
-            ),
-          );
-        }
-        return;
-      }
-      unawaited(
-        nav.push(MaterialPageRoute(builder: (_) => const NotificationScreen())),
-      );
-    } catch (_) {
-      _messengerKey.currentState?.showSnackBar(
-        const SnackBar(
-          content: Text('알림의 내용을 열 수 없습니다. 접근 권한이나 삭제 여부를 확인해 주세요.'),
+    final content = NotificationContentTarget.fromPayload(data);
+    if (content != null) {
+      _openNotificationContent(content, ownerId: expectedOwner);
+      return;
+    }
+    if (kIsWeb &&
+        const {
+          WebAppPage.album,
+          WebAppPage.editor,
+          WebAppPage.print,
+          WebAppPage.template,
+        }.contains(webLocation?.page)) {
+      _webRouter?.requestLocation(webLocation!);
+      return;
+    }
+    unawaited(
+      nav.push(MaterialPageRoute(builder: (_) => const NotificationScreen())),
+    );
+  }
+
+  void _openNotificationContent(
+    NotificationContentTarget target, {
+    String? ownerId,
+  }) {
+    _orderDetailNavigation.cancel();
+    if (kIsWeb) {
+      _webRouter?.requestLocation(
+        WebAppLocation(
+          target.kind == NotificationContentKind.album
+              ? WebAppPage.album
+              : WebAppPage.template,
+          '${target.id}',
         ),
       );
+      return;
+    }
+    _notificationContentNavigation.receive(
+      target,
+      ownerId: ownerId ?? Supabase.instance.client.auth.currentUser?.id,
+    );
+    _scheduleNotificationContentOpen();
+  }
+
+  void _scheduleNotificationContentOpen() {
+    if (!mounted ||
+        !_appRootInstalled ||
+        !_notificationContentNavigation.hasPending ||
+        _notificationContentScheduled ||
+        _notificationContentBusy)
+      return;
+    _notificationContentScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _notificationContentScheduled = false;
+      if (mounted) unawaited(_openPendingNotificationContent());
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
+  }
+
+  Future<void> _openPendingNotificationContent() async {
+    if (!mounted || _notificationContentBusy) return;
+    final nav = _navigatorKey.currentState;
+    final opening = _notificationContentNavigation.take(
+      ownerId: Supabase.instance.client.auth.currentUser?.id,
+      profileOwnerId: ref.read(authViewModelProvider).asData?.value?.id,
+      navigatorReady: nav != null && _appRootInstalled,
+      now: DateTime.now(),
+    );
+    if (nav == null || opening == null) return;
+    bool current() =>
+        mounted &&
+        nav.context.mounted &&
+        _notificationContentNavigation.isCurrent(
+          opening,
+          ownerId: Supabase.instance.client.auth.currentUser?.id,
+          profileOwnerId: ref.read(authViewModelProvider).asData?.value?.id,
+        );
+    Future<T?> readCurrent<T>(Future<T> read) => Future.any<T?>([
+      read.then<T?>((value) => value),
+      opening.cancelled.then<T?>((_) => null),
+    ]);
+    _notificationContentBusy = true;
+    var opened = false;
+    try {
+      if (opening.target.kind == NotificationContentKind.album) {
+        await Future.any<void>([
+          HomeAlbumActions.waitForReaderToClose(),
+          opening.cancelled,
+        ]);
+        if (!current()) return;
+        final album = await readCurrent(
+          ref.read(albumRepositoryProvider).fetchAlbum('${opening.target.id}'),
+        );
+        if (album == null || !current()) return;
+        final ready = Completer<void>();
+        unawaited(
+          HomeAlbumActions.openAlbum(
+            nav.context,
+            ref,
+            album,
+            canContinue: current,
+            onReaderOpened: () {
+              opened = true;
+              if (!ready.isCompleted) ready.complete();
+            },
+          ).then(
+            (_) {
+              if (!ready.isCompleted) ready.complete();
+            },
+            onError: (Object error, StackTrace stack) {
+              if (!ready.isCompleted) ready.completeError(error, stack);
+            },
+          ),
+        );
+        await Future.any<void>([ready.future, opening.cancelled]);
+      } else {
+        final template = await readCurrent(
+          ref.read(templateRepositoryProvider).getTemplate(opening.target.id),
+        );
+        if (template == null || !current()) return;
+        unawaited(
+          nav.push(
+            MaterialPageRoute<void>(
+              builder: (_) => TemplateDetailScreen(template: template),
+            ),
+          ),
+        );
+        opened = true;
+      }
+    } catch (_) {
+      if (current()) {
+        _messengerKey.currentState?.showSnackBar(
+          const SnackBar(
+            content: Text('알림의 내용을 열 수 없습니다. 접근 권한이나 삭제 여부를 확인해 주세요.'),
+          ),
+        );
+      }
+    } finally {
+      _notificationContentNavigation.finish(
+        opening,
+        opened: opened,
+        now: DateTime.now(),
+      );
+      _notificationContentBusy = false;
+      if (mounted && _notificationContentNavigation.hasPending)
+        _scheduleNotificationContentOpen();
     }
   }
 
@@ -500,6 +653,7 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
     if (!mounted) return;
     _appRootInstalled = true;
     _scheduleOrderDetailOpen();
+    _scheduleNotificationContentOpen();
     unawaited(_recoverPrintPayment());
     if (kIsWeb) _scheduleWebLocationOpen();
   }
@@ -519,50 +673,27 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
     }
   }
 
-  Future<void> _clearWebReturn() async {
-    try {
-      await (await SharedPreferences.getInstance()).remove(_webReturnKey);
-    } catch (_) {
-      /* A denied browser store must not block navigation. */
-    }
-  }
+  Future<void> _clearWebReturn() => _webReturnStore.clear();
 
-  Future<void> _rememberWebReturn(WebAppLocation location) async {
-    if (location == WebAppLocation.home) return;
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      // Only canonical internal paths are retained. No OAuth codes, tokens,
-      // delivery details or arbitrary return URLs are stored here.
-      await prefs.setString(
-        _webReturnKey,
-        '${DateTime.now().millisecondsSinceEpoch}|${location.uri}',
-      );
-    } catch (_) {
-      /* Private browsing can disable persistent storage. */
-    }
-  }
+  Future<void> _rememberWebReturn(WebAppLocation location) =>
+      _webReturnStore.remember(location);
 
-  Future<WebAppLocation?> _takeWebReturn() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final value = prefs.getString(_webReturnKey);
-      await prefs.remove(_webReturnKey);
-      final parts = value?.split('|');
-      if (parts == null || parts.length != 2) return null;
-      final created = int.tryParse(parts.first);
-      final age = DateTime.now().millisecondsSinceEpoch - (created ?? 0);
-      if (created == null || age < 0 || age > 15 * 60 * 1000) return null;
-      return WebAppLocation.parse(Uri.parse(parts.last));
-    } catch (_) {
-      return null;
-    }
-  }
+  Future<WebAppLocation?> _takeWebReturn() => _webReturnStore.take();
 
   void _receiveWebLocation(WebAppLocation location) {
+    _notificationContentNavigation.cancel();
+    _orderDetailNavigation.cancel();
     _webNavigationRevision++;
     _pendingWebLocation = location;
-    _pendingWebOwner = Supabase.instance.client.auth.currentUser?.id;
-    if (_pendingWebOwner == null) unawaited(_rememberWebReturn(location));
+    _pendingWebOwner = location.isPublic
+        ? null
+        : Supabase.instance.client.auth.currentUser?.id;
+    if (location == WebAppLocation.login &&
+        _webRouter?.observedLocation.page == WebAppPage.template) {
+      unawaited(_rememberWebReturn(_webRouter!.observedLocation));
+    }
+    if (_pendingWebOwner == null && !location.isPublic)
+      unawaited(_rememberWebReturn(location));
     _scheduleWebLocationOpen();
   }
 
@@ -585,30 +716,74 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
     if (_webNavigationBusy || !mounted || !_appRootInstalled) return;
     final owner = Supabase.instance.client.auth.currentUser?.id;
     // AuthGate must have finished a server-validated account restoration.
-    if (owner != null &&
+    if (_pendingWebLocation?.isPublic != true &&
+        owner != null &&
         ref.read(authViewModelProvider).asData?.value?.id != owner)
       return;
     var target = _pendingWebLocation;
     if (target == null) return;
-    if (owner == null) {
-      if (target == WebAppLocation.home) _webRouter?.finishInitialNavigation();
+    if (owner == null && !target.isPublic) {
+      // A public product/policy route can sit above AuthGate. A private menu
+      // request must reveal that login screen while retaining its return path.
+      _webNavigationBusy = true;
+      final publicExitRevision = _webNavigationRevision;
+      try {
+        if (!await _webRouter!.returnToRoot()) {
+          _pendingWebLocation = null;
+          return;
+        }
+        if (!mounted ||
+            publicExitRevision != _webNavigationRevision ||
+            Supabase.instance.client.auth.currentUser?.id != null)
+          return;
+        final nav = _navigatorKey.currentState;
+        if (nav != null) {
+          unawaited(
+            nav.push(
+              MaterialPageRoute<void>(
+                settings: const WebAppRouteSettings(WebAppLocation.login),
+                builder: (_) => const AuthGate(allowDiscovery: false),
+              ),
+            ),
+          );
+          _webRouter?.finishInitialNavigation();
+        }
+      } finally {
+        _webNavigationBusy = false;
+        if (mounted && publicExitRevision != _webNavigationRevision)
+          _scheduleWebLocationOpen();
+      }
       return;
     }
-    if (_pendingWebOwner != null && _pendingWebOwner != owner) {
+    if (!target.isPublic &&
+        _pendingWebOwner != null &&
+        _pendingWebOwner != owner) {
       _pendingWebLocation = null;
       _webRouter?.restoreObservedLocation();
       return;
     }
     _webNavigationBusy = true;
+    _openingWebLocation = target;
     final revision = _webNavigationRevision;
     try {
-      if (owner != null && target == WebAppLocation.home) {
-        target = await _takeWebReturn() ?? target;
+      if (owner != null &&
+          (target == WebAppLocation.home || target == WebAppLocation.login)) {
+        target = await _takeWebReturn() ?? WebAppLocation.home;
       }
       if (!mounted ||
           revision != _webNavigationRevision ||
-          Supabase.instance.client.auth.currentUser?.id != owner)
+          (!target.isPublic &&
+              Supabase.instance.client.auth.currentUser?.id != owner))
         return;
+      // OAuth can restore a private destination from an originally public '/'.
+      // Validate it only after rejecting an obsolete navigation or account.
+      if (!target.isPublic &&
+          owner != null &&
+          ref.read(authViewModelProvider).asData?.value?.id != owner) {
+        _pendingWebLocation = target;
+        _pendingWebOwner = owner;
+        return;
+      }
       _pendingWebLocation = null;
       _pendingWebOwner = null;
       final router = _webRouter!;
@@ -618,11 +793,13 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
         router.finishInitialNavigation();
         return;
       }
+      if (router.updateDisplayedLocation(target)) return;
       if (!await router.returnToRoot()) return;
       await HomeAlbumActions.waitForReaderToClose();
       if (!mounted ||
           revision != _webNavigationRevision ||
-          Supabase.instance.client.auth.currentUser?.id != owner)
+          (!target.isPublic &&
+              Supabase.instance.client.auth.currentUser?.id != owner))
         return;
       Route<void> route(Widget child) => MaterialPageRoute<void>(
         settings: WebAppRouteSettings(target!),
@@ -631,29 +808,57 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
       switch (target.page) {
         case WebAppPage.home:
           break;
+        case WebAppPage.login:
+          if (owner == null) {
+            unawaited(nav.push(route(const AuthGate(allowDiscovery: false))));
+          }
+        case WebAppPage.albums:
+          unawaited(nav.push(route(const WebAlbumLibraryScreen())));
+        case WebAppPage.printProducts:
+          unawaited(nav.push(route(const PrintProductsScreen())));
+        case WebAppPage.policy:
+          unawaited(
+            nav.push(
+              route(
+                CommercePolicyScreen(
+                  kind: CommercePolicyKind.values.byName(target.id!),
+                ),
+              ),
+            ),
+          );
         case WebAppPage.create:
         case WebAppPage.aiCreate:
           final draft = await ref.read(albumCreationDraftProvider.future);
-          if (!mounted || revision != _webNavigationRevision ||
-              Supabase.instance.client.auth.currentUser?.id != owner) return;
+          if (!mounted ||
+              revision != _webNavigationRevision ||
+              Supabase.instance.client.auth.currentUser?.id != owner)
+            return;
           var resume = false;
           if (draft != null) {
             final choice = await showDialog<bool>(
               context: nav.context,
               builder: (dialogContext) => AlertDialog(
                 title: const Text('만들던 앨범이 있습니다'),
-                content: Text('${draft.title.trim().isEmpty ? '제목 없는 앨범' : draft.title}\n'
-                    '이어서 만들거나 새 앨범을 시작하세요. 새 앨범을 임시 저장하면 기존 임시 저장을 대체합니다.'),
+                content: Text(
+                  '${draft.title.trim().isEmpty ? '제목 없는 앨범' : draft.title}\n'
+                  '이어서 만들거나 새 앨범을 시작하세요. 새 앨범을 임시 저장하면 기존 임시 저장을 대체합니다.',
+                ),
                 actions: [
-                  TextButton(onPressed: () => Navigator.pop(dialogContext, false),
-                    child: const Text('새 앨범 만들기')),
-                  FilledButton(onPressed: () => Navigator.pop(dialogContext, true),
-                    child: const Text('이어서 만들기')),
+                  TextButton(
+                    onPressed: () => Navigator.pop(dialogContext, false),
+                    child: const Text('새 앨범 만들기'),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(dialogContext, true),
+                    child: const Text('이어서 만들기'),
+                  ),
                 ],
               ),
             );
-            if (!mounted || revision != _webNavigationRevision ||
-                Supabase.instance.client.auth.currentUser?.id != owner) return;
+            if (!mounted ||
+                revision != _webNavigationRevision ||
+                Supabase.instance.client.auth.currentUser?.id != owner)
+              return;
             if (choice == null) {
               router.restoreObservedLocation();
               return;
@@ -662,25 +867,90 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
           }
           final startAi = !resume && target.page == WebAppPage.aiCreate;
           if (resume) target = WebAppLocation.create;
-          unawaited(nav.push(route(AlbumCreateFlowScreen(
-            initialDraft: resume ? draft : null, initialAiMode: startAi,
-          ))));
+          unawaited(
+            nav.push(
+              route(
+                AlbumCreateFlowScreen(
+                  initialDraft: resume ? draft : null,
+                  initialAiMode: startAi,
+                ),
+              ),
+            ),
+          );
         case WebAppPage.orders:
           unawaited(nav.push(route(const OrderHistoryScreen())));
         case WebAppPage.account:
           unawaited(nav.push(route(const MyPageScreen())));
         case WebAppPage.designs:
-          unawaited(nav.push(route(const StoreHubScreen())));
         case WebAppPage.materials:
-          unawaited(nav.push(route(const StoreHubScreen(initialMaterials: true))));
+          if (owner == null) {
+            unawaited(
+              nav.push(route(const PublicDiscoveryScreen(catalogOnly: true))),
+            );
+          } else {
+            final catalogLocation = WebAppRouteController(
+              target,
+              pages: const {WebAppPage.designs, WebAppPage.materials},
+            );
+            unawaited(
+              nav
+                  .push<void>(
+                    MaterialPageRoute<void>(
+                      settings: WebAppRouteSettings(
+                        target,
+                        controller: catalogLocation,
+                      ),
+                      builder: (_) => ValueListenableBuilder<WebAppLocation>(
+                        valueListenable: catalogLocation,
+                        builder: (_, location, _) => StoreHubScreen(
+                          initialMaterials:
+                              location.page == WebAppPage.materials,
+                          onDepartmentChanged: (materials) =>
+                              catalogLocation.update(
+                                materials
+                                    ? WebAppLocation.materials
+                                    : WebAppLocation.designs,
+                              ),
+                        ),
+                      ),
+                    ),
+                  )
+                  .whenComplete(catalogLocation.dispose),
+            );
+          }
         case WebAppPage.template:
-          final template = await ref.read(templateRepositoryProvider)
-              .getTemplate(int.parse(target.id!));
-          if (!mounted || revision != _webNavigationRevision ||
-              Supabase.instance.client.auth.currentUser?.id != owner) return;
-          unawaited(nav.push(route(TemplateDetailScreen(template: template))));
+          final templateId = int.parse(target.id!);
+          final bundled = publishedCreationTemplates
+              .where((item) => item.id == templateId)
+              .firstOrNull;
+          // Public links expose only the curated published catalog. A guessed
+          // identifier never grants access to server or customer documents.
+          if (owner == null && bundled == null) {
+            throw StateError('unpublished_template');
+          }
+          final template =
+              bundled ??
+              await ref
+                  .read(templateRepositoryProvider)
+                  .getTemplate(templateId);
+          if (!mounted ||
+              revision != _webNavigationRevision ||
+              Supabase.instance.client.auth.currentUser?.id != owner)
+            return;
+          unawaited(
+            nav.push(
+              route(
+                TemplateDetailScreen(
+                  template: template,
+                  guestPreview: owner == null,
+                ),
+              ),
+            ),
+          );
         case WebAppPage.library:
-          unawaited(nav.push(route(const MaterialCatalogScreen(library: true))));
+          unawaited(
+            nav.push(route(const MaterialCatalogScreen(library: true))),
+          );
         case WebAppPage.notifications:
           unawaited(nav.push(route(const NotificationScreen())));
         case WebAppPage.order:
@@ -781,9 +1051,10 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
       }
       if (mounted &&
           revision == _webNavigationRevision &&
-          Supabase.instance.client.auth.currentUser?.id == owner) {
+          (target.isPublic ||
+              Supabase.instance.client.auth.currentUser?.id == owner)) {
         router.finishInitialNavigation();
-        unawaited(_clearWebReturn());
+        if (target.page != WebAppPage.login) unawaited(_clearWebReturn());
       }
     } catch (_) {
       if (mounted &&
@@ -797,12 +1068,15 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
         );
       }
     } finally {
+      _openingWebLocation = null;
       _webNavigationBusy = false;
       if (_pendingWebLocation != null && mounted) _scheduleWebLocationOpen();
     }
   }
 
   void _openOrderDetail(String orderId, {String? ownerId}) {
+    if (orderId.trim().isEmpty || orderId.trim().length > 200) return;
+    _notificationContentNavigation.cancel();
     _orderDetailNavigation.receive(
       orderId,
       ownerId: ownerId ?? Supabase.instance.client.auth.currentUser?.id,
@@ -847,9 +1121,19 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeControllerProvider);
+    ref.listen(authViewModelProvider, (_, next) {
+      if (next.asData?.value != null) _scheduleNotificationContentOpen();
+    });
     if (kIsWeb) {
       ref.listen(authViewModelProvider, (_, next) {
-        if (next.asData?.value != null) _scheduleWebLocationOpen();
+        if (next.asData?.value != null) {
+          if (_pendingWebLocation == null &&
+              _webRouter?.observedLocation == WebAppLocation.login) {
+            _receiveWebLocation(WebAppLocation.home);
+          } else {
+            _scheduleWebLocationOpen();
+          }
+        }
       });
       return MaterialApp.router(
         title: '스냅핏',
@@ -863,18 +1147,21 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
         builder: (context, child) {
           syncWebDocumentTheme(Theme.of(context).brightness == Brightness.dark);
           return AnnotatedRegion<SystemUiOverlayStyle>(
-          value: SnapFitTheme.systemOverlayStyle(context),
-          child: WebNavigationScope(
-            onNavigate: (section) => _webRouter!.requestLocation(switch (section) {
-              WebSection.albums => WebAppLocation.home,
-              WebSection.create => WebAppLocation.create,
-              WebSection.designs => WebAppLocation.designs,
-              WebSection.orders => WebAppLocation.orders,
-              WebSection.account => WebAppLocation.account,
-            }),
-            onNotifications: () => _webRouter!.requestLocation(WebAppLocation.notifications),
-            child: child!,
-          ),
+            value: SnapFitTheme.systemOverlayStyle(context),
+            child: WebNavigationScope(
+              onNavigate: (section) =>
+                  _webRouter!.requestLocation(switch (section) {
+                    WebSection.albums => WebAppLocation.albums,
+                    WebSection.create => WebAppLocation.create,
+                    WebSection.designs => WebAppLocation.designs,
+                    WebSection.orders => WebAppLocation.orders,
+                    WebSection.account => WebAppLocation.account,
+                  }),
+              onNotifications: () =>
+                  _webRouter!.requestLocation(WebAppLocation.notifications),
+              onPublicNavigate: _webRouter!.requestLocation,
+              child: child!,
+            ),
           );
         },
       );

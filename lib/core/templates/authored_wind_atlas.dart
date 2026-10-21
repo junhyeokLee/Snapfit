@@ -184,7 +184,9 @@ Map<String, dynamic> buildWindAtlas(
   }
 
   void add(_Sheet p, String name, String role) {
-    if (pages.isNotEmpty) {
+    if (p is _WindAtlasSignaturePage && pages.isNotEmpty) {
+      p.folios(pages.length);
+    } else if (pages.isNotEmpty) {
       final left = pages.length.isOdd;
       text(
         p,
@@ -229,49 +231,9 @@ Map<String, dynamic> buildWindAtlas(
   var p = sheet();
   switch (cover) {
     case WindAtlasCover.illustrated:
-      p.box('bookcloth_spine', 0, 0, .034, 1, ink);
-      text(
-        p,
-        'edition',
-        '여행 수집실 · 첫 번째 기록',
-        .10,
-        .065,
-        .8,
-        .05,
-        size: .022,
-        color: red,
-      );
-      title(
-        p,
-        wide ? '바람을\n수집한\n여행' : '바람을\n수집한 여행',
-        .1,
-        wide ? .23 : .17,
-        wide ? .32 : .8,
-        wide ? .45 : .32,
-        size: wide ? .105 : .123,
-      );
-      art(
-        p,
-        'coast_frontispiece',
-        'coast_watercolor',
-        wide ? .43 : .04,
-        wide ? .16 : .44,
-        wide ? .53 : .91,
-        wide ? .63 : .38,
-      );
-      line(p, 'imprint_rule', .1, .86, .8);
-      text(p, 'cover_place', copy.place, .1, .89, .52, .065, size: .024);
-      text(
-        p,
-        'cover_byline',
-        copy.byline,
-        .64,
-        .89,
-        .26,
-        .065,
-        size: .024,
-        align: 'right',
-      );
+      final signature = _WindAtlasSignaturePage(aspect, pages.length);
+      signature.cover(copy);
+      p = signature;
     case WindAtlasCover.botanical:
       p.box('cloth', 0, 0, 1, 1, ink);
       p.box('paper_label', .095, .075, .81, .85, paper);
@@ -409,58 +371,13 @@ Map<String, dynamic> buildWindAtlas(
   caption(p, '${copy.period}\n${copy.byline}의 여행', .12, .84, .76);
   add(p, '한 권의 여행 지도', 'contents-ledger');
 
-  // 02: a ticket-like departure note, opposite a generous arrival photograph.
-  p = sheet(ink, paper);
-  text(
-    p,
-    'arrival_section',
-    '첫 번째 장 / 도착의 감각',
-    .09,
-    .075,
-    .78,
-    .05,
-    size: .023,
-    color: butter,
-  );
-  title(p, '마침내,\n여기.', .09, .23, .8, .39, size: .15);
-  p.box('ticket_stock', .09, .66, .79, .19, paper);
-  text(p, 'ticket_label', '도착한 곳', .13, .69, .68, .04, size: .021, color: red);
-  text(
-    p,
-    'ticket_place',
-    copy.place,
-    .13,
-    .76,
-    .68,
-    .07,
-    size: .031,
-    color: ink,
-  );
-  add(p, '마침내 여기', 'arrival-chapter');
-  p = sheet();
-  p.photo('arrival_full', harbor, .12, .07, .81, .69);
-  text(
-    p,
-    'arrival_word',
-    '첫인상',
-    .12,
-    .79,
-    .28,
-    .08,
-    size: .049,
-    font: 'Eulyoo',
-  );
-  text(
-    p,
-    'arrival_note',
-    '우리는 잠깐 말을 멈추고\n오래 바다를 바라보았다.',
-    .49,
-    .80,
-    .44,
-    .10,
-    size: .026,
-  );
-  add(p, '바다부터 만난 날', 'arrival-photo-essay');
+  // 02: a quiet typographic arrival, opposite the main photograph.
+  var signature = _WindAtlasSignaturePage(aspect, pages.length);
+  signature.arrivalChapter(copy);
+  add(signature, '마침내 여기', 'arrival-chapter');
+  signature = _WindAtlasSignaturePage(aspect, pages.length);
+  signature.arrivalPhoto(copy);
+  add(signature, '바다부터 만난 날', 'arrival-photo-essay');
 
   // 03: a tall doorway aperture; the opposite page collects different scales.
   p = sheet(pale);
@@ -493,16 +410,13 @@ Map<String, dynamic> buildWindAtlas(
   caption(p, '기억하고 싶은 모퉁이', .12, .83, .43);
   add(p, '발견의 크기', 'asymmetric-discovery');
 
-  // 04: photo diptych with complementary calm/light and dark/detailed pages.
-  p = sheet(blue);
-  title(p, '바다의\n두 가지 온도', .08, .075, .81, .24, size: .088);
-  p.photo('sea_horizon', coast, .08, .41, .79, .36);
-  caption(p, '멀리서 보면 고요하고,', .08, .825, .79);
-  add(p, '멀리서 바라본 바다', 'sea-horizon');
-  p = sheet(ink, paper);
-  p.photo('sea_close', harbor, .12, .10, .81, .57, shape: 'studioWave');
-  title(p, '가까이서는\n반짝이던.', .12, .72, .81, .19, size: .069);
-  add(p, '가까이에서 발견한 바다', 'sea-wave-window');
+  // 04: a broad horizon and a small close-up create distinct viewing distances.
+  signature = _WindAtlasSignaturePage(aspect, pages.length);
+  signature.seaHorizon();
+  add(signature, '멀리서 바라본 바다', 'sea-horizon');
+  signature = _WindAtlasSignaturePage(aspect, pages.length, dark: true);
+  signature.seaClose();
+  add(signature, '가까이에서 발견한 바다', 'sea-wave-window');
 
   // 05: a botanical still-life opposite a generous cafe table.
   p = sheet(butter);
@@ -560,89 +474,13 @@ Map<String, dynamic> buildWindAtlas(
   caption(p, '손에 남은 것보다 마음에 남은 것들.', .12, .854, .8);
   add(p, '초여름의 수확', 'harvest-triptych');
 
-  // 07: ephemera are separate editable shapes and type, never baked into art.
-  p = sheet(blue);
-  chapter(p, '03', '주머니 속 수집품');
-  p.box('ticket_red', .08, .22, .78, .18, red);
-  text(
-    p,
-    'ticket_title',
-    '오늘의 목적지',
-    .12,
-    .249,
-    .68,
-    .05,
-    size: .022,
-    color: paper,
-  );
-  text(
-    p,
-    'ticket_destination',
-    copy.place,
-    .12,
-    .318,
-    .68,
-    .065,
-    size: .029,
-    color: paper,
-  );
-  p.photo('saved_postcard', coast, .08, .49, .52, .30, shape: 'studioPostage');
-  text(
-    p,
-    'kept_note',
-    '종이 한 장에도\n하루가\n접혀 있었다.',
-    .65,
-    .53,
-    .23,
-    .20,
-    size: .029,
-    font: 'Eulyoo',
-  );
-  caption(p, '버리지 못한 작은 것들의 목록', .08, .86, .78);
-  add(p, '주머니에서 꺼낸 하루', 'ephemera-pocket');
-  p = sheet();
-  title(p, '수집품 목록', .12, .075, .80, .12, size: .081);
-  for (final entry in [
-    ('01', '돌아오는 기차표', '차창 밖 바다까지 함께'),
-    ('02', '카페의 작은 영수증', '오래 앉아 있던 오후'),
-    ('03', '보내지 못한 엽서', '쓸 말이 너무 많아서'),
-  ].indexed) {
-    final y = .30 + entry.$1 * .20;
-    text(
-      p,
-      'archive_n_${entry.$1}',
-      entry.$2.$1,
-      .12,
-      y,
-      .12,
-      .065,
-      size: .04,
-      font: 'Cormorant Garamond',
-      color: red,
-    );
-    text(
-      p,
-      'archive_title_${entry.$1}',
-      entry.$2.$2,
-      .31,
-      y,
-      .59,
-      .055,
-      size: .030,
-    );
-    text(
-      p,
-      'archive_note_${entry.$1}',
-      entry.$2.$3,
-      .31,
-      y + .075,
-      .59,
-      .07,
-      size: .022,
-    );
-    line(p, 'archive_rule_${entry.$1}', .12, y + .15, .80);
-  }
-  add(p, '작은 물건의 긴 기억', 'ephemera-index');
+  // 07: an image and its place, followed by an uncluttered editable archive.
+  signature = _WindAtlasSignaturePage(aspect, pages.length);
+  signature.ephemeraPocket(copy);
+  add(signature, '주머니에서 꺼낸 하루', 'ephemera-pocket');
+  signature = _WindAtlasSignaturePage(aspect, pages.length);
+  signature.ephemeraIndex(copy);
+  add(signature, '작은 물건의 긴 기억', 'ephemera-index');
 
   // 08: negative-space window compositions reflow in landscape, not stretched.
   p = sheet();
@@ -1033,6 +871,16 @@ Map<String, dynamic> buildWindAtlas(
     'catalogPublishable': false,
     'innerPageCount': 32,
     'coverVariant': cover.name,
+    'signatureRevision': 'travel-editorial-2026-10-21',
+    'signaturePageIndices': [
+      if (cover == WindAtlasCover.illustrated) 0,
+      3,
+      4,
+      7,
+      8,
+      13,
+      14,
+    ],
     'aspect': aspect.name,
     'designWidth': aspect.canvas.width,
     'designHeight': aspect.canvas.height,

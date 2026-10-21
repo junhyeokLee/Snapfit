@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:convert';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -13,52 +13,84 @@ import 'package:snap_fit/features/album/domain/entities/layer_export_mapper.dart
 import 'package:snap_fit/features/album/printing/album_print_exporter.dart';
 import 'package:snap_fit/features/album/printing/print_album_document.dart';
 import 'package:snap_fit/features/store/presentation/widgets/template_page_renderer.dart';
-import '../widget/ai_album_start_step_test.dart' show loadCreationFonts;
 import '../widget/studio_decorations_test.dart' show capture;
 
-const _export = bool.fromEnvironment('EXPORT_FREE_PHOTO_COVERS');
-List<FreeCollectionVolume> get _volumes => FreeCollectionVolume.values
-    .where(
-      (volume) =>
-          volume.document(CollectionAspect.square)['coverTreatment'] ==
-          'full-bleed-photo',
-    )
-    .toList();
+// Reading-order contracts allow shared grids while each jacket keeps its own
+// subject, palette and editable typography. No export path exists in this test.
+const _directions = {
+  'masthead': FreeCollectionVolume.vows,
+  'gallery': FreeCollectionVolume.letters,
+  'split': FreeCollectionVolume.postcards,
+  'band': FreeCollectionVolume.cinema,
+  'archive': FreeCollectionVolume.objects,
+  'field': FreeCollectionVolume.city,
+  'inset': FreeCollectionVolume.garden,
+  'horizon': FreeCollectionVolume.seaside,
+};
+
+Rect _rect(LayerModel layer) =>
+    layer.position & Size(layer.width, layer.height);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() async {
-    await loadCreationFonts();
-    await (FontLoader(
-      'Eulyoo',
-    )..addFont(rootBundle.load('assets/fonts/Eulyoo1945-Regular.ttf'))).load();
+    final manifest =
+        jsonDecode(await rootBundle.loadString('FontManifest.json')) as List;
+    for (final entry in manifest.whereType<Map>()) {
+      final loader = FontLoader(entry['family'] as String);
+      for (final font in (entry['fonts'] as List).whereType<Map>()) {
+        loader.addFont(rootBundle.load(font['asset'] as String));
+      }
+      await loader.load();
+    }
   });
 
-  test('nine full photo covers span seven themes without duplicate images', () {
-    expect(_volumes, hasLength(9));
-    expect(_volumes.map((v) => v.category).toSet(), hasLength(7));
+  test('32 photo jackets preserve subjects and editable personal fields', () {
+    expect(FreeCollectionVolume.values, hasLength(32));
+    expect(
+      FreeCollectionVolume.values.map((v) => v.category).toSet(),
+      hasLength(7),
+    );
     for (final aspect in CollectionAspect.values) {
       final photos = <String>{};
-      for (final volume in _volumes) {
+      for (final volume in FreeCollectionVolume.values) {
         final document = volume.document(aspect);
         final cover = document['cover'] as Map<String, dynamic>;
         final layers = DataTemplateEngine.buildLayersFromJson(
           cover,
           aspect.canvas,
         );
-        final photo = layers.singleWhere((l) => l.type == LayerType.image);
-        expect(photo.position, Offset.zero);
-        expect(Size(photo.width, photo.height), aspect.canvas);
-        expect(photo.imageBackground, 'none');
-        expect(photos.add(photo.imageUrl!), true);
+        final images = layers.where((l) => l.type == LayerType.image).toList();
+        expect(images.length, inInclusiveRange(1, 2), reason: volume.id);
+        expect(photos.add(images.first.imageUrl!), isTrue, reason: volume.id);
+        for (final image in images) expect(image.imageBackground, 'none');
+        final title = (cover['layers'] as List).cast<Map>().singleWhere(
+          (l) => l['typographyRole'] == 'signature-title',
+        );
+        expect(
+          (title['text'] as String).replaceAll(RegExp(r'\s+'), ''),
+          volume.title.replaceAll(RegExp(r'\s+'), ''),
+          reason: volume.id,
+        );
+        expect(
+          layers.where((l) => l.type == LayerType.text).map((l) => l.text),
+          containsAll([
+            volume.defaultCopy.place,
+            volume.defaultCopy.byline,
+            volume.defaultCopy.period,
+          ]),
+          reason: volume.id,
+        );
         final cleared = AlbumCreationTemplate.preparePages(
           [layers],
           sourceCanvas: aspect.canvas,
           cover: aspect.cover,
         ).single;
         expect(
-          cleared.singleWhere((l) => l.type == LayerType.image).imageUrl,
-          isNull,
+          cleared
+              .where((l) => l.type == LayerType.image)
+              .every((l) => !l.hasImageSource),
+          isTrue,
         );
         expect(
           cleared.where((l) => l.type == LayerType.text).length,
@@ -66,9 +98,91 @@ void main() {
         );
         expect(document['innerPageCount'], 24);
         expect(document['accessTier'], 'free');
+        expect(document['artDirection'], volume.id);
       }
     }
   });
+
+  test(
+    'eight jacket directions retain reading order and photograph protection',
+    () {
+      expect(_directions, hasLength(8));
+      for (final aspect in CollectionAspect.values) {
+        for (final entry in _directions.entries) {
+          final cover =
+              entry.value.document(aspect)['cover'] as Map<String, dynamic>;
+          final layers = DataTemplateEngine.buildLayersFromJson(
+            cover,
+            aspect.canvas,
+          );
+          final hero = layers.firstWhere((l) => l.type == LayerType.image);
+          final titleId = ((cover['layers'] as List).cast<Map>().singleWhere(
+            (l) => l['typographyRole'] == 'signature-title',
+          ))['id'];
+          final title = layers.singleWhere((l) => l.id == titleId);
+          final label = '${entry.key}/${aspect.name}';
+          if (entry.key == 'horizon') {
+            expect(_rect(hero), Offset.zero & aspect.canvas, reason: label);
+            expect(
+              layers.any((l) => l.id.endsWith('_signature_title_stock')),
+              isTrue,
+            );
+            expect(
+              layers.any((l) => l.id.endsWith('_signature_information_stock')),
+              isTrue,
+            );
+            continue;
+          }
+          expect(_rect(hero).overlaps(_rect(title)), isFalse, reason: label);
+          if (entry.key == 'archive') {
+            expect(
+              layers.where((l) => l.type == LayerType.image),
+              hasLength(2),
+            );
+          }
+          if (aspect == CollectionAspect.landscape) {
+            if (entry.key == 'gallery' || entry.key == 'band') {
+              expect(
+                _rect(hero).right,
+                lessThanOrEqualTo(_rect(title).left),
+                reason: label,
+              );
+            } else {
+              expect(
+                _rect(title).right,
+                lessThanOrEqualTo(_rect(hero).left),
+                reason: label,
+              );
+            }
+          } else if (entry.key == 'gallery') {
+            expect(
+              _rect(hero).bottom,
+              lessThanOrEqualTo(_rect(title).top),
+              reason: label,
+            );
+          } else {
+            expect(
+              _rect(title).bottom,
+              lessThanOrEqualTo(_rect(hero).top),
+              reason: label,
+            );
+            if (entry.key == 'field') {
+              expect(
+                layers.any((l) => l.id.endsWith('_signature_top_edge')),
+                isTrue,
+              );
+            }
+            if (entry.key == 'split') {
+              expect(
+                layers.any((l) => l.id.endsWith('_signature_color_edge')),
+                isTrue,
+              );
+            }
+          }
+        }
+      }
+    },
+  );
 
   for (final style in ['photoCoverShadeTop', 'photoCoverShadeBottom']) {
     testWidgets('$style survives saving and matches editor print pixels', (
@@ -136,13 +250,10 @@ void main() {
   }
 
   for (final aspect in CollectionAspect.values) {
-    testWidgets('full photo cover native review: ${aspect.name}', (
+    testWidgets('eight jacket directions render in RAM: ${aspect.name}', (
       tester,
     ) async {
-      final images = <ui.Image>[];
-      final width = 320.0;
-      final height = width / aspect.canvas.aspectRatio;
-      for (final volume in _volumes) {
+      for (final volume in _directions.values) {
         final image = await capture(
           tester,
           TemplatePageRenderer(
@@ -150,78 +261,16 @@ void main() {
               volume.document(aspect)['cover'],
               aspect.canvas,
             ),
-            width: width,
-            height: height,
+            width: 320,
+            height: 320 / aspect.canvas.aspectRatio,
             designCanvasSize: aspect.canvas,
             preserveTypography: true,
             showCanvasChrome: false,
           ),
         );
-        images.add(image);
+        image.dispose();
         expect(tester.takeException(), isNull, reason: volume.id);
-        if (_export) {
-          await tester.runAsync(() async {
-            final bytes = await image.toByteData(
-              format: ui.ImageByteFormat.png,
-            );
-            final file = File(
-              'output/settings-template-qa/free-photo-${volume.id}-${aspect.name}.png',
-            );
-            file.parent.createSync(recursive: true);
-            file.writeAsBytesSync(bytes!.buffer.asUint8List());
-          });
-        }
       }
-      if (_export) {
-        await tester.runAsync(() async {
-          final recorder = ui.PictureRecorder();
-          final canvas = Canvas(recorder);
-          canvas.drawColor(const Color(0xFFECF1F0), BlendMode.src);
-          for (final entry in images.indexed) {
-            final x = 20 + entry.$1 % 4 * (width + 20);
-            final y = 20 + entry.$1 ~/ 4 * (height + 48);
-            final image = entry.$2;
-            canvas.drawImageRect(
-              image,
-              Rect.fromLTWH(
-                0,
-                0,
-                image.width.toDouble(),
-                image.height.toDouble(),
-              ),
-              Rect.fromLTWH(x, y, width, height),
-              Paint(),
-            );
-            final label = TextPainter(
-              textDirection: TextDirection.ltr,
-              text: TextSpan(
-                text: '${_volumes[entry.$1].title} · 무료',
-                style: const TextStyle(
-                  fontFamily: 'NotoSans',
-                  fontSize: 14,
-                  color: Color(0xFF283C36),
-                ),
-              ),
-            )..layout(maxWidth: width);
-            label.paint(canvas, Offset(x, y + height + 9));
-            label.dispose();
-          }
-          final picture = recorder.endRecording();
-          final overview = await picture.toImage(
-            1380,
-            ((_volumes.length / 4).ceil() * (height + 48) + 20).ceil(),
-          );
-          final bytes = await overview.toByteData(
-            format: ui.ImageByteFormat.png,
-          );
-          File(
-            'output/settings-template-qa/free-photo-${aspect.name}.png',
-          ).writeAsBytesSync(bytes!.buffer.asUint8List());
-          overview.dispose();
-          picture.dispose();
-        });
-      }
-      for (final image in images) image.dispose();
     });
   }
 }

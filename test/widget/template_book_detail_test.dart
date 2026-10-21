@@ -25,6 +25,7 @@ import 'package:snap_fit/features/store/presentation/views/template_full_screen_
 import 'package:snap_fit/features/store/presentation/widgets/template_page_renderer.dart';
 import 'package:snap_fit/features/store/presentation/widgets/template_purchase_overview.dart';
 import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
+import 'package:snap_fit/shared/widgets/studio_material.dart';
 
 import 'ai_album_start_step_test.dart' show loadCreationFonts;
 
@@ -137,6 +138,127 @@ void main() {
   });
   tearDown(() => CatalogFavorites.instance.dispose());
 
+  testWidgets('rotating the detail preserves the selected spread and format', (
+    tester,
+  ) async {
+    _size(tester, const Size(390, 844));
+    await tester.pumpWidget(
+      _app(
+        TemplateDetailScreen(
+          template: publishedCreationTemplates.firstWhere(
+            (item) => item.id == -9501,
+          ),
+        ),
+      ),
+    );
+    await _paint(tester);
+    final list = find.byKey(const ValueKey('template-spread-list'));
+    expect(tester.widget<ListView>(list).scrollDirection, Axis.horizontal);
+    final selectedThumb = find.byKey(
+      const ValueKey('template-spread-thumb-10'),
+    );
+    await tester.scrollUntilVisible(
+      selectedThumb,
+      180,
+      scrollable: find.descendant(of: list, matching: find.byType(Scrollable)),
+    );
+    await Scrollable.ensureVisible(
+      tester.element(selectedThumb),
+      alignment: .5,
+    );
+    await _paint(tester);
+    await tester.tap(selectedThumb);
+    await _paint(tester);
+    expect(find.text('19–20쪽'), findsOneWidget);
+    final selector = find.byKey(const ValueKey('template-size-selector'));
+    await tester.ensureVisible(selector);
+    await tester.tap(find.descendant(of: selector, matching: find.text('세로형')));
+    await _paint(tester);
+    final spread = find.descendant(
+      of: find.byKey(const ValueKey('template-detail-stage')),
+      matching: find.byKey(const ValueKey('template-book-spread-19')),
+    );
+    final ratio = tester.getSize(spread).aspectRatio;
+
+    tester.view.physicalSize = const Size(844, 390);
+    tester.view.padding = const FakeViewPadding(
+      left: 44,
+      right: 24,
+      bottom: 24,
+    );
+    await _paint(tester);
+    expect(
+      find.byKey(const ValueKey('store-detail-workspace-landscape')),
+      findsOneWidget,
+    );
+    expect(tester.widget<ListView>(list).scrollDirection, Axis.vertical);
+    expect(find.text('19–20쪽'), findsOneWidget);
+    expect(selectedThumb.hitTestable(), findsOneWidget);
+    expect(tester.getSize(spread).aspectRatio, closeTo(ratio, .0001));
+    final stage = tester.getRect(
+      find.byKey(const ValueKey('template-detail-stage')),
+    );
+    final action = tester.getRect(
+      find.byKey(const ValueKey('template-detail-use')),
+    );
+    expect(stage.right, lessThan(action.left));
+    expect(stage.bottom, greaterThan(action.top));
+    expect(action.bottom, lessThanOrEqualTo(390 - 24));
+
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.padding = const FakeViewPadding(top: 24, bottom: 24);
+    await _paint(tester);
+    expect(tester.widget<ListView>(list).scrollDirection, Axis.horizontal);
+    expect(find.text('19–20쪽'), findsOneWidget);
+    await tester.ensureVisible(list);
+    expect(selectedThumb.hitTestable(), findsOneWidget);
+    expect(tester.getSize(spread).aspectRatio, closeTo(ratio, .0001));
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final size in [const Size(320, 568), const Size(648, 320)]) {
+    testWidgets('large type keeps detail purchase reachable $size', (
+      tester,
+    ) async {
+      _size(tester, size);
+      for (final page in <Widget>[
+        TemplateDetailScreen(
+          template: publishedCreationTemplates.firstWhere(
+            (item) => item.id == -9501,
+          ),
+        ),
+        MaterialDetailScreen(
+          productKey: 'frame:storyVowGate',
+          favoriteKey: 'frame:storyVowGate',
+          title: '벨벳 양문 접지',
+          type: '사진 프레임',
+          preview: (_) => const ColoredBox(color: Colors.green),
+        ),
+      ]) {
+        await tester.pumpWidget(_app(page, scale: 1.6));
+        await _paint(tester);
+        final action = find.byKey(
+          ValueKey(
+            page is TemplateDetailScreen
+                ? 'template-detail-use'
+                : 'material-access',
+          ),
+        );
+        expect(action.hitTestable(), findsOneWidget);
+        expect(tester.getSize(action).height, greaterThanOrEqualTo(44));
+        expect(
+          tester.getRect(action).bottom,
+          lessThanOrEqualTo(size.height - 24),
+        );
+        if (page is MaterialDetailScreen) {
+          await tester.ensureVisible(find.text('사진과 분리된 프레임'));
+          expect(find.text('미리보기 사진은 포함되지 않아요.'), findsOneWidget);
+        }
+        expect(tester.takeException(), isNull);
+      }
+    });
+  }
+
   const paidKey = 'sticker:materialLace';
   final paid = PointShopProduct(
     productKey: paidKey,
@@ -146,6 +268,80 @@ void main() {
     pointPrice: 300,
     isActive: true,
   );
+  for (final size in [
+    const Size(320, 568),
+    const Size(390, 844),
+    const Size(740, 360),
+    const Size(844, 390),
+  ]) {
+    for (final dark in [false, true]) {
+      testWidgets('material access and usage fit $size dark=$dark', (
+        tester,
+      ) async {
+        _size(tester, size);
+        final key = GlobalKey();
+        await tester.pumpWidget(
+          _app(
+            MaterialDetailScreen(
+              productKey: 'frame:storyVowGate',
+              favoriteKey: 'frame:storyVowGate',
+              title: '벨벳 양문 접지',
+              type: '프레임',
+              preview: (_) => StudioMaterial(
+                style: 'storyVowGate',
+                child: Image.asset(
+                  'assets/templates/atelier_editions_2026/velvet-vow-archive.png',
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            dark: dark,
+            captureKey: key,
+          ),
+        );
+        await _paint(tester);
+        expect(find.text('무료로 이용하기'), findsNothing);
+        expect(find.text('400P로 구매'), findsOneWidget);
+        await _capture(
+          tester,
+          key,
+          'material-${size.width.toInt()}-${dark ? 'dark' : 'light'}',
+        );
+        await tester.ensureVisible(find.text('여러 앨범에 계속 사용'));
+        expect(find.text('사진과 분리된 프레임'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
+
+  testWidgets('an unregistered paid material never claims to be free', (
+    tester,
+  ) async {
+    _size(tester, const Size(390, 844));
+    await tester.pumpWidget(
+      _app(
+        MaterialDetailScreen(
+          productKey: 'frame:storyVowGate',
+          favoriteKey: 'frame:storyVowGate',
+          title: '벨벳 양문 접지',
+          type: '프레임',
+          preview: (_) => const SizedBox(),
+        ),
+        catalog: [],
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('무료로 이용하기'), findsNothing);
+    expect(find.text('무료'), findsNothing);
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const ValueKey('material-access')))
+          .onPressed,
+      isNull,
+    );
+    expect(find.text('판매 준비 중'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
   test('inclusion alone never grants paid material reuse', () {
     expect(
       templateMaterialReuse(paidKey, AsyncData([paid]), const AsyncData({})),

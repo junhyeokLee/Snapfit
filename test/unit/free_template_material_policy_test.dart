@@ -31,8 +31,8 @@ void main() {
       expect(data['changesPaidProducts'], false);
       expect(data['grantsOwnership'], false);
       final rows = (data['rows'] as List).cast<Map>();
-      expect(rows, hasLength(77));
-      expect(rows.map((r) => r['product_key']).toSet(), hasLength(77));
+      expect(rows, hasLength(93));
+      expect(rows.map((r) => r['product_key']).toSet(), hasLength(93));
       expect(rows.every((r) => r['point_price'] == 0), true);
       expect(
         rows.every(
@@ -40,7 +40,7 @@ void main() {
         ),
         true,
       );
-      expect(data['collections'], hasLength(37));
+      expect(data['collections'], hasLength(42));
       expect(
         jsonDecode(File('${out.path}/manifest.json').readAsStringSync()),
         data,
@@ -56,10 +56,10 @@ void main() {
     },
   );
   test(
-    'all 37 free books and every size use only explicitly free materials',
+    'all 42 free books and every size use only explicitly free materials',
     () {
       final used = <String>{};
-      expect(authoredCollections, hasLength(37));
+      expect(authoredCollections, hasLength(42));
       for (final collection in authoredCollections) {
         final document = collection.catalogDocument();
         expect(
@@ -73,7 +73,13 @@ void main() {
         );
         used.addAll(templateVisualMaterialKeys(document));
       }
-      expect(used, hasLength(28));
+      expect(
+        used,
+        isEmpty,
+        reason:
+            'The photo-led free books now use editable photographs, text '
+            'and basic paper shapes without priced ornaments.',
+      );
       for (final key in used) {
         expect(freeTemplateMaterialProductKeys, contains(key));
         expect(pointShopLaunchPrices[key]?.points, 0, reason: key);
@@ -84,7 +90,7 @@ void main() {
   test(
     'free kit has explicit zero prices and registered stable identities',
     () {
-      expect(freeTemplateMaterialProductKeys, hasLength(40));
+      expect(freeTemplateMaterialProductKeys, hasLength(51));
       for (final key in freeTemplateMaterialProductKeys) {
         expect(pointShopLaunchPrices[key]?.points, 0, reason: key);
         expect(
@@ -115,6 +121,105 @@ void main() {
     );
     expect(() => validateFreeTemplateMaterials(document), throwsStateError);
   });
+
+  test(
+    'saved payloads, image aliases and aspect overrides stay classified',
+    () {
+      final rose = studioDecorationById('materialRose')!.insertionValue;
+      for (final layer in <Map<String, dynamic>>[
+        {
+          'type': 'IMAGE',
+          'payload': {'imageBackground': 'materialLaceMount'},
+        },
+        {'type': 'image', 'previewUrl': rose},
+        {
+          'type': 'STICKER',
+          'payload': {'originalUrl': rose},
+        },
+        {
+          'type': 'image',
+          'frame': 'none',
+          'aspectOverrides': {
+            'landscape': {'frame': 'signatureRailWallet'},
+          },
+        },
+        {
+          'type': 'text',
+          'payload': {'textFillImageUrl': rose},
+        },
+        {
+          'type': 'text',
+          'style': {'textFillImageUrl': rose},
+        },
+      ]) {
+        final document = documentWith(layer);
+        expect(
+          freeTemplateMaterialIssues(document),
+          isNotEmpty,
+          reason: '$layer',
+        );
+        expect(() => validateFreeTemplateMaterials(document), throwsStateError);
+      }
+      final saved = documentWith({
+        'type': 'IMAGE',
+        'payload': {'imageBackground': 'materialLaceMount'},
+      });
+      expect(
+        templateVisualMaterialKeys(saved),
+        containsAll(['frame:materialLaceMount', 'sticker:materialLace']),
+      );
+      final listVariant = {
+        ...documentWith({'type': 'text', 'text': '기본 문구'}),
+        'variants': [
+          {
+            ...documentWith({'type': 'image', 'frame': 'signatureRailWallet'}),
+            'aspect': 'landscape',
+          },
+        ],
+      };
+      expect(
+        freeTemplateMaterialIssues(listVariant),
+        contains('frame:signatureRailWallet'),
+      );
+      expect(
+        templateVisualMaterialKeys(listVariant),
+        contains('frame:signatureRailWallet'),
+      );
+      expect(
+        freeTemplateMaterialIssues({
+          'layers': [
+            {'type': 'image', 'frame': 'signatureRailWallet'},
+          ],
+        }),
+        contains('frame:signatureRailWallet'),
+      );
+    },
+  );
+
+  test(
+    'saved free frames remain free without mutating the source document',
+    () {
+      final document = documentWith({
+        'type': 'IMAGE',
+        'payload': {
+          'imageBackground': 'studioGallery',
+          'previewUrl': 'asset:sample-photo.png',
+        },
+        'aspectOverrides': {
+          'portrait': {
+            'payload': {'imageBackground': 'studioPhotoCorners'},
+          },
+        },
+      });
+      final before = jsonEncode(document);
+      expect(freeTemplateMaterialIssues(document), isEmpty);
+      expect(
+        templateVisualMaterialKeys(document),
+        containsAll(['frame:studioGallery', 'frame:studioPhotoCorners']),
+      );
+      expect(jsonEncode(document), before);
+    },
+  );
 
   test(
     'paid raster and procedural decorations cannot be disguised as photos',
@@ -179,6 +284,26 @@ void main() {
         documentWith({'type': 'decoration', 'fillColor': '#FFFFFF'}),
       ),
       isEmpty,
+    );
+    expect(
+      freeTemplateMaterialIssues(
+        documentWith({
+          'type': 'sticker',
+          'frame': 'rasterCover',
+          'imageUrl': 'asset:assets/templates/prose_study/woodcut_ink.png',
+        }),
+      ),
+      isEmpty,
+    );
+    expect(
+      freeTemplateMaterialIssues(
+        documentWith({
+          'type': 'sticker',
+          'frame': 'rasterCover',
+          'imageUrl': 'asset:assets/new-paid-art.png',
+        }),
+      ),
+      isNotEmpty,
     );
   });
 }

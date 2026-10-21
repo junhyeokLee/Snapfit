@@ -4,6 +4,7 @@ import 'experience_icon.dart';
 import '../../features/notification/presentation/views/notification_screen.dart';
 import '../../core/constants/snapfit_colors.dart';
 import '../../core/theme/snapfit_theme.dart';
+import '../../core/theme/snapfit_design_tokens.dart';
 
 /// Customer screens matched to snapfit-experience-design.html; not the home book stage.
 abstract final class ExperienceStyle {
@@ -11,26 +12,21 @@ abstract final class ExperienceStyle {
   static const muted = Color(0xFF778080);
   static const line = Color(0xFFE6EBEA);
   static const wash = Color(0xFFF3F6F5);
-  static const accent = Color(0xFF08B8D0);
+  static const accent = Color(0xFF14AAA8);
   static TextStyle text(
     double size, {
     FontWeight weight = FontWeight.w400,
     Color? color,
-  }) => TextStyle(
-    fontFamily: 'NotoSans',
-    fontSize: size,
-    fontWeight: weight,
-    letterSpacing: 0,
-    height: 1.5,
-    color: color ?? ink,
-  );
+  }) => SnapFitType.style(size, weight: weight, color: color ?? ink);
   static ButtonStyle get primary => FilledButton.styleFrom(
     backgroundColor: accent,
-    foregroundColor: const Color(0xFF063740),
+    foregroundColor: SnapFitColors.onAccent,
     minimumSize: const Size(0, 48),
     padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
     textStyle: text(14, weight: FontWeight.w600),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+    tapTargetSize: MaterialTapTargetSize.padded,
+    visualDensity: VisualDensity.standard,
+    shape: const StadiumBorder(),
   );
 }
 
@@ -59,11 +55,15 @@ class ExperienceHeader extends StatelessWidget implements PreferredSizeWidget {
     this.themeAware = true,
     this.onBack,
     this.showNotifications = true,
+    this.titleContent,
+    this.showDivider = true,
   });
   final String title;
   final bool brand, back, themeAware;
   final VoidCallback? onBack;
   final bool showNotifications;
+  final Widget? titleContent;
+  final bool showDivider;
   final List<Widget> actions;
   @override
   Size get preferredSize => const Size.fromHeight(60);
@@ -85,21 +85,23 @@ class ExperienceHeader extends StatelessWidget implements PreferredSizeWidget {
           child: Container(
             height: 60,
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: themeAware
-                      ? SnapFitColors.overlayLightOf(context)
-                      : ExperienceStyle.line,
-                ),
-              ),
-            ),
+            decoration: showDivider
+                ? BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: themeAware
+                            ? SnapFitColors.overlayLightOf(context)
+                            : ExperienceStyle.line,
+                      ),
+                    ),
+                  )
+                : null,
             child: Row(
               children: [
                 if (!brand && back) ...[
                   SizedBox(
-                    width: 44,
-                    height: 44,
+                    width: 48,
+                    height: 48,
                     child: IconButton(
                       tooltip: '뒤로가기',
                       onPressed: () {
@@ -121,38 +123,39 @@ class ExperienceHeader extends StatelessWidget implements PreferredSizeWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                 ],
                 Expanded(
-                  child: brand
-                      ? Text.rich(
-                          TextSpan(children: [const TextSpan(text: '스토어')]),
-                          style: ExperienceStyle.text(
-                            22,
-                            weight: FontWeight.w600,
-                            color: themeAware
-                                ? SnapFitColors.textPrimaryOf(context)
-                                : null,
-                          ),
-                        )
-                      : Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: ExperienceStyle.text(
-                            22,
-                            weight: FontWeight.w600,
-                            color: themeAware
-                                ? SnapFitColors.textPrimaryOf(context)
-                                : null,
+                  child:
+                      titleContent ??
+                      Tooltip(
+                        message: brand ? '스토어' : title,
+                        excludeFromSemantics: true,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Semantics(
+                            header: true,
+                            child: Text(
+                              brand ? '스토어' : title,
+                              maxLines: 1,
+                              softWrap: false,
+                              style: ExperienceStyle.text(
+                                22,
+                                weight: FontWeight.w600,
+                                color: themeAware
+                                    ? SnapFitColors.textPrimaryOf(context)
+                                    : null,
+                              ),
+                            ),
                           ),
                         ),
+                      ),
                 ),
                 ...actions,
                 if (showNotifications)
                   SizedBox(
-                    width: 44,
-                    height: 44,
+                    width: 48,
+                    height: 48,
                     child: IconButton(
                       tooltip: '알림',
                       onPressed: () {
@@ -201,7 +204,9 @@ class ExperienceRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) => InkWell(
     onTap: onTap,
+    borderRadius: BorderRadius.circular(SnapFitRadius.md),
     child: Container(
+      constraints: const BoxConstraints(minHeight: 64),
       padding: const EdgeInsets.symmetric(vertical: 19),
       decoration: BoxDecoration(
         border: Border(

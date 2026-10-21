@@ -1,15 +1,36 @@
 import 'package:flutter/material.dart';
 
 /// Keep short Korean names from leaving a single syllable on the second line.
-class CatalogItemTitle extends StatelessWidget {
+class CatalogItemTitle extends StatefulWidget {
   const CatalogItemTitle(this.text, {super.key, required this.style});
   final String text;
   final TextStyle style;
+
+  @override
+  State<CatalogItemTitle> createState() => _CatalogItemTitleState();
+}
+
+class _CatalogItemTitleState extends State<CatalogItemTitle> {
+  Object? _layoutKey;
+  String _display = '';
+
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, box) {
       final scaler = MediaQuery.textScalerOf(context);
       final direction = Directionality.of(context);
+      final text = widget.text;
+      final style = widget.style;
+      final key = (text, style, box.maxWidth, scaler, direction);
+      if (_layoutKey == key) {
+        return Text(
+          _display,
+          semanticsLabel: text,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: style,
+        );
+      }
       double width(String value) {
         final painter = TextPainter(
           text: TextSpan(text: value, style: style),
@@ -36,6 +57,8 @@ class CatalogItemTitle extends StatelessWidget {
           }
         }
       }
+      _layoutKey = key;
+      _display = display;
       return Text(
         display,
         semanticsLabel: text,

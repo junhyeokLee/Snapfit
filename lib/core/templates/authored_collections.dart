@@ -16,10 +16,17 @@ part 'authored_free_expansion.dart';
 part 'authored_free_layouts.dart';
 part 'authored_free_photo_direction.dart';
 part 'authored_free_photo_covers.dart';
+part 'authored_free_signature_covers.dart';
+part 'authored_free_catalog_jackets.dart';
+part 'authored_free_immersive_covers.dart';
+part 'authored_free_editorial_interiors.dart';
+part 'authored_paid_immersive_covers.dart';
+part 'authored_paid_editorial_interiors.dart';
 part 'authored_free_quality_spreads.dart';
 part 'authored_life_collections.dart';
 part 'authored_life_layouts.dart';
 part 'authored_wind_atlas.dart';
+part 'authored_wind_atlas_signature.dart';
 part 'authored_prose_study.dart';
 part 'authored_prose_album.dart';
 part 'authored_luminous_edition.dart';
@@ -44,6 +51,20 @@ part 'authored_concept_baby.dart';
 part 'authored_concept_family.dart';
 part 'authored_concept_couple.dart';
 part 'authored_concept_pet.dart';
+part 'authored_atelier_editions.dart';
+part 'authored_atelier_stories.dart';
+part 'authored_atelier_layouts.dart';
+part 'authored_atelier_compositions.dart';
+part 'authored_atelier_interiors.dart';
+part 'authored_atelier_life_interiors.dart';
+part 'authored_template_typography.dart';
+part 'authored_studio_editions.dart';
+part 'authored_studio_layouts.dart';
+part 'authored_studio_family.dart';
+part 'authored_studio_pet.dart';
+part 'authored_studio_milestones.dart';
+part 'authored_studio_vows.dart';
+part 'authored_studio_discoveries.dart';
 
 /// Original authored compositions. Never used as fallback output for AI.
 enum CollectionAspect {
@@ -55,6 +76,18 @@ enum CollectionAspect {
   CoverSize get cover => legacyCoverSizes[index];
   Size get canvas => Size(500, 500 / cover.realSize.aspectRatio);
 }
+
+/// Refine newly selected catalog editions while preserving authored archives
+/// and documents already saved into a customer's album.
+Map<String, dynamic> refinePaidCatalogDocument(
+  String id,
+  CollectionAspect aspect,
+  Map<String, dynamic> document,
+) => _refinePaidEditorialInteriors(
+  id,
+  aspect,
+  _refinePaidImmersiveCover(id, aspect, document),
+);
 
 class AuthoredCollection {
   const AuthoredCollection(
@@ -81,7 +114,10 @@ class AuthoredCollection {
     'petal_archive' => ['설레는 준비', '우리의 약속', '함께한 마음', '오후의 여운', '오래 남길 편지'],
     'lost_and_found' => ['여행의 시작', '낯선 길 위에서', '동네의 맛', '주머니 속 기록', '돌아오는 길'],
     'good_things' => ['좋은 아침', '취향을 모아서', '밖에서 보낸 시간', '작은 기록들', '다음의 우리'],
-    _ => FreeCollectionVolume.byId(id)?.chapters ?? const [],
+    _ =>
+      FreeCollectionVolume.byId(id)?.chapters ??
+          StudioEdition.byId(id)?.chapters ??
+          const [],
   };
 
   Map<String, dynamic> document(CollectionAspect aspect) {
@@ -91,10 +127,21 @@ class AuthoredCollection {
       'small-days' => EditorialVolume.smallDays.document(aspect),
       'wind-atlas' => buildWindAtlas(aspect),
       proseStudyId => buildProseAlbum(aspect),
-      _ => FreeCollectionVolume.byId(id)?.document(aspect),
+      _ =>
+        FreeCollectionVolume.byId(id)?.document(aspect) ??
+            StudioEdition.byId(id)?.document(aspect),
     };
     if (current != null) {
-      final published = _refineBaselineCatalogCover(id, aspect, current);
+      final jackets = _refineAdditionalFreeCatalogCover(
+        id,
+        aspect,
+        _refineBaselineCatalogCover(id, aspect, current),
+      );
+      final published = _refineFreeEditorialInteriors(
+        id,
+        aspect,
+        _refineFreeImmersiveCover(id, aspect, jackets),
+      );
       validateFreeTemplateMaterials(published);
       return {
         ...published,
@@ -179,6 +226,41 @@ final authoredCollections = List<AuthoredCollection>.unmodifiable([
     '사진 곁의 짧은 기록, 함께한 날의 스물네 장면',
     '커플·기념일',
     bundledId: proseAlbumBundledId,
+  ),
+  const AuthoredCollection(
+    'alley-afternoon',
+    '골목의 오후',
+    '걷다가 발견한 가게와 작은 장면을 담는 산책 사진집',
+    '일상',
+    bundledId: -9471,
+  ),
+  const AuthoredCollection(
+    'saturday-together',
+    '같이 보낸 토요일',
+    '소풍과 식탁, 함께 웃은 하루를 기록하는 가족·친구 사진집',
+    '가족·친구',
+    bundledId: -9472,
+  ),
+  const AuthoredCollection(
+    'daily-paw-walk',
+    '오늘도 산책!',
+    '발걸음과 작은 발견을 담는 경쾌한 반려동물 산책 일지',
+    '반려동물',
+    bundledId: -9473,
+  ),
+  const AuthoredCollection(
+    'our-first-promise',
+    '우리의 첫 약속',
+    '두 사람의 시작과 축하의 장면을 담는 웨딩 사진집',
+    '웨딩',
+    bundledId: -9474,
+  ),
+  const AuthoredCollection(
+    'little-day-discoveries',
+    '작은 날의 발견',
+    '매일 새로워지는 표정과 작은 성장을 담는 기록',
+    '성장·육아',
+    bundledId: -9475,
   ),
 ]);
 

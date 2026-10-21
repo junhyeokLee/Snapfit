@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'creation_workspace.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
-import '../../../../../core/theme/snapfit_design_tokens.dart';
+import '../../../../../core/theme/snapfit_design_tokens.dart'
+    show SnapFitMotion;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_manager/photo_manager.dart';
 import '../../../../../core/constants/cover_size.dart';
@@ -14,6 +16,7 @@ import '../../../../store/presentation/widgets/template_page_renderer.dart';
 import '../../../../store/presentation/widgets/template_book_artwork.dart';
 import 'photo_crop_sheet.dart';
 import '../../../data/gallery/browser_photo_asset.dart';
+import '../../utils/photo_crop_geometry.dart';
 
 /// A creation workspace outlives the photo-fill widget, but not its album.
 class TemplatePhotoFillSession {
@@ -411,6 +414,8 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
       _staleTarget();
       return;
     }
+    // Choosing the same local photograph again must retain its edited crop.
+    if (original.asset?.id == asset.id) return;
     File? file;
     try {
       file = await _fileFor(asset);
@@ -428,14 +433,49 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
       _fileRequests.remove(asset);
       throw StateError('Photo not available locally');
     }
+    var replacement = original
+        .copyWith(clearImage: true)
+        .copyWith(asset: asset);
+    final sourceSize = Size(asset.width.toDouble(), asset.height.toDouble());
+    final reviewCrop = PhotoCropGeometry.needsReview(
+      asset.orientation == 90 || asset.orientation == 270
+          ? sourceSize.flipped
+          : sourceSize,
+      Size(original.width, original.height),
+    );
+    final coverHero = page == 0
+        ? widget.pages.first
+              .where((layer) => layer.type == LayerType.image)
+              .reduce(
+                (a, b) => a.width * a.height >= b.width * b.height ? a : b,
+              )
+              .id
+        : null;
+    if (reviewCrop && original.id == coverHero) {
+      final result = await showPhotoCropSheet(
+        context,
+        layer: replacement,
+        file: localFile,
+        title: '표지 사진 구도',
+        pageContext: _cropPageContext(
+          page,
+          targetId: original.id,
+          targetFile: localFile,
+        ),
+      );
+      if (!mounted || result == null) return;
+      if (!_currentTarget(revision, page, original)) {
+        _staleTarget();
+        return;
+      }
+      replacement = result;
+    }
     final index = widget.pages[page].indexWhere(
       (layer) => layer.id == original.id && layer.type == LayerType.image,
     );
     if (index < 0) return;
     final pages = widget.pages.map((p) => [...p]).toList();
-    pages[page][index] = pages[page][index]
-        .copyWith(clearImage: true)
-        .copyWith(asset: asset);
+    pages[page][index] = replacement;
     _remember();
     setState(() {
       if (localFile != null) {
@@ -450,6 +490,26 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
       _selectedSlot = (page: page, id: original.id);
     });
     _publish(pages);
+    if (reviewCrop && original.id != coverHero) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('중요한 부분이 잘 보이는지 사진 구도를 확인해보세요.'),
+          action: SnackBarAction(
+            label: '구도 조정',
+            onPressed: () {
+              if (_picking || _layerAt(page, original.id) != replacement)
+                return;
+              setState(() {
+                _page = page;
+                _selectedSlot = (page: page, id: original.id);
+              });
+              _revealPage(page);
+              _cropSelectedPhoto();
+            },
+          ),
+        ),
+      );
+    }
   }
 
   void _photoError() {
@@ -512,8 +572,16 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_pageRailController.hasClients) return;
       final target = page * _railItemExtent;
+      final offset = target.clamp(
+        0.0,
+        _pageRailController.position.maxScrollExtent,
+      );
+      if (SnapFitMotion.reduced(context)) {
+        _pageRailController.jumpTo(offset);
+        return;
+      }
       _pageRailController.animateTo(
-        target.clamp(0, _pageRailController.position.maxScrollExtent),
+        offset,
         duration: const Duration(milliseconds: 240),
         curve: Curves.easeOutCubic,
       );
@@ -542,6 +610,40 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
     _publish(pages);
   }
 
+  PhotoCropPageContext _cropPageContext(
+    int page, {
+    required String targetId,
+    File? targetFile,
+  }) {
+    final snapshot = List<LayerModel>.of(widget.pages[page]);
+    final canvas = coverCanvasBaseSize(widget.cover);
+    final preserveTypography = widget.preserveTypography;
+    final files = <String, File>{
+      for (final layer in snapshot)
+        if (_files['$page:${layer.id}'] case final file?) layer.id: file,
+      if (targetFile != null) targetId: targetFile,
+    };
+    return PhotoCropPageContext(
+      canvasSize: canvas,
+      builder: (draft) => ColoredBox(
+        color: Colors.white,
+        child: TemplatePageRenderer(
+          layers: [
+            for (final layer in snapshot) layer.id == draft.id ? draft : layer,
+          ],
+          width: canvas.width,
+          height: canvas.height,
+          designCanvasSize: canvas,
+          preserveTypography: preserveTypography,
+          showCanvasChrome: false,
+          cacheNetworkImages: true,
+          localFiles: files,
+          imageDecodeWidth: 1200,
+        ),
+      ),
+    );
+  }
+
   Future<void> _cropSelectedPhoto() async {
     final slot = _selectedSlot;
     final layer = _selectedLayer;
@@ -564,6 +666,11 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
         context,
         layer: layer,
         file: file,
+        pageContext: _cropPageContext(
+          slot.page,
+          targetId: layer.id,
+          targetFile: file,
+        ),
       );
       if (!mounted || result == null || slot.page >= widget.pages.length)
         return;
@@ -747,6 +854,9 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
     }
     final slots = _slots;
     final filled = slots.where((s) => s.layer.hasImageSource).length;
+    // Counts use the parent's accepted document, never a pending picker or the
+    // local undo snapshot. A cancelled/failed/rejected photo cannot complete it.
+    final allPhotosPlaced = slots.isNotEmpty && filled == slots.length;
     final ink = ExperienceFormStyle.ink(context);
     final muted = ExperienceFormStyle.muted(context);
     return SafeArea(
@@ -830,11 +940,13 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
                           if (_files['$i:${l.id}'] != null)
                             l.id: _files['$i:${l.id}']!,
                       },
-                      onLayerTap: i == 0 && !wrap
+                      // Only the native book's binding duplicate is read-only.
+                      // Web renders the actual flat cover with wrap=false.
+                      onLayerTap: !kIsWeb && i == 0 && !wrap
                           ? null
                           : (id) => _tapSlot(i, id),
                       selectedLayerId:
-                          (i != 0 || wrap) && _selectedSlot?.page == i
+                          (kIsWeb || i != 0 || wrap) && _selectedSlot?.page == i
                           ? _selectedSlot?.id
                           : null,
                     ),
@@ -882,11 +994,15 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
                     padding: const EdgeInsets.all(5),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(6),
+                      color: selected
+                          ? ExperienceFormStyle.selection(context)
+                          : Colors.transparent,
                       border: Border.all(
                         color: selected
-                            ? ExperienceFormStyle.selectionInk(context)
-                            : ink.withValues(alpha: .12),
-                        width: selected ? 2 : 1,
+                            ? ExperienceFormStyle.selectionInk(
+                                context,
+                              ).withValues(alpha: .35)
+                            : ExperienceFormStyle.line(context),
                       ),
                     ),
                     child: Column(
@@ -981,17 +1097,60 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
                             style: ExperienceFormStyle.text(
                               context,
                               wide || compact ? 13 : 20,
-                              weight: FontWeight.w600,
+                              weight: wide || compact
+                                  ? FontWeight.w600
+                                  : FontWeight.w700,
                             ),
                           ),
                         ),
                         if (wide || compact) ..._historyButtons(),
                         Semantics(
-                          label: '전체 사진 ${slots.length}장 중 $filled장 추가됨',
+                          key: const ValueKey('fill-progress-status'),
+                          container: true,
+                          liveRegion: true,
+                          label: allPhotosPlaced
+                              ? '사진 ${slots.length}장 모두 배치됨. 표지를 확인해주세요.'
+                              : '전체 사진 ${slots.length}장 중 $filled장 추가됨',
                           excludeSemantics: true,
-                          child: Text(
-                            '$filled / ${slots.length}',
-                            style: TextStyle(fontSize: 13, color: muted),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (allPhotosPlaced) ...[
+                                    Icon(
+                                      Icons.check_circle,
+                                      size: 16,
+                                      color: ExperienceFormStyle.selectionInk(
+                                        context,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                  ],
+                                  Text(
+                                    '$filled / ${slots.length}',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: allPhotosPlaced ? ink : muted,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (allPhotosPlaced)
+                                Text(
+                                  '모두 배치됨',
+                                  key: const ValueKey('fill-all-photos-placed'),
+                                  style: ExperienceFormStyle.text(
+                                    context,
+                                    11,
+                                    color: ExperienceFormStyle.selectionInk(
+                                      context,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
                         if (filled < slots.length)
@@ -1080,44 +1239,72 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
                     : const EdgeInsets.fromLTRB(24, 4, 24, 12),
                 child: Row(
                   children: [
-                    if (wide) ...[
+                    if (wide && _selectedLayer?.hasImageSource == true) ...[
                       _buildSlotTools(compact: true),
                       const SizedBox(width: 16),
                     ],
-                    if (filled < slots.length) ...[
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: _picking ? null : _addPhotos,
-                          icon: const Icon(
-                            Icons.add_photo_alternate_outlined,
-                            size: 20,
-                          ),
-                          label: const Text('사진 추가'),
-                          style: OutlinedButton.styleFrom(
-                            minimumSize: const Size(0, 48),
-                            foregroundColor: ink,
-                            side: BorderSide(
-                              color: ExperienceFormStyle.line(context),
-                            ),
-                            textStyle: const TextStyle(
-                              fontFamily: SnapFitFonts.body,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                    ],
                     Expanded(
-                      child: ElevatedButton(
-                        onPressed: _picking ? null : widget.onContinue,
-                        style: ExperienceFormStyle.primary(context),
-                        child: Text(
-                          filled < slots.length ? '나중에 채우기' : '표지 확인',
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: wide ? 420 : double.infinity,
+                          ),
+                          child: LayoutBuilder(
+                            builder: (context, actionsBox) {
+                              final needsPhotos = filled < slots.length;
+                              final add = FilledButton.icon(
+                                key: const ValueKey('fill-add-photos'),
+                                onPressed: _picking ? null : _addPhotos,
+                                icon: const Icon(
+                                  Icons.add_photo_alternate_outlined,
+                                  size: 20,
+                                ),
+                                label: const Text('사진 추가'),
+                                style: CreationStyle.primary(context),
+                              );
+                              final next = needsPhotos
+                                  ? TextButton(
+                                      key: const ValueKey('fill-continue'),
+                                      onPressed: _picking
+                                          ? null
+                                          : widget.onContinue,
+                                      child: const Text('나중에 채우기'),
+                                    )
+                                  : FilledButton(
+                                      key: const ValueKey('fill-continue'),
+                                      onPressed: _picking
+                                          ? null
+                                          : widget.onContinue,
+                                      style: CreationStyle.primary(context),
+                                      child: const Text('표지 확인'),
+                                    );
+                              final stacked = actionsBox.maxWidth < 380;
+                              if (stacked) {
+                                return Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (needsPhotos) ...[
+                                      add,
+                                      const SizedBox(height: 4),
+                                    ],
+                                    next,
+                                  ],
+                                );
+                              }
+                              return Row(
+                                children: [
+                                  if (needsPhotos) ...[
+                                    Expanded(child: add),
+                                    const SizedBox(width: 12),
+                                  ],
+                                  Expanded(child: next),
+                                ],
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),

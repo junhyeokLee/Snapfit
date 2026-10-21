@@ -7,6 +7,8 @@ import 'study_photo_frame.dart';
 import 'edition_photo_frame.dart';
 import 'keepsake_photo_frame.dart';
 import 'atelier_edition_frame.dart';
+import 'atelier_signature_frame.dart';
+import 'atelier_story_frame.dart';
 
 /// Normalized paths keep the same cut edge in thumbnails, editor and reader.
 class StudioMaterial extends StatelessWidget {
@@ -33,6 +35,12 @@ class StudioMaterial extends StatelessWidget {
   };
 
   static EdgeInsets photoInsets(String style, Size size) {
+    if (atelierStoryPhotoFrames.contains(style)) {
+      return AtelierStoryFrame.insets(style, size);
+    }
+    if (atelierSignaturePhotoFrames.contains(style)) {
+      return AtelierSignatureFrame.insets(style, size);
+    }
     if (atelierEditionPhotoFrames.contains(style))
       return AtelierEditionFrame.insets(style, size);
     if (keepsakePhotoFrames.contains(style))
@@ -71,6 +79,12 @@ class StudioMaterial extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
+      if (atelierStoryPhotoFrames.contains(style)) {
+        return AtelierStoryFrame(style: style, child: child);
+      }
+      if (atelierSignaturePhotoFrames.contains(style)) {
+        return AtelierSignatureFrame(style: style, child: child);
+      }
       if (atelierEditionPhotoFrames.contains(style))
         return AtelierEditionFrame(style: style, child: child);
       if (keepsakePhotoFrames.contains(style)) {
@@ -144,6 +158,12 @@ class StudioMaterialClipper extends CustomClipper<Path> {
 
   @override
   Path getClip(Size size) {
+    if (atelierStoryPhotoFrames.contains(style)) {
+      return AtelierStoryFrame.outer(style, size);
+    }
+    if (atelierSignaturePhotoFrames.contains(style)) {
+      return AtelierSignatureFrame.outer(style, size);
+    }
     if (atelierEditionPhotoFrames.contains(style))
       return AtelierEditionFrame.outer(style, size);
     if (keepsakePhotoFrames.contains(style))

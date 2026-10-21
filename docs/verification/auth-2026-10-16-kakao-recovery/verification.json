@@ -1,0 +1,65 @@
+{
+  "reported_problem": "Web Kakao sign-in displays a generic social-login failure and remains busy; the Kakao email is already registered.",
+  "verified_code_defects": [
+    "LoginScreen kept the loading state after a completed web OAuth launch, even when navigation did not complete.",
+    "Updated callback errors did not invalidate a still-pending earlier login attempt.",
+    "Server-rejected persisted sessions were retained after getUser failed.",
+    "Delayed token clearing or logout could interfere with a newer login."
+  ],
+  "changes": [
+    "Release social-login busy state when the launcher finishes; only a verified Auth session completes login.",
+    "Invalidate an older attempt when a callback failure arrives and ignore its late result.",
+    "Clear only explicitly rejected user/session states; preserve temporary outages and refreshable JWT failures.",
+    "Serialize app auth token writes and clearing; protect a newer session including same-user token changes.",
+    "Require canonical email and server confirmation for native provider sign-in as well as web recovery."
+  ],
+  "verification": {
+    "service_mock_group_tests_passed_reported": 46,
+    "latest_session_recovery_tests_passed": 8,
+    "login_screen_and_recovery_vm_widget_tests_passed": 29,
+    "web_auth_unit_tests_passed": 15,
+    "chrome_platform_web_assert_and_recovery_tests_passed": 4,
+    "chrome_widget_tests_use_fake_auth_and_forbid_real_backend_access": true,
+    "related_static_analysis": "passed",
+    "actual_user_kakao_sign_in_reverified_this_followup": false,
+    "current_remote_account_state_verified_this_followup": false,
+    "owner_reported_web_kakao_sign_in_succeeded_on_retry": true,
+    "owner_confirmation": "사용자: 다시 누르니깐 됐네",
+    "direct_browser_sign_in_reverified_by_agent_this_followup": false,
+    "first_failed_attempt_root_cause_confirmed": false,
+    "owner_reported_intermediate_failure": "로그인 후 스냅핏으로 돌아왔지만 계정 확인을 완료하지 못했어요."
+  },
+  "external_verification_limits": [
+    "Browser-control feature-gate service returned an external 403; no browser security warning was bypassed.",
+    "Supabase MCP log query returned a project permission error."
+  ],
+  "web_publication": {
+    "status": "published",
+    "served_origin": "http://127.0.0.1:7357",
+    "main_file": "main.5359076631a4cd747244.dart.js",
+    "main_sha256": "5359076631a4cd74724470ebc9159aa25be36a57fa135030ac25ffea639b623c",
+    "served_artifacts_match": true,
+    "updates_user_59841_flutter_process": false
+  },
+  "remote_auth_settings_modified": false,
+  "accounts_or_albums_deleted_this_followup": false,
+  "payment_settings_modified_or_tests_performed": false,
+  "mobile_application_launched": false,
+  "reported_web_origin": "http://localhost:59841",
+  "reported_origin_is_published_web": false,
+  "known_registered_development_callback_urls": [
+    "http://127.0.0.1:7357/?auth_callback=1",
+    "http://localhost:7357/?auth_callback=1"
+  ],
+  "development_origin_findings": {
+    "requested_callback": "http://localhost:59841/?auth_callback=1",
+    "requested_callback_in_previously_verified_allowlist": false,
+    "possible_cross_origin_site_url_fallback": "http://127.0.0.1:7357/?auth_callback=1",
+    "fallback_observed_in_current_browser": false,
+    "shared_editor_launch_configurations_added": true,
+    "fixed_origin": "http://127.0.0.1:7357",
+    "actual_user_rerun_required": true,
+    "current_59841_debug_process_modified_or_restarted": false,
+    "static_7357_web_published": true
+  }
+}

@@ -15,8 +15,11 @@ class HomeUiState {
 }
 
 class HomeUiStateNotifier extends Notifier<HomeUiState> {
+  HomeUiStateNotifier({this.initialIndex = 0});
+  final int initialIndex;
+
   @override
-  HomeUiState build() => const HomeUiState();
+  HomeUiState build() => HomeUiState(bottomNavIndex: initialIndex);
 
   void setBottomNavIndex(int index) {
     if (state.bottomNavIndex == index) return;

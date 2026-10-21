@@ -1,0 +1,262 @@
+{
+  "recorded_at_utc": "2026-10-20T12:33:40.237655+00:00",
+  "status": "implemented_and_locally_verified",
+  "implemented": {
+    "local_ai_result_editing": [
+      "Paper tone and real text-element edits without another model call",
+      "Original restoration retains other edits, typography, geometry, photos and book size",
+      "Actual-font overflow preflight before applying text",
+      "Edited draft is used by buildLayers and temporary save",
+      "Request cancellation restores the active result, brief, size and page count",
+      "Expired previous result is comparison-only after new generation; existing account/session/request/billing safeguards retained"
+    ],
+    "selection_and_completion": [
+      "Accepted size/binding checkmarks and accessible selected state",
+      "Current settings summary retains input focus",
+      "Photo completion waits for actual parent document update; cancel/fail/decline never claim success and undo clears completion",
+      "Reduced motion and large text preserved",
+      "Short landscape web keeps nonzero book area and reachable selection actions"
+    ],
+    "gemini_quality": [
+      "Shared editorial rubric in actual direction/composition/review request payloads",
+      "Typography hierarchy and leading, density-aware materials, palette compatibility and repeated body-copy gates",
+      "Five complete quality checks with real page evidence and actionable failed-page issues",
+      "Existing bounded targeted corrections and final validators; failed quality never completes a READY draft",
+      "Explicit bold/layered styles, running labels and requested repeated text remain allowed"
+    ]
+  },
+  "validation": {
+    "native": {
+      "passed": 135,
+      "files": 17,
+      "exit_code": 0,
+      "existing_golden_only_test_names_excluded": [
+        "photo fill layout",
+        "album setup layout"
+      ],
+      "new_or_updated_golden_files": 0
+    },
+    "chrome": {
+      "passed": 25,
+      "files": [
+        "test/unit/ai_template_local_edit_test.dart",
+        "test/widget/ai_template_local_edit_test.dart",
+        "test/widget/creation_selection_feedback_test.dart"
+      ],
+      "exit_code": 0,
+      "all_test_bodies_and_assertions_executed": true,
+      "font_boundary": "Only custom test FontLoader setup is omitted on web; native tests retain real bundled-font loading and text preflight. Browser tests verify state, interaction, semantics, overflow, accepted values and completion."
+    },
+    "server": {
+      "passed": 125,
+      "files": [
+        "tool/ai_template_eval/evaluate_test.ts",
+        "tool/ai_template_eval/editorial-polish_test.ts",
+        "tool/ai_template_eval/server-probe_test.ts",
+        "supabase/functions/ai-album-draft/generation-guard_test.ts",
+        "supabase/functions/ai-album-draft/index_test.ts",
+        "supabase/functions/ai-album-draft/template-art-direction_test.ts",
+        "supabase/functions/ai-album-draft/template-book-engine_test.ts",
+        "supabase/functions/ai-album-draft/template-design_test.ts",
+        "supabase/functions/ai-album-draft/template-editorial-quality_test.ts",
+        "supabase/functions/ai-album-draft/template-model-checkpoint_test.ts",
+        "supabase/functions/ai-album-draft/template-model-provider_test.ts",
+        "supabase/functions/ai-album-draft/template-page-expansion_test.ts"
+      ],
+      "exit_code": 0,
+      "typed_deno_checks": true,
+      "live_model_calls": 0
+    },
+    "analysis": {
+      "dart_files": 18,
+      "issues": 0,
+      "exit_code": 0
+    },
+    "format": {
+      "dart_files": 18,
+      "changes": 0,
+      "exit_code": 0
+    },
+    "diff_check": {
+      "files": 32,
+      "exit_code": 0
+    },
+    "overlap": "Native, Chrome, focused and repeated runs overlap; their counts are not summed as unique tests.",
+    "historical_edit_regression": {
+      "fixture": "test/fixtures/ai_template_gemini_historical_book.json",
+      "bytes": 34663,
+      "source": {
+        "path": "output/ai-template-evaluations/live-server-2026-10-19T06-27-20-213Z-travel-square/run.json",
+        "sha256": "0e1aa6e34036165f59069822fa642edec5ba1503381363eec09dbd08a846716b",
+        "note": "Unmodified synthetic Gemini book from 2026-10-19; not a current generation or premium-quality approval."
+      },
+      "unmodified_source_document_and_brief": true,
+      "pages": 21,
+      "checks": [
+        "warm and cool paper edits on actual shared background colors",
+        "at most six palette colors; original artwork colors retained",
+        "actual-font text preflight",
+        "identical exported artwork layers and preserved elements",
+        "original backgrounds restored"
+      ],
+      "new_generation_evaluation": false
+    },
+    "resolved_initial_failures": [
+      "Stale price-test expectation updated to the already-current SQL/Env policy; production price unchanged",
+      "Shared paper/artwork colors now retain original palette entry and allocate a background-only entry within six-color limit",
+      "Browser custom FontLoader setup hang removed for structural interaction tests; native font checks retained",
+      "True short-landscape web overflow fixed by moving long help text into the existing settings scroll",
+      "Browser photo-fixture IO hang replaced with an in-memory 8x8 synthetic PNG, without changing completion assertions",
+      "Initial semantic handle teardown fixed in test lifecycle"
+    ],
+    "interrupted_runs": "Earlier incomplete Chrome runs were interrupted and are not counted as passes. Final Chrome batch completes all 25 cases."
+  },
+  "source_and_test_sha256": {
+    "lib/features/album/ai_album/domain/ai_template_paper_tone.dart": "a0c13ecd2880048d18916e048169fb76ac5b8bf6c1d75d0d8989e3ad33e52940",
+    "lib/features/album/ai_album/domain/ai_template_text_edit.dart": "156b2989d3b110a3af4a41a69c23b0dae0af3bc1b57779f7fd246b88fa1f893a",
+    "lib/features/album/presentation/widgets/create_flow/ai_template_text_edit_dialog.dart": "4a3d9029773fc626f85b78c7b13174775aa0928c4ead26a936965a727ea15f86",
+    "lib/features/album/presentation/widgets/create_flow/ai_template_design_review.dart": "50b3c78577fa4ee3bf9d208c72e90de3d76d9a01e2f650d4430cf0601074ec02",
+    "lib/features/album/presentation/widgets/create_flow/ai_album_recommendation_review_step.dart": "3b946d4d1a2c971af8b36415c52c9576946aec3db3fb6ccd28d4b9c7c56ab749",
+    "lib/features/album/presentation/views/album_create_flow_screen.dart": "8d5987f1b0860978d2e92cb0b598360d2f1408590df67e415070c603344d9821",
+    "lib/features/album/presentation/widgets/create_flow/cover_size_picker.dart": "ea9f5286aafbbb0b4b04d6735dba636e0f003ec3990d2a6501000fe218ad50ce",
+    "lib/features/album/presentation/widgets/create_flow/print_cover_type_picker.dart": "6edc3d9352a7e47d5e35c5de410a766cb78d62f556b3556795dc42ad55fdcfde",
+    "lib/features/album/presentation/widgets/create_flow/album_create_step1.dart": "50403e42977468d403e43d6c3b9d9e49e9665912fcebf6f177ffb1e672c39c40",
+    "lib/features/album/presentation/widgets/create_flow/template_photo_fill_step.dart": "59bab51cfa71f8d68889405627d8c5b4813ddabc11bb38be5206a627b71378d0",
+    "test/fixtures/ai_template_local_edit_fixture.dart": "4e1e1a9c9f9adf71cc9965a7c76ebb6227867643b29803f88fcaf96e5396337c",
+    "test/unit/ai_template_local_edit_test.dart": "9b4b5c836b93348dda96c32abd137ccc93b54890930817138ebf3b1a4538fe57",
+    "test/widget/ai_template_local_edit_test.dart": "2ff24878ef82999c668bbc708347d4d54a33405fb64f7c365f2ff05f14075ea1",
+    "test/widget/album_create_flow_ai_server_mode_test.dart": "1b2fed1b427e8598910b5c3ca1f12d4a62f8889786233d3a1efe3e5f3fdbd033",
+    "test/widget/creation_selection_feedback_test.dart": "6e6cb4c513ea8611756117fbc0e74038c42aa4580f492d6f16fbc5e37e85a034",
+    "test/unit/ai_album_pricing_test.dart": "001d5d63505602b6f223f29645d70fe6951ee10a940b59d797aa457536e696b3",
+    "test/unit/ai_template_historical_local_edit_test.dart": "624ee01775bea2ac897df2647958314f37f4cd54f040d4820d7f692a26ab5850",
+    "supabase/functions/ai-album-draft/index.ts": "c0201a1f964d6e45a5c84fe5ccf86ecb90e90205bef00aee6b9eec3a0b89ceab",
+    "supabase/functions/ai-album-draft/template-editorial-quality.ts": "bbcfa6b1e6a77773d44808beca2c8298b5f089d758628dac827fde5233c73374",
+    "supabase/functions/ai-album-draft/template-editorial-quality_test.ts": "262afc5fb7085712ae05079cb1882ef33b3af258c25819b5403c73a2fea1c2c7",
+    "supabase/functions/ai-album-draft/template-composition.ts": "4e7bc193aef90d966cfb0496bf3a6bf65cdb82d4f33f92d6eca20611f44d75e2",
+    "supabase/functions/ai-album-draft/template-book-engine.ts": "731e000df9ca63fb0353dc1ae8126fd6409fd9a468a03aba7fc78f1c76215f0b",
+    "supabase/functions/ai-album-draft/template-book-engine_test.ts": "e456fed09ee37ad367998d9eee227ef501781928bf3d5ea6c8d51fb9c2b4a7e8",
+    "supabase/functions/ai-album-draft/test-support.ts": "66ca61ecc0f91199c6ddf3da88dd29aeea21a491edff894cd48d37f6215860f6",
+    "supabase/functions/ai-album-draft/template-model-provider_test.ts": "bb1c7968d964f21bd2985e65f1bee737074aad6806f92de891c932f3e2b0c600",
+    "supabase/functions/ai-album-draft/template-model-checkpoint_test.ts": "a5fa2762357b74dd9bdda440bbf6af11adff5b1cf1c823ea579ce3ef52eae19d",
+    "tool/ai_template_eval/evaluate_test.ts": "01a0f5068a77c712ac3e0ab19d0fe6ff89efbce2ae57137e87ed437e74f4fb24",
+    "tool/ai_template_eval/run.ts": "a63251b718c3ea6f1a3b108afbf7b8e922656222bd651346e7caf2a0bc72e37a",
+    "docs/all_screen_design_audit.md": "90de6eb229f28e43734cb8214f157b5f4fb51c722bc5c88b10a48b66165fdabc",
+    "docs/ai_template_evaluation.md": "a247e3100c0b363fde918fe0246b7636ccd7f05ffec232d298e09d33ae565d0c",
+    "test/fixtures/ai_template_gemini_historical_book.json": "4bc0925049b4935551f6d2efb490f941742086626a35f9e0a983d7eef4a0da56",
+    "lib/features/album/presentation/widgets/create_flow/creation_workspace.dart": "f9d7a1bcca555d7639377f45447a715ac7093852ede4508ab14503b84c253abe"
+  },
+  "previous_verification_comparison": {
+    "design-medium-three-2026-10-20.json": {
+      "checked": 22,
+      "changed": [
+        "docs/all_screen_design_audit.md"
+      ],
+      "outside_this_scope": []
+    },
+    "design-priority-three-2026-10-20.json": {
+      "checked": 30,
+      "changed": [
+        "lib/features/album/presentation/views/album_create_flow_screen.dart",
+        "lib/shared/widgets/album_bottom_sheet.dart",
+        "test/widget/album_create_flow_ai_server_mode_test.dart",
+        "docs/all_screen_design_audit.md"
+      ],
+      "outside_this_scope": [
+        "lib/shared/widgets/album_bottom_sheet.dart"
+      ],
+      "inherited_change_note": "album_bottom_sheet.dart was already changed in the medium-priority work and still exactly matches that later verification record."
+    }
+  },
+  "media_inventory": {
+    "before_count": 340,
+    "after_count": 340,
+    "added": [],
+    "deleted": [],
+    "changed": [],
+    "baseline_sha256": "09cd7870c58241159a76a6f560341228f355e86202d337fd3821dd585487a337"
+  },
+  "storage": {
+    "free_bytes_before": 11429376000,
+    "removed": [
+      {
+        "path": "/Users/devsheep/SnapFit/SnapFit/build",
+        "logical_bytes": 889215341
+      },
+      {
+        "path": "/Users/devsheep/SnapFit/SnapFit/.dart_tool/flutter_build",
+        "logical_bytes": 17695
+      },
+      {
+        "path": "/Users/devsheep/SnapFit/SnapFit/.dart_tool/hooks_runner",
+        "logical_bytes": 11772565
+      }
+    ],
+    "already_absent": [
+      ".dart_tool/build",
+      ".dart_tool/pub/bin",
+      ".dart_tool/build_resolvers"
+    ],
+    "preserved": [
+      "source",
+      "assets",
+      "test goldens",
+      "historical JSON and PDF inputs",
+      "package_config.json",
+      "package_graph.json",
+      ".dart_tool/chrome-device",
+      "SDK and global caches",
+      "other projects"
+    ],
+    "logical_bytes_removed": 901005601,
+    "free_bytes_after": 12332474368,
+    "free_space_caveat": "Free-space change also reflects macOS swap and other active projects; logical removed bytes are measured separately."
+  },
+  "artifacts": {
+    "preview_files_created": 0,
+    "screenshots_created": 0,
+    "image_video_pdf_exports_created": 0,
+    "goldens_updated": 0,
+    "release_build_created": false,
+    "small_source_test_fixture_added": true
+  },
+  "deployed": false,
+  "production_database_flags_models_privacy_or_billing_policy_changed": false,
+  "quality_limitations": [
+    "No new live Gemini book or rendered premium-catalog comparison was performed",
+    "Implementation and mocked request/response checks do not establish paid-template visual parity",
+    "Request text is longer, so input token usage can rise despite unchanged pricing policy and token ceilings",
+    "Production deployment and real-output quality evaluation remain separate from these local changes"
+  ],
+  "logs": {
+    "native": {
+      "path": "/private/tmp/snapfit-ai-result-final-native-frozen.log",
+      "sha256": "f2c9d1b4dd85dd7f1e65b5508d3d3bee5edb215a8bdfba0e12bc3190efc6a258",
+      "result": "and large waiting text remain readable Size(648.0, 320.0)\n00:26 +134: /Users/devsheep/SnapFit/SnapFit/test/widget/ai_template_generating_status_test.dart: unconfirmed point result is honest and recoverable at large text\n00:26 +135: All tests passed!"
+    },
+    "chrome": {
+      "path": "/private/tmp/snapfit-ai-result-chrome-final-pass.log",
+      "sha256": "94cfea7ab26042e45a1207d9620348bdd480f296855e5adad302f5671d85686a",
+      "result": "/creation_selection_feedback_test.dart: cancelled or failed selection has no success: failure=false\n00:12 +24: test/widget/creation_selection_feedback_test.dart: cancelled or failed selection has no success: failure=true\n00:12 +25: All tests passed!"
+    },
+    "server": {
+      "path": "/private/tmp/snapfit-editorial-quality-server-final.log",
+      "sha256": "4f26ff4b50c10e75a191682df1ff291c3e72103159be5a3aeeb9b78c749afb8f",
+      "result": "independently editable IDs ... ok (1ms)\nv2 final20 uses only16 model interiors and unchanged token/deadline budget ... ok (7ms)\nv2 final80 uses only16 model interiors and unchanged token/deadline budget ... ok (1ms)\n\nok | 125 passed | 0 failed (1s)"
+    },
+    "analysis": {
+      "path": "/private/tmp/snapfit-ai-result-final-analysis.log",
+      "sha256": "59c928771fdeef6a225a84fed4bfd4ac8b1fc1b8278f4c935cc58110e42014b8",
+      "result": "Analyzing 18 items...                                           \nNo issues found! (ran in 7.6s)"
+    },
+    "format": {
+      "path": "/private/tmp/snapfit-ai-result-final-format.log",
+      "sha256": "23416cfa63e128f3d3654f6ea982021d20566daa2f44ef9d768b1942d45ae598",
+      "result": "Formatted 18 files (0 changed) in 0.27 seconds."
+    },
+    "diff_check": {
+      "path": "/private/tmp/snapfit-ai-result-final-diff-check.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": ""
+    }
+  }
+}

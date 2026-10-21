@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:snap_fit/features/album/presentation/providers/home_ui_state_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -44,6 +45,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          homeUiStateProvider.overrideWith(
+            () => HomeUiStateNotifier(initialIndex: 0),
+          ),
           albumRepositoryProvider.overrideWithValue(mockRepo),
           authViewModelProvider.overrideWith(
             () => FakeAuthViewModel(
@@ -78,6 +82,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          homeUiStateProvider.overrideWith(
+            () => HomeUiStateNotifier(initialIndex: 0),
+          ),
           albumRepositoryProvider.overrideWithValue(mockRepo),
           authViewModelProvider.overrideWith(
             () => FakeAuthViewModel(
@@ -116,6 +123,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          homeUiStateProvider.overrideWith(
+            () => HomeUiStateNotifier(initialIndex: 0),
+          ),
           albumRepositoryProvider.overrideWithValue(mockRepo),
           authViewModelProvider.overrideWith(
             () => FakeAuthViewModel(
@@ -151,6 +161,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          homeUiStateProvider.overrideWith(
+            () => HomeUiStateNotifier(initialIndex: 0),
+          ),
           albumRepositoryProvider.overrideWithValue(mockRepo),
           authViewModelProvider.overrideWith(
             () => FakeAuthViewModel(
@@ -186,6 +199,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          homeUiStateProvider.overrideWith(
+            () => HomeUiStateNotifier(initialIndex: 0),
+          ),
           albumRepositoryProvider.overrideWithValue(mockRepo),
           authViewModelProvider.overrideWith(
             () => FakeAuthViewModel(
@@ -238,6 +254,9 @@ void main() {
       ProviderScope(
         retry: (_, __) => null,
         overrides: [
+          homeUiStateProvider.overrideWith(
+            () => HomeUiStateNotifier(initialIndex: 0),
+          ),
           albumRepositoryProvider.overrideWithValue(mockRepo),
           authViewModelProvider.overrideWith(
             () => FakeAuthViewModel(
@@ -280,6 +299,9 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
+              homeUiStateProvider.overrideWith(
+                () => HomeUiStateNotifier(initialIndex: 0),
+              ),
               albumRepositoryProvider.overrideWithValue(mockRepo),
               authViewModelProvider.overrideWith(
                 () => FakeAuthViewModel(
@@ -316,6 +338,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          homeUiStateProvider.overrideWith(
+            () => HomeUiStateNotifier(initialIndex: 0),
+          ),
           albumRepositoryProvider.overrideWithValue(mockRepo),
           authViewModelProvider.overrideWith(
             () => FakeAuthViewModel(

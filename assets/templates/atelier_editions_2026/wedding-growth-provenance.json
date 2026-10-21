@@ -1,0 +1,63 @@
+{
+  "generatedAt": "2026-10-18",
+  "method": "built-in-image_gen",
+  "use": "Replaceable sample photographs only; layouts, text and frames remain editable.",
+  "commercialRightsReview": "pending-owner-review",
+  "assets": [
+    {
+      "asset": "our-first-promise.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: full bleed sample photo for a Korean wedding memory album cover, photograph only. An adult East Asian bride and groom in simple contemporary wedding clothes laughing while walking hand in hand on a sunlit rocky coastal path, blue sea behind, bride wearing a plain white midi wedding dress and groom a pale gray suit. Natural candid composition, real faces and hands, wind moves the dress subtly, clean clear everyday camera exposure rather than glossy advertisement. Portrait-safe square composition, couple central lower two-thirds, generous clear pale blue sky across upper quarter for editable title. Distinct cobalt sea, crisp white clothing, green coastal grasses, no beige filter. No letters, logo, watermarks, borders, wedding arch, collage, graphic layout or mockup.",
+      "source": "exec-015d63f7-5c97-4c73-999f-8bb74f0a7f92.png"
+    },
+    {
+      "asset": "velvet-vow-archive.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: exclusive full bleed premium wedding album cover photograph, photograph only. An adult East Asian bride wearing an understated ivory satin wedding dress and groom in a black suit sitting close together on a deep wine-red velvet bench in a bright historic room, bride gently leaning her head toward groom, both smiling softly. Large tall white-paned window at right, pale plaster wall in upper-left quarter left clean for editable typography. Clear natural daylight, human skin and hands realistic, candid editorial lens, not glamorous fashion posing. Rich but restrained wine red, ivory, warm graphite, clear bright faces. Couple centered in lower two thirds, wide enough to crop square, portrait and landscape. No text, monograms, logos, watermarks, frames, collage, graphic layout, mockup, petals in air or excessive flowers.",
+      "source": "exec-fa78d320-388d-4518-a119-3932b91e4db8.png"
+    },
+    {
+      "asset": "little-day-discoveries.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: full bleed sample photograph for a free baby memory book cover, no book or graphics. A happy East Asian baby around ten months old in a yellow knit romper, seated safely on a pale blue quilt on a low living-room floor, looking toward a small orange wooden stacking toy beside their knees. One baby only, anatomically believable small hands and feet fully visible. Fresh side daylight, matte pale green wall across top third, a partial cobalt storage basket at the edge. Genuine ordinary phone-camera candid, clear balanced exposure, no glossy studio props, no blurry background. Square composition portrait crop-safe, baby center-lower half, clean wall above for editable Korean title. Palette pale pistachio, sky blue, sunshine yellow and one orange accent, no cream filter. No text, logos, watermarks, border, collage, mockup, floating decorations or excessive toys.",
+      "source": "exec-4d9d72eb-9f27-42db-a38e-13180166dcfd.png"
+    },
+    {
+      "asset": "little-explorer-book.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: exclusive full bleed cover photo for a premium childhood discovery memory book, actual photo only. A curious East Asian toddler around two years old wearing denim overalls over a rust-red striped cotton t-shirt, crouching safely beside large green garden leaves and looking at a single smooth fallen leaf held in their small hands. Face is clearly visible in profile three-quarter view. Sunlit botanical garden path, pale cool-gray wall in upper left quarter for editable title, one cobalt child's bucket at lower right edge. Rich green foliage, denim blue, muted coral stripes, genuine phone photograph with crisp ordinary detail, realistic hands and body, not fashion posing or shallow-focus portrait. Square composition with toddler center and lower-middle, safe for portrait and landscape cropping. No letters, labels, logos, watermarks, collage, stars, planets, cartoon decorations, frames or mockup.",
+      "source": "exec-b4961bdf-e486-4d20-b1d8-84d72d3fc25e.png"
+    },
+    {
+      "asset": "velvet-vow-details.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: replaceable wedding album interior photograph, actual candid detail photograph. A folded blank ivory cotton wedding invitation, a small deep wine-red velvet ribbon, a tiny clear glass bud vase with one off-white tulip and two simple gold wedding bands resting separately on a bright cool-gray stone windowsill. Natural side light casts crisp soft-edged shadows. Intimate real material detail: cotton grain, matte ribbon nap, believable glass and metal. Editorial still life but not a flat vector layout, no background blur. Landscape composition, objects grouped center-right with clear margins, crop-safe. The paper must be completely blank, no lettering. No logos, watermark, borders, mockup, collage, extra jewelry or paper graphics.",
+      "source": "exec-3011bb4d-0e3f-47d5-b67e-34049d77c199.png"
+    },
+    {
+      "asset": "velvet-vow-reading.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: replaceable interior wedding memory photograph. A candid adult East Asian bride in simple ivory satin and groom in a black suit reading a small blank folded paper together beside a tall bright window in an intimate wedding room. They stand facing one another in three-quarter profile with happy relaxed faces, hands natural, not looking at camera. An out-of-focus-free clear room with white walls, one deep burgundy floral arrangement far in background, no crowd or stage. Soft real daylight, believable ordinary wedding photo with crisp clothing and paper textures. Landscape composition, people in central half with headroom, crop-safe, no blur effects. No writing, logos, watermarks, borders, collage, mockup or graphic elements.",
+      "source": "exec-88ebdc34-bb2e-410c-96bd-05ae3864ae60.png"
+    },
+    {
+      "asset": "little-explorer-drawing.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: replaceable childhood memory album interior photo, photograph only. A candid close-up of the natural hands and forearms of an East Asian toddler in a rust-red striped cotton t-shirt drawing irregular childlike orange and blue crayon marks on a large white sheet of paper on a low pale gray table. Face only partially visible at top edge if needed. Three chunky crayons, a small cup of water and one leaf at the corner, ordinary lived-in home, not a neatly composed design template. Clear window daylight, real wax texture, paper fibers and tiny normal hands with correct fingers. Landscape format, drawing and hands centered, no shallow depth-of-field blur, no lettering or legible words. No logos, watermarks, border, collage or graphic layout.",
+      "source": "exec-fd6642dd-6802-4651-a1be-50136c1cfb75.png"
+    },
+    {
+      "asset": "little-explorer-finds.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: editable childhood photo book interior photograph. Low candid view of a two-year-old East Asian toddler wearing denim overalls and small gray canvas sneakers crouching on a real garden path, child's head and upper body partially outside upper frame. Their hands place a single smooth fallen leaf beside a cobalt blue child's bucket with two pebbles. Focus on little hands, knees, sneakers, leaf and textured paving; realistic proportions and normal fingers. Soft natural daylight, green grass at edge, small coral striped shirt visible, real ordinary phone snapshot rather than curated flatlay. Landscape framing crop-safe around central hands and objects, sharp meaningful details, no depth-of-field blur. No readable text, logo, watermark, graphic layout, collage, frame or illustration.",
+      "source": "exec-604efb74-a3c5-4a57-a29e-0ec7d0339dfc.png"
+    },
+  {
+    "asset": "little-explorer-walk.png",
+    "prompt": "Use case: photorealistic-natural. Asset type: replaceable interior photo in a childhood discovery album. A happy East Asian toddler around two wearing denim overalls over a rust-red striped t-shirt taking confident steps on an ordinary green park path while holding an adult parent's hand. Adult is only partly visible at left, cropped above shoulders, wearing a clean white shirt and charcoal trousers. Natural correct hand contact, normal anatomy, candid little smile, believable walking posture. Clear daylight with sharp grass and path detail, ordinary family phone photograph, not studio or dramatic blur. Landscape format, child in central third and generous room around the scene for portrait crops. No other people, no doll, no text, logos, watermark, collage, frames or illustration.",
+    "source": "exec-de3d9e8b-aa0b-404f-a64e-52fb2ae29c48.png"
+  },
+  {
+    "asset": "little-explorer-play.png",
+    "prompt": "Use case: photorealistic-natural. Asset type: replaceable childhood photo album interior snapshot. A laughing East Asian toddler around two years old in a rust-red striped cotton t-shirt and denim overalls playing with large simple blue and orange wooden blocks on a pale gray rug in a real sunny apartment. Child seated naturally, head shoulders and both normal hands visible, child looking at the blocks rather than posing. Pale blue wall and low shelf in the background, clear real daylight and gentle natural shadows. Genuine family phone snapshot, realistic face, hands and body, clear surroundings not blurry. Landscape format with the child's face and hands central for frame cropping. No doll, no words or numbers on blocks, no text, logos, watermark, collage, decorative frame or mockup.",
+    "source": "exec-78b1ec30-dae7-452a-b09d-dd50e2547658.png"
+  },
+  {
+    "asset": "little-explorer-rest.png",
+    "prompt": "Use case: photorealistic-natural. Asset type: replaceable photo for a childhood memory book's quiet resting spread. An East Asian toddler around two years old in a muted rust-red striped cotton t-shirt asleep safely on a low pale blue quilted floor mattress in a sunny tidy family living room. Toddler's head on a thin small pillow, face seen in gentle profile, one hand resting beside cheek, body relaxed naturally, lower body covered by light gray cotton blanket. A cobalt toy bucket and two wooden blocks at distant side of room. Clear calm late-afternoon daylight, genuine ordinary phone photograph, realistic anatomy, visible cloth weave and peaceful face, not a newborn or doll. Landscape composition child centered and entirely inside scene for safe cropping, no blurry effect. No lettering, logos, watermark, collage, graphic frame or mockup.",
+    "source": "exec-8fe03ca6-c537-487c-99fa-db971d79011a.png"
+  }
+  ]
+}

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -262,24 +263,88 @@ void main() {
   }
 
   Future<void> agree(WidgetTester tester) async {
-    final checkbox = find.byKey(const ValueKey('print-checkout-agreement'));
-    if (checkbox.evaluate().isEmpty) {
-      await tester.scrollUntilVisible(
-        checkbox,
-        120,
-        scrollable: find
-            .descendant(
-              of: find.byType(ListView).first,
-              matching: find.byType(Scrollable),
-            )
-            .first,
-      );
+    for (final key in [
+      'print-checkout-agreement',
+      'print-checkout-policy-agreement',
+      'print-checkout-custom-production-agreement',
+    ]) {
+      final checkbox = find.byKey(ValueKey(key));
+      if (checkbox.evaluate().isEmpty) {
+        await tester.scrollUntilVisible(
+          checkbox,
+          120,
+          scrollable: find
+              .descendant(
+                of: find.byType(ListView).first,
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        );
+      }
+      await tester.ensureVisible(checkbox);
+      await tester.pump();
+      await tester.tap(checkbox);
+      await tester.pumpAndSettle();
     }
-    await tester.ensureVisible(checkbox);
-    await tester.pump();
-    await tester.tap(checkbox);
-    await tester.pumpAndSettle();
   }
+
+  testWidgets(
+    'content review alone cannot pay; policy and custom production choices are separately required',
+    (tester) async {
+      when(
+        () => orders.fetchPrintCheckoutReadiness(albumId: 7),
+      ).thenAnswer((_) async => _readiness(canPay: true));
+      PrintCheckoutRequest? submitted;
+      await pump(
+        tester,
+        onPay: (request) async {
+          submitted = request;
+          return null;
+        },
+      );
+      await validDelivery(tester);
+      await review(tester);
+      final pay = find.byKey(const ValueKey('print-checkout-payment'));
+      for (final key in [
+        'print-checkout-agreement',
+        'print-checkout-policy-agreement',
+      ]) {
+        final checkbox = find.byKey(ValueKey(key));
+        if (checkbox.evaluate().isEmpty) {
+          await tester.scrollUntilVisible(
+            checkbox,
+            120,
+            scrollable: find.byType(Scrollable).first,
+          );
+        }
+        await tester.ensureVisible(checkbox);
+        await tester.pumpAndSettle();
+        await tester.tap(checkbox);
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(pay);
+        await tester.pumpAndSettle();
+        expect(tester.widget<FilledButton>(pay).onPressed, isNull);
+      }
+      final separate = find.byKey(
+        const ValueKey('print-checkout-custom-production-agreement'),
+      );
+      await tester.ensureVisible(separate);
+      await tester.pumpAndSettle();
+      await tester.tap(separate);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(pay);
+      await tester.pumpAndSettle();
+      expect(tester.widget<FilledButton>(pay).onPressed, isNotNull);
+      await tester.tap(pay);
+      await tester.pumpAndSettle();
+      expect(submitted?.consent?.complete, isTrue);
+      expect(
+        submitted?.consent?.toJson()['version'],
+        'PRINT_ORDER_CONSENT_2026_10_19',
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   for (final size in [
     const Size(648, 320),
@@ -489,6 +554,12 @@ void main() {
       await tester.pumpAndSettle();
       expect(sdkLaunches, 0);
       expect(find.textContaining('같은 주문으로 준비를 다시 시도'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.textContaining('확정 수령인'),
+        120,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
       expect(find.textContaining('확정 수령인'), findsOneWidget);
       expect(
         tester
@@ -678,6 +749,7 @@ void main() {
       expect(paymentCalls, 0);
       verifyNever(() => orders.fetchMyOrders());
       await tester.ensureVisible(find.text('수정'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('수정'));
       await tester.pumpAndSettle();
       expect(
@@ -1067,6 +1139,18 @@ void main() {
     );
     expect(find.textContaining('테스트 수령인'), findsOneWidget);
   });
+
+  testWidgets('mobile resume keeps existing order screen refresh behavior', (
+    tester,
+  ) async {
+    await pump(tester, onPay: (_) async => _receipt());
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+    verify(() => orders.fetchPrintCheckoutReadiness(albumId: 7)).called(1);
+    verify(() => orders.fetchPrintPreviewSnapshot(albumId: 7)).called(1);
+    expect(tester.takeException(), isNull);
+  }, skip: kIsWeb);
   testWidgets(
     'a changed approved print geometry requires a new visual review even at the same price',
     (tester) async {

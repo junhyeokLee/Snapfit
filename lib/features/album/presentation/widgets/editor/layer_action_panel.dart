@@ -19,6 +19,9 @@ class LayerActionPanel extends ConsumerStatefulWidget {
   final Future<void> Function(LayerModel)? onOpenGallery;
   final Future<void> Function(LayerModel)? onOpenPhotoCrop;
 
+  /// Web inspectors expose actions as labelled controls; native keeps its rail.
+  final bool showLabels;
+
   /// 레이어 선택 후 "꾸미기" 탭 시 호출. 제공 시 바텀시트(프레임/텍스트 스타일)를 띄우고, 미제공 시 인라인 서브메뉴 표시.
   final void Function(LayerModel layer)? onOpenDecorateSheet;
 
@@ -30,6 +33,7 @@ class LayerActionPanel extends ConsumerStatefulWidget {
     required this.onRefresh,
     this.onOpenGallery,
     this.onOpenPhotoCrop,
+    this.showLabels = false,
     this.onOpenDecorateSheet,
   });
 
@@ -138,6 +142,69 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
       fadeRight: _canScrollRailRight,
     );
 
+    final actions = <Widget>[
+      if (layer.type == LayerType.text)
+        _buildActionButton(
+          Icons.font_download_outlined,
+          widget.showLabels ? '글 편집' : '폰트',
+          () => widget.textEditor.openForExisting(layer),
+        ),
+      if (layer.type == LayerType.image)
+        if (widget.onOpenPhotoCrop != null &&
+            (layer.asset != null ||
+                [
+                  layer.previewUrl,
+                  layer.imageUrl,
+                  layer.originalUrl,
+                ].whereType<String>().any((url) => url.trim().isNotEmpty)))
+          _buildActionButton(
+            Icons.crop_rounded,
+            widget.showLabels ? '사진 자르기' : '사진 구도',
+            () => widget.onOpenPhotoCrop!(layer),
+          ),
+      if (layer.type == LayerType.image)
+        _buildActionButton(
+          Icons.image_outlined,
+          widget.showLabels ? '사진 교체' : '사진변경',
+          () => widget.onOpenGallery?.call(layer),
+        ),
+      if (layer.type == LayerType.image)
+        _buildActionButton(
+          Icons.open_with,
+          widget.showLabels ? '사진 위치' : '사진위치',
+          () {
+            widget.interaction.toggleImagePanMode();
+            widget.onRefresh();
+          },
+          color: widget.interaction.isImagePanMode
+              ? SnapFitColors.accent
+              : null,
+        ),
+      _buildActionButton(
+        Icons.opacity,
+        '불투명도',
+        () => setState(() => _panelMode = EditPanelMode.opacity),
+      ),
+      _buildActionButton(Icons.auto_awesome_outlined, '꾸미기', () {
+        if (widget.onOpenDecorateSheet != null) {
+          widget.onOpenDecorateSheet!(layer);
+        } else {
+          setState(() => _panelMode = EditPanelMode.decorate);
+        }
+      }),
+      _buildActionButton(Icons.delete_outline, '삭제', () {
+        widget.interaction.deleteSelected();
+        widget.onRefresh();
+      }, color: Theme.of(context).colorScheme.error),
+    ];
+    if (widget.showLabels) {
+      return Wrap(
+        key: const ValueKey('web-layer-quick-actions'),
+        spacing: 4,
+        runSpacing: 4,
+        children: actions,
+      );
+    }
     return ShaderMask(
       key: Key(
         'layerActionRailEdgeFade-left-${_canScrollRailLeft ? 'on' : 'off'}-right-${_canScrollRailRight ? 'on' : 'off'}',
@@ -160,62 +227,7 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
         key: const Key('layerActionRailScroll'),
         controller: _primaryRailController,
         scrollDirection: Axis.horizontal,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (layer.type == LayerType.text)
-              _buildActionButton(
-                Icons.font_download_outlined,
-                "폰트",
-                () => widget.textEditor.openForExisting(layer),
-              ),
-            if (layer.type == LayerType.image)
-              if (widget.onOpenPhotoCrop != null &&
-                  (layer.asset != null ||
-                      [layer.previewUrl, layer.imageUrl, layer.originalUrl]
-                          .whereType<String>()
-                          .any((url) => url.trim().isNotEmpty)))
-                _buildActionButton(
-                  Icons.crop_rounded,
-                  '사진 구도',
-                  () => widget.onOpenPhotoCrop!(layer),
-                ),
-            if (layer.type == LayerType.image)
-              _buildActionButton(
-                Icons.image_outlined,
-                "사진변경",
-                () => widget.onOpenGallery?.call(layer),
-              ),
-            if (layer.type == LayerType.image)
-              _buildActionButton(
-                Icons.open_with,
-                "사진위치",
-                () {
-                  widget.interaction.toggleImagePanMode();
-                  widget.onRefresh();
-                },
-                color: widget.interaction.isImagePanMode
-                    ? SnapFitColors.accent
-                    : null,
-              ),
-            _buildActionButton(
-              Icons.opacity,
-              "불투명도",
-              () => setState(() => _panelMode = EditPanelMode.opacity),
-            ),
-            _buildActionButton(Icons.auto_awesome_outlined, "꾸미기", () {
-              if (widget.onOpenDecorateSheet != null) {
-                widget.onOpenDecorateSheet!(layer);
-              } else {
-                setState(() => _panelMode = EditPanelMode.decorate);
-              }
-            }),
-            _buildActionButton(Icons.delete_outline, "삭제", () {
-              widget.interaction.deleteSelected();
-              widget.onRefresh();
-            }, color: Theme.of(context).colorScheme.error),
-          ],
-        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: actions),
       ),
     );
   }
@@ -226,6 +238,18 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
     VoidCallback onTap, {
     Color? color,
   }) {
+    if (widget.showLabels) {
+      return TextButton.icon(
+        onPressed: onTap,
+        icon: Icon(icon, size: 18),
+        label: Text(label),
+        style: TextButton.styleFrom(
+          foregroundColor: color ?? ExperienceFormStyle.ink(context),
+          minimumSize: const Size(0, 48),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        ),
+      );
+    }
     return Tooltip(
       message: label,
       excludeFromSemantics: true,

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../../../core/constants/cover_size.dart';
+import '../../../../core/utils/text_shadow_codec.dart';
 import 'layer.dart';
 
 /// Pages use the physical album canvas, including each aspect variant.
@@ -62,6 +63,10 @@ class AlbumCreationTemplate {
                   width: layer.width * scale,
                   height: layer.height * scale,
                   textStyle: layer.textStyle?.copyWith(
+                    shadows: TextShadowCodec.scaled(
+                      layer.textStyle?.shadows,
+                      scale,
+                    ),
                     fontSize: layer.textStyle?.fontSize == null
                         ? null
                         : layer.textStyle!.fontSize! * scale,

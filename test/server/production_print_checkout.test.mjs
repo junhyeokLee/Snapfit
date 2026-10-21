@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import {test} from 'node:test'
 import {createProductionPrintCheckoutHandler,printCheckoutRevision,printCheckoutSpecRevision,canonicalPrintReview,reconcileProductionPrintPayment} from '../../supabase/functions/_shared/production-print-checkout.ts'
 import {PortOnePrintPaymentError,queryPortOnePrintPaymentState} from '../../supabase/functions/_shared/portone-print-payment.ts'
+import {printCheckoutConsent} from '../../supabase/functions/_shared/print-checkout-consent.ts'
 const owner='11111111-1111-4111-8111-111111111111',other='22222222-2222-4222-8222-222222222222',requestId='33333333-3333-4333-8333-333333333333'
 const product={id:'REDP_200X150_SOFT',trimWidthMm:200,trimHeightMm:150}
 const spec={id:product.id,verified:true,specVersion:'SYNTHETIC_APPROVED_V1',coverType:'SOFT',pageCount:20,dpi:300,colorSpace:'sRGB',layoutFit:'contain',minimumPhotoPpi:150,
@@ -24,7 +25,9 @@ function fixture(overrides={}){
       const i=rows.find(v=>v.user_id===p.p_actor&&(p.p_payment_id===v.payment_id||p.p_request_id===v.request_id||p.p_order_id===v.order_id))
       return i?{data:{...structuredClone(i),launch_ready:ctx.canPay},error:null}:{data:null,error:{code:'P0002',message:'print_checkout_not_found'}}
     }
-    if(name==='prepare_production_print_checkout'){
+    if(name==='record_print_checkout_consent'){assert.deepEqual(p.p_consent,printCheckoutConsent);return{data:true,error:null}}
+    if(name==='prepare_production_print_checkout_with_consent'){
+      assert.deepEqual(p.p_consent,printCheckoutConsent)
       const i={id:'55555555-5555-4555-8555-555555555555',user_id:p.p_actor,request_id:p.p_request_id,payment_id:'SFP_55555555-5555-4555-8555-555555555555',order_id:'ordp_55555555-5555-4555-8555-555555555555',
         album_id:p.p_album_id,amount:p.p_expected_amount,page_count:p.p_page_count,environment:'live',currency:'KRW',store_id:config.storeId,channel_key:config.channelKey,status:'PREPARED',
         expires_at:'2026-10-15T00:00:00Z',reviewed_revision:p.p_reviewed_revision,reviewed_spec_revision:p.p_reviewed_spec_revision,delivery_snapshot:p.p_recipient,payment_receipt:null,verified_at:null,print_file_source:'APP_UPLOADED',prepayment_package_ready:false,prepayment_package_id:null,sdk_issued_at:null}
@@ -41,8 +44,17 @@ function fixture(overrides={}){
 }
 const request=(body,auth='Bearer synthetic-user')=>new Request('https://example.invalid/checkout',{method:'POST',headers:auth?{authorization:auth}:{},body:JSON.stringify(body)})
 const result=async promise=>{const r=await promise;return{status:r.status,body:await r.json()}}
-const prepareBody=async(f,changes={})=>({action:'prepare',albumId:1,requestId,expectedAmount:49900,reviewedRevision:await printCheckoutRevision(f.ctx.snapshot),reviewedSpecRevision:await printCheckoutSpecRevision(f.ctx.quote.spec),recipient,...changes})
+const prepareBody=async(f,changes={})=>({action:'prepare',albumId:1,requestId,expectedAmount:49900,reviewedRevision:await printCheckoutRevision(f.ctx.snapshot),reviewedSpecRevision:await printCheckoutSpecRevision(f.ctx.quote.spec),recipient,consent:{...printCheckoutConsent},...changes})
 const prepare=async(f,changes={})=>result(f.handler(request(await prepareBody(f,changes))))
+
+test('separate policy and custom-production consent must be affirmative and exactly versioned before any privileged checkout read',async()=>{
+ for(const consent of [undefined,null,{},[],{...printCheckoutConsent,policyAccepted:false},{...printCheckoutConsent,orderReviewed:false},
+  {...printCheckoutConsent,customProductionAccepted:false},{...printCheckoutConsent,policyVersion:'old'},
+  {...printCheckoutConsent,customProductionNotice:'no refunds'},{...printCheckoutConsent,acceptedAt:'forged-client-time'}]){
+  const f=fixture();const response=await prepare(f,{consent});assert.equal(response.status,400);assert.equal(response.body.error,'print_checkout_consent_required');
+  assert.equal(f.calls.includes('db'),false);assert.equal(f.rows.length,0)
+ }
+})
 
 test('Dart/JS reviewed source has the same stable IEEE754 SHA256; numeric types normalize without losing precision',async()=>{
   const cover={pages:[{index:0,layers:[{x:1,y:.125,rotation:0,text:'숫자 · emoji 🖼',nested:{z:Math.PI,a:1}}]}]}

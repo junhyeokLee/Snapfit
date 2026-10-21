@@ -80,6 +80,62 @@ void main() {
   );
 
   testWidgets(
+    'browser picker shows named failures and expandable import results',
+    (tester) async {
+      final repository = BrowserGalleryRepository(
+        currentOwner: () => 'owner-a',
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            galleryRepositoryProvider.overrideWithValue(repository),
+            visibleOrderOwnerProvider.overrideWith(
+              (ref) => ref.watch(_ownerProvider),
+            ),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: BrowserPhotoSelectionSheet(
+                maxSelection: 10,
+                selectFiles: () async => [
+                  BrowserPhotoFile(
+                    name: 'empty.jpg',
+                    size: 0,
+                    readBytes: () => throw StateError('must not read'),
+                  ),
+                  BrowserPhotoFile(
+                    name: 'too-big.jpg',
+                    size: 50000001,
+                    readBytes: () => throw StateError('must not read'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.byKey(const ValueKey('browser-photo-pick-files')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('empty.jpg · 사진 한 장은 50MB'), findsOneWidget);
+      expect(find.textContaining('too-big.jpg · 사진 한 장은 50MB'), findsOneWidget);
+      expect(find.text('0장 선택 완료'), findsOneWidget);
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('browser-photo-import-results')),
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('browser-photo-import-results')),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('browser-photo-import-file-list')),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
     'browser bytes fill a template slot without a native file or photo-manager call',
     (tester) async {
       final photo = await tester.runAsync(

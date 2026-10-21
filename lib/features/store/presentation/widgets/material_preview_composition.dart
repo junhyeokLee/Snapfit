@@ -21,6 +21,8 @@ class MaterialPreviewComposition {
     this.paperColor = const Color(0xFFF7F8F6),
     this.photoAlignment = Alignment.center,
     this.letteringSourceSize,
+    this.circularPhoto = false,
+    this.sampleTextColor = const Color(0xFF3D524B),
   });
 
   static const canvas = Size(600, 680);
@@ -33,6 +35,8 @@ class MaterialPreviewComposition {
   final Color paperColor;
   final Alignment photoAlignment;
   final Size? letteringSourceSize;
+  final bool circularPhoto;
+  final Color sampleTextColor;
   bool get materialBelowPhoto => placement == MaterialPreviewPlacement.backing;
 
   factory MaterialPreviewComposition.forProduct(
@@ -63,7 +67,9 @@ class MaterialPreviewComposition {
     final scene =
         scenes[((curatedIndex < 0 ? ordinal : curatedIndex) + photoIndex) %
             scenes.length];
-    final photo = 'assets/templates/original_editorial/images/${scene.photo}';
+    final photo = scene.photo.startsWith('assets/')
+        ? scene.photo
+        : 'assets/templates/original_editorial/images/${scene.photo}';
     final ratio = spec?.aspectRatio ?? 1;
 
     MaterialPreviewComposition compose(
@@ -77,6 +83,8 @@ class MaterialPreviewComposition {
       bool serif = false,
       Color? paperColor,
       Size? letteringSourceSize,
+      bool circularPhoto = false,
+      Color sampleTextColor = const Color(0xFF3D524B),
     }) {
       final material = _fit(aspect ?? ratio, materialBounds);
       return MaterialPreviewComposition(
@@ -103,15 +111,68 @@ class MaterialPreviewComposition {
             ? const Alignment(-.4, 0)
             : Alignment.center,
         letteringSourceSize: letteringSourceSize,
+        circularPhoto: circularPhoto,
+        sampleTextColor: sampleTextColor,
       );
     }
 
-    if (type == '프레임') {
+    if (productKey.startsWith('frame:')) {
       return compose(
         MaterialPreviewPlacement.frame,
         const Rect.fromLTWH(36, 28, 528, 532),
         null,
         const Rect.fromLTWH(48, 584, 504, 64),
+      );
+    }
+    if (atelierLayeredDecorations.any((s) => s.id == id)) {
+      final support = _fit(ratio, const Rect.fromLTWH(44, 32, 512, 512));
+      if (id.endsWith('Mount')) {
+        final window = atelierMountWindow(id);
+        return compose(
+          MaterialPreviewPlacement.frame,
+          support,
+          Rect.fromLTWH(
+            support.left + support.width * window.left,
+            support.top + support.height * window.top,
+            support.width * window.width,
+            support.height * window.height,
+          ),
+          const Rect.fromLTWH(48, 582, 504, 72),
+          circularPhoto: id == 'editionOrbitMount',
+        );
+      }
+      if (id.endsWith('Paper')) {
+        return compose(
+          MaterialPreviewPlacement.backing,
+          support,
+          Rect.fromLTWH(
+            support.left + support.width * .17,
+            support.top + support.height * .15,
+            support.width * .66,
+            support.height * .46,
+          ),
+          const Rect.fromLTWH(48, 582, 504, 72),
+        );
+      }
+      final sample = switch (id) {
+        'editionGardenBand' => '서연 · 지우',
+        'editionRailBand' => 'NEXT STOP',
+        'editionHerbariumBand' => 'PLANT NOTES',
+        'editionOrbitBand' => '너의 첫해',
+        'editionKitchenBand' => '우리 집의 식탁',
+        'editionCinemaBand' => 'ADMIT TWO',
+        _ => 'WALK CLUB',
+      };
+      return compose(
+        MaterialPreviewPlacement.accent,
+        const Rect.fromLTWH(66, 340, 468, 132),
+        const Rect.fromLTWH(44, 36, 512, 360),
+        const Rect.fromLTWH(48, 582, 504, 72),
+        sampleText: sample,
+        sampleArea: const Rect.fromLTWH(.075, .20, .60, .60),
+        sampleTextColor: id == 'editionGardenBand' || id == 'editionCinemaBand'
+            ? const Color(0xFFF4F0E8)
+            : const Color(0xFF3D524B),
       );
     }
     if (type == '문구') {
@@ -123,6 +184,23 @@ class MaterialPreviewComposition {
         null,
         aspect: source.aspectRatio,
         letteringSourceSize: source,
+      );
+    }
+    if (atelierWritingPapers.any((s) => s.id == id)) {
+      final sample = switch (id) {
+        'atelierWritingVow' => '서로에게\n쓴 약속',
+        'atelierWritingReceipt' => '점심은\n천천히',
+        'atelierWritingLetter' => '자막 대신\n남기는 말',
+        _ => '매일 조금씩\n살펴본 기록',
+      };
+      return compose(
+        MaterialPreviewPlacement.card,
+        const Rect.fromLTWH(264, 188, 304, 440),
+        const Rect.fromLTWH(34, 48, 212, 316),
+        const Rect.fromLTWH(36, 408, 204, 174),
+        sampleText: sample,
+        sampleArea: const Rect.fromLTWH(.16, .29, .68, .40),
+        serif: id == 'atelierWritingVow' || id == 'atelierWritingLetter',
       );
     }
     if (id == 'luminousLace' || id == 'atelierCornerBrackets') {
@@ -235,7 +313,17 @@ const _translucentPapers = {
   'studioVellum',
 };
 
-enum _Theme { wedding, travel, daily, growth, family, couple, pet, celebration }
+enum _Theme {
+  wedding,
+  travel,
+  daily,
+  botanical,
+  growth,
+  family,
+  couple,
+  pet,
+  celebration,
+}
 
 _Theme _themeFor(String? collection, String? wordArt) {
   final artTheme = switch (wordArt) {
@@ -255,13 +343,14 @@ _Theme _themeFor(String? collection, String? wordArt) {
   };
   return artTheme ??
       switch (collection) {
-        '웨딩' || '웨딩 기록' || '서약의 아틀리에' || '서체와 압인' => _Theme.wedding,
-        '여행' || '여행 기록' || '여행 인쇄소' || '해변의 기록' => _Theme.travel,
-        '성장·육아' || '성장 기록' || '작은 첫 계절' => _Theme.growth,
-        '가족·친구' || '함께한 식탁' || '함께 차린 식탁' => _Theme.family,
-        '커플·기념일' || '둘의 기록' || '둘의 보관함' => _Theme.couple,
-        '반려동물' || '산책 수첩' || '산책의 흔적' => _Theme.pet,
+        '웨딩' || '웨딩 기록' || '서약의 아틀리에' || '서체와 압인' || '밤의 가든' => _Theme.wedding,
+        '여행' || '여행 기록' || '여행 인쇄소' || '해변의 기록' || '느린 열차' => _Theme.travel,
+        '성장·육아' || '성장 기록' || '작은 첫 계절' || '첫 번째 행성' => _Theme.growth,
+        '가족·친구' || '함께한 식탁' || '함께 차린 식탁' || '우리 집의 식탁' => _Theme.family,
+        '커플·기념일' || '둘의 기록' || '둘의 보관함' || '둘만의 영화' => _Theme.couple,
+        '반려동물' || '산책 수첩' || '산책의 흔적' || '산책 클럽' => _Theme.pet,
         '작은 축하' => _Theme.celebration,
+        '초록의 관찰' => _Theme.botanical,
         _ => _Theme.daily,
       };
 }
@@ -273,6 +362,15 @@ const List<_Scene> _letterScenes = [
   (photo: 'daily_book.png', caption: '한 장씩 모은 기억'),
 ];
 const Map<_Theme, List<_Scene>> _scenes = {
+  _Theme.botanical: [
+    (
+      photo: 'assets/templates/atelier_editions_2026/green-hours.png',
+      caption: '초록을 돌보는 시간',
+    ),
+    (photo: 'daily_book.png', caption: '창가에 둔 꽃 한 송이'),
+    (photo: 'small_days_walk.png', caption: '산책에서 만난 잎의 모양'),
+    (photo: 'daily_picnic.png', caption: '계절의 초록을 모아서'),
+  ],
   _Theme.growth: [
     (photo: 'growth_keepsakes.png', caption: '작은 물건을 모아'),
     (photo: 'growth_sleep.png', caption: '너의 작은 하루'),

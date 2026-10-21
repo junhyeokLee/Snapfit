@@ -1,0 +1,379 @@
+{
+  "recordedAtUtc": "2026-10-21T02:21:04.572Z",
+  "status": "authored_travel_signature_web_deployed_verified",
+  "scope": {
+    "collectionId": "wind-atlas",
+    "catalogId": -9304,
+    "title": "바람을 수집한 여행",
+    "accessTier": "free",
+    "points": 0,
+    "innerPages": 32,
+    "modifiedDefaultCover": true,
+    "modifiedInnerPages": [
+      3,
+      4,
+      7,
+      8,
+      13,
+      14
+    ],
+    "protectedInnerPages": 26,
+    "protectedAlternateCovers": 2,
+    "aspectVariants": [
+      "portrait",
+      "square",
+      "landscape"
+    ]
+  },
+  "implemented": [
+    "Larger cover photography with separate Korean title, travel dates, location and author",
+    "Different arrival, sea and collection/journal facing-page compositions",
+    "Real bundled-font fitting; body at least 11 authored pixels, captions at least 8.5; text contrast at least 4.5:1",
+    "Complete Korean journal words and source paragraphs retained with short last-line rebalancing",
+    "Current editable cover and pages 3-4 drawn in catalog cards without regenerating thumbnail files",
+    "Only existing local photo assets; photo and text layers remain editable"
+  ],
+  "validation": {
+    "native": {
+      "uniqueChecks": 52,
+      "failed": 0,
+      "files": 8,
+      "note": "51 unique unit/widget/design checks across final focused runs plus one RAM-only visual test; repeat runs not added"
+    },
+    "chrome": {
+      "passed": 8,
+      "failed": 0,
+      "files": 2,
+      "scope": "Current live catalog widgets and canonical catalog propagation; font aesthetics assessed in native RAM rendering"
+    },
+    "analysis": {
+      "files": 12,
+      "issues": 0
+    },
+    "ramVisual": {
+      "scenarios": 14,
+      "selectedPageRenders": 98,
+      "textBoxes": 652,
+      "decodedPhotos": 98,
+      "savedImageFiles": 0,
+      "metrics": [
+        {
+          "aspect": "portrait",
+          "case": "authored",
+          "pages": [
+            0,
+            3,
+            4,
+            7,
+            8,
+            13,
+            14
+          ],
+          "textCount": 47,
+          "photoCount": 7,
+          "decodedImages": 7,
+          "textOverflow": 0
+        },
+        {
+          "aspect": "portrait",
+          "case": "long-copy",
+          "pages": [
+            0,
+            3,
+            4,
+            7,
+            8,
+            13,
+            14
+          ],
+          "textCount": 47,
+          "photoCount": 7,
+          "decodedImages": 7,
+          "textOverflow": 0
+        },
+        {
+          "aspect": "portrait",
+          "case": "empty-copy",
+          "pages": [
+            0,
+            3,
+            4,
+            7,
+            8,
+            13,
+            14
+          ],
+          "textCount": 47,
+          "photoCount": 7,
+          "decodedImages": 7,
+          "textOverflow": 0
+        },
+        {
+          "aspect": "square",
+          "case": "authored",
+          "pages": [
+            0,
+            3,
+            4,
+            7,
+            8,
+            13,
+            14
+          ],
+          "textCount": 47,
+          "photoCount": 7,
+          "decodedImages": 7,
+          "textOverflow": 0
+        },
+        {
+          "aspect": "square",
+          "case": "long-copy",
+          "pages": [
+            0,
+            3,
+            4,
+            7,
+            8,
+            13,
+            14
+          ],
+          "textCount": 47,
+          "photoCount": 7,
+          "decodedImages": 7,
+          "textOverflow": 0
+        },
+        {
+          "aspect": "square",
+          "case": "empty-copy",
+          "pages": [
+            0,
+            3,
+            4,
+            7,
+            8,
+            13,
+            14
+          ],
+          "textCount": 47,
+          "photoCount": 7,
+          "decodedImages": 7,
+          "textOverflow": 0
+        },
+        {
+          "aspect": "landscape",
+          "case": "authored",
+          "pages": [
+            0,
+            3,
+            4,
+            7,
+            8,
+            13,
+            14
+          ],
+          "textCount": 45,
+          "photoCount": 7,
+          "decodedImages": 7,
+          "textOverflow": 0
+        },
+        {
+          "aspect": "landscape",
+          "case": "long-copy",
+          "pages": [
+            0,
+            3,
+            4,
+            7,
+            8,
+            13,
+            14
+          ],
+          "textCount": 45,
+          "photoCount": 7,
+          "decodedImages": 7,
+          "textOverflow": 0
+        },
+        {
+          "aspect": "landscape",
+          "case": "empty-copy",
+          "pages": [
+            0,
+            3,
+            4,
+            7,
+            8,
+            13,
+            14
+          ],
+          "textCount": 45,
+          "photoCount": 7,
+          "decodedImages": 7,
+          "textOverflow": 0
+        },
+        {
+          "aspect": "square",
+          "case": "people",
+          "pages": [
+            0,
+            3,
+            4,
+            7,
+            8,
+            13,
+            14
+          ],
+          "textCount": 47,
+          "photoCount": 7,
+          "decodedImages": 7,
+          "textOverflow": 0
+        },
+        {
+          "aspect": "square",
+          "case": "portrait",
+          "pages": [
+            0,
+            3,
+            4,
+            7,
+            8,
+            13,
+            14
+          ],
+          "textCount": 47,
+          "photoCount": 7,
+          "decodedImages": 7,
+          "textOverflow": 0
+        },
+        {
+          "aspect": "square",
+          "case": "group",
+          "pages": [
+            0,
+            3,
+            4,
+            7,
+            8,
+            13,
+            14
+          ],
+          "textCount": 47,
+          "photoCount": 7,
+          "decodedImages": 7,
+          "textOverflow": 0
+        },
+        {
+          "aspect": "square",
+          "case": "dark",
+          "pages": [
+            0,
+            3,
+            4,
+            7,
+            8,
+            13,
+            14
+          ],
+          "textCount": 47,
+          "photoCount": 7,
+          "decodedImages": 7,
+          "textOverflow": 0
+        },
+        {
+          "aspect": "square",
+          "case": "landscape",
+          "pages": [
+            0,
+            3,
+            4,
+            7,
+            8,
+            13,
+            14
+          ],
+          "textCount": 47,
+          "photoCount": 7,
+          "decodedImages": 7,
+          "textOverflow": 0
+        }
+      ],
+      "samplePhotos": {
+        "people": "assets/templates/original_editorial/images/couple_walk.png",
+        "portrait": "assets/templates/scrapbook/images/sources/city_weekend.png",
+        "group": "assets/templates/original_editorial/images/family_friends.png",
+        "dark": "assets/templates/original_editorial/images/cover_friends_evening.png",
+        "landscape": "assets/templates/jeju_travel/images/sources/jeju_ocean.jpg"
+      }
+    },
+    "preservation": "Before-change canonical SHA-256 values verify 26 untouched inner pages and two untouched alternate covers in all three aspects",
+    "productionVisual": "Deployed anonymous template detail visibly showed the new cover, free 0P, 32 pages and three shapes; screenshot inspected only in memory",
+    "previousAiRelease": {
+      "unchangedSourceAndTestHashes": 52,
+      "modelCallsThisTask": 0
+    },
+    "diffCheck": {
+      "exitCode": 0
+    }
+  },
+  "production": {
+    "verified": true,
+    "tlsVerified": true,
+    "build": {
+      "main_sha256": "b9cc56fcecdc6df5a46bd5d0c8b62a6cb2009ceb3846530b6823d1a9e7dbd42a",
+      "main_file": "main.b9cc56fcecdc6df5a46b.dart.js",
+      "bootstrap_sha256": "3e29b3e1c20a3597e4cc32d6e2bf7e7f4a20a7fd0aa4abe902d86f06366be94f",
+      "bootstrap_file": "flutter_bootstrap.3e29b3e1c20a3597e4cc.js"
+    },
+    "resources": {
+      "index.html": {
+        "bytes": 3023,
+        "sha256": "cbc9d4929b3c8ae9bbd9290f998b107619599902d0bbeb177807b2bca84559fd"
+      },
+      "main.b9cc56fcecdc6df5a46b.dart.js": {
+        "bytes": 7271229,
+        "sha256": "b9cc56fcecdc6df5a46bd5d0c8b62a6cb2009ceb3846530b6823d1a9e7dbd42a"
+      },
+      "flutter_bootstrap.3e29b3e1c20a3597e4cc.js": {
+        "bytes": 14512,
+        "sha256": "3e29b3e1c20a3597e4cc32d6e2bf7e7f4a20a7fd0aa4abe902d86f06366be94f"
+      }
+    },
+    "url": "https://snapfit-c719d.web.app/",
+    "designUrl": "https://snapfit-c719d.web.app/#/designs/templates/-9304"
+  },
+  "storage": {
+    "removedBytes": 3663484231,
+    "removedCaches": {
+      "build": 3442336312,
+      ".dart_tool/flutter_build": 186902043,
+      ".dart_tool/hooks_runner": 34245876
+    },
+    "originalMediaCount": 340,
+    "finalMediaCount": 340,
+    "changedOriginalMedia": [],
+    "newMediaFiles": [],
+    "previewFilesCreated": 0,
+    "freeBytesAfter": 32406573056,
+    "preservedPackageConfiguration": true
+  },
+  "remainingLimits": [
+    "Physical printer proof and color matching have not been performed. Existing printVerified remains false.",
+    "App Store and Play Store binaries were not released; the shared source and production web are updated.",
+    "A very tall replacement photograph still uses the existing adjustable center crop and may need manual framing. Content-aware automatic crop quality remains a later phase.",
+    "Arbitrarily long text edited inside the existing editor can expand beyond its original box; validation covers default, specified long and empty factory copy, not unrestricted editing.",
+    "No independent commercial-app blind comparison or claim of being best in market."
+  ],
+  "sourceAndTestSha256": {
+    "lib/core/templates/authored_collections.dart": "719605dd74ffcc40845e7f7bbb447acde4ca4c5f94e678583d24a8ac578e97f2",
+    "lib/core/templates/authored_wind_atlas.dart": "1ce28cdf15a0db60333aa50429b6f15b88e53acc8187ce1fafd200c8774f8e31",
+    "lib/core/templates/authored_wind_atlas_signature.dart": "254ac41925105a1fe15825549ffe8e2159c97c3c807a6dc3459288aed7813311",
+    "lib/features/album/presentation/widgets/create_flow/creation_catalog_cover.dart": "f2a994c1a73a2b62dd7f8caeaeadda01b39c6b1226ef8a06cc8c7850222a7328",
+    "lib/features/store/presentation/widgets/catalog_edition_artwork.dart": "8a272c5b2442f0ebd9b20185cbe8e0385b261ea6be034b1ef758cd369326ee5f",
+    "lib/features/store/presentation/views/material_catalog_screen.dart": "3e2e0e4e44bc7eccd77a8c99447c49c10df9d293fe99aecbb848ecb28724203c",
+    "test/unit/wind_atlas_signature_quality_test.dart": "aa67bd776c18a93d16fcc9ae3db270b5fa75f594e49653e3aecbbc8203cffa75",
+    "test/widget/wind_atlas_live_catalog_test.dart": "cf33b04564a65eee601145df2fec1ba026dd4e472fe1866da21a26d34c17047b",
+    "test/design/wind_atlas_signature_memory_test.dart": "348eb5123d8b5c3efbb4a5f18ac3d85cf462e8ba5dacfd940a88e6d8d751dee5",
+    "test/design/wind_atlas_test.dart": "29ee3a2f6a69d0c830b1146a54ed5739d494de1048580d0fea4ba98e85fcbb92",
+    "test/widget/catalog_thumbnail_test.dart": "efb5acc84d8237a61ef5ccb1f2434e4ac6d0ade0bb150e14137ea87f648d64ad",
+    "test/widget/published_store_catalog_test.dart": "fefd0c6cc09b3dd5143aa93bc0a35da68229e1243f813f0362caad837f3b10f9"
+  }
+}

@@ -1,0 +1,2307 @@
+{
+  "recordedAtUtc": "2026-10-21T05:34:02.640737+00:00",
+  "status": "free_editorial_books_web_deployed_verified",
+  "scope": {
+    "freeCollections": 42,
+    "innerPagesPerDesignSet": 1016,
+    "aspects": [
+      "portrait",
+      "square",
+      "landscape"
+    ],
+    "coverVariants": 126,
+    "innerPageVariants": 3048,
+    "totalPageVariants": 3174,
+    "pricePoints": 0,
+    "paidCollectionsUnchanged": 26,
+    "savedAlbumsRewritten": false
+  },
+  "implemented": [
+    "Full-bleed editable cover photograph for every free title, with compact opaque high-contrast typography plates",
+    "Photo-led editorial interiors with 13 active composition families and category-specific palette, display type and rhythm",
+    "Complete original Korean wording and photo/text layer identities retained, with source photograph aspect ratio respected",
+    "Three previously authored wind-atlas signature spreads (six pages) retain their photographs and text composition while receiving safer footer placement",
+    "Only the mislabelled quiet_room stock photograph is replaced with the existing living-room sample in exactly 105 image slots; the original source factory remains intact",
+    "All free store spreads render current editable layers; 18-book LRU retains two parsed pages per spread"
+  ],
+  "validation": {
+    "contentQuality": {
+      "passed": 129,
+      "failed": 0,
+      "metrics": {
+        "books": 126,
+        "pages": 3174,
+        "covers": 126,
+        "refinedInteriors": 3030,
+        "protectedInteriors": 18,
+        "approvedSampleReplacement": {
+          "from": "asset:assets/frame_preview/quiet_room.jpg",
+          "to": "asset:assets/templates/original_editorial/images/daily_book.png",
+          "layers": 105
+        },
+        "layoutCounts": {
+          "opening-statement": 108,
+          "opening-photograph": 117,
+          "paired-gallery": 282,
+          "photographic-pause": 471,
+          "headline-and-scene": 345,
+          "asymmetric-duet": 252,
+          "margin-essay": 357,
+          "scene-and-caption": 324,
+          "statement-register": 408,
+          "photo-journal": 72,
+          "closing-portrait": 129,
+          "three-scene-sequence": 99,
+          "contact-gallery": 66,
+          "wind-signature-preserved": 18
+        }
+      }
+    },
+    "coverAndLiveContracts": {
+      "passed": 41,
+      "failed": 0,
+      "note": "The earlier 169-check run included 128 pre-curation quality checks; these overlap the 129-check final quality group and are not added to a unique total."
+    },
+    "storeCommerceSelectionAndThumbnail": {
+      "passed": 147,
+      "failed": 0,
+      "note": "275 passed plus one obsolete ornament-count assertion updated for the no-priced-ornament catalog; all nine material-policy checks passed on final rerun."
+    },
+    "analysis": {
+      "files": 11,
+      "issues": 0
+    },
+    "previousAiContract": {
+      "unchangedSourceAndTestHashes": 52
+    },
+    "ramVisual": {
+      "books": 126,
+      "scope": "complete-catalogue",
+      "pages": 3174,
+      "decodedImages": 3786,
+      "sourceAspectChecks": 3636,
+      "previewFiles": 0,
+      "passedTests": 134,
+      "failedTests": 0,
+      "elapsedMs": 160016,
+      "perBook": [
+        {
+          "collection": "lightbound",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 30,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            17,
+            18
+          ]
+        },
+        {
+          "collection": "lightbound",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 30,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            17,
+            18
+          ]
+        },
+        {
+          "collection": "lightbound",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 30,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            17,
+            18
+          ]
+        },
+        {
+          "collection": "our-vows",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 29,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            11,
+            12
+          ]
+        },
+        {
+          "collection": "our-vows",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 29,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            11,
+            12
+          ]
+        },
+        {
+          "collection": "our-vows",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 29,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            11,
+            12
+          ]
+        },
+        {
+          "collection": "garden-promise",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 32,
+          "sourceAspectChecks": 31,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "garden-promise",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 32,
+          "sourceAspectChecks": 31,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "garden-promise",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 32,
+          "sourceAspectChecks": 31,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "one-fine-film",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 33,
+          "sourceAspectChecks": 32,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "one-fine-film",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 33,
+          "sourceAspectChecks": 32,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "one-fine-film",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 33,
+          "sourceAspectChecks": 32,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "love-letters",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 29,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "love-letters",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 29,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "love-letters",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 29,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "our-first-promise",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 22,
+          "sourceAspectChecks": 21,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "our-first-promise",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 22,
+          "sourceAspectChecks": 21,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "our-first-promise",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 22,
+          "sourceAspectChecks": 21,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "journey",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 25,
+          "sourceAspectChecks": 24,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "journey",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 25,
+          "sourceAspectChecks": 24,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "journey",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 25,
+          "sourceAspectChecks": 24,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "across-the-sea",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 34,
+          "sourceAspectChecks": 33,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "across-the-sea",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 34,
+          "sourceAspectChecks": 33,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "across-the-sea",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 34,
+          "sourceAspectChecks": 33,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "city-collector",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 32,
+          "sourceAspectChecks": 31,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "city-collector",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 32,
+          "sourceAspectChecks": 31,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "city-collector",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 32,
+          "sourceAspectChecks": 31,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "slow-paths",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 30,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "slow-paths",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 30,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "slow-paths",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 30,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "travel-postbox",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 32,
+          "sourceAspectChecks": 31,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "travel-postbox",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 32,
+          "sourceAspectChecks": 31,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "travel-postbox",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 32,
+          "sourceAspectChecks": 31,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "wind-atlas",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 33,
+          "decodedImages": 35,
+          "sourceAspectChecks": 34,
+          "representativePages": [
+            0,
+            1,
+            2,
+            13,
+            14,
+            15,
+            16
+          ]
+        },
+        {
+          "collection": "wind-atlas",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 33,
+          "decodedImages": 35,
+          "sourceAspectChecks": 34,
+          "representativePages": [
+            0,
+            1,
+            2,
+            13,
+            14,
+            15,
+            16
+          ]
+        },
+        {
+          "collection": "wind-atlas",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 33,
+          "decodedImages": 35,
+          "sourceAspectChecks": 34,
+          "representativePages": [
+            0,
+            1,
+            2,
+            13,
+            14,
+            15,
+            16
+          ]
+        },
+        {
+          "collection": "small-days",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 26,
+          "sourceAspectChecks": 25,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "small-days",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 26,
+          "sourceAspectChecks": 25,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "small-days",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 26,
+          "sourceAspectChecks": 25,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "seasonal-table",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            17,
+            18
+          ]
+        },
+        {
+          "collection": "seasonal-table",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            17,
+            18
+          ]
+        },
+        {
+          "collection": "seasonal-table",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            17,
+            18
+          ]
+        },
+        {
+          "collection": "taste-archive",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "taste-archive",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "taste-archive",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "better-together",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 33,
+          "sourceAspectChecks": 32,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "better-together",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 33,
+          "sourceAspectChecks": 32,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "better-together",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 33,
+          "sourceAspectChecks": 32,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "weekend-temperature",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 29,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            17,
+            18
+          ]
+        },
+        {
+          "collection": "weekend-temperature",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 29,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            17,
+            18
+          ]
+        },
+        {
+          "collection": "weekend-temperature",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 29,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            17,
+            18
+          ]
+        },
+        {
+          "collection": "alley-afternoon",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 30,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "alley-afternoon",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 30,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "alley-afternoon",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 30,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "your-first-year",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "your-first-year",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "your-first-year",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "little-footsteps",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 32,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "little-footsteps",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 32,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "little-footsteps",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 32,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "you-are-spring",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 27,
+          "sourceAspectChecks": 26,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "you-are-spring",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 27,
+          "sourceAspectChecks": 26,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "you-are-spring",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 27,
+          "sourceAspectChecks": 26,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "growing-in-color",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 34,
+          "sourceAspectChecks": 32,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "growing-in-color",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 34,
+          "sourceAspectChecks": 32,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "growing-in-color",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 34,
+          "sourceAspectChecks": 32,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "first-birthday",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 28,
+          "sourceAspectChecks": 27,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "first-birthday",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 28,
+          "sourceAspectChecks": 27,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "first-birthday",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 28,
+          "sourceAspectChecks": 27,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "little-day-discoveries",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 22,
+          "sourceAspectChecks": 21,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "little-day-discoveries",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 22,
+          "sourceAspectChecks": 21,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "little-day-discoveries",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 22,
+          "sourceAspectChecks": 21,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "our-family-year",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 30,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "our-family-year",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 30,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "our-family-year",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 30,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "around-our-table",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "around-our-table",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "around-our-table",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 29,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "our-good-company",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 34,
+          "sourceAspectChecks": 32,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "our-good-company",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 34,
+          "sourceAspectChecks": 32,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "our-good-company",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 34,
+          "sourceAspectChecks": 32,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "across-generations",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 28,
+          "sourceAspectChecks": 27,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "across-generations",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 28,
+          "sourceAspectChecks": 27,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "across-generations",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 28,
+          "sourceAspectChecks": 27,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "a-picnic-together",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 33,
+          "sourceAspectChecks": 32,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "a-picnic-together",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 33,
+          "sourceAspectChecks": 32,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "a-picnic-together",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 33,
+          "sourceAspectChecks": 32,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "saturday-together",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 28,
+          "sourceAspectChecks": 27,
+          "representativePages": [
+            0,
+            1,
+            2,
+            5,
+            6,
+            11,
+            12
+          ]
+        },
+        {
+          "collection": "saturday-together",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 28,
+          "sourceAspectChecks": 27,
+          "representativePages": [
+            0,
+            1,
+            2,
+            5,
+            6,
+            11,
+            12
+          ]
+        },
+        {
+          "collection": "saturday-together",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 28,
+          "sourceAspectChecks": 27,
+          "representativePages": [
+            0,
+            1,
+            2,
+            5,
+            6,
+            11,
+            12
+          ]
+        },
+        {
+          "collection": "dates-of-us",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 32,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "dates-of-us",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 32,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "dates-of-us",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 32,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "scenes-for-two",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "scenes-for-two",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "scenes-for-two",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "seasons-of-love",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "seasons-of-love",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "seasons-of-love",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "still-us",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 29,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "still-us",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 29,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "still-us",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 29,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "collected-by-two",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 34,
+          "sourceAspectChecks": 32,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "collected-by-two",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 34,
+          "sourceAspectChecks": 32,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "collected-by-two",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 34,
+          "sourceAspectChecks": 32,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "our-prose",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 28,
+          "sourceAspectChecks": 27,
+          "representativePages": [
+            0,
+            1,
+            2,
+            5,
+            6,
+            11,
+            12
+          ]
+        },
+        {
+          "collection": "our-prose",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 28,
+          "sourceAspectChecks": 27,
+          "representativePages": [
+            0,
+            1,
+            2,
+            5,
+            6,
+            11,
+            12
+          ]
+        },
+        {
+          "collection": "our-prose",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 28,
+          "sourceAspectChecks": 27,
+          "representativePages": [
+            0,
+            1,
+            2,
+            5,
+            6,
+            11,
+            12
+          ]
+        },
+        {
+          "collection": "a-day-with-you",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 32,
+          "sourceAspectChecks": 31,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "a-day-with-you",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 32,
+          "sourceAspectChecks": 31,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "a-day-with-you",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 32,
+          "sourceAspectChecks": 31,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "shapes-of-naps",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 27,
+          "sourceAspectChecks": 26,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "shapes-of-naps",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 27,
+          "sourceAspectChecks": 26,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "shapes-of-naps",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 27,
+          "sourceAspectChecks": 26,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "our-walking-promise",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 29,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "our-walking-promise",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 29,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "our-walking-promise",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 29,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            23,
+            24
+          ]
+        },
+        {
+          "collection": "our-little-companion",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 30,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "our-little-companion",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 30,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "our-little-companion",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 30,
+          "sourceAspectChecks": 28,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "the-kindest-face",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "the-kindest-face",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "the-kindest-face",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 31,
+          "sourceAspectChecks": 30,
+          "representativePages": [
+            0,
+            1,
+            2,
+            11,
+            12,
+            21,
+            22
+          ]
+        },
+        {
+          "collection": "daily-paw-walk",
+          "scope": "complete-book",
+          "aspect": "portrait",
+          "pages": 25,
+          "decodedImages": 27,
+          "sourceAspectChecks": 26,
+          "representativePages": [
+            0,
+            1,
+            2,
+            7,
+            8,
+            11,
+            12
+          ]
+        },
+        {
+          "collection": "daily-paw-walk",
+          "scope": "complete-book",
+          "aspect": "square",
+          "pages": 25,
+          "decodedImages": 27,
+          "sourceAspectChecks": 26,
+          "representativePages": [
+            0,
+            1,
+            2,
+            7,
+            8,
+            11,
+            12
+          ]
+        },
+        {
+          "collection": "daily-paw-walk",
+          "scope": "complete-book",
+          "aspect": "landscape",
+          "pages": 25,
+          "decodedImages": 27,
+          "sourceAspectChecks": 26,
+          "representativePages": [
+            0,
+            1,
+            2,
+            7,
+            8,
+            11,
+            12
+          ]
+        }
+      ]
+    },
+    "representativeDiagnosis": {
+      "books": 42,
+      "scope": "visual-diagnosis",
+      "pages": 294,
+      "decodedImages": 307,
+      "sourceAspectChecks": 257,
+      "previewFiles": 0
+    },
+    "chrome": {
+      "passed": 10,
+      "failed": 0,
+      "files": 2
+    }
+  },
+  "storage": {
+    "previewFilesCreated": 0,
+    "originalMediaBaselineCount": 340,
+    "originalMediaFilesPreserved": 340,
+    "originalMediaBytes": 522862670,
+    "newPreviewMediaFiles": 0,
+    "cleanedGeneratedCaches": [
+      {
+        "path": "build",
+        "logicalBytes": 1901141415
+      },
+      {
+        "path": ".dart_tool/flutter_build",
+        "logicalBytes": 70135834
+      },
+      {
+        "path": ".dart_tool/hooks_runner",
+        "logicalBytes": 23008524
+      }
+    ],
+    "logicalBytesRemoved": 1994285773,
+    "transientHashRecorderBytesRemoved": 5268904,
+    "portableSourceHashFixtureRetained": true,
+    "packageConfigurationPreserved": true,
+    "freeBytesAfterCleanup": 26221436928
+  },
+  "sourceSha256": {
+    "lib/core/templates/authored_collections.dart": "920d6810feb4f7bb053b0569cebad8344bcd3a493c5d1fabeb6e49b646e7b73d",
+    "lib/core/templates/authored_free_immersive_covers.dart": "6e61cb279b0602d039cce609c2c3d74829cb246087d978e67f0ee83140ac0e5b",
+    "lib/core/templates/authored_free_editorial_interiors.dart": "fc08915a66933aee981de2e705732252fadc1b19577a90fdf4681d6fc8c8f463",
+    "lib/features/album/presentation/widgets/create_flow/creation_catalog_cover.dart": "e3178d372b510130baf8e1c8be0b901a2054c2ceb370afb5ccf3b048f5114392",
+    "lib/features/store/presentation/widgets/catalog_edition_artwork.dart": "fca29b638dec6f5dca2b2a4bfabc6c02dda612f4eee685b98b9de41b6fb87eb6"
+  },
+  "production": {
+    "url": "https://snapfit-c719d.web.app/",
+    "project": "snapfit-c719d",
+    "hostingOnly": true,
+    "tlsVerified": true,
+    "entrypointAndMainMatchValidatedBuild": true,
+    "main_sha256": "9eb2a6e2b4c9f3a4d372a551e8fdbab47ef7508aaa4fd4338bbdbbb1500ea53d",
+    "main_file": "main.9eb2a6e2b4c9f3a4d372.dart.js",
+    "bootstrap_sha256": "ca9138756105b449bb9d48a26f3f75018554ac96ced30199a4f2a932ff3694a5",
+    "bootstrap_file": "flutter_bootstrap.ca9138756105b449bb9d.js",
+    "mainBytes": 7333440,
+    "nativeStoreReleasePerformed": false,
+    "uiVerified": {
+      "detail": "/#/designs/templates/-9473",
+      "fullBleedCoverPhotograph": true,
+      "updatedInnerSpread": [
+        1,
+        2
+      ],
+      "photographsLoaded": true,
+      "freePrice0P": true,
+      "viewport": [
+        1280,
+        720
+      ],
+      "screenshotFilesSaved": 0
+    }
+  }
+}

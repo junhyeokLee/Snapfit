@@ -20,8 +20,12 @@ import 'package:snap_fit/features/album/domain/entities/layer.dart';
 import 'package:snap_fit/features/album/presentation/controllers/layer_interaction_manager.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
 import 'package:snap_fit/features/album/presentation/views/page_editor_screen.dart';
+import 'package:snap_fit/features/album/presentation/views/album_reader_inner_detail_screen.dart';
+import 'package:snap_fit/features/album/presentation/controllers/layer_builder.dart';
+import 'package:snap_fit/features/album/presentation/widgets/reader/reader_page_gallery.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/layer_manager_panel.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/page_list_selector.dart';
+import 'package:snap_fit/features/album/presentation/widgets/editor/page_editor_canvas.dart';
 import 'package:snap_fit/features/album/service/album_editor_service.dart';
 import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
 import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
@@ -68,7 +72,9 @@ List<LayerModel> _layers(int page) {
       position: const Offset(50, 50),
       width: 400,
       height: 290,
-      imageUrl: 'asset:assets/snapfit_home_square.jpg',
+      imageUrl: page.isEven
+          ? 'asset:assets/snapfit_home_landscape.jpg'
+          : 'asset:assets/snapfit_home_square.jpg',
       zIndex: 1,
     ),
     LayerModel(
@@ -126,6 +132,8 @@ Future<ProviderContainer> _container({
         templateCanvasSize: Size(500, 500 / cover.ratio),
         pages: [for (var page = 0; page <= inner; page++) _layers(page)],
       );
+  // Existing albums retain legacy ratios even though new albums use print products.
+  container.read(albumEditorViewModelProvider.notifier).selectCover(cover);
   return container;
 }
 
@@ -281,6 +289,134 @@ void main() {
         },
       );
     }
+  }
+
+  for (final size in [const Size(390, 844), const Size(844, 390)]) {
+    testWidgets('actual page inspection edits the viewed page at $size', (
+      tester,
+    ) async {
+      _size(tester, size);
+      final container = await _container();
+      addTearDown(container.dispose);
+      final vm = container.read(albumEditorViewModelProvider.notifier);
+      final capture = GlobalKey();
+      await tester.pumpWidget(
+        _app(
+          container,
+          Consumer(
+            builder: (context, ref, _) {
+              const base = Size(500, 500);
+              final preview = LayerInteractionManager.preview(ref, () => base);
+              return AlbumReaderInnerDetailScreen(
+                innerPages: vm.pages.skip(1).toList(),
+                initialPageIndex: 2,
+                singlePageW: 500,
+                singlePageH: 500,
+                interaction: preview,
+                layerBuilder: LayerBuilder(preview, () => base),
+              );
+            },
+          ),
+          dark: size.width > size.height,
+          capture: capture,
+        ),
+      );
+      await _paint(tester);
+      expect(find.text('3 / 24'), findsOneWidget);
+      await _capture(tester, capture, 'page-inspection-${size.width.toInt()}');
+      await tester.tap(find.byTooltip('다음 페이지'));
+      await _paint(tester);
+      expect(find.text('4 / 24'), findsOneWidget);
+      await tester.tap(find.byTooltip('현재 페이지 편집'));
+      await _paint(tester);
+      expect(find.byType(PageEditorScreen), findsOneWidget);
+      expect(vm.currentPageIndex, 4);
+      Navigator.of(tester.element(find.byType(PageEditorScreen))).pop(false);
+      await _paint(tester);
+      expect(find.byType(ReaderPageGallery), findsOneWidget);
+      expect(find.text('4 / 24'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    });
+  }
+
+  for (final cover in [...legacyCoverSizes, coverSizes[2]]) {
+    testWidgets(
+      'editor spread, history and rotation keep ${cover.ratio} artwork',
+      (tester) async {
+        _size(tester, const Size(390, 844));
+        final container = await _container(cover: cover);
+        addTearDown(container.dispose);
+        final vm = container.read(albumEditorViewModelProvider.notifier);
+        final capture = GlobalKey();
+        await tester.pumpWidget(
+          _app(
+            container,
+            const PageEditorScreen(initialPageIndex: 3),
+            capture: capture,
+          ),
+        );
+        await _paint(tester);
+        final original = vm.currentPage!.layers[1];
+        final canvas = find.byType(PageEditorCanvas);
+        var rect = tester.getRect(canvas);
+        expect(rect.width / rect.height, closeTo(cover.ratio, .001));
+        expect(find.byTooltip('되돌리기'), findsOneWidget);
+        expect(find.byTooltip('다시하기'), findsOneWidget);
+        vm.updatePageBackgroundColor(0xFFE5EDE9);
+        await _paint(tester);
+        await tester.tap(find.byTooltip('되돌리기'));
+        await _paint(tester);
+        expect(vm.currentPage!.backgroundColor, isNull);
+        await tester.tap(find.byTooltip('다시하기'));
+        await _paint(tester);
+        expect(vm.currentPage!.backgroundColor, 0xFFE5EDE9);
+        tester.view.physicalSize = const Size(844, 390);
+        tester.view.padding = const FakeViewPadding(
+          left: 44,
+          right: 24,
+          bottom: 24,
+        );
+        await _paint(tester);
+        expect(vm.currentPageIndex, 3);
+        rect = tester.getRect(canvas);
+        expect(rect.width / rect.height, closeTo(cover.ratio, .001));
+        final spread = tester.getRect(
+          find.byKey(const ValueKey('editor-open-spread')),
+        );
+        expect(spread.width, closeTo(rect.width * 2, .01));
+        expect(spread.left, greaterThanOrEqualTo(124));
+        expect(spread.right, lessThanOrEqualTo(748));
+        expect(spread.bottom, lessThanOrEqualTo(366));
+        final photo = vm.currentPage!.layers[1];
+        expect(photo.position, original.position);
+        expect(photo.width, original.width);
+        expect(photo.height, original.height);
+        final facing = find.byKey(const ValueKey('editor-facing-page-4'));
+        expect(facing.hitTestable(), findsOneWidget);
+        await tester.tap(facing);
+        await _paint(tester);
+        expect(vm.currentPageIndex, 4);
+        await _capture(
+          tester,
+          capture,
+          'editor-spread-${cover.ratio.toStringAsFixed(2)}-844-light',
+        );
+        await tester.tap(find.byKey(const ValueKey('editor-facing-page-3')));
+        await _paint(tester);
+        expect(vm.currentPageIndex, 3);
+        expect(vm.currentPage!.backgroundColor, 0xFFE5EDE9);
+        await tester.tap(find.byTooltip('되돌리기'));
+        await _paint(tester);
+        expect(vm.currentPage!.backgroundColor, isNull);
+        expect(
+          find.byKey(const ValueKey('editor-save-album')).hitTestable(),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
   }
 
   for (final size in [const Size(320, 568), const Size(844, 390)]) {

@@ -8,15 +8,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/theme/snapfit_design_tokens.dart' show SnapFitRadius;
 import '../../../../core/theme/snapfit_theme.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/widgets/experience_style.dart';
 import '../../../../shared/web/web_design.dart';
+import '../../../../core/navigation/web_app_location.dart';
+import '../../../commerce/presentation/public_commerce_screen.dart';
+import '../../../store/presentation/views/public_discovery_screen.dart';
 import '../../../../core/utils/screen_logger.dart';
 import '../../../profile/presentation/views/terms_policy_screen.dart';
 import '../../../album/presentation/widgets/home/home_cover_frame.dart';
 import '../../../album/presentation/widgets/cover/album_spine_image.dart';
 import '../../domain/consent_policy.dart';
+import '../../domain/email_auth_error.dart';
 import '../../domain/web_oauth.dart';
 import '../viewmodels/auth_view_model.dart';
 
@@ -37,7 +42,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   _LoginProvider? _loadingProvider;
   bool _confirmingConsent = false;
-  bool _webRedirectStarted = false;
+  int _socialLoginRevision = 0;
   late _AuthMode _mode;
   bool _animateIn = false;
   final _scrollController = ScrollController();
@@ -46,6 +51,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _signUpFormKey = GlobalKey<FormState>();
   final _emailLoginFormKey = GlobalKey<FormState>();
   final _resetPasswordFormKey = GlobalKey<FormState>();
+  final _emailConfirmationFormKey = GlobalKey<FormState>();
+  final _confirmationCodeController = TextEditingController();
+  static const _confirmationCodeLength = 8;
+  bool _verifyingConfirmation = false;
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -63,6 +72,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   String? _pendingConfirmationEmail;
   bool _resetEmailSent = false;
   bool _confirmationEmailResent = false;
+  bool _confirmationNeedsRequest = false;
   bool _passwordChangeComplete = false;
   bool _termsChecked = false;
   bool _privacyChecked = false;
@@ -97,11 +107,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (oldWidget.authNotice != widget.authNotice &&
         widget.authNotice != null) {
       _emailFormError = widget.authNotice;
+      if (_loadingProvider == _LoginProvider.kakao ||
+          _loadingProvider == _LoginProvider.google) {
+        // A callback failure can reuse this LoginScreen while an earlier
+        // launcher is still pending. Its completion must not keep the screen
+        // busy or overwrite a subsequent attempt.
+        _socialLoginRevision++;
+        _loadingProvider = null;
+        _confirmingConsent = false;
+      }
     }
   }
 
   @override
   void dispose() {
+    _socialLoginRevision++;
     _confirmationCooldownTimer?.cancel();
     _resetCooldownTimer?.cancel();
     _scrollController.dispose();
@@ -109,6 +129,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _passwordConfirmController.dispose();
+    _confirmationCodeController.dispose();
     _loginEmailController.dispose();
     _loginPasswordController.dispose();
     _resetEmailController.dispose();
@@ -123,13 +144,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _loginWithSocial(_LoginProvider provider) async {
     if (!mounted || _isLoading || ModalRoute.of(context)?.isCurrent == false)
       return;
+    final revision = ++_socialLoginRevision;
     setState(() {
       _loadingProvider = provider;
       _confirmingConsent = true;
+      _emailFormError = null;
     });
     try {
       if (!await _ensureConsentBeforeLogin()) return;
-      if (!mounted || ModalRoute.of(context)?.isCurrent == false) return;
+      if (!mounted ||
+          revision != _socialLoginRevision ||
+          ModalRoute.of(context)?.isCurrent == false)
+        return;
       setState(() => _confirmingConsent = false);
       final auth = ref.read(authViewModelProvider.notifier);
       if (provider == _LoginProvider.kakao) {
@@ -137,15 +163,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       } else {
         await auth.loginWithGoogle();
       }
-      if (kIsWeb) {
-        // Redirect launch is not login success. AuthGate switches only after
-        // Supabase returns a verified session on the callback page.
-        _webRedirectStarted = true;
-      } else {
+      if (!mounted || revision != _socialLoginRevision) return;
+      if (!kIsWeb) {
         await auth.syncConsentIfPresent();
       }
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || revision != _socialLoginRevision) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -157,7 +180,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ),
       );
     } finally {
-      if (mounted && !_webRedirectStarted)
+      // A browser launch can complete without leaving this page (cancel,
+      // blocked navigation, or browser back). Only a verified session in
+      // AuthGate completes login; a successful launch must not lock the UI.
+      if (mounted && revision == _socialLoginRevision)
         setState(() {
           _loadingProvider = null;
           _confirmingConsent = false;
@@ -182,22 +208,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               backgroundColor: WebPalette.of(dialogContext).surface,
               surfaceTintColor: Colors.transparent,
               clipBehavior: Clip.antiAlias,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: 620,
-                  maxHeight: MediaQuery.sizeOf(dialogContext).height * .88),
+                constraints: BoxConstraints(
+                  maxWidth: 620,
+                  maxHeight: MediaQuery.sizeOf(dialogContext).height * .88,
+                ),
                 child: _AuthConsentSheet(onView: _openTerms),
               ),
             ),
           )
         : await showModalBottomSheet<_AuthConsentChoice>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      constraints: const BoxConstraints(maxWidth: 760),
-      backgroundColor: Colors.transparent,
-      builder: (_) => _AuthConsentSheet(onView: _openTerms),
-    );
+            context: context,
+            isScrollControlled: true,
+            useSafeArea: true,
+            constraints: const BoxConstraints(maxWidth: 760),
+            backgroundColor: Colors.transparent,
+            builder: (_) => _AuthConsentSheet(onView: _openTerms),
+          );
 
     if (result == null || !result.terms || !result.privacy || !mounted)
       return false;
@@ -238,31 +268,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return null;
   }
 
-  String _friendlyEmailAuthError(Object error, {required bool isSignUp}) {
-    final raw = error.toString().toLowerCase();
-    if (raw.contains('rate_limit') ||
-        raw.contains('rate limit') ||
-        raw.contains('over_email_send_rate') ||
-        raw.contains('too many')) {
-      return '요청이 잠시 많아졌어요. 조금 뒤에 다시 시도해주세요.';
-    }
-    if (raw.contains('already') || raw.contains('registered')) {
-      return '이미 가입된 이메일이에요. 이메일로 로그인을 시도해주세요.';
-    }
-    if (raw.contains('invalid') || raw.contains('credential')) {
-      return isSignUp ? '이메일 또는 비밀번호 형식을 확인해주세요.' : '이메일 또는 비밀번호가 올바르지 않아요.';
-    }
-    if (raw.contains('confirm') || raw.contains('verified')) {
-      return '이메일 인증을 먼저 완료해주세요.';
-    }
-    if (raw.contains('weak') || raw.contains('password')) {
-      return '비밀번호는 8자 이상, 영문과 숫자를 함께 사용해주세요.';
-    }
-    return isSignUp
-        ? '이메일 가입을 완료하지 못했어요. 잠시 후 다시 시도해주세요.'
-        : '이메일 로그인을 완료하지 못했어요. 잠시 후 다시 시도해주세요.';
-  }
-
   Future<void> _loginWithEmail() async {
     if (!mounted ||
         _isLoading ||
@@ -286,8 +291,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       TextInput.finishAutofillContext();
     } catch (e) {
       if (!mounted) return;
+      if (kIsWeb && isEmailConfirmationRequired(e)) {
+        final email = _loginEmailController.text.trim();
+        if (_pendingConfirmationEmail != email) {
+          _confirmationCooldownTimer?.cancel();
+          _confirmationCooldown = 0;
+        }
+        setState(() {
+          _mode = _AuthMode.signup;
+          _showSignUpConfirmation = true;
+          _pendingConfirmationEmail = email;
+          _confirmationCodeController.clear();
+          _confirmationEmailResent = false;
+          _confirmationNeedsRequest = true;
+          _emailFormError = null;
+        });
+        if (_scrollController.hasClients) _scrollController.jumpTo(0);
+        return;
+      }
       setState(
-        () => _emailFormError = _friendlyEmailAuthError(e, isSignUp: false),
+        () => _emailFormError = emailAuthErrorMessage(
+          e,
+          action: EmailAuthAction.signIn,
+        ),
       );
     } finally {
       if (mounted) setState(() => _loadingProvider = null);
@@ -319,7 +345,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(
-        () => _emailFormError = _friendlyEmailAuthError(e, isSignUp: false),
+        () => _emailFormError = emailAuthErrorMessage(
+          e,
+          action: EmailAuthAction.requestPasswordReset,
+        ),
       );
     } finally {
       if (mounted) setState(() => _loadingProvider = null);
@@ -338,6 +367,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (emailError != null || _isLoading || _confirmationCooldown > 0) return;
     setState(() {
       _emailFormError = null;
+      _confirmationEmailResent = false;
       _loadingProvider = _LoginProvider.email;
     });
     try {
@@ -345,7 +375,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           .read(authViewModelProvider.notifier)
           .resendEmailConfirmation(email);
       if (!mounted) return;
-      setState(() => _confirmationEmailResent = true);
+      setState(() {
+        _confirmationEmailResent = true;
+        if (kIsWeb) _confirmationNeedsRequest = false;
+        if (kIsWeb) _confirmationCodeController.clear();
+      });
       _startEmailCooldown(confirmation: true);
       ScaffoldMessenger.of(
         context,
@@ -353,10 +387,59 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(
-        () => _emailFormError = _friendlyEmailAuthError(e, isSignUp: true),
+        () => _emailFormError = emailAuthErrorMessage(
+          e,
+          action: EmailAuthAction.resendConfirmation,
+        ),
       );
     } finally {
       if (mounted) setState(() => _loadingProvider = null);
+    }
+  }
+
+  Future<void> _verifyEmailConfirmation() async {
+    if (!kIsWeb ||
+        !mounted ||
+        _isLoading ||
+        _mode != _AuthMode.signup ||
+        !_showSignUpConfirmation ||
+        ModalRoute.of(context)?.isCurrent == false)
+      return;
+    if (!(_emailConfirmationFormKey.currentState?.validate() ?? false)) return;
+    final email = _pendingConfirmationEmail?.trim() ?? '';
+    if (_validateEmail(email) != null) return;
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _emailFormError = null;
+      _loadingProvider = _LoginProvider.email;
+      _verifyingConfirmation = true;
+    });
+    try {
+      await ref
+          .read(authViewModelProvider.notifier)
+          .verifyEmailConfirmation(
+            email: email,
+            token: _confirmationCodeController.text.trim(),
+          );
+      if (!mounted) return;
+      _confirmationCodeController.clear();
+      TextInput.finishAutofillContext(shouldSave: false);
+      // AuthGate changes screens only after the server-verified session has
+      // been synchronized. A completed UI request never fabricates a login.
+    } catch (error) {
+      if (!mounted) return;
+      setState(
+        () => _emailFormError = emailAuthErrorMessage(
+          error,
+          action: EmailAuthAction.verifyConfirmation,
+        ),
+      );
+    } finally {
+      if (mounted)
+        setState(() {
+          _loadingProvider = null;
+          _verifyingConfirmation = false;
+        });
     }
   }
 
@@ -386,7 +469,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(
-        () => _emailFormError = _friendlyEmailAuthError(e, isSignUp: false),
+        () => _emailFormError = emailAuthErrorMessage(
+          e,
+          action: EmailAuthAction.updatePassword,
+        ),
       );
     } finally {
       if (mounted) setState(() => _loadingProvider = null);
@@ -425,16 +511,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             marketingOptIn: _marketingChecked,
           );
       if (!mounted) return;
+      if (kIsWeb && ref.read(authViewModelProvider).asData?.value != null) {
+        // An already verified signup session is handled directly by AuthGate.
+        return;
+      }
       setState(() {
         _pendingConfirmationEmail = _emailController.text.trim();
         _showSignUpConfirmation = true;
+        if (kIsWeb) _confirmationNeedsRequest = false;
+        if (kIsWeb) _confirmationCodeController.clear();
       });
       _startEmailCooldown(confirmation: true);
       if (_scrollController.hasClients) _scrollController.jumpTo(0);
     } catch (e) {
       if (!mounted) return;
       setState(
-        () => _emailFormError = _friendlyEmailAuthError(e, isSignUp: true),
+        () => _emailFormError = emailAuthErrorMessage(
+          e,
+          action: EmailAuthAction.signUp,
+        ),
       );
     } finally {
       if (mounted) setState(() => _loadingProvider = null);
@@ -450,6 +545,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       _mode = mode;
       _emailFormError = null;
       _showSignUpConfirmation = false;
+      if (kIsWeb) _confirmationCodeController.clear();
       if (mode != _AuthMode.resetRequest) _resetEmailSent = false;
       if (mode != _AuthMode.resetPassword) _passwordChangeComplete = false;
       if (mode != _AuthMode.signup) _confirmationEmailResent = false;
@@ -511,7 +607,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SnapFitTheme.systemOverlayStyle(context),
       child: Scaffold(
-        backgroundColor: SnapFitColors.backgroundOf(context),
+        backgroundColor: SnapFitColors.isDark(context)
+            ? SnapFitColors.deepCharcoal
+            : const Color(0xFFF9F7F4),
         body: _AuthResponsiveShell(
           controller: _scrollController,
           animateIn: _animateIn,
@@ -542,13 +640,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         _AuthMode.login => _buildLoginCard(context),
         _AuthMode.emailLogin => _buildEmailLoginCard(context),
         _AuthMode.signup => _buildSignUpCard(context),
-        _AuthMode.resetRequest || _AuthMode.resetPassword =>
-          _buildResetPasswordCard(context),
+        _AuthMode.resetRequest ||
+        _AuthMode.resetPassword => _buildResetPasswordCard(context),
       },
     );
     return SnapFitWebShell(
       showNavigation: false,
       actions: [
+        TextButton(
+          onPressed: () =>
+              openPublicCommerce(context, WebAppLocation.printProducts),
+          child: const Text('인쇄 상품·가격'),
+        ),
         TextButton(
           onPressed: () => _openTerms(TermsPolicyDocType.terms),
           child: const Text('이용 안내'),
@@ -560,18 +663,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           final introduction = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('YOUR STORIES, BEAUTIFULLY KEPT',
-                style: TextStyle(fontSize: 11, letterSpacing: 1.8,
-                  fontWeight: FontWeight.w600, color: WebPalette.of(context).brandInk)),
+              Text(
+                'YOUR STORIES, BEAUTIFULLY KEPT',
+                style: TextStyle(
+                  fontSize: 11,
+                  letterSpacing: 1.8,
+                  fontWeight: FontWeight.w600,
+                  color: WebPalette.of(context).brandInk,
+                ),
+              ),
               const SizedBox(height: 24),
-              Text('사진에 담긴 순간을\n나만의 이야기로.',
-                style: TextStyle(fontSize: wide ? 46 : 32, height: 1.28,
-                  letterSpacing: -1.6, fontWeight: FontWeight.w600,
-                  color: WebPalette.of(context).ink)),
+              Text(
+                '사진에 담긴 순간을\n나만의 이야기로.',
+                style: TextStyle(
+                  fontSize: wide ? 46 : 32,
+                  height: 1.28,
+                  letterSpacing: -1.6,
+                  fontWeight: FontWeight.w700,
+                  color: WebPalette.of(context).ink,
+                ),
+              ),
               const SizedBox(height: 20),
-              Text('일상과 여행, 함께한 시간을 한곳에 모으세요.\n사진을 고르고 이야기를 더하면 나만의 앨범이 됩니다.',
-                style: TextStyle(fontSize: 16, height: 1.8,
-                  color: WebPalette.of(context).muted)),
+              Text(
+                '일상과 여행, 함께한 시간을 한곳에 모으세요.\n사진을 고르고 이야기를 더하면 나만의 앨범이 됩니다.',
+                style: TextStyle(
+                  fontSize: 16,
+                  height: 1.8,
+                  color: WebPalette.of(context).muted,
+                ),
+              ),
               if (wide) ...[
                 const SizedBox(height: 40),
                 ClipRRect(
@@ -586,14 +706,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Row(children: [
-                  Text('A MOMENT WORTH KEEPING',
-                    style: TextStyle(fontSize: 10, letterSpacing: 1.4,
-                      color: WebPalette.of(context).muted)),
-                  const Spacer(),
-                  Text('사진에서 시작하는 나의 기록',
-                    style: TextStyle(fontSize: 12, color: WebPalette.of(context).muted)),
-                ]),
+                Row(
+                  children: [
+                    Text(
+                      'A MOMENT WORTH KEEPING',
+                      style: TextStyle(
+                        fontSize: 10,
+                        letterSpacing: 1.4,
+                        color: WebPalette.of(context).muted,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '사진에서 시작하는 나의 기록',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: WebPalette.of(context).muted,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ],
           );
@@ -603,22 +735,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
           return SingleChildScrollView(
             controller: _scrollController,
-            padding: EdgeInsets.symmetric(vertical: wide ? 48 : 20),
-            child: wide
-                ? Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: Padding(
-                        padding: const EdgeInsets.only(right: 72),
-                        child: introduction,
-                      )),
-                      SizedBox(width: 450, child: entry),
-                    ],
-                  )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [introduction, const SizedBox(height: 32), entry],
-                  ),
+            padding: EdgeInsets.symmetric(vertical: wide ? 32 : 8),
+            child: Column(
+              children: [
+                wide
+                    ? Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 72),
+                              child: introduction,
+                            ),
+                          ),
+                          SizedBox(width: 450, child: entry),
+                        ],
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          entry,
+                          const SizedBox(height: 20),
+                          Text(
+                            '사진을 모으고 이야기를 더해 나만의 앨범을 만드세요.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 13,
+                              height: 1.6,
+                              color: WebPalette.of(context).muted,
+                            ),
+                          ),
+                        ],
+                      ),
+                const SizedBox(height: 32),
+                const PublicCommerceFooter(),
+              ],
+            ),
           );
         },
       ),
@@ -636,6 +788,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             const SizedBox(height: 12),
           ],
           Text('내 앨범으로 계속하기', style: _titleStyle(context)),
+          if (!kIsWeb) ...[
+            const SizedBox(height: 8),
+            Text(
+              '앨범을 만들 때 사용한 방법으로 로그인해 주세요.',
+              key: const ValueKey('auth-login-guidance'),
+              style: ExperienceFormStyle.text(context, 13, secondary: true),
+            ),
+          ],
           SizedBox(height: 22),
           _SocialLoginButton.kakao(
             loading:
@@ -693,6 +853,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           TextButton(
             onPressed: _isLoading ? null : () => _switchMode(_AuthMode.signup),
             child: const Text('이메일로 새 계정 만들기'),
+          ),
+          TextButton.icon(
+            key: const ValueKey('auth-browse-designs'),
+            onPressed: _isLoading
+                ? null
+                : () {
+                    final navigate = WebNavigationScope.maybeOf(
+                      context,
+                    )?.onPublicNavigate;
+                    if (kIsWeb && navigate != null) {
+                      navigate(WebAppLocation.designs);
+                    } else {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const PublicDiscoveryScreen(),
+                        ),
+                      );
+                    }
+                  },
+            icon: const Icon(Icons.auto_stories_outlined, size: 19),
+            label: const Text('먼저 디자인 둘러보기'),
           ),
           SizedBox(height: 12),
           _TermsFooter(
@@ -798,7 +979,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     height: 18,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.2,
-                      color: kIsWeb ? WebPalette.of(context).onBrand : Colors.white,
+                      color: kIsWeb
+                          ? WebPalette.of(context).onBrand
+                          : Colors.white,
                     ),
                   )
                 : const Text('이메일로 로그인'),
@@ -947,7 +1130,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     height: 18,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.2,
-                      color: kIsWeb ? WebPalette.of(context).onBrand : Colors.white,
+                      color: kIsWeb
+                          ? WebPalette.of(context).onBrand
+                          : Colors.white,
                     ),
                   )
                 : Text(
@@ -1013,9 +1198,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                '메일의 인증 링크를 열면 가입이 완료돼요. 메일이 보이지 않으면 스팸함도 확인해주세요.',
+                kIsWeb
+                    ? _confirmationNeedsRequest
+                          ? '이메일 인증이 아직 완료되지 않았어요. 인증 메일 다시 보내기를 누른 뒤, 이 창에서 8자리 인증번호를 입력해주세요.'
+                          : '이 창에서 메일에 적힌 8자리 인증번호를 입력해주세요. 메일이 보이지 않으면 스팸함도 확인해주세요.'
+                    : '메일의 인증 링크를 열면 가입이 완료돼요. 메일이 보이지 않으면 스팸함도 확인해주세요.',
                 style: _bodyStyle(context),
               ),
+              if (kIsWeb) ...[
+                const SizedBox(height: 16),
+                Form(
+                  key: _emailConfirmationFormKey,
+                  child: _AuthTextField(
+                    enabled: !_isLoading,
+                    controller: _confirmationCodeController,
+                    label: '인증번호',
+                    hint: '8자리 인증번호',
+                    keyboardType: TextInputType.number,
+                    autofillHints: const [AutofillHints.oneTimeCode],
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(_confirmationCodeLength),
+                    ],
+                    validator: (value) =>
+                        RegExp(r'^[0-9]{8}$').hasMatch(value?.trim() ?? '')
+                        ? null
+                        : '메일의 8자리 인증번호를 입력해주세요.',
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _verifyEmailConfirmation(),
+                  ),
+                ),
+              ],
             ],
           ),
           aside: Column(
@@ -1025,11 +1238,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               if (_emailFormError != null) _emailErrorNotice(),
               if (_confirmationEmailResent) ...[
                 SizedBox(height: 12),
-                const _InlineAuthNotice(
+                _InlineAuthNotice(
                   icon: Icons.mark_email_read_rounded,
-                  text: '방금 인증 메일을 다시 보냈어요. 가장 최근 메일의 링크를 열어주세요.',
+                  text: kIsWeb
+                      ? '방금 인증 메일을 다시 보냈어요. 가장 최근 메일의 인증번호를 입력해주세요.'
+                      : '방금 인증 메일을 다시 보냈어요. 가장 최근 메일의 링크를 열어주세요.',
                 ),
               ],
+              if (kIsWeb)
+                TextButton(
+                  key: const ValueKey('auth-confirmation-login'),
+                  onPressed: _isLoading
+                      ? null
+                      : () {
+                          _loginEmailController.text =
+                              _pendingConfirmationEmail ?? '';
+                          _switchMode(_AuthMode.emailLogin);
+                        },
+                  child: const Text('인증 후 이메일로 로그인'),
+                ),
               OutlinedButton(
                 key: const ValueKey('auth-confirmation-resend'),
                 onPressed: _isLoading || _confirmationCooldown > 0
@@ -1044,18 +1271,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ],
           ),
-          action: ElevatedButton(
-            key: const ValueKey('auth-confirmation-login'),
-            onPressed: _isLoading
-                ? null
-                : () {
-                    _loginEmailController.text =
-                        _pendingConfirmationEmail ?? '';
-                    _switchMode(_AuthMode.emailLogin);
-                  },
-            style: _primaryButtonStyle(context),
-            child: const Text('인증 후 이메일로 로그인'),
-          ),
+          action: kIsWeb
+              ? ElevatedButton(
+                  key: const ValueKey('auth-confirmation-verify'),
+                  onPressed: _isLoading ? null : _verifyEmailConfirmation,
+                  style: _primaryButtonStyle(context),
+                  child: _verifyingConfirmation
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('인증 완료'),
+                )
+              : ElevatedButton(
+                  key: const ValueKey('auth-confirmation-login'),
+                  onPressed: _isLoading
+                      ? null
+                      : () {
+                          _loginEmailController.text =
+                              _pendingConfirmationEmail ?? '';
+                          _switchMode(_AuthMode.emailLogin);
+                        },
+                  style: _primaryButtonStyle(context),
+                  child: const Text('인증 후 이메일로 로그인'),
+                ),
           secondary: TextButton(
             onPressed: _isLoading ? null : () => _switchMode(_AuthMode.signup),
             child: const Text('이메일을 잘못 입력했어요'),
@@ -1210,7 +1450,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     height: 18,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.2,
-                      color: kIsWeb ? WebPalette.of(context).onBrand : Colors.white,
+                      color: kIsWeb
+                          ? WebPalette.of(context).onBrand
+                          : Colors.white,
                     ),
                   )
                 : const Text('계정 만들기'),
@@ -1291,7 +1533,9 @@ class _AuthConsentSheetState extends State<_AuthConsentSheet> {
           ),
           child: Material(
             color: SnapFitColors.backgroundOf(context),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(SnapFitRadius.lg),
+            ),
             clipBehavior: Clip.antiAlias,
             child: SafeArea(
               top: false,
@@ -1308,7 +1552,7 @@ class _AuthConsentSheetState extends State<_AuthConsentSheet> {
                             style: ExperienceFormStyle.text(
                               context,
                               18,
-                              weight: FontWeight.w600,
+                              weight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -1565,7 +1809,7 @@ class _AuthResponsiveShell extends StatelessWidget {
         final brand = Row(
           key: const ValueKey('auth-brand'),
           children: [
-            Image.asset('assets/snapfit_logo.png', width: 30, height: 30),
+            Image.asset('assets/snapfit_logo.png', width: 36, height: 36),
             const SizedBox(width: 10),
             Flexible(
               child: FittedBox(
@@ -1575,7 +1819,7 @@ class _AuthResponsiveShell extends StatelessWidget {
                   'SnapFit',
                   style: TextStyle(
                     fontFamily: 'Raleway',
-                    fontSize: 24,
+                    fontSize: 28,
                     letterSpacing: 0,
                     fontWeight: FontWeight.w700,
                     color: ExperienceFormStyle.ink(context),
@@ -1644,7 +1888,19 @@ class _AuthResponsiveShell extends StatelessWidget {
                     const SizedBox(height: 24),
                     if (login) ...[
                       const _AuthAlbumPreview(),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 12),
+                      Text(
+                        '사진을 이야기로, 나만의 앨범으로',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12,
+                          letterSpacing: 0.2,
+                          color: ExperienceFormStyle.ink(
+                            context,
+                          ).withOpacity(0.38),
+                        ),
+                      ),
+                      const SizedBox(height: 22),
                     ],
                     form,
                   ],
@@ -1682,7 +1938,7 @@ class _AuthAlbumPreview extends StatelessWidget {
           child: HomeCoverFrame(
             width: width,
             height: width * 3 / 4,
-            shadowScale: 1,
+            shadowScale: 1.1,
             showShadow: true,
             showBookDepth: true,
             bindingArtwork: const AlbumSpineImage(image: image),
@@ -1690,8 +1946,24 @@ class _AuthAlbumPreview extends StatelessWidget {
               fit: StackFit.expand,
               children: [
                 const AlbumSpineImage(image: image),
+                // 하단 그라디언트 - 텍스트 가독성 + 감성
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        stops: const [0.42, 1.0],
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.52),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
                 Positioned(
-                  left: 20,
+                  left: 16,
                   right: 12,
                   bottom: 12,
                   child: Text(
@@ -1699,7 +1971,7 @@ class _AuthAlbumPreview extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: ExperienceStyle.text(
-                      16,
+                      15,
                       weight: FontWeight.w600,
                       color: Colors.white,
                     ),
@@ -1723,7 +1995,9 @@ class _AuthPaperCard extends StatelessWidget {
   Widget build(BuildContext context) => Center(
     child: ConstrainedBox(
       constraints: BoxConstraints(
-        maxWidth: !kIsWeb && MediaQuery.orientationOf(context) == Orientation.landscape
+        maxWidth:
+            !kIsWeb &&
+                MediaQuery.orientationOf(context) == Orientation.landscape
             ? 960
             : maxWidth,
       ),
@@ -1836,8 +2110,7 @@ class _SocialLoginButton extends StatelessWidget {
             backgroundColor: backgroundColor,
             foregroundColor: foregroundColor,
             elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(6),
+            shape: StadiumBorder(
               side: borderColor == null
                   ? BorderSide.none
                   : BorderSide(color: borderColor!, width: 1),
@@ -1894,6 +2167,7 @@ class _AuthTextField extends StatelessWidget {
     this.enabled = true,
     this.textInputAction = TextInputAction.next,
     this.onSubmitted,
+    this.inputFormatters,
   });
 
   final TextEditingController controller;
@@ -1907,6 +2181,7 @@ class _AuthTextField extends StatelessWidget {
   final bool enabled;
   final TextInputAction textInputAction;
   final ValueChanged<String>? onSubmitted;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   Widget build(BuildContext context) {
@@ -1933,31 +2208,53 @@ class _AuthTextField extends StatelessWidget {
           style: ExperienceFormStyle.text(context, 15),
           textInputAction: textInputAction,
           onFieldSubmitted: onSubmitted,
+          inputFormatters: inputFormatters,
           autocorrect:
               keyboardType != TextInputType.emailAddress &&
               autofillHints?.contains(AutofillHints.newPassword) != true &&
+              autofillHints?.contains(AutofillHints.oneTimeCode) != true &&
               autofillHints?.contains(AutofillHints.password) != true,
           enableSuggestions:
               keyboardType != TextInputType.emailAddress &&
               autofillHints?.contains(AutofillHints.newPassword) != true &&
+              autofillHints?.contains(AutofillHints.oneTimeCode) != true &&
               autofillHints?.contains(AutofillHints.password) != true,
           autovalidateMode: AutovalidateMode.onUserInteraction,
           decoration: kIsWeb
               ? InputDecoration(
                   hintText: hint,
-                  hintStyle: TextStyle(color: WebPalette.of(context).muted, fontSize: 14),
-                  filled: true, fillColor: WebPalette.of(context).surface,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: WebPalette.of(context).line)),
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: WebPalette.of(context).line)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: WebPalette.of(context).brandInk, width: 1.5)),
-                  suffixIcon: suffixIcon, errorMaxLines: 3,
+                  hintStyle: TextStyle(
+                    color: WebPalette.of(context).muted,
+                    fontSize: 14,
+                  ),
+                  filled: true,
+                  fillColor: WebPalette.of(context).surface,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 16,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(SnapFitRadius.md),
+                    borderSide: BorderSide(color: WebPalette.of(context).line),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(SnapFitRadius.md),
+                    borderSide: BorderSide(color: WebPalette.of(context).line),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(SnapFitRadius.md),
+                    borderSide: BorderSide(
+                      color: WebPalette.of(context).brandInk,
+                      width: 1.5,
+                    ),
+                  ),
+                  suffixIcon: suffixIcon,
+                  errorMaxLines: 3,
                 )
-              : ExperienceFormStyle.input(context, hint: hint)
-                  .copyWith(suffixIcon: suffixIcon, errorMaxLines: 3),
+              : ExperienceFormStyle.input(
+                  context,
+                  hint: hint,
+                ).copyWith(suffixIcon: suffixIcon, errorMaxLines: 3),
         ),
       ],
     );
@@ -1986,7 +2283,7 @@ class _InlineAuthNotice extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 12, vertical: 11),
         decoration: BoxDecoration(
           color: ExperienceFormStyle.surface(context),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(SnapFitRadius.lg),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -2101,8 +2398,12 @@ class _TermsCheckTile extends StatelessWidget {
             Checkbox(
               value: value,
               onChanged: enabled ? (v) => onChanged(v ?? false) : null,
-              activeColor: kIsWeb ? WebPalette.of(context).brand : ExperienceStyle.accent,
-              checkColor: kIsWeb ? WebPalette.of(context).onBrand : const Color(0xFF063740),
+              activeColor: kIsWeb
+                  ? WebPalette.of(context).brand
+                  : ExperienceStyle.accent,
+              checkColor: kIsWeb
+                  ? WebPalette.of(context).onBrand
+                  : Colors.white,
               side: BorderSide(color: ExperienceFormStyle.muted(context)),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(3),
@@ -2183,7 +2484,7 @@ class _FooterLink extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(SnapFitRadius.md),
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 44),
         child: Padding(
@@ -2205,25 +2506,38 @@ class _FooterLink extends StatelessWidget {
 
 ButtonStyle _outlineButtonStyle(BuildContext context) =>
     OutlinedButton.styleFrom(
-      minimumSize: const Size(0, 48),
-      foregroundColor: kIsWeb ? WebPalette.of(context).ink : ExperienceFormStyle.ink(context),
-      side: BorderSide(color: kIsWeb ? WebPalette.of(context).line : ExperienceFormStyle.line(context)),
+      minimumSize: const Size(0, 52),
+      foregroundColor: kIsWeb
+          ? WebPalette.of(context).ink
+          : ExperienceFormStyle.ink(context),
+      side: BorderSide(
+        color: kIsWeb
+            ? WebPalette.of(context).line
+            : ExperienceFormStyle.line(context),
+      ),
       textStyle: ExperienceFormStyle.text(context, 14, weight: FontWeight.w600),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kIsWeb ? 8 : 6)),
+      shape: const StadiumBorder(),
     );
 
-ButtonStyle _primaryButtonStyle(BuildContext context) =>
-    kIsWeb ? ElevatedButton.styleFrom(
-      backgroundColor: WebPalette.of(context).brand, foregroundColor: WebPalette.of(context).onBrand,
-      minimumSize: const Size(0, 48), elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-    ) : ExperienceFormStyle.primary(context);
+ButtonStyle _primaryButtonStyle(BuildContext context) => kIsWeb
+    ? ElevatedButton.styleFrom(
+        backgroundColor: WebPalette.of(context).brand,
+        foregroundColor: WebPalette.of(context).onBrand,
+        minimumSize: const Size(0, 48),
+        elevation: 0,
+        shape: const StadiumBorder(),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+      )
+    : ExperienceFormStyle.primary(context);
 
 TextStyle _titleStyle(BuildContext context) => ExperienceFormStyle.text(
   context,
-  kIsWeb ? 24 : MediaQuery.orientationOf(context) == Orientation.landscape ? 18 : 22,
-  weight: FontWeight.w600,
+  kIsWeb
+      ? 24
+      : MediaQuery.orientationOf(context) == Orientation.landscape
+      ? 18
+      : 22,
+  weight: FontWeight.w700,
   color: kIsWeb ? WebPalette.of(context).ink : null,
 );
 

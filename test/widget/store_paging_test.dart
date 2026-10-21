@@ -46,7 +46,7 @@ void main() {
           child: wrapCreation(
             const MediaQuery(
               data: MediaQueryData(disableAnimations: true),
-              child: StoreScreen(),
+              child: StoreScreen(searchMode: true),
             ),
           ),
         ),
@@ -75,8 +75,7 @@ void main() {
       expect(count(), 30);
       scroll.jumpTo(0);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('검색'));
-      await tester.pumpAndSettle();
+      expect(find.byType(TextField).hitTestable(), findsOneWidget);
       await tester.enterText(find.byType(TextField), 'Template 29');
       await tester.pumpAndSettle();
       expect(count(), 1);

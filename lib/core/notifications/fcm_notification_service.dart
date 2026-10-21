@@ -19,6 +19,7 @@ import 'notification_policy.dart';
 class NotificationSettingsState {
   final bool all, order, invite, comment, marketing, newTemplate, nightMute;
   final bool permissionGranted;
+  final String? ownerId;
   const NotificationSettingsState({
     required this.all,
     required this.order,
@@ -28,6 +29,7 @@ class NotificationSettingsState {
     required this.newTemplate,
     required this.nightMute,
     required this.permissionGranted,
+    this.ownerId,
   });
 }
 
@@ -81,6 +83,9 @@ class FcmNotificationService {
   static String? _registeredToken, _preferencesUser, _lastRegistrationSignature;
   static DateTime? _lastRegisteredAt;
   static Future<void> _preferenceWrites = Future.value();
+  static Future<void> _preferenceEdits = Future.value();
+  static final _preferenceReads =
+      <({String userId, int generation}), Future<void>>{};
   static final _preferenceVersions = <String, int>{};
   static NotificationTapHandler? _onTap;
   static Map<String, dynamic>? _pendingTap;
@@ -192,7 +197,7 @@ class FcmNotificationService {
     final userId = _client.auth.currentUser?.id;
     if (userId == null || _signingOut) return;
     if (kIsWeb) {
-      await _syncPreferences(userId);
+      await _syncPreferences(userId, generation);
       if (!_current(userId, generation)) return;
       await _syncWeb(userId, generation);
       if (!_current(userId, generation)) return;
@@ -202,7 +207,7 @@ class FcmNotificationService {
     }
     await _initializeLocalNotifications();
     if (!_current(userId, generation)) return;
-    await _syncPreferences(userId);
+    await _syncPreferences(userId, generation);
     if (!_current(userId, generation)) return;
     final permissionPrefs = await SharedPreferences.getInstance();
     if (!(permissionPrefs.getBool('push_permission_requested') ?? false)) {
@@ -274,7 +279,8 @@ class FcmNotificationService {
   static Future<bool> _prepareWebPush() {
     return _webPreparation ??= (() async {
       final environment = _browser.environment(Env.webPushVapidKey);
-      if (!environment.canEnable || !await _messaging.isSupported()) return false;
+      if (!environment.canEnable || !await _messaging.isSupported())
+        return false;
       final options = DefaultFirebaseOptions.web;
       await _browser.prepare({
         'apiKey': options.apiKey,
@@ -283,7 +289,9 @@ class FcmNotificationService {
         'projectId': options.projectId,
       }, Env.webPushVapidKey.trim());
       if (!_webMessagingListening) {
-        FirebaseMessaging.onMessage.listen((message) => unawaited(_receive(message)));
+        FirebaseMessaging.onMessage.listen(
+          (message) => unawaited(_receive(message)),
+        );
         _webMessagingListening = true;
       }
       return true;
@@ -294,10 +302,13 @@ class FcmNotificationService {
     // New-account registration waits for cleanup. Never invalidate a token
     // after another account has already completed its browser registration.
     _webCleanup = _webCleanup.catchError((_) {}).then((_) async {
-      try { await _browser.clearOwner(); } catch (_) {}
+      try {
+        await _browser.clearOwner();
+      } catch (_) {}
       if (deleteToken) {
         try {
-          if (await _messaging.isSupported()) await _messaging.deleteToken().timeout(_timeout);
+          if (await _messaging.isSupported())
+            await _messaging.deleteToken().timeout(_timeout);
         } catch (_) {}
       }
     });
@@ -311,15 +322,22 @@ class FcmNotificationService {
     if (!_current(userId, generation)) return;
     final enabled = prefs.getBool('web_push_enabled_$userId') ?? false;
     final environment = _browser.environment(Env.webPushVapidKey);
-    if (_webPushPaused || !enabled || !environment.supported ||
-        !environment.configured || environment.permission != 'granted') {
+    if (_webPushPaused ||
+        !enabled ||
+        !environment.supported ||
+        !environment.configured ||
+        environment.permission != 'granted') {
       // Browser permission alone never opts an account into this installation.
       await _browser.clearOwner();
       if (!_current(userId, generation)) return;
       final token = _registeredToken;
       if (token != null) {
-        await _client.from('push_devices').delete()
-          .eq('token', token).eq('user_id', userId).timeout(_timeout);
+        await _client
+            .from('push_devices')
+            .delete()
+            .eq('token', token)
+            .eq('user_id', userId)
+            .timeout(_timeout);
       }
       if (!_current(userId, generation)) return;
       try {
@@ -334,22 +352,40 @@ class FcmNotificationService {
       return;
     }
     if (!await _prepareWebPush() || !_current(userId, generation)) return;
-    final token = await _messaging.getToken(vapidKey: Env.webPushVapidKey.trim(),
-      serviceWorkerScriptPath: _browser.serviceWorkerScriptPath).timeout(_timeout);
+    final token = await _messaging
+        .getToken(
+          vapidKey: Env.webPushVapidKey.trim(),
+          serviceWorkerScriptPath: _browser.serviceWorkerScriptPath,
+        )
+        .timeout(_timeout);
     if (!_current(userId, generation) || token == null || token.isEmpty) return;
-    final signature = '$userId:$token:web:${DateTime.now().timeZoneOffset.inMinutes}';
-    final recent = _lastRegisteredAt != null &&
-      DateTime.now().difference(_lastRegisteredAt!) < const Duration(hours: 1);
+    final signature =
+        '$userId:$token:web:${DateTime.now().timeZoneOffset.inMinutes}';
+    final recent =
+        _lastRegisteredAt != null &&
+        DateTime.now().difference(_lastRegisteredAt!) <
+            const Duration(hours: 1);
     if (_lastRegistrationSignature != signature || !recent) {
-      await _client.rpc('register_push_device', params: {
-        'p_token': token, 'p_platform': 'web',
-        'p_timezone_offset_minutes': DateTime.now().timeZoneOffset.inMinutes,
-        'p_enabled': true,
-      }).timeout(_timeout);
+      await _client
+          .rpc(
+            'register_push_device',
+            params: {
+              'p_token': token,
+              'p_platform': 'web',
+              'p_timezone_offset_minutes':
+                  DateTime.now().timeZoneOffset.inMinutes,
+              'p_enabled': true,
+            },
+          )
+          .timeout(_timeout);
       if (!_current(userId, generation)) return;
       if (_registeredToken != null && _registeredToken != token) {
-        await _client.from('push_devices').delete()
-          .eq('token', _registeredToken!).eq('user_id', userId).timeout(_timeout);
+        await _client
+            .from('push_devices')
+            .delete()
+            .eq('token', _registeredToken!)
+            .eq('user_id', userId)
+            .timeout(_timeout);
       }
       if (!_current(userId, generation)) return;
       _registeredToken = token;
@@ -359,21 +395,37 @@ class FcmNotificationService {
     await _bindWebOwner(userId, generation, prefs);
   }
 
-  static Future<void> _bindWebOwner(String userId, int generation, SharedPreferences prefs) async {
+  static Future<void> _bindWebOwner(
+    String userId,
+    int generation,
+    SharedPreferences prefs,
+  ) async {
     if (!_current(userId, generation) || _webPushPaused) return;
     // Device consent outlives short-lived access JWTs, like native push. The
     // bound lease matches the backend's existing 90-day device freshness rule.
-    final expiresAt = (_lastRegisteredAt ?? DateTime.now())
-      .add(const Duration(days: 90)).millisecondsSinceEpoch ~/ 1000;
-    await _browser.setOwner(userId: userId, expiresAt: expiresAt, preferences: {
-      'all': prefs.getBool(_prefKey(kAll, userId)) ?? _default(kAll),
-      'order': prefs.getBool(_prefKey(kOrder, userId)) ?? _default(kOrder),
-      'invite': prefs.getBool(_prefKey(kInvite, userId)) ?? _default(kInvite),
-      'comment': prefs.getBool(_prefKey(kComment, userId)) ?? _default(kComment),
-      'marketing': prefs.getBool(_prefKey(kMarketing, userId)) ?? _default(kMarketing),
-      'new_template': prefs.getBool(_prefKey(kNewTemplate, userId)) ?? _default(kNewTemplate),
-      'nightMute': prefs.getBool(_prefKey(kNightMute, userId)) ?? _default(kNightMute),
-    });
+    final expiresAt =
+        (_lastRegisteredAt ?? DateTime.now())
+            .add(const Duration(days: 90))
+            .millisecondsSinceEpoch ~/
+        1000;
+    await _browser.setOwner(
+      userId: userId,
+      expiresAt: expiresAt,
+      preferences: {
+        'all': prefs.getBool(_prefKey(kAll, userId)) ?? _default(kAll),
+        'order': prefs.getBool(_prefKey(kOrder, userId)) ?? _default(kOrder),
+        'invite': prefs.getBool(_prefKey(kInvite, userId)) ?? _default(kInvite),
+        'comment':
+            prefs.getBool(_prefKey(kComment, userId)) ?? _default(kComment),
+        'marketing':
+            prefs.getBool(_prefKey(kMarketing, userId)) ?? _default(kMarketing),
+        'new_template':
+            prefs.getBool(_prefKey(kNewTemplate, userId)) ??
+            _default(kNewTemplate),
+        'nightMute':
+            prefs.getBool(_prefKey(kNightMute, userId)) ?? _default(kNightMute),
+      },
+    );
     if (_current(userId, generation) && !_webPushPaused) _webOwnerReady = true;
   }
 
@@ -382,28 +434,45 @@ class FcmNotificationService {
     final generation = _generation;
     var environment = _browser.environment(Env.webPushVapidKey);
     if (userId == null || !kIsWeb) {
-      return BrowserPushState(environment: environment, enabled: false, registered: false);
+      return BrowserPushState(
+        environment: environment,
+        enabled: false,
+        registered: false,
+      );
     }
     if (environment.canEnable) {
       try {
         final supported = await _prepareWebPush();
         if (!supported) {
-          environment = const BrowserPushEnvironment(supported: false, configured: true,
-            permission: 'unavailable', message: '이 브라우저에서는 웹 푸시를 사용할 수 없어요. 알림함을 이용해주세요.');
+          environment = const BrowserPushEnvironment(
+            supported: false,
+            configured: true,
+            permission: 'unavailable',
+            message: '이 브라우저에서는 웹 푸시를 사용할 수 없어요. 알림함을 이용해주세요.',
+          );
         }
       } catch (_) {
-        environment = BrowserPushEnvironment(supported: environment.supported,
-          configured: false, permission: environment.permission,
-          message: '브라우저 알림 연결이 아직 준비되지 않았어요. 잠시 후 다시 확인하거나 알림함을 이용해주세요.');
+        environment = BrowserPushEnvironment(
+          supported: environment.supported,
+          configured: false,
+          permission: environment.permission,
+          message: '브라우저 알림 연결이 아직 준비되지 않았어요. 잠시 후 다시 확인하거나 알림함을 이용해주세요.',
+        );
       }
     }
-    if (!_current(userId, generation)) throw StateError('notification_settings_owner_changed');
+    if (!_current(userId, generation))
+      throw StateError('notification_settings_owner_changed');
     final prefs = await SharedPreferences.getInstance();
-    if (!_current(userId, generation)) throw StateError('notification_settings_owner_changed');
-    return BrowserPushState(environment: environment,
+    if (!_current(userId, generation))
+      throw StateError('notification_settings_owner_changed');
+    return BrowserPushState(
+      environment: environment,
       enabled: prefs.getBool('web_push_enabled_$userId') ?? false,
-      registered: _webOwnerReady && _registeredToken != null &&
-        _lastRegistrationSignature?.startsWith('$userId:') == true);
+      registered:
+          _webOwnerReady &&
+          _registeredToken != null &&
+          _lastRegistrationSignature?.startsWith('$userId:') == true,
+    );
   }
 
   static Future<BrowserPushState> enableBrowserPush() async {
@@ -415,18 +484,23 @@ class FcmNotificationService {
     }
     // Preserve the browser's user gesture: permission is the first async step.
     final granted = await _browser.requestPermission();
-    if (!_current(userId, generation)) throw StateError('notification_settings_owner_changed');
+    if (!_current(userId, generation))
+      throw StateError('notification_settings_owner_changed');
     if (!granted) return loadBrowserPushState();
     final prefs = await SharedPreferences.getInstance();
-    if (!_current(userId, generation)) throw StateError('notification_settings_owner_changed');
+    if (!_current(userId, generation))
+      throw StateError('notification_settings_owner_changed');
     await prefs.setBool('web_push_enabled_$userId', true);
-    if (!_current(userId, generation)) throw StateError('notification_settings_owner_changed');
+    if (!_current(userId, generation))
+      throw StateError('notification_settings_owner_changed');
     _webPushPaused = false;
     // A prior preference sync may have started before the explicit opt-in.
     await syncSession();
-    if (!_current(userId, generation)) throw StateError('notification_settings_owner_changed');
+    if (!_current(userId, generation))
+      throw StateError('notification_settings_owner_changed');
     await syncSession();
-    if (!_current(userId, generation)) throw StateError('notification_settings_owner_changed');
+    if (!_current(userId, generation))
+      throw StateError('notification_settings_owner_changed');
     return loadBrowserPushState();
   }
 
@@ -440,16 +514,25 @@ class FcmNotificationService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('web_push_enabled_$userId', false);
     await clearing;
-    try { await _syncFuture?.timeout(const Duration(seconds: 12)); } catch (_) {}
-    if (!_current(userId, generation)) throw StateError('notification_settings_owner_changed');
+    try {
+      await _syncFuture?.timeout(const Duration(seconds: 12));
+    } catch (_) {}
+    if (!_current(userId, generation))
+      throw StateError('notification_settings_owner_changed');
     final token = _registeredToken;
     if (token != null) {
-      await _client.from('push_devices').delete()
-        .eq('token', token).eq('user_id', userId).timeout(_timeout);
+      await _client
+          .from('push_devices')
+          .delete()
+          .eq('token', token)
+          .eq('user_id', userId)
+          .timeout(_timeout);
     }
-    if (!_current(userId, generation)) throw StateError('notification_settings_owner_changed');
+    if (!_current(userId, generation))
+      throw StateError('notification_settings_owner_changed');
     await _messaging.deleteToken().timeout(_timeout);
-    if (!_current(userId, generation)) throw StateError('notification_settings_owner_changed');
+    if (!_current(userId, generation))
+      throw StateError('notification_settings_owner_changed');
     _registeredToken = null;
     _lastRegistrationSignature = null;
     _lastRegisteredAt = null;
@@ -464,10 +547,30 @@ class FcmNotificationService {
     _retry = Timer(Duration(seconds: seconds), () => unawaited(syncSession()));
   }
 
-  static Future<void> _syncPreferences(String userId) async {
-    final generation = _generation;
+  static Future<void> _editPreferences(Future<void> Function() edit) {
+    final operation = _preferenceEdits.then((_) => edit());
+    _preferenceEdits = operation.catchError((_) {});
+    return operation;
+  }
+
+  static Future<void> _syncPreferences(String userId, int generation) {
+    final key = (userId: userId, generation: generation);
+    final pending = _preferenceReads[key];
+    if (pending != null) return pending;
+    late final Future<void> operation;
+    operation = _readPreferences(userId, generation).whenComplete(() {
+      if (identical(_preferenceReads[key], operation)) {
+        _preferenceReads.remove(key);
+      }
+    });
+    _preferenceReads[key] = operation;
+    return operation;
+  }
+
+  static Future<void> _readPreferences(String userId, int generation) async {
     final prefs = await SharedPreferences.getInstance();
-    if (kIsWeb && !_current(userId, generation)) return;
+    await _preferenceEdits;
+    if (!_current(userId, generation)) return;
     final dirty = prefs.getBool('push_prefs_dirty_$userId') ?? false;
     if (_preferencesUser != userId && !dirty) {
       final version = _preferenceVersions[userId] ?? 0;
@@ -477,23 +580,31 @@ class FcmNotificationService {
           .eq('user_id', userId)
           .maybeSingle()
           .timeout(_timeout);
-      if (kIsWeb && !_current(userId, generation)) return;
-      if ((_preferenceVersions[userId] ?? 0) != version ||
-          (prefs.getBool('push_prefs_dirty_$userId') ?? false)) {
-        await _saveRemotePrefs(prefs, userId);
+      if (!_current(userId, generation)) return;
+      var changedWhileReading = false;
+      await _editPreferences(() async {
+        if (!_current(userId, generation)) return;
+        changedWhileReading =
+            (_preferenceVersions[userId] ?? 0) != version ||
+            (prefs.getBool('push_prefs_dirty_$userId') ?? false);
+        if (changedWhileReading) return;
+        for (final entry in _columns.entries) {
+          if (!_current(userId, generation)) return;
+          await prefs.setBool(
+            _prefKey(entry.key, userId),
+            row?[entry.value] as bool? ?? _default(entry.key),
+          );
+        }
+        if (_current(userId, generation)) _preferencesUser = userId;
+      });
+      if (!_current(userId, generation)) return;
+      if (changedWhileReading) {
+        await _saveRemotePrefs(prefs, userId, generation);
         return;
       }
-      for (final entry in _columns.entries) {
-        if (kIsWeb && !_current(userId, generation)) return;
-        await prefs.setBool(
-          '${entry.key}_$userId',
-          row?[entry.value] as bool? ?? _default(entry.key),
-        );
-      }
-      _preferencesUser = userId;
     }
-    if (dirty) await _saveRemotePrefs(prefs, userId);
-    if (kIsWeb && _current(userId, generation)) _preferencesUser = userId;
+    if (dirty) await _saveRemotePrefs(prefs, userId, generation);
+    if (_current(userId, generation)) _preferencesUser = userId;
   }
 
   static bool _default(String key) => key != kMarketing && key != kNightMute;
@@ -501,17 +612,25 @@ class FcmNotificationService {
       '${key}_${userId ?? 'signed_out'}';
 
   static Future<NotificationSettingsState> loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
     final userId = _client.auth.currentUser?.id;
-    if (kIsWeb && userId != null) {
-      final generation = _generation;
-      // Wait for the same existing remote preference read/write before the
-      // form displays values. A failed first read must not become defaults.
-      await _syncPreferences(userId);
-      if (!_current(userId, generation)) {
+    final generation = _generation;
+    final prefs = await SharedPreferences.getInstance();
+    void checkOwner() {
+      if (generation != _generation ||
+          _client.auth.currentUser?.id != userId ||
+          (userId != null && _signingOut)) {
         throw StateError('notification_settings_owner_changed');
       }
     }
+
+    checkOwner();
+    // Every platform must resolve the account's first remote read before its
+    // editable form can turn cached defaults into a full settings snapshot.
+    if (userId != null) await _syncPreferences(userId, generation);
+    checkOwner();
+    final permissionGranted = await isPermissionGranted();
+    await _preferenceEdits;
+    checkOwner();
     bool read(String key) =>
         prefs.getBool(_prefKey(key, userId)) ?? _default(key);
     return NotificationSettingsState(
@@ -522,12 +641,14 @@ class FcmNotificationService {
       marketing: read(kMarketing),
       newTemplate: read(kNewTemplate),
       nightMute: read(kNightMute),
-      permissionGranted: await isPermissionGranted(),
+      permissionGranted: permissionGranted,
+      ownerId: userId,
     );
   }
 
   static Future<bool> isPermissionGranted() async {
-    if (kIsWeb) return _browser.environment(Env.webPushVapidKey).permission == 'granted';
+    if (kIsWeb)
+      return _browser.environment(Env.webPushVapidKey).permission == 'granted';
     final settings = await _messaging.getNotificationSettings();
     return settings.authorizationStatus == AuthorizationStatus.authorized ||
         settings.authorizationStatus == AuthorizationStatus.provisional;
@@ -561,12 +682,24 @@ class FcmNotificationService {
     required bool marketing,
     required bool newTemplate,
     required bool nightMute,
+    String? expectedOwnerId,
   }) async {
     final userId = _client.auth.currentUser?.id;
-    if (userId == null) return;
+    if (userId == null) {
+      if (expectedOwnerId != null) {
+        throw StateError('notification_settings_owner_changed');
+      }
+      return;
+    }
     final generation = _generation;
+    if (!_current(userId, generation) ||
+        (expectedOwnerId != null && expectedOwnerId != userId)) {
+      throw StateError('notification_settings_owner_changed');
+    }
     final prefs = await SharedPreferences.getInstance();
-    _preferenceVersions[userId] = (_preferenceVersions[userId] ?? 0) + 1;
+    if (!_current(userId, generation)) {
+      throw StateError('notification_settings_owner_changed');
+    }
     final values = {
       kAll: all,
       kOrder: order,
@@ -576,35 +709,59 @@ class FcmNotificationService {
       kNewTemplate: newTemplate,
       kNightMute: nightMute,
     };
-    for (final entry in values.entries) {
-      await prefs.setBool(_prefKey(entry.key, userId), entry.value);
+    await _editPreferences(() async {
+      if (!_current(userId, generation)) {
+        throw StateError('notification_settings_owner_changed');
+      }
+      _preferenceVersions[userId] = (_preferenceVersions[userId] ?? 0) + 1;
+      // The complete intent stays in this owner's namespace if the account
+      // changes during local storage. It can be retried on that owner's login.
+      await prefs.setBool('push_prefs_dirty_$userId', true);
+      for (final entry in values.entries) {
+        await prefs.setBool(_prefKey(entry.key, userId), entry.value);
+      }
+    });
+    if (!_current(userId, generation)) {
+      throw StateError('notification_settings_owner_changed');
     }
-    await prefs.setBool('push_prefs_dirty_$userId', true);
-    if (kIsWeb && _current(userId, generation) && _registeredToken != null && !_webPushPaused) {
+    _preferencesUser = userId;
+    if (kIsWeb &&
+        _current(userId, generation) &&
+        _registeredToken != null &&
+        !_webPushPaused) {
       // Apply local opt-outs to the background worker even while the server is
       // offline. A failed policy update must not leave stale content visible.
       try {
         await _bindWebOwner(userId, generation, prefs);
       } catch (_) {
         _webOwnerReady = false;
-        try { await _browser.clearOwner(); } catch (_) {}
+        try {
+          await _browser.clearOwner();
+        } catch (_) {}
       }
     }
     try {
-      await _saveRemotePrefs(prefs, userId);
+      await _saveRemotePrefs(prefs, userId, generation);
+      if (!_current(userId, generation)) {
+        throw StateError('notification_settings_owner_changed');
+      }
       if (kIsWeb) unawaited(syncSession());
     } catch (_) {
-      _scheduleRetry();
+      if (_current(userId, generation)) _scheduleRetry();
       rethrow;
     }
   }
 
-  static Future<void> _saveRemotePrefs(SharedPreferences prefs, String userId) {
-    final generation = _generation;
+  static Future<void> _saveRemotePrefs(
+    SharedPreferences prefs,
+    String userId,
+    int generation,
+  ) {
     return _preferenceWrites = _preferenceWrites.catchError((_) {}).then((
       _,
     ) async {
-      if (kIsWeb && !_current(userId, generation)) return;
+      await _preferenceEdits;
+      if (!_current(userId, generation)) return;
       final version = _preferenceVersions[userId] ?? 0;
       await _client
           .from('push_preferences')
@@ -616,10 +773,12 @@ class FcmNotificationService {
                   _default(entry.key),
           })
           .timeout(_timeout);
-      if (kIsWeb && !_current(userId, generation)) return;
-      if ((_preferenceVersions[userId] ?? 0) == version) {
-        await prefs.setBool('push_prefs_dirty_$userId', false);
-      }
+      await _editPreferences(() async {
+        if (!_current(userId, generation)) return;
+        if ((_preferenceVersions[userId] ?? 0) == version) {
+          await prefs.setBool('push_prefs_dirty_$userId', false);
+        }
+      });
     });
   }
 
@@ -628,7 +787,9 @@ class FcmNotificationService {
     _generation++;
     _retry?.cancel();
     final userId = _client.auth.currentUser?.id;
-    final clearingBrowser = kIsWeb ? _browser.clearOwner().catchError((_) {}) : null;
+    final clearingBrowser = kIsWeb
+        ? _browser.clearOwner().catchError((_) {})
+        : null;
     if (kIsWeb) {
       _webOwnerReady = false;
       _webPushPaused = true;
@@ -638,18 +799,26 @@ class FcmNotificationService {
       await _syncFuture?.timeout(const Duration(seconds: 12));
     } catch (_) {}
     if (kIsWeb) {
-      try { await clearingBrowser; } catch (_) {}
+      try {
+        await clearingBrowser;
+      } catch (_) {}
       if (userId != null && _client.auth.currentUser?.id == userId) {
         try {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('web_push_enabled_$userId', false);
           final token = _registeredToken;
           if (token != null) {
-            await _client.from('push_devices').delete()
-              .eq('token', token).eq('user_id', userId).timeout(_timeout);
+            await _client
+                .from('push_devices')
+                .delete()
+                .eq('token', token)
+                .eq('user_id', userId)
+                .timeout(_timeout);
           }
         } catch (_) {}
-        try { await _messaging.deleteToken().timeout(_timeout); } catch (_) {}
+        try {
+          await _messaging.deleteToken().timeout(_timeout);
+        } catch (_) {}
       }
       _registeredToken = null;
       _lastRegistrationSignature = null;
@@ -770,7 +939,9 @@ class FcmNotificationService {
       if (userId == null || message.data['userId'] != userId) return;
       if (kIsWeb) {
         if (_signingOut) return;
-        await _browser.showForeground(message.data.map((k, v) => MapEntry(k, v.toString())));
+        await _browser.showForeground(
+          message.data.map((k, v) => MapEntry(k, v.toString())),
+        );
         return;
       }
       await showLocalNotification(
@@ -788,9 +959,15 @@ class FcmNotificationService {
     required String body,
     Map<String, String>? data,
   }) async {
-    if (_client.auth.currentUser == null || kIsWeb) return;
+    final userId = _client.auth.currentUser?.id;
+    final generation = _generation;
+    if (userId == null || kIsWeb || !_current(userId, generation)) return;
+    final originalData = Map<String, String>.from(data ?? {});
+    if (originalData['userId'] != null && originalData['userId'] != userId)
+      return;
     final settings = await loadSettings();
-    final category = notificationCategory(data ?? {});
+    if (!_current(userId, generation)) return;
+    final category = notificationCategory(originalData);
     final enabled = switch (category) {
       'order' => settings.order,
       'invite' => settings.invite,
@@ -808,9 +985,10 @@ class FcmNotificationService {
         ))
       return;
     await _initializeLocalNotifications();
+    if (!_current(userId, generation)) return;
     final payload = <String, String>{
-      ...?data,
-      'userId': _client.auth.currentUser!.id,
+      ...originalData,
+      'userId': originalData['userId'] ?? userId,
     };
     final id =
         int.tryParse(payload['notificationId'] ?? '') ??
@@ -834,6 +1012,11 @@ class FcmNotificationService {
       ),
       payload: jsonEncode(payload),
     );
+    if (!_current(userId, generation)) {
+      try {
+        await _localNotifications.cancel(id);
+      } catch (_) {}
+    }
   }
 }
 

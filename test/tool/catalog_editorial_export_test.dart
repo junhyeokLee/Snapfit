@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snap_fit/core/templates/data_template_engine.dart';
 import 'package:snap_fit/core/templates/template_document_pages.dart';
+import 'package:snap_fit/core/templates/catalog_editorial_assets.g.dart';
 import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
 import 'package:snap_fit/features/store/presentation/widgets/template_page_renderer.dart';
 
@@ -53,9 +54,21 @@ void main() {
       tester.view.physicalSize = const Size(1200, 1000);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
-      final assets = <int, String>{};
-      final firstPages = <int, int>{};
-      for (final template in publishedCreationTemplates) {
+      final selectedIds = const String.fromEnvironment(
+        'EXPORT_TEMPLATE_IDS',
+      ).split(',').where((s) => s.isNotEmpty).map(int.parse).toSet();
+      final partial = selectedIds.isNotEmpty;
+      expect(
+        selectedIds.difference(
+          publishedCreationTemplates.map((t) => t.id).toSet(),
+        ),
+        isEmpty,
+      );
+      final assets = <int, String>{if (partial) ...catalogEditorialAssets};
+      final firstPages = <int, int>{if (partial) ...catalogEditorialFirstPages};
+      for (final template in publishedCreationTemplates.where(
+        (t) => !partial || selectedIds.contains(t.id),
+      )) {
         final document =
             jsonDecode(template.templateJson!) as Map<String, dynamic>;
         final metadata = document['metadata'] as Map? ?? const {};

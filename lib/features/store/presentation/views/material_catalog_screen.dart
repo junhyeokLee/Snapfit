@@ -4,6 +4,9 @@ import '../../../../shared/web/web_design.dart';
 import '../../data/store_curation_provider.dart';
 import '../widgets/material_curation.dart';
 import '../widgets/material_catalog_tile.dart';
+import '../widgets/library_design_tile.dart';
+import '../widgets/web/web_catalog_toolbar.dart';
+import '../widgets/web/web_catalog_footer.dart';
 
 import '../../../../shared/widgets/catalog_artwork_hero.dart';
 import '../../../../shared/widgets/album_stage_style.dart';
@@ -19,8 +22,8 @@ import '../../../../core/templates/studio_word_art_catalog.dart';
 import '../../../../shared/widgets/catalog_favorite_widgets.dart';
 import '../../../../shared/widgets/experience_style.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
+import '../../../../core/theme/snapfit_design_tokens.dart' show SnapFitRadius;
 import '../../../../core/constants/snapfit_colors.dart';
-import '../../../../shared/widgets/experience_icon.dart';
 import '../../../../shared/widgets/studio_decoration.dart';
 import '../../../../core/templates/frame_preview_photos.dart';
 import '../../../../shared/widgets/studio_word_art_preview.dart';
@@ -59,10 +62,12 @@ class MaterialCatalogScreen extends ConsumerStatefulWidget {
     this.library = false,
     this.embedded = false,
     this.initialType = '전체',
+    this.searchMode = false,
   });
   final bool library;
   final bool embedded;
   final String initialType;
+  final bool searchMode;
   @override
   ConsumerState<MaterialCatalogScreen> createState() =>
       _MaterialCatalogScreenState();
@@ -74,7 +79,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
   final _libraryContentKey = GlobalKey();
   bool _favoritesOnly = false;
   String _priceFilter = '전체';
-  bool _libraryFavorites = false;
+  String _catalogSort = '추천순';
   _LibrarySort _librarySort = _LibrarySort.favorites;
   final _scroll = ScrollController();
   final _search = TextEditingController();
@@ -117,18 +122,28 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
     if (_scroll.hasClients) _scroll.jumpTo(0);
   }
 
-  String get _sortLabel => _librarySort == _LibrarySort.name
-      ? '이름순'
-      : _libraryFavorites
-      ? '최근 즐겨찾기순'
-      : '즐겨찾기 먼저';
+  void _resetWebFilters() => setState(() {
+    _search.clear();
+    _query = '';
+    _type = '전체';
+    _priceFilter = '전체';
+    _favoritesOnly = false;
+    _librarySort = _LibrarySort.favorites;
+    _catalogSort = '추천순';
+    _resetPage();
+  });
+
+  String get _sortLabel =>
+      _librarySort == _LibrarySort.name ? '이름순' : '즐겨찾기 먼저';
 
   Widget _librarySortMenu() => PopupMenuButton<_LibrarySort>(
     key: const ValueKey('library-sort'),
     tooltip: '보관함 정렬',
     initialValue: _librarySort,
     color: ExperienceFormStyle.surface(context),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(SnapFitRadius.md),
+    ),
     onSelected: (sort) => setState(() {
       _librarySort = sort;
       _resetPage();
@@ -140,11 +155,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
           value: sort,
           checked: _librarySort == sort,
           child: Text(
-            sort == _LibrarySort.name
-                ? '이름순'
-                : _libraryFavorites
-                ? '최근 즐겨찾기순'
-                : '즐겨찾기 먼저',
+            sort == _LibrarySort.name ? '이름순' : '즐겨찾기 먼저',
             style: ExperienceFormStyle.text(context, 13),
           ),
         ),
@@ -172,55 +183,6 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (final favorite in [false, true])
-          Semantics(
-            button: true,
-            selected: _libraryFavorites == favorite,
-            child: Material(
-              color: _libraryFavorites == favorite
-                  ? ExperienceFormStyle.selection(context)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(6),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(6),
-                onTap: () => setState(() {
-                  _libraryFavorites = favorite;
-                  _resetPage();
-                }),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(minHeight: 44),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 12,
-                    ),
-                    child: Row(
-                      children: [
-                        ExperienceIcon(
-                          favorite ? 'Bookmark' : 'BookOpen',
-                          size: 18,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            favorite ? '즐겨찾기' : '구매한 항목',
-                            style: ExperienceFormStyle.text(
-                              context,
-                              13,
-                              weight: _libraryFavorites == favorite
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        const SizedBox(height: 16),
         LayoutBuilder(
           builder: (context, box) => Wrap(
             spacing: 8,
@@ -277,6 +239,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
 
   Widget _librarySearch({Widget? leading}) => CatalogSearchDisclosure(
     key: _librarySearchKey,
+    compactAction: leading == null,
     leading: leading,
     controller: _search,
     onClear: () => setState(() {
@@ -533,29 +496,6 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
     );
   }
 
-  Widget _libraryCollection(List<_CatalogItem> items) {
-    final templates = items.where((item) => item.template != null).length;
-    final materials = items.length - templates;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          '구매한 디자인',
-          style: ExperienceFormStyle.text(context, 18, weight: FontWeight.w600),
-        ),
-        Padding(
-          key: const ValueKey('library-collection-stage'),
-          padding: const EdgeInsets.only(top: 6),
-          child: Text(
-            '템플릿 $templates종 · 소재 $materials종',
-            style: ExperienceFormStyle.text(context, 12, secondary: true),
-          ),
-        ),
-        const SizedBox(height: 18),
-      ],
-    );
-  }
-
   Widget _materialCollection(
     List<_CatalogItem> items,
     StoreCuration selection,
@@ -567,7 +507,16 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
           key: item.key,
           title: item.title,
           type: item.type,
-          preview: item.preview(false),
+          favoriteKey: item.favoriteKey,
+          preview:
+              !usesLiveCatalogArtwork(item.template) &&
+                  catalogPreviewAssets.containsKey(item.key)
+              ? Image.asset(
+                  catalogPreviewAssets[item.key]!,
+                  fit: BoxFit.contain,
+                  cacheWidth: 320,
+                )
+              : item.preview(false),
           onOpen: () => _open(item),
         ),
     ],
@@ -585,6 +534,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
       final ownedKeys = owned.hasValue ? owned.requireValue : const <String>{};
       bool matchesPrice(_CatalogItem item) {
         if (_priceFilter == '전체') return true;
+        if (_priceFilter == '보유') return ownedKeys.contains(item.key);
         if (!catalog.hasValue) return false;
         final product = prices[item.key];
         // Missing catalog entries are legacy free materials, matching the price badge.
@@ -612,14 +562,15 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                       item.type.contains(_query)) &&
                   matchesPrice(item) &&
                   (!widget.library ||
-                      _libraryFavorites ||
-                      ownedKeys.contains(item.key)),
+                      ownedKeys.contains(item.key) ||
+                      favorites.contains(item.favoriteKey)),
             )
             .toList(),
         (item) => item.favoriteKey,
-        onlyFavorites: widget.library ? _libraryFavorites : _favoritesOnly,
+        onlyFavorites: widget.library ? false : _favoritesOnly,
       );
-      if (widget.library && _librarySort == _LibrarySort.name) {
+      if ((!widget.library && kIsWeb && _catalogSort == '이름순') ||
+          (widget.library && _librarySort == _LibrarySort.name)) {
         items.sort((a, b) => a.title.compareTo(b.title));
       }
       _total = items.length;
@@ -628,6 +579,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
           : null;
       final collection =
           !widget.library &&
+              !widget.searchMode &&
               _query.isEmpty &&
               _type == '전체' &&
               _priceFilter == '전체' &&
@@ -648,12 +600,12 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
           : ['전체', '스티커', '프레임', '문구', '종이'];
       final loadingLibrary =
           widget.library &&
-          ((!_libraryFavorites && owned.isLoading && !owned.hasValue) ||
+          ((owned.isLoading && !owned.hasValue) ||
               ((templates?.isLoading ?? false) &&
                   !(templates?.hasValue ?? false)));
       final failedLibrary =
           widget.library &&
-          ((!_libraryFavorites && owned.hasError && !owned.hasValue) ||
+          ((owned.hasError && !owned.hasValue) ||
               ((templates?.hasError ?? false) &&
                   !(templates?.hasValue ?? false)));
       final horizontalPadding = kIsWeb
@@ -673,6 +625,11 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
       final noResultsTitle = widget.library
           ? '조건에 맞는 항목이 없어요.'
           : '조건에 맞는 소재가 없어요.';
+      final resultHeaderExtent =
+          (MediaQuery.textScalerOf(context).scale(12) * 1.6 + 24).clamp(
+            48.0,
+            100.0,
+          );
       final content = RefreshIndicator(
         key: widget.library ? _libraryContentKey : null,
         onRefresh: _refreshCatalog,
@@ -698,187 +655,22 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (kIsWeb && !widget.library && !widget.embedded) ...[
-                      TextField(
+                    if (kIsWeb)
+                      WebCatalogToolbar(
                         controller: _search,
-                        decoration:
-                            ExperienceFormStyle.input(
-                              context,
-                              hint: '프레임, 스티커, 문구 검색',
-                            ).copyWith(
-                              prefixIcon: const Icon(Icons.search, size: 20),
-                            ),
-                        onChanged: (value) => setState(() {
+                        searchHint: widget.library
+                            ? '내 디자인 이름이나 소재 종류 검색'
+                            : '스티커, 프레임, 문구, 종이 검색',
+                        onSearchChanged: (value) => setState(() {
                           _query = value.trim().toLowerCase();
                           _resetPage();
                         }),
-                      ),
-                      const SizedBox(height: 18),
-                    ],
-                    if (widget.library && !libraryWide) ...[
-                      SizedBox(
-                        width: double.infinity,
-                        child: SegmentedButton<bool>(
-                          key: const ValueKey('library-collection-filter'),
-                          showSelectedIcon: false,
-                          style: SegmentedButton.styleFrom(
-                            side: BorderSide.none,
-                            backgroundColor: ExperienceFormStyle.surface(
-                              context,
-                            ),
-                            foregroundColor: ExperienceFormStyle.ink(context),
-                            selectedBackgroundColor:
-                                ExperienceFormStyle.selection(context),
-                            selectedForegroundColor:
-                                ExperienceFormStyle.selectionInk(context),
-                            minimumSize: const Size(0, 48),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            textStyle: ExperienceStyle.text(
-                              14,
-                              weight: FontWeight.w600,
-                            ),
-                          ),
-                          segments: const [
-                            ButtonSegment(value: false, label: Text('구매한 항목')),
-                            ButtonSegment(value: true, label: Text('즐겨찾기')),
-                          ],
-                          selected: {_libraryFavorites},
-                          onSelectionChanged: (value) => setState(() {
-                            _libraryFavorites = value.single;
-                            _resetPage();
-                          }),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                    ],
-                    if (widget.library && !libraryWide)
-                      _librarySearch(leading: _typeFilters(tabs))
-                    else if (widget.embedded && !libraryWide) ...[
-                      CatalogSearchDisclosure(
-                        controller: _search,
-                        leading: _typeFilters(tabs),
-                        onClear: () => setState(() {
-                          _query = '';
+                        categories: tabs,
+                        category: _type,
+                        onCategoryChanged: (value) => setState(() {
+                          _type = value;
                           _resetPage();
                         }),
-                        child: TextField(
-                          controller: _search,
-                          onChanged: (value) => setState(() {
-                            _query = value.trim().toLowerCase();
-                            _resetPage();
-                          }),
-                          style: ExperienceFormStyle.text(context, 14),
-                          decoration: InputDecoration(
-                            hintText: widget.library
-                                ? '보관함에서 검색'
-                                : '프레임, 스티커, 문구 검색',
-                            hintStyle: ExperienceStyle.text(
-                              14,
-                              color: ExperienceFormStyle.muted(context),
-                            ),
-                            prefixIcon: Padding(
-                              padding: EdgeInsets.all(14),
-                              child: ExperienceIcon(
-                                'Search',
-                                color: ExperienceFormStyle.muted(context),
-                              ),
-                            ),
-                            suffixIcon: _query.isEmpty
-                                ? null
-                                : IconButton(
-                                    tooltip: '검색 지우기',
-                                    icon: const Icon(Icons.close, size: 20),
-                                    onPressed: () => setState(() {
-                                      _search.clear();
-                                      _query = '';
-                                      _resetPage();
-                                    }),
-                                  ),
-                            filled: true,
-                            fillColor: ExperienceFormStyle.surface(context),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 12,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(6),
-                              borderSide: BorderSide.none,
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(6),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ] else if (!libraryWide && !kIsWeb) ...[
-                      if (!widget.library) ...[
-                        Text(
-                          'SNAPFIT MATERIALS',
-                          style: ExperienceStyle.text(
-                            11,
-                            weight: FontWeight.w600,
-                            color: ExperienceFormStyle.muted(context),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              widget.library ? '내 보관함' : '사진 곁에 놓는 작은 취향',
-                              style: ExperienceStyle.text(
-                                27,
-                                weight: FontWeight.w600,
-                                color: ExperienceFormStyle.ink(context),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        widget.library
-                            ? '내가 고른 디자인과 구매한 소재.'
-                            : '스티커, 종이, 프레임. 한 장을 더 나답게.',
-                        style: ExperienceStyle.text(
-                          14,
-                          color: ExperienceFormStyle.muted(context),
-                        ),
-                      ),
-                      const SizedBox(height: 25),
-                    ],
-                    if (!widget.embedded && !widget.library) _typeFilters(tabs),
-                    SizedBox(height: libraryWide ? 0 : 10),
-                    if (widget.library)
-                      Padding(
-                        padding: EdgeInsets.symmetric(
-                          vertical: libraryWide ? 0 : 8,
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                loadingLibrary
-                                    ? '항목을 불러오는 중'
-                                    : failedLibrary
-                                    ? '목록을 확인해 주세요'
-                                    : '${items.length}개 항목',
-                                style: ExperienceStyle.text(
-                                  12,
-                                  color: ExperienceFormStyle.muted(context),
-                                ),
-                              ),
-                            ),
-                            _librarySortMenu(),
-                          ],
-                        ),
-                      )
-                    else
-                      CatalogFilterBar(
                         price: _priceFilter,
                         onPriceChanged: (value) => setState(() {
                           _priceFilter = value;
@@ -889,24 +681,155 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                           _favoritesOnly = !_favoritesOnly;
                           _resetPage();
                         }),
-                      ),
-                    SizedBox(height: libraryWide ? 8 : 16),
+                        resultLabel: loadingLibrary
+                            ? '보관함을 확인하고 있어요'
+                            : '${items.length}개의 디자인',
+                        sort: widget.library
+                            ? (_librarySort == _LibrarySort.name
+                                  ? '이름순'
+                                  : '추천순')
+                            : _catalogSort,
+                        onSortChanged: (value) => setState(() {
+                          if (widget.library) {
+                            _librarySort = value == '이름순'
+                                ? _LibrarySort.name
+                                : _LibrarySort.favorites;
+                          } else {
+                            _catalogSort = value;
+                          }
+                          _resetPage();
+                        }),
+                        filtersActive:
+                            _query.isNotEmpty ||
+                            _type != '전체' ||
+                            _priceFilter != '전체' ||
+                            _favoritesOnly ||
+                            _catalogSort != '추천순' ||
+                            _librarySort != _LibrarySort.favorites,
+                        onReset: _resetWebFilters,
+                        leading: null,
+                      )
+                    else ...[
+                      if (widget.searchMode &&
+                          !widget.library &&
+                          !widget.embedded) ...[
+                        TextField(
+                          controller: _search,
+                          decoration:
+                              ExperienceFormStyle.input(
+                                context,
+                                hint: '프레임, 스티커, 문구 검색',
+                              ).copyWith(
+                                prefixIcon: const Icon(Icons.search, size: 20),
+                              ),
+                          onChanged: (value) => setState(() {
+                            _query = value.trim().toLowerCase();
+                            _resetPage();
+                          }),
+                        ),
+                        const SizedBox(height: 18),
+                      ],
+                      if ((widget.library ||
+                              widget.embedded ||
+                              widget.searchMode) &&
+                          !libraryWide)
+                        _typeFilters(tabs)
+                      else if (!libraryWide && !kIsWeb && !widget.library) ...[
+                        if (!widget.library) ...[
+                          Text(
+                            'SNAPFIT MATERIALS',
+                            style: ExperienceStyle.text(
+                              11,
+                              weight: FontWeight.w600,
+                              color: ExperienceFormStyle.muted(context),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                widget.library ? '내 디자인' : '사진 곁에 놓는 작은 취향',
+                                style: ExperienceStyle.text(
+                                  27,
+                                  weight: FontWeight.w700,
+                                  color: ExperienceFormStyle.ink(context),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          widget.library
+                              ? '내가 고른 디자인과 구매한 소재.'
+                              : '스티커, 종이, 프레임. 한 장을 더 나답게.',
+                          style: ExperienceStyle.text(
+                            14,
+                            color: ExperienceFormStyle.muted(context),
+                          ),
+                        ),
+                        const SizedBox(height: 25),
+                      ],
+                      if (!widget.embedded &&
+                          !widget.library &&
+                          !widget.searchMode)
+                        _typeFilters(tabs),
+                      SizedBox(height: libraryWide ? 0 : 10),
+                      if (!widget.library)
+                        CatalogFilterBar(
+                          price: _priceFilter,
+                          onPriceChanged: (value) => setState(() {
+                            _priceFilter = value;
+                            _resetPage();
+                          }),
+                          favoritesOnly: _favoritesOnly,
+                          onFavoritesChanged: () => setState(() {
+                            _favoritesOnly = !_favoritesOnly;
+                            _resetPage();
+                          }),
+                        ),
+                      SizedBox(height: libraryWide ? 8 : 16),
+                    ],
+                    if (kIsWeb) const SizedBox(height: 20),
                   ],
                 ),
               ),
             ),
-            if (widget.library &&
-                !libraryWide &&
-                !loadingLibrary &&
-                !failedLibrary &&
-                !_libraryFavorites &&
-                _type == '전체' &&
-                _query.isEmpty &&
-                _librarySort == _LibrarySort.favorites &&
-                items.isNotEmpty)
-              SliverPadding(
-                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                sliver: SliverToBoxAdapter(child: _libraryCollection(items)),
+            if (widget.library && !kIsWeb)
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _LibraryResultHeader(
+                  extent: resultHeaderExtent,
+                  child: ColoredBox(
+                    color: SnapFitColors.backgroundOf(context),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              loadingLibrary
+                                  ? '항목을 불러오는 중'
+                                  : failedLibrary
+                                  ? '목록을 확인해 주세요'
+                                  : '${items.length}개 항목',
+                              style: ExperienceFormStyle.text(
+                                context,
+                                12,
+                                secondary: true,
+                              ),
+                            ),
+                          ),
+                          _librarySortMenu(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
             if (collection.isNotEmpty && !kIsWeb)
               SliverPadding(
@@ -916,13 +839,31 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                   child: _materialCollection(collection, curation!),
                 ),
               ),
-            if (_priceFilter != '전체' && catalog.isLoading && !catalog.hasValue)
+            if (_priceFilter == '보유' && owned.isLoading && !owned.hasValue)
+              _catalogState(
+                title: '보유한 디자인을 확인하고 있어요',
+                icon: Icons.inventory_2_outlined,
+                loading: true,
+              )
+            else if (_priceFilter == '보유' && owned.hasError && !owned.hasValue)
+              _catalogState(
+                title: '보유한 디자인을 불러오지 못했어요',
+                icon: Icons.cloud_off_outlined,
+                action: '다시 불러오기',
+                onAction: () => ref.invalidate(ownedPointShopKeysProvider),
+              )
+            else if (_priceFilter != '전체' &&
+                _priceFilter != '보유' &&
+                catalog.isLoading &&
+                !catalog.hasValue)
               _catalogState(
                 title: '가격을 확인하고 있어요',
                 icon: Icons.toll_outlined,
                 loading: true,
               )
-            else if (_priceFilter != '전체' && catalog.hasError)
+            else if (_priceFilter != '전체' &&
+                _priceFilter != '보유' &&
+                catalog.hasError)
               _catalogState(
                 title: '가격을 불러오지 못했어요',
                 icon: Icons.cloud_off_outlined,
@@ -948,27 +889,35 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
               )
             else if (items.isEmpty)
               _catalogState(
-                icon: widget.library && _libraryFavorites || _favoritesOnly
+                icon: _favoritesOnly
                     ? Icons.bookmark_border
                     : Icons.inventory_2_outlined,
                 title: _query.isNotEmpty
                     ? noResultsTitle
-                    : (_favoritesOnly || (widget.library && _libraryFavorites))
+                    : _favoritesOnly
                     ? '즐겨찾는 항목이 없어요.'
                     : _priceFilter != '전체' || _type != '전체' || !widget.library
                     ? noResultsTitle
                     : '아직 보관한 항목이 없어요.',
                 detail: _query.isNotEmpty || _type != '전체'
                     ? '다른 검색어나 분류로 찾아보세요.'
-                    : widget.library && !_libraryFavorites
-                    ? '구매한 템플릿과 소재가 여기에 모여요.'
+                    : widget.library
+                    ? '구매한 소재와 즐겨찾기가 여기에 모여요.'
                     : null,
-                action: _query.isNotEmpty || _type != '전체' ? '필터 초기화' : null,
+                action:
+                    _query.isNotEmpty ||
+                        _type != '전체' ||
+                        (kIsWeb && (_priceFilter != '전체' || _favoritesOnly))
+                    ? '필터 초기화'
+                    : null,
                 onAction: () => setState(() {
                   _query = '';
                   _search.clear();
                   _type = '전체';
                   _priceFilter = '전체';
+                  if (kIsWeb) {
+                    _favoritesOnly = false;
+                  }
                   _resetPage();
                 }),
               )
@@ -990,8 +939,12 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                               : box.crossAxisExtent >= 420
                               ? 2
                               : 1)
+                        : widget.library && _type == '템플릿'
+                        ? (libraryWide && box.crossAxisExtent >= 680 ? 2 : 1)
                         : libraryWide
-                        ? (box.crossAxisExtent >= 520 ? 3 : 2)
+                        ? (_type == '템플릿'
+                              ? (box.crossAxisExtent >= 760 ? 3 : 2)
+                              : (box.crossAxisExtent >= 520 ? 3 : 2))
                         : _type == '템플릿'
                         ? (box.crossAxisExtent > 650 ? 3 : 2)
                         : (box.crossAxisExtent > 650 ? 4 : 2);
@@ -1004,19 +957,30 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                         ? MediaQuery.textScalerOf(context).scale(11) * 1.5 + 2
                         : 0.0;
                     final previewHeight = libraryWide
-                        ? (MediaQuery.sizeOf(context).height * .44).clamp(
-                            84.0,
-                            width,
-                          )
+                        ? (box.viewportMainAxisExtent -
+                                  resultHeaderExtent -
+                                  LibraryDesignTile.extent(
+                                    0,
+                                    MediaQuery.textScalerOf(context),
+                                  ) -
+                                  8)
+                              .clamp(64.0, width)
                         : widget.library
-                        ? width * 1.14
+                        ? _type == '템플릿'
+                              ? (width * .52).clamp(176.0, 260.0)
+                              : width * 1.14
                         : width;
                     return SliverGrid(
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: columns,
                         crossAxisSpacing: 12,
                         mainAxisSpacing: 20,
-                        mainAxisExtent: widget.library
+                        mainAxisExtent: widget.library && !kIsWeb
+                            ? LibraryDesignTile.extent(
+                                previewHeight,
+                                MediaQuery.textScalerOf(context),
+                              )
+                            : widget.library
                             ? previewHeight + titleHeight + typeHeight + 9 + 48
                             : MaterialCatalogTile.extent(
                                 width,
@@ -1026,7 +990,10 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                       delegate: SliverChildBuilderDelegate(
                         (context, i) {
                           final item = items[i];
-                          final thumbnail = catalogPreviewAssets[item.key];
+                          final thumbnail =
+                              usesLiveCatalogArtwork(item.template)
+                              ? null
+                              : catalogPreviewAssets[item.key];
                           if (!widget.library) {
                             return MaterialCatalogTile(
                               key: ValueKey('material-item-${item.key}'),
@@ -1053,6 +1020,37 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                                         child: item.preview(false),
                                       ),
                               ),
+                            );
+                          }
+                          if (!kIsWeb) {
+                            return LibraryDesignTile(
+                              key: ValueKey('material-item-${item.key}'),
+                              productKey: item.key,
+                              title: item.title,
+                              type: item.type,
+                              template: item.template,
+                              owned: ownedKeys.contains(item.key),
+                              favoriteKey: item.favoriteKey,
+                              heroTag: (this, item.key),
+                              previewHeight: previewHeight,
+                              onOpen: () => _open(item),
+                              preview: item.template != null
+                                  ? item.preview(false)
+                                  : thumbnail != null
+                                  ? Image.asset(
+                                      thumbnail,
+                                      fit: BoxFit.contain,
+                                      cacheWidth: 384,
+                                      errorBuilder: (_, __, ___) =>
+                                          MaterialOriginalPreview(
+                                            productKey: item.key,
+                                            child: item.preview(false),
+                                          ),
+                                    )
+                                  : MaterialOriginalPreview(
+                                      productKey: item.key,
+                                      child: item.preview(false),
+                                    ),
                             );
                           }
                           return InkWell(
@@ -1182,68 +1180,61 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
             if (items.isNotEmpty &&
                 (!widget.library || (!loadingLibrary && !failedLibrary)))
               SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 56,
-                  child: Center(
-                    child: _loading
-                        ? const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                child: kIsWeb
+                    ? WebCatalogFooter(
+                        loading: _loading,
+                        visible: _visible,
+                        total: items.length,
+                        onMore: _loadMore,
+                      )
+                    : SizedBox(
+                        height: 56,
+                        child: Center(
+                          child: _loading
+                              ? const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                    SizedBox(width: 10),
+                                    Text('목록을 더 불러오고 있어요'),
+                                  ],
+                                )
+                              : _visible < items.length
+                              ? TextButton(
+                                  onPressed: _loadMore,
+                                  child: Text(
+                                    '더 보기 · $_visible / ${items.length}',
+                                  ),
+                                )
+                              : Text(
+                                  '${items.length}개 항목을 모두 확인했어요',
+                                  style: ExperienceStyle.text(
+                                    12,
+                                    color: ExperienceFormStyle.muted(context),
+                                  ),
                                 ),
-                              ),
-                              SizedBox(width: 10),
-                              Text('목록을 더 불러오고 있어요'),
-                            ],
-                          )
-                        : _visible < items.length
-                        ? TextButton(
-                            onPressed: _loadMore,
-                            child: Text('더 보기 · $_visible / ${items.length}'),
-                          )
-                        : Text(
-                            '${items.length}개 항목을 모두 확인했어요',
-                            style: ExperienceStyle.text(
-                              12,
-                              color: ExperienceFormStyle.muted(context),
-                            ),
-                          ),
-                  ),
-                ),
+                        ),
+                      ),
               ),
           ],
         ),
       );
       if (kIsWeb) {
-        final body = libraryWide
-            ? Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SizedBox(width: 184, child: _librarySidebar(tabs)),
-                  VerticalDivider(width: 1, color: WebPalette.of(context).line),
-                  const SizedBox(width: 24),
-                  Expanded(child: content),
-                ],
-              )
-            : content;
+        final body = content;
         if (widget.embedded) return body;
         return SnapFitWebShell(
           section: WebSection.designs,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              WebPageHeading(
-                eyebrow: widget.library ? 'MY DESIGNS' : 'DESIGN MATERIALS',
-                title: widget.library ? '내 디자인 보관함' : '꾸밈 소재',
-                description: widget.library
-                    ? '구매한 디자인과 즐겨찾는 소재를 한곳에서 관리하세요.'
-                    : '사진 곁에 놓을 스티커, 프레임, 문구와 종이를 찾아보세요.',
-              ),
-              const SizedBox(height: 28),
+              WebPageHeading(title: widget.library ? '내 디자인 보관함' : '꾸밈 소재'),
+              const SizedBox(height: 20),
               Expanded(child: body),
             ],
           ),
@@ -1254,8 +1245,15 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
         appBar: widget.embedded
             ? null
             : ExperienceHeader(
-                title: widget.library ? '내 보관함' : '꾸밈 소재',
+                title: widget.searchMode
+                    ? '소재 검색'
+                    : widget.library
+                    ? '내 디자인'
+                    : '꾸밈 소재',
                 themeAware: true,
+                showDivider: !widget.library,
+                showNotifications: !widget.searchMode,
+                back: Navigator.of(context).canPop(),
               ),
         body: SafeArea(
           top: false,
@@ -1263,7 +1261,16 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
               ? Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SizedBox(width: 184, child: _librarySidebar(tabs)),
+                    SizedBox(
+                      width:
+                          ((MediaQuery.sizeOf(context).width -
+                                      MediaQuery.paddingOf(
+                                        context,
+                                      ).horizontal) *
+                                  .2)
+                              .clamp(136.0, 172.0),
+                      child: _librarySidebar(tabs),
+                    ),
                     VerticalDivider(
                       width: 1,
                       color: ExperienceFormStyle.line(context),
@@ -1276,4 +1283,23 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
       );
     },
   );
+}
+
+class _LibraryResultHeader extends SliverPersistentHeaderDelegate {
+  _LibraryResultHeader({required this.extent, required this.child});
+  final double extent;
+  final Widget child;
+  @override
+  double get minExtent => extent;
+  @override
+  double get maxExtent => extent;
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) => SizedBox.expand(child: child);
+  @override
+  bool shouldRebuild(_LibraryResultHeader oldDelegate) =>
+      extent != oldDelegate.extent || child != oldDelegate.child;
 }

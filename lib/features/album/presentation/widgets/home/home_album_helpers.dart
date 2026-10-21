@@ -11,13 +11,14 @@ import '../../../../../core/cache/snapfit_cache_manager.dart';
 import '../../../data/gallery/photo_asset_image_provider.dart';
 
 /// 날짜 포맷 (yyyy.MM.dd)
-String formatAlbumDate(String raw) {
+String formatAlbumDate(String raw, {bool useLocalTime = false}) {
   if (raw.isEmpty) return '----.--.--';
   final parsed = DateTime.tryParse(raw);
   if (parsed == null) return raw;
-  final mm = parsed.month.toString().padLeft(2, '0');
-  final dd = parsed.day.toString().padLeft(2, '0');
-  return '${parsed.year}.$mm.$dd';
+  final date = useLocalTime ? parsed.toLocal() : parsed;
+  final mm = date.month.toString().padLeft(2, '0');
+  final dd = date.day.toString().padLeft(2, '0');
+  return '${date.year}.$mm.$dd';
 }
 
 /// 커버 비율 파싱

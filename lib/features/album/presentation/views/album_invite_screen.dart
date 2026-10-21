@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/theme/snapfit_design_tokens.dart' show SnapFitRadius;
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/widgets/experience_icon.dart';
 import '../../../../shared/widgets/experience_style.dart';
@@ -53,102 +54,126 @@ class _AlbumInviteScreenState extends ConsumerState<AlbumInviteScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => kIsWeb ? _buildWeb() : Scaffold(
-    backgroundColor: SnapFitColors.backgroundOf(context),
-    appBar: const ExperienceHeader(title: '멤버 초대', showNotifications: false),
-    body: SafeArea(
-      top: false,
-      bottom: false,
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 960),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final wide =
-                  constraints.maxWidth >= 540 &&
-                  MediaQuery.orientationOf(context) == Orientation.landscape;
-              final compact = constraints.maxHeight < 420;
-              if (wide) {
-                return Padding(
-                  key: const ValueKey('inviteContent'),
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      SizedBox(
-                        width: (constraints.maxWidth * .36).clamp(180, 300),
-                        child: SingleChildScrollView(
-                          key: const PageStorageKey('invite-album'),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: _albumIdentity(
-                            compact: true,
-                            stacked: true,
-                            previewHeight: (constraints.maxHeight * .28).clamp(
-                              48,
-                              84,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                      VerticalDivider(
-                        width: 1,
-                        color: ExperienceFormStyle.line(context),
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          key: const PageStorageKey('invite-settings'),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: _linkSettings(compact: true, linkFirst: true),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }
-              return SingleChildScrollView(
-                key: const ValueKey('inviteContent'),
-                padding: EdgeInsets.fromLTRB(24, compact ? 12 : 24, 24, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _albumIdentity(compact: compact),
-                    SizedBox(height: compact ? 12 : 24),
-                    Divider(
-                      color: ExperienceFormStyle.line(context),
-                      height: 1,
-                    ),
-                    SizedBox(height: compact ? 8 : 20),
-                    _linkSettings(compact: compact),
-                  ],
-                ),
-              );
-            },
+  Widget build(BuildContext context) => kIsWeb
+      ? _buildWeb()
+      : Scaffold(
+          backgroundColor: SnapFitColors.backgroundOf(context),
+          appBar: const ExperienceHeader(
+            title: '멤버 초대',
+            showNotifications: false,
           ),
-        ),
-      ),
-    ),
-    bottomNavigationBar: SafeArea(
-      top: false,
-      child: Center(
-        heightFactor: 1,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 960),
-          child: _actions(),
-        ),
-      ),
-    ),
-  );
+          body: SafeArea(
+            top: false,
+            bottom: false,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 960),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final wide =
+                        constraints.maxWidth >= 540 &&
+                        MediaQuery.orientationOf(context) ==
+                            Orientation.landscape;
+                    final compact = constraints.maxHeight < 420;
+                    if (wide) {
+                      return Padding(
+                        key: const ValueKey('inviteContent'),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            SizedBox(
+                              width: (constraints.maxWidth * .36).clamp(
+                                180,
+                                300,
+                              ),
+                              child: SingleChildScrollView(
+                                key: const PageStorageKey('invite-album'),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                child: _albumIdentity(
+                                  compact: true,
+                                  stacked: true,
+                                  previewHeight: (constraints.maxHeight * .68)
+                                      .clamp(96, 192),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 20),
+                            VerticalDivider(
+                              width: 1,
+                              color: ExperienceFormStyle.line(context),
+                            ),
+                            const SizedBox(width: 20),
+                            Expanded(
+                              child: SingleChildScrollView(
+                                key: const PageStorageKey('invite-settings'),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                child: _linkSettings(
+                                  compact: true,
+                                  linkFirst: true,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                    return SingleChildScrollView(
+                      key: const ValueKey('inviteContent'),
+                      padding: EdgeInsets.fromLTRB(
+                        24,
+                        compact ? 12 : 24,
+                        24,
+                        20,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _albumIdentity(
+                            compact: compact,
+                            previewHeight: compact ? 104 : 164,
+                          ),
+                          SizedBox(height: compact ? 10 : 24),
+                          Divider(
+                            color: ExperienceFormStyle.line(context),
+                            height: 1,
+                          ),
+                          SizedBox(height: compact ? 8 : 20),
+                          _linkSettings(compact: compact),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+          bottomNavigationBar: SafeArea(
+            top: false,
+            child: Center(
+              heightFactor: 1,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 960),
+                child: _actions(),
+              ),
+            ),
+          ),
+        );
 
   Widget _buildWeb() => SnapFitWebShell(
     title: '앨범 공유',
     showNavigation: false,
-    actions: [TextButton.icon(
-      onPressed: _busy ? null : () => Navigator.maybePop(context),
-      icon: const Icon(Icons.arrow_back, size: 17),
-      label: const Text('앨범으로'),
-    )],
+    actions: [
+      TextButton.icon(
+        onPressed: _busy ? null : () => Navigator.maybePop(context),
+        icon: const Icon(Icons.arrow_back, size: 17),
+        label: const Text('앨범으로'),
+      ),
+    ],
     child: SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -159,72 +184,106 @@ class _AlbumInviteScreenState extends ConsumerState<AlbumInviteScreen> {
             description: '참여할 사람의 권한을 정하고 초대 링크를 공유하세요.',
           ),
           const SizedBox(height: 30),
-          LayoutBuilder(builder: (context, box) {
-            final summary = WebSurface(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (widget.album != null) ...[
-                    SizedBox(
-                      height: 230,
-                      child: Center(child: WebSavedAlbumArtwork(album: widget.album!)),
+          LayoutBuilder(
+            builder: (context, box) {
+              final summary = WebSurface(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (widget.album != null) ...[
+                      SizedBox(
+                        height: 230,
+                        child: Center(
+                          child: WebSavedAlbumArtwork(album: widget.album!),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                    Text(
+                      widget.albumTitle,
+                      style: TextStyle(
+                        color: WebPalette.of(context).ink,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
+                    if (widget.album != null) ...[
+                      const SizedBox(height: 10),
+                      Text(
+                        widget.album!.physicalCoverSize.displayName,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: WebPalette.of(context).muted,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 24),
+                    Divider(height: 1, color: WebPalette.of(context).line),
+                    const SizedBox(height: 20),
+                    Text(
+                      '초대 권한',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: WebPalette.of(context).muted,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _allowEditing ? '보기 및 편집' : '보기 전용',
+                      style: TextStyle(
+                        color: WebPalette.of(context).brandInk,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _allowEditing
+                          ? '참여자는 사진과 글, 페이지 구성을 함께 편집할 수 있습니다.'
+                          : '참여자는 앨범을 볼 수 있으며 내용을 변경할 수 없습니다.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: WebPalette.of(context).muted,
+                        height: 1.6,
+                      ),
+                    ),
                   ],
-                  Text(widget.albumTitle, style: TextStyle(
-                    color: WebPalette.of(context).ink, fontSize: 20, fontWeight: FontWeight.w700,
-                  )),
-                  if (widget.album != null) ...[
-                    const SizedBox(height: 10),
-                    Text(widget.album!.physicalCoverSize.displayName,
-                      style: TextStyle(fontSize: 12, color: WebPalette.of(context).muted)),
+                ),
+              );
+              final form = WebSurface(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      '공유 설정',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: WebPalette.of(context).ink,
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    _linkSettings(),
+                    const SizedBox(height: 26),
+                    _actions(),
                   ],
-                  const SizedBox(height: 24),
-                  Divider(height: 1, color: WebPalette.of(context).line),
-                  const SizedBox(height: 20),
-                  Text('초대 권한', style: TextStyle(
-                    fontSize: 12, color: WebPalette.of(context).muted,
-                  )),
-                  const SizedBox(height: 8),
-                  Text(_allowEditing ? '보기 및 편집' : '보기 전용',
-                    style: TextStyle(
-                      color: WebPalette.of(context).brandInk, fontSize: 15, fontWeight: FontWeight.w700,
-                    )),
-                  const SizedBox(height: 8),
-                  Text(_allowEditing
-                      ? '참여자는 사진과 글, 페이지 구성을 함께 편집할 수 있습니다.'
-                      : '참여자는 앨범을 볼 수 있으며 내용을 변경할 수 없습니다.',
-                    style: TextStyle(fontSize: 13, color: WebPalette.of(context).muted, height: 1.6)),
-                ],
-              ),
-            );
-            final form = WebSurface(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                ),
+              );
+              if (box.maxWidth < 900)
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [summary, const SizedBox(height: 20), form],
+                );
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('공유 설정', style: TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.w700, color: WebPalette.of(context).ink,
-                  )),
-                  const SizedBox(height: 22),
-                  _linkSettings(),
-                  const SizedBox(height: 26),
-                  _actions(),
+                  SizedBox(width: 330, child: summary),
+                  const SizedBox(width: 28),
+                  Expanded(child: form),
                 ],
-              ),
-            );
-            if (box.maxWidth < 900) return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [summary, const SizedBox(height: 20), form],
-            );
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(width: 330, child: summary),
-                const SizedBox(width: 28),
-                Expanded(child: form),
-              ],
-            );
-          }),
+              );
+            },
+          ),
           const SizedBox(height: 32),
         ],
       ),
@@ -234,87 +293,105 @@ class _AlbumInviteScreenState extends ConsumerState<AlbumInviteScreen> {
   Widget _albumIdentity({
     bool compact = false,
     bool stacked = false,
-    double previewHeight = 84,
-  }) {
-    final cover = widget.album == null
-        ? null
-        : SizedBox(
-            width: stacked
-                ? double.infinity
-                : compact
-                ? 60
-                : 88,
-            height: stacked
-                ? previewHeight + 8
-                : compact
-                ? 80
-                : 112,
-            child: Center(
-              child: HomeAlbumCoverThumbnail(
-                album: widget.album!,
-                height: stacked
-                    ? previewHeight
-                    : compact
-                    ? 76
-                    : 104,
-                maxWidth: stacked
-                    ? 132
-                    : compact
-                    ? 56
-                    : 80,
-                showShadow: false,
+    double previewHeight = 164,
+  }) => LayoutBuilder(
+    builder: (context, bounds) {
+      final album = widget.album?.id == widget.albumId ? widget.album : null;
+      final vertical =
+          stacked ||
+          (!compact && bounds.maxWidth < 300) ||
+          MediaQuery.textScalerOf(context).scale(16) > 22.4;
+      final cover = album == null
+          ? null
+          : SizedBox(
+              key: const ValueKey('inviteAlbumArtwork'),
+              width: vertical
+                  ? double.infinity
+                  : compact
+                  ? 80
+                  : 144,
+              height:
+                  (vertical
+                      ? previewHeight
+                      : compact
+                      ? 80
+                      : 164) +
+                  (compact && !vertical ? 8 : 16),
+              child: Center(
+                child: HomeAlbumCoverThumbnail(
+                  album: album,
+                  height: vertical
+                      ? previewHeight
+                      : compact
+                      ? 80
+                      : 164,
+                  maxWidth: vertical
+                      ? (bounds.maxWidth * .76).clamp(100, 218)
+                      : compact
+                      ? 72
+                      : 132,
+                  showBookDepth: true,
+                  showShadow: true,
+                ),
               ),
+            );
+      final identity = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (!compact) ...[
+            Text(
+              '공유할 앨범',
+              style: ExperienceFormStyle.text(context, 12, secondary: true),
             ),
-          );
-    final identity = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (!stacked) ...[
+            const SizedBox(height: 8),
+          ],
           Text(
-            '함께 간직할 순간',
-            style: ExperienceFormStyle.text(context, 12, secondary: true),
-          ),
-          const SizedBox(height: 6),
-        ],
-        Tooltip(
-          message: widget.albumTitle,
-          child: Text(
             widget.albumTitle,
-            maxLines: stacked ? 2 : null,
-            overflow: stacked ? TextOverflow.ellipsis : null,
             style: ExperienceFormStyle.text(
               context,
-              stacked ? 18 : 20,
-              weight: FontWeight.w600,
+              compact ? 18 : 20,
+              weight: FontWeight.w700,
             ),
           ),
-        ),
-        if (!compact) ...[
-          const SizedBox(height: 8),
-          Text(
-            '초대받은 멤버와 이 앨범을 공유해요.',
-            style: ExperienceFormStyle.text(context, 13, secondary: true),
-          ),
+          if (album != null) ...[
+            SizedBox(height: compact ? 6 : 10),
+            Text(
+              album.physicalCoverSize.displayName,
+              key: const ValueKey('inviteAlbumSpec'),
+              style: ExperienceFormStyle.text(context, 12, secondary: true),
+            ),
+          ],
+          if (!compact) ...[
+            const SizedBox(height: 10),
+            Text(
+              '초대받은 멤버와 이 앨범을 공유해요.',
+              style: ExperienceFormStyle.text(context, 13, secondary: true),
+            ),
+          ],
         ],
-      ],
-    );
-    return stacked
-        ? Column(
-            key: const ValueKey('inviteAlbumIdentity'),
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (cover != null) ...[cover, const SizedBox(height: 12)],
-              identity,
-            ],
-          )
-        : Row(
-            key: const ValueKey('inviteAlbumIdentity'),
-            children: [
-              if (cover != null) ...[cover, SizedBox(width: compact ? 16 : 18)],
-              Expanded(child: identity),
-            ],
-          );
-  }
+      );
+      return vertical
+          ? Column(
+              key: const ValueKey('inviteAlbumIdentity'),
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (cover != null) ...[cover, const SizedBox(height: 18)],
+                identity,
+              ],
+            )
+          : Row(
+              key: const ValueKey('inviteAlbumIdentity'),
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (cover != null) ...[
+                  cover,
+                  SizedBox(width: compact ? 16 : 20),
+                ],
+                Expanded(child: identity),
+              ],
+            );
+    },
+  );
 
   Widget _linkSettings({bool compact = false, bool linkFirst = false}) {
     final permission = Column(
@@ -351,7 +428,9 @@ class _AlbumInviteScreenState extends ConsumerState<AlbumInviteScreen> {
                   setState(() => _allowEditing = value);
                   _createInviteLink();
                 },
-          activeTrackColor: kIsWeb ? WebPalette.of(context).brand : ExperienceStyle.accent,
+          activeTrackColor: kIsWeb
+              ? WebPalette.of(context).brand
+              : ExperienceStyle.accent,
         ),
       ],
     );
@@ -370,7 +449,7 @@ class _AlbumInviteScreenState extends ConsumerState<AlbumInviteScreen> {
             padding: const EdgeInsets.fromLTRB(14, 14, 10, 14),
             decoration: BoxDecoration(
               color: ExperienceFormStyle.surface(context),
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(SnapFitRadius.lg),
               border: Border.all(color: ExperienceFormStyle.line(context)),
             ),
             child: Row(

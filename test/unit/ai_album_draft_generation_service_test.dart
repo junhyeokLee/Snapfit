@@ -2,8 +2,60 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/features/album/ai_album/domain/ai_album_curation_engine.dart';
 import 'package:snap_fit/features/album/ai_album/domain/ai_album_draft_generation_service.dart';
 import 'package:snap_fit/features/album/ai_album/domain/ai_album_models.dart';
+import '../fixtures/ai_template_v3_fixture.dart';
 
 void main() {
+  test(
+    'template generation keeps a private memo local and sends only public design preferences',
+    () async {
+      const memo = '서연의 제주 사진집 · 생일 2020-03-14 · 개인 메모';
+      const brief = AiTemplateBrief(
+        prompt: memo,
+        pageCount: 20,
+        expectedPointCost: 500,
+        safeOptions: AiTemplateSafeOptions(
+          topic: AiDesignTopic.family,
+          mood: AiDesignMood.warm,
+          palette: AiDesignPalette.pastel,
+          density: AiDesignDensity.quiet,
+        ),
+      );
+      var collected = false;
+      var prepared = false;
+      final provider = _RecordingTemplateProvider();
+      final service = AiAlbumDraftGenerationService(
+        collectCandidates: (_) async {
+          collected = true;
+          return const [];
+        },
+        prepareAdvancedPreviews: (_) async {
+          prepared = true;
+          return const [];
+        },
+        templateProvider: provider,
+      );
+
+      final result = await service.generate(
+        theme: AlbumTheme.family,
+        range: AiPhotoRange.manualSelection,
+        designBrief: brief,
+      );
+
+      final sent = provider.receivedBrief!;
+      expect(sent.prompt, brief.safeOptions.publicDescription);
+      expect(sent.prompt, isNot(contains('서연')));
+      expect(sent.prompt, isNot(contains('제주')));
+      expect(sent.prompt, isNot(contains('2020-03-14')));
+      expect(sent.toSafeDesignJson(), brief.toSafeDesignJson());
+      expect(sent.expectedPointCost, brief.expectedPointCost);
+      expect(brief.prompt, memo);
+      expect(collected, isFalse);
+      expect(prepared, isFalse);
+      expect(result.status, AiAlbumDraftGenerationStatus.success);
+      expect(result.shouldChargePoints, isTrue);
+    },
+  );
+
   test(
     'generates a reviewable draft and marks points chargeable only after success',
     () async {
@@ -560,4 +612,23 @@ class _ThemedCandidatesNotFoundProvider extends AiAlbumDraftProvider {
   }) async {
     throw Exception('themed_candidates_not_found');
   }
+}
+
+class _RecordingTemplateProvider extends AiAlbumDraftProvider {
+  AiTemplateBrief? receivedBrief;
+
+  @override
+  Future<AlbumRecommendationDraft> createTemplate(AiTemplateBrief brief) async {
+    receivedBrief = brief;
+    return originalTemplateDraft(brief);
+  }
+
+  @override
+  Future<AlbumRecommendationDraft> createDraft({
+    required AlbumTheme theme,
+    required AiPhotoRange range,
+    required List<PhotoCandidate> candidates,
+  }) async => throw StateError(
+    'Personal photo curation must stay outside template generation',
+  );
 }

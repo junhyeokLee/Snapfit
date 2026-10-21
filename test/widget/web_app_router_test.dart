@@ -62,6 +62,123 @@ void main() {
   const print = WebAppLocation(WebAppPage.print, '69');
 
   testWidgets(
+    'catalog addresses change in place and browser back preserves list work',
+    (tester) async {
+      final harness = _Harness();
+      final catalog = WebAppRouteController(
+        WebAppLocation.designs,
+        pages: const {WebAppPage.designs, WebAppPage.materials},
+      );
+      addTearDown(catalog.dispose);
+      await harness.mount(tester);
+      unawaited(
+        harness.navigator.currentState!.push<void>(
+          MaterialPageRoute<void>(
+            settings: WebAppRouteSettings(
+              WebAppLocation.designs,
+              controller: catalog,
+            ),
+            builder: (_) => Scaffold(
+              body: ValueListenableBuilder<WebAppLocation>(
+                valueListenable: catalog,
+                builder: (_, location, _) => Column(
+                  children: [
+                    Text(location.uri.toString()),
+                    const TextField(key: ValueKey('catalog-query')),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final listState = tester.state(find.byType(TextField));
+      await tester.enterText(find.byType(TextField), 'preserved private query');
+      catalog.update(WebAppLocation.materials);
+      await tester.pumpAndSettle();
+      expect(harness.router.currentConfiguration, WebAppLocation.materials);
+      expect(harness.router.observedLocation, WebAppLocation.materials);
+      expect(harness.requested, isEmpty);
+
+      // The application checks ownership before applying this browser request.
+      await harness.router.setNewRoutePath(WebAppLocation.designs);
+      expect(harness.requested, [WebAppLocation.designs]);
+      expect(
+        harness.router.updateDisplayedLocation(WebAppLocation.designs),
+        isTrue,
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('/designs'), findsOneWidget);
+      expect(tester.state(find.byType(TextField)), same(listState));
+      expect(find.text('preserved private query'), findsOneWidget);
+      expect(harness.router.currentConfiguration.uri.hasQuery, isFalse);
+      expect(harness.router.updateDisplayedLocation(editor), isFalse);
+      expect(harness.router.currentConfiguration, WebAppLocation.designs);
+
+      await harness.router.setNewRoutePath(WebAppLocation.materials);
+      expect(
+        harness.router.updateDisplayedLocation(WebAppLocation.materials),
+        isTrue,
+      );
+      await tester.pumpAndSettle();
+      expect(tester.state(find.byType(TextField)), same(listState));
+      harness.navigator.currentState!.pop();
+      await tester.pumpAndSettle();
+      expect(harness.router.currentConfiguration, WebAppLocation.home);
+      catalog.update(WebAppLocation.designs);
+      expect(harness.router.currentConfiguration, WebAppLocation.home);
+      await harness.close(tester);
+    },
+  );
+
+  testWidgets('a modal or another page cannot be replaced by a catalog tab', (
+    tester,
+  ) async {
+    final harness = _Harness();
+    final catalog = WebAppRouteController(
+      WebAppLocation.designs,
+      pages: const {WebAppPage.designs, WebAppPage.materials},
+    );
+    addTearDown(catalog.dispose);
+    await harness.mount(tester);
+    unawaited(
+      harness.navigator.currentState!.push<void>(
+        MaterialPageRoute<void>(
+          settings: WebAppRouteSettings(
+            WebAppLocation.designs,
+            controller: catalog,
+          ),
+          builder: (_) => const Scaffold(body: Text('catalog work')),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    unawaited(
+      showDialog<void>(
+        context: harness.navigator.currentContext!,
+        builder: (_) => const AlertDialog(title: Text('keep modal')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      harness.router.updateDisplayedLocation(WebAppLocation.materials),
+      isFalse,
+    );
+    expect(catalog.value, WebAppLocation.designs);
+    expect(find.text('keep modal'), findsOneWidget);
+    harness.navigator.currentState!.pop();
+    await tester.pumpAndSettle();
+    await harness.push(tester, editor);
+    expect(
+      harness.router.updateDisplayedLocation(WebAppLocation.materials),
+      isFalse,
+    );
+    expect(harness.router.currentConfiguration, editor);
+    await harness.close(tester);
+  });
+
+  testWidgets(
     'imperative typed push and back update location without requesting another route',
     (tester) async {
       final harness = _Harness();
@@ -300,6 +417,92 @@ void main() {
       harness.router.finishInitialNavigation();
       expect(harness.router.currentConfiguration, editor);
       expect(harness.requested, [editor]);
+      await harness.close(tester);
+    },
+  );
+
+  for (final publicPage in [
+    WebAppLocation.printProducts,
+    const WebAppLocation(WebAppPage.policy, 'refund'),
+  ]) {
+    testWidgets(
+      'public ${publicPage.uri} survives account loss and root auth restoration',
+      (tester) async {
+        final harness = _Harness();
+        await harness.mount(tester);
+        await harness.push(tester, publicPage);
+        final published = <WebAppLocation>[];
+        harness.router.addListener(
+          () => published.add(harness.router.currentConfiguration),
+        );
+        harness.router.resetForSessionChange();
+        await tester.pumpAndSettle();
+        expect(harness.router.currentConfiguration, publicPage);
+        expect(harness.requested, [publicPage]);
+        expect(find.text('root home'), findsOneWidget);
+        // Account restoration and AuthGate may rebuild underneath the public
+        // route. Root observations must never replace its browser address.
+        await harness.push(tester, publicPage);
+        harness.router.finishInitialNavigation();
+        await tester.pumpAndSettle();
+        expect(find.text(publicPage.uri.toString()), findsOneWidget);
+        expect(published, everyElement(publicPage));
+        expect(harness.router.currentConfiguration, publicPage);
+        await harness.close(tester);
+      },
+    );
+
+    testWidgets(
+      'public ${publicPage.uri} pending during account loss is restored after private routes clear',
+      (tester) async {
+        final harness = _Harness();
+        await harness.mount(tester);
+        await harness.push(tester, editor);
+        harness.router.requestLocation(publicPage);
+        harness.requested.clear();
+        harness.router.resetForSessionChange(pendingLocation: publicPage);
+        await tester.pumpAndSettle();
+        expect(harness.router.currentConfiguration, publicPage);
+        expect(harness.requested, [publicPage]);
+        expect(find.text(editor.uri.toString()), findsNothing);
+        await harness.push(tester, publicPage);
+        harness.router.finishInitialNavigation();
+        expect(harness.router.currentConfiguration, publicPage);
+        await harness.close(tester);
+      },
+    );
+  }
+
+  testWidgets(
+    'session changes remove private album and order history without restoring access',
+    (tester) async {
+      final harness = _Harness();
+      await harness.mount(tester);
+      await harness.push(tester, editor);
+      await harness.push(tester, WebAppLocation.orders);
+      harness.router.resetForSessionChange();
+      await tester.pumpAndSettle();
+      expect(harness.router.currentConfiguration, WebAppLocation.home);
+      expect(find.text(editor.uri.toString()), findsNothing);
+      expect(find.text('/orders'), findsNothing);
+      expect(harness.requested, isEmpty);
+      expect(find.text('root home'), findsOneWidget);
+      await harness.close(tester);
+    },
+  );
+
+  testWidgets(
+    'a newer private request does not retain the previous public page after session change',
+    (tester) async {
+      final harness = _Harness();
+      await harness.mount(tester);
+      await harness.push(tester, WebAppLocation.printProducts);
+      harness.router.resetForSessionChange(
+        pendingLocation: WebAppLocation.orders,
+      );
+      await tester.pumpAndSettle();
+      expect(harness.router.currentConfiguration, WebAppLocation.home);
+      expect(harness.requested, isEmpty);
       await harness.close(tester);
     },
   );

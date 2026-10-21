@@ -19,6 +19,7 @@ const releaseMigrations = [
   '20260908105146_remove_external_print_payment_integration.sql',
   '20260908111001_digital_point_shop.sql',
   '20260908112124_complete_digital_point_shop_schema.sql',
+  '20261019114718_push_enqueue_preferences_and_quiet_hours.sql',
 ];
 const alice = '11111111-1111-4111-8111-111111111111';
 const bob = '22222222-2222-4222-8222-222222222222';

@@ -94,12 +94,12 @@ class Env {
     defaultValue: false,
   );
 
-  /// Premium AI album draft point cost. Tuned for high-quality hybrid
-  /// OpenAI Vision + Claude curation mode.
-  /// - --dart-define=AI_ALBUM_DRAFT_POINT_COST=700
+  /// AI album draft base point cost (20 pages). Actual cost scales with page
+  /// count: 300 + pageCount * 10 (500P for 20p ~ 1100P for 80p).
+  /// - --dart-define=AI_ALBUM_DRAFT_POINT_COST=500
   static const int aiAlbumDraftPointCost = int.fromEnvironment(
     'AI_ALBUM_DRAFT_POINT_COST',
-    defaultValue: 700,
+    defaultValue: 500,
   );
 
   /// Native store consumable point product ids. Configure matching ids in

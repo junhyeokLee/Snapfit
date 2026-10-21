@@ -1,0 +1,10 @@
+// Public Kakao native app key; matches Env.kakaoNativeAppKey and Android.
+// Info.plist needs this Xcode setting to register the actual callback scheme.
+KAKAO_NATIVE_APP_KEY = 34ecdf62d2b450c00c1d525d0cffa4df
+
+// Existing public Google OAuth IDs for com.devsheep.snapFit. The iOS SDK reads
+// GIDClientID and GIDServerClientID from Info.plist when Dart has no iOS override.
+// Keep the server ID aligned with Env.googleWebClientId for Supabase ID tokens.
+GOOGLE_IOS_CLIENT_ID = 991239566838-q3rs3vqvengj2975hoj8g1h87i369k4s.apps.googleusercontent.com
+GOOGLE_REVERSED_CLIENT_ID = com.googleusercontent.apps.991239566838-q3rs3vqvengj2975hoj8g1h87i369k4s
+GOOGLE_SERVER_CLIENT_ID = 991239566838-uvukou4dr1ucvkei1efgb38l09s6490g.apps.googleusercontent.com

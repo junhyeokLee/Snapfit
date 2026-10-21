@@ -27,7 +27,7 @@ class AlbumFrozenScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: SnapFitColors.backgroundOf(context),
       appBar: ExperienceHeader(
-        title: '앨범 완성',
+        title: '책으로 만들기',
         themeAware: true,
         onBack: onClose,
         showNotifications: false,
@@ -88,7 +88,7 @@ class AlbumFrozenScreen extends StatelessWidget {
   }
 
   Widget _buildWeb(BuildContext context) => SnapFitWebShell(
-    title: '앨범 완성',
+    title: '책으로 만들기',
     showNavigation: false,
     actions: [TextButton.icon(
       onPressed: onClose,
@@ -121,7 +121,7 @@ class AlbumFrozenScreen extends StatelessWidget {
                 children: [
                   Row(children: [
                     Icon(Icons.check_circle_outline, size: 20, color: WebPalette.of(context).brandInk),
-                    SizedBox(width: 10), Text('앨범 완성', style: TextStyle(
+                    SizedBox(width: 10), Text('책으로 만들기', style: TextStyle(
                       fontSize: 13, color: WebPalette.of(context).brandInk, fontWeight: FontWeight.w600,
                     )),
                   ]),
@@ -150,7 +150,7 @@ class AlbumFrozenScreen extends StatelessWidget {
                     label: const Text('책 주문 준비하기'),
                   ),
                   const SizedBox(height: 12),
-                  TextButton(onPressed: onClose, child: const Text('완료')),
+                  TextButton(onPressed: onClose, child: const Text('내 앨범으로')),
                 ],
               ),
             );
@@ -199,15 +199,15 @@ class AlbumFrozenScreen extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            '완성된 앨범',
+            '책으로 만들기',
             style: ExperienceFormStyle.text(context, 13, secondary: true),
           ),
         ],
       ),
       const SizedBox(height: 12),
       Text(
-        '앨범이 완성되었습니다!',
-        style: ExperienceFormStyle.text(context, 26, weight: FontWeight.w600),
+        '인쇄 전에 확인해요',
+        style: ExperienceFormStyle.text(context, 26, weight: FontWeight.w700),
       ),
       if (album?.title.isNotEmpty == true) ...[
         const SizedBox(height: 8),
@@ -215,7 +215,7 @@ class AlbumFrozenScreen extends StatelessWidget {
       ],
       const SizedBox(height: 12),
       Text(
-        '소중한 기록을 앨범에 담았어요.\n앨범은 보관하고 계속 수정할 수 있습니다.',
+        '책의 배치와 제작 금액을 확인할 수 있어요.\n아직 주문 전이며 앨범은 계속 수정할 수 있어요.',
         style: ExperienceFormStyle.text(context, 14, secondary: true),
       ),
       const SizedBox(height: 28),
@@ -225,7 +225,7 @@ class AlbumFrozenScreen extends StatelessWidget {
           onPressed: onOrder,
           style: ExperienceFormStyle.primary(context),
           icon: const Icon(Icons.auto_stories_outlined, size: 19),
-          label: const Text('책으로 주문 준비하기'),
+          label: const Text('인쇄 검토하기'),
         ),
       ),
       const SizedBox(height: 10),
@@ -242,7 +242,7 @@ class AlbumFrozenScreen extends StatelessWidget {
             foregroundColor: ExperienceFormStyle.ink(context),
             minimumSize: const Size(0, 48),
           ),
-          child: const Text('완료'),
+          child: const Text('내 앨범으로'),
         ),
       ),
     ],

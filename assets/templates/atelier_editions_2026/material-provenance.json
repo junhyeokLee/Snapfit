@@ -1,0 +1,69 @@
+{
+  "revision": "atelier-category-materials-2026-10-16",
+  "generationMethod": "built-in image_gen; model is tool-managed and not exposed",
+  "assets": [
+    {
+      "id": "editionNightSeal",
+      "file": "assets/sticker/studio/edition_night_seal.png",
+      "provider": "OpenAI built-in image_gen",
+      "createdDate": "2026-10-16",
+      "transparentBackground": true,
+      "status": "generated-needs-owner-review",
+      "prompt": "Use case: product-mockup. Asset type: premium wedding scrapbook decorative material cutout, true transparent background. One exquisitely tactile asymmetrical small keepsake assemblage: deep midnight-blue silk ribbon loop, a slightly irregular antique pale gold wax seal with tiny pressed fern impression (no letters), one small ivory dried flower sprig and the corner of torn translucent vellum, arranged together as a horizontal lower-right page corner ornament. Realistic top-down flatlay, delicate silk weave and torn fibers, refined and restrained, no glitter, no chrome, no cartoon, no unrelated objects, no shadows spreading outside the object, tiny natural contact shadows only. Large clean transparent surrounding area, no background, no frame, no text, no watermark. This is an isolated reusable editor sticker, not a whole album page."
+    },
+    {
+      "id": "editionRailBundle",
+      "file": "assets/sticker/studio/edition_rail_bundle.png",
+      "provider": "OpenAI built-in image_gen",
+      "createdDate": "2026-10-16",
+      "transparentBackground": true,
+      "status": "generated-needs-owner-review",
+      "prompt": "Use case: product-mockup. Asset type: original premium rail-travel scrapbook editor sticker, true transparent background. One isolated diagonal ephemera cluster: two old ivory perforated blank regional train ticket stubs, one has a narrow burgundy edge and tiny circular punch holes, a folded faded cyan railway route fragment with thin red lines but NO readable words/numbers, held by a tiny aged-brass paper clip. Subtle realistic paper thickness, deckled fiber, ink texture, natural small contact shadows. Top-down flatlay, beautifully precise and tactile, richly layered but not messy, ratio approximately 3:2 horizontal. All visual detail inside isolated objects; clean transparent outer margin. No text, no logos, no watermark, no glitter, no cartoon, no background, no book/photo mockup."
+    },
+    {
+      "id": "editionBotanicalPassport",
+      "file": "assets/sticker/studio/edition_botanical_passport.png",
+      "provider": "OpenAI built-in image_gen",
+      "createdDate": "2026-10-16",
+      "transparentBackground": true,
+      "status": "generated-needs-owner-review",
+      "prompt": "Use case: product-mockup. Asset type: high quality original botanical scrapbook ornament cutout, real transparent background. A sophisticated botanical specimen assemblage viewed straight down: one delicate pressed fern branch and tiny butter-yellow wildflower, layered over the lower corner of a small pale green rag-paper plant passport label with an empty ivory writing area and a single tiny brass eyelet, held by a slim sage cotton tie. The label has hairline green botanical ruling but no letters or numbers. Crisp pressed leaf veins, translucent fragile edges, linen fibers, handmade paper thickness, restrained organic asymmetry, not a cartoon or a glossy 3D icon. Horizontal 3:2 overall, clean isolated silhouette, subtle contact shadows only, no background, no border, no text, no watermark, no logos."
+    },
+    {
+      "id": "editionOrbitMobile",
+      "file": "assets/sticker/studio/edition_orbit_mobile.png",
+      "provider": "OpenAI built-in image_gen",
+      "createdDate": "2026-10-16",
+      "transparentBackground": true,
+      "status": "generated-needs-owner-review",
+      "prompt": "Use case: product-mockup. Asset type: original high-end baby scrapbook material cutout on real transparent background. A small tender textile mobile keepsake arranged flat as a horizontal corner ornament: one butter-yellow felt crescent moon, two tiny dusty sky-blue and warm peach felt stars stitched with ivory thread, a softly curved thin cotton cord, and a small frayed oval pale blue embroidered patch with blank center. Tactile hand-sewn wool fibers and precise gentle stitches, a premium craft object for a baby's first-year photo book, mature design not toy-store clipart, no shiny plastic or glitter. Top down natural studio light, compact isolated 3:2 arrangement with clean transparent margin and natural tiny contact shadows, no background, no text, no watermark, no logos."
+    },
+    {
+      "id": "editionRecipeBundle",
+      "file": "assets/sticker/studio/edition_recipe_bundle.png",
+      "provider": "OpenAI built-in image_gen",
+      "createdDate": "2026-10-16",
+      "transparentBackground": true,
+      "status": "generated-needs-owner-review",
+      "prompt": "Use case: product-mockup. Asset type: premium family recipe scrapbook decoration cutout on true transparent background. One tasteful tactile arrangement: an ivory deckle-edge folded recipe note with a subtle tomato-red double border, its center empty without words, a small red-and-ivory woven gingham fabric swatch peeking from behind, and a delicate realistic rosemary sprig held with a small matte red cotton bow at lower right. Editorial craft flatlay top-down, visible paper fibers, finely woven cotton, tiny rosemary needles, soft natural contact shadows, refined Mediterranean family-table theme, horizontal 3:2 composition. Only isolated objects with transparent outer margin. No text, no logo, no watermark, no glitter, no cartoon, no food photograph, no background, not a full page."
+    },
+    {
+      "id": "editionCinemaBundle",
+      "file": "assets/sticker/studio/edition_cinema_bundle.png",
+      "provider": "OpenAI built-in image_gen",
+      "createdDate": "2026-10-16",
+      "transparentBackground": true,
+      "status": "generated-needs-owner-review",
+      "prompt": "Use case: product-mockup. Asset type: original premium cinema scrapbook material cutout on true transparent background. One compact elegant ephemera assemblage: a short gently curled matte translucent 35mm film strip with three empty clear frames and precise sprocket holes, two oxblood-red/ivory vintage cinema ticket stubs with blank writing panels, a small brass clip. No clapperboard, no popcorn, no words, no numerals. Sophisticated analogue cinema collector aesthetic, tactile printed paper and matte film, subtle contact shadows only, not shiny plastic. Top-down horizontal 3:2 composition, clean isolated edges, completely transparent surrounding area, no background, no watermark, no logos, no cartoon, no glitter, not a full page."
+    },
+    {
+      "id": "editionWalkPatch",
+      "file": "assets/sticker/studio/edition_walk_patch.png",
+      "provider": "OpenAI built-in image_gen",
+      "createdDate": "2026-10-16",
+      "transparentBackground": true,
+      "status": "generated-needs-owner-review",
+      "prompt": "Use case: product-mockup. Asset type: original premium pet walking journal editor material, real transparent background. A refined modern textile keepsake cluster: small lilac woven oval dog walking club patch with an embroidered simple dark-green paw impression (no letters), short folded segment of sage woven leash with a tiny brushed brass D ring, and a crisp pale off-white folded route tag with just a few hairline green route dots and lines, blank center, no writing. Contemporary outdoor gear meets fine scrapbook, not a vintage sepia object, no brown aged paper. Sharply tactile fabric stitches and fibers, neat restrained asymmetry, top-down horizontal 3:2 composition, natural small contact shadows only. Isolated silhouette with generous transparent outer margin, no background, no text, no logo, no watermark, no cartoon, no glitter."
+    }
+  ]
+}

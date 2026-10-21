@@ -33,6 +33,7 @@ class TextStylePickerSheet extends StatefulWidget {
     if (kIsWeb) {
       return showWebAwareDialog<String>(
         context: context,
+        useRootNavigator: false,
         maxWidth: 1100,
         maxHeight: 760,
         builder: (dialogContext) => TextStylePickerSheet(
@@ -1116,7 +1117,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       padding: EdgeInsets.only(bottom: resized ? 0 : media.viewInsets.bottom),
       child: LayoutBuilder(
         builder: (context, box) {
-          final wide = box.maxWidth >= (kIsWeb ? 720 : 540) &&
+          final wide =
+              box.maxWidth >= (kIsWeb ? 720 : 540) &&
               (kIsWeb || media.orientation == Orientation.landscape);
           final catalog = _favoritesOnly
               ? (saved.isEmpty
@@ -1154,10 +1156,12 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
               math.min(media.size.height * .94, 720),
             ),
             child: Material(
-              color: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.surfaceOf(context),
-              borderRadius: kIsWeb ? BorderRadius.circular(12) : const BorderRadius.vertical(
-                top: Radius.circular(8),
-              ),
+              color: kIsWeb
+                  ? WebPalette.of(context).surface
+                  : SnapFitColors.surfaceOf(context),
+              borderRadius: kIsWeb
+                  ? BorderRadius.circular(12)
+                  : const BorderRadius.vertical(top: Radius.circular(8)),
               clipBehavior: Clip.antiAlias,
               child: SafeArea(
                 top: false,
@@ -1317,26 +1321,32 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
     _fullViewOpen = true;
     bool returning = false;
     Widget fullView(BuildContext ctx) => _TextStyleFullViewScreen(
-          title: title,
-          items: items,
-          selectedKey: widget.selectedKey,
-          buildPreview: _previewItem,
-          onSelect: (key) {
-            if (returning ||
-                !ctx.mounted ||
-                ModalRoute.of(ctx)?.isCurrent == false)
-              return;
-            returning = true;
-            // 제스처 처리 중 pop 시 _debugLocked 오류 방지: 한 프레임 뒤에 전체 보기만 pop
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (ctx.mounted && ModalRoute.of(ctx)?.isCurrent != false)
-                Navigator.of(ctx).pop(key);
-            });
-          },
-        );
+      title: title,
+      items: items,
+      selectedKey: widget.selectedKey,
+      buildPreview: _previewItem,
+      onSelect: (key) {
+        if (returning || !ctx.mounted || ModalRoute.of(ctx)?.isCurrent == false)
+          return;
+        returning = true;
+        // 제스처 처리 중 pop 시 _debugLocked 오류 방지: 한 프레임 뒤에 전체 보기만 pop
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (ctx.mounted && ModalRoute.of(ctx)?.isCurrent != false)
+            Navigator.of(ctx).pop(key);
+        });
+      },
+    );
     final key = kIsWeb
-        ? await showWebAwareDialog<String>(context: context, maxWidth: 1100, maxHeight: 760, builder: fullView)
-        : await Navigator.of(context).push<String>(MaterialPageRoute(builder: fullView));
+        ? await showWebAwareDialog<String>(
+            context: context,
+            useRootNavigator: false,
+            maxWidth: 1100,
+            maxHeight: 760,
+            builder: fullView,
+          )
+        : await Navigator.of(
+            context,
+          ).push<String>(MaterialPageRoute(builder: fullView));
     if (!mounted) return;
     _fullViewOpen = false;
     if (key != null) _apply(key);
@@ -1385,7 +1395,9 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
                   child: Text(
                     '모두 보기',
                     style: TextStyle(
-                      color: kIsWeb ? WebPalette.of(context).brandInk : SnapFitColors.accent,
+                      color: kIsWeb
+                          ? WebPalette.of(context).brandInk
+                          : SnapFitColors.accent,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1441,7 +1453,9 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: hasAccentBorder
-                              ? kIsWeb ? WebPalette.of(context).brandInk : SnapFitColors.accent
+                              ? kIsWeb
+                                    ? WebPalette.of(context).brandInk
+                                    : SnapFitColors.accent
                               : SnapFitColors.overlayStrongOf(context),
                           width: hasAccentBorder ? 2 : 1,
                         ),
@@ -1530,7 +1544,9 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                 color: isSelected
-                                    ? kIsWeb ? WebPalette.of(context).brandInk : SnapFitColors.accent
+                                    ? kIsWeb
+                                          ? WebPalette.of(context).brandInk
+                                          : SnapFitColors.accent
                                     : SnapFitColors.overlayStrongOf(context),
                                 width: isSelected ? 2 : 1,
                               ),
@@ -3169,7 +3185,13 @@ class _TextStyleFullViewScreen extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: kIsWeb ? WebPalette.of(context).surface : null,
     appBar: AppBar(
-      leading: kIsWeb ? IconButton(onPressed: () => Navigator.pop(context), tooltip: '전체 보기 닫기', icon: const Icon(Icons.close, size: 20)) : null,
+      leading: kIsWeb
+          ? IconButton(
+              onPressed: () => Navigator.pop(context),
+              tooltip: '전체 보기 닫기',
+              icon: const Icon(Icons.close, size: 20),
+            )
+          : null,
       title: Text(title, style: const TextStyle(fontSize: 18)),
     ),
     body: SafeArea(

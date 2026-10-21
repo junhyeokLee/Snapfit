@@ -8,6 +8,7 @@ import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/creation_catalog_cover.dart';
 import 'package:snap_fit/features/store/data/api/template_provider.dart';
 import 'package:snap_fit/features/store/presentation/views/store_screen.dart';
+import 'package:snap_fit/features/store/presentation/views/store_hub_screen.dart';
 import 'package:snap_fit/features/store/presentation/views/template_detail_screen.dart';
 import 'package:snap_fit/features/store/presentation/widgets/premium_template_list.dart';
 import 'ai_album_start_step_test.dart' show wrapCreation, loadCreationFonts;
@@ -28,8 +29,13 @@ void main() {
       (tester) async {
         tester.view.physicalSize = size;
         tester.view.devicePixelRatio = 1;
+        tester.platformDispatcher.accessibilityFeaturesTestValue =
+            const FakeAccessibilityFeatures(disableAnimations: true);
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.view.resetDevicePixelRatio);
+        addTearDown(
+          tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+        );
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
@@ -40,16 +46,18 @@ void main() {
               ),
             ],
             child: wrapCreation(
-              const MediaQuery(
-                data: MediaQueryData(disableAnimations: true),
-                child: StoreScreen(),
+              MediaQuery(
+                data: MediaQueryData(size: size, disableAnimations: true),
+                child: const StoreHubScreen(),
               ),
+              showShell: false,
             ),
           ),
         );
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
-        expect(find.text('앨범 템플릿'), findsOneWidget);
+        expect(find.byKey(const ValueKey('store-departments')), findsOneWidget);
+        expect(find.byTooltip('스토어 검색'), findsOneWidget);
         expect(find.text('완성 템플릿'), findsNothing);
         final scope = ProviderScope.containerOf(
           tester.element(find.byType(StoreScreen)),
@@ -58,21 +66,37 @@ void main() {
           scope.read(templateListProvider).requireValue.map((t) => t.id),
           publishedCreationTemplates.map((t) => t.id),
         );
-        final search = find.byType(TextField);
         final scroll = find
             .descendant(
               of: find.byType(CustomScrollView),
               matching: find.byType(Scrollable),
             )
             .first;
-        final searchToggle = find.text('검색');
-        await tester.scrollUntilVisible(searchToggle, 280, scrollable: scroll);
-        await tester.ensureVisible(searchToggle);
-        await tester.pumpAndSettle();
-        await tester.tap(searchToggle);
-        await tester.pumpAndSettle();
-        expect(search, findsOneWidget);
-        await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(
+          find.byKey(const ValueKey('store-topic-filters')),
+          280,
+          scrollable: scroll,
+        );
+        Future<void> selectTopic(String category) async {
+          await tester.scrollUntilVisible(
+            find.byKey(const ValueKey('store-topic-filters')),
+            280,
+            scrollable: scroll,
+          );
+          final chip = find.byKey(ValueKey('store-topic-$category'));
+          // Move the whole tap target into both viewports, then let layout
+          // settle before reading its position for the actual pointer event.
+          await Scrollable.ensureVisible(
+            tester.element(chip),
+            alignment: .25,
+            alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
+          );
+          await tester.pumpAndSettle();
+          expect(chip.hitTestable(), findsOneWidget, reason: category);
+          await tester.tap(chip.hitTestable());
+          await tester.pumpAndSettle();
+        }
+
         for (final category in [
           '웨딩',
           '여행',
@@ -82,31 +106,42 @@ void main() {
           '커플·기념일',
           '반려동물',
         ]) {
-          final chip = find.descendant(
-            of: find.byKey(const ValueKey('store-topic-filters')),
-            matching: find.text(category),
+          await selectTopic(category);
+          final resultLabel = find.text(
+            '$category · ${publishedCreationTemplates.where((t) => t.category == category).length}종',
           );
-          await tester.ensureVisible(chip);
-          await tester.tap(chip);
-          await tester.pumpAndSettle();
+          // Subject changes retain the controls and current result count;
+          // there is no second trip past the collection hero.
+          expect(resultLabel, findsOneWidget);
+          expect(resultLabel.hitTestable(), findsOneWidget);
           expect(
-            find.text(
-              '$category · ${category == '여행' || category == '커플·기념일' ? 8 : 7}종',
-            ),
+            find.byKey(ValueKey('store-topic-$category')).hitTestable(),
             findsOneWidget,
           );
           expect(tester.takeException(), isNull);
         }
-        final allTopics = find.descendant(
-          of: find.byKey(const ValueKey('store-topic-filters')),
-          matching: find.text('전체'),
+        await selectTopic('전체');
+        expect(find.byType(TextField), findsNothing);
+        await tester.tap(find.byTooltip('스토어 검색'));
+        await tester.pumpAndSettle();
+        final searchScreen = find.byWidgetPredicate(
+          (widget) => widget is StoreScreen && widget.searchMode,
         );
-        await tester.ensureVisible(allTopics);
-        await tester.pumpAndSettle();
-        await tester.tap(allTopics);
-        await tester.pumpAndSettle();
+        expect(searchScreen, findsOneWidget);
+        expect(find.text('템플릿 검색'), findsOneWidget);
+        final search = find.byType(TextField);
+        expect(search, findsOneWidget);
+        Future<void> showSearch() async {
+          tester
+              .widget<CustomScrollView>(find.byType(CustomScrollView))
+              .controller!
+              .jumpTo(0);
+          await tester.pumpAndSettle();
+          await tester.scrollUntilVisible(search, 240, scrollable: scroll);
+        }
+
         for (final template in publishedCreationTemplates) {
-          await tester.scrollUntilVisible(search, -280, scrollable: scroll);
+          await showSearch();
           await tester.enterText(search, template.title);
           FocusManager.instance.primaryFocus?.unfocus();
           await tester.pumpAndSettle();
@@ -130,7 +165,7 @@ void main() {
               );
           expect(covers.map((cover) => cover.template.id), [template.id]);
         }
-        await tester.scrollUntilVisible(search, -280, scrollable: scroll);
+        await showSearch();
         await tester.enterText(search, '제주의 기록');
         FocusManager.instance.primaryFocus?.unfocus();
         await tester.pumpAndSettle();
@@ -200,9 +235,10 @@ void main() {
   }
 
   for (final size in [const Size(320, 568), const Size(844, 390)]) {
-    testWidgets('$size: thirty-six-item carousel has bounded pagination', (
+    testWidgets('$size: free-catalog carousel has bounded pagination', (
       tester,
     ) async {
+      final count = bundledCreationTemplates.length;
       tester.view.physicalSize = size;
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
@@ -220,12 +256,12 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('1 / 37'), findsOneWidget);
+      expect(find.text('1 / $count'), findsOneWidget);
       await tester.ensureVisible(find.byTooltip('다음 컬렉션'));
-      for (var i = 2; i <= 37; i++) {
+      for (var i = 2; i <= count; i++) {
         await tester.tap(find.byTooltip('다음 컬렉션'));
         await tester.pumpAndSettle();
-        expect(find.text('$i / 37'), findsOneWidget);
+        expect(find.text('$i / $count'), findsOneWidget);
         expect(tester.takeException(), isNull);
       }
       expect(
@@ -240,7 +276,7 @@ void main() {
       );
       await tester.tap(find.byTooltip('이전 컬렉션'));
       await tester.pumpAndSettle();
-      expect(find.text('36 / 37'), findsOneWidget);
+      expect(find.text('${count - 1} / $count'), findsOneWidget);
     });
   }
 }

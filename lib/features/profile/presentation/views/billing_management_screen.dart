@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/theme/snapfit_design_tokens.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/widgets/experience_icon.dart';
 import '../../../../shared/widgets/experience_style.dart';
@@ -52,8 +53,8 @@ class _BillingManagementScreenState
   _LedgerFilter _filter = _LedgerFilter.all;
   String? _selectedProductId;
   String? _webOwnerId;
-  bool get _webOwnerCurrent => _webOwnerId != null &&
-      ref.read(visibleOrderOwnerProvider) == _webOwnerId;
+  bool get _webOwnerCurrent =>
+      _webOwnerId != null && ref.read(visibleOrderOwnerProvider) == _webOwnerId;
 
   @override
   void initState() {
@@ -90,8 +91,11 @@ class _BillingManagementScreenState
       final owner = ref.watch(visibleOrderOwnerProvider);
       if (owner != null && _webOwnerId == null) _webOwnerId = owner;
       if (owner == null || owner != _webOwnerId) {
-        return const CustomerWebPage(title: '포인트 이용내역', eyebrow: 'POINTS',
-          child: Center(child: Text('로그인 계정을 확인하고 포인트 화면을 다시 열어주세요.')));
+        return const CustomerWebPage(
+          title: '포인트 이용내역',
+          eyebrow: 'POINTS',
+          child: Center(child: Text('로그인 계정을 확인하고 포인트 화면을 다시 열어주세요.')),
+        );
       }
     }
     final balance = ref.watch(myPointBalanceProvider);
@@ -229,79 +233,147 @@ class _BillingManagementScreenState
     );
   }
 
-  Widget _webPoints(AsyncValue<int> balance,
-      AsyncValue<List<PointLedgerEntry>> ledger) {
+  Widget _webPoints(
+    AsyncValue<int> balance,
+    AsyncValue<List<PointLedgerEntry>> ledger,
+  ) {
     final entries = (ledger.asData?.value ?? const <PointLedgerEntry>[])
-        .where((entry) => switch (_filter) {
-          _LedgerFilter.all => true,
-          _LedgerFilter.received => entry.amountDelta > 0,
-          _LedgerFilter.spent => entry.amountDelta < 0,
-        }).toList(growable: false);
+        .where(
+          (entry) => switch (_filter) {
+            _LedgerFilter.all => true,
+            _LedgerFilter.received => entry.amountDelta > 0,
+            _LedgerFilter.spent => entry.amountDelta < 0,
+          },
+        )
+        .toList(growable: false);
     return CustomerWebPage(
-      title: '포인트', eyebrow: 'POINTS',
+      title: '포인트',
       description: webPointTopupLiveCheckoutReleased
           ? '보유 포인트와 충전·사용 내역을 확인하세요.'
-          : '보유 포인트와 적립·사용 내역, 웹 충전 준비 상태를 확인하세요.',
-      actions: [OutlinedButton.icon(
-        onPressed: () {
-          if (!_webOwnerCurrent) return;
-          ref.invalidate(myPointBalanceProvider);
-          ref.invalidate(myPointLedgerProvider);
-        }, icon: const Icon(Icons.refresh, size: 18), label: const Text('새로고침'))],
-      sidebar: CustomerWebNote(title: '사용 가능한 포인트',
+          : '보유 포인트와 이용내역을 확인하세요.',
+      actions: [
+        OutlinedButton.icon(
+          onPressed: () {
+            if (!_webOwnerCurrent) return;
+            ref.invalidate(myPointBalanceProvider);
+            ref.invalidate(myPointLedgerProvider);
+          },
+          icon: const Icon(Icons.refresh, size: 18),
+          label: const Text('새로고침'),
+        ),
+      ],
+      sidebar: CustomerWebNote(
+        title: '사용 가능한 포인트',
         message: webPointTopupLiveCheckoutReleased
             ? '포인트는 템플릿과 꾸밈 소재를 고를 때 사용합니다. TEST 기록은 실제 잔액과 별도로 보관됩니다.'
             : '포인트는 템플릿과 꾸밈 소재를 고를 때 사용합니다. 웹의 실제 충전은 아직 열려 있지 않으며 TEST 기록은 잔액에 반영되지 않습니다.',
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          balance.when(data: (amount) => Text('${_formatPoints(amount)} P',
-              style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600,
-                color: WebPalette.of(context).ink)),
-            loading: () => const Text('잔액 확인 중'),
-            error: (_, __) => TextButton(onPressed: () => ref.invalidate(myPointBalanceProvider),
-              child: const Text('잔액 다시 확인'))),
-          if (widget.returnToAiDraftFlow) ...[
-            const SizedBox(height: 24),
-            OutlinedButton(onPressed: () => Navigator.maybePop(context),
-              child: const Text('앨범 만들기로 돌아가기')),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            balance.when(
+              data: (amount) => Text(
+                '${_formatPoints(amount)} P',
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w700,
+                  color: WebPalette.of(context).ink,
+                ),
+              ),
+              loading: () => const Text('잔액 확인 중'),
+              error: (_, __) => TextButton(
+                onPressed: () => ref.invalidate(myPointBalanceProvider),
+                child: const Text('잔액 다시 확인'),
+              ),
+            ),
+            if (widget.returnToAiDraftFlow) ...[
+              const SizedBox(height: 24),
+              OutlinedButton(
+                onPressed: () => Navigator.maybePop(context),
+                child: const Text('앨범 만들기로 돌아가기'),
+              ),
+            ],
           ],
-        ])),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        SegmentedButton<bool>(showSelectedIcon: false,
-          segments: const [ButtonSegment(value: true, label: Text('포인트 충전')),
-            ButtonSegment(value: false, label: Text('이용내역'))],
-          selected: {_webTopup}, onSelectionChanged: (value) => setState(() => _webTopup = value.single)),
-        const SizedBox(height: 24),
-        if (_webTopup)
-          Expanded(child: SingleChildScrollView(controller: _chargeScroll,
-            child: WebPointTopupPanel(key: ValueKey('web-point-topup-$_webOwnerId'), ownerId: _webOwnerId!)))
-        else ...[
-        Wrap(alignment: WrapAlignment.spaceBetween,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          spacing: 24, runSpacing: 16, children: [
-          Text('이용내역', style: Theme.of(context).textTheme.titleLarge),
-          SegmentedButton<_LedgerFilter>(key: const ValueKey('points-ledger-filter'),
-            showSelectedIcon: false,
-            segments: const [
-              ButtonSegment(value: _LedgerFilter.all, label: Text('전체')),
-              ButtonSegment(value: _LedgerFilter.received, label: Text('적립')),
-              ButtonSegment(value: _LedgerFilter.spent, label: Text('사용')),
-            ], selected: {_filter},
-            onSelectionChanged: (selection) => setState(() => _filter = selection.single)),
-        ]),
-        const SizedBox(height: 24),
-        Expanded(child: ledger.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, __) => Center(child: OutlinedButton.icon(
-            onPressed: () => ref.invalidate(myPointLedgerProvider),
-            icon: const Icon(Icons.refresh), label: const Text('이용내역 다시 확인'))),
-          data: (_) => entries.isEmpty
-            ? const Center(child: Text('선택한 조건의 포인트 내역이 없습니다.'))
-            : ListView.builder(controller: _historyScroll,
-                itemCount: entries.length,
-                itemBuilder: (_, index) => _ledgerRow(entries[index], compact: false)),
-        )),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SegmentedButton<bool>(
+              showSelectedIcon: false,
+              segments: const [
+                ButtonSegment(value: true, label: Text('포인트 충전')),
+                ButtonSegment(value: false, label: Text('이용내역')),
+              ],
+              selected: {_webTopup},
+              onSelectionChanged: (value) =>
+                  setState(() => _webTopup = value.single),
+            ),
+          ),
+          const SizedBox(height: 24),
+          if (_webTopup)
+            Expanded(
+              child: SingleChildScrollView(
+                controller: _chargeScroll,
+                child: WebPointTopupPanel(
+                  key: ValueKey('web-point-topup-$_webOwnerId'),
+                  ownerId: _webOwnerId!,
+                ),
+              ),
+            )
+          else ...[
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 24,
+              runSpacing: 16,
+              children: [
+                Text('이용내역', style: Theme.of(context).textTheme.titleLarge),
+                SegmentedButton<_LedgerFilter>(
+                  key: const ValueKey('points-ledger-filter'),
+                  showSelectedIcon: false,
+                  segments: const [
+                    ButtonSegment(value: _LedgerFilter.all, label: Text('전체')),
+                    ButtonSegment(
+                      value: _LedgerFilter.received,
+                      label: Text('적립'),
+                    ),
+                    ButtonSegment(
+                      value: _LedgerFilter.spent,
+                      label: Text('사용'),
+                    ),
+                  ],
+                  selected: {_filter},
+                  onSelectionChanged: (selection) =>
+                      setState(() => _filter = selection.single),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Expanded(
+              child: ledger.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (_, __) => Center(
+                  child: OutlinedButton.icon(
+                    onPressed: () => ref.invalidate(myPointLedgerProvider),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('이용내역 다시 확인'),
+                  ),
+                ),
+                data: (_) => entries.isEmpty
+                    ? const Center(child: Text('선택한 조건의 포인트 내역이 없습니다.'))
+                    : ListView.builder(
+                        controller: _historyScroll,
+                        itemCount: entries.length,
+                        itemBuilder: (_, index) =>
+                            _ledgerRow(entries[index], compact: false),
+                      ),
+              ),
+            ),
+          ],
         ],
-      ]),
+      ),
     );
   }
 
@@ -332,7 +404,7 @@ class _BillingManagementScreenState
                 style: ExperienceFormStyle.text(
                   context,
                   compact ? 16 : 20,
-                  weight: FontWeight.w600,
+                  weight: compact ? FontWeight.w600 : FontWeight.w700,
                 ),
               ),
             ],
@@ -340,16 +412,16 @@ class _BillingManagementScreenState
           style: ExperienceFormStyle.text(
             context,
             compact ? 26 : 32,
-            weight: FontWeight.w600,
+            weight: FontWeight.w700,
           ),
         ),
         loading: () => Text(
           '확인 중',
-          style: ExperienceFormStyle.text(context, 24, weight: FontWeight.w600),
+          style: ExperienceFormStyle.text(context, 24, weight: FontWeight.w700),
         ),
         error: (_, __) => Text(
           '확인 실패',
-          style: ExperienceFormStyle.text(context, 24, weight: FontWeight.w600),
+          style: ExperienceFormStyle.text(context, 24, weight: FontWeight.w700),
         ),
       ),
       if (balance.hasError)
@@ -401,7 +473,7 @@ class _BillingManagementScreenState
     minimumSize: const Size(0, 44),
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
     textStyle: ExperienceFormStyle.text(context, 14, weight: FontWeight.w600),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+    shape: const StadiumBorder(),
   );
 
   Widget _content(
@@ -609,7 +681,7 @@ class _BillingManagementScreenState
             ? ExperienceFormStyle.selection(context)
             : ExperienceFormStyle.surface(context),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(SnapFitRadius.lg),
           side: BorderSide(
             color: selected
                 ? ExperienceFormStyle.selectionInk(context)
@@ -618,7 +690,7 @@ class _BillingManagementScreenState
         ),
         child: InkWell(
           key: ValueKey('points-product-${product.id}'),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(SnapFitRadius.lg),
           onTap: purchases.busy
               ? null
               : () => setState(() => _selectedProductId = product.id),
@@ -647,7 +719,7 @@ class _BillingManagementScreenState
                           style: ExperienceFormStyle.text(
                             context,
                             18,
-                            weight: FontWeight.w600,
+                            weight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -817,19 +889,17 @@ class _AiDraftReturnCard extends StatelessWidget {
               ? null
               : () => Navigator.of(context).pop(true),
           style: OutlinedButton.styleFrom(
-            foregroundColor: SnapFitColors.accent,
-            side: BorderSide(color: SnapFitColors.overlayLightOf(context)),
+            foregroundColor: ExperienceFormStyle.selectionInk(context),
+            side: BorderSide(color: ExperienceFormStyle.line(context)),
             minimumSize: const Size(0, 48),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             textStyle: ExperienceStyle.text(14, weight: FontWeight.w600),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(6),
-            ),
+            shape: const StadiumBorder(),
           ),
-          icon: const ExperienceIcon(
+          icon: ExperienceIcon(
             'ArrowLeft',
             size: 18,
-            color: SnapFitColors.accent,
+            color: ExperienceFormStyle.selectionInk(context),
           ),
           label: Text(
             compact ? 'AI로 돌아가기' : 'AI 템플릿으로 돌아가기',

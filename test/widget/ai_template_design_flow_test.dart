@@ -50,7 +50,7 @@ void main() {
               find.byKey(const Key('ai_template_brief_continue')),
             )
             .onPressed,
-        isNull,
+        isNotNull,
       );
       expect(find.text('20쪽'), findsOneWidget);
       expect(
@@ -63,7 +63,8 @@ void main() {
             .onPressed,
         isNull,
       );
-      expect(find.textContaining('AI가 최대 16쪽'), findsOneWidget);
+      expect(find.textContaining('AI가 최대 16쪽'), findsNothing);
+      expect(find.textContaining('내지는 20~80쪽'), findsOneWidget);
       await tester.enterText(
         find.byKey(const Key('ai_template_brief')),
         '여백은 넓게, 글은 짧게',

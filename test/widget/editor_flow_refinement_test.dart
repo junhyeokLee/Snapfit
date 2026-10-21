@@ -33,6 +33,7 @@ import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
 import 'package:snap_fit/shared/widgets/experience_form_style.dart';
 import 'package:snap_fit/shared/widgets/image_frame_style_picker.dart';
 import 'package:snap_fit/shared/widgets/gallery_thumb_tile.dart';
+import 'package:snap_fit/shared/widgets/snapfit_motion.dart';
 import 'package:snap_fit/features/store/presentation/widgets/template_page_renderer.dart';
 
 import '../fixtures/ai_template_design_fixture.dart';
@@ -75,6 +76,9 @@ late Uint8List _photoBytes;
 AssetEntity _photo(String id) {
   final asset = _Photo();
   when(() => asset.id).thenReturn(id);
+  when(() => asset.width).thenReturn(0);
+  when(() => asset.height).thenReturn(0);
+  when(() => asset.orientation).thenReturn(0);
   when(
     () => asset.file,
   ).thenAnswer((_) async => File('assets/snapfit_home_square.jpg'));
@@ -173,7 +177,10 @@ Future<void> _capture(WidgetTester tester, GlobalKey key, String name) async {
         await (key.currentContext!.findRenderObject() as RenderRepaintBoundary)
             .toImage();
     final data = await image.toByteData(format: ui.ImageByteFormat.png);
-    final file = File('output/editor-flow-qa/$name.png');
+    final file = File(
+      'output/editor-flow-qa/$name'
+      '${const String.fromEnvironment('DESIGN_SYSTEM_REVISION')}.png',
+    );
     await file.parent.create(recursive: true);
     await file.writeAsBytes(data!.buffer.asUint8List());
     image.dispose();
@@ -445,6 +452,7 @@ void main() {
       testWidgets(
         'layout preview cancels without editing and applies explicitly $suffix',
         (tester) async {
+          final semantics = tester.ensureSemantics();
           _size(tester, size);
           final key = GlobalKey(), editor = _Editor();
           await tester.pumpWidget(
@@ -456,6 +464,23 @@ void main() {
             ),
           );
           await _paint(tester);
+          final layoutCard = find.byWidgetPredicate(
+            (widget) =>
+                widget is SnapFitPressable &&
+                widget.semanticLabel == '${pageTemplates.first.name} 레이아웃 미리보기',
+          );
+          expect(
+            tester
+                .getSemantics(layoutCard)
+                .hasFlag(ui.SemanticsFlag.hasSelectedState),
+            isTrue,
+          );
+          expect(
+            tester
+                .getSemantics(layoutCard)
+                .hasFlag(ui.SemanticsFlag.isSelected),
+            isFalse,
+          );
           await tester.tap(find.text(pageTemplates.first.name));
           await _paint(tester);
           expect(editor.applied, isEmpty);
@@ -475,8 +500,15 @@ void main() {
           );
           await _paint(tester);
           expect(editor.applied, [pageTemplates.first.id]);
+          expect(
+            tester
+                .getSemantics(layoutCard)
+                .hasFlag(ui.SemanticsFlag.isSelected),
+            isTrue,
+          );
           expect(find.byType(TemplateSelectionPanel), findsOneWidget);
           expect(tester.takeException(), isNull);
+          semantics.dispose();
         },
       );
 

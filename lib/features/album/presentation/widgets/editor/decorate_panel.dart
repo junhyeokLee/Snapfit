@@ -111,7 +111,7 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> {
         if (widget.onClose == null) ...[
           ListTile(
             contentPadding: const EdgeInsets.fromLTRB(24, 12, 12, 12),
-            title: Text(widget.mode == DecorateSheetMode.sticker ? '꾸미기' : '배경 색', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w600)),
+            title: Text(widget.mode == DecorateSheetMode.sticker ? '꾸미기' : '배경 색', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700)),
             trailing: IconButton(onPressed: _closeSheet, tooltip: '닫기', icon: const Icon(Icons.close, size: 20)),
           ),
           Divider(height: 1, color: WebPalette.of(context).line),

@@ -257,7 +257,25 @@ class _FreeBook {
     double w,
     double h, {
     double size = .071,
-  }) => p.title(value, x: x, y: y, w: w, h: h, size: size);
+  }) {
+    if (p.index == 0) {
+      p.title(value, x: x, y: y, w: w, h: h, size: size);
+      return;
+    }
+    _fittedEditorialType(
+      p,
+      'title',
+      value,
+      Rect.fromLTWH(x, y, w, h),
+      font: palette.serif ? 'Eulyoo' : 'NotoSans',
+      size: size,
+      color: palette.ink,
+      weight: palette.serif ? 400 : 800,
+      leading: 1.22,
+    );
+    p.layers.last['typographyRole'] = 'free-editorial-title';
+  }
+
   void text(
     _Sheet p,
     String id,
@@ -437,6 +455,7 @@ Map<String, dynamic> _buildFreeCollection(
 ) {
   final b = _FreeBook(volume, aspect, copy);
   _freeCover(b);
+  b.pages[0] = _buildFreeSignatureCover(b, b.pages[0]);
   for (final spread in volume._spreads) _freeSpread(b, spread);
   final document = b.document;
   validateFreeTemplateMaterials(document);

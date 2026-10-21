@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../support/store_catalog_navigation.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:snap_fit/core/templates/data_template_engine.dart';
@@ -374,9 +375,19 @@ void main() {
           size(tester, extent);
           await mount(tester, const StoreHubScreen(), dark: dark);
           await capture(tester, 'shop-atelier-templates', extent, dark);
-          await tap(tester, find.text('꾸밈소재'));
+          await selectStoreCatalog(tester, 1);
           await capture(tester, 'shop-atelier-materials', extent, dark);
-          await tap(tester, find.text('템플릿').first);
+          await selectStoreCatalog(tester, 0);
+          await tester.scrollUntilVisible(
+            find.text('검색'),
+            180,
+            scrollable: find
+                .descendant(
+                  of: find.byType(CustomScrollView).first,
+                  matching: find.byType(Scrollable),
+                )
+                .first,
+          );
           await tap(tester, find.text('검색'));
           await tester.enterText(find.byType(TextField), '바다');
           final keyboard = extent.width > extent.height ? 140.0 : 260.0;
@@ -505,6 +516,16 @@ void main() {
         reset(tester);
         size(tester, extent);
         await mount(tester, const StoreHubScreen(), scale: 1.8, dark: true);
+        await tester.scrollUntilVisible(
+          find.text('검색'),
+          180,
+          scrollable: find
+              .descendant(
+                of: find.byType(CustomScrollView).first,
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        );
         await tap(tester, find.text('검색'));
         await tester.enterText(find.byType(TextField), '웨딩');
         await paint(tester);

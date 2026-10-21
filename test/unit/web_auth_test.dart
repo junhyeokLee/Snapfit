@@ -169,6 +169,53 @@ void main() {
       );
     });
     test(
+      'initial callback failures stay visible without exchanging codes again',
+      () {
+        final current = Uri.parse('http://127.0.0.1:7357/');
+        WebOAuthException? failure(String suffix) => failedWebAuthCallback(
+          Uri.parse('http://127.0.0.1:7357/$suffix'),
+          current: current,
+        );
+        expect(
+          failure('?auth_callback=1&error=access_denied')?.code,
+          'web_auth_callback_cancelled',
+        );
+        expect(
+          failure('?auth_callback=1#error_code=flow_state_expired')?.code,
+          'web_auth_callback_expired',
+        );
+        expect(
+          failure(
+            '?auth_callback=1&error_code=provider_email_needs_verification',
+          )?.code,
+          'web_auth_email_unverified',
+        );
+        expect(
+          failure('?auth_callback=1&code=one-use-fixture')?.code,
+          'web_auth_callback_failed',
+        );
+        expect(failure('?code=album-invitation'), isNull);
+        expect(failure('?auth_callback=1'), isNull);
+        expect(
+          failedWebAuthCallback(
+            Uri.parse(
+              'https://other.example/?auth_callback=1&error=access_denied',
+            ),
+            current: current,
+          ),
+          isNull,
+        );
+        final error = failure(
+          '?auth_callback=1&error=server_error&error_description=private-token',
+        );
+        expect(
+          socialAuthErrorMessage(error!),
+          isNot(contains('private-token')),
+        );
+        expect(socialAuthErrorMessage(error), contains('돌아왔지만'));
+      },
+    );
+    test(
       'configuration errors give useful bounded text without echoing response details',
       () {
         expect(
@@ -194,6 +241,112 @@ void main() {
           socialAuthErrorMessage(const AuthException('private-token')),
           isNot(contains('private-token')),
         );
+        for (final code in [
+          'user_not_found',
+          'session_not_found',
+          'bad_jwt',
+          'refresh_token_not_found',
+        ]) {
+          final message = socialAuthErrorMessage(
+            AuthException('private-token', code: code),
+          );
+          expect(message, contains('다시 로그인'));
+          expect(message, isNot(contains('private-token')));
+        }
+      },
+    );
+    test('slow account verification gives a bounded network retry notice', () {
+      final message = socialAuthErrorMessage(
+        TimeoutException('fixture-private-server-detail'),
+      );
+      expect(message, contains('인터넷 연결'));
+      expect(message, contains('다시 시도'));
+      expect(message, isNot(contains('취소')));
+      expect(message, isNot(contains('fixture-private-server-detail')));
+    });
+    test(
+      'specific callback failures take priority over access_denied in query and fragment',
+      () {
+        final current = Uri.parse('http://localhost:59841/');
+        for (final code in [
+          'otp_expired',
+          'flow_state_expired',
+          'flow_state_not_found',
+          'flow_state_already_used',
+        ]) {
+          for (final suffix in [
+            '?auth_callback=1&error=access_denied&error_code=$code',
+            '?auth_callback=1#error=access_denied&error_code=$code',
+            '?auth_callback=1&error=access_denied#error_code=$code',
+          ]) {
+            final error = failedWebAuthCallback(
+              Uri.parse('http://localhost:59841/$suffix'),
+              current: current,
+            );
+            expect(error?.code, 'web_auth_callback_expired');
+            expect(socialAuthErrorMessage(error!), contains('만료'));
+            expect(socialAuthErrorMessage(error), isNot(contains('취소')));
+          }
+        }
+        final unverified = failedWebAuthCallback(
+          Uri.parse(
+            'http://localhost:59841/?auth_callback=1&error=access_denied&error_code=provider_email_needs_verification',
+          ),
+          current: current,
+        );
+        expect(unverified?.code, 'web_auth_email_unverified');
+        final unknown = failedWebAuthCallback(
+          Uri.parse(
+            'http://localhost:59841/?auth_callback=1&error=access_denied&error_code=unexpected_failure',
+          ),
+          current: current,
+        );
+        expect(unknown?.code, 'web_auth_callback_failed');
+        expect(socialAuthErrorMessage(unknown!), isNot(contains('취소')));
+      },
+    );
+    test(
+      'SDK callback errors retain detailed verification failures without a network call',
+      () async {
+        final requests = <http.Request>[];
+        final client = SupabaseClient(
+          'https://fixture.supabase.co',
+          'fixture-public-key',
+          httpClient: MockClient((request) async {
+            requests.add(request);
+            throw StateError('A rejected callback must not call Auth');
+          }),
+        );
+        addTearDown(client.dispose);
+        for (final code in [
+          'otp_expired',
+          'flow_state_not_found',
+          'provider_email_needs_verification',
+          'unexpected_failure',
+        ]) {
+          AuthException? failure;
+          try {
+            await client.auth.getSessionFromUrl(
+              Uri.parse(
+                'http://localhost:59841/?auth_callback=1&error=access_denied&error_code=$code&error_description=private-detail',
+              ),
+            );
+          } on AuthException catch (error) {
+            failure = error;
+          }
+          expect(failure?.code, 'access_denied');
+          expect(failure?.statusCode, code);
+          final message = socialAuthErrorMessage(failure!);
+          expect(message, isNot(contains('취소')));
+          expect(message, isNot(contains('private-detail')));
+          if (code == 'otp_expired' || code == 'flow_state_not_found') {
+            expect(message, contains('만료'));
+          }
+          if (code == 'provider_email_needs_verification') {
+            expect(message, contains('인증된 이메일'));
+          }
+        }
+        expect(requests, isEmpty);
       },
     );
   });
@@ -248,16 +401,16 @@ void main() {
           supabase: client,
           browserUri: () => Uri.parse('http://127.0.0.1:7357/'),
           webProviderEnabled: (_) async => true,
-          webOAuthLauncher: (provider, redirect) async {
-            launches.add('${provider.name}|$redirect');
+          webOAuthLauncher: (provider, redirect, scopes) async {
+            launches.add('${provider.name}|$redirect|${scopes ?? ''}');
             return true;
           },
         );
         await service.loginWithWebProvider(OAuthProvider.google);
         await service.loginWithWebProvider(OAuthProvider.kakao);
         expect(launches, [
-          'google|http://127.0.0.1:7357/?auth_callback=1',
-          'kakao|http://127.0.0.1:7357/?auth_callback=1',
+          'google|http://127.0.0.1:7357/?auth_callback=1|',
+          'kakao|http://127.0.0.1:7357/?auth_callback=1|account_email',
         ]);
         expect(tokens.saves, 0);
         expect(client.auth.currentSession, isNull);
@@ -271,7 +424,7 @@ void main() {
         supabase: client,
         browserUri: () => Uri.parse('http://localhost:7357/'),
         webProviderEnabled: (_) async => false,
-        webOAuthLauncher: (_, __) async {
+        webOAuthLauncher: (_, __, ___) async {
           launched = true;
           return true;
         },
@@ -289,7 +442,7 @@ void main() {
         supabase: client,
         browserUri: () => Uri.parse('http://localhost:7357/'),
         webProviderEnabled: (_) async => true,
-        webOAuthLauncher: (_, __) async => false,
+        webOAuthLauncher: (_, __, ___) async => false,
       );
       await expectLater(
         service.loginWithWebProvider(OAuthProvider.google),

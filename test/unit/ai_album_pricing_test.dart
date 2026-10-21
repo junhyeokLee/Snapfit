@@ -4,8 +4,25 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/config/env.dart';
 
 void main() {
-  test('advanced AI defaults to profit-safe premium point cost', () {
-    expect(Env.aiAlbumDraftPointCost, 700);
+  test('AI base cost matches the current 20-page server pricing policy', () {
+    final basePricing = File(
+      'supabase/migrations/20261019120000_ai_template_cost_500.sql',
+    ).readAsStringSync();
+    final pagePricing = File(
+      'supabase/migrations/20261019130000_ai_template_page_cost.sql',
+    ).readAsStringSync();
+    expect(Env.aiAlbumDraftPointCost, 500);
+    expect(basePricing, contains('select 500;'));
+    expect(
+      pagePricing,
+      contains(
+        '300 + least(80, greatest(20, coalesce(p_page_count, 20))) * 10',
+      ),
+    );
+    expect(
+      pagePricing,
+      contains('public.ai_album_draft_point_cost_for_pages(p_page_count)'),
+    );
   });
 
   test(

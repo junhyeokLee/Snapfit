@@ -34,6 +34,20 @@ final publishedDesignTemplates = List<DesignTemplate>.unmodifiable([
     _premiumDesign(volume.id, volume.title, volume.category, volume.document),
   for (final volume in conceptVolumeCatalogIds.keys)
     _premiumDesign(volume.id, volume.title, volume.category, volume.document),
+  for (final edition in AtelierEdition.values)
+    _premiumDesign(
+      edition.id,
+      edition.title,
+      edition.category,
+      edition.document,
+    ),
+  for (final edition in StudioEdition.values.where((e) => e.premium))
+    _premiumDesign(
+      edition.id,
+      edition.title,
+      edition.category,
+      edition.document,
+    ),
 ]);
 
 DesignTemplate _premiumDesign(

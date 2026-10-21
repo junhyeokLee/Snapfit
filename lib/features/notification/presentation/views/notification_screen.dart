@@ -6,6 +6,7 @@ import '../../../../shared/widgets/experience_icon.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/theme/snapfit_design_tokens.dart';
 import '../../../../core/notifications/fcm_notification_service.dart';
 import '../../domain/entities/app_notification_item.dart';
 import '../providers/notification_provider.dart';
@@ -23,12 +24,22 @@ class NotificationScreen extends ConsumerStatefulWidget {
 
 class _NotificationScreenState extends ConsumerState<NotificationScreen> {
   bool _markingAll = false;
+  bool _refreshing = false;
+  bool _openingSettings = false;
+  Future<List<AppNotificationItem>>? _manualRefresh;
+  List<AppNotificationItem>? _retainedItems;
+  int _inboxGeneration = 0;
   String? _webOwnerId;
-  bool get _webOwnerCurrent => _webOwnerId != null &&
-      ref.read(visibleOrderOwnerProvider) == _webOwnerId;
+  bool get _webOwnerCurrent =>
+      _webOwnerId != null && ref.read(visibleOrderOwnerProvider) == _webOwnerId;
 
   Future<void> _markAllRead() async {
-    if (!mounted || _markingAll || (kIsWeb && !_webOwnerCurrent)) return;
+    if (!mounted ||
+        _markingAll ||
+        _refreshing ||
+        _openingSettings ||
+        (kIsWeb && !_webOwnerCurrent))
+      return;
     final inbox = ref.read(notificationInboxProvider);
     if (inbox.isLoading ||
         inbox.hasError ||
@@ -47,26 +58,117 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     }
   }
 
+  Future<void> _refreshInbox() async {
+    if (!mounted ||
+        _refreshing ||
+        _markingAll ||
+        _openingSettings ||
+        (kIsWeb && !_webOwnerCurrent) ||
+        ref.read(notificationInboxProvider).isLoading)
+      return;
+    final current = ref.read(notificationInboxProvider);
+    final retained =
+        current.asData?.value ??
+        (identical(_manualRefresh, ref.read(notificationInboxProvider.future))
+            ? _retainedItems
+            : null);
+    final generation = _inboxGeneration;
+    setState(() {
+      _refreshing = true;
+      _manualRefresh = null;
+      _retainedItems = retained;
+    });
+    final inbox = ref.refresh(notificationInboxProvider.future);
+    _manualRefresh = inbox;
+    try {
+      await Future.wait<Object>([
+        inbox,
+        ref.refresh(notificationUnreadCountProvider.future),
+      ]);
+    } catch (_) {
+      if (!mounted ||
+          (kIsWeb && !_webOwnerCurrent) ||
+          generation != _inboxGeneration ||
+          !identical(ref.read(notificationInboxProvider.future), inbox))
+        return;
+      if (ModalRoute.of(context)?.isCurrent != false) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('알림을 새로고침하지 못했어요. 다시 시도해주세요.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _refreshing = false);
+    }
+  }
+
+  Future<void> _openSettings() async {
+    if (!mounted || _openingSettings || (kIsWeb && !_webOwnerCurrent)) return;
+    setState(() => _openingSettings = true);
+    try {
+      await Navigator.push<void>(
+        context,
+        MaterialPageRoute(builder: (_) => const NotificationSettingsScreen()),
+      );
+    } finally {
+      if (mounted) setState(() => _openingSettings = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (kIsWeb) {
       final owner = ref.watch(visibleOrderOwnerProvider);
       if (owner != null && _webOwnerId == null) _webOwnerId = owner;
       if (owner == null || owner != _webOwnerId) {
-        return const CustomerWebPage(title: '알림함', eyebrow: 'NOTIFICATIONS',
-          child: Center(child: Text('로그인 계정을 확인하고 알림함을 다시 열어주세요.')));
+        return const CustomerWebPage(
+          title: '알림함',
+          eyebrow: 'NOTIFICATIONS',
+          child: Center(child: Text('로그인 계정을 확인하고 알림함을 다시 열어주세요.')),
+        );
       }
     }
+    ref.listen(notificationInboxProvider, (previous, next) {
+      if (next.isReloading) {
+        _inboxGeneration++;
+        _retainedItems = null;
+      }
+    });
     final inboxAsync = ref.watch(notificationInboxProvider);
     final retentionDaysAsync = ref.watch(notificationRetentionDaysProvider);
 
     if (kIsWeb) return _webInbox(inboxAsync, retentionDaysAsync);
     return Scaffold(
       backgroundColor: SnapFitColors.backgroundOf(context),
-      appBar: const ExperienceHeader(
+      appBar: ExperienceHeader(
         title: '알림',
         themeAware: true,
         showNotifications: false,
+        actions: [
+          IconButton(
+            key: const ValueKey('inbox-refresh'),
+            tooltip: '알림 새로고침',
+            onPressed:
+                _refreshing ||
+                    _markingAll ||
+                    _openingSettings ||
+                    inboxAsync.isLoading
+                ? null
+                : _refreshInbox,
+            icon: _refreshing
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const ExperienceIcon('RefreshCw'),
+          ),
+          IconButton(
+            key: const ValueKey('inbox-settings'),
+            tooltip: '알림 설정',
+            onPressed: _openingSettings ? null : _openSettings,
+            icon: const ExperienceIcon('Settings2'),
+          ),
+        ],
       ),
       body: SafeArea(
         top: false,
@@ -136,40 +238,72 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     );
   }
 
-  Widget _webInbox(AsyncValue<List<AppNotificationItem>> inbox,
-      AsyncValue<int> retentionDays) {
+  Widget _webInbox(
+    AsyncValue<List<AppNotificationItem>> inbox,
+    AsyncValue<int> retentionDays,
+  ) {
     final items = inbox.asData?.value;
     final unread = items?.where((item) => !item.isRead).length;
     return CustomerWebPage(
-      title: '알림함', eyebrow: 'NOTIFICATIONS',
+      title: '알림함',
+      eyebrow: 'NOTIFICATIONS',
       description: '앨범의 새 소식과 주문 진행 안내를 확인하세요.',
-      actions: [OutlinedButton.icon(
-        onPressed: () => ref.invalidate(notificationInboxProvider),
-        icon: const Icon(Icons.refresh, size: 18), label: const Text('새로고침'),
-      )],
-      sidebar: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        CustomerWebNote(title: '새로운 소식',
-          message: inbox.hasError ? '알림을 다시 불러와주세요.'
-            : unread == null ? '알림을 확인하고 있습니다.' : '읽지 않은 알림 $unread개',
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            if (items != null) Text('전체 ${items.length}개',
-              style: TextStyle(fontSize: 13, color: WebPalette.of(context).muted)),
-            const SizedBox(height: 20),
-            OutlinedButton.icon(
-              onPressed: () => Navigator.push<void>(context, MaterialPageRoute(
-                builder: (_) => const NotificationSettingsScreen())),
-              icon: const Icon(Icons.tune, size: 18), label: const Text('알림 설정'),
+      actions: [
+        OutlinedButton.icon(
+          key: const ValueKey('inbox-refresh'),
+          onPressed:
+              _refreshing || _markingAll || _openingSettings || inbox.isLoading
+              ? null
+              : _refreshInbox,
+          icon: const Icon(Icons.refresh, size: 18),
+          label: const Text('새로고침'),
+        ),
+      ],
+      sidebar: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          CustomerWebNote(
+            title: '새로운 소식',
+            message: inbox.hasError
+                ? '알림을 다시 불러와주세요.'
+                : unread == null
+                ? '알림을 확인하고 있습니다.'
+                : '읽지 않은 알림 $unread개',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (items != null)
+                  Text(
+                    '전체 ${items.length}개',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: WebPalette.of(context).muted,
+                    ),
+                  ),
+                const SizedBox(height: 20),
+                OutlinedButton.icon(
+                  key: const ValueKey('inbox-settings'),
+                  onPressed: _openingSettings ? null : _openSettings,
+                  icon: const Icon(Icons.tune, size: 18),
+                  label: const Text('알림 설정'),
+                ),
+              ],
             ),
-          ])),
-        const SizedBox(height: 20),
-        _RetentionPolicyBar(retentionDaysAsync: retentionDays, compact: true),
-      ]),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        _overview(inbox, wide: false),
-        const SizedBox(height: 20), const Divider(height: 1),
-        const SizedBox(height: 8),
-        Expanded(child: _inbox(inbox)),
-      ]),
+          ),
+          const SizedBox(height: 20),
+          _RetentionPolicyBar(retentionDaysAsync: retentionDays, compact: true),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _overview(inbox, wide: false),
+          const SizedBox(height: 20),
+          const Divider(height: 1),
+          const SizedBox(height: 8),
+          Expanded(child: _inbox(inbox)),
+        ],
+      ),
     );
   }
 
@@ -182,11 +316,13 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       style: ExperienceFormStyle.text(
         context,
         wide ? 20 : 24,
-        weight: FontWeight.w600,
+        weight: FontWeight.w700,
       ),
     );
     final enabled =
         !_markingAll &&
+        !_refreshing &&
+        !_openingSettings &&
         !inbox.isLoading &&
         !inbox.hasError &&
         (inbox.asData?.value.any((item) => !item.isRead) ?? false);
@@ -227,7 +363,26 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
           );
   }
 
-  Widget _inbox(AsyncValue<List<AppNotificationItem>> inbox) => inbox.when(
+  AsyncValue<List<AppNotificationItem>> _visibleInbox(
+    AsyncValue<List<AppNotificationItem>> inbox,
+  ) {
+    // Keep only the items visible when this manual refresh began. Dependency
+    // reloads clear them even if Riverpod reuses an unfinished future.
+    if (_retainedItems != null &&
+        identical(
+          _manualRefresh,
+          ref.watch(notificationInboxProvider.future),
+        ) &&
+        (inbox.isLoading || inbox.hasError)) {
+      return AsyncData(_retainedItems!);
+    }
+    return inbox;
+  }
+
+  Widget _inbox(
+    AsyncValue<List<AppNotificationItem>> inbox,
+  ) => _visibleInbox(inbox).when(
+    skipLoadingOnRefresh: !_refreshing,
     loading: () => const Center(child: CircularProgressIndicator()),
     error: (_, __) => Center(
       child: SingleChildScrollView(
@@ -247,11 +402,15 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                 foregroundColor: ExperienceFormStyle.ink(context),
                 side: BorderSide(color: ExperienceFormStyle.line(context)),
                 textStyle: ExperienceFormStyle.text(context, 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
-                ),
+                shape: const StadiumBorder(),
               ),
-              onPressed: () => ref.invalidate(notificationInboxProvider),
+              onPressed:
+                  _refreshing ||
+                      _markingAll ||
+                      _openingSettings ||
+                      inbox.isLoading
+                  ? null
+                  : _refreshInbox,
               icon: const ExperienceIcon('RefreshCw', size: 18),
               label: const Text('다시 불러오기'),
             ),
@@ -276,7 +435,9 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       ];
       return ListView.builder(
         key: const PageStorageKey('inbox-list'),
-        padding: kIsWeb ? EdgeInsets.zero : const EdgeInsets.fromLTRB(16, 10, 16, 16),
+        padding: kIsWeb
+            ? EdgeInsets.zero
+            : const EdgeInsets.fromLTRB(16, 10, 16, 16),
         itemCount: entries.length,
         itemBuilder: (context, index) {
           final (label, item) = entries[index];
@@ -300,8 +461,8 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
             onTap: () async {
               if (kIsWeb && !_webOwnerCurrent) return;
               try {
-                await ref.read(notificationActionProvider).markRead(item.id);
-                if (kIsWeb && !_webOwnerCurrent) return;
+                // The shared tap handler saves the read state independently.
+                // A slow or failed read receipt must not block the destination.
                 await FcmNotificationService.openNotification({
                   ...item.data,
                   'type': item.type,
@@ -389,10 +550,13 @@ class _NotificationCard extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
-    final isRead = item.isRead;
+  Widget build(BuildContext context) => Semantics(
+    value: item.isRead ? '읽음' : '읽지 않음',
+    child: kIsWeb ? _webRow(context) : _nativeRow(context),
+  );
 
-    if (kIsWeb) return _webRow(context);
+  Widget _nativeRow(BuildContext context) {
+    final isRead = item.isRead;
     return Container(
       decoration: BoxDecoration(
         border: Border(
@@ -404,13 +568,22 @@ class _NotificationCard extends StatelessWidget {
         leading: Badge(
           isLabelVisible: !isRead,
           smallSize: 5,
-          child: Icon(
-            item.type == 'album_invite'
-                ? Icons.people_outline
-                : item.type == 'order_status'
-                ? Icons.inventory_2_outlined
-                : Icons.notifications_none,
-            size: 21,
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: ExperienceFormStyle.surface(context),
+              borderRadius: BorderRadius.circular(9),
+            ),
+            child: Icon(
+              item.type == 'album_invite'
+                  ? Icons.people_outline
+                  : item.type == 'order_status'
+                  ? Icons.inventory_2_outlined
+                  : Icons.notifications_none,
+              size: 19,
+              color: ExperienceFormStyle.ink(context),
+            ),
           ),
         ),
         title: Text(
@@ -442,47 +615,111 @@ class _NotificationCard extends StatelessWidget {
   Widget _webRow(BuildContext context) => LayoutBuilder(
     builder: (context, bounds) {
       final wide = bounds.maxWidth >= 700;
-      final date = '${_typeLabel(item.type)} · ${_formatDateTime(item.createdAt)}';
-      return Material(color: Colors.transparent,
-        child: InkWell(onTap: onTap, borderRadius: BorderRadius.circular(12),
+      final date =
+          '${_typeLabel(item.type)} · ${_formatDateTime(item.createdAt)}';
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(SnapFitRadius.md),
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 12),
             decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: WebPalette.of(context).line))),
-            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Container(width: 40, height: 40,
-                decoration: BoxDecoration(color: WebPalette.of(context).softBrand,
-                  borderRadius: BorderRadius.circular(12)),
-                child: Badge(isLabelVisible: !item.isRead, smallSize: 6,
-                  alignment: Alignment.topRight,
-                  child: Center(child: Icon(
-                    item.type == 'album_invite' ? Icons.people_outline
-                      : item.type == 'order_status' ? Icons.inventory_2_outlined
-                      : Icons.notifications_none,
-                    size: 20, color: WebPalette.of(context).brandInk)))),
-              const SizedBox(width: 20),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(item.title, style: TextStyle(fontSize: 15, height: 1.5,
-                  fontWeight: item.isRead ? FontWeight.w400 : FontWeight.w600,
-                  color: WebPalette.of(context).ink)),
-                const SizedBox(height: 8),
-                Text(item.body, style: TextStyle(fontSize: 14,
-                  height: 1.7, color: WebPalette.of(context).muted)),
-                if (!wide) ...[
-                  const SizedBox(height: 12),
-                  Text(date, style: TextStyle(fontSize: 12, color: WebPalette.of(context).muted)),
+              border: Border(
+                bottom: BorderSide(color: WebPalette.of(context).line),
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: WebPalette.of(context).softBrand,
+                    borderRadius: BorderRadius.circular(SnapFitRadius.md),
+                  ),
+                  child: Badge(
+                    isLabelVisible: !item.isRead,
+                    smallSize: 6,
+                    alignment: Alignment.topRight,
+                    child: Center(
+                      child: Icon(
+                        item.type == 'album_invite'
+                            ? Icons.people_outline
+                            : item.type == 'order_status'
+                            ? Icons.inventory_2_outlined
+                            : Icons.notifications_none,
+                        size: 20,
+                        color: WebPalette.of(context).brandInk,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.title,
+                        style: TextStyle(
+                          fontSize: 15,
+                          height: 1.5,
+                          fontWeight: item.isRead
+                              ? FontWeight.w400
+                              : FontWeight.w600,
+                          color: WebPalette.of(context).ink,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        item.body,
+                        style: TextStyle(
+                          fontSize: 14,
+                          height: 1.7,
+                          color: WebPalette.of(context).muted,
+                        ),
+                      ),
+                      if (!wide) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          date,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: WebPalette.of(context).muted,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                if (wide) ...[
+                  const SizedBox(width: 28),
+                  SizedBox(
+                    width: 176,
+                    child: Text(
+                      date,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 12,
+                        height: 1.8,
+                        color: WebPalette.of(context).muted,
+                      ),
+                    ),
+                  ),
                 ],
-              ])),
-              if (wide) ...[
-                const SizedBox(width: 28),
-                SizedBox(width: 176, child: Text(date,
-                  textAlign: TextAlign.right,
-                  style: TextStyle(fontSize: 12, height: 1.8, color: WebPalette.of(context).muted))),
+                const SizedBox(width: 20),
+                Padding(
+                  padding: EdgeInsets.only(top: 4),
+                  child: Icon(
+                    Icons.chevron_right,
+                    size: 18,
+                    color: WebPalette.of(context).muted,
+                  ),
+                ),
               ],
-              const SizedBox(width: 20),
-              Padding(padding: EdgeInsets.only(top: 4),
-                child: Icon(Icons.chevron_right, size: 18, color: WebPalette.of(context).muted)),
-            ]),
+            ),
           ),
         ),
       );

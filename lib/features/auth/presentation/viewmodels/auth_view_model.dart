@@ -15,6 +15,8 @@ import '../../../../core/interceptors/token_storage.dart';
 import '../../../../core/supabase/supabase_provider.dart';
 import '../../data/dto/auth_response.dart';
 import '../../domain/auth_service.dart';
+import '../../domain/native_kakao_login.dart';
+import '../../domain/account_deletion_request.dart';
 
 final tokenStorageProvider = Provider<TokenStorage>((ref) {
   return TokenStorage();
@@ -275,8 +277,10 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
 
   Future<void> deleteAccount() async {
     await ref.read(authServiceProvider).deleteAccount();
-    state = const AsyncData(null);
   }
+
+  Future<AccountDeletionRequest> requestAccountDeletion() =>
+      ref.read(authServiceProvider).requestAccountDeletion();
 
   Future<void> loginWithKakao() async {
     if (kIsWeb) {
@@ -288,17 +292,9 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
     if (Env.kakaoNativeAppKey.isEmpty) {
       throw Exception('KAKAO_NATIVE_APP_KEY가 설정되지 않았습니다.');
     }
-    final useTalk = await isKakaoTalkInstalled();
-    OAuthToken token = useTalk
-        ? await UserApi.instance.loginWithKakaoTalk()
-        : await UserApi.instance.loginWithKakaoAccount();
-
-    // Supabase Kakao OIDC requires an ID token. Kakao can return only an
-    // access token when the OpenID scope has not been granted yet, so request
-    // the missing OpenID scope once before failing the login.
-    if (token.idToken == null || token.idToken!.isEmpty) {
-      token = await UserApi.instance.loginWithNewScopes(['openid']);
-    }
+    final OAuthToken token = await ensureNativeKakaoEmailConsent(
+      await loginWithNativeKakao(),
+    );
 
     final accessToken = token.accessToken;
     if (accessToken == null || accessToken.isEmpty) {
@@ -306,8 +302,9 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
     }
     final idToken = token.idToken;
     if (idToken == null || idToken.isEmpty) {
-      throw Exception(
+      throw const AuthException(
         '카카오 ID 토큰을 가져올 수 없습니다. Kakao Developers에서 OpenID Connect를 활성화하고 Supabase Kakao Provider 설정을 확인해주세요.',
+        code: 'kakao_oidc_unavailable',
       );
     }
 
@@ -379,6 +376,22 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
 
   Future<void> resendEmailConfirmation(String email) async {
     await ref.read(authServiceProvider).resendEmailConfirmation(email);
+  }
+
+  Future<void> verifyEmailConfirmation({
+    required String email,
+    required String token,
+  }) async {
+    final auth = await ref
+        .read(authServiceProvider)
+        .verifyEmailConfirmation(email: email, token: token);
+    if (!ref.mounted) return;
+    // The explicit verification already checked getUser. A slower restore that
+    // started before it must not replace this result with an old login error.
+    _sessionSyncRevision++;
+    state = AsyncData(auth.user);
+    ref.invalidate(authUserIdProvider);
+    unawaited(syncConsentIfPresent().catchError((Object _) {}));
   }
 
   Future<String?> handleAuthCallback(Uri uri) async {

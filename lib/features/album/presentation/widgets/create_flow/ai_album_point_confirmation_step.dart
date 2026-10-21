@@ -89,7 +89,10 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
                     _PaperCard(
                       children: [
                         if (designBrief != null) ...[
-                          _InfoRow(label: '디자인 요청', value: designBrief!.prompt),
+                          _InfoRow(
+                            label: '디자인 요청',
+                            value: designBrief!.safeOptions.summary,
+                          ),
                           _InfoRow(
                             label: '구성',
                             value: '표지 + 내지 ${designBrief!.pageCount}쪽',
@@ -118,7 +121,7 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
                     if (designBrief != null) ...[
                       const SizedBox(height: 16),
                       Text(
-                        '입력한 디자인 요청을 AI에 전달해요. 사진첩에 접근하거나 사진을 전송하지 않아요.',
+                        '선택한 주제·분위기·색감·구성만 AI에 전달해요. 개인 메모와 사진은 보내지 않아요.',
                         style: TextStyle(
                           fontSize: 13,
                           height: 1.5,
@@ -145,9 +148,7 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
                           foregroundColor: SnapFitColors.isDark(context)
                               ? const Color(0xFF111111)
                               : Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                          ),
+                          shape: const StadiumBorder(),
                         ),
                         child: Text(
                           isFirstAiDraftFree ? '무료로 템플릿 만들기' : '템플릿 만들기',
@@ -172,28 +173,52 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
   Widget _webConfirmation(BuildContext context) => ListView(
     padding: const EdgeInsets.all(28),
     children: [
-      const Text('AI 템플릿 생성 전 확인', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+      const Text(
+        'AI 템플릿 생성 전 확인',
+        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+      ),
       const SizedBox(height: 12),
-      Text('선택한 구성과 포인트 사용 조건을 확인하세요.', style: TextStyle(fontSize: 14, color: WebPalette.of(context).muted)),
+      Text(
+        '선택한 구성과 포인트 사용 조건을 확인하세요.',
+        style: TextStyle(fontSize: 14, color: WebPalette.of(context).muted),
+      ),
       const SizedBox(height: 24),
-      WebSurface(child: Column(children: [
-        _InfoRow(label: '템플릿 무드', value: _themeLabel(theme)),
-        _InfoRow(label: '사진 범위', value: _rangeLabel(range)),
-        _InfoRow(label: '사용 포인트', value: isFirstAiDraftFree ? '무료' : '${_format(pointCost)}P'),
-        if (isFirstAiDraftFree) const _InfoRow(label: '무료 혜택', value: '첫 AI 템플릿 1회'),
-        _InfoRow(label: '보유 포인트', value: '${_format(balance)}P'),
-        const _InfoRow(label: '사용 기준', value: '성공 시만 처리'),
-        const _InfoRow(label: '실패 시', value: '실패 시 차감 없음'),
-      ])),
+      WebSurface(
+        child: Column(
+          children: [
+            _InfoRow(label: '템플릿 무드', value: _themeLabel(theme)),
+            _InfoRow(label: '사진 범위', value: _rangeLabel(range)),
+            _InfoRow(
+              label: '사용 포인트',
+              value: isFirstAiDraftFree ? '무료' : '${_format(pointCost)}P',
+            ),
+            if (isFirstAiDraftFree)
+              const _InfoRow(label: '무료 혜택', value: '첫 AI 템플릿 1회'),
+            _InfoRow(label: '보유 포인트', value: '${_format(balance)}P'),
+            const _InfoRow(label: '사용 기준', value: '성공 시만 처리'),
+            const _InfoRow(label: '실패 시', value: '실패 시 차감 없음'),
+          ],
+        ),
+      ),
       if (usesServerDraftProvider) ...[
         const SizedBox(height: 20),
-        _ServerAnalysisConsentCard(usesAdvancedServerAnalysis: usesAdvancedServerAnalysis),
+        _ServerAnalysisConsentCard(
+          usesAdvancedServerAnalysis: usesAdvancedServerAnalysis,
+        ),
       ],
       const SizedBox(height: 28),
-      Wrap(alignment: WrapAlignment.end, spacing: 12, runSpacing: 8, children: [
-        OutlinedButton(onPressed: onBack, child: const Text('이전')),
-        FilledButton(onPressed: onConfirm, child: Text(isFirstAiDraftFree ? '무료로 템플릿 만들기' : '템플릿 만들기')),
-      ]),
+      Wrap(
+        alignment: WrapAlignment.end,
+        spacing: 12,
+        runSpacing: 8,
+        children: [
+          OutlinedButton(onPressed: onBack, child: const Text('이전')),
+          FilledButton(
+            onPressed: onConfirm,
+            child: Text(isFirstAiDraftFree ? '무료로 템플릿 만들기' : '템플릿 만들기'),
+          ),
+        ],
+      ),
     ],
   );
 
@@ -225,7 +250,7 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
             style: ExperienceFormStyle.text(
               context,
               20,
-              weight: FontWeight.w600,
+              weight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 12),
@@ -243,14 +268,26 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
             style: ExperienceFormStyle.text(context, 12, secondary: true),
           ),
           const SizedBox(height: 20),
-          Text(brief.prompt, style: ExperienceFormStyle.text(context, 16)),
+          Text(
+            brief.safeOptions.summary,
+            style: ExperienceFormStyle.text(context, 16),
+          ),
+          if (brief.prompt.trim().isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              '개인 메모 · 이 기기에만 보관',
+              style: ExperienceFormStyle.text(context, 12, secondary: true),
+            ),
+            const SizedBox(height: 4),
+            Text(brief.prompt, style: ExperienceFormStyle.text(context, 14)),
+          ],
           const SizedBox(height: 24),
           _confirmationRow(context, '책 크기', brief.coverSize.displayName),
           _confirmationRow(context, '표지', brief.coverSize.coverType.label),
           _confirmationRow(context, '내지', '${brief.pageCount}쪽'),
           const SizedBox(height: 20),
           Text(
-            '입력한 디자인 요청을 AI에 전달해요. 사진첩에 접근하거나 사진을 전송하지 않아요.',
+            '선택한 주제·분위기·색감·구성만 AI에 전달해요. 개인 메모와 사진은 보내지 않아요.',
             style: ExperienceFormStyle.text(context, 12, secondary: true),
           ),
         ],
@@ -266,7 +303,7 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
           Expanded(
             child: FilledButton(
               onPressed: onConfirm,
-              style: ExperienceFormStyle.primary(context),
+              style: CreationStyle.primary(context),
               child: const Text('템플릿 만들기'),
             ),
           ),
@@ -338,10 +375,16 @@ class _ServerAnalysisConsentCard extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(15.w, 14.h, 15.w, 14.h),
       decoration: BoxDecoration(
-        color: kIsWeb ? WebPalette.of(context).surface : isDark ? const Color(0xFF1A1B20) : Colors.white,
+        color: kIsWeb
+            ? WebPalette.of(context).surface
+            : isDark
+            ? const Color(0xFF1A1B20)
+            : Colors.white,
         borderRadius: BorderRadius.circular(kIsWeb ? 12 : 22.r),
         border: Border.all(
-          color: kIsWeb ? WebPalette.of(context).line : isDark
+          color: kIsWeb
+              ? WebPalette.of(context).line
+              : isDark
               ? Colors.white.withOpacity(0.10)
               : const Color(0xFFE7E1D8),
         ),

@@ -5,10 +5,11 @@ import 'package:snap_fit/features/album/presentation/widgets/home/home_bottom_na
 import 'package:snap_fit/shared/widgets/experience_icon.dart';
 import 'package:snap_fit/shared/widgets/experience_style.dart';
 import 'package:snap_fit/shared/widgets/experience_form_style.dart';
+import 'package:snap_fit/core/constants/snapfit_colors.dart';
 
 void main() {
   for (final rail in [false, true]) {
-    for (final currentIndex in [0, 2, 5]) {
+    for (final currentIndex in [0, 1, 2, 4, 5, 6]) {
       testWidgets(
         'experience navigation has icons and keeps every destination: rail=$rail index=$currentIndex',
         (tester) async {
@@ -31,25 +32,55 @@ void main() {
             tester
                 .widgetList<ExperienceIcon>(find.byType(ExperienceIcon))
                 .map((i) => i.name),
-            ['House', 'Layers2', 'Bookmark', 'UserRound'],
+            ['BookOpen', 'Layers2', 'Bookmark', 'UserRound'],
           );
-          expect(find.text('홈'), findsOneWidget);
+          expect(find.text('내 앨범'), findsOneWidget);
           final icons = tester
               .widgetList<ExperienceIcon>(find.byType(ExperienceIcon))
               .toList();
           expect(
-            icons[currentIndex == 0 ? 0 : 1].color,
+            icons[switch (currentIndex) {
+                  0 || 1 => 0,
+                  2 || 5 => 1,
+                  6 => 2,
+                  _ => 3,
+                }]
+                .color,
             ExperienceFormStyle.selectionInk(
               tester.element(find.byType(HomeBottomNavigationBar)),
             ),
           );
+          final navigation = tester.element(
+            find.byType(HomeBottomNavigationBar),
+          );
           expect(
             tester
-                .widgetList<Material>(find.byType(Material))
-                .any((m) => m.color == Colors.white),
-            isTrue,
+                .widget<Material>(
+                  find.byKey(const ValueKey('home-navigation-surface')),
+                )
+                .color,
+            SnapFitColors.backgroundOf(navigation).withValues(alpha: .86),
           );
-          await tester.tap(find.text('홈'));
+          final selectedDestination = currentIndex == 1
+              ? 0
+              : currentIndex == 5
+              ? 2
+              : currentIndex;
+          expect(
+            tester
+                .widget<AnimatedContainer>(
+                  find.byKey(
+                    ValueKey('home-navigation-indicator-$selectedDestination'),
+                  ),
+                )
+                .decoration,
+            isA<BoxDecoration>().having(
+              (decoration) => decoration.color,
+              'selected background',
+              ExperienceFormStyle.selection(navigation),
+            ),
+          );
+          await tester.tap(find.text('내 앨범'));
           expect(selected, 0);
           expect(find.text('알림'), findsNothing);
           await tester.tap(find.text('마이'));
@@ -57,7 +88,7 @@ void main() {
           expect(find.text('소재'), findsNothing);
           await tester.tap(find.text('스토어'));
           expect(selected, 2);
-          await tester.tap(find.text('보관함'));
+          await tester.tap(find.text('내 디자인'));
           expect(selected, 6);
           expect(tester.takeException(), isNull);
         },

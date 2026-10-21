@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import '../../../../shared/web/web_design.dart';
+import '../widgets/web/web_design_detail_layout.dart';
 import '../../../../core/navigation/web_app_location.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/theme/snapfit_design_tokens.dart' show SnapFitRadius;
 
 import '../../../../shared/widgets/experience_style.dart';
 import '../../../../shared/widgets/album_stage_style.dart';
@@ -35,7 +37,10 @@ import '../../../../core/templates/template_document_pages.dart';
 import '../../../../core/templates/published_premium_templates.dart';
 import '../../../../core/constants/cover_size.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
+import '../../../auth/presentation/providers/public_template_return_intent.dart';
 import '../../domain/entities/premium_template.dart';
+import '../../domain/template_design_profile.dart';
+import '../../../point_shop/data/point_shop_provider.dart';
 import '../../../point_shop/domain/point_shop_template_key.dart';
 import '../../../point_shop/presentation/point_shop_access.dart';
 import '../../../point_shop/presentation/point_shop_artwork.dart';
@@ -46,24 +51,29 @@ import '../../../album/data/bundled_creation_templates.dart';
 import '../widgets/template_page_renderer.dart';
 import '../widgets/template_book_artwork.dart';
 import '../widgets/template_purchase_overview.dart';
+import '../widgets/template_design_profile_summary.dart';
+import '../widgets/public_template_information.dart';
 import '../widgets/template_edition_sheet.dart';
 import '../widgets/material_original_preview.dart';
 import 'template_full_screen_view.dart';
 import 'material_detail_screen.dart';
 import '../../../album/presentation/views/album_create_flow_screen.dart';
 import '../../../album/presentation/widgets/create_flow/creation_template_preview.dart';
-import '../../../album/presentation/widgets/create_flow/creation_workspace.dart';
+import '../widgets/store_detail_workspace.dart';
+import '../utils/published_template_share_uri.dart';
 
 class TemplateDetailScreen extends ConsumerStatefulWidget {
   final PremiumTemplate template;
   final bool selectForCreation;
   final Object? heroTag;
+  final bool guestPreview;
 
   const TemplateDetailScreen({
     super.key,
     required this.template,
     this.selectForCreation = false,
     this.heroTag,
+    this.guestPreview = false,
   });
 
   @override
@@ -76,8 +86,20 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   bool _isUsing = false;
   bool _isLikeSubmitting = false;
   bool _isTemplateHydrating = false;
+  bool _isFullScreenPreviewOpen = false;
   final _spreadController = PageController();
   final _spreadListController = ScrollController();
+  final _spreadPagerKey = GlobalKey();
+  final _spreadListKey = GlobalKey();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Keep the selected thumbnail visible after the list changes its axis.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _centerSpreadThumbnail(animated: false);
+    });
+  }
 
   @override
   void dispose() {
@@ -450,7 +472,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   }
 
   Future<void> _refreshTemplate() async {
-    if (isBundledCreationTemplate(_template)) {
+    if (widget.guestPreview || isBundledCreationTemplate(_template)) {
       _isTemplateHydrating = false;
       return;
     }
@@ -613,6 +635,20 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
   Future<void> _onUse() async {
     if (_isUsing || ModalRoute.of(context)?.isCurrent == false) return;
+    if (widget.guestPreview) {
+      final navigate = WebNavigationScope.maybeOf(context)?.onPublicNavigate;
+      if (kIsWeb && navigate != null) {
+        navigate(WebAppLocation.login);
+      } else {
+        if (!kIsWeb) {
+          ref
+              .read(publicTemplateReturnIntentProvider.notifier)
+              .remember(_template.id);
+        }
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
+      return;
+    }
     setState(() => _isUsing = true);
     try {
       final volume = publishedPremiumVolume(_template.id);
@@ -705,7 +741,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
         context,
         snapFitRoute(
           page: AlbumCreateFlowScreen(initialCreationTemplate: selection),
-          settings: kIsWeb ? const WebAppRouteSettings(WebAppLocation.create) : null,
+          settings: kIsWeb
+              ? const WebAppRouteSettings(WebAppLocation.create)
+              : null,
         ),
       );
     } catch (_) {
@@ -721,11 +759,16 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
   Future<void> _onShareTemplate() async {
     final subtitle = _template.subTitle?.trim();
+    final publicLink = publishedTemplateShareUri(
+      _template.id,
+      webBase: kIsWeb ? Uri.base : null,
+    );
+    final link = publicLink?.toString() ?? _coverPreviewUrl(_template);
     final lines = <String>[
       'SnapFit 템플릿 공유',
       _template.title,
       if (subtitle != null && subtitle.isNotEmpty) subtitle,
-      _coverPreviewUrl(_template),
+      if (link.trim().isNotEmpty) link,
     ];
     final text = lines.join('\n');
 
@@ -736,9 +779,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
         try {
           await Clipboard.setData(ClipboardData(text: text));
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('공유할 템플릿 정보를 복사했어요.')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('공유할 템플릿 정보를 복사했어요.')));
           return;
         } catch (_) {
           // A browser can also deny clipboard access; retain the visible error.
@@ -751,21 +794,89 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     }
   }
 
-  void _openFullScreenView(int initialIndex) {
-    if (_parsedPages.isEmpty && _template.previewImages.isEmpty) return;
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => TemplateFullScreenView(
-          parsedPages: _shownPages,
-          previewImages: _template.previewImages,
-          initialIndex: initialIndex,
-          designCanvasSize: _shownCanvas,
-          preserveTypography: isBundledCreationTemplate(_template),
-        ),
+  Future<void> _openFullScreenView(int initialIndex) async {
+    if (!mounted ||
+        _isFullScreenPreviewOpen ||
+        ModalRoute.of(context)?.isCurrent != true) {
+      return;
+    }
+    final owner = ModalRoute.of(context);
+    final variant = _previewVariant;
+    final pages = _shownPages;
+    final previews = _template.previewImages;
+    final canvas = _shownCanvas;
+    final preserveTypography = isBundledCreationTemplate(_template);
+    final pageCount = pages.isNotEmpty ? pages.length : previews.length;
+    if (initialIndex < 0 || initialIndex >= pageCount) return;
+    var lastViewedPage = initialIndex;
+    var viewerActive = true;
+    late final MaterialPageRoute<void> viewerRoute;
+    viewerRoute = MaterialPageRoute<void>(
+      builder: (context) => TemplateFullScreenView(
+        parsedPages: pages,
+        previewImages: previews,
+        initialIndex: initialIndex,
+        designCanvasSize: canvas,
+        preserveTypography: preserveTypography,
+        onPageChanged: (index) {
+          if (!viewerActive ||
+              !mounted ||
+              !viewerRoute.isCurrent ||
+              index < 0 ||
+              index >= pageCount) {
+            return;
+          }
+          lastViewedPage = index;
+        },
       ),
     );
+    setState(() => _isFullScreenPreviewOpen = true);
+    await Navigator.push<void>(context, viewerRoute);
+    viewerActive = false;
+    await viewerRoute.completed;
+
+    bool canRestore() {
+      if (!mounted || owner?.isCurrent != true || _previewVariant != variant) {
+        return false;
+      }
+      final currentPageCount = _shownPages.isNotEmpty
+          ? _shownPages.length
+          : _template.previewImages.length;
+      return lastViewedPage >= 0 && lastViewedPage < currentPageCount;
+    }
+
+    final spread = (lastViewedPage + 1) ~/ 2;
+    void restoreSpread() {
+      if (!canRestore()) return;
+      final pagerPositions = _spreadController.positions;
+      final thumbnailPositions = _spreadListController.positions;
+      if (pagerPositions.length != 1 ||
+          thumbnailPositions.length != 1 ||
+          !pagerPositions.single.hasContentDimensions ||
+          !thumbnailPositions.single.hasContentDimensions) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => restoreSpread());
+        WidgetsBinding.instance.ensureVisualUpdate();
+        return;
+      }
+      setState(() => _detailSpread = spread);
+      _spreadController.jumpToPage(spread);
+      _centerSpreadThumbnail(animated: false);
+    }
+
+    void resumeDetail() {
+      if (!mounted) return;
+      if (owner?.isCurrent != true) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => resumeDetail());
+        return;
+      }
+      // Reparent only after the uncovered detail has rebuilt its semantics.
+      setState(() => _isFullScreenPreviewOpen = false);
+      if (!canRestore()) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) => restoreSpread());
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => resumeDetail());
+    WidgetsBinding.instance.ensureVisualUpdate();
   }
 
   String? _previewVariant;
@@ -801,16 +912,22 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
   void _spreadChanged(int index) {
     setState(() => _detailSpread = index);
-    if (_spreadListController.hasClients) {
+    _centerSpreadThumbnail();
+  }
+
+  void _centerSpreadThumbnail({bool animated = true}) {
+    final positions = _spreadListController.positions;
+    if (positions.length == 1 && positions.single.hasContentDimensions) {
+      final position = positions.single;
+      final itemExtent = position.axis == Axis.vertical
+          ? 64 + MediaQuery.textScalerOf(context).scale(10) * 1.5
+          : 96.0;
       final offset =
-          (index *
-                      (_spreadListController.position.axis == Axis.vertical
-                          ? 80.0
-                          : 88.0) -
-                  _spreadListController.position.viewportDimension / 2 +
-                  40)
-              .clamp(0.0, _spreadListController.position.maxScrollExtent);
-      if (MediaQuery.disableAnimationsOf(context)) {
+          (_detailSpread * itemExtent -
+                  position.viewportDimension / 2 +
+                  itemExtent / 2)
+              .clamp(0.0, position.maxScrollExtent);
+      if (!animated || MediaQuery.disableAnimationsOf(context)) {
         _spreadListController.jumpTo(offset);
       } else {
         _spreadListController.animateTo(
@@ -843,6 +960,14 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   }
 
   Widget _buildDetailStage({bool compact = false}) {
+    final sidebar =
+        compact &&
+        MediaQuery.orientationOf(context) == Orientation.landscape &&
+        MediaQuery.sizeOf(context).width -
+                MediaQuery.paddingOf(context).horizontal >=
+            560;
+    final thumbnailExtent =
+        48 + MediaQuery.textScalerOf(context).scale(10) * 1.5 + 8;
     final pageCount = _shownPages.isNotEmpty
         ? _shownPages.length
         : _template.previewImages.length.clamp(1, 1000);
@@ -855,15 +980,25 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       height: compact
           ? null
           : (MediaQuery.sizeOf(context).height * .42).clamp(210, 340),
-      decoration: BoxDecoration(color: kIsWeb ? WebPalette.of(context).canvas : null, gradient: kIsWeb ? null : AlbumStageStyle.gradient(context)),
-      child: PageView.builder(
-        key: const ValueKey('template-spread-pager'),
-        controller: _spreadController,
-        itemCount: spreadCount,
-        onPageChanged: _spreadChanged,
-        itemBuilder: (context, index) => Padding(
-          padding: EdgeInsets.all(compact ? 8 : 22),
-          child: _spreadArtwork(index, pageCount, hero: true),
+      decoration: BoxDecoration(
+        color: kIsWeb ? WebPalette.of(context).canvas : null,
+        gradient: kIsWeb ? null : AlbumStageStyle.gradient(context),
+      ),
+      child: Semantics(
+        key: _spreadPagerKey,
+        container: true,
+        child: KeyedSubtree(
+          key: PageStorageKey('template-detail-spreads-${_template.id}'),
+          child: PageView.builder(
+            key: const ValueKey('template-spread-pager'),
+            controller: _spreadController,
+            itemCount: spreadCount,
+            onPageChanged: _spreadChanged,
+            itemBuilder: (context, index) => Padding(
+              padding: EdgeInsets.all(compact ? (kIsWeb ? 0 : 8) : 22),
+              child: _spreadArtwork(index, pageCount, hero: true),
+            ),
+          ),
         ),
       ),
     );
@@ -916,50 +1051,63 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
         ),
       ],
     );
-    final thumbnails = SizedBox(
-      width: compact ? 64 : null,
-      height: compact ? null : 82,
-      child: ListView.separated(
-        key: const ValueKey('template-spread-list'),
-        controller: _spreadListController,
-        scrollDirection: compact ? Axis.vertical : Axis.horizontal,
-        itemCount: spreadCount,
-        separatorBuilder: (_, __) =>
-            SizedBox(width: compact ? 0 : 8, height: compact ? 8 : 0),
-        itemBuilder: (context, index) => Semantics(
-          selected: spread == index,
-          button: true,
-          child: InkWell(
-            key: ValueKey('template-spread-thumb-$index'),
-            onTap: () => _goToSpread(index),
-            child: Container(
-              width: compact ? null : 80,
-              height: compact ? 72 : null,
-              padding: const EdgeInsets.fromLTRB(4, 4, 4, 2),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: spread == index
-                      ? kIsWeb ? WebPalette.of(context).brandInk : ExperienceStyle.accent
-                      : ExperienceFormStyle.line(context),
-                ),
-              ),
-              child: Column(
-                children: [
-                  Expanded(child: _spreadArtwork(index, pageCount)),
-                  const SizedBox(height: 4),
-                  Text(
-                    index == 0
-                        ? '표지'
-                        : index * 2 < pageCount
-                        ? '${index * 2 - 1}–${index * 2}'
-                        : '${index * 2 - 1}',
-                    style: ExperienceFormStyle.text(
-                      context,
-                      10,
-                      color: ExperienceFormStyle.muted(context),
+    final thumbnails = Semantics(
+      key: _spreadListKey,
+      container: true,
+      child: SizedBox(
+        width: sidebar ? 64 : null,
+        height: sidebar ? null : thumbnailExtent,
+        child: KeyedSubtree(
+          key: PageStorageKey('template-detail-thumbnails-${_template.id}'),
+          child: ListView.separated(
+            key: const ValueKey('template-spread-list'),
+            controller: _spreadListController,
+            scrollDirection: sidebar ? Axis.vertical : Axis.horizontal,
+            itemCount: spreadCount,
+            separatorBuilder: (_, __) =>
+                SizedBox(width: sidebar ? 0 : 8, height: sidebar ? 8 : 0),
+            itemBuilder: (context, index) => Semantics(
+              selected: spread == index,
+              button: true,
+              child: InkWell(
+                key: ValueKey('template-spread-thumb-$index'),
+                onTap: () => _goToSpread(index),
+                child: Container(
+                  width: sidebar ? null : 88,
+                  height: sidebar ? thumbnailExtent : null,
+                  padding: const EdgeInsets.fromLTRB(4, 4, 4, 2),
+                  decoration: BoxDecoration(
+                    color: spread == index
+                        ? ExperienceFormStyle.selection(context)
+                        : null,
+                    border: Border(
+                      bottom: BorderSide(
+                        width: 2,
+                        color: spread == index
+                            ? ExperienceStyle.accent
+                            : ExperienceFormStyle.line(context),
+                      ),
                     ),
                   ),
-                ],
+                  child: Column(
+                    children: [
+                      Expanded(child: _spreadArtwork(index, pageCount)),
+                      const SizedBox(height: 4),
+                      Text(
+                        index == 0
+                            ? '표지'
+                            : index * 2 < pageCount
+                            ? '${index * 2 - 1}–${index * 2}'
+                            : '${index * 2 - 1}',
+                        style: ExperienceFormStyle.text(
+                          context,
+                          10,
+                          color: ExperienceFormStyle.muted(context),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -968,7 +1116,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     );
     return Column(
       children: [
-        if (compact)
+        if (sidebar)
           Expanded(
             child: Row(
               children: [
@@ -978,9 +1126,16 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
               ],
             ),
           )
+        else if (compact)
+          Expanded(child: artwork)
         else
           artwork,
         navigation,
+        if (compact && !sidebar)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: thumbnails,
+          ),
         if (!compact) ...[
           thumbnails,
           const SizedBox(height: 16),
@@ -994,13 +1149,56 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     final variants = _parsedPagesByAspect.keys
         .where((key) => const ['portrait', 'square', 'landscape'].contains(key))
         .toList();
-    if (variants.length < 2) return const SizedBox();
+    if (variants.length < 2) {
+      if (!kIsWeb) return const SizedBox();
+      final ratio = _shownCanvas.width / _shownCanvas.height;
+      return Text(
+        ratio > 1.05
+            ? '가로형'
+            : ratio < .95
+            ? '세로형'
+            : '정사각형',
+        style: ExperienceFormStyle.text(context, 14, weight: FontWeight.w600),
+      );
+    }
     final selectedVariant =
         _previewVariant ??
         variants
             .where((key) => _variantCanvasSizes[key] == _designCanvasSize)
             .firstOrNull ??
         variants.first;
+    if (kIsWeb)
+      return DropdownButtonFormField<String>(
+        key: const ValueKey('web-template-size-selector'),
+        initialValue: selectedVariant,
+        isExpanded: true,
+        decoration: const InputDecoration(
+          isDense: true,
+          border: OutlineInputBorder(),
+        ),
+        items: [
+          for (final key in variants)
+            DropdownMenuItem(
+              value: key,
+              child: Text(
+                const {
+                  'portrait': '세로형',
+                  'square': '정사각형',
+                  'landscape': '가로형',
+                }[key]!,
+              ),
+            ),
+        ],
+        onChanged: _isUsing
+            ? null
+            : (value) {
+                if (value == null) return;
+                setState(() => _previewVariant = value);
+                final count =
+                    1 + ((_shownPages.length.clamp(1, 1000) - 1) / 2).ceil();
+                if (_detailSpread >= count) _goToSpread(count - 1);
+              },
+      );
     return SizedBox(
       width: double.infinity,
       child: SegmentedButton<String>(
@@ -1013,7 +1211,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
           selectedBackgroundColor: ExperienceFormStyle.selection(context),
           selectedForegroundColor: ExperienceFormStyle.selectionInk(context),
           textStyle: ExperienceFormStyle.text(context, 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+          shape: const StadiumBorder(),
         ),
         segments: [
           for (final key in variants)
@@ -1102,9 +1300,10 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
           ? AlbumSpineImage(image: provider)
           : Image(image: provider, fit: BoxFit.cover);
     }
-    if (url.isEmpty) return ColoredBox(
-      color: kIsWeb ? WebPalette.of(context).canvas : const Color(0xFFF2F3F0),
-    );
+    if (url.isEmpty)
+      return ColoredBox(
+        color: kIsWeb ? WebPalette.of(context).canvas : const Color(0xFFF2F3F0),
+      );
     return SnapfitImage(
       urlOrGs: imageUrlByVariant(url, variant: ImageVariant.detail),
       fit: BoxFit.cover,
@@ -1121,7 +1320,8 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => _materialsFrame(context,
+        builder: (context) => _materialsFrame(
+          context,
           body: SafeArea(
             top: false,
             child: Center(
@@ -1148,7 +1348,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              '이 템플릿에 배치된 소재입니다. 무료 또는 이미 구매한 소재는 다른 앨범에서도 사용할 수 있어요. 나머지는 아래에서 개별 이용 범위와 가격을 확인해 주세요.',
+                              widget.guestPreview
+                                  ? '디자인 안에 배치된 소재는 그 상태로 사용할 수 있어요. 아래는 다른 앨범에 개별 추가할 때의 공개 가격이며, 로그인 후 보유 여부와 최종 이용 조건을 확인해요.'
+                                  : '이 템플릿에 배치된 소재입니다. 무료 또는 이미 구매한 소재는 다른 앨범에서도 사용할 수 있어요. 나머지는 아래에서 개별 이용 범위와 가격을 확인해 주세요.',
                               style: ExperienceFormStyle.text(
                                 context,
                                 13,
@@ -1162,17 +1364,20 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                     final key = keys[index - 1];
                     return InkWell(
                       key: ValueKey('template-material-row-$key'),
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => MaterialDetailScreen(
-                            productKey: key,
-                            favoriteKey: _materialFavoriteKey(key),
-                            title: _materialName(key),
-                            type: _materialKind(key),
-                            preview: (_) => PointShopArtwork(productKey: key),
-                          ),
-                        ),
-                      ),
+                      onTap: widget.guestPreview
+                          ? null
+                          : () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => MaterialDetailScreen(
+                                  productKey: key,
+                                  favoriteKey: _materialFavoriteKey(key),
+                                  title: _materialName(key),
+                                  type: _materialKind(key),
+                                  preview: (_) =>
+                                      PointShopArtwork(productKey: key),
+                                ),
+                              ),
+                            ),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         decoration: BoxDecoration(
@@ -1212,12 +1417,19 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                                     ),
                                   ),
                                   const SizedBox(height: 6),
-                                  TemplateMaterialReuseLabel(productKey: key),
+                                  if (widget.guestPreview)
+                                    PublicCatalogPriceLabel(
+                                      productKey: key,
+                                      compact: false,
+                                    )
+                                  else
+                                    TemplateMaterialReuseLabel(productKey: key),
                                 ],
                               ),
                             ),
                             const SizedBox(width: 12),
-                            const ExperienceIcon('ChevronRight', size: 18),
+                            if (!widget.guestPreview)
+                              const ExperienceIcon('ChevronRight', size: 18),
                           ],
                         ),
                       ),
@@ -1305,6 +1517,10 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     if (widget.selectForCreation && !kIsWeb) {
       return CreationTemplatePreview(
         title: _template.title,
+        profileSummary: TemplateDesignProfileSummary(
+          key: const ValueKey('creation-template-profile'),
+          profile: TemplateDesignProfile.of(_template),
+        ),
         favoriteKey: CatalogFavoriteKeys.template(_template.id),
         accessBadge: PointShopProductBadge(
           productKey: pointShopTemplateKey(_template),
@@ -1335,6 +1551,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       if (!previewMaterials.contains(key)) previewMaterials.add(key);
     }
     final volume = publishedPremiumVolume(_template.id);
+    final publicFacts = widget.guestPreview
+        ? PublicTemplateFacts.fromTemplate(_template)
+        : null;
     final info = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1347,17 +1566,18 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                   context,
                   11,
                   weight: FontWeight.w600,
-                  color: ExperienceFormStyle.muted(context),
+                  color: ExperienceFormStyle.selectionInk(context),
                 ),
               ),
             ),
-            CatalogFavoriteButton(
-              bookmark: true,
-              unframed: true,
-              itemKey: CatalogFavoriteKeys.template(_template.id),
-              label: _template.title,
-            ),
-            if (!isPublishedCreationTemplate(_template))
+            if (!widget.guestPreview)
+              CatalogFavoriteButton(
+                bookmark: true,
+                unframed: true,
+                itemKey: CatalogFavoriteKeys.template(_template.id),
+                label: _template.title,
+              ),
+            if (!widget.guestPreview && !isPublishedCreationTemplate(_template))
               IconButton(
                 onPressed: _onLike,
                 icon: Icon(
@@ -1371,7 +1591,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
           style: ExperienceFormStyle.text(
             context,
             22,
-            weight: FontWeight.w600,
+            weight: FontWeight.w700,
           ).copyWith(height: 1.25),
         ),
         const SizedBox(height: 10),
@@ -1383,32 +1603,60 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
             color: ExperienceFormStyle.muted(context),
           ),
         ),
-        const SizedBox(height: 24),
-        Row(
-          children: [
-            _experienceMetric(
-              volume == null
-                  ? '${_template.pageCount}쪽'
-                  : '24 / ${volume.extendedPages}쪽',
-              '페이지 분량',
-            ),
-            _experienceMetric(
-              '${_parsedPagesByAspect.isEmpty ? 1 : _parsedPagesByAspect.length}가지',
-              '앨범 규격',
-            ),
-            _experienceMetric('${materials.length}종', '사용한 소재'),
-          ],
+        const SizedBox(height: 16),
+        TemplateDesignProfileSummary(
+          key: const ValueKey('template-detail-profile'),
+          profile: TemplateDesignProfile.of(_template),
         ),
         const SizedBox(height: 24),
-        _buildSizeSelector(),
-        const SizedBox(height: 20),
-        TemplatePurchaseOverview(
-          productKey: pointShopTemplateKey(_template),
-          materialKeys: materials,
-          isPublishedFree:
-              !_template.isPremium && isPublishedCreationTemplate(_template),
-          onMaterials: _showMaterials,
-        ),
+        if (kIsWeb)
+          Wrap(
+            spacing: 16,
+            runSpacing: 16,
+            children: [
+              _webMetric(
+                publicFacts?.pageLabel ??
+                    (volume == null
+                        ? '${_template.pageCount}쪽'
+                        : '24 / ${volume.extendedPages}쪽'),
+                '페이지 분량',
+              ),
+              _webMetric(
+                '${_parsedPagesByAspect.isEmpty ? 1 : _parsedPagesByAspect.length}가지',
+                '앨범 규격',
+              ),
+              _webMetric('${materials.length}종', '사용한 소재'),
+            ],
+          )
+        else
+          Row(
+            children: [
+              _experienceMetric(
+                publicFacts?.pageLabel ??
+                    (volume == null
+                        ? '${_template.pageCount}쪽'
+                        : '24 / ${volume.extendedPages}쪽'),
+                '페이지 분량',
+              ),
+              _experienceMetric(
+                '${_parsedPagesByAspect.isEmpty ? 1 : _parsedPagesByAspect.length}가지',
+                '앨범 규격',
+              ),
+              _experienceMetric('${materials.length}종', '사용한 소재'),
+            ],
+          ),
+        const SizedBox(height: 24),
+        if (!kIsWeb) ...[_buildSizeSelector(), const SizedBox(height: 20)],
+        if (widget.guestPreview)
+          PublicTemplateInformation(template: _template)
+        else
+          TemplatePurchaseOverview(
+            productKey: pointShopTemplateKey(_template),
+            materialKeys: materials,
+            isPublishedFree:
+                !_template.isPremium && isPublishedCreationTemplate(_template),
+            onMaterials: _showMaterials,
+          ),
         if (materials.isNotEmpty) ...[
           const SizedBox(height: 24),
           Row(
@@ -1431,7 +1679,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                   style: ExperienceFormStyle.text(
                     context,
                     12,
-                    color: kIsWeb ? WebPalette.of(context).brandInk : const Color(0xFF007E90),
+                    color: kIsWeb
+                        ? WebPalette.of(context).brandInk
+                        : ExperienceFormStyle.selectionInk(context),
                   ),
                 ),
               ),
@@ -1447,7 +1697,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                     child: InkWell(
                       key: ValueKey('template-material-preview-$key'),
                       onTap: _showMaterials,
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(SnapFitRadius.md),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -1492,122 +1742,383 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       appBar: const ExperienceHeader(title: '템플릿 상세'),
       body: _isTemplateHydrating
           ? const Center(child: CircularProgressIndicator())
-          : CreationWorkspace(
-              portraitStageHeight: (MediaQuery.sizeOf(context).height * .44)
-                  .clamp(240.0, 390.0),
-              stage: CreationPaperStage(
-                inset: 0,
-                child: _buildDetailStage(compact: true),
-              ),
+          : StoreDetailWorkspace(
+              freezeLayout: _isFullScreenPreviewOpen,
+              stage: _buildDetailStage(compact: true),
               fields: info,
-              actions: Row(
-                children: [
-                  Flexible(
-                    child: PointShopProductBadge(
-                      productKey: pointShopTemplateKey(_template),
-                      unlistedLabel:
-                          !_template.isPremium &&
-                              isPublishedCreationTemplate(_template)
-                          ? '무료'
-                          : '판매 준비 중',
-                      compact: false,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    flex: 3,
-                    child: FilledButton(
-                      key: const ValueKey('template-detail-use'),
-                      onPressed: _isUsing ? null : _onUse,
-                      style: ExperienceFormStyle.primary(context),
-                      child: _isUsing
-                          ? const SizedBox.square(
-                              dimension: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Flexible(child: Text('이 디자인으로 시작')),
-                                SizedBox(width: 8),
-                                ExperienceIcon(
-                                  'ArrowRight',
-                                  size: 20,
-                                  color: Color(0xFF063740),
-                                ),
-                              ],
-                            ),
-                    ),
-                  ),
-                ],
-              ),
+              actions: _buildNativeActions(),
             ),
     );
   }
 
+  Widget _buildNativeActions() => LayoutBuilder(
+    builder: (context, bounds) {
+      if (widget.guestPreview) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            PublicTemplatePriceLabel(template: _template),
+            const SizedBox(height: 8),
+            FilledButton(
+              key: const ValueKey('template-detail-use'),
+              onPressed: _onUse,
+              child: const Text('로그인하고 이 디자인으로 시작'),
+            ),
+          ],
+        );
+      }
+      final productKey = pointShopTemplateKey(_template);
+      final owned =
+          ref
+              .watch(ownedPointShopKeysProvider)
+              .asData
+              ?.value
+              .contains(productKey) ??
+          false;
+      final priced =
+          ref
+              .watch(pointShopCatalogProvider)
+              .asData
+              ?.value
+              .any(
+                (product) =>
+                    product.productKey == productKey &&
+                    product.isActive &&
+                    product.pointPrice != null,
+              ) ??
+          false;
+      final stacked =
+          bounds.maxWidth < 340 ||
+          MediaQuery.textScalerOf(context).scale(16) > 22.4 ||
+          (!owned && !priced);
+      final price = PointShopProductBadge(
+        key: const ValueKey('template-detail-price'),
+        productKey: productKey,
+        unlistedLabel:
+            !_template.isPremium && isPublishedCreationTemplate(_template)
+            ? '무료'
+            : '판매 준비 중',
+        compact: false,
+      );
+      final action = _buildNativeUseAction(showArrow: !stacked);
+      return stacked
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [price, const SizedBox(height: 8), action],
+            )
+          : Row(
+              children: [
+                Flexible(child: price),
+                const SizedBox(width: 16),
+                Expanded(flex: 3, child: action),
+              ],
+            );
+    },
+  );
+
+  Widget _buildNativeUseAction({required bool showArrow}) {
+    final productKey = pointShopTemplateKey(_template);
+    final catalog = ref.watch(pointShopCatalogProvider);
+    final owned =
+        ref
+            .watch(ownedPointShopKeysProvider)
+            .asData
+            ?.value
+            .contains(productKey) ??
+        false;
+    final action = owned
+        ? (label: '이 디자인으로 시작', ready: true, retry: false)
+        : catalog.when(
+            loading: () => (label: '가격 확인 중', ready: false, retry: false),
+            error: (_, __) => (label: '가격 다시 확인', ready: false, retry: true),
+            data: (items) {
+              final product = items
+                  .where((item) => item.productKey == productKey)
+                  .firstOrNull;
+              final unavailable = product != null
+                  ? !product.isActive || product.pointPrice == null
+                  : _template.isPremium ||
+                        !isPublishedCreationTemplate(_template);
+              return (
+                label: unavailable ? '판매 준비 중' : '이 디자인으로 시작',
+                ready: !unavailable,
+                retry: false,
+              );
+            },
+          );
+    return FilledButton(
+      key: const ValueKey('template-detail-use'),
+      onPressed: _isUsing
+          ? null
+          : action.retry
+          ? () => ref.invalidate(pointShopCatalogProvider)
+          : action.ready
+          ? _onUse
+          : null,
+      style: ExperienceFormStyle.primary(context),
+      child: _isUsing
+          ? const SizedBox.square(
+              dimension: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : action.ready && showArrow
+          ? const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Flexible(child: Text('이 디자인으로 시작')),
+                SizedBox(width: 8),
+                ExperienceIcon(
+                  'ArrowRight',
+                  size: 20,
+                  color: SnapFitColors.onAccent,
+                ),
+              ],
+            )
+          : Text(action.label, textAlign: TextAlign.center),
+    );
+  }
+
   Widget _materialsFrame(BuildContext context, {required Widget body}) {
-    if (!kIsWeb) return Scaffold(backgroundColor: SnapFitColors.backgroundOf(context), appBar: const ExperienceHeader(title: '사용한 꾸밈 소재'), body: body);
+    if (!kIsWeb)
+      return Scaffold(
+        backgroundColor: SnapFitColors.backgroundOf(context),
+        appBar: const ExperienceHeader(title: '사용한 꾸밈 소재'),
+        body: body,
+      );
     return SnapFitWebShell(
       section: WebSection.designs,
-      actions: [TextButton.icon(onPressed: () => Navigator.maybePop(context), icon: const Icon(Icons.arrow_back, size: 18), label: const Text('템플릿으로'))],
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        WebPageHeading(eyebrow: 'TEMPLATE / MATERIALS', title: '디자인에 사용한 소재', description: _template.title),
-        const SizedBox(height: 24),
-        Expanded(child: WebSurface(padding: EdgeInsets.zero, child: body)),
-      ]),
+      showNavigation: !widget.guestPreview,
+      actions: [
+        TextButton.icon(
+          onPressed: () => Navigator.maybePop(context),
+          icon: const Icon(Icons.arrow_back, size: 18),
+          label: const Text('템플릿으로'),
+        ),
+      ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          WebPageHeading(
+            eyebrow: 'TEMPLATE / MATERIALS',
+            title: '디자인에 사용한 소재',
+            description: _template.title,
+          ),
+          const SizedBox(height: 24),
+          Expanded(
+            child: WebSurface(padding: EdgeInsets.zero, child: body),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _webDetail(Widget information) {
-    final details = WebSurface(child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      information,
-      const SizedBox(height: 24),
-      Divider(color: WebPalette.of(context).line),
-      const SizedBox(height: 18),
-      PointShopProductBadge(productKey: pointShopTemplateKey(_template), unlistedLabel: !_template.isPremium && isPublishedCreationTemplate(_template) ? '무료' : '판매 준비 중', compact: false),
-      const SizedBox(height: 18),
-      FilledButton.icon(
+    final palette = WebPalette.of(context);
+    Widget price() => !widget.guestPreview
+        ? PointShopProductBadge(
+            productKey: pointShopTemplateKey(_template),
+            unlistedLabel:
+                !_template.isPremium && isPublishedCreationTemplate(_template)
+                ? '무료'
+                : '판매 준비 중',
+            compact: false,
+          )
+        : PublicTemplatePriceLabel(template: _template);
+    Widget useAction({bool compact = false}) {
+      final onPressed = _isUsing || _isTemplateHydrating || _parsedPages.isEmpty
+          ? null
+          : _onUse;
+      final label = Text(
+        _isUsing
+            ? '준비 중'
+            : widget.guestPreview
+            ? (compact ? '로그인 후 시작' : '로그인하고 이 디자인으로 시작')
+            : (compact ? '이 디자인 사용' : '이 디자인으로 시작'),
+        textAlign: TextAlign.center,
+      );
+      if (compact) {
+        return FilledButton(
+          key: const ValueKey('template-detail-use'),
+          onPressed: onPressed,
+          child: _isUsing
+              ? const SizedBox.square(
+                  dimension: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : label,
+        );
+      }
+      return FilledButton.icon(
         key: const ValueKey('template-detail-use'),
-        onPressed: _isUsing || _isTemplateHydrating || _parsedPages.isEmpty
-            ? null : _onUse,
-        icon: _isUsing ? const SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.arrow_forward, size: 18),
-        label: Text(_isUsing ? '준비 중' : '이 디자인으로 시작'),
-      ),
-    ]));
-    final preview = WebSurface(padding: const EdgeInsets.all(18), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Text('페이지 미리보기', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: WebPalette.of(context).muted)),
-      const SizedBox(height: 16),
-      Expanded(child: _isTemplateHydrating ? const Center(child: CircularProgressIndicator()) : _buildDetailStage(compact: true)),
-      if (!_isTemplateHydrating && _parsedPages.isEmpty) ...[
+        onPressed: onPressed,
+        icon: _isUsing
+            ? const SizedBox.square(
+                dimension: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.arrow_forward, size: 18),
+        label: label,
+      );
+    }
+
+    Widget options() => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text('앨범 모양', style: TextStyle(fontSize: 12, color: palette.muted)),
+        const SizedBox(height: 8),
+        _buildSizeSelector(),
+        const SizedBox(height: 12),
+        Text(
+          '사진과 글을 바꿔 나의 앨범으로 완성해요.',
+          style: TextStyle(fontSize: 13, height: 1.6, color: palette.muted),
+        ),
+      ],
+    );
+    final action = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          '이 디자인 사용하기',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: palette.ink,
+          ),
+        ),
+        const SizedBox(height: 14),
+        price(),
         const SizedBox(height: 16),
-        Text('편집할 디자인 정보를 다시 불러와 주세요.',
-          style: TextStyle(color: WebPalette.of(context).muted, fontSize: 13)),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton.icon(
-            key: const ValueKey('web-template-detail-retry'),
-            onPressed: _isUsing ? null : _retryWebTemplate,
-            icon: const Icon(Icons.refresh, size: 17),
-            label: const Text('디자인 다시 불러오기'),
+        options(),
+        const SizedBox(height: 18),
+        useAction(),
+      ],
+    );
+    final preview = WebSurface(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            '표지 · 내지 미리보기',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 14,
+              height: 1.5,
+              fontWeight: FontWeight.w600,
+              color: palette.ink,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: _isTemplateHydrating
+                ? const Center(child: CircularProgressIndicator())
+                : _buildDetailStage(compact: true),
+          ),
+          if (!_isTemplateHydrating && _parsedPages.isEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              '편집할 디자인 정보를 다시 불러와 주세요.',
+              style: TextStyle(color: palette.muted, fontSize: 13),
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                key: const ValueKey('web-template-detail-retry'),
+                onPressed: _isUsing ? null : _retryWebTemplate,
+                icon: const Icon(Icons.refresh, size: 17),
+                label: const Text('디자인 다시 불러오기'),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+    return SnapFitWebShell(
+      section: WebSection.designs,
+      showNavigation: !widget.guestPreview,
+      actions: [
+        TextButton.icon(
+          onPressed: () => Navigator.maybePop(context),
+          icon: const Icon(Icons.arrow_back, size: 18),
+          label: const Text('목록으로'),
+        ),
+      ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          WebPageHeading(title: _template.title),
+          const SizedBox(height: 20),
+          Expanded(
+            child: WebDesignDetailLayout(
+              preview: preview,
+              action: action,
+              stackedAction: options(),
+              stackedPreviewHeightForWidth: _webStackedPreviewHeight,
+              bottomAction: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  price(),
+                  const SizedBox(height: 8),
+                  useAction(compact: true),
+                ],
+              ),
+              information: information,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  double _webStackedPreviewHeight(double width) {
+    final pageCount = _shownPages.isNotEmpty
+        ? _shownPages.length
+        : _template.previewImages.length.clamp(1, 1000);
+    final left = _detailSpread == 0 ? 0 : _detailSpread * 2 - 1;
+    final paired = _detailSpread > 0 && left + 1 < pageCount;
+    final ratio = _shownCanvas.width / _shownCanvas.height * (paired ? 2 : 1);
+    final textScaler = MediaQuery.textScalerOf(context);
+    // Surface padding, navigation and thumbnail rail.
+    // Size the stage from the actual book rather than the viewport's height.
+    final artworkHeight = (width - 24).clamp(1.0, double.infinity) / ratio;
+    final thumbnailHeight = 48 + textScaler.scale(10) * 1.5 + 8;
+    final chrome =
+        24 + textScaler.scale(14) * 1.5 + 12 + 44 + thumbnailHeight + 8;
+    // Wide, short windows retain the existing vertical thumbnail rail.
+    final sidebar =
+        MediaQuery.orientationOf(context) == Orientation.landscape &&
+        MediaQuery.sizeOf(context).width -
+                MediaQuery.paddingOf(context).horizontal >=
+            560;
+    return sidebar
+        ? (artworkHeight + chrome).clamp(320.0, 620.0)
+        : artworkHeight + chrome;
+  }
+
+  Widget _webMetric(String value, String label) => SizedBox(
+    width: 132,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          value,
+          style: ExperienceFormStyle.text(context, 17, weight: FontWeight.w600),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: ExperienceFormStyle.text(
+            context,
+            12,
+            color: ExperienceFormStyle.muted(context),
           ),
         ),
       ],
-    ]));
-    return SnapFitWebShell(
-      section: WebSection.designs,
-      actions: [TextButton.icon(onPressed: () => Navigator.maybePop(context), icon: const Icon(Icons.arrow_back, size: 18), label: const Text('목록으로'))],
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        WebPageHeading(eyebrow: 'DESIGN / TEMPLATE', title: _template.title, description: '페이지 구성과 이용 범위를 확인한 뒤 나의 사진으로 채워보세요.'),
-        const SizedBox(height: 28),
-        Expanded(child: LayoutBuilder(builder: (context, bounds) {
-          if (bounds.maxWidth >= 960) return Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Expanded(child: preview), const SizedBox(width: 24), SizedBox(width: 360, child: SingleChildScrollView(child: details)),
-          ]);
-          return ListView(children: [SizedBox(height: 460, child: preview), const SizedBox(height: 20), details]);
-        })),
-      ]),
-    );
-  }
+    ),
+  );
 
   Widget _experienceMetric(String value, String label) => Expanded(
     child: Column(

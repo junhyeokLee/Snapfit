@@ -52,7 +52,8 @@ export function createPushDispatchHandler(dependencies: {
             await finish(row, { status: 'discarded', last_error: 'recipient_unavailable' }); counts.discarded++; return;
           }
           const now = new Date();
-          const policy = deliveryPolicy(notification.category, prefsResult.data, device.timezone_offset_minutes, now);
+          const policy = deliveryPolicy(notification.category, prefsResult.data,
+            device.timezone_offset_minutes, now, notification.created_at);
           if (!policy.allowed) {
             await finish(row, { status: 'discarded', last_error: 'notification_preferences' }); counts.discarded++; return;
           }

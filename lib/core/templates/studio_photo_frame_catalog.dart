@@ -63,6 +63,23 @@ const atelierEditionPhotoFrames = {
   'atelierCornerFold',
 };
 
+const atelierSignaturePhotoFrames = {
+  'signatureVowPocket',
+  'signatureRailWallet',
+  'signatureHerbariumSleeve',
+  'signatureOrbitQuilt',
+  'signatureKitchenFold',
+  'signatureCinemaGate',
+  'signatureTrailPocket',
+};
+
+const atelierStoryPhotoFrames = {
+  'storyVowGate',
+  'storyVowCotton',
+  'storyDiscoverySlide',
+  'storyDiscoveryStitch',
+};
+
 const keepsakeFrameAssets = {
   'materialLaceMount': 'assets/sticker/studio/material_lace.png',
   'materialLinenOval': 'assets/sticker/studio/material_linen.png',
@@ -76,6 +93,8 @@ const keepsakeFrameIncludedMaterials = {
 };
 
 const studioPhotoFrames = {
+  ...atelierStoryPhotoFrames,
+  ...atelierSignaturePhotoFrames,
   ...keepsakePhotoFrames,
   ...atelierEditionPhotoFrames,
   ...editionPhotoFrames,

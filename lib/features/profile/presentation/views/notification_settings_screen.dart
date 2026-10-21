@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/theme/snapfit_design_tokens.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/widgets/experience_style.dart';
 import '../../../../core/notifications/fcm_notification_service.dart';
@@ -18,16 +19,19 @@ class NotificationSettingsScreen extends ConsumerStatefulWidget {
       _NotificationSettingsScreenState();
 }
 
-class _NotificationSettingsScreenState extends ConsumerState<NotificationSettingsScreen>
+class _NotificationSettingsScreenState
+    extends ConsumerState<NotificationSettingsScreen>
     with WidgetsBindingObserver {
   bool _loading = true;
   bool _loadFailed = false;
   bool _requestingPermission = false;
   BrowserPushState? _browserPush;
   bool _browserBusy = false;
+  int _loadEpoch = 0;
+  String? _settingsOwnerId;
   String? _webOwnerId;
-  bool get _webOwnerCurrent => _webOwnerId != null &&
-      ref.read(visibleOrderOwnerProvider) == _webOwnerId;
+  bool get _webOwnerCurrent =>
+      _webOwnerId != null && ref.read(visibleOrderOwnerProvider) == _webOwnerId;
 
   bool all = true;
   bool order = true;
@@ -57,6 +61,7 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
   }
 
   Future<void> _load() async {
+    final epoch = ++_loadEpoch;
     if (kIsWeb) {
       final owner = ref.read(visibleOrderOwnerProvider);
       if (owner == null) return;
@@ -66,10 +71,14 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
     try {
       final settings = await FcmNotificationService.loadSettings();
       final browserPush = kIsWeb
-        ? await FcmNotificationService.loadBrowserPushState() : null;
-      if (!mounted) return;
+          ? await FcmNotificationService.loadBrowserPushState()
+          : null;
+      if (!mounted || epoch != _loadEpoch) return;
       if (kIsWeb && !_webOwnerCurrent) {
-        setState(() { _loading = false; _loadFailed = true; });
+        setState(() {
+          _loading = false;
+          _loadFailed = true;
+        });
         return;
       }
       setState(() {
@@ -81,12 +90,13 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
         newTemplate = settings.newTemplate;
         nightMute = settings.nightMute;
         permissionGranted = settings.permissionGranted;
+        _settingsOwnerId = settings.ownerId;
         _browserPush = browserPush;
         _loading = false;
         _loadFailed = false;
       });
     } catch (_) {
-      if (mounted)
+      if (mounted && epoch == _loadEpoch)
         setState(() {
           _loading = false;
           _loadFailed = true;
@@ -96,6 +106,7 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
 
   Future<void> _toggle(String key, bool value) async {
     if (kIsWeb && !_webOwnerCurrent) return;
+    _loadEpoch++;
     setState(() {
       switch (key) {
         case FcmNotificationService.kAll:
@@ -130,9 +141,15 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
         marketing: marketing,
         newTemplate: newTemplate,
         nightMute: nightMute,
+        expectedOwnerId: _settingsOwnerId,
       );
-    } catch (_) {
+    } catch (error) {
       if (!mounted || (kIsWeb && !_webOwnerCurrent)) return;
+      if (error is StateError &&
+          error.message == 'notification_settings_owner_changed') {
+        setState(() => _loadFailed = true);
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('설정은 저장했지만 서버 연결이 지연되고 있어요. 연결되면 다시 적용합니다.'),
@@ -164,18 +181,25 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
       // The service requests browser permission as its first async operation,
       // preserving the click gesture; it never prompts on page load.
       final result = await (enable
-        ? FcmNotificationService.enableBrowserPush()
-        : FcmNotificationService.disableBrowserPush());
+          ? FcmNotificationService.enableBrowserPush()
+          : FcmNotificationService.disableBrowserPush());
       if (!mounted || !_webOwnerCurrent) return;
-      setState(() { _browserPush = result; permissionGranted = result.environment.permission == 'granted'; });
+      setState(() {
+        _browserPush = result;
+        permissionGranted = result.environment.permission == 'granted';
+      });
       if (enable && !result.active) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('브라우저 알림 연결을 완료하지 못했어요. 권한과 연결 상태를 확인해주세요.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('브라우저 알림 연결을 완료하지 못했어요. 권한과 연결 상태를 확인해주세요.'),
+          ),
+        );
       }
     } catch (_) {
       if (!mounted || !_webOwnerCurrent) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('브라우저 알림 연결 상태를 변경하지 못했어요. 다시 확인해주세요.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('브라우저 알림 연결 상태를 변경하지 못했어요. 다시 확인해주세요.')),
+      );
       // Reload real state; never turn a failed registration into a success.
       try {
         final result = await FcmNotificationService.loadBrowserPushState();
@@ -195,8 +219,11 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
       if (mounted && _webOwnerCurrent) setState(() => _browserPush = result);
     } catch (_) {
       if (mounted && _webOwnerCurrent) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('브라우저 연결 상태를 확인하지 못했어요. 잠시 후 다시 시도해주세요.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('브라우저 연결 상태를 확인하지 못했어요. 잠시 후 다시 시도해주세요.'),
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _browserBusy = false);
@@ -205,60 +232,60 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
 
   @override
   Widget build(BuildContext context) => kIsWeb
-    ? _webSettingsPage()
-    : Scaffold(
-    backgroundColor: SnapFitColors.backgroundOf(context),
-    appBar: const ExperienceHeader(
-      title: '알림 설정',
-      themeAware: true,
-      showNotifications: false,
-    ),
-    body: _loading
-        ? const Center(child: CircularProgressIndicator())
-        : _loadFailed
-        ? SafeArea(
-            top: false,
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '알림 설정을 불러오지 못했어요.',
-                      style: ExperienceFormStyle.text(context, 15),
-                    ),
-                    const SizedBox(height: 16),
-                    OutlinedButton.icon(
-                      onPressed: () {
-                        setState(() => _loading = true);
-                        _load();
-                      },
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('다시 시도'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          )
-        : NotificationSettingsContent(
-            settings: NotificationSettingsState(
-              all: all,
-              order: order,
-              invite: invite,
-              comment: comment,
-              marketing: marketing,
-              newTemplate: newTemplate,
-              nightMute: nightMute,
-              permissionGranted: permissionGranted,
-            ),
-            onToggle: _toggle,
-            onRequestPermission: _requestingPermission
-                ? null
-                : _requestPermission,
+      ? _webSettingsPage()
+      : Scaffold(
+          backgroundColor: SnapFitColors.backgroundOf(context),
+          appBar: const ExperienceHeader(
+            title: '알림 설정',
+            themeAware: true,
+            showNotifications: false,
           ),
-  );
+          body: _loading
+              ? const Center(child: CircularProgressIndicator())
+              : _loadFailed
+              ? SafeArea(
+                  top: false,
+                  child: Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '알림 설정을 불러오지 못했어요.',
+                            style: ExperienceFormStyle.text(context, 15),
+                          ),
+                          const SizedBox(height: 16),
+                          OutlinedButton.icon(
+                            onPressed: () {
+                              setState(() => _loading = true);
+                              _load();
+                            },
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('다시 시도'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+              : NotificationSettingsContent(
+                  settings: NotificationSettingsState(
+                    all: all,
+                    order: order,
+                    invite: invite,
+                    comment: comment,
+                    marketing: marketing,
+                    newTemplate: newTemplate,
+                    nightMute: nightMute,
+                    permissionGranted: permissionGranted,
+                  ),
+                  onToggle: _toggle,
+                  onRequestPermission: _requestingPermission
+                      ? null
+                      : _requestPermission,
+                ),
+        );
 
   Widget _webSettingsPage() {
     final owner = ref.watch(visibleOrderOwnerProvider);
@@ -269,28 +296,55 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
       });
     }
     if (owner == null || owner != _webOwnerId) {
-      return const CustomerWebPage(title: '알림 설정', eyebrow: 'NOTIFICATIONS',
-        child: Center(child: Text('로그인 계정을 확인하고 알림 설정을 다시 열어주세요.')));
+      return const CustomerWebPage(
+        title: '알림 설정',
+        eyebrow: 'NOTIFICATIONS',
+        child: Center(child: Text('로그인 계정을 확인하고 알림 설정을 다시 열어주세요.')),
+      );
     }
-    return CustomerWebPage(title: '알림 설정', eyebrow: 'NOTIFICATIONS',
-      description: '계정에서 받고 싶은 앨범과 주문 소식을 선택하세요.',
-      child: _loading ? const Center(child: CircularProgressIndicator())
-        : _loadFailed ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-            const Text('계정의 알림 설정을 불러오지 못했어요.'),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: () { setState(() => _loading = true); _load(); },
-              icon: const Icon(Icons.refresh), label: const Text('설정 다시 확인')),
-          ]))
-        : NotificationSettingsContent(settings: NotificationSettingsState(
-            all: all, order: order, invite: invite, comment: comment,
-            marketing: marketing, newTemplate: newTemplate, nightMute: nightMute,
-            permissionGranted: permissionGranted),
-            onToggle: _toggle, onRequestPermission: null,
-            browserPush: _browserPush, browserBusy: _browserBusy,
-            onEnableBrowser: () => _changeBrowserPush(enable: true),
-            onDisableBrowser: () => _changeBrowserPush(enable: false),
-            onRefreshBrowser: _refreshBrowserPush));
+    return CustomerWebPage(
+      title: '알림 설정',
+      description: '앨범·주문 소식과 브라우저 알림을 설정하세요.',
+      child: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _loadFailed
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('계정의 알림 설정을 불러오지 못했어요.'),
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      setState(() => _loading = true);
+                      _load();
+                    },
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('설정 다시 확인'),
+                  ),
+                ],
+              ),
+            )
+          : NotificationSettingsContent(
+              settings: NotificationSettingsState(
+                all: all,
+                order: order,
+                invite: invite,
+                comment: comment,
+                marketing: marketing,
+                newTemplate: newTemplate,
+                nightMute: nightMute,
+                permissionGranted: permissionGranted,
+              ),
+              onToggle: _toggle,
+              onRequestPermission: null,
+              browserPush: _browserPush,
+              browserBusy: _browserBusy,
+              onEnableBrowser: () => _changeBrowserPush(enable: true),
+              onDisableBrowser: () => _changeBrowserPush(enable: false),
+              onRefreshBrowser: _refreshBrowserPush,
+            ),
+    );
   }
 }
 
@@ -315,127 +369,198 @@ class NotificationSettingsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => kIsWeb
-    ? SingleChildScrollView(child: LayoutBuilder(builder: (context, bounds) {
-        final overview = Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          _heading(context, '알림 수신'), _master(context),
-          const SizedBox(height: 24),
-          _browserPanel(context),
-        ]);
-        final categories = _categories(context, compact: false);
-        return bounds.maxWidth >= 860
-          ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              SizedBox(width: 300, child: overview), const SizedBox(width: 48),
-              Expanded(child: categories),
-            ])
-          : Column(crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [overview, const SizedBox(height: 32), categories]);
-      }))
-    : SafeArea(
-    top: false,
-    child: LayoutBuilder(
-      builder: (context, constraints) {
-        final wide =
-            constraints.maxWidth >= 540 &&
-            MediaQuery.orientationOf(context) == Orientation.landscape;
-        return Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: wide ? 1040 : 640),
-            child: wide
-                ? Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
+      ? SingleChildScrollView(
+          child: LayoutBuilder(
+            builder: (context, bounds) {
+              final overview = Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _heading(context, '알림 수신'),
+                  _master(context),
+                  const SizedBox(height: 24),
+                  _browserPanel(context),
+                ],
+              );
+              final categories = _categories(context, compact: false);
+              return bounds.maxWidth >= 860
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(width: 300, child: overview),
+                        const SizedBox(width: 48),
+                        Expanded(child: categories),
+                      ],
+                    )
+                  : Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        SizedBox(
-                          width: (constraints.maxWidth * .35).clamp(180, 300),
-                          child: SingleChildScrollView(
-                            key: const PageStorageKey('notification-summary'),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            child: _overview(context, compact: true),
-                          ),
-                        ),
-                        const SizedBox(width: 20),
-                        VerticalDivider(
-                          width: 1,
-                          color: ExperienceFormStyle.line(context),
-                        ),
-                        const SizedBox(width: 20),
-                        Expanded(
-                          child: ListView(
-                            key: const PageStorageKey(
-                              'notification-preferences',
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            children: [_categories(context, compact: true)],
-                          ),
-                        ),
+                        overview,
+                        const SizedBox(height: 32),
+                        categories,
                       ],
-                    ),
-                  )
-                : ListView(
-                    key: const PageStorageKey('notification-preferences'),
-                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
-                    children: [
-                      _overview(context, compact: false),
-                      const SizedBox(height: 28),
-                      _categories(context, compact: false),
-                    ],
-                  ),
+                    );
+            },
+          ),
+        )
+      : SafeArea(
+          top: false,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final wide =
+                  constraints.maxWidth >= 540 &&
+                  MediaQuery.orientationOf(context) == Orientation.landscape;
+              return Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: wide ? 1040 : 640),
+                  child: wide
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              SizedBox(
+                                width: (constraints.maxWidth * .35).clamp(
+                                  180,
+                                  300,
+                                ),
+                                child: SingleChildScrollView(
+                                  key: const PageStorageKey(
+                                    'notification-summary',
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  child: _overview(context, compact: true),
+                                ),
+                              ),
+                              const SizedBox(width: 20),
+                              VerticalDivider(
+                                width: 1,
+                                color: ExperienceFormStyle.line(context),
+                              ),
+                              const SizedBox(width: 20),
+                              Expanded(
+                                child: ListView(
+                                  key: const PageStorageKey(
+                                    'notification-preferences',
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  children: [
+                                    _categories(context, compact: true),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView(
+                          key: const PageStorageKey('notification-preferences'),
+                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
+                          children: [
+                            _overview(context, compact: false),
+                            const SizedBox(height: 28),
+                            _categories(context, compact: false),
+                          ],
+                        ),
+                ),
+              );
+            },
           ),
         );
-      },
-    ),
-  );
 
   Widget _browserPanel(BuildContext context) {
     final palette = WebPalette.of(context);
     final state = browserPush;
     final environment = state?.environment;
     final active = state?.active == true;
-    return WebSurface(padding: const EdgeInsets.all(20), child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Icon(active ? Icons.notifications_active_outlined : Icons.web_outlined,
-          size: 26, color: palette.brandInk),
-        const SizedBox(height: 16),
-        Text('이 브라우저 알림', style: TextStyle(color: palette.ink,
-          fontSize: 17, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 8),
-        Text(active ? '현재 계정에 연결되어 있어요'
-          : state?.enabled == true ? '연결 상태를 다시 확인해주세요' : '아직 연결하지 않았어요',
-          style: TextStyle(color: active ? palette.brandInk : palette.ink,
-            fontSize: 13, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 12),
-        Text(environment?.message ?? '브라우저 알림 지원 여부를 확인하고 있어요.',
-          style: TextStyle(color: palette.muted, fontSize: 13, height: 1.6)),
-        const SizedBox(height: 18),
-        if (active || state?.enabled == true)
-          OutlinedButton.icon(onPressed: browserBusy ? null : onDisableBrowser,
-            icon: const Icon(Icons.notifications_off_outlined, size: 18),
-            label: const Text('이 브라우저 연결 끄기')),
-        if (!active && environment?.canEnable == true) ...[
-          if (state?.enabled == true) const SizedBox(height: 8),
-          FilledButton.icon(onPressed: browserBusy ? null : onEnableBrowser,
-            style: FilledButton.styleFrom(backgroundColor: palette.brand,
-              foregroundColor: palette.onBrand),
-            icon: const Icon(Icons.notifications_none, size: 18),
-            label: Text(state?.enabled == true ? '브라우저 다시 연결' : '브라우저 알림 켜기')),
+    return WebSurface(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Icon(
+            active ? Icons.notifications_active_outlined : Icons.web_outlined,
+            size: 26,
+            color: palette.brandInk,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '이 브라우저 알림',
+            style: TextStyle(
+              color: palette.ink,
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            active
+                ? '현재 계정에 연결되어 있어요'
+                : state?.enabled == true
+                ? '연결 상태를 다시 확인해주세요'
+                : '아직 연결하지 않았어요',
+            style: TextStyle(
+              color: active ? palette.brandInk : palette.ink,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            environment?.message ?? '브라우저 알림 지원 여부를 확인하고 있어요.',
+            style: TextStyle(color: palette.muted, fontSize: 13, height: 1.6),
+          ),
+          const SizedBox(height: 18),
+          if (active || state?.enabled == true)
+            OutlinedButton.icon(
+              onPressed: browserBusy ? null : onDisableBrowser,
+              icon: const Icon(Icons.notifications_off_outlined, size: 18),
+              label: const Text('이 브라우저 연결 끄기'),
+            ),
+          if (!active && environment?.canEnable == true) ...[
+            if (state?.enabled == true) const SizedBox(height: 8),
+            FilledButton.icon(
+              onPressed: browserBusy ? null : onEnableBrowser,
+              style: FilledButton.styleFrom(
+                backgroundColor: palette.brand,
+                foregroundColor: palette.onBrand,
+              ),
+              icon: const Icon(Icons.notifications_none, size: 18),
+              label: Text(state?.enabled == true ? '브라우저 다시 연결' : '브라우저 알림 켜기'),
+            ),
+          ],
+          const SizedBox(height: 8),
+          TextButton.icon(
+            onPressed: browserBusy ? null : onRefreshBrowser,
+            icon: browserBusy
+                ? SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: palette.brandInk,
+                    ),
+                  )
+                : const Icon(Icons.refresh, size: 18),
+            style: TextButton.styleFrom(foregroundColor: palette.brandInk),
+            label: Text(browserBusy ? '연결 확인 중' : '연결 상태 새로 확인'),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            '계정별 수신 설정과 이 브라우저의 연결은 별도로 관리돼요. 로그아웃하면 브라우저 연결이 해제됩니다. 브라우저를 완전히 종료하거나 운영체제에서 알림을 차단하면 수신되지 않을 수 있어요.',
+            style: TextStyle(color: palette.muted, fontSize: 12, height: 1.6),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '알림함에서는 브라우저 권한과 관계없이 새 소식을 확인할 수 있어요.',
+            style: TextStyle(color: palette.muted, fontSize: 12, height: 1.6),
+          ),
         ],
-        const SizedBox(height: 8),
-        TextButton.icon(onPressed: browserBusy ? null : onRefreshBrowser,
-          icon: browserBusy
-            ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(
-                strokeWidth: 2, color: palette.brandInk))
-            : const Icon(Icons.refresh, size: 18),
-          style: TextButton.styleFrom(foregroundColor: palette.brandInk),
-          label: Text(browserBusy ? '연결 확인 중' : '연결 상태 새로 확인')),
-        const SizedBox(height: 14),
-        Text('계정별 수신 설정과 이 브라우저의 연결은 별도로 관리돼요. 로그아웃하면 브라우저 연결이 해제됩니다. 브라우저를 완전히 종료하거나 운영체제에서 알림을 차단하면 수신되지 않을 수 있어요.',
-          style: TextStyle(color: palette.muted, fontSize: 12, height: 1.6)),
-        const SizedBox(height: 8),
-        Text('알림함에서는 브라우저 권한과 관계없이 새 소식을 확인할 수 있어요.',
-          style: TextStyle(color: palette.muted, fontSize: 12, height: 1.6)),
-      ]));
+      ),
+    );
   }
 
   Widget _overview(BuildContext context, {required bool compact}) => Column(
@@ -448,7 +573,7 @@ class NotificationSettingsContent extends StatelessWidget {
       ] else ...[
         Text(
           '받고 싶은 소식만',
-          style: ExperienceFormStyle.text(context, 24, weight: FontWeight.w600),
+          style: ExperienceFormStyle.text(context, 24, weight: FontWeight.w700),
         ),
         const SizedBox(height: 8),
         Text(
@@ -471,7 +596,11 @@ class NotificationSettingsContent extends StatelessWidget {
 
   Widget _permissionNotice(BuildContext context) => Container(
     padding: const EdgeInsets.all(16),
-    color: ExperienceFormStyle.surface(context),
+    decoration: BoxDecoration(
+      color: ExperienceFormStyle.surface(context),
+      borderRadius: BorderRadius.circular(SnapFitRadius.lg),
+      border: Border.all(color: ExperienceFormStyle.line(context)),
+    ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -507,9 +636,7 @@ class NotificationSettingsContent extends StatelessWidget {
           style: OutlinedButton.styleFrom(
             minimumSize: const Size(0, 44),
             foregroundColor: ExperienceFormStyle.ink(context),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(6),
-            ),
+            shape: const StadiumBorder(),
           ),
           child: const Text('기기 알림 설정'),
         ),

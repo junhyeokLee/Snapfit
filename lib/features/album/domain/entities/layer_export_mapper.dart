@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/cover_size.dart';
+import '../../../../core/utils/text_shadow_codec.dart';
 import 'layer.dart';
 
 class LayerExportMapper {
@@ -240,6 +241,8 @@ class LayerExportMapper {
           : null,
       'letterSpacing': style.letterSpacing,
       if (style.height != null) 'height': style.height,
+      if (style.shadows?.isNotEmpty == true)
+        'shadows': TextShadowCodec.encode(style.shadows!, referenceWidth),
     };
   }
 
@@ -283,6 +286,10 @@ class LayerExportMapper {
       height: rawHeight is num && rawHeight.isFinite && rawHeight > 0
           ? rawHeight.toDouble()
           : null,
+      shadows: TextShadowCodec.decode(
+        json['shadows'],
+        canvasWidth: currentWidth,
+      ),
     );
   }
 

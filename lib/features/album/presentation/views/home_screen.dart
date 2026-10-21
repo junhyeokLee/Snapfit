@@ -39,13 +39,15 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const String _favoriteKey = 'album_favorite_ids_v1';
   Set<int> _favoriteAlbumIds = <int>{};
-  final List<int> _bottomNavHistory = <int>[0];
+  late final List<int> _bottomNavHistory;
   final _destinationBodyKey = GlobalKey();
+  bool _albumsVisited = false;
 
   @override
   void initState() {
     super.initState();
-    ScreenLogger.enter('HomeScreen', kIsWeb ? '웹 · 앨범 보관함' : '홈 · 중앙 앨범 캐러셀');
+    _bottomNavHistory = [ref.read(homeUiStateProvider).bottomNavIndex];
+    ScreenLogger.enter('HomeScreen', '앨범 · 스토어');
     _loadFavoriteAlbumIds();
   }
 
@@ -117,11 +119,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     if (kIsWeb) return const WebAlbumLibraryScreen();
-    final albumsAsync = ref.watch(homeViewModelProvider);
-    final authAsync = ref.watch(authViewModelProvider);
-    final draft = ref.watch(albumCreationDraftProvider).asData?.value;
-    final unreadNotificationCount = ref.watch(notificationUnreadCountProvider);
     final uiState = ref.watch(homeUiStateProvider);
+    final showingAlbums =
+        uiState.bottomNavIndex == 0 || uiState.bottomNavIndex == 1;
+    // Retain the loaded album provider while browsing other root destinations.
+    _albumsVisited = _albumsVisited || showingAlbums;
+    final albumsAsync = _albumsVisited
+        ? ref.watch(homeViewModelProvider)
+        : const AsyncData<List<Album>>([]);
+    final authAsync = ref.watch(authViewModelProvider);
+    final draft = showingAlbums
+        ? ref.watch(albumCreationDraftProvider).asData?.value
+        : null;
+    final unreadNotificationCount = ref.watch(notificationUnreadCountProvider);
     final uiStateNotifier = ref.read(homeUiStateProvider.notifier);
     final isAndroid = defaultTargetPlatform == TargetPlatform.android;
     final hasUnreadNotification = unreadNotificationCount.maybeWhen(
@@ -262,6 +272,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             );
 
             return Scaffold(
+              extendBody: true,
               backgroundColor: uiState.bottomNavIndex == 0
                   ? homeBackground
                   : baseBackground,

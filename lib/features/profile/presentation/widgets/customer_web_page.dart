@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/web/web_design.dart';
 
-/// Secondary customer pages share website navigation and a desktop content
-/// grid. Existing controllers, access checks and actions stay in their screen.
+/// Customer forms use one page scroll, while history panes keep their own
+/// bounded list. Supporting information sits beside the task on desktop.
 class CustomerWebPage extends StatelessWidget {
   const CustomerWebPage({
     super.key,
@@ -36,54 +36,160 @@ class CustomerWebPage extends StatelessWidget {
     showNavigation: showNavigation,
     actions: [
       OutlinedButton.icon(
-        onPressed: allowBack ? onBack ?? () => Navigator.maybePop(context) : null,
+        onPressed: allowBack
+            ? onBack ?? () => Navigator.maybePop(context)
+            : null,
         icon: const Icon(Icons.arrow_back, size: 18),
-        label: const Text('이전 화면'),
+        label: const Text('이전'),
       ),
       ...actions,
     ],
-    child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      WebPageHeading(title: title, eyebrow: eyebrow, description: description),
-      const SizedBox(height: 28),
-      Expanded(child: LayoutBuilder(builder: (context, bounds) {
-        final content = WebSurface(
-          child: scrollBody ? SingleChildScrollView(child: child) : child,
+    child: LayoutBuilder(
+      builder: (context, bounds) {
+        final heading = WebPageHeading(
+          title: title,
+          eyebrow: eyebrow,
+          description: description,
         );
-        if (sidebar == null) return content;
-        if (bounds.maxWidth < 900) {
-          // Keep forms and list scrolling in one bounded content pane. The
-          // same contextual guidance remains available below the heading.
-          return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            ConstrainedBox(constraints: const BoxConstraints(maxHeight: 160),
-              child: SingleChildScrollView(child: sidebar!)),
-            const SizedBox(height: 20),
-            Expanded(child: content),
-          ]);
+        final content = WebSurface(child: child);
+        if (scrollBody) {
+          return SingleChildScrollView(
+            key: const ValueKey('customer-web-page-scroll'),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                heading,
+                const SizedBox(height: 24),
+                CustomerWebColumns(primary: content, secondary: sidebar),
+                const SizedBox(height: 24),
+              ],
+            ),
+          );
         }
-        return Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          SizedBox(width: 280, child: SingleChildScrollView(child: sidebar!)),
-          const SizedBox(width: 28),
-          Expanded(child: content),
-        ]);
-      })),
-    ]),
+        return NestedScrollView(
+          key: const ValueKey('customer-web-bounded-page'),
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  heading,
+                  const SizedBox(height: 24),
+                  if (sidebar != null && bounds.maxWidth < 940) ...[
+                    WebSurface(
+                      padding: EdgeInsets.zero,
+                      child: ExpansionTile(
+                        key: const ValueKey('customer-web-context-toggle'),
+                        tilePadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 4,
+                        ),
+                        childrenPadding: const EdgeInsets.fromLTRB(
+                          12,
+                          0,
+                          12,
+                          12,
+                        ),
+                        shape: const Border(),
+                        collapsedShape: const Border(),
+                        title: const Text('요약 및 안내'),
+                        children: [sidebar!],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                ],
+              ),
+            ),
+          ],
+          body: bounds.maxWidth >= 940 && sidebar != null
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(child: content),
+                    const SizedBox(width: 24),
+                    SizedBox(
+                      width: 300,
+                      child: SingleChildScrollView(child: sidebar!),
+                    ),
+                  ],
+                )
+              : content,
+        );
+      },
+    ),
+  );
+}
+
+/// A task and its summary share a reading order, including narrow browsers.
+class CustomerWebColumns extends StatelessWidget {
+  const CustomerWebColumns({
+    super.key,
+    required this.primary,
+    this.secondary,
+    this.summaryWidth = 320,
+    this.breakpoint = 940,
+  });
+  final Widget primary;
+  final Widget? secondary;
+  final double summaryWidth, breakpoint;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, bounds) {
+      if (secondary == null) return primary;
+      if (bounds.maxWidth < breakpoint) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [primary, const SizedBox(height: 20), secondary!],
+        );
+      }
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(child: primary),
+          const SizedBox(width: 24),
+          SizedBox(width: summaryWidth, child: secondary!),
+        ],
+      );
+    },
   );
 }
 
 class CustomerWebNote extends StatelessWidget {
-  const CustomerWebNote({super.key, required this.title, required this.message,
-    this.child});
+  const CustomerWebNote({
+    super.key,
+    required this.title,
+    required this.message,
+    this.child,
+  });
   final String title, message;
   final Widget? child;
   @override
   Widget build(BuildContext context) => WebSurface(
-    child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600,
-        color: WebPalette.of(context).ink)),
-      const SizedBox(height: 12),
-      Text(message, style: TextStyle(fontSize: 13, height: 1.8,
-        color: WebPalette.of(context).muted)),
-      if (child != null) ...[const SizedBox(height: 20), child!],
-    ]),
+    padding: const EdgeInsets.all(24),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: WebPalette.of(context).ink,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          message,
+          style: TextStyle(
+            fontSize: 13,
+            height: 1.65,
+            color: WebPalette.of(context).muted,
+          ),
+        ),
+        if (child != null) ...[const SizedBox(height: 20), child!],
+      ],
+    ),
   );
 }

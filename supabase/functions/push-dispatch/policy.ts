@@ -3,7 +3,7 @@ export interface PushPreferences {
   comment_enabled?: boolean; marketing_enabled?: boolean; new_template_enabled?: boolean; night_mute?: boolean;
 }
 export function deliveryPolicy(category: string, preferences: PushPreferences | null,
-  timezoneOffsetMinutes: number, now: Date): { allowed: boolean; ttlSeconds: number } {
+  timezoneOffsetMinutes: number, now: Date, createdAt?: string): { allowed: boolean; ttlSeconds: number } {
   const prefs = preferences ?? {};
   if (prefs.all_enabled === false) return { allowed: false, ttlSeconds: 0 };
   const columns: Record<string, keyof PushPreferences> = { order: 'order_enabled', invite: 'invite_enabled',
@@ -13,6 +13,15 @@ export function deliveryPolicy(category: string, preferences: PushPreferences | 
   const local = new Date(now.getTime() + timezoneOffsetMinutes * 60_000);
   const hour = local.getUTCHours();
   if (prefs.night_mute && (hour >= 22 || hour < 8)) return { allowed: false, ttlSeconds: 0 };
+  // Old pending rows may predate the enqueue filter or a worker outage. A quiet-
+  // time event must not become a morning push when the worker catches up.
+  if (prefs.night_mute && createdAt !== undefined) {
+    const createdLocal = new Date(Date.parse(createdAt) + timezoneOffsetMinutes * 60_000);
+    const createdHour = createdLocal.getUTCHours();
+    if (!Number.isFinite(createdLocal.getTime()) || createdHour >= 22 || createdHour < 8) {
+      return { allowed: false, ttlSeconds: 0 };
+    }
+  }
   // A notification queued at 21:59 must expire before quiet hours, even if offline.
   const untilQuiet = (22 - hour) * 3600 - local.getUTCMinutes() * 60 - local.getUTCSeconds();
   return { allowed: true, ttlSeconds: prefs.night_mute ? Math.min(300, untilQuiet) : 300 };

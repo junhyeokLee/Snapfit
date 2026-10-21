@@ -1,12 +1,13 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../../data/gallery/photo_asset_image_provider.dart';
 import '../../../../core/constants/snapfit_colors.dart';
-import '../../../../core/theme/snapfit_theme.dart';
 import '../../../../core/utils/text_image_shader.dart';
 import '../../../../core/utils/outline_text_style.dart';
+import '../../../../core/utils/storage_url_resolver.dart';
 import '../../../../shared/snapfit_image.dart';
 import '../../../../shared/widgets/studio_material.dart';
 import '../../../../shared/widgets/photo_crop_viewport.dart';
@@ -27,6 +28,18 @@ part 'layer_builder_text_styles.dart';
 part 'layer_builder_text_rendering.dart';
 part 'layer_builder_image_rendering.dart';
 part 'layer_builder_painters.dart';
+
+// Artwork glyphs and fixed frame captions keep the previous interface geometry.
+// Saved styles still take precedence, and print has its own independent default.
+Widget _legacyArtworkGeometry(Widget child) => DefaultTextStyle.merge(
+  style: const TextStyle(
+    fontFamily: 'NotoSans',
+    fontWeight: FontWeight.w400,
+    height: kIsWeb ? 1.6 : 1.43,
+    letterSpacing: .25,
+  ),
+  child: child,
+);
 
 /// Decorate 스티커 탭(추천/전체보기)의 미리보기와
 /// 실제 캔버스 적용 렌더링을 동일하게 맞추는 공용 위젯.
@@ -82,7 +95,9 @@ class LayerBuilder {
       opacity: 1,
       zIndex: 0,
     );
-    return _buildStickerDecoration(layer) ?? const SizedBox.shrink();
+    return _legacyArtworkGeometry(
+      _buildStickerDecoration(layer) ?? const SizedBox.shrink(),
+    );
   }
 
   /// 이미지 레이어 빌드
@@ -96,11 +111,16 @@ class LayerBuilder {
   Widget buildPhotoFrame(LayerModel layer, Widget photo) =>
       _buildFramedImage(layer, photo);
 
+  Widget _isolateArtwork(Widget child) =>
+      interaction.isPrintPreview ? child : _legacyArtworkGeometry(child);
+
   Widget _buildFramedImage(LayerModel layer, Widget image) {
-    return _buildFramedImageImpl(
-      this,
-      layer,
-      PhotoCropViewport(layer: layer, child: image),
+    return _isolateArtwork(
+      _buildFramedImageImpl(
+        this,
+        layer,
+        PhotoCropViewport(layer: layer, child: image),
+      ),
     );
   }
 

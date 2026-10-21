@@ -1,0 +1,136 @@
+{
+  "status": "production_web_deployed_verified",
+  "date": "2026-10-21",
+  "scope": [
+    "Enable real photo-slot tapping and selection on web covers",
+    "Read-only full-page crop context in creation and editor, preserving current draft",
+    "Crop anchor direction follows actual frame aperture",
+    "Store filter changes keep controls/results visible without returning to introductory hero"
+  ],
+  "files": {
+    "lib/features/album/presentation/controllers/photo_crop_editor.dart": "99a46b224c7d95428cb5a6d917fa377a76623377b9a7dbc987701cde100ce93e",
+    "lib/features/album/presentation/widgets/create_flow/photo_crop_sheet.dart": "2894aef69b950def20ecb687014f79c61a3a879bc19999a9f9aeb975a0a8a85f",
+    "lib/features/album/presentation/widgets/create_flow/template_photo_fill_step.dart": "0d73569868f871b8ac27a67cd1df67edd0052881aba0cfb48ec0c3e784c52b9c",
+    "lib/features/store/presentation/views/store_screen.dart": "1d707a06ca12361277b273b4a880f7e2efcfd0e4dc6442ea319940f50d1f7d70",
+    "test/widget/store_paging_test.dart": "e0a5e562f730bd64a6d87406f61c0f7dcf81e71d8e6e8e68cdfff9a8d7261ca5",
+    "test/widget/published_store_catalog_test.dart": "f6bd4f1b6f39eb3b7401004c673ee4d823ee5d501a048694ff54703d2f378d41",
+    "test/widget/photo_crop_page_context_test.dart": "c774a5311626adf5b37e15aca86c75bfbbe9262426eb29c738c15f80c3293c0e",
+    "test/widget/photo_crop_frame_aperture_test.dart": "c70a24f13ccb0e98708244195b5400ace37e8fcc2b4500731e2302b2f106fb4f",
+    "test/widget/editor_photo_crop_context_test.dart": "c223038c9c8313a495922bc9a6233fd67cbabdf0716efbbcbbca7caceb35ac1e",
+    "test/widget/template_photo_fill_web_cover_test.dart": "4208a263a0350da379e267c5643305ec8bbab1a69f2d1d5871a65233551117c3",
+    "test/widget/store_filter_continuity_test.dart": "b4b1318dba6762a66f28d8b135caca24fefda926a56ab141dc13992513fd6a7c"
+  },
+  "validation": {
+    "native": {
+      "passed": 120,
+      "failed": 0,
+      "skipped": 1,
+      "files": 12,
+      "ramVisualCases": 1,
+      "ramImages": 2,
+      "imageFilesWritten": 0
+    },
+    "browserCropContext": {
+      "passed": 7,
+      "failed": 0
+    },
+    "browserStoreLayout": {
+      "passed": 5,
+      "failed": 0
+    },
+    "analysis": {
+      "files": 11,
+      "issues": 0
+    },
+    "browserCoverAndStoreFilters": {
+      "passed": 9,
+      "failed": 0,
+      "nativeAndBrowserUniqueTotal": 141,
+      "cases": [
+        "Actual browser photo gallery multi-select, web cover tap, replacement auto crop review, cancel/apply/undo/redo at phone and desktop sizes",
+        "Subject filters with real collection hero at 100/200 percent text",
+        "Selected comparison across subject/price/favorite/sort",
+        "First twelve items to next twelve using real incremental scrolling; caret-only changes retain page and scroll",
+        "Refresh, editorial topic browsing and narrow web discovery reset"
+      ]
+    },
+    "adjustmentsAfterChecks": [
+      "Bounded scroll controls in 320x320 at 200 percent text keep photo and apply/cancel visible",
+      "Use the shared Korean font and dark foreground for page context action",
+      "Preserve actual background-first stable layer order in editor context",
+      "Use white paper base under creation page context",
+      "Browser tests await real asynchronous gallery thumbnail pixels before settling",
+      "Pagination tests use real bounded scrolling rather than jumping past lazily estimated content extents"
+    ],
+    "afterTestReadinessAdjustmentsNativeStore": {
+      "passed": 6,
+      "failed": 0,
+      "skipped": 1
+    }
+  },
+  "preserved": {
+    "originalMediaFiles": 340,
+    "originalMediaBytes": 522862670,
+    "originalMediaInventoryUnchanged": true,
+    "noPreviewFilesCreated": true,
+    "coverAndInteriorAuthoringSourcesUnchanged": true,
+    "originalPhotoBytesAndOtherLayersPreserved": true,
+    "existingPurchaseAndAuthenticationGatesRetained": true
+  },
+  "storage": {
+    "freeBytesAtStart": 22567989248,
+    "generatedCachesRemoved": [
+      {
+        "path": "build",
+        "bytes": 1763337457
+      },
+      {
+        "path": ".dart_tool/flutter_build",
+        "bytes": 70483634
+      },
+      {
+        "path": ".dart_tool/hooks_runner",
+        "bytes": 23009119
+      }
+    ],
+    "generatedCachesRemovedBytes": 1856830210,
+    "originalMediaFileCountAfter": 340,
+    "originalMediaBytesAfter": 522862670,
+    "freeBytesAfterCleanup": 22541418496,
+    "ramImagesReleased": true
+  },
+  "frozenBuildInputs": 1402,
+  "productionBuild": {
+    "main_sha256": "c0c638edb434cec837a48a690e574024cb4984fe28d4c9f722d7cf513e67769c",
+    "main_file": "main.c0c638edb434cec837a4.dart.js",
+    "bootstrap_sha256": "0a91666beddf8ae152fda775dd2edc9b7b2a84061783dcbb88765141e86e8147",
+    "bootstrap_file": "flutter_bootstrap.0a91666beddf8ae152fd.js",
+    "mainBytes": 7440963
+  },
+  "production": {
+    "url": "https://snapfit-c719d.web.app/",
+    "deployment": "Firebase hosting only",
+    "files": 829,
+    "main_sha256": "c0c638edb434cec837a48a690e574024cb4984fe28d4c9f722d7cf513e67769c",
+    "main_file": "main.c0c638edb434cec837a4.dart.js",
+    "bootstrap_sha256": "0a91666beddf8ae152fda775dd2edc9b7b2a84061783dcbb88765141e86e8147",
+    "bootstrap_file": "flutter_bootstrap.0a91666beddf8ae152fd.js",
+    "mainBytes": 7440963,
+    "tlsVerified": true,
+    "indexToBootstrapToMainVerified": true,
+    "frozenInputsMatchedAfterBuild": true
+  },
+  "verifiedAtUtc": "2026-10-21T11:43:21.353256+00:00",
+  "productionVisual": {
+    "route": "/#/designs/templates/-9522",
+    "viewport": "1280x720",
+    "theme": "dark",
+    "observations": [
+      "Original full-photo boxless cover loads completely",
+      "Actual spread thumbnails and title render",
+      "Public price is 2800P and existing login/use gate remains available"
+    ],
+    "imageFilesWritten": 0
+  },
+  "completedAtUtc": "2026-10-21T11:44:04.891388+00:00"
+}

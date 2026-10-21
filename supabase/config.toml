@@ -23,6 +23,10 @@ verify_jwt = false
 [functions.ai-album-draft]
 verify_jwt = true
 
+[functions.ai-template-worker]
+# Private Cron HMAC + single-use DB nonce; customer JWTs cannot invoke work.
+verify_jwt = false
+
 [functions.push-dispatch]
 verify_jwt = false
 
@@ -111,3 +115,11 @@ verify_jwt = false
 
 [functions.web-point-topup-reconcile]
 verify_jwt = false
+
+[functions.print-pricing-admin]
+# Current Auth admin + fresh database app_metadata check; changes planned quotes only.
+verify_jwt = true
+
+[functions.print-public-catalog]
+# No user session required. Public anon JWT gateway; retail-only read projection.
+verify_jwt = true

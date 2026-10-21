@@ -2,6 +2,7 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/repositories/gallery_repository.dart';
+import '../../domain/models/gallery_date_range.dart';
 import '../../data/api/album_provider.dart';
 
 part 'gallery_notifier.freezed.dart';
@@ -17,6 +18,7 @@ abstract class GalleryState with _$GalleryState {
     @Default(true) bool hasMore,
     @Default(false) bool isLoading,
     Object? error,
+    GalleryDateRange? dateRange,
   }) = _GalleryState;
 }
 
@@ -35,7 +37,7 @@ class GalleryNotifier extends _$GalleryNotifier {
   /// 초기 데이터 로드 (권한 확인 및 첫 앨범 로딩)
   Future<void> fetchInitialData({String? albumId}) async {
     final version = ++_requestVersion;
-    state = const GalleryState(isLoading: true);
+    state = GalleryState(isLoading: true, dateRange: state.dateRange);
     try {
       final permitted = await _repository.requestPermission();
       if (!ref.mounted || version != _requestVersion) return;
@@ -109,6 +111,45 @@ class GalleryNotifier extends _$GalleryNotifier {
     await loadMore();
   }
 
+  /// Change the native query before paging; already selected photos belong to
+  /// the sheet and are deliberately left untouched.
+  Future<void> setDateRange(GalleryDateRange? range) async {
+    if (state.dateRange == range) return;
+    // A picker opened before refresh may return while permission/albums are
+    // still loading. Keep that initialization alive; its first page will use
+    // the newest range when the album becomes available.
+    if (state.selectedAlbum == null) {
+      state = state.copyWith(dateRange: range);
+      return;
+    }
+    ++_requestVersion;
+    state = state.copyWith(
+      dateRange: range,
+      images: const [],
+      currentPage: 0,
+      hasMore: state.selectedAlbum != null,
+      isLoading: false,
+      error: null,
+    );
+    await loadMore();
+  }
+
+  AssetPathEntity _albumForQuery(AssetPathEntity album) {
+    final range = state.dateRange;
+    if (range == null) return album;
+    final filter = album.filterOption;
+    return album.copyWith(
+      albumType: album.albumType,
+      filterOption: (filter is FilterOptionGroup ? filter : FilterOptionGroup())
+          .copyWith(
+            createTimeCond: DateTimeCond(
+              min: range.start,
+              max: range.lastInstant,
+            ),
+          ),
+    );
+  }
+
   /// 이미지 추가 로딩 (페이징)
   Future<void> loadMore() async {
     if (state.isLoading || !state.hasMore || state.selectedAlbum == null) {
@@ -122,7 +163,7 @@ class GalleryNotifier extends _$GalleryNotifier {
 
     try {
       final newImages = await _repository.loadImagesPaged(
-        album,
+        _albumForQuery(album),
         page,
         _pageSize,
       );

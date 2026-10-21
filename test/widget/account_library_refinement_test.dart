@@ -16,6 +16,7 @@ import 'package:snap_fit/core/theme/snapfit_theme.dart';
 import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
 import 'package:snap_fit/features/album/presentation/widgets/home/home_cover_frame.dart';
 import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
+import 'package:snap_fit/features/auth/domain/account_deletion_request.dart';
 import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
 import 'package:snap_fit/features/point_shop/data/point_shop_provider.dart';
 import 'package:snap_fit/features/point_shop/domain/point_shop_template_key.dart';
@@ -57,10 +58,14 @@ class _Auth extends AuthViewModel {
   }
 
   @override
-  Future<void> deleteAccount() async {
+  Future<AccountDeletionRequest> requestAccountDeletion() async {
     deletes++;
     if (failDelete) throw Exception('탈퇴 처리에 실패했어요. 다시 시도해 주세요.');
     await pendingDelete;
+    return const AccountDeletionRequest(
+      reference: 'DEL-1',
+      alreadyRequested: false,
+    );
   }
 
   @override
@@ -232,7 +237,7 @@ void main() {
         await tester.ensureVisible(find.text('회원 탈퇴'));
         await tester.tap(find.text('회원 탈퇴'));
         await tester.pumpAndSettle();
-        final delete = find.widgetWithText(FilledButton, '계정 삭제');
+        final delete = find.widgetWithText(FilledButton, '삭제 요청 접수');
         expect(tester.widget<FilledButton>(delete).onPressed, isNull);
         await _capture(tester, key, 'delete-$id');
         await tester.ensureVisible(find.byType(CheckboxListTile));
@@ -373,7 +378,9 @@ void main() {
 
   testWidgets('library query, type and order survive rotation', (tester) async {
     _viewport(tester, const Size(390, 844));
-    final spec = studioDecorations.first;
+    final spec = studioDecorations.firstWhere(
+      (spec) => spec.category == StudioDecorationCategory.sticker,
+    );
     await tester.pumpWidget(
       _app(
         const MaterialCatalogScreen(library: true),
@@ -403,7 +410,11 @@ void main() {
     expect(find.text('이름순'), findsOneWidget);
     expect(find.text('1개 항목'), findsOneWidget);
     final scroll = find.byKey(const ValueKey('material-catalog-scroll'));
-    expect(tester.getTopLeft(scroll).dx, greaterThanOrEqualTo(44 + 184));
+    final sidebar = tester.getRect(
+      find.byKey(const ValueKey('library-sidebar')),
+    );
+    expect(sidebar.width, inInclusiveRange(136, 172));
+    expect(tester.getTopLeft(scroll).dx, closeTo(sidebar.right + 1, .01));
     await tester.ensureVisible(find.byTooltip('검색 지우기'));
     await tester.tap(find.byTooltip('검색 지우기'));
     await tester.pumpAndSettle();
@@ -503,46 +514,50 @@ void main() {
     expect(find.byType(AccountSettingsScreen), findsNothing);
   });
 
-  testWidgets('deletion waits for success, prevents back and reports failure', (
-    tester,
-  ) async {
-    final auth = _Auth()..failDelete = true;
-    AccountSettingsResult? result;
-    await _openAccount(tester, auth, (value) => result = value);
-    Future<void> confirm() async {
-      await tester.ensureVisible(find.text('회원 탈퇴'));
-      await tester.tap(find.text('회원 탈퇴'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byType(CheckboxListTile));
-      await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, '계정 삭제'));
-      await tester.pump();
-    }
+  testWidgets(
+    'deletion request reports failure and acceptance while retaining the session',
+    (tester) async {
+      final auth = _Auth()..failDelete = true;
+      AccountSettingsResult? result;
+      await _openAccount(tester, auth, (value) => result = value);
+      Future<void> confirm() async {
+        await tester.ensureVisible(find.text('회원 탈퇴'));
+        await tester.tap(find.text('회원 탈퇴'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byType(CheckboxListTile));
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(FilledButton, '삭제 요청 접수'));
+        await tester.pump();
+      }
 
-    await confirm();
-    await tester.pumpAndSettle();
-    expect(auth.deletes, 1);
-    expect(result, isNull);
-    expect(find.textContaining('탈퇴 처리에 실패'), findsOneWidget);
-    final pending = Completer<void>();
-    auth
-      ..failDelete = false
-      ..pendingDelete = pending.future;
-    await confirm();
-    await tester.pump(const Duration(milliseconds: 400));
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
-    expect(
-      await tester.state<NavigatorState>(find.byType(Navigator)).maybePop(),
-      true,
-    );
-    await tester.pump();
-    expect(find.byType(AccountSettingsScreen), findsOneWidget);
-    pending.complete();
-    await tester.pumpAndSettle();
-    expect(result, AccountSettingsResult.deleted);
-    expect(auth.deletes, 2);
-    expect(tester.takeException(), isNull);
-  });
+      await confirm();
+      await tester.pumpAndSettle();
+      expect(auth.deletes, 1);
+      expect(result, isNull);
+      expect(find.textContaining('탈퇴 처리에 실패'), findsOneWidget);
+      final pending = Completer<void>();
+      auth
+        ..failDelete = false
+        ..pendingDelete = pending.future;
+      await confirm();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.byType(LinearProgressIndicator), findsOneWidget);
+      expect(
+        await tester.state<NavigatorState>(find.byType(Navigator)).maybePop(),
+        true,
+      );
+      await tester.pump();
+      expect(find.byType(AccountSettingsScreen), findsOneWidget);
+      pending.complete();
+      await tester.pumpAndSettle();
+      expect(result, isNull);
+      expect(find.byType(AccountSettingsScreen), findsOneWidget);
+      expect(find.textContaining('접수번호 DEL-1'), findsOneWidget);
+      expect(auth.logouts, 0);
+      expect(auth.deletes, 2);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('changed account cannot be deleted through an old confirmation', (
     tester,
@@ -554,7 +569,7 @@ void main() {
     await tester.tap(find.byType(CheckboxListTile));
     auth.switchAccount();
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, '계정 삭제'));
+    await tester.tap(find.widgetWithText(FilledButton, '삭제 요청 접수'));
     await tester.pumpAndSettle();
     expect(auth.deletes, 0);
     expect(find.textContaining('로그인 계정이 변경'), findsOneWidget);

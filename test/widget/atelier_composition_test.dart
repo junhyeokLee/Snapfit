@@ -32,17 +32,19 @@ void main() {
     }
   });
   test(
-    '36 independent materials retain stable favorites and unpriced product identities',
+    '47 independent materials retain stable favorites and unpriced product identities',
     () {
       expect(atelierEditionPhotoFrames, hasLength(12));
-      expect(atelierCompositionDecorations, hasLength(8));
+      expect(atelierSignaturePhotoFrames, hasLength(7));
+      expect(atelierCompositionDecorations, hasLength(12));
       expect(atelierWordArts, hasLength(16));
       final keys = [
         ...atelierEditionPhotoFrames.map((s) => 'frame:$s'),
+        ...atelierSignaturePhotoFrames.map((s) => 'frame:$s'),
         ...atelierCompositionDecorations.map((s) => 'sticker:${s.id}'),
         ...atelierWordArts.map((s) => s.productKey),
       ];
-      expect(keys.toSet(), hasLength(36));
+      expect(keys.toSet(), hasLength(47));
       for (final key in keys) {
         final product = pointShopKnownProducts.singleWhere(
           (p) => p.productKey == key,

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>스냅핏 이메일 인증</title>
+  </head>
+  <body style="margin:0;padding:32px 16px;background:#f5f8f7;font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#183b38;">
+    <div style="max-width:520px;margin:0 auto;padding:32px;background:#ffffff;border:1px solid #dce8e5;border-radius:16px;">
+      <p style="margin:0 0 24px;font-size:18px;font-weight:bold;">스냅핏</p>
+      <h1 style="margin:0 0 16px;font-size:24px;line-height:1.4;">이메일을 인증해주세요</h1>
+      <p style="margin:0 0 20px;font-size:15px;line-height:1.8;">웹에서 가입 중이라면, 가입을 진행하던 스냅핏 화면에 아래 8자리 인증번호를 입력해주세요.</p>
+      <div style="margin:0 0 20px;padding:20px 12px;background:#edf7f4;border:1px solid #cce5de;border-radius:10px;text-align:center;font-family:monospace;font-size:30px;font-weight:bold;letter-spacing:4px;">{{ .Token }}</div>
+      <p style="margin:0 0 28px;color:#526c67;font-size:14px;line-height:1.8;">인증번호는 발송 후 1시간 동안 사용할 수 있어요. 메일을 다시 요청했다면 가장 최근 메일의 인증번호를 입력해주세요.</p>
+      <div style="padding-top:24px;border-top:1px solid #e2ebe7;">
+        <p style="margin:0 0 16px;font-size:14px;line-height:1.8;">모바일 앱에서 가입 중이라면 아래 버튼으로 이메일 인증을 완료해주세요.</p>
+        <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:12px 18px;border:1px solid #32796b;border-radius:8px;color:#245d51;font-size:14px;font-weight:bold;text-decoration:none;">모바일 앱에서 이메일 인증하기</a>
+      </div>
+    </div>
+  </body>
+</html>

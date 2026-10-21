@@ -6,6 +6,7 @@ import 'package:crypto/crypto.dart';
 import '../data/order_repository.dart';
 import 'entities/order_history_item.dart';
 import 'portone_payment.dart';
+import 'print_checkout_consent.dart';
 
 /// A content comparison for the review flow; it is not payment evidence.
 String printCheckoutRevision(Map<String, dynamic> snapshot) {
@@ -297,6 +298,7 @@ class PrintCheckoutRequest {
     required this.addressLine2,
     this.reviewedSpecRevision = '',
     this.deliveryMemo = '',
+    this.consent,
   });
 
   final int albumId;
@@ -309,6 +311,7 @@ class PrintCheckoutRequest {
   final String addressLine1;
   final String addressLine2;
   final String deliveryMemo;
+  final PrintCheckoutConsent? consent;
 }
 
 /// Constructed only from an order read back through the authenticated repository.

@@ -66,19 +66,23 @@ class _AlbumReaderInnerDetailScreenState
     final target = vm.pages.indexWhere((p) => p.id == viewedId);
     if (target < 1) return;
     final albumId = vm.album?.id;
-    await Navigator.push<bool>(context, MaterialPageRoute(
-      settings: albumId != null && albumId > 0
-          ? WebAppRouteSettings(WebAppLocation(WebAppPage.editor, '$albumId'))
-          : null,
-      builder: (_) => PageEditorScreen(
-        initialPageIndex: target,
-        returnToPreviousOnSave: true,
+    await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        settings: albumId != null && albumId > 0
+            ? WebAppRouteSettings(WebAppLocation(WebAppPage.editor, '$albumId'))
+            : null,
+        builder: (_) => PageEditorScreen(
+          initialPageIndex: target,
+          returnToPreviousOnSave: true,
+        ),
       ),
-    ));
+    );
     if (!mounted) return;
     final updated = vm.pages.skip(1).toList();
     final retained = updated.indexWhere((p) => p.id == viewedId);
-    final next = retained >= 0 ? retained
+    final next = retained >= 0
+        ? retained
         : _current.clamp(0, updated.isEmpty ? 0 : updated.length - 1);
     setState(() {
       _edited = updated;
@@ -90,11 +94,16 @@ class _AlbumReaderInnerDetailScreenState
   void _inviteMembers() {
     final album = ref.read(albumEditorViewModelProvider.notifier).album;
     if (album == null || album.id <= 0 || !album.allowsManagement) return;
-    Navigator.push(context, MaterialPageRoute(builder: (_) => AlbumInviteScreen(
-      album: album,
-      albumId: album.id,
-      albumTitle: album.title.isEmpty ? '스냅핏 앨범' : album.title,
-    )));
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AlbumInviteScreen(
+          album: album,
+          albumId: album.id,
+          albumTitle: album.title.isEmpty ? '스냅핏 앨범' : album.title,
+        ),
+      ),
+    );
   }
 
   void _showMoreOptions() {
@@ -168,6 +177,9 @@ class _AlbumReaderInnerDetailScreenState
       currentPage: _current,
       pageCount: _visible.length,
       onMore: _showMoreOptions,
+      onEdit: album?.allowsEditing == false || _visible.isEmpty
+          ? null
+          : () => _editCurrentPage(),
       onPageChanged: (index) => setState(() => _current = index),
       pageBuilder: (context, index) => ReaderDetailPageArtwork(
         page: _visible[index],
@@ -193,6 +205,7 @@ class _AlbumReaderInnerDetailScreenState
       if (index < 0 || index >= _visible.length) return;
       setState(() => _current = index);
     }
+
     Widget rail({bool horizontal = false}) => WebAlbumPageRail(
       pages: _visible,
       selectedIndex: _current,
@@ -203,130 +216,44 @@ class _AlbumReaderInnerDetailScreenState
       horizontal: horizontal,
       includesCover: false,
     );
-    final edit = OutlinedButton.icon(
-      onPressed: album?.allowsEditing == false || _visible.isEmpty
-          ? null : _editCurrentPage,
-      icon: const Icon(Icons.edit_outlined, size: 17),
-      label: const Text('현재 페이지 편집'),
-    );
-    final invite = album?.allowsManagement == true
-        ? TextButton.icon(
-            onPressed: _inviteMembers,
-            icon: const Icon(Icons.group_add_outlined, size: 17),
-            label: const Text('멤버 초대'),
-          )
-        : null;
-    return SnapFitWebShell(
-      title: '페이지 상세',
-      workspace: true,
-      showNavigation: false,
-      actions: [TextButton.icon(
-        onPressed: () => Navigator.pop(context),
-        icon: const Icon(Icons.arrow_back, size: 17),
-        label: const Text('앨범으로'),
-      )],
-      child: LayoutBuilder(builder: (context, box) {
-        final wide = box.maxWidth >= 1100;
-        final compact = box.maxWidth < 760;
-        final details = Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('문서 정보', style: TextStyle(
-              color: WebPalette.of(context).ink, fontSize: 13, fontWeight: FontWeight.w700,
-            )),
-            const SizedBox(height: 18),
-            Text(vm.selectedCover.displayName, style: TextStyle(
-              color: WebPalette.of(context).muted, fontSize: 12, height: 1.6,
-            )),
-            const SizedBox(height: 10),
-            Text('내지 ${_visible.length}쪽', style: TextStyle(
-              color: WebPalette.of(context).muted, fontSize: 12,
-            )),
-            const SizedBox(height: 10),
-            Text(album?.allowsEditing == false ? '보기 전용' : '편집 가능',
-              style: TextStyle(color: WebPalette.of(context).brandInk, fontSize: 12)),
-            const SizedBox(height: 26),
-            edit,
-            if (invite != null) ...[const SizedBox(height: 10), invite],
-            const SizedBox(height: 16),
-            Text('책 주문은 앨범 미리보기 화면에서 전체 구성을 확인한 뒤 진행할 수 있습니다.',
-              style: TextStyle(color: WebPalette.of(context).muted, fontSize: 12, height: 1.6)),
-          ],
-        );
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
-              color: WebPalette.of(context).surface,
-              child: WebPageHeading(
-                title: album?.title.isNotEmpty == true ? album!.title : '앨범 상세',
-                eyebrow: 'PAGE DETAIL',
-                description: '${vm.selectedCover.displayName} · 내지 ${_visible.length}쪽',
-                trailing: wide ? null : Wrap(spacing: 10, runSpacing: 10,
-                  children: [edit, if (invite != null) invite]),
+    return WebAlbumReaderWorkspace(
+      title: album?.title.isNotEmpty == true ? album!.title : '앨범 상세',
+      description:
+          '${vm.selectedCover.displayName} · 내지 ${_visible.length}쪽'
+          '${album?.allowsEditing == false ? ' · 보기 전용' : ''}',
+      pageLabel: _visible.isEmpty
+          ? '페이지 없음'
+          : '내지 ${_current + 1} / ${_visible.length}쪽',
+      pageRail: rail(),
+      compactPageRail: rail(horizontal: true),
+      onBack: () => Navigator.pop(context),
+      backLabel: '앨범으로',
+      editLabel: '현재 페이지 편집',
+      onEdit: album?.allowsEditing == false || _visible.isEmpty
+          ? null
+          : _editCurrentPage,
+      onPrevious: _current > 0 ? () => select(_current - 1) : null,
+      onNext: _current + 1 < _visible.length
+          ? () => select(_current + 1)
+          : null,
+      managementMenu: album?.allowsManagement == true
+          ? IconButton(
+              tooltip: '멤버 초대',
+              onPressed: _inviteMembers,
+              icon: const Icon(Icons.group_add_outlined, size: 19),
+            )
+          : null,
+      canvas: _visible.isEmpty
+          ? const Center(child: Text('페이지가 없습니다.'))
+          : Center(
+              child: ReaderDetailPageArtwork(
+                page: _visible[_current],
+                ratio: ratio,
+                interaction: previewInteraction,
+                layerBuilder: previewBuilder,
+                flatPresentation: true,
               ),
             ),
-            Divider(height: 1, color: WebPalette.of(context).line),
-            if (compact) SizedBox(height: 112, child: rail(horizontal: true)),
-            Expanded(child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (!compact) ...[
-                  SizedBox(width: 166, child: rail()),
-                  VerticalDivider(width: 1, color: WebPalette.of(context).line),
-                ],
-                Expanded(child: ColoredBox(
-                  color: WebPalette.of(context).canvas,
-                  child: Column(children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Row(mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            tooltip: '이전 페이지',
-                            onPressed: _current > 0 ? () => select(_current - 1) : null,
-                            icon: const Icon(Icons.chevron_left, size: 20),
-                          ),
-                          Text(_visible.isEmpty ? '페이지 없음'
-                              : '${_current + 1} / ${_visible.length}',
-                            style: TextStyle(color: WebPalette.of(context).ink, fontSize: 12)),
-                          IconButton(
-                            tooltip: '다음 페이지',
-                            onPressed: _current + 1 < _visible.length
-                                ? () => select(_current + 1) : null,
-                            icon: const Icon(Icons.chevron_right, size: 20),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(child: Padding(
-                      padding: const EdgeInsets.fromLTRB(28, 0, 28, 28),
-                      child: _visible.isEmpty ? const Center(child: Text('페이지가 없습니다.'))
-                          : Center(child: ReaderDetailPageArtwork(
-                              page: _visible[_current],
-                              ratio: ratio,
-                              interaction: previewInteraction,
-                              layerBuilder: previewBuilder,
-                              flatPresentation: true,
-                            )),
-                    )),
-                  ]),
-                )),
-                if (wide) ...[
-                  VerticalDivider(width: 1, color: WebPalette.of(context).line),
-                  SizedBox(width: 264, child: ColoredBox(
-                    color: WebPalette.of(context).surface,
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(24), child: details,
-                    ),
-                  )),
-                ],
-              ],
-            )),
-          ],
-        );
-      }),
     );
   }
 }
@@ -350,13 +277,15 @@ class ReaderDetailPageArtwork extends StatelessWidget {
     aspectRatio: ratio,
     child: DecoratedBox(
       decoration: BoxDecoration(
-        boxShadow: flatPresentation ? const [] : [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: .12),
-            blurRadius: 22,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        boxShadow: flatPresentation
+            ? const []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: .12),
+                  blurRadius: 22,
+                  offset: const Offset(0, 8),
+                ),
+              ],
       ),
       child: ClipRect(
         child: ColoredBox(

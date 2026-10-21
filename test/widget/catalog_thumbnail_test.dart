@@ -14,8 +14,8 @@ import 'package:snap_fit/features/store/domain/entities/premium_template.dart';
 import 'package:snap_fit/features/store/presentation/widgets/template_page_renderer.dart';
 import 'package:snap_fit/shared/widgets/image_frame_style_picker.dart';
 
-class _CachedOnlyTemplate extends PremiumTemplate {
-  _CachedOnlyTemplate(PremiumTemplate original)
+class _CountedTemplate extends PremiumTemplate {
+  _CountedTemplate(PremiumTemplate original)
     : super(
         id: original.id,
         title: original.title,
@@ -29,7 +29,7 @@ class _CachedOnlyTemplate extends PremiumTemplate {
   @override
   String? get templateJson {
     documentReads++;
-    throw StateError('A cached cover must not build the full document.');
+    return super.templateJson;
   }
 }
 
@@ -55,10 +55,10 @@ void main() {
       expect(header.getUint32(20), dimension, reason: entry.key);
     }
   });
-  testWidgets('catalog cover uses one image, never a native layer tree', (
+  testWidgets('paid catalog cover uses its current native layers', (
     tester,
   ) async {
-    final t = publishedCreationTemplates.first;
+    final t = publishedPremiumTemplates.first;
     await tester.pumpWidget(
       MaterialApp(
         home: SizedBox.square(
@@ -67,20 +67,24 @@ void main() {
         ),
       ),
     );
-    expect(find.byType(TemplatePageRenderer), findsNothing);
-    final image = tester.widget<Image>(find.byType(Image));
-    final provider = image.image as ResizeImage;
+    final renderer = tester.widget<TemplatePageRenderer>(
+      find.byType(TemplatePageRenderer),
+    );
+    expect(renderer.preserveTypography, isTrue);
+    expect(renderer.imageDecodeWidth, inInclusiveRange(128, 1024));
     expect(
-      (provider.imageProvider as AssetImage).assetName,
-      catalogPreviewAssets['template:${t.id}'],
+      renderer.layers.map((layer) => layer.id),
+      ((jsonDecode(t.templateJson!) as Map)['cover']['layers'] as List).map(
+        (layer) => layer['id'],
+      ),
     );
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('book thumbnail wraps the cached bitmap without parsing pages', (
+  testWidgets('paid book wraps current cover and bounds image decoding', (
     tester,
   ) async {
-    final template = _CachedOnlyTemplate(
+    final template = _CountedTemplate(
       publishedCreationTemplates.firstWhere((t) => t.id == -9501),
     );
     await tester.pumpWidget(
@@ -99,13 +103,17 @@ void main() {
         ),
       ),
     );
-    final element = find.byType(Image).evaluate().single;
-    final provider = (element.widget as Image).image as ResizeImage;
-    expect(provider.width, 660);
-    await tester.runAsync(() => precacheImage(provider, element));
-    await tester.pumpAndSettle();
-    expect(find.byType(TemplatePageRenderer), findsNothing);
-    expect(template.documentReads, 0);
+    final renderers = tester.widgetList<TemplatePageRenderer>(
+      find.byType(TemplatePageRenderer),
+    );
+    // The front and the narrow binding share the parsed cover, never a second
+    // document read or a stale cached bitmap.
+    expect(renderers, hasLength(2));
+    for (final renderer in renderers) {
+      expect(renderer.imageDecodeWidth, inInclusiveRange(128, 1024));
+      expect(renderer.preserveTypography, isTrue);
+    }
+    expect(template.documentReads, 1);
     expect(find.byType(AlbumSpineImage), findsOneWidget);
     final frame = tester.widget<HomeCoverFrame>(find.byType(HomeCoverFrame));
     expect(frame.bindingArtwork, isNotNull);

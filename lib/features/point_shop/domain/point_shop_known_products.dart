@@ -21,6 +21,8 @@ final pointShopKnownProducts = List<PointShopProduct>.unmodifiable([
     ),
   ...pendingPremiumVolumeProducts,
   ...pendingConceptVolumeProducts,
+  ...pendingAtelierEditionProducts,
+  ...pendingStudioEditionProducts,
   for (final decoration in studioDecorations)
     PointShopProduct(
       productKey: 'sticker:${decoration.id}',

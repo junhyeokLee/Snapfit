@@ -63,6 +63,38 @@ final publishedPremiumTemplates = List<PremiumTemplate>.unmodifiable([
       tags: const ['SnapFit Original', '컨셉 에디션'],
       documentBuilder: _lazyDocument(() => conceptCatalogDocument(entry.key)),
     ),
+  for (final edition in AtelierEdition.values)
+    PremiumTemplate(
+      id: edition.catalogId,
+      title: edition.title,
+      subTitle: edition.concept,
+      description: '${edition.concept} · 내지 32쪽 · 세 규격 · 신규 디자인 검수 중',
+      category: edition.category,
+      coverImageUrl: '',
+      previewImages: const [],
+      pageCount: edition.innerPageCount,
+      userCount: 0,
+      isNew: true,
+      isPremium: true,
+      tags: const ['SnapFit Original', '아틀리에 에디션', '내지 32쪽'],
+      documentBuilder: _lazyDocument(edition.catalogDocument),
+    ),
+  for (final edition in StudioEdition.values.where((e) => e.premium))
+    PremiumTemplate(
+      id: edition.catalogId,
+      title: edition.title,
+      category: edition.category,
+      subTitle: edition.subtitle,
+      description: '내지 32쪽 · 세 규격 · 사진과 문구를 개별 편집하는 신규 유료 시안',
+      coverImageUrl: '',
+      previewImages: const [],
+      pageCount: edition.innerPageCount,
+      userCount: 0,
+      isNew: true,
+      isPremium: true,
+      tags: const ['SnapFit Original', '스튜디오 에디션', '내지 32쪽'],
+      documentBuilder: _lazyDocument(edition.catalogDocument),
+    ),
 ]);
 
 final publishedCreationTemplates = List<PremiumTemplate>.unmodifiable([

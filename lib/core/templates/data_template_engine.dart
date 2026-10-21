@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../constants/design_templates.dart';
 import '../../features/album/domain/entities/layer.dart';
+import '../utils/text_shadow_codec.dart';
 
 /// Data-driven template engine (Phase 1)
 /// - Keeps existing `DesignTemplate` runtime contract
@@ -212,6 +213,7 @@ class DataTemplateEngine {
       final baseStyle = layer.textStyle;
       final nextStyle = baseStyle?.copyWith(
         fontSize: (baseStyle.fontSize ?? 12) * fitScale,
+        shadows: TextShadowCodec.scaled(baseStyle.shadows, fitScale),
         letterSpacing: baseStyle.letterSpacing == null
             ? null
             : baseStyle.letterSpacing! * fitScale,
@@ -224,6 +226,7 @@ class DataTemplateEngine {
           ),
           width: fittedW,
           height: fittedH,
+          imageOffset: _resizedPhotoOffset(layer, fittedW, fittedH),
           textStyle: nextStyle,
         ),
       );
@@ -315,8 +318,19 @@ class DataTemplateEngine {
       final y = layer.position.dy
           .clamp(pad, math.max(pad, canvas.height - h - pad))
           .toDouble();
-      return layer.copyWith(position: Offset(x, y), width: w, height: h);
+      return layer.copyWith(
+        position: Offset(x, y),
+        width: w,
+        height: h,
+        imageOffset: _resizedPhotoOffset(layer, w, h),
+      );
     }).toList();
+  }
+
+  static Offset? _resizedPhotoOffset(LayerModel layer, double w, double h) {
+    final offset = layer.imageOffset;
+    if (layer.type != LayerType.image || offset == null) return null;
+    return Offset(offset.dx * w / layer.width, offset.dy * h / layer.height);
   }
 
   static LayerModel? _compileLayer(
@@ -487,12 +501,20 @@ class DataTemplateEngine {
               ? null
               : letterSpacing * globalScale,
           height: heightMul,
+          shadows: TextShadowCodec.decode(
+            styleView['shadows'],
+            scale: strictLayout
+                ? (canvas.height / safeDesignH) * globalScale
+                : (math.min(canvas.width, canvas.height) / 300) * globalScale,
+          ),
         ),
       );
     }
 
     String? frame;
     String? imageUrl;
+    String? originalUrl;
+    String? previewUrl;
     if (type == LayerType.decoration) {
       frame =
           (merged['style'] ??
@@ -502,13 +524,22 @@ class DataTemplateEngine {
               ?.toString();
     } else {
       frame = (merged['frame'] ?? payload['imageBackground'])?.toString();
-      imageUrl =
-          (merged['imageUrl'] ??
-                  merged['previewUrl'] ??
-                  payload['imageUrl'] ??
-                  payload['previewUrl'] ??
-                  payload['originalUrl'])
-              ?.toString();
+      originalUrl = _firstPhotoSource([
+        merged['originalUrl'],
+        payload['originalUrl'],
+      ]);
+      previewUrl = _firstPhotoSource([
+        merged['previewUrl'],
+        payload['previewUrl'],
+      ]);
+      imageUrl = _firstPhotoSource([
+        merged['imageUrl'],
+        merged['previewUrl'],
+        payload['imageUrl'],
+        payload['previewUrl'],
+        payload['originalUrl'],
+        merged['originalUrl'],
+      ]);
       final asset = merged['asset']?.toString();
       if (asset != null && asset.isNotEmpty) {
         imageUrl = asset.startsWith('asset:') ? asset : 'asset:$asset';
@@ -523,7 +554,29 @@ class DataTemplateEngine {
       height: transformed.height,
       rotation: rot,
       imageBackground: frame,
+      imageTemplate: type == LayerType.image || type == LayerType.sticker
+          ? (merged['imageTemplate'] ?? payload['imageTemplate'])?.toString()
+          : null,
       imageUrl: imageUrl,
+      originalUrl: originalUrl,
+      previewUrl: previewUrl,
+      imageZoom: type == LayerType.image
+          ? _photoZoom(
+              merged.containsKey('imageZoom')
+                  ? merged['imageZoom']
+                  : payload['imageZoom'],
+            )
+          : 1,
+      imageOffset: type == LayerType.image
+          ? _photoOffset(
+              merged,
+              payload,
+              sourceWidth: usesRatioCoords ? w * safeDesignW : w,
+              sourceHeight: usesRatioCoords ? h * safeDesignH : h,
+              targetWidth: transformed.width,
+              targetHeight: transformed.height,
+            )
+          : null,
       decorationFillColor: type == LayerType.decoration
           ? (merged['fillColor']?.toString() ??
                 payload['fillColor']?.toString() ??
@@ -545,6 +598,51 @@ class DataTemplateEngine {
       opacity: opacity,
       zIndex: z,
     );
+  }
+
+  static double _photoZoom(Object? value) =>
+      value is num && value.isFinite ? value.toDouble().clamp(1, 4) : 1;
+
+  static String? _firstPhotoSource(List<Object?> sources) {
+    for (final source in sources) {
+      final value = source?.toString().trim();
+      if (value != null && value.isNotEmpty) return value;
+    }
+    return null;
+  }
+
+  static Offset? _photoOffset(
+    Map<String, dynamic> layer,
+    Map<String, dynamic> payload, {
+    required double sourceWidth,
+    required double sourceHeight,
+    required double targetWidth,
+    required double targetHeight,
+  }) {
+    final hasRatio =
+        layer.containsKey('imageOffsetRatio') ||
+        payload.containsKey('imageOffsetRatio');
+    final raw = hasRatio
+        ? layer.containsKey('imageOffsetRatio')
+              ? layer['imageOffsetRatio']
+              : payload['imageOffsetRatio']
+        : layer['imageOffset'] ?? payload['imageOffset'];
+    if (raw is! Map) return null;
+    final x = hasRatio ? raw['x'] : raw['x'] ?? raw['dx'];
+    final y = hasRatio ? raw['y'] : raw['y'] ?? raw['dy'];
+    if (x is! num || y is! num || !x.isFinite || !y.isFinite) return null;
+    if (!targetWidth.isFinite || !targetHeight.isFinite) return null;
+    if (!hasRatio &&
+        (!sourceWidth.isFinite ||
+            !sourceHeight.isFinite ||
+            sourceWidth <= 0 ||
+            sourceHeight <= 0))
+      return null;
+    final offset = Offset(
+      hasRatio ? x.toDouble() * targetWidth : x * targetWidth / sourceWidth,
+      hasRatio ? y.toDouble() * targetHeight : y * targetHeight / sourceHeight,
+    );
+    return offset.dx.isFinite && offset.dy.isFinite ? offset : null;
   }
 
   static _Rect _applyGlobalTransform({

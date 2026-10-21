@@ -7,17 +7,43 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:snap_fit/features/album/presentation/views/print_order_checkout_screen.dart';
 import 'package:snap_fit/features/album/presentation/views/print_order_preview_screen.dart';
+import 'package:snap_fit/features/album/presentation/utils/print_photo_issue.dart';
 import 'package:snap_fit/features/album/printing/album_print_exporter.dart';
 import 'package:snap_fit/features/profile/data/order_repository.dart';
+import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
+import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
+import 'package:snap_fit/features/profile/domain/order_visibility_owner.dart';
+import 'package:snap_fit/features/profile/data/print_dev_checkout.dart';
+import 'package:snap_fit/features/profile/data/print_payment_service.dart';
 import 'package:snap_fit/features/profile/domain/print_checkout.dart';
 import '../printing/hardcover_print_export_test.dart' as hard;
 
 class _OrderRepo extends Mock implements OrderRepository {}
 
+class _PreviewAuth extends AuthViewModel {
+  @override
+  Future<UserInfo?> build() async => const UserInfo(
+    id: 'preview-fixture-owner',
+    name: '테스트 고객',
+    email: 'preview.owner@example.com',
+    provider: 'EMAIL',
+  );
+}
+
+class _EmptyPreviewRecovery extends PrintPaymentRecoveryStore {
+  @override
+  Future<PendingPrintPayment?> read(String owner) async => null;
+}
+
 class _Exporter extends AlbumPrintExporter {
   Object? failure;
   Object? generationFailure;
   int generationCalls = 0;
+  int verificationCalls = 0;
+  Map<String, dynamic> report = {
+    'imageResolution': <dynamic>[],
+    'blankPagesAdded': 19,
+  };
   int coverBytes = 5;
   int interiorBytes = 5;
   PrintVendorSpec? verifiedSpec;
@@ -30,8 +56,9 @@ class _Exporter extends AlbumPrintExporter {
     void Function(int, int)? onProgress,
   }) async {
     verifiedSpec = spec;
+    verificationCalls++;
     if (failure != null) throw failure!;
-    return {'imageResolution': <dynamic>[], 'blankPagesAdded': 19};
+    return report;
   }
 
   @override
@@ -58,6 +85,9 @@ void main() {
   late _Exporter exporter;
   setUp(() {
     orders = _OrderRepo();
+    when(
+      () => orders.printPaymentOwnerId(),
+    ).thenAnswer((_) async => 'preview-fixture-owner');
     when(() => orders.fetchPrintCheckoutReadiness(albumId: 7)).thenAnswer(
       (_) async => PrintCheckoutReadiness(
         canPay: false,
@@ -111,15 +141,31 @@ void main() {
       },
     );
   });
-  Future<void> pump(WidgetTester tester) async {
+  Future<void> pump(
+    WidgetTester tester, {
+    Future<bool> Function(PrintPhotoEditTarget)? onEditPhotoIssue,
+  }) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           orderRepositoryProvider.overrideWithValue(orders),
+          authViewModelProvider.overrideWith(_PreviewAuth.new),
+          visibleOrderOwnerProvider.overrideWithValue('preview-fixture-owner'),
+          printDevAdminAccessProvider.overrideWithValue(false),
+          printPaymentServiceProvider.overrideWith(
+            (_) => PrintPaymentService(
+              repository: orders,
+              store: _EmptyPreviewRecovery(),
+            ),
+          ),
           printPreviewExporterProvider.overrideWithValue(exporter),
         ],
-        child: const MaterialApp(
-          home: PrintOrderPreviewScreen(albumId: 7, albumTitle: 'Our album'),
+        child: MaterialApp(
+          home: PrintOrderPreviewScreen(
+            albumId: 7,
+            albumTitle: 'Our album',
+            onEditPhotoIssue: onEditPhotoIssue,
+          ),
         ),
       ),
     );
@@ -132,6 +178,191 @@ void main() {
     await tester.tap(find.text('검수용 PDF 보기·저장'));
     await tester.pumpAndSettle();
   }
+
+  Future<void> scrollPreviewTo(
+    WidgetTester tester,
+    Finder target,
+    double delta,
+  ) async {
+    final native = find.byKey(const ValueKey('print-preview-details-scroll'));
+    final pane = native.evaluate().isNotEmpty
+        ? native
+        : find.byKey(const ValueKey('web-print-preview-scroll'));
+    final scrollable = find.descendant(
+      of: pane,
+      matching: find.byType(Scrollable),
+    );
+    expect(scrollable, findsOneWidget);
+    await tester.scrollUntilVisible(target, delta, scrollable: scrollable);
+  }
+
+  Future<Map<String, dynamic>> photoSnapshot() async {
+    final snapshot = await orders.fetchPrintPreviewSnapshot(albumId: 7);
+    final album = Map<String, dynamic>.from(snapshot['album'] as Map);
+    album['cover_layers_json'] = jsonEncode({
+      'pages': [
+        {'index': 0, 'isCover': true, 'layers': []},
+        {
+          'index': 1,
+          'isCover': false,
+          'layers': [
+            {
+              'id': 'photo-one',
+              'type': 'image',
+              'x': .1,
+              'y': .1,
+              'width': .5,
+              'height': .5,
+              'scale': 1,
+              'zIndex': 0,
+            },
+          ],
+        },
+      ],
+    });
+    final result = {...snapshot, 'album': album};
+    when(
+      () => orders.fetchPrintPreviewSnapshot(albumId: 7),
+    ).thenAnswer((_) async => result);
+    return result;
+  }
+
+  testWidgets(
+    'photo warnings reveal the reviewed page and reload after editing without export',
+    (tester) async {
+      final snapshot = await photoSnapshot();
+      exporter.report = {
+        'imageResolution': [
+          {'page': 1, 'layerId': 'photo-one', 'effectivePpi': 180},
+          {'page': 1, 'layerId': 'missing-photo', 'effectivePpi': 180},
+          {'page': 999, 'layerId': 'photo-one', 'effectivePpi': 180},
+        ],
+      };
+      PrintPhotoEditTarget? requested;
+      await pump(
+        tester,
+        onEditPhotoIssue: (target) async {
+          requested = target;
+          exporter.report = {'imageResolution': <dynamic>[]};
+          return true;
+        },
+      );
+      expect(find.text('내지 1쪽 · 사진 1'), findsOneWidget);
+      expect(find.text('현재 180ppi · 권장 300ppi'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('print-edit-photo-999-photo-one')),
+        findsNothing,
+      );
+      final showPage = find.widgetWithText(TextButton, '페이지 보기');
+      await scrollPreviewTo(tester, showPage, 250);
+      await tester.pumpAndSettle();
+      expect(showPage.hitTestable(), findsOneWidget);
+      await tester.tap(showPage);
+      await tester.pumpAndSettle();
+      expect(find.text('내지 1 / 20'), findsOneWidget);
+      final checkbox = find.byType(CheckboxListTile);
+      await scrollPreviewTo(tester, checkbox, 250);
+      await tester.pumpAndSettle();
+      expect(checkbox.hitTestable(), findsOneWidget);
+      await tester.tap(checkbox);
+      await tester.pump();
+      final edit = find.byKey(const ValueKey('print-edit-photo-1-photo-one'));
+      await scrollPreviewTo(tester, edit, -250);
+      await tester.pumpAndSettle();
+      expect(edit.hitTestable(), findsOneWidget);
+      await tester.tap(edit);
+      await tester.pumpAndSettle();
+      expect(requested?.pageIndex, 1);
+      expect(requested?.layerId, 'photo-one');
+      expect(requested?.reviewedRevision, printCheckoutRevision(snapshot));
+      expect(exporter.verificationCalls, 2);
+      expect(exporter.generationCalls, 0);
+      expect(find.text('선명도를 확인할 사진'), findsNothing);
+      expect(
+        tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value,
+        isFalse,
+      );
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.byKey(const ValueKey('print-continue-to-delivery')),
+            )
+            .onPressed,
+        isNull,
+      );
+      verifyNever(() => orders.fetchMyOrders());
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'blocking resolution failures link the exact photo while checkout stays blocked',
+    (tester) async {
+      await photoSnapshot();
+      exporter.failure = const PrintPreflightException(
+        'print_image_resolution_too_low',
+        ['page:1', 'layer:photo-one', '80ppi'],
+      );
+      PrintPhotoEditTarget? requested;
+      await pump(
+        tester,
+        onEditPhotoIssue: (target) async {
+          requested = target;
+          return false;
+        },
+      );
+      expect(find.text('인쇄하려면 이 사진을 수정해 주세요.'), findsOneWidget);
+      expect(find.text('현재 80ppi · 권장 300ppi'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('print-continue-to-delivery')),
+        findsNothing,
+      );
+      final edit = find.byKey(const ValueKey('print-edit-photo-1-photo-one'));
+      await scrollPreviewTo(tester, edit, 250);
+      await tester.pumpAndSettle();
+      expect(edit.hitTestable(), findsOneWidget);
+      await tester.tap(edit);
+      await tester.pumpAndSettle();
+      expect(requested?.layerId, 'photo-one');
+      expect(exporter.verificationCalls, 2);
+      expect(exporter.generationCalls, 0);
+      expect(find.text('인쇄하려면 이 사진을 수정해 주세요.'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'photo warning actions fit narrow large text and failed editing keeps the warning',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1;
+      tester.platformDispatcher.textScaleFactorTestValue = 1.8;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await photoSnapshot();
+      exporter.report = {
+        'imageResolution': [
+          {'page': 1, 'layerId': 'photo-one', 'effectivePpi': 180},
+        ],
+      };
+      await pump(
+        tester,
+        onEditPhotoIssue: (_) async => throw StateError('fixture failure'),
+      );
+      final edit = find.byKey(const ValueKey('print-edit-photo-1-photo-one'));
+      await scrollPreviewTo(tester, edit, 250);
+      await tester.pumpAndSettle();
+      expect(edit.hitTestable(), findsOneWidget);
+      await tester.tap(edit);
+      await tester.pumpAndSettle();
+      expect(find.text('사진 편집을 열지 못했어요. 앨범에서 다시 시도해 주세요.'), findsOneWidget);
+      expect(find.text('내지 1쪽 · 사진 1'), findsOneWidget);
+      expect(exporter.verificationCalls, 2);
+      expect(exporter.generationCalls, 0);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'reviewed album moves directly to delivery without exporting PDFs or creating an order',
@@ -175,15 +406,16 @@ void main() {
       expect(find.text('견적 확인 중'), findsOneWidget);
       expect(find.textContaining('49,900원'), findsNothing);
       expect(find.text('작성한 내지 1페이지 + 뒤에 추가되는 빈 페이지 19페이지'), findsOneWidget);
-      await tester.scrollUntilVisible(find.byIcon(Icons.chevron_right), 300);
+      await scrollPreviewTo(tester, find.byIcon(Icons.chevron_right), 300);
       await tester.tap(find.byIcon(Icons.chevron_right));
       await tester.pump();
       await tester.tap(find.byIcon(Icons.chevron_right));
       await tester.pump();
       expect(find.text('내지 2 / 20 · 추가 빈 페이지'), findsOneWidget);
-      await tester.scrollUntilVisible(find.text('빈 페이지'), -200);
+      await scrollPreviewTo(tester, find.text('빈 페이지'), -200);
       expect(find.text('빈 페이지'), findsOneWidget);
-      await tester.scrollUntilVisible(
+      await scrollPreviewTo(
+        tester,
         find.widgetWithText(FilledButton, '배송지 입력하기'),
         300,
       );
@@ -197,7 +429,7 @@ void main() {
       await openPdfTools(tester);
       final generate = find.widgetWithText(OutlinedButton, '표지·내지 검수용 PDF 만들기');
       expect(tester.widget<OutlinedButton>(generate).onPressed, isNull);
-      await tester.scrollUntilVisible(find.byType(CheckboxListTile), -200);
+      await scrollPreviewTo(tester, find.byType(CheckboxListTile), -200);
       await tester.tap(find.byType(CheckboxListTile));
       await tester.pump();
       await tester.ensureVisible(generate);
@@ -224,6 +456,7 @@ void main() {
         'sourcePageCount': 1,
         'addedBlankPageCount': 19,
         'priceIsEstimate': false,
+        'retailPriceStatus': 'FINAL',
         'supplierCostVerified': true,
         'shippingCostVerified': true,
         'packagingCostVerified': true,
@@ -346,7 +579,7 @@ void main() {
       ['private-source'],
     );
     await pump(tester);
-    await tester.scrollUntilVisible(find.byType(CheckboxListTile), 300);
+    await scrollPreviewTo(tester, find.byType(CheckboxListTile), 300);
     await tester.tap(find.byType(CheckboxListTile));
     await tester.pump();
     await openPdfTools(tester);
@@ -354,7 +587,8 @@ void main() {
     await tester.ensureVisible(generate);
     await tester.tap(generate);
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
+    await scrollPreviewTo(
+      tester,
       find.textContaining('사진 원본을 불러오지 못했습니다'),
       -300,
     );
@@ -420,7 +654,7 @@ void main() {
       expect(find.text('${product.label} · 1권'), findsOneWidget);
       expect(find.text('견적 확인 중'), findsOneWidget);
       expect(find.textContaining('제작 견적을 확인한 뒤 판매가를 안내'), findsOneWidget);
-      await tester.scrollUntilVisible(find.byType(PrintPageLayoutPreview), 250);
+      await scrollPreviewTo(tester, find.byType(PrintPageLayoutPreview), 250);
       final preview = tester.widget<PrintPageLayoutPreview>(
         find.byType(PrintPageLayoutPreview),
       );
@@ -428,7 +662,7 @@ void main() {
       final previewSize = tester.getSize(find.byType(PrintPageLayoutPreview));
       expect(previewSize.aspectRatio, closeTo(product.aspectRatio, .001));
       expect(exporter.verifiedSpec!.id, id);
-      await tester.scrollUntilVisible(find.byType(CheckboxListTile), 250);
+      await scrollPreviewTo(tester, find.byType(CheckboxListTile), 250);
       await tester.tap(find.byType(CheckboxListTile));
       await tester.pump();
       await openPdfTools(tester);
@@ -572,7 +806,8 @@ void main() {
         expect(find.text('견적 확인 중'), findsNothing);
         expect(find.textContaining('기본 20페이지'), findsNothing);
         expect(find.textContaining('309,900원'), findsNothing);
-        await tester.scrollUntilVisible(
+        await scrollPreviewTo(
+          tester,
           find.widgetWithText(FilledButton, '배송지 입력하기'),
           300,
         );
@@ -650,7 +885,7 @@ void main() {
       expect(exporter.verifiedSpec, isNull);
       expect(exporter.generationCalls, 0);
       expect(find.text('표지·내지 검수용 PDF 만들기'), findsNothing);
-      await tester.scrollUntilVisible(find.byType(PrintPageLayoutPreview), 250);
+      await scrollPreviewTo(tester, find.byType(PrintPageLayoutPreview), 250);
       expect(
         tester.getSize(find.byType(PrintPageLayoutPreview)).aspectRatio,
         closeTo(1.25, .001),
@@ -690,19 +925,19 @@ void main() {
       );
       await pump(tester);
       expect(find.text('200×150mm 하드커버 · 1권'), findsOneWidget);
-      await tester.scrollUntilVisible(find.byType(PrintPageLayoutPreview), 250);
+      await scrollPreviewTo(tester, find.byType(PrintPageLayoutPreview), 250);
       expect(
         tester.getSize(find.byType(PrintPageLayoutPreview)).aspectRatio,
         closeTo(206 / 156, .001),
       );
-      await tester.scrollUntilVisible(find.byIcon(Icons.chevron_right), 250);
+      await scrollPreviewTo(tester, find.byIcon(Icons.chevron_right), 250);
       await tester.tap(find.byIcon(Icons.chevron_right));
       await tester.pump();
       expect(
         tester.getSize(find.byType(PrintPageLayoutPreview)).aspectRatio,
         closeTo(200 / 150, .001),
       );
-      await tester.scrollUntilVisible(find.byType(CheckboxListTile), 250);
+      await scrollPreviewTo(tester, find.byType(CheckboxListTile), 250);
       await tester.tap(find.byType(CheckboxListTile));
       await tester.pump();
       await openPdfTools(tester);

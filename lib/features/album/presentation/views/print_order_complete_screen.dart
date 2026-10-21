@@ -8,6 +8,7 @@ import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/widgets/experience_style.dart';
 import '../../../../shared/web/web_design.dart';
+import '../../../profile/presentation/widgets/customer_web_page.dart';
 import '../../../profile/data/order_repository.dart';
 import '../../../profile/domain/print_checkout.dart';
 import '../../../profile/presentation/views/order_history_screen.dart';
@@ -80,104 +81,125 @@ class _PrintOrderCompleteScreenState
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      child: kIsWeb ? _webProgress() : Scaffold(
-        backgroundColor: SnapFitColors.backgroundOf(context),
-        appBar: ExperienceHeader(
-          title: '주문 진행 상황',
-          back: false,
-          showNotifications: false,
-          actions: [
-            IconButton(
-              onPressed: _loading ? null : _refresh,
-              tooltip: '진행 상황 새로고침',
-              icon: const Icon(Icons.refresh),
-            ),
-          ],
-        ),
-        body: SafeArea(
-          top: false,
-          child: LayoutBuilder(
-            builder: (context, bounds) {
-              final wide =
-                  bounds.maxWidth >= 540 &&
-                  MediaQuery.orientationOf(context) == Orientation.landscape;
-              return Align(
-                alignment: Alignment.topCenter,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: wide ? 1040 : 560),
-                  child: wide
-                      ? Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: Row(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
+      child: kIsWeb
+          ? _webProgress()
+          : Scaffold(
+              backgroundColor: SnapFitColors.backgroundOf(context),
+              appBar: ExperienceHeader(
+                title: '주문 진행 상황',
+                back: false,
+                showNotifications: false,
+                actions: [
+                  IconButton(
+                    onPressed: _loading ? null : _refresh,
+                    tooltip: '진행 상황 새로고침',
+                    icon: const Icon(Icons.refresh),
+                  ),
+                ],
+              ),
+              body: SafeArea(
+                top: false,
+                child: LayoutBuilder(
+                  builder: (context, bounds) {
+                    final wide =
+                        bounds.maxWidth >= 540 &&
+                        MediaQuery.orientationOf(context) ==
+                            Orientation.landscape;
+                    return Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: wide ? 1040 : 560,
+                        ),
+                        child: wide
+                            ? Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  20,
+                                  16,
+                                  20,
+                                  16,
+                                ),
+                                child: Column(
                                   children: [
-                                    SizedBox(
-                                      width: (bounds.maxWidth * .38).clamp(
-                                        200,
-                                        340,
-                                      ),
-                                      child: SingleChildScrollView(
-                                        key: const PageStorageKey(
-                                          'print-receipt-summary',
-                                        ),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            _confirmation(compact: true),
-                                            const SizedBox(height: 8),
-                                            _receiptDetails(compact: true),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 20),
-                                    VerticalDivider(
-                                      width: 1,
-                                      color: ExperienceFormStyle.line(context),
-                                    ),
-                                    const SizedBox(width: 20),
                                     Expanded(
-                                      child: ListView(
-                                        key: const PageStorageKey(
-                                          'print-progress-content',
-                                        ),
-                                        children: [_progressDetails()],
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children: [
+                                          SizedBox(
+                                            width: (bounds.maxWidth * .38)
+                                                .clamp(200, 340),
+                                            child: SingleChildScrollView(
+                                              key: const PageStorageKey(
+                                                'print-receipt-summary',
+                                              ),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  _confirmation(compact: true),
+                                                  const SizedBox(height: 8),
+                                                  _receiptDetails(
+                                                    compact: true,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 20),
+                                          VerticalDivider(
+                                            width: 1,
+                                            color: ExperienceFormStyle.line(
+                                              context,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 20),
+                                          Expanded(
+                                            child: ListView(
+                                              key: const PageStorageKey(
+                                                'print-progress-content',
+                                              ),
+                                              children: [_progressDetails()],
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
+                                    const SizedBox(height: 16),
+                                    _actions(wide: true),
                                   ],
                                 ),
+                              )
+                            : ListView(
+                                key: const PageStorageKey(
+                                  'print-progress-content',
+                                ),
+                                padding: const EdgeInsets.fromLTRB(
+                                  24,
+                                  24,
+                                  24,
+                                  28,
+                                ),
+                                children: [
+                                  _confirmation(),
+                                  const SizedBox(height: 24),
+                                  _progressDetails(),
+                                  const SizedBox(height: 24),
+                                  Divider(
+                                    color: ExperienceFormStyle.line(context),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _receiptDetails(),
+                                  const SizedBox(height: 24),
+                                  _actions(),
+                                ],
                               ),
-                              const SizedBox(height: 16),
-                              _actions(wide: true),
-                            ],
-                          ),
-                        )
-                      : ListView(
-                          key: const PageStorageKey('print-progress-content'),
-                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
-                          children: [
-                            _confirmation(),
-                            const SizedBox(height: 24),
-                            _progressDetails(),
-                            const SizedBox(height: 24),
-                            Divider(color: ExperienceFormStyle.line(context)),
-                            const SizedBox(height: 16),
-                            _receiptDetails(),
-                            const SizedBox(height: 24),
-                            _actions(),
-                          ],
-                        ),
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
-        ),
-      ),
+              ),
+            ),
     );
   }
 
@@ -186,42 +208,60 @@ class _PrintOrderCompleteScreenState
     section: WebSection.orders,
     showNavigation: false,
     actions: [
-      IconButton(onPressed: _loading ? null : _refresh, tooltip: '진행 상황 새로고침', icon: const Icon(Icons.refresh, size: 20)),
-    ],
-    child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      const WebPageHeading(
-        eyebrow: '앨범  /  인쇄 주문  /  진행 상황',
-        title: '책이 만들어지는 과정을 확인하세요',
-        description: '확인된 결제와 제작·배송 단계를 나누어 안내합니다. 주문 내역에서도 같은 진행 상황을 볼 수 있습니다.',
+      IconButton(
+        onPressed: _loading ? null : _refresh,
+        tooltip: '진행 상황 새로고침',
+        icon: const Icon(Icons.refresh, size: 20),
       ),
-      const SizedBox(height: 24),
-      Expanded(child: LayoutBuilder(builder: (context, bounds) {
-        final progress = WebSurface(child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          _confirmation(),
-          const SizedBox(height: 28),
-          Divider(color: WebPalette.of(context).line),
-          const SizedBox(height: 24),
-          _progressDetails(),
-        ]));
-        final receipt = WebSurface(child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text('주문 정보', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: WebPalette.of(context).muted)),
-          const SizedBox(height: 20),
-          _receiptDetails(),
-          const SizedBox(height: 28),
-          Divider(color: WebPalette.of(context).line),
-          const SizedBox(height: 24),
-          _actions(),
-        ]));
-        if (bounds.maxWidth >= 980) {
-          return Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Expanded(child: SingleChildScrollView(key: const PageStorageKey('print-progress-content'), child: progress)),
-            const SizedBox(width: 24),
-            SizedBox(width: 350, child: SingleChildScrollView(key: const PageStorageKey('print-receipt-summary'), child: receipt)),
-          ]);
-        }
-        return ListView(children: [progress, const SizedBox(height: 20), receipt]);
-      })),
-    ]),
+    ],
+    child: ListView(
+      key: const PageStorageKey('print-progress-content'),
+      children: [
+        const WebPageHeading(
+          title: '주문 진행 상황',
+          description: '결제 확인부터 제작·배송까지 같은 주문내역에서 확인할 수 있습니다.',
+        ),
+        const SizedBox(height: 24),
+        CustomerWebColumns(
+          breakpoint: 980,
+          summaryWidth: 350,
+          primary: WebSurface(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _confirmation(),
+                const SizedBox(height: 24),
+                Divider(color: WebPalette.of(context).line),
+                const SizedBox(height: 24),
+                _progressDetails(),
+              ],
+            ),
+          ),
+          secondary: WebSurface(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  '주문 정보',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: WebPalette.of(context).ink,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _receiptDetails(),
+                const SizedBox(height: 24),
+                Divider(color: WebPalette.of(context).line),
+                const SizedBox(height: 24),
+                _actions(),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
+    ),
   );
 
   Widget _confirmation({bool compact = false}) {
@@ -262,7 +302,7 @@ class _PrintOrderCompleteScreenState
                 style: ExperienceFormStyle.text(
                   context,
                   compact ? 16 : 24,
-                  weight: FontWeight.w600,
+                  weight: compact ? FontWeight.w600 : FontWeight.w700,
                 ),
               ),
             ),
@@ -343,7 +383,7 @@ class _PrintOrderCompleteScreenState
         style: ExperienceFormStyle.text(
           context,
           compact ? 14 : 18,
-          weight: FontWeight.w600,
+          weight: compact ? FontWeight.w600 : FontWeight.w700,
         ),
       ),
       const SizedBox(height: 8),
@@ -379,7 +419,7 @@ class _PrintOrderCompleteScreenState
       style: OutlinedButton.styleFrom(
         minimumSize: const Size(0, 44),
         textStyle: ExperienceFormStyle.text(context, 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kIsWeb ? 12 : 6)),
+        shape: const StadiumBorder(),
       ),
       onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
       child: const Text('내 앨범으로 돌아가기'),
@@ -410,6 +450,7 @@ class _PrintOrderCompleteScreenState
               context,
               orderId: widget.receipt.orderId,
               albumTitle: widget.receipt.title,
+              albumId: widget.receipt.albumId,
             );
             if (mounted) _refresh();
           },
@@ -446,7 +487,9 @@ class _PrintOrderCompleteScreenState
                   ),
                 ),
                 ColoredBox(
-                  color: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.backgroundOf(context),
+                  color: kIsWeb
+                      ? WebPalette.of(context).surface
+                      : SnapFitColors.backgroundOf(context),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Icon(

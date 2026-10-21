@@ -32,6 +32,9 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+# Local deployment cache and generated review output
+/.firebase/
+/output/
 # Generated visual-test diagnostics; approved golden baselines remain tracked.
 /test/**/failures/
 # Local AI evaluation prompts, model responses and review artifacts
@@ -54,6 +57,7 @@ app.*.map.json
 /android/app/release
 # Supabase local CLI cache (contains machine-local linked project metadata)
 supabase/.temp/
+supabase/.env.ai-template.local
 
 # Template image sourcing candidates (review/transient; approved assets are copied elsewhere)
 assets/templates/*/images/free_stock_candidates/

@@ -136,10 +136,10 @@ void main() {
           );
           expect(dimensions.width / dimensions.height, closeTo(ratio, .001));
           expect(find.text('FREEZE'), findsNothing);
-          await tester.ensureVisible(find.text('책으로 주문 준비하기'));
-          await tester.tap(find.text('책으로 주문 준비하기'));
-          await tester.ensureVisible(find.text('완료'));
-          await tester.tap(find.text('완료'));
+          await tester.ensureVisible(find.text('인쇄 검토하기'));
+          await tester.tap(find.text('인쇄 검토하기'));
+          await tester.ensureVisible(find.text('내 앨범으로'));
+          await tester.tap(find.text('내 앨범으로'));
           expect(orders, 1);
           expect(closes, 1);
           expect(tester.takeException(), isNull);

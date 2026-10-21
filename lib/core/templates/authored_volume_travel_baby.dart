@@ -303,16 +303,24 @@ void _volumeBaby(_VolumeAuthor b) {
     b.end();
     b.page('arrival-record-card', '#F1F1E7');
     b.heading('너를 맞이한 우리의 집');
-    b.stock(.12, .23, .74, .54, '#FCFBF4');
-    b.text(
-      '처음 눕힌 자리\n네 곁을 지킨 사람\n그날 잊지 못할 순간',
-      .21,
-      .34,
-      .56,
-      .29,
-      size: .029,
-      leading: 1.9,
+    b.photo(
+      'assets/templates/soft_babybook/images/approved_stock/book_bed.jpg',
+      .09,
+      .23,
+      .54,
+      .40,
+      frame: 'materialScallopMount',
     );
+    b.text(
+      '처음 눕힌 자리\n\n곁을 지킨 사람',
+      .69,
+      .26,
+      .22,
+      .32,
+      size: .025,
+      leading: 1.5,
+    );
+    b.text('네가 온 뒤로, 집의 모든 장면이 조금씩 달라졌다.', .10, .69, .79, .12, size: .028);
     b.paper('heirloomGrowthRuler', .15, .80, .68, .085);
     b.end();
   });
@@ -344,10 +352,32 @@ void _volumeBaby(_VolumeAuthor b) {
     b.caption('눈을 맞추고 이름을 불렀다.');
     b.end();
     b.page('first-look-date-note', '#F1F2E9');
-    b.stock(.13, .19, .72, .59, '#FCFCF5');
-    b.text('처음이라서\n더 오래 남은 날', .21, .28, .57, .21, size: .043);
-    b.text('언제였는지, 누구와 있었는지,\n어떤 표정으로 바라봤는지.', .21, .58, .56, .15, size: .027);
-    b.paper('studioSageRibbon', .68, .73, .19, .17);
+    b.text(
+      '눈이 마주치면\n함께 웃었어',
+      .09,
+      .13,
+      .82,
+      .22,
+      size: .061,
+      font: 'BookMyungjo',
+      leading: 1.2,
+    );
+    b.photo(
+      'assets/templates/soft_babybook/images/approved_stock/parent_back.jpg',
+      .09,
+      .46,
+      .48,
+      .36,
+      frame: 'materialLinenOval',
+    );
+    b.text(
+      '언제였는지,\n누구와 있었는지.\n\n그때의 표정까지\n남겨 두고 싶어.',
+      .65,
+      .48,
+      .26,
+      .35,
+      size: .027,
+    );
     b.end();
   });
   b.spread('밖으로 나간 작은 여행', 2, () {
@@ -397,22 +427,24 @@ void _volumeBaby(_VolumeAuthor b) {
   b.spread('좋아하는 놀이가 생겼어', 2, () {
     b.page('favorite-toys-insert', '#D5E0D1');
     b.paper('heirloomTableLinen', .07, .16, .86, .64, turn: 3);
-    b.photo('growth_keepsakes', .14, .24, .72, .47, mounted: true);
+    b.photo('growth_play', .14, .24, .72, .47, frame: 'materialScallopMount');
     b.caption('가장 먼저 손이 가는 물건');
     b.end();
     b.page('play-preferences', '#F1F1E5');
     b.heading('너의 요즘 취향');
-    b.stock(.12, .24, .73, .50, '#FAFAF2');
-    b.text(
-      '좋아하는 장난감\n웃음을 터뜨리는 놀이\n집중해서 바라보는 것',
-      .21,
-      .34,
-      .55,
-      .28,
-      size: .027,
-      leading: 1.9,
-    );
-    b.paper('studioSageRibbon', .70, .70, .18, .19);
+    b.paper('materialMonthDial', .68, .20, .22, .22);
+    b.photo('growth_hand', .10, .24, .43, .25, frame: 'studioPhotoCorners');
+    for (var n = 0; n < 3; n++) {
+      b.text(
+        ['좋아하는 장난감', '함께 웃었던 놀이', '오래 바라본 것'][n],
+        .12,
+        .56 + n * .105,
+        .72,
+        .055,
+        size: .027,
+      );
+      b.stock(.12, .63 + n * .105, .72, .0015, '#B5C6B7');
+    }
     b.end();
   });
   b.reversedSpread('옷장에 남겨 둔 한 벌', 3, () {
@@ -469,7 +501,14 @@ void _volumeBaby(_VolumeAuthor b) {
   b.spread('너를 기다리며 꺼낸 것', 1, () {
     b.page('waiting-keepsake-paper', '#E0E6D8');
     b.paper('studioCottonRag', .08, .12, .85, .66, turn: 3);
-    b.photo('growth_keepsakes', .14, .20, .71, .47, frame: 'studioDeckle');
+    b.photo(
+      'assets/templates/soft_babybook/images/approved_stock/field_baby.jpg',
+      .14,
+      .20,
+      .71,
+      .47,
+      frame: 'studioDeckle',
+    );
     b.caption('만나기 전에 준비해 두었던 것');
     b.end();
     b.page('waiting-letter', '#F1F2E8');
@@ -532,9 +571,25 @@ void _volumeBaby(_VolumeAuthor b) {
   }, extra: true);
   b.reversedSpread('가을에서 겨울로', 2, () {
     b.page('autumn-small-objects', '#E0E5D3');
-    b.paper('studioCottonRag', .07, .12, .85, .69, turn: 2);
-    b.photo('growth_keepsakes', .13, .21, .73, .48, mounted: true);
-    b.caption('조금 더 두꺼워진 네 옷');
+    b.heading('너와 맞는 새 계절');
+    b.photo(
+      'assets/templates/soft_babybook/images/approved_stock/field_baby.jpg',
+      .08,
+      .23,
+      .59,
+      .57,
+      natural: false,
+      frame: 'atelierFolio',
+    );
+    b.photo(
+      'growth_keepsakes',
+      .72,
+      .46,
+      .20,
+      .19,
+      frame: 'studioPhotoCorners',
+    );
+    b.caption('조금 더 두꺼워진 옷, 조금 더 길어진 산책');
     b.end();
     b.page('autumn-winter-record', '#F0F1E5');
     b.heading('또 한 계절을 지나');

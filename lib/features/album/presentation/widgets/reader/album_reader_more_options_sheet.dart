@@ -63,7 +63,7 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
               action('앨범 편집', Icons.edit_outlined, onEdit),
               if (onInvite != null)
                 action('멤버 초대', Icons.group_add_outlined, onInvite!),
-              action('책 주문 준비', Icons.auto_stories_outlined, onConfirm),
+              action('책으로 만들기', Icons.auto_stories_outlined, onConfirm),
               if (onDelete != null) ...[
                 Divider(height: 1, color: WebPalette.of(context).line),
                 action('앨범 삭제', Icons.delete_outline, onDelete!, destructive: true),
@@ -172,8 +172,8 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
 
               // 제작 확정
               _SheetItem(
-                icon: Icons.lock_outline_rounded,
-                label: '제작 확정하기',
+                icon: Icons.auto_stories_outlined,
+                label: '책으로 만들기',
                 iconColor: SnapFitColors.accent,
                 labelColor: SnapFitColors.accent,
                 onTap: onConfirm,

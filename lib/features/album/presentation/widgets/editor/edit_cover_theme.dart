@@ -92,7 +92,7 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
       return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         ListTile(
           contentPadding: const EdgeInsets.fromLTRB(24, 12, 12, 12),
-          title: const Text('표지 테마', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+          title: const Text('표지 테마', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
           subtitle: const Text('테마를 선택하면 표지에 바로 적용됩니다. 사진과 글의 배치는 유지됩니다.'),
           trailing: IconButton(onPressed: () => Navigator.pop(context), tooltip: '표지 테마 닫기', icon: const Icon(Icons.close, size: 20)),
         ),

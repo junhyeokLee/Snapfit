@@ -184,10 +184,10 @@ class _AdminPointShopManagementScreenState
                       item.productKey,
                     );
                     final launch = pointShopLaunchPrices[item.productKey];
-                    final price = contents != null
+                    final price = isPendingTemplateProduct(item.productKey)
                         ? '${item.pointPrice == null ? '가격 미설정' : '${item.pointPrice}P'} · 출시 대기'
                         : !saved
-                        ? '현재 무료 · 가격 미설정'
+                        ? '미등록 · 가격 및 판매 상태 확인 필요'
                         : item.pointPrice == null
                         ? '가격 미설정 · 판매 중지'
                         : '${item.pointPrice}P · ${item.isActive ? '판매 중' : '판매 중지'}';

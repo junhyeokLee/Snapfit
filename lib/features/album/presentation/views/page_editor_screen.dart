@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/editor_modal_scope.dart';
 import '../../data/album_creation_draft_store.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -11,8 +12,9 @@ import '../../domain/entities/album_save_progress.dart';
 import '../../domain/entities/album_creation_draft.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/theme/snapfit_design_tokens.dart' show SnapFitRadius;
 import '../../../../core/constants/cover_size.dart';
-import '../../../../core/utils/platform_ui.dart';
+import '../../../../shared/widgets/album_stage_style.dart';
 import '../../../../core/utils/screen_logger.dart';
 import '../../../../core/navigation/web_unsaved_work_guard.dart';
 import '../../../../shared/widgets/album_bottom_sheet.dart';
@@ -25,6 +27,7 @@ import '../controllers/layer_interaction_manager.dart';
 import '../controllers/layer_builder.dart';
 import '../widgets/editor/layer_action_panel.dart';
 import '../widgets/editor/page_editor_canvas.dart';
+import '../widgets/reader/album_reader_page_content.dart';
 import '../widgets/editor/page_list_selector.dart';
 import '../widgets/editor/editor_bottom_menu.dart';
 import '../widgets/editor/editor_keyboard_shortcuts.dart';
@@ -42,20 +45,20 @@ import '../controllers/photo_crop_editor.dart';
 import '../controllers/photo_frame_editor.dart';
 import '../widgets/editor/page_editor_overlays.dart';
 import '../widgets/web/web_album_workspace.dart';
+import '../widgets/web/web_layer_transform_inspector.dart';
+import '../widgets/web/web_editor_tool_dialog.dart';
 import '../../data/api/storage_service.dart';
 import '../utils/album_save_error_message.dart';
 import '../../../point_shop/data/point_shop_provider.dart';
 
 class _PageEditorEntranceReveal extends StatelessWidget {
   final Widget child;
-  final Duration delay;
   final bool includeScale;
   final bool disabled;
 
   const _PageEditorEntranceReveal({
     super.key,
     required this.child,
-    this.delay = Duration.zero,
     this.includeScale = false,
     this.disabled = false,
   });
@@ -66,15 +69,10 @@ class _PageEditorEntranceReveal extends StatelessWidget {
     const duration = Duration(milliseconds: 360);
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
-      duration: delay + duration,
+      duration: duration,
       curve: Curves.easeOutCubic,
       builder: (context, value, child) {
-        final totalMs = (delay + duration).inMilliseconds;
-        final t = delay == Duration.zero
-            ? value
-            : ((value * totalMs - delay.inMilliseconds) /
-                      duration.inMilliseconds)
-                  .clamp(0.0, 1.0);
+        final t = value;
         final scale = includeScale ? 0.96 + (0.04 * t) : 1.0;
         return Opacity(
           opacity: t,
@@ -174,11 +172,15 @@ class _PageEditorPageTurnReveal extends StatelessWidget {
 class PageEditorScreen extends ConsumerStatefulWidget {
   /// Initial document page; 0 selects the cover. Null keeps the current page.
   final int? initialPageIndex;
+
+  /// Select this photo after opening its page; ignored for absent/non-photo IDs.
+  final String? initialSelectedLayerId;
   final String? initialMaterialKey;
 
   const PageEditorScreen({
     super.key,
     this.initialPageIndex,
+    this.initialSelectedLayerId,
     this.initialMaterialKey,
     this.returnToPreviousOnSave = false,
     this.creationDraftId,
@@ -204,6 +206,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
   late final ToolbarActionHandler _toolbarActionHandler;
 
   EditorMode _currentMode = EditorMode.none; // Current bottom panel mode
+  bool _webToolDialogOpen = false;
 
   // 저장 진행률 상태
   bool _isSaving = false;
@@ -214,6 +217,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
   bool _exitPromptOpen = false;
   Timer? _editorHintTimer;
   int? _lastSyncedPageIndex;
+  int? _initialSelectionPageIndex;
+  String? _pendingInitialSelectedLayerId;
   String? _lastLayerSyncSignature;
   bool _showEditorHint = false;
   int _pageTurnNonce = 0;
@@ -221,6 +226,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
   Future<void> _draftWrites = Future.value();
   int _pendingDraftWrites = 0;
   bool _draftWriteFailed = false;
+  DateTime? _lastDraftSavedAt;
 
   bool get _hasCreationDraft =>
       widget.creationDraftId != null && widget.creationDraftOwner != null;
@@ -265,6 +271,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
       },
       onLayerTap: (layer) => setState(() {}),
       onTapPlaceholder: (layer) => _openGalleryForPlaceholder(layer),
+      enableWebTransforms: kIsWeb,
     );
     _layerBuilder = LayerBuilder(_interaction, () => _canvasSize);
     _toolbarActionHandler = ToolbarActionHandler(context, ref);
@@ -283,11 +290,32 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
       final maxIdx = vm.pages.length - 1;
       final pageIndex = idx.clamp(0, maxIdx > 0 ? maxIdx : 0);
       vm.goToPage(pageIndex);
+      _initialSelectionPageIndex = pageIndex;
+      _pendingInitialSelectedLayerId = idx == pageIndex
+          ? widget.initialSelectedLayerId
+          : null;
       setState(() {});
       if (widget.initialMaterialKey != null) {
         unawaited(_insertInitialMaterial(widget.initialMaterialKey!));
       }
     });
+  }
+
+  void _selectInitialPhotoIfReady() {
+    final id = _pendingInitialSelectedLayerId;
+    final targetPage = _initialSelectionPageIndex;
+    if (id == null || targetPage == null) return;
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
+    if (_lastSyncedPageIndex != targetPage ||
+        vm.currentPageIndex != targetPage) {
+      return;
+    }
+    _pendingInitialSelectedLayerId = null;
+    _initialSelectionPageIndex = null;
+    final photo = vm.currentPage?.layers
+        .where((layer) => layer.id == id && layer.type == LayerType.image)
+        .firstOrNull;
+    if (photo != null) _interaction.setSelectedLayer(photo.id);
   }
 
   Future<void> _insertInitialMaterial(String key) async {
@@ -396,6 +424,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
         });
         if (!written) throw StateError('Linked draft no longer exists');
         if (mounted) {
+          _lastDraftSavedAt = DateTime.now();
           ref.invalidate(albumCreationDraftProvider);
           if (notify)
             ScaffoldMessenger.of(context).showSnackBar(
@@ -427,7 +456,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
     AlbumEditorViewModel vm,
     List<LayerModel> layers,
   ) async {
-    if (_isSaving) return;
+    // A pointer transform commits on pointer-up. Consume the save shortcut
+    // without saving an older document while the user is still dragging.
+    if (_isSaving || (kIsWeb && _interaction.isInteractingNow)) return;
 
     try {
       setState(() {
@@ -515,23 +546,50 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
     if (kIsWeb) {
       await showWebAwareDialog<bool>(
         context: context,
+        useRootNavigator: false,
+        routeSettings: editorModalRouteSettings(context),
         maxWidth: 560,
         maxHeight: 340,
         builder: (dialogContext) => Padding(
           padding: const EdgeInsets.all(28),
-          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Text('저장 공간이 부족합니다', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: WebPalette.of(context).ink)),
-            const SizedBox(height: 14),
-            Text('저장 공간을 초과했습니다. 사용하지 않는 앨범이나 사진을 정리한 뒤 다시 저장해 주세요.', style: TextStyle(fontSize: 14, height: 1.7, color: WebPalette.of(context).muted)),
-            const SizedBox(height: 24),
-            Align(alignment: Alignment.centerRight, child: OutlinedButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('닫기'))),
-          ]),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                '저장 공간이 부족합니다',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: WebPalette.of(context).ink,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                '저장 공간을 초과했습니다. 사용하지 않는 앨범이나 사진을 정리한 뒤 다시 저장해 주세요.',
+                style: TextStyle(
+                  fontSize: 14,
+                  height: 1.7,
+                  color: WebPalette.of(context).muted,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Align(
+                alignment: Alignment.centerRight,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  child: const Text('닫기'),
+                ),
+              ),
+            ],
+          ),
         ),
       );
       return;
     }
     await showModalBottomSheet<bool>(
       context: context,
+      routeSettings: editorModalRouteSettings(context),
       backgroundColor: SnapFitColors.surfaceOf(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -577,6 +635,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
     if (!vm.canDeleteCurrentPage) return;
     final shouldDelete = await showDialog<bool>(
       context: context,
+      useRootNavigator: false,
+      routeSettings: editorModalRouteSettings(context),
       builder: (ctx) => AlertDialog(
         backgroundColor: SnapFitColors.surfaceOf(context),
         shape: RoundedRectangleBorder(
@@ -654,12 +714,14 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         _interaction.resetForPageChange();
+        _selectInitialPhotoIfReady();
       });
     } else if (_lastLayerSyncSignature != layerSyncSignature) {
       _lastLayerSyncSignature = layerSyncSignature;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         _interaction.syncLayers(layers);
+        _selectInitialPhotoIfReady();
       });
     }
 
@@ -667,6 +729,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
 
     void handlePageSelected(int index) {
       if (index == currentPageIndex) return;
+      _pendingInitialSelectedLayerId = null;
+      _initialSelectionPageIndex = null;
       _pageTurnForward = index > currentPageIndex;
       _pageTurnNonce++;
       _interaction.clearSelection();
@@ -702,89 +766,158 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
       );
     }
 
-    Widget buildCanvasArea({required EdgeInsets padding}) {
+    Widget editableInner(double width, double height, {bool flat = false}) {
+      return PageEditorCanvas(
+        canvasKey: _canvasKey,
+        canvasW: width,
+        canvasH: height,
+        flatPresentation: flat || kIsWeb,
+        layers: layers,
+        interaction: _interaction,
+        layerBuilder: _layerBuilder,
+        onCanvasSizeChanged: (size) {
+          if (_canvasSize == size) return;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted || _canvasSize == size) return;
+            setState(() => _canvasSize = size);
+            vm.loadPendingEditAlbumIfNeeded(size);
+            vm.setCoverCanvasSize(size, isCover: false);
+          });
+        },
+        backgroundColor: vm.currentPage?.backgroundColor == null
+            ? null
+            : Color(vm.currentPage!.backgroundColor!),
+        isCover: false,
+        onAddPhoto: () {
+          if (!_isSaving) _toolbarActionHandler.addPhoto();
+        },
+        onChooseDesign: () {
+          if (!_isSaving) _handleModeChange(EditorMode.template, layers);
+        },
+        emptyPageActionsEnabled: !_isSaving,
+      );
+    }
+
+    Widget buildCanvasArea({required EdgeInsets padding, bool spread = false}) {
       return Padding(
         padding: padding,
         child: _PageEditorEntranceReveal(
           key: const Key('pageEditorCanvasReveal'),
-          disabled: kIsWeb,
-          delay: Duration.zero,
+          disabled: kIsWeb || MediaQuery.disableAnimationsOf(context),
           includeScale: true,
           child: _PageEditorPageTurnReveal(
             key: ValueKey('page-turn-$currentPageIndex-$_pageTurnNonce'),
-            disabled: kIsWeb,
+            disabled: kIsWeb || MediaQuery.disableAnimationsOf(context),
             forward: _pageTurnForward,
             child: _buildWorkspaceFrame(
               context,
               child: currentPageIndex == 0
                   ? EditCover(
                       key: _coverEditorKey,
-                      flatPresentation: kIsWeb,
+                      flatPresentation: true,
                       editAlbum: vm.album,
                       showAppBar: false,
                       initialCoverSize: vm.selectedCover,
                       showBottomToolbar: false,
                       interaction: _interaction,
                       canvasKey: _canvasKey,
-                      onSizeChanged: (size) {
-                        _canvasSize = size;
-                      },
+                      onSizeChanged: (size) => _canvasSize = size,
                     )
                   : LayoutBuilder(
-                      key: ValueKey(currentPageIndex),
-                      builder: (context, constraints) {
-                        const double sidePadding = 16.0;
-                        final double availW =
-                            constraints.maxWidth - sidePadding * 2;
-                        final double availH = constraints.maxHeight;
-                        const double logicalW = kCoverReferenceWidth;
-                        final double logicalH = logicalW / aspect;
-
-                        final double scaleByWidth = availW / logicalW;
-                        final double scaleByHeight = availH / logicalH;
-                        final double scale = math.min(
-                          scaleByWidth,
-                          scaleByHeight,
+                      builder: (context, box) {
+                        final count = spread ? 2 : 1;
+                        final width = math.min(
+                          math.max(1, box.maxWidth - 24) / count,
+                          math.max(1, box.maxHeight - 24) * aspect,
                         );
-                        final double innerW = logicalW * scale;
-                        final double innerH = logicalH * scale;
-
+                        final height = width / aspect;
+                        if (!spread)
+                          return Center(child: editableInner(width, height));
+                        final left = currentPageIndex.isOdd
+                            ? currentPageIndex
+                            : currentPageIndex - 1;
+                        final base = Size(
+                          kCoverReferenceWidth,
+                          kCoverReferenceWidth / aspect,
+                        );
+                        final preview = LayerBuilder(
+                          LayerInteractionManager.preview(ref, () => base),
+                          () => base,
+                        );
                         return Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: sidePadding,
+                          child: DecoratedBox(
+                            key: const ValueKey('editor-open-spread'),
+                            decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: .12),
+                                  blurRadius: 22,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
                             ),
-                            child: SizedBox(
-                              width: innerW,
-                              height: innerH,
-                              child: PageEditorCanvas(
-                                flatPresentation: kIsWeb,
-                                canvasKey: _canvasKey,
-                                canvasW: innerW,
-                                canvasH: innerH,
-                                layers: layers,
-                                interaction: _interaction,
-                                layerBuilder: _layerBuilder,
-                                onCanvasSizeChanged: (size) {
-                                  if (_canvasSize != size) {
-                                    WidgetsBinding.instance
-                                        .addPostFrameCallback((_) {
-                                          if (!mounted) return;
-                                          setState(() => _canvasSize = size);
-                                          vm.loadPendingEditAlbumIfNeeded(size);
-                                          vm.setCoverCanvasSize(
-                                            size,
-                                            isCover: vm.currentPageIndex == 0,
-                                          );
-                                        });
-                                  }
-                                },
-                                backgroundColor:
-                                    vm.currentPage?.backgroundColor != null
-                                    ? Color(vm.currentPage!.backgroundColor!)
-                                    : null,
-                                isCover: vm.currentPage?.isCover ?? false,
-                              ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                for (final index in [left, left + 1])
+                                  SizedBox(
+                                    width: width,
+                                    height: height,
+                                    child: index == currentPageIndex
+                                        ? DecoratedBox(
+                                            position:
+                                                DecorationPosition.foreground,
+                                            decoration: BoxDecoration(
+                                              border: Border.all(
+                                                color:
+                                                    ExperienceFormStyle.selectionInk(
+                                                      context,
+                                                    ).withValues(alpha: .55),
+                                              ),
+                                            ),
+                                            child: editableInner(
+                                              width,
+                                              height,
+                                              flat: true,
+                                            ),
+                                          )
+                                        : Semantics(
+                                            button: index < pages.length,
+                                            label: '$index쪽 편집',
+                                            child: GestureDetector(
+                                              key: ValueKey(
+                                                'editor-facing-page-$index',
+                                              ),
+                                              behavior: HitTestBehavior.opaque,
+                                              onTap: index < pages.length
+                                                  ? () => handlePageSelected(
+                                                      index,
+                                                    )
+                                                  : null,
+                                              child: index < pages.length
+                                                  ? ClipRect(
+                                                      child: AlbumReaderPageContent(
+                                                        layers:
+                                                            pages[index].layers,
+                                                        targetW: width,
+                                                        targetH: height,
+                                                        previewBuilder: preview,
+                                                        baseCanvasSize: base,
+                                                        flatPresentation: true,
+                                                        backgroundColor: Color(
+                                                          pages[index]
+                                                                  .backgroundColor ??
+                                                              0xFFFFFFFF,
+                                                        ),
+                                                      ),
+                                                    )
+                                                  : const ColoredBox(
+                                                      color: Colors.white,
+                                                    ),
+                                            ),
+                                          ),
+                                  ),
+                              ],
                             ),
                           ),
                         );
@@ -796,13 +929,14 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
       );
     }
 
-    Widget buildLayerActions() {
+    Widget buildLayerActions({bool showLabels = false}) {
       return AnimatedSwitcher(
         duration: SnapFitMotion.medium,
         switchInCurve: SnapFitMotion.entrance,
         switchOutCurve: Curves.easeInCubic,
         child: _interaction.selectedLayerId != null
             ? LayerActionPanel(
+                showLabels: showLabels,
                 layers: layers,
                 interaction: _interaction,
                 textEditor: TextEditorManager(
@@ -822,13 +956,6 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
                     _openDecorateSheetForLayer(layer),
               )
             : const SizedBox.shrink(),
-      );
-    }
-
-    Widget buildInlinePanel() {
-      if (_currentMode == EditorMode.none) return const SizedBox.shrink();
-      return _EditorToolPanelReveal(
-        child: _buildInlineToolPanel(context, _currentMode, layers),
       );
     }
 
@@ -863,58 +990,59 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
     }
 
     Widget buildLandscapeLayout() {
-      const sidePanelTop = 34.0;
-      const sidePanelBottom = 14.0;
       return Row(
         children: [
           SizedBox(
-            width: 92,
+            width: 80,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                10,
-                sidePanelTop,
-                6,
-                sidePanelBottom,
-              ),
+              padding: const EdgeInsets.fromLTRB(6, 8, 6, 8),
               child: buildPageSelector(),
             ),
           ),
           Expanded(
-            child: Stack(
+            child: Column(
               children: [
-                Positioned.fill(
+                Expanded(
                   child: buildCanvasArea(
-                    padding: const EdgeInsets.fromLTRB(2, 24, 2, 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 2,
+                      vertical: 4,
+                    ),
+                    spread: true,
                   ),
                 ),
-                Positioned(
-                  left: 8,
-                  top: sidePanelTop,
-                  width: 126,
-                  child: buildLayerActions(),
-                ),
-                if (_currentMode != EditorMode.none)
-                  Positioned(
-                    left: 8,
-                    top: 104,
-                    width: 148,
-                    bottom: sidePanelBottom,
-                    child: SingleChildScrollView(child: buildInlinePanel()),
+                if (_interaction.selectedLayerId != null)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 6),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 96),
+                      child: SingleChildScrollView(child: buildLayerActions()),
+                    ),
                   ),
               ],
             ),
           ),
-          SizedBox(
-            width: 88,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                6,
-                sidePanelTop,
-                10,
-                sidePanelBottom,
+          if (_currentMode != EditorMode.none)
+            SizedBox(
+              key: const ValueKey('editor-side-inspector'),
+              width: math.min(240, MediaQuery.sizeOf(context).width * .29),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(4, 8, 8, 8),
+                child: _EditorToolPanelReveal(
+                  child: _buildInlineToolPanel(
+                    context,
+                    _currentMode,
+                    layers,
+                    fillAvailableHeight: true,
+                  ),
+                ),
               ),
-              child: buildBottomMenu(),
             ),
+          SizedBox(
+            width: math
+                .max(72.0, MediaQuery.textScalerOf(context).scale(11) * 4 + 20)
+                .clamp(72.0, 112.0),
+            child: buildBottomMenu(),
           ),
         ],
       );
@@ -1136,9 +1264,10 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
     }
 
     Widget buildWebWorkspace() {
-      final selectedMode = _currentMode == EditorMode.none
-          ? EditorMode.layer
-          : _currentMode;
+      final selectedMode = _currentMode;
+      final selectedLayer = layers
+          .where((layer) => layer.id == _interaction.selectedLayerId)
+          .firstOrNull;
       final referenceSize = Size(
         kCoverReferenceWidth,
         kCoverReferenceWidth / aspect,
@@ -1167,46 +1296,48 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
             : null,
       );
 
-      WebAlbumEditorTool tool(
-        String label,
-        IconData icon,
-        EditorMode mode,
-      ) => WebAlbumEditorTool(
-        label: label,
-        icon: icon,
-        selected: selectedMode == mode,
-        onPressed: () => _handleModeChange(mode, layers),
-      );
+      WebAlbumEditorTool tool(String label, IconData icon, EditorMode mode) =>
+          WebAlbumEditorTool(
+            label: label,
+            icon: icon,
+            selected: selectedMode == mode,
+            onPressed: () => _handleModeChange(mode, layers),
+            opensProperties: false,
+          );
 
-      Widget progressOverlay({required String title, double? progress}) => Stack(
-        fit: StackFit.expand,
-        children: [
-          const ModalBarrier(dismissible: false, color: Color(0x66000000)),
-          Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 380),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: WebSurface(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(title, style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: WebPalette.of(context).ink,
-                      )),
-                      const SizedBox(height: 20),
-                      LinearProgressIndicator(value: progress),
-                    ],
+      Widget progressOverlay({required String title, double? progress}) =>
+          Stack(
+            fit: StackFit.expand,
+            children: [
+              const ModalBarrier(dismissible: false, color: Color(0x66000000)),
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 380),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: WebSurface(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            title,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: WebPalette.of(context).ink,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          LinearProgressIndicator(value: progress),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
-      );
+            ],
+          );
 
       return Stack(
         fit: StackFit.expand,
@@ -1222,6 +1353,11 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
             hasUnsavedChanges: vm.hasUnsavedChanges,
             isPersisted: (vm.album?.id ?? 0) > 0,
             isSaving: _isSaving,
+            lastAccountSavedAt: (vm.album?.id ?? 0) > 0
+                ? DateTime.tryParse(vm.album?.updatedAt ?? '')
+                : null,
+            lastDraftSavedAt: _lastDraftSavedAt,
+            selectedLayerId: _interaction.selectedLayerId,
             onBack: () async {
               final shouldPop = await _handleWillPop(vm, layers);
               if (shouldPop && mounted) Navigator.pop(context);
@@ -1232,16 +1368,20 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
                 : null,
             draftPending: _pendingDraftWrites > 0,
             draftFailed: _draftWriteFailed,
-            onUndo: canUndo ? () {
-              vm.undo();
-              _interaction.resetForPageChange();
-              if (mounted) setState(() {});
-            } : null,
-            onRedo: canRedo ? () {
-              vm.redo();
-              _interaction.resetForPageChange();
-              if (mounted) setState(() {});
-            } : null,
+            onUndo: canUndo
+                ? () {
+                    vm.undo();
+                    _interaction.resetForPageChange();
+                    if (mounted) setState(() {});
+                  }
+                : null,
+            onRedo: canRedo
+                ? () {
+                    vm.redo();
+                    _interaction.resetForPageChange();
+                    if (mounted) setState(() {});
+                  }
+                : null,
             onAddPage: !_isSaving && vm.canAddPage ? handleAddPage : null,
             onDeletePage: !_isSaving && vm.canDeleteCurrentPage
                 ? () => _confirmDeleteCurrentPage(vm)
@@ -1251,30 +1391,84 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
             canvas: GestureDetector(
               behavior: HitTestBehavior.translucent,
               onTap: _isSaving ? null : _interaction.clearSelection,
-              child: buildCanvasArea(padding: const EdgeInsets.fromLTRB(
-                24, 4, 24, 12,
-              )),
+              child: buildCanvasArea(
+                padding: const EdgeInsets.fromLTRB(24, 4, 24, 12),
+              ),
             ),
             properties: ColoredBox(
               color: WebPalette.of(context).surface,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (_interaction.selectedLayerId != null)
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: buildLayerActions(),
+              child: selectedLayer == null
+                  ? SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.touch_app_outlined,
+                              size: 32,
+                              color: WebPalette.of(context).muted,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              '사진이나 글을 선택해 주세요',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: WebPalette.of(context).ink,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '사진 교체·자르기와 글 편집을 바로 할 수 있어요.\n수치 입력은 고급 조정에서 확인하세요.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: WebPalette.of(context).muted,
+                                fontSize: 12,
+                                height: 1.6,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : LayoutBuilder(
+                      builder: (context, _) => SingleChildScrollView(
+                        key: const ValueKey('web-editor-properties-scroll'),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                12,
+                                12,
+                                12,
+                                12,
+                              ),
+                              child: buildLayerActions(showLabels: true),
+                            ),
+                            WebLayerTransformInspector(
+                              key: ValueKey('transform-${selectedLayer.id}'),
+                              layer: _interaction.currentTransformFor(
+                                selectedLayer,
+                              ),
+                              baseSize: _interaction.baseSizeFor(selectedLayer),
+                              enabled: !_isSaving,
+                              onChanged: ({x, y, width, height, rotation}) =>
+                                  _interaction.updateTransform(
+                                    selectedLayer,
+                                    x: x,
+                                    y: y,
+                                    width: width,
+                                    height: height,
+                                    rotation: rotation,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  Expanded(
-                    child: _buildInlineToolPanel(
-                      context,
-                      selectedMode,
-                      layers,
-                      fillAvailableHeight: true,
-                    ),
-                  ),
-                ],
-              ),
             ),
             tools: [
               WebAlbumEditorTool(
@@ -1289,12 +1483,14 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
                 onPressed: () => _handleModeChange(EditorMode.text, layers),
                 opensProperties: false,
               ),
-              if (currentPageIndex == 0) WebAlbumEditorTool(
-                label: '표지 테마',
-                icon: Icons.style_outlined,
-                onPressed: () => unawaited(_toolbarActionHandler.openCoverTheme()),
-                opensProperties: false,
-              ),
+              if (currentPageIndex == 0)
+                WebAlbumEditorTool(
+                  label: '표지 테마',
+                  icon: Icons.style_outlined,
+                  onPressed: () =>
+                      unawaited(_toolbarActionHandler.openCoverTheme()),
+                  opensProperties: false,
+                ),
               tool('레이어', Icons.layers_outlined, EditorMode.layer),
               tool('레이아웃', Icons.dashboard_outlined, EditorMode.layout),
               tool('템플릿', Icons.grid_view_outlined, EditorMode.template),
@@ -1316,10 +1512,16 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
               right: 20,
               bottom: 20,
               child: WebSurface(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 12,
+                ),
                 child: Text(
                   '사진 업로드 중 ${(state!.backgroundUploadProgress * 100).toInt()}%',
-                  style: TextStyle(color: WebPalette.of(context).ink, fontSize: 12),
+                  style: TextStyle(
+                    color: WebPalette.of(context).ink,
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ),
@@ -1359,536 +1561,230 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
         },
         child: WillPopScope(
           onWillPop: () => _handleWillPop(vm, layers),
-          child: kIsWeb ? buildWebWorkspace() : Scaffold(
-            resizeToAvoidBottomInset: false,
-            backgroundColor: Colors.transparent,
-            extendBodyBehindAppBar: true,
-            appBar: AppBar(
-              toolbarHeight: desktopWorkspace ? 64 : 64.h,
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              centerTitle: true,
-              leading: IconButton(
-                icon: Icon(
-                  platformBackIcon(),
-                  color: SnapFitColors.textPrimaryOf(context),
-                ),
-                onPressed: () async {
-                  final shouldPop = await _handleWillPop(vm, layers);
-                  if (shouldPop && mounted) {
-                    Navigator.pop(context);
-                  }
-                },
-              ),
-              title: desktopWorkspace
-                  ? Text(
-                      '앨범 편집',
-                      style: ExperienceFormStyle.text(
-                        context,
-                        18,
-                        weight: FontWeight.w600,
-                      ),
-                    )
-                  : null,
-              actions: [
-                if (_hasCreationDraft)
-                  IconButton(
-                    key: const ValueKey('editor-save-draft'),
-                    tooltip: _draftWriteFailed ? '임시 저장 다시 시도' : '이 기기에 임시 저장',
-                    onPressed: _isSaving || _pendingDraftWrites > 0
-                        ? null
-                        : () => _saveCreationEditorDraft(),
-                    icon: _pendingDraftWrites > 0
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Icon(
-                            _draftWriteFailed
-                                ? Icons.error_outline
-                                : Icons.save_outlined,
-                          ),
-                  ),
-                Padding(
-                  padding: EdgeInsets.only(right: 12.w),
-                  child: Builder(
-                    builder: (context) {
-                      final isLandscape =
-                          MediaQuery.sizeOf(context).width >
-                          MediaQuery.sizeOf(context).height;
-                      return SnapFitPressable(
-                        onTap: _isSaving
-                            ? null
-                            : () => _onSaveAlbum(vm, layers),
-                        pressedScale: 0.96,
-                        borderRadius: BorderRadius.circular(999.r),
-                        child: AnimatedOpacity(
-                          duration: SnapFitMotion.fast,
-                          opacity: _isSaving ? 0.45 : 1,
-                          child: Container(
-                            height: desktopWorkspace
-                                ? 38
-                                : isLandscape
-                                ? 30
-                                : 34.h,
-                            constraints: BoxConstraints(
-                              minWidth: desktopWorkspace
-                                  ? 86
-                                  : isLandscape
-                                  ? 46
-                                  : 42.w,
-                            ),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: isLandscape ? 12 : 8.w,
-                            ),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(999.r),
-                              gradient: const LinearGradient(
-                                colors: [
-                                  SnapFitColors.primaryGradientStart,
-                                  SnapFitColors.primaryGradientEnd,
-                                ],
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: SnapFitColors.accent.withOpacity(0.18),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 5),
-                                ),
-                              ],
-                            ),
-                            child: Text(
-                              desktopWorkspace ? '앨범 저장' : '저장',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w900,
-                                fontSize: desktopWorkspace
-                                    ? 14
-                                    : isLandscape
-                                    ? 11
-                                    : 12.sp,
-                                height: 1.0,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-            body: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: Theme.of(context).brightness == Brightness.dark
-                      ? const [Color(0xFF0F1112), Color(0xFF1C1814)]
-                      : const [Color(0xFFEFE2D0), Color(0xFFF8EFE2)],
-                ),
-              ),
-              child: Stack(
-                children: [
-                  _buildEditorStudioBackground(context),
-                  SafeArea(
-                    bottom: false,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        if (desktopWorkspace) return buildDesktopLayout();
-                        final isLandscape =
-                            constraints.maxWidth > constraints.maxHeight;
-                        if (isLandscape) return buildLandscapeLayout();
-
-                        return Column(
-                          children: [
-                            // 1. Top Page Selector (리스트–아이콘과 같은 여백으로 정리)
-                            Padding(
-                              padding: EdgeInsets.only(top: 16.h),
-                              child: SnapFitFadeIn(
-                                key: const Key('pageEditorSelectorReveal'),
-                                delay: const Duration(milliseconds: 80),
-                                child: PageListSelector(
-                                  pages: pages,
-                                  currentPageIndex: currentPageIndex,
-                                  onPageSelected: (index) {
-                                    if (index == currentPageIndex) return;
-                                    _pageTurnForward = index > currentPageIndex;
-                                    _pageTurnNonce++;
-                                    _interaction.clearSelection();
-                                    vm.goToPage(index);
-                                    // 페이지 전환 시 _canvasSize 리셋 → 다음 렌더에서 PageEditorCanvas가 실제 크기 재측정
-                                    setState(() => _canvasSize = Size.zero);
-                                  },
-                                  onAddPage: vm.canAddPage
-                                      ? handleAddPage
-                                      : null,
-                                  addPageDescription: vm.addPageDescription,
-                                  canDeleteCurrentPage: vm.canDeleteCurrentPage,
-                                  onDeleteCurrentPage: () =>
-                                      _confirmDeleteCurrentPage(vm),
-                                ),
-                              ),
-                            ),
-                            // 2. Main Canvas Area
-                            // AnimatedSwitcher를 사용하지 않는다: EditCover와 PageEditorCanvas가
-                            // 동일한 _canvasKey를 공유하므로 전환 애니메이션 중 두 위젯이 동시에
-                            // 트리에 존재하면 GlobalKey 충돌이 발생한다.
-                            Expanded(
-                              child: Padding(
-                                padding: EdgeInsets.fromLTRB(
-                                  12.w,
-                                  6.h,
-                                  12.w,
-                                  0,
-                                ),
-                                child: _PageEditorEntranceReveal(
-                                  key: const Key('pageEditorCanvasReveal'),
-                                  delay: Duration.zero,
-                                  includeScale: true,
-                                  child: _PageEditorPageTurnReveal(
-                                    key: ValueKey(
-                                      'page-turn-$currentPageIndex-$_pageTurnNonce',
-                                    ),
-                                    forward: _pageTurnForward,
-                                    child: _buildWorkspaceFrame(
-                                      context,
-                                      child: currentPageIndex == 0
-                                          ? EditCover(
-                                              key: _coverEditorKey,
-                                              editAlbum: vm.album,
-                                              showAppBar: false,
-                                              initialCoverSize:
-                                                  vm.selectedCover,
-                                              showBottomToolbar: false,
-                                              interaction: _interaction,
-                                              canvasKey: _canvasKey,
-                                              onSizeChanged: (size) {
-                                                _canvasSize = size;
-                                              },
-                                            )
-                                          : LayoutBuilder(
-                                              key: ValueKey(currentPageIndex),
-                                              builder: (context, constraints) {
-                                                const double sidePadding = 16.0;
-                                                final double availW =
-                                                    constraints.maxWidth -
-                                                    sidePadding * 2;
-                                                final double availH =
-                                                    constraints.maxHeight;
-                                                const double logicalW =
-                                                    kCoverReferenceWidth;
-                                                final double logicalH =
-                                                    logicalW / aspect;
-
-                                                final double scaleByWidth =
-                                                    availW / logicalW;
-                                                final double scaleByHeight =
-                                                    availH / logicalH;
-                                                final double scale = math.min(
-                                                  scaleByWidth,
-                                                  scaleByHeight,
-                                                );
-                                                final double innerW =
-                                                    logicalW * scale;
-                                                final double innerH =
-                                                    logicalH * scale;
-
-                                                return Center(
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal:
-                                                              sidePadding,
-                                                        ),
-                                                    child: SizedBox(
-                                                      width: innerW,
-                                                      height: innerH,
-                                                      child: PageEditorCanvas(
-                                                        canvasKey: _canvasKey,
-                                                        canvasW: innerW,
-                                                        canvasH: innerH,
-                                                        layers: layers,
-                                                        interaction:
-                                                            _interaction,
-                                                        layerBuilder:
-                                                            _layerBuilder,
-                                                        onCanvasSizeChanged: (size) {
-                                                          if (_canvasSize !=
-                                                              size) {
-                                                            WidgetsBinding
-                                                                .instance
-                                                                .addPostFrameCallback((
-                                                                  _,
-                                                                ) {
-                                                                  if (!mounted)
-                                                                    return;
-                                                                  setState(
-                                                                    () =>
-                                                                        _canvasSize =
-                                                                            size,
-                                                                  );
-                                                                  vm.loadPendingEditAlbumIfNeeded(
-                                                                    size,
-                                                                  );
-                                                                  vm.setCoverCanvasSize(
-                                                                    size,
-                                                                    isCover:
-                                                                        vm.currentPageIndex ==
-                                                                        0,
-                                                                  );
-                                                                });
-                                                          }
-                                                        },
-                                                        backgroundColor:
-                                                            vm
-                                                                    .currentPage
-                                                                    ?.backgroundColor !=
-                                                                null
-                                                            ? Color(
-                                                                vm
-                                                                    .currentPage!
-                                                                    .backgroundColor!,
-                                                              )
-                                                            : null,
-                                                        isCover:
-                                                            vm
-                                                                .currentPage
-                                                                ?.isCover ??
-                                                            false,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            // 툴바 영역은 항상 동일 높이로 확보하여 커버/캔버스의 위아래 위치가 변하지 않도록 한다.
-                            // 툴바 영역은 충분한 고정 높이(옵시티 슬라이더 포함)를 확보해서
-                            // RenderFlex overflow가 발생하지 않도록 한다.
-                            SizedBox(
-                              height: math.max(64, 72.h),
-                              child: Center(
-                                child: AnimatedSwitcher(
-                                  duration: SnapFitMotion.medium,
-                                  switchInCurve: SnapFitMotion.entrance,
-                                  switchOutCurve: Curves.easeInCubic,
-                                  child: _interaction.selectedLayerId != null
-                                      ? LayerActionPanel(
-                                          layers: layers,
-                                          interaction: _interaction,
-                                          textEditor: TextEditorManager(
-                                            context,
-                                            ref.read(
-                                              albumEditorViewModelProvider
-                                                  .notifier,
-                                            ),
-                                          ),
-                                          onRefresh: () => setState(() {}),
-                                          onOpenGallery: (LayerModel layer) =>
-                                              _openGalleryForPlaceholder(layer),
-                                          onOpenPhotoCrop: (layer) =>
-                                              editPhotoCrop(
-                                                context,
-                                                ref,
-                                                layer,
-                                                layerBuilder: _layerBuilder,
-                                              ),
-                                          onOpenDecorateSheet:
-                                              (LayerModel layer) =>
-                                                  _openDecorateSheetForLayer(
-                                                    layer,
-                                                  ),
-                                        )
-                                      : const SizedBox.shrink(),
-                                ),
-                              ),
-                            ),
-
-                            // Bottom Menu (고정)
-                            Padding(
-                              padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 8.h),
-                              child: SnapFitFadeIn(
-                                key: const Key('pageEditorDockReveal'),
-                                delay: const Duration(milliseconds: 140),
-                                beginOffset: const Offset(0, 0.055),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    // 헤더 row – 표지 편집과 동일한 위치/디자인
-                                    Padding(
-                                      padding: EdgeInsets.fromLTRB(
-                                        4.w,
-                                        0,
-                                        4.w,
-                                        6.h,
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              '편집 도구',
-                                              style: TextStyle(
-                                                fontSize: 12.5.sp,
-                                                fontWeight: FontWeight.w900,
-                                                letterSpacing: -0.2,
-                                                color:
-                                                    SnapFitColors.textPrimaryOf(
-                                                      context,
-                                                    ),
-                                              ),
-                                            ),
-                                          ),
-                                          _EditorMiniHistoryButton(
-                                            icon: Icons.undo_rounded,
-                                            enabled: canUndo,
-                                            tooltip: '되돌리기',
-                                            onTap: () {
-                                              vm.undo();
-                                              _interaction.resetForPageChange();
-                                              if (mounted) setState(() {});
-                                            },
-                                          ),
-                                          SizedBox(width: 4.w),
-                                          _EditorMiniHistoryButton(
-                                            icon: Icons.redo_rounded,
-                                            enabled: canRedo,
-                                            tooltip: '다시하기',
-                                            onTap: () {
-                                              vm.redo();
-                                              _interaction.resetForPageChange();
-                                              if (mounted) setState(() {});
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    EditorBottomMenu(
-                                      currentMode: _currentMode,
-                                      isCover: currentPageIndex == 0,
-                                      showCoverMenuItem: false,
-                                      canUndo: canUndo,
-                                      canRedo: canRedo,
-                                      onUndo: () {
-                                        vm.undo();
-                                        _interaction.resetForPageChange();
-                                        if (mounted) setState(() {});
-                                      },
-                                      onRedo: () {
-                                        vm.redo();
-                                        _interaction.resetForPageChange();
-                                        if (mounted) setState(() {});
-                                      },
-                                      onModeChanged: (mode) =>
-                                          _handleModeChange(mode, layers),
-                                      onAddPhoto: () {
-                                        _toolbarActionHandler.addPhoto();
-                                      },
-                                      onCover: () => _toolbarActionHandler
-                                          .openCoverTheme(),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
+          child: kIsWeb
+              ? buildWebWorkspace()
+              : Scaffold(
+                  resizeToAvoidBottomInset: false,
+                  backgroundColor: Colors.transparent,
+                  appBar: AppBar(
+                    toolbarHeight: desktopWorkspace ? 64 : 52,
+                    backgroundColor: AlbumStageStyle.top(context),
+                    surfaceTintColor: Colors.transparent,
+                    systemOverlayStyle: AlbumStageStyle.overlay(context),
+                    elevation: 0,
+                    centerTitle: true,
+                    leading: IconButton(
+                      tooltip: '편집 마치기',
+                      icon: const ExperienceIcon('ArrowLeft', size: 22),
+                      onPressed: () async {
+                        final shouldPop = await _handleWillPop(vm, layers);
+                        if (shouldPop && mounted) Navigator.pop(context);
                       },
                     ),
-                  ),
-
-                  if (_showEditorHint &&
-                      !_isSaving &&
-                      _interaction.selectedLayerId == null &&
-                      _currentMode == EditorMode.none)
-                    _buildEditorHint(context, isCover: currentPageIndex == 0),
-
-                  // 저장 중 진행률 오버레이
-                  if (_isSaving)
-                    PageEditorSaveOverlay(
-                      progress: _saveStatus.phase == AlbumSavePhase.uploading
-                          ? _saveStatus.fraction
-                          : null,
-                      status: _saveStatus.label,
-                    ),
-
-                  // 백그라운드 이미지 업로드 진행률 배지 (저장 이후에도 계속 업로드되는 경우)
-                  if (!_isSaving &&
-                      (state?.backgroundUploadProgress ?? 0) > 0 &&
-                      (state?.backgroundUploadProgress ?? 0) < 1)
-                    Positioned(
-                      bottom: 80.h,
-                      left: 16.w,
-                      right: 16.w,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 12.w,
-                          vertical: 8.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: SnapFitColors.overlayStrongOf(context),
-                          borderRadius: BorderRadius.circular(999.r),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 14.r,
-                              height: 14.r,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                value: state!.backgroundUploadProgress,
-                                color: const Color(0xFF8F6846),
-                                backgroundColor: Colors.white24,
-                              ),
-                            ),
-                            SizedBox(width: 8.w),
-                            Text(
-                              '사진 업로드 중... ${(state.backgroundUploadProgress * 100).toInt()}%',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.w500,
-                                decoration: TextDecoration.none,
-                              ),
-                            ),
-                          ],
-                        ),
+                    title: Text(
+                      desktopWorkspace
+                          ? '앨범 편집'
+                          : currentPageIndex == 0
+                          ? '표지'
+                          : '$currentPageIndex쪽',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: ExperienceFormStyle.text(
+                        context,
+                        14,
+                        weight: FontWeight.w600,
                       ),
                     ),
+                    actions: [
+                      if (_hasCreationDraft)
+                        IconButton(
+                          key: const ValueKey('editor-save-draft'),
+                          tooltip: _draftWriteFailed
+                              ? '임시 저장 다시 시도'
+                              : '이 기기에 임시 저장',
+                          onPressed: _isSaving || _pendingDraftWrites > 0
+                              ? null
+                              : () => _saveCreationEditorDraft(),
+                          icon: _pendingDraftWrites > 0
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Icon(
+                                  _draftWriteFailed
+                                      ? Icons.error_outline
+                                      : Icons.save_outlined,
+                                  size: 21,
+                                ),
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          right: 12,
+                          top: 4,
+                          bottom: 4,
+                        ),
+                        child: FilledButton.icon(
+                          key: const ValueKey('editor-save-album'),
+                          onPressed: _isSaving
+                              ? null
+                              : () => _onSaveAlbum(vm, layers),
+                          icon: ExperienceIcon(
+                            'Check',
+                            size: 17,
+                            color: ExperienceFormStyle.primary(
+                              context,
+                            ).foregroundColor?.resolve({}),
+                          ),
+                          label: Text(desktopWorkspace ? '앨범 저장' : '저장'),
+                          style: ExperienceFormStyle.primary(context).copyWith(
+                            minimumSize: const WidgetStatePropertyAll(
+                              Size(76, 48),
+                            ),
+                            padding: const WidgetStatePropertyAll(
+                              EdgeInsets.symmetric(horizontal: 12),
+                            ),
+                            textStyle: WidgetStatePropertyAll(
+                              ExperienceFormStyle.text(
+                                context,
+                                13,
+                                weight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  body: Container(
+                    decoration: BoxDecoration(
+                      gradient: AlbumStageStyle.gradient(context),
+                    ),
+                    child: Stack(
+                      children: [
+                        SafeArea(
+                          top: false,
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              if (desktopWorkspace) return buildDesktopLayout();
+                              final isLandscape =
+                                  constraints.maxWidth > constraints.maxHeight;
+                              if (isLandscape) return buildLandscapeLayout();
 
-                  // 전역 로딩 오버레이 (생성 플로우 전환용)
-                  if (state?.isCreatingInBackground ?? false)
-                    const PageEditorPreparingOverlay(),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+                              return Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: buildPageSelector(),
+                                  ),
+                                  Expanded(
+                                    child: buildCanvasArea(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        8,
+                                        4,
+                                        8,
+                                        12,
+                                      ),
+                                    ),
+                                  ),
+                                  if (_interaction.selectedLayerId != null)
+                                    Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        12,
+                                        0,
+                                        12,
+                                        8,
+                                      ),
+                                      child: ConstrainedBox(
+                                        constraints: const BoxConstraints(
+                                          maxHeight: 110,
+                                        ),
+                                        child: SingleChildScrollView(
+                                          child: buildLayerActions(),
+                                        ),
+                                      ),
+                                    ),
+                                  buildBottomMenu(),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
 
-  Widget _buildEditorStudioBackground(BuildContext context) {
-    final isDark = SnapFitColors.isDark(context);
-    return Positioned.fill(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark
-                ? const [Color(0xFF0F1112), Color(0xFF1C1814)]
-                : const [Color(0xFFEFE2D0), Color(0xFFF8EFE2)],
-          ),
+                        if (_showEditorHint &&
+                            !_isSaving &&
+                            _interaction.selectedLayerId == null &&
+                            _currentMode == EditorMode.none)
+                          _buildEditorHint(
+                            context,
+                            isCover: currentPageIndex == 0,
+                          ),
+
+                        // 저장 중 진행률 오버레이
+                        if (_isSaving)
+                          PageEditorSaveOverlay(
+                            progress:
+                                _saveStatus.phase == AlbumSavePhase.uploading
+                                ? _saveStatus.fraction
+                                : null,
+                            status: _saveStatus.label,
+                          ),
+
+                        // 백그라운드 이미지 업로드 진행률 배지 (저장 이후에도 계속 업로드되는 경우)
+                        if (!_isSaving &&
+                            (state?.backgroundUploadProgress ?? 0) > 0 &&
+                            (state?.backgroundUploadProgress ?? 0) < 1)
+                          Positioned(
+                            bottom: 80.h,
+                            left: 16.w,
+                            right: 16.w,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 12.w,
+                                vertical: 8.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: SnapFitColors.overlayStrongOf(context),
+                                borderRadius: BorderRadius.circular(999.r),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 14.r,
+                                    height: 14.r,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      value: state!.backgroundUploadProgress,
+                                      color: const Color(0xFF8F6846),
+                                      backgroundColor: Colors.white24,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8.w),
+                                  Text(
+                                    '사진 업로드 중... ${(state.backgroundUploadProgress * 100).toInt()}%',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.w500,
+                                      decoration: TextDecoration.none,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                        // 전역 로딩 오버레이 (생성 플로우 전환용)
+                        if (state?.isCreatingInBackground ?? false)
+                          const PageEditorPreparingOverlay(),
+                      ],
+                    ),
+                  ),
+                ),
         ),
       ),
     );
@@ -1971,6 +1867,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
     try {
       final result = await showDialog<String>(
         context: context,
+        useRootNavigator: false,
+        routeSettings: editorModalRouteSettings(context),
         builder: (ctx) {
           return AlertDialog(
             scrollable: _hasCreationDraft,
@@ -2040,7 +1938,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
       onPressed: () => Navigator.pop(dialogContext, 'draft'),
       style: OutlinedButton.styleFrom(
         minimumSize: const Size(0, 44),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        shape: const StadiumBorder(),
       ),
       child: const Text('임시 저장 후 나가기', textAlign: TextAlign.center),
     );
@@ -2048,7 +1946,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
       onPressed: () => Navigator.pop(dialogContext, 'save'),
       style: FilledButton.styleFrom(
         minimumSize: const Size(0, 44),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        shape: const StadiumBorder(),
       ),
       child: const Text('앨범 저장', textAlign: TextAlign.center),
     );
@@ -2184,6 +2082,80 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
     );
   }
 
+  Future<void> _openWebEditorTool(EditorMode initialMode) async {
+    if (!mounted || _webToolDialogOpen || _isSaving) return;
+    final editorScope = ProviderScope.containerOf(context, listen: false);
+    final pageId = ref
+        .read(albumEditorViewModelProvider.notifier)
+        .currentPage
+        ?.id;
+    setState(() {
+      _webToolDialogOpen = true;
+      _currentMode = initialMode;
+    });
+    try {
+      await showDialog<void>(
+        context: context,
+        useRootNavigator: false,
+        routeSettings: editorModalRouteSettings(context),
+        builder: (_) => UncontrolledProviderScope(
+          container: editorScope,
+          child: WebEditorToolDialog(
+            initialMode: initialMode,
+            onModeChanged: (mode) {
+              if (mounted) setState(() => _currentMode = mode);
+            },
+            panelBuilder: (toolContext, mode, close) => Consumer(
+              builder: (context, toolRef, _) {
+                final state = toolRef.watch(albumEditorViewModelProvider).value;
+                final vm = toolRef.read(albumEditorViewModelProvider.notifier);
+                if (vm.currentPage?.id != pageId) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Text('편집할 페이지가 변경됐어요. 창을 닫고 다시 열어주세요.'),
+                    ),
+                  );
+                }
+                return switch (mode) {
+                  EditorMode.layer => LayerManagerPanel(
+                    layers: state?.layers ?? const [],
+                    interaction: _interaction,
+                    showHandle: false,
+                    onLayerSelected: (_) => close(),
+                  ),
+                  EditorMode.layout => const TemplateSelectionPanel(
+                    title: '레이아웃',
+                    showHeader: false,
+                  ),
+                  EditorMode.template => const DesignTemplatePanel(
+                    showHeader: false,
+                  ),
+                  EditorMode.sticker => DecoratePanel(
+                    mode: DecorateSheetMode.sticker,
+                    onClose: close,
+                  ),
+                  EditorMode.backgroundColor => DecoratePanel(
+                    mode: DecorateSheetMode.backgroundColor,
+                    onClose: close,
+                  ),
+                  _ => const SizedBox.shrink(),
+                };
+              },
+            ),
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _webToolDialogOpen = false;
+          _currentMode = EditorMode.none;
+        });
+      }
+    }
+  }
+
   void _handleModeChange(EditorMode mode, List<LayerModel> layers) {
     if (_showEditorHint) {
       setState(() => _showEditorHint = false);
@@ -2200,24 +2172,30 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
       return;
     }
 
+    if (kIsWeb) {
+      unawaited(_openWebEditorTool(mode));
+      return;
+    }
+
     // 가로 모드: 사이드바 인라인 패널 사용
     final isLandscape =
         MediaQuery.sizeOf(context).width > MediaQuery.sizeOf(context).height;
     final viewport = MediaQuery.sizeOf(context);
-    if (kIsWeb || isLandscape ||
-        (viewport.width >= 1100 && viewport.height >= 600)) {
+    if (isLandscape || (viewport.width >= 1100 && viewport.height >= 600)) {
       setState(() => _currentMode = mode);
       return;
     }
 
     // 세로 모드: 커버 편집과 동일하게 모달 바텀시트 사용
     setState(() => _currentMode = mode);
+    final editorScope = ProviderScope.containerOf(context, listen: false);
     showModalBottomSheet(
       context: context,
+      routeSettings: editorModalRouteSettings(context),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
-        return switch (mode) {
+        final panel = switch (mode) {
           EditorMode.sticker => const DecoratePanel(
             mode: DecorateSheetMode.sticker,
           ),
@@ -2232,6 +2210,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
           EditorMode.template => const DesignTemplatePanel(closeOnApply: false),
           _ => const SizedBox.shrink(),
         };
+        return UncontrolledProviderScope(container: editorScope, child: panel);
       },
     ).then((_) {
       if (mounted) setState(() => _currentMode = EditorMode.none);
@@ -2293,11 +2272,11 @@ class _InlineEditorAtelierPanel extends StatelessWidget {
             : MediaQuery.sizeOf(context).height * .50,
         decoration: BoxDecoration(
           color: ExperienceFormStyle.surface(context),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(SnapFitRadius.lg),
           border: Border.all(color: borderColor),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(SnapFitRadius.lg),
           child: Column(
             children: [
               Padding(
@@ -2343,55 +2322,6 @@ class _InlineEditorAtelierPanel extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _EditorMiniHistoryButton extends StatelessWidget {
-  const _EditorMiniHistoryButton({
-    required this.icon,
-    required this.enabled,
-    required this.tooltip,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final bool enabled;
-  final String tooltip;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = SnapFitColors.isDark(context);
-    return Tooltip(
-      message: tooltip,
-      child: GestureDetector(
-        onTap: enabled ? onTap : null,
-        child: AnimatedOpacity(
-          duration: SnapFitMotion.fast,
-          opacity: enabled ? 1.0 : 0.28,
-          child: Container(
-            width: 34.r,
-            height: 34.r,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isDark
-                  ? Colors.white.withOpacity(0.08)
-                  : const Color(0xFFEDE8E0),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withOpacity(0.12)
-                    : const Color(0xFFD5CDBF),
-              ),
-            ),
-            child: Icon(
-              icon,
-              size: 17,
-              color: SnapFitColors.textPrimaryOf(context),
-            ),
           ),
         ),
       ),

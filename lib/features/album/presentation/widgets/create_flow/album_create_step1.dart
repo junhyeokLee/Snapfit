@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../../../core/constants/album_page_policy.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 import '../../../domain/entities/layer.dart';
 import '../../../../store/presentation/widgets/template_page_renderer.dart';
 import '../../../../store/presentation/widgets/template_book_artwork.dart';
@@ -151,7 +152,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                   style: ExperienceFormStyle.text(
                     context,
                     20,
-                    weight: FontWeight.w600,
+                    weight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -159,25 +160,58 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                 IconButton(
                   tooltip: '시작 방식 변경',
                   onPressed: widget.onChangeDesign,
-                  icon: const Icon(Icons.swap_horiz, size: 21),
+                  icon: const ExperienceIcon('RefreshCw', size: 21),
                 ),
             ],
           ),
-          Wrap(
-            spacing: 12,
-            runSpacing: 4,
-            children: [
-              Text(
-                widget.sourceLabel,
-                style: ExperienceFormStyle.text(context, 12, secondary: true),
+          Semantics(
+            key: const ValueKey('creation-selection-summary'),
+            container: true,
+            liveRegion: true,
+            label:
+                '${widget.sourceLabel} 선택. '
+                '${widget.selectedCover == null ? '책 크기를 선택해주세요' : '${cover.displayName}, ${cover.coverType.label} 선택됨'}. '
+                '내지 ${widget.selectedPageCount}쪽.'
+                '${_awaitingPhotos ? ' 사진 추가 전.' : ''}',
+            child: ExcludeSemantics(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 4,
+                    children: [
+                      Text(
+                        widget.sourceLabel,
+                        style: ExperienceFormStyle.text(
+                          context,
+                          12,
+                          secondary: true,
+                        ),
+                      ),
+                      if (_awaitingPhotos)
+                        Text(
+                          '사진 추가 전',
+                          key: const ValueKey('creation-cover-awaiting-photos'),
+                          style: ExperienceFormStyle.text(
+                            context,
+                            12,
+                            secondary: true,
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    widget.selectedCover == null
+                        ? '책 크기를 선택해주세요'
+                        : '선택됨 · ${cover.displayName} · ${cover.coverType.label} · 내지 ${widget.selectedPageCount}쪽',
+                    key: const ValueKey('creation-selected-settings'),
+                    style: ExperienceFormStyle.text(context, 12),
+                  ),
+                ],
               ),
-              if (_awaitingPhotos)
-                Text(
-                  '사진 추가 전',
-                  key: const ValueKey('creation-cover-awaiting-photos'),
-                  style: ExperienceFormStyle.text(context, 12, secondary: true),
-                ),
-            ],
+            ),
           ),
           const SizedBox(height: 22),
           _label(context, '앨범 제목'),
@@ -274,15 +308,6 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                 style: ExperienceFormStyle.text(context, 12, secondary: true),
               ),
             ),
-          if (widget.onChangeDesign != null)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: widget.onChangeDesign,
-                icon: const Icon(Icons.swap_horiz, size: 18),
-                label: const Text('디자인 변경'),
-              ),
-            ),
         ],
       ),
       actions: ValueListenableBuilder<TextEditingValue>(
@@ -298,7 +323,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                     !_tooManyPages
                 ? widget.onNext
                 : null,
-            style: ExperienceFormStyle.primary(context),
+            style: CreationStyle.primary(context),
             child: Text(_hasTemplate ? '사진 채우기' : '표지 만들기'),
           ),
         ),

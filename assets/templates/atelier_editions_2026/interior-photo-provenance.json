@@ -1,0 +1,23 @@
+{
+  "method": "built-in image_gen",
+  "date": "2026-10-16",
+  "usage": "Editable sample photography for green-hours interiors; not flattened template pages",
+  "commercialReview": "pending-owner-review",
+  "items": [
+    {
+      "asset": "assets/templates/atelier_editions_2026/green-hours-watering.png",
+      "original": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-f729978f-d6f2-4141-a68e-e6195e0e86eb.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: original editorial sample photograph for an editable premium botanical photo album, not a finished page. A close, candid view of an adult's two hands gently watering a small lush basil plant in a weathered terracotta pot on a real pale stone windowsill. Only forearms and hands in frame; no face. Slender brushed metal watering can, thin physically believable stream of water entering soil, detailed basil veins and a few natural soil crumbs. Soft bright morning daylight. Quiet green, silver and terracotta palette. Authentic premium gardening magazine photography, tactile natural materials, sharp believable plant details, no heavy blur, no text or logo, no paper collage or graphics. Landscape 3:2 composition, entire pot and hands comfortably inside central 70 percent so it can crop to square or portrait; neither cut off at edges."
+    },
+    {
+      "asset": "assets/templates/atelier_editions_2026/green-hours-tools.png",
+      "original": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-cf7ca9da-a63d-4c15-8a49-95a8c940f1b9.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: original high-end botanical photo album sample image, photograph only. Overhead editorial still life of a gardener's working tools on a pale sage green painted wooden table: slender antique pruning scissors, an open folded linen pouch, natural jute twine, a worn small terracotta pot, a hand trowel with a wood handle, three blank kraft seed envelopes and a freshly cut fern sprig. Realistic slightly asymmetrical human arrangement, cohesive restrained sage green, steel, charcoal, muted terracotta and ivory palette. Rich tactile fibres, quiet soft side daylight, fine realistic detail. Landscape 3:2, entire arrangement comfortably inside central 75 percent for cropping. No food, no flowers bouquet, no fake text, no labels, no logos, no border, no graphic collage, not a render."
+    },
+    {
+      "asset": "assets/templates/atelier_editions_2026/green-hours-leaf-study.png",
+      "original": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-57edd02d-6f0e-46cc-b515-b3ea77b6a29e.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: original photographic sample for a premium botanical field journal. A crisp close editorial photograph of a single newly unfurled pale green fern frond, softly curled tip and detailed leaflets, among a few mature deep green fern stems growing in a charcoal ceramic pot beside a pale blue window. Natural live plant, not an illustration or pressed specimen. Morning side light passing through translucent young leaves. Rich fine leaf veins, realistic stem anatomy, restrained cool blue, pale chartreuse and forest green with natural depth but no excessive blur. Vertical-friendly subject centered in a landscape 3:2 photograph, all meaningful frond detail inside central 65 percent. No flowers, hands, people, words, labels, collage, watermark, logos or decorative graphics."
+    }
+  ]
+}

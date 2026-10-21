@@ -42,6 +42,7 @@ import 'package:snap_fit/shared/widgets/studio_decoration.dart';
 
 import '../helpers/fake_album.dart';
 import 'ai_album_start_step_test.dart' show loadCreationFonts;
+import '../support/store_catalog_navigation.dart';
 import 'auth_gate_test.dart' show FakeHomeViewModel;
 import 'my_page_screen_test.dart' show FakeAuthViewModel;
 import 'page_editor_screen_golden_test.dart'
@@ -56,6 +57,9 @@ class _ProductionPaintBinding extends AutomatedTestWidgetsFlutterBinding {
 Widget _app(Widget child, ValueNotifier<bool> dark, {GlobalKey? captureKey}) =>
     ProviderScope(
       overrides: [
+        homeUiStateProvider.overrideWith(
+          () => HomeUiStateNotifier(initialIndex: 0),
+        ),
         templateListProvider.overrideWith(
           (ref) async => publishedCreationTemplates,
         ),
@@ -129,7 +133,10 @@ Future<void> _save(WidgetTester tester, GlobalKey key, String name) async {
         await (key.currentContext!.findRenderObject()! as RenderRepaintBoundary)
             .toImage();
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-    final file = File('output/theme-store-home-qa/$name.png');
+    final file = File(
+      'output/theme-store-home-qa/$name'
+      '${const String.fromEnvironment('DESIGN_SYSTEM_REVISION')}.png',
+    );
     file.parent.createSync(recursive: true);
     file.writeAsBytesSync(bytes!.buffer.asUint8List());
     image.dispose();
@@ -264,6 +271,7 @@ void main() {
         );
         await _paint(tester);
         expect(find.byType(StoreScreen), findsOneWidget);
+        await tester.pumpAndSettle();
         final storeScaffold = tester.widget<Scaffold>(
           find
               .descendant(
@@ -276,13 +284,22 @@ void main() {
           storeScaffold.backgroundColor,
           SnapFitColors.backgroundOf(context),
         );
-        final firstTitle = publishedCreationTemplates.first.title;
+        await tester.scrollUntilVisible(
+          find.text('모든 템플릿'),
+          180,
+          scrollable: find
+              .descendant(
+                of: find.byType(CustomScrollView).first,
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        );
         expect(
-          tester.widget<Text>(find.text(firstTitle).first).style!.color,
+          tester.widget<Text>(find.text('모든 템플릿')).style!.color,
           ExperienceFormStyle.ink(context),
         );
         await _save(tester, key, 'store-$suffix');
-        await tester.tap(find.text('꾸밈소재').first);
+        await selectStoreCatalog(tester, 1);
         await _paint(tester);
         await _save(tester, key, 'materials-$suffix');
         expect(tester.takeException(), isNull);
@@ -390,6 +407,21 @@ void main() {
           of: find.byType(HomeBottomNavigationBar),
           matching: find.text('스토어'),
         ),
+      );
+      await _paint(tester);
+      await tester.scrollUntilVisible(
+        find.byType(SegmentedButton<String>),
+        180,
+        scrollable: find
+            .descendant(
+              of: find.byType(CustomScrollView).first,
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await Scrollable.ensureVisible(
+        tester.element(find.byType(SegmentedButton<String>)),
+        alignment: .5,
       );
       await _paint(tester);
       await tester.tap(

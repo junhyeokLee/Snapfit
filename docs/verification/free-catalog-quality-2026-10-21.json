@@ -1,0 +1,1017 @@
+{
+  "recordedAtUtc": "2026-10-21T04:38:57.664304+00:00",
+  "status": "free_catalog_covers_and_photo_quality_web_deployed_verified",
+  "scope": {
+    "freeCatalogTitles": 42,
+    "newCovers": 41,
+    "retainedTravelSignature": "wind-atlas",
+    "categories": 7,
+    "aspectVariants": [
+      "portrait",
+      "square",
+      "landscape"
+    ],
+    "pricePoints": 0,
+    "existingInteriorsPreserved": true,
+    "paidCatalogTitles": 26
+  },
+  "implemented": [
+    "Editorial cover art direction with editable title, personal text and photograph layers",
+    "Current free covers rendered in store cards without regenerated bitmap previews; 18-cover parsed LRU and bounded image decoding",
+    "Local severe-cover-crop review, quick composition controls, accurate crop dragging and same-photo crop preservation",
+    "Saved zoom, relative and legacy pixel crop restoration across canvas scaling; print original and screen preview source pairs preserved"
+  ],
+  "validation": {
+    "coverAndCatalog": {
+      "passed": 34,
+      "files": 4
+    },
+    "storeAndMaterials": {
+      "passed": 142,
+      "files": 4
+    },
+    "photoWorkflow": {
+      "passed": 140,
+      "files": 9,
+      "uniqueWithinGroup": true
+    },
+    "chrome": {
+      "passed": 38,
+      "files": 4
+    },
+    "analysis": {
+      "files": 21,
+      "issues": 0
+    },
+    "ramVisual": {
+      "coverRenders": 126,
+      "categories": 7,
+      "savedImageFiles": 0,
+      "allPhotosDecoded": true,
+      "metrics": [
+        {
+          "collection": "lightbound",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "lightbound",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "lightbound",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "our-vows",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "our-vows",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "our-vows",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "garden-promise",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "garden-promise",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "garden-promise",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "one-fine-film",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "one-fine-film",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "one-fine-film",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "love-letters",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "love-letters",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "love-letters",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "our-first-promise",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "our-first-promise",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "our-first-promise",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "journey",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "journey",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "journey",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "across-the-sea",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "across-the-sea",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "across-the-sea",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "city-collector",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "city-collector",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "city-collector",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "slow-paths",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "slow-paths",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "slow-paths",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "travel-postbox",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "travel-postbox",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "travel-postbox",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "wind-atlas",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "wind-atlas",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "wind-atlas",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "small-days",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "small-days",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "small-days",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "seasonal-table",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "seasonal-table",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "seasonal-table",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "taste-archive",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 2
+        },
+        {
+          "collection": "taste-archive",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 2
+        },
+        {
+          "collection": "taste-archive",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 2
+        },
+        {
+          "collection": "better-together",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "better-together",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "better-together",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "weekend-temperature",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "weekend-temperature",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "weekend-temperature",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "alley-afternoon",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "alley-afternoon",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "alley-afternoon",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "your-first-year",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "your-first-year",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "your-first-year",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "little-footsteps",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 2
+        },
+        {
+          "collection": "little-footsteps",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 2
+        },
+        {
+          "collection": "little-footsteps",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 2
+        },
+        {
+          "collection": "you-are-spring",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "you-are-spring",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "you-are-spring",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "growing-in-color",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 2
+        },
+        {
+          "collection": "growing-in-color",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 2
+        },
+        {
+          "collection": "growing-in-color",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 2
+        },
+        {
+          "collection": "first-birthday",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "first-birthday",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "first-birthday",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "little-day-discoveries",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "little-day-discoveries",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "little-day-discoveries",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "our-family-year",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "our-family-year",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "our-family-year",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "around-our-table",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 2
+        },
+        {
+          "collection": "around-our-table",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 2
+        },
+        {
+          "collection": "around-our-table",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 2
+        },
+        {
+          "collection": "our-good-company",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 2
+        },
+        {
+          "collection": "our-good-company",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 2
+        },
+        {
+          "collection": "our-good-company",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 2
+        },
+        {
+          "collection": "across-generations",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "across-generations",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "across-generations",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "a-picnic-together",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "a-picnic-together",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "a-picnic-together",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "saturday-together",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "saturday-together",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "saturday-together",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "dates-of-us",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 2
+        },
+        {
+          "collection": "dates-of-us",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 2
+        },
+        {
+          "collection": "dates-of-us",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 2
+        },
+        {
+          "collection": "scenes-for-two",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "scenes-for-two",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "scenes-for-two",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "seasons-of-love",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "seasons-of-love",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "seasons-of-love",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "still-us",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "still-us",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "still-us",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "collected-by-two",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 2
+        },
+        {
+          "collection": "collected-by-two",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 2
+        },
+        {
+          "collection": "collected-by-two",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 2
+        },
+        {
+          "collection": "our-prose",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "our-prose",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "our-prose",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "a-day-with-you",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "a-day-with-you",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "a-day-with-you",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "shapes-of-naps",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "shapes-of-naps",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "shapes-of-naps",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "our-walking-promise",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "our-walking-promise",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "our-walking-promise",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "our-little-companion",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 2
+        },
+        {
+          "collection": "our-little-companion",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 2
+        },
+        {
+          "collection": "our-little-companion",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 2
+        },
+        {
+          "collection": "the-kindest-face",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "the-kindest-face",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "the-kindest-face",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        },
+        {
+          "collection": "daily-paw-walk",
+          "aspect": "portrait",
+          "width": 240,
+          "height": 322,
+          "decodedImages": 1
+        },
+        {
+          "collection": "daily-paw-walk",
+          "aspect": "square",
+          "width": 240,
+          "height": 240,
+          "decodedImages": 1
+        },
+        {
+          "collection": "daily-paw-walk",
+          "aspect": "landscape",
+          "width": 240,
+          "height": 180,
+          "decodedImages": 1
+        }
+      ]
+    },
+    "previousAiContract": {
+      "unchangedHashes": 52
+    },
+    "legacyCoverAndBook": {
+      "passed": 241,
+      "files": 3,
+      "failed": 0
+    },
+    "finalCoverAndBookRun": {
+      "passed": 246,
+      "files": 4,
+      "failed": 0,
+      "note": "Includes the 5 live-catalog checks already reported in the cover/catalog group; repeated checks are not added to a unique total"
+    }
+  },
+  "storage": {
+    "generatedPreviewFiles": 0,
+    "originalMediaBaselineCount": 340,
+    "cleanedGeneratedCaches": [
+      {
+        "path": "build",
+        "logicalBytes": 1755287793
+      },
+      {
+        "path": ".dart_tool/flutter_build",
+        "logicalBytes": 69991272
+      },
+      {
+        "path": ".dart_tool/hooks_runner",
+        "logicalBytes": 23009069
+      }
+    ],
+    "logicalBytesRemoved": 1848288134,
+    "packageConfigurationPreserved": true,
+    "originalMediaFiles": 340,
+    "originalMediaBytes": 522862670,
+    "addedPreviewMediaFiles": 0,
+    "modifiedOrRemovedOriginalMediaFiles": 0
+  },
+  "sourceSha256": {
+    "lib/core/templates/authored_collections.dart": "74d967ed7b51791d35b949cfba94d6eeb23f1d37424f618bfaa7fb588e659e14",
+    "lib/core/templates/authored_free_layouts.dart": "f028f886a01f75c968c9c352889f5b98565d0de974166b2c072a45c6857cf069",
+    "lib/core/templates/authored_free_signature_covers.dart": "7c4d3edda1eb2492df5f2a2001e74be31bfc68deb8690c17a3b88e226030c499",
+    "lib/core/templates/authored_free_catalog_jackets.dart": "841b2295a5ec250d9d2799e4541d34f52d0977be1bd82e396bc7aa371afad9aa",
+    "lib/core/templates/data_template_engine.dart": "2f9430debb57556ba048b357192b0e30ed8d7cb366fdad7f03c0a6142611a90e",
+    "lib/features/album/presentation/utils/photo_crop_geometry.dart": "1ddd208ab705526f7d7e8d91a781da066d92858cae571263d46bc8488b37c7a1",
+    "lib/features/album/presentation/widgets/create_flow/photo_crop_sheet.dart": "77fdefce9dacfb569caee58c6b6a36c7e78592fe524f7f9ef73e7ba2090ea821",
+    "lib/features/album/presentation/widgets/create_flow/template_photo_fill_step.dart": "56ddc2946efbecaeded5a4957e38d41dfe8c681acb007b5d6fc3aa36b912fb26",
+    "lib/features/album/presentation/widgets/create_flow/creation_catalog_cover.dart": "a3c21370f9747942eecd79a6f545f7929f653fe515f958051e74e67b0ad9caab",
+    "lib/features/store/presentation/widgets/catalog_edition_artwork.dart": "d237f07cb8fc07633bc0628bfc878e3760724651536bea9887dcc883d5d0f68b"
+  },
+  "refinements": [
+    "Detected the existing journey/wind-atlas harbor-photo duplication in the complete catalog uniqueness check; journey now uses an existing distinct cafe scene, while its original draft and interiors remain intact"
+  ],
+  "production": {
+    "url": "https://snapfit-c719d.web.app/",
+    "hostingProject": "snapfit-c719d",
+    "hostingOnly": true,
+    "httpsVerified": true,
+    "entrypointAndMainBytesMatchValidatedBuild": true,
+    "main_sha256": "84dce1e2dba3bc2fc3a8a765da32133561fe40265b3331c2663c0a752616cf4f",
+    "main_file": "main.84dce1e2dba3bc2fc3a8.dart.js",
+    "bootstrap_sha256": "75f815d5f7b3be246a8bc4a93af0f816277515116a42d5be459e60154349de9b",
+    "bootstrap_file": "flutter_bootstrap.75f815d5f7b3be246a8b.js",
+    "mainBytes": 7299533,
+    "nativeStoreReleasePerformed": false,
+    "uiVerified": {
+      "publicCatalog": true,
+      "freePrice0P": true,
+      "categoryFilter": "반려동물",
+      "travelDetail": "/#/designs/templates/-9302",
+      "petDetail": "/#/designs/templates/-9473",
+      "travelSquareAndPortraitSwitch": true,
+      "photographsLoaded": true,
+      "viewport": [
+        1280,
+        720
+      ],
+      "screenshotFilesSaved": 0
+    }
+  }
+}

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/core/templates/studio_decoration_catalog.dart';
 import 'package:snap_fit/core/templates/studio_photo_frame_catalog.dart';
+import 'package:snap_fit/core/templates/frame_preview_photos.dart';
+import 'package:snap_fit/core/templates/studio_word_art_catalog.dart';
 import 'package:snap_fit/core/templates/template_visual_material_inventory.dart';
 import 'package:snap_fit/features/point_shop/domain/point_shop_known_products.dart';
 import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
@@ -286,7 +288,15 @@ void main() {
         const MaterialApp(home: LuminousMaterials(newOnly: true)),
       );
       await tester.pumpAndSettle();
-      expect(find.text('재료 라이브러리 83'), findsOneWidget);
+      final expectedCount =
+          conceptWaveDecorations.length +
+          atelierCompositionDecorations.length +
+          keepsakeDecorations.length +
+          keepsakePhotoFrames.length +
+          atelierEditionPhotoFrames.length +
+          atelierSignaturePhotoFrames.length +
+          atelierWordArts.length;
+      expect(find.text('재료 라이브러리 $expectedCount'), findsOneWidget);
       await tester.tap(find.text('스티커·종이'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('서약의 아틀리에'));
@@ -309,6 +319,26 @@ void main() {
       await tester.tap(find.text('프레임'));
       await tester.pumpAndSettle();
       expect(find.text('세 겹 단차 액자'), findsOneWidget);
+      final gallery = find.descendant(
+        of: find.byType(GridView),
+        matching: find.byType(Scrollable),
+      );
+      await tester.scrollUntilVisible(
+        find.text('기차표 보관 지갑'),
+        180,
+        scrollable: gallery,
+      );
+      expect(find.text('기차표 보관 지갑'), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is Image &&
+              widget.image is AssetImage &&
+              (widget.image as AssetImage).assetName ==
+                  framePreviewPhotos['signatureRailWallet'],
+        ),
+        findsWidgets,
+      );
       expect(tester.takeException(), isNull);
     });
   }

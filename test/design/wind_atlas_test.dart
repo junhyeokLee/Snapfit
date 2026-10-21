@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/core/templates/authored_collections.dart';
 import 'package:snap_fit/core/templates/catalog_favorite_keys.dart';
+import 'package:snap_fit/core/templates/free_template_material_policy.dart';
 import 'package:snap_fit/core/templates/template_document_pages.dart';
 import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
 import 'package:snap_fit/features/album/domain/entities/album_creation_template.dart';
@@ -17,7 +18,6 @@ import '../widget/ai_album_start_step_test.dart'
     show loadCreationFonts, wrapCreation;
 import '../widget/studio_decorations_test.dart' show capture;
 
-const exporting = bool.fromEnvironment('EXPORT_WIND_ATLAS');
 String geometry(Map<String, dynamic> p) => jsonEncode([
   for (final l in p['layers'] as List)
     [
@@ -55,7 +55,14 @@ void main() {
         containsAll(['portrait', 'square', 'landscape']),
       );
       for (final aspect in CollectionAspect.values) {
-        expect(catalog['variants'][aspect.name], buildWindAtlas(aspect));
+        expect(catalog['variants'][aspect.name], {
+          ...buildWindAtlas(aspect),
+          'materialPolicyRevision': freeTemplateMaterialPolicyRevision,
+        });
+        expect(
+          freeTemplateMaterialIssues(catalog['variants'][aspect.name]),
+          isEmpty,
+        );
       }
       expect(
         CatalogFavoriteKeys.template(windAtlasBundledId),
@@ -66,7 +73,7 @@ void main() {
   test(
     '32 distinct inner pages, 3 real covers, approved free without paid publication',
     () {
-      expect(bundledCreationTemplates.length, 37);
+      expect(bundledCreationTemplates.length, 42);
       expect(bundledCreationTemplates.every((t) => !t.isPremium), true);
       for (final aspect in CollectionAspect.values) {
         final existing = authoredCollections
@@ -99,6 +106,7 @@ void main() {
       }
     },
   );
+  // Rendering checks below keep images in memory; this suite never exports files.
   for (final aspect in CollectionAspect.values) {
     test(
       '${aspect.name}: bounds, typography, binding and editable roundtrip',
@@ -203,43 +211,6 @@ void main() {
         for (final raw in tester.widgetList<RawImage>(find.byType(RawImage)))
           expect(raw.image, isNotNull);
       }
-      if (exporting)
-        await tester.runAsync(() async {
-          final dir = Directory(
-            'output/template-preview/wind-atlas/${aspect.name}',
-          );
-          await dir.create(recursive: true);
-          for (final item in images.indexed)
-            await File('${dir.path}/page-${item.$1}.png').writeAsBytes(
-              (await item.$2.toByteData(
-                format: ui.ImageByteFormat.png,
-              ))!.buffer.asUint8List(),
-            );
-          final w = images.first.width.toDouble(),
-              h = images.first.height.toDouble();
-          final recorder = ui.PictureRecorder(), canvas = Canvas(recorder);
-          canvas.drawColor(const Color(0xFFE2E7E5), BlendMode.src);
-          for (var i = 0; i < images.length; i++) {
-            final x = i == 0 ? 0.0 : ((i - 1) % 4) * w;
-            final y = i == 0 ? 0.0 : (((i - 1) ~/ 4) + 1) * (h + 20);
-            canvas.drawImage(images[i], Offset(x, y), Paint());
-          }
-          final picture = recorder.endRecording();
-          final contact = await picture.toImage(
-            (w * 4).ceil(),
-            ((h + 20) * 9).ceil(),
-          );
-          await File('${dir.path}/contact.png').writeAsBytes(
-            (await contact.toByteData(
-              format: ui.ImageByteFormat.png,
-            ))!.buffer.asUint8List(),
-          );
-          contact.dispose();
-          picture.dispose();
-          await File('${dir.path}/document.json').writeAsString(
-            const JsonEncoder.withIndent('  ').convert(buildWindAtlas(aspect)),
-          );
-        });
       for (final im in images) im.dispose();
       for (final cover in WindAtlasCover.values.skip(1)) {
         final layers = windAtlasPreviewPages(aspect, cover: cover).first;
@@ -254,23 +225,6 @@ void main() {
             showCanvasChrome: false,
           ),
         );
-        if (exporting)
-          await tester.runAsync(() async {
-            await File(
-              'output/template-preview/wind-atlas/${aspect.name}/cover-${cover.name}.png',
-            ).writeAsBytes(
-              (await image.toByteData(
-                format: ui.ImageByteFormat.png,
-              ))!.buffer.asUint8List(),
-            );
-            await File(
-              'output/template-preview/wind-atlas/${aspect.name}/cover-${cover.name}.json',
-            ).writeAsString(
-              const JsonEncoder.withIndent(
-                '  ',
-              ).convert(buildWindAtlas(aspect, cover: cover)['cover']),
-            );
-          });
         image.dispose();
       }
       expect(tester.takeException(), isNull);

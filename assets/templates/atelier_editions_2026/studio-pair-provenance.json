@@ -1,0 +1,38 @@
+{
+  "generatedAt": "2026-10-16",
+  "method": "built-in-image_gen",
+  "use": "replaceable sample photographs, not flattened templates",
+  "commercialRightsReview": "pending-owner-review",
+  "assets": [
+    {
+      "asset": "alley-afternoon.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: full-bleed editable photo-album cover photograph, NOT a book mockup. Primary request: a beautifully candid ordinary afternoon walking through a quiet European neighborhood, a salmon-pink corner building and muted red fabric awning with NO readable signage, a blue bicycle leaning near the doorway and one small naturally dressed adult seen from behind on the sidewalk. Natural documentary travel photography, real masonry and pavement, clear crisp photographic detail, restrained fresh coral, blue and ivory colors, lively but not oversaturated. Square photo composition that also crops safely to a portrait or wide album cover: recognizable building corner and bicycle toward the middle, clean upper left wall for editable title to be added later in code. Late afternoon sunlight, gentle defined shadows, not hazy or blurry, not staged fashion photography. No text, no watermarks, no logos, no album or paper border, no collage, no graphic elements. Fill the entire image with the actual scene.",
+      "source": "exec-bbdc124c-1cf1-46f3-b051-4e1d9a425958.png"
+    },
+    {
+      "asset": "city-afterglow.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: premium photo-album full-bleed cover photograph, not a mockup or page layout. Primary request: cinematic but natural travel photograph of an old red streetcar crossing a wet city intersection just after rain at blue hour. Architecture with illuminated windows and geometric tram wires, an unposed adult holding a small dark umbrella near the lower right street corner. Streetcar in middle lower area, restrained rich red, electric cyan window reflections and graphite city facades, perceptible buildings in shadows, realistic lens detail, no blur, no bokeh. Square composition crop-safe for portrait and wide album cover, the upper left facade has quieter dark window area for editable typography added later. Streetcar remains readable in the central 70 percent. Travel documentary photography with tactile fine film grain, premium printed photo-book mood, realistic exposure not artificial neon sci-fi. No legible text or numbers, no logos, no watermarks, no borders, no paper, no collage, no graphic decoration. Only the actual photographic scene.",
+      "source": "exec-314c0d15-9234-426e-9522-7377f1d7c65a.png"
+    },
+    {
+      "asset": "city-cafe.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: editable photograph inside an evening urban travel album. A close, candid still-life photo of a small white espresso cup, a plain punched transit ticket with no readable writing, and a partly open blank notebook on a dark green cafe table beside a window at dusk. Through the window a recognizable wet cobbled street and amber-lit old city storefronts, sharp enough to read the real scene rather than abstract bokeh. A sleeve and relaxed hand near the notebook, no faces. Square or landscape composition, realistic ordinary traveler phone photography with excellent natural exposure and tactile detail, quiet red/cyan/graphite accents that complement a red streetcar night photo. Do not make it a scrapbook layout or mockup. No printed text, logos, watermarks, decorative graphics or borders. One realistic photograph.",
+      "source": "exec-4bb1e00e-297b-4f1a-aa53-b9c9d16be29c.png"
+    },
+    {
+      "asset": "city-crossing.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: interior photograph for a premium urban evening travel album. A natural documentary photo taken from behind of two friends in simple coats sharing an umbrella while walking over a wet zebra crossing in a historic European city after dusk. They occupy the central half, overhead tram wires and a softly illuminated blue stone bridge in the distance, dark cyan urban facades, a few restrained red details from traffic. A believable ordinary travel moment, realistic hands and anatomy, natural skin, gently imperfect candid framing with generous surrounding street for cropping to square, portrait and wide photo frames. High quality fine detail, clear image, no fake intense neon, no blur or bokeh, no fashion posing, no readable text, watermark or logos. Actual photo only, no collage, page, paper or book mockup.",
+      "source": "exec-51ccddb5-c4f6-4f1a-b65b-b9a5ddd28ec8.png"
+    },
+    {
+      "asset": "city-tram-interior.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: editable interior travel photograph for a night-city photo album. A beautifully candid image inside a vintage European streetcar after dark, close foreground of an adult hand holding an overhead leather strap, red upholstered seats and warm brass grab rails, two passengers naturally seated in the distance, cool blue city visible through clear tram windows. Ordinary travel documentary photography, natural exposure, crisp tactile details, not a posed fashion shoot, not blurry. Landscape composition that also crops to square, main hand and seat remain in central 70 percent, realistic human anatomy. Restrained amber/red and cyan/graphite colors. No readable lettering, no numbers, no brand logos, no watermarks, no graphic decoration, no borders or paper; only one photographic scene.",
+      "source": "exec-dc88dbaa-a500-4d30-8cf6-0b16e92fb88f.png"
+    },
+    {
+      "asset": "city-river.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: editable interior photograph for an urban evening travel photo album called City Afterglow. Primary request: a candid, high-detail photograph from the stone embankment of a historic European river at blue hour after rain, a low iron bridge crossing the central river, old city apartments with a few glowing amber windows, one small red streetcar crossing the bridge. Composition: clear blue water reflections in lower half, slate/cyan stone and muted warm windows, real urban landscape not a fantasy skyline, no famous landmarks. Beautiful but believable ordinary phone travel photography, crisp exposure without cinematic blur, tactile fine grain. Wide composition crop-safe in square and portrait photo frames, no people needed. No legible writing, logos, watermark, page layout, paper, frame, or collage; actual photographic scene fills the whole image.",
+      "source": "exec-54ec4811-4f99-479c-bf1e-a20e94318f83.png"
+    }
+  ]
+}

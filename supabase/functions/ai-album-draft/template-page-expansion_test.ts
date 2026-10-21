@@ -8,7 +8,8 @@ import {
   validateDirectedTemplate,
 } from "./template-art-direction.ts";
 import { expandTemplatePages } from "./template-page-expansion.ts";
-import { handleAiAlbumDraftRequest } from "./index.ts";
+import { openAiContractEnv } from "./test-support.ts";
+import { createOriginalTemplate } from "./index.ts";
 
 Deno.test("page contract accepts physical even20..80 and legacy4..16 only", () => {
   for (const pageCount of [4, 8, 16, 20, 22, 50, 52, 80]) {
@@ -95,13 +96,10 @@ for (const pageCount of [20, 80]) {
     const brief = { ...fixture.brief, pageCount };
     let calls = 0;
     let firstSignal: AbortSignal | null | undefined;
-    const response = await handleAiAlbumDraftRequest(
-      new Request("https://example.test/ai-album-draft", {
-        method: "POST",
-        body: JSON.stringify({ designBrief: brief, candidates: [] }),
-      }),
+    const result: any = await createOriginalTemplate(
+      parseTemplateBrief(brief),
       {
-        env: (key) => key === "OPENAI_API_KEY" ? "test-key" : undefined,
+        env: openAiContractEnv("test-key"),
         fetch: async (_, init) => {
           const body = JSON.parse(String(init?.body));
           const prompt = JSON.parse(body.messages[1].content);
@@ -125,8 +123,6 @@ for (const pageCount of [20, 80]) {
         },
       },
     );
-    const result = await response.json();
-    assertEquals(response.status, 200, JSON.stringify(result));
     assertEquals(calls, 2);
     assertEquals(result.pageCount, pageCount);
     assertEquals(result.design.pages.length, pageCount + 1);

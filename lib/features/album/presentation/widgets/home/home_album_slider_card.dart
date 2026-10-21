@@ -54,7 +54,17 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
     _floatController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 3800),
-    )..repeat();
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context) || !TickerMode.of(context)) {
+      _floatController.stop();
+    } else if (!_floatController.isAnimating) {
+      _floatController.repeat();
+    }
   }
 
   void _cancelPendingUnpress() {

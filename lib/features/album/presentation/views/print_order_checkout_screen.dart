@@ -6,19 +6,24 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/theme/snapfit_design_tokens.dart' show SnapFitRadius;
+import '../../../../core/commerce/commerce_policy.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/widgets/experience_style.dart';
 import '../../../../shared/web/web_design.dart';
+import '../../../profile/presentation/widgets/customer_web_page.dart';
 import '../../../profile/data/order_repository.dart';
 import '../../../profile/data/customer_print_test_checkout.dart';
 import '../../../profile/data/print_dev_checkout.dart';
 import '../../../profile/data/print_payment_service.dart';
 import '../../../profile/data/portone_payment_launcher.dart';
 import '../../../profile/domain/print_checkout.dart';
+import '../../../profile/domain/print_checkout_consent.dart';
 import '../../../profile/domain/print_order_request.dart';
 import '../../../profile/domain/order_visibility_owner.dart';
 import '../../../profile/presentation/views/print_order_request_screen.dart';
 import '../../../profile/presentation/views/order_history_screen.dart';
+import '../../../profile/presentation/views/terms_policy_screen.dart';
 import '../../printing/print_vendor_spec.dart';
 import 'print_order_complete_screen.dart';
 
@@ -50,7 +55,8 @@ class PrintOrderCheckoutScreen extends ConsumerStatefulWidget {
 }
 
 class _PrintOrderCheckoutScreenState
-    extends ConsumerState<PrintOrderCheckoutScreen> {
+    extends ConsumerState<PrintOrderCheckoutScreen>
+    with WidgetsBindingObserver {
   final _formKey = GlobalKey<FormState>();
   final _name = TextEditingController();
   final _phone = TextEditingController();
@@ -65,6 +71,8 @@ class _PrintOrderCheckoutScreenState
   bool _paying = false;
   bool _reviewing = false;
   bool _agreed = false;
+  bool _policyAccepted = false;
+  bool _customProductionAccepted = false;
   bool _reviewChanged = false;
   String? _error;
   String? _notice;
@@ -108,6 +116,39 @@ class _PrintOrderCheckoutScreenState
             _testSession?.verifiedTest != true
       : _readiness?.canPay == true;
 
+  PrintCheckoutConsent get _consent => PrintCheckoutConsent(
+    orderReviewed: _agreed,
+    policyAccepted: _policyAccepted,
+    customProductionAccepted: _customProductionAccepted,
+  );
+
+  void _clearConsent() {
+    _agreed = false;
+    _policyAccepted = false;
+    _customProductionAccepted = false;
+  }
+
+  void _revealOrderNotice() {
+    if (!_reviewing ||
+        (_error == null &&
+            _notice == null &&
+            _preparationNotice == null &&
+            !_reviewChanged &&
+            !_pendingPayment)) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_ownerCurrent || !_scroll.hasClients) return;
+      unawaited(
+        _scroll.animateTo(
+          0,
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+        ),
+      );
+    });
+  }
+
   bool get _canPay =>
       _ownerCurrent &&
       !_loading &&
@@ -120,10 +161,35 @@ class _PrintOrderCheckoutScreenState
       _error == null &&
       _paymentAvailable &&
       _quote.hasPlannedRetailPrice &&
-      _agreed;
+      _consent.complete;
+
+  @override
+  void initState() {
+    super.initState();
+    if (kIsWeb) WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!kIsWeb ||
+        state != AppLifecycleState.resumed ||
+        !mounted ||
+        ModalRoute.of(context)?.isCurrent != true ||
+        _loading ||
+        _paying ||
+        _recoveringPayment ||
+        _pendingPayment ||
+        _preparationRequiresRestart ||
+        widget.testMode ||
+        !_ownerCurrent) {
+      return;
+    }
+    unawaited(_refresh(quoteOnly: true));
+  }
 
   @override
   void dispose() {
+    if (kIsWeb) WidgetsBinding.instance.removeObserver(this);
     for (final controller in [_name, _phone, _zip, _address, _detail, _memo]) {
       controller.dispose();
     }
@@ -132,7 +198,7 @@ class _PrintOrderCheckoutScreenState
     super.dispose();
   }
 
-  Future<bool> _refresh() async {
+  Future<bool> _refresh({bool quoteOnly = false}) async {
     if (_loading || !_ownerCurrent) return false;
     setState(() {
       _loading = true;
@@ -141,11 +207,18 @@ class _PrintOrderCheckoutScreenState
     try {
       final repository = ref.read(orderRepositoryProvider);
       final results = await Future.wait<Object>([
-        repository.fetchPrintPreviewSnapshot(albumId: widget.albumId),
+        if (!quoteOnly)
+          repository.fetchPrintPreviewSnapshot(albumId: widget.albumId),
         repository.fetchPrintCheckoutReadiness(albumId: widget.albumId),
       ]);
-      final snapshot = results[0] as Map<String, dynamic>;
-      final readiness = results[1] as PrintCheckoutReadiness;
+      final readiness = results.last as PrintCheckoutReadiness;
+      // Current readiness contains the server's reviewed content revision.
+      // Older responses still require reading the snapshot for comparison.
+      final snapshot = !quoteOnly
+          ? results.first as Map<String, dynamic>
+          : readiness.reviewedRevision == null
+          ? await repository.fetchPrintPreviewSnapshot(albumId: widget.albumId)
+          : null;
       final testCapability = widget.testMode
           ? await _testService.capability(
               albumId: widget.albumId,
@@ -154,7 +227,8 @@ class _PrintOrderCheckoutScreenState
           : null;
       final quote = readiness.quote;
       final changed =
-          printCheckoutRevision(snapshot) != widget.reviewedRevision ||
+          snapshot != null &&
+              printCheckoutRevision(snapshot) != widget.reviewedRevision ||
           readiness.reviewedRevision != null &&
               readiness.reviewedRevision != widget.reviewedRevision ||
           quote.productCode != widget.initialQuote.productCode ||
@@ -169,20 +243,22 @@ class _PrintOrderCheckoutScreenState
       final priceChanged =
           quote.amount != _quote.amount ||
           quote.pricePolicyVersion != _quote.pricePolicyVersion ||
-          quote.shippingIncluded != _quote.shippingIncluded;
+          quote.shippingIncluded != _quote.shippingIncluded ||
+          quote.retailPriceStatus != _quote.retailPriceStatus;
       if (!mounted || !_ownerCurrent) return false;
       setState(() {
         _quote = quote;
         _readiness = readiness;
         _testCapability = testCapability;
         _reviewChanged = changed || specChanged;
-        if (changed || specChanged || priceChanged) _agreed = false;
+        if (changed || specChanged || priceChanged) _clearConsent();
         _notice = changed || specChanged
             ? '앨범 내용이나 제작 구성이 바뀌었어요. 인쇄 미리보기를 다시 확인해주세요.'
             : priceChanged
             ? '제작 금액이 갱신되었습니다. 새 금액을 확인해주세요.'
             : null;
       });
+      _revealOrderNotice();
       return true;
     } catch (_) {
       if (mounted && _ownerCurrent) {
@@ -191,6 +267,7 @@ class _PrintOrderCheckoutScreenState
           _testCapability = null;
           _error = '주문 준비 상태를 확인하지 못했습니다. 다시 확인해주세요.';
         });
+        _revealOrderNotice();
       }
       return false;
     } finally {
@@ -199,38 +276,66 @@ class _PrintOrderCheckoutScreenState
   }
 
   void _deliveryChanged(String _) {
-    if (_agreed) setState(() => _agreed = false);
+    if (_consent.orderReviewed ||
+        _policyAccepted ||
+        _customProductionAccepted) {
+      setState(_clearConsent);
+    }
   }
 
   Future<void> _searchAddress() async {
     if (_paying || _deliveryLocked || !_ownerCurrent) return;
     final selected = kIsWeb
-        ? await showWebAwareDialog<AddressSearchItem>(context: context, maxWidth: 820, maxHeight: 760, builder: (_) => const _AddressSearchSheet())
+        ? await showWebAwareDialog<AddressSearchItem>(
+            context: context,
+            maxWidth: 820,
+            maxHeight: 760,
+            builder: (_) => const _AddressSearchSheet(),
+          )
         : await showModalBottomSheet<AddressSearchItem>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: SnapFitColors.backgroundOf(context),
-      constraints: const BoxConstraints(maxWidth: 640),
-      builder: (_) => const _AddressSearchSheet(),
-    );
+            context: context,
+            isScrollControlled: true,
+            useSafeArea: true,
+            backgroundColor: SnapFitColors.backgroundOf(context),
+            constraints: const BoxConstraints(maxWidth: 640),
+            builder: (_) => const _AddressSearchSheet(),
+          );
     if (!mounted || !_ownerCurrent || selected == null) return;
     setState(() {
       _zip.text = selected.zipCode;
       _address.text = selected.roadAddressPart1.isNotEmpty
           ? selected.roadAddressPart1
           : selected.roadAddress;
-      _agreed = false;
+      _clearConsent();
     });
   }
 
   Future<void> _review() async {
     FocusScope.of(context).unfocus();
-    if (!_ownerCurrent ||
-        _loading ||
-        _paying ||
-        !_formKey.currentState!.validate())
+    if (!_ownerCurrent || _loading || _paying) return;
+    if (kIsWeb) {
+      final invalidFields = _formKey.currentState!.validateGranularly();
+      if (invalidFields.isNotEmpty) {
+        final firstInvalid = invalidFields.first;
+        // Error labels change field heights. Reveal the first existing
+        // validator error after the updated web form has finished layout.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || !_ownerCurrent || !firstInvalid.mounted || _reviewing)
+            return;
+          unawaited(
+            Scrollable.ensureVisible(
+              firstInvalid.context,
+              alignment: .25,
+              duration: const Duration(milliseconds: 180),
+              alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
+            ),
+          );
+        });
+        return;
+      }
+    } else if (!_formKey.currentState!.validate()) {
       return;
+    }
     final refreshed = await _refresh();
     if (!mounted || !_ownerCurrent || !refreshed || _reviewChanged) return;
     setState(() => _reviewing = true);
@@ -265,6 +370,7 @@ class _PrintOrderCheckoutScreenState
         addressLine1: _address.text.trim(),
         addressLine2: _detail.text.trim(),
         deliveryMemo: _memo.text.trim(),
+        consent: _consent,
       );
       PrintPaidReceipt? receipt;
       if (widget.onPay != null) {
@@ -363,6 +469,7 @@ class _PrintOrderCheckoutScreenState
           _paying = false;
           _fileProgress = null;
         });
+      if (mounted) _revealOrderNotice();
       // Restore the frozen invoice immediately after an interrupted upload.
       // Otherwise the disabled payment button leaves no way to retry on this
       // visit, even though the SDK has never opened.
@@ -378,7 +485,7 @@ class _PrintOrderCheckoutScreenState
       _error == null &&
       _paymentAvailable &&
       _quote.hasPlannedRetailPrice &&
-      _agreed;
+      _consent.complete;
 
   Future<void> _payTest() async {
     if (!_canPay) return;
@@ -443,7 +550,7 @@ class _PrintOrderCheckoutScreenState
       setState(() {
         _notice =
             '결제창 결과를 서버에서 확인하고 있어요. 이제 앱을 닫아도 TEST 결제 확인과 개발 주문 접수가 이어집니다. 실제 청구·제작·배송은 없습니다.';
-        _agreed = false;
+        _clearConsent();
       });
     } catch (error) {
       if (mounted && _ownerCurrent) {
@@ -458,6 +565,7 @@ class _PrintOrderCheckoutScreenState
           _paying = false;
           _fileProgress = null;
         });
+        _revealOrderNotice();
         _scheduleTestRecovery();
       }
     }
@@ -498,7 +606,7 @@ class _PrintOrderCheckoutScreenState
             _memo.text = '${recipient['deliveryMemo'] ?? ''}';
           }
           _reviewing = true;
-          _agreed = false;
+          _clearConsent();
         }
       });
     } catch (error) {
@@ -611,13 +719,13 @@ class _PrintOrderCheckoutScreenState
           setState(() {
             _pendingCustomerRequestHold = true;
             _pendingCanResume = false;
-            _agreed = false;
+            _clearConsent();
           });
         } else if (missingPlaceholder) {
           setState(() {
             _pendingCustomerRequestHold = false;
             _pendingCanResume = true;
-            _agreed = false;
+            _clearConsent();
             _notice = '주문 준비 응답을 아직 확인하지 못했어요. 내용을 확인하면 같은 주문번호로 준비를 다시 시도합니다.';
           });
         } else if (invoice != null &&
@@ -644,7 +752,7 @@ class _PrintOrderCheckoutScreenState
             _memo.text = '${recipient['deliveryMemo'] ?? ''}';
             _pendingCanResume = true;
             _reviewing = true;
-            _agreed = false;
+            _clearConsent();
             _notice =
                 '이전에 준비한 주문을 불러왔어요. 배송지와 앨범 내용을 확인하면 같은 주문으로 결제를 이어갈 수 있어요.';
           });
@@ -711,14 +819,28 @@ class _PrintOrderCheckoutScreenState
         return SnapFitWebShell(
           title: '앨범 주문',
           showNavigation: false,
-          actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('앨범으로 돌아가기'))],
-          child: ListView(children: [
-            const WebPageHeading(eyebrow: '앨범  /  인쇄 주문', title: '로그인 계정을 확인해주세요'),
-            const SizedBox(height: 24),
-            WebSurface(child: Text(currentOwner == null
-                ? '로그인한 계정을 확인한 뒤 앨범을 주문할 수 있어요.'
-                : '로그인 계정이 변경되었어요. 이 화면을 닫고 앨범 주문을 다시 열어주세요.')),
-          ]),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('앨범으로 돌아가기'),
+            ),
+          ],
+          child: ListView(
+            children: [
+              const WebPageHeading(
+                eyebrow: '앨범  /  인쇄 주문',
+                title: '로그인 계정을 확인해주세요',
+              ),
+              const SizedBox(height: 24),
+              WebSurface(
+                child: Text(
+                  currentOwner == null
+                      ? '로그인한 계정을 확인한 뒤 앨범을 주문할 수 있어요.'
+                      : '로그인 계정이 변경되었어요. 이 화면을 닫고 앨범 주문을 다시 열어주세요.',
+                ),
+              ),
+            ],
+          ),
         );
       }
       return Scaffold(
@@ -747,91 +869,31 @@ class _PrintOrderCheckoutScreenState
           setState(() => _reviewing = false);
         }
       },
-      child: kIsWeb ? _webCheckout() : Scaffold(
-        backgroundColor: SnapFitColors.backgroundOf(context),
-        appBar: ExperienceHeader(
-          title: _reviewing ? '주문 내용 확인' : '배송지 입력',
-          showNotifications: false,
-          onBack: _paying
-              ? () {}
-              : () {
-                  if (_reviewing) {
-                    setState(() => _reviewing = false);
-                  } else {
-                    Navigator.pop(context);
-                  }
-                },
-          actions: [
-            IconButton(
-              onPressed: _loading || _paying ? null : _refresh,
-              tooltip: '최신 주문 정보 확인',
-              icon: const Icon(Icons.refresh, size: 20),
-            ),
-          ],
-        ),
-        body: SafeArea(
-          top: false,
-          child: LayoutBuilder(
-            builder: (context, bounds) {
-              final wide =
-                  bounds.maxWidth >= 540 &&
-                  MediaQuery.orientationOf(context) == Orientation.landscape;
-              return Align(
-                alignment: Alignment.topCenter,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: wide ? 1040 : 640),
-                  child: wide
-                      ? Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              SizedBox(
-                                width: (bounds.maxWidth * .33).clamp(180, 280),
-                                child: SingleChildScrollView(
-                                  key: const PageStorageKey(
-                                    'print-checkout-summary',
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      _albumSummary(compact: true),
-                                      const SizedBox(height: 8),
-                                      _priceDetails(compact: true),
-                                      const SizedBox(height: 16),
-                                      Divider(
-                                        color: ExperienceFormStyle.line(
-                                          context,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      _configuration(includeProduct: true),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 20),
-                              VerticalDivider(
-                                width: 1,
-                                color: ExperienceFormStyle.line(context),
-                              ),
-                              const SizedBox(width: 20),
-                              Expanded(child: _checkoutContent(wide: true)),
-                            ],
-                          ),
-                        )
-                      : _checkoutContent(wide: false),
-                ),
-              );
-            },
-          ),
-        ),
-        bottomNavigationBar: _reviewing
-            ? SafeArea(
+      child: kIsWeb
+          ? _webCheckout()
+          : Scaffold(
+              backgroundColor: SnapFitColors.backgroundOf(context),
+              appBar: ExperienceHeader(
+                title: _reviewing ? '주문 내용 확인' : '배송지 입력',
+                showNotifications: false,
+                onBack: _paying
+                    ? () {}
+                    : () {
+                        if (_reviewing) {
+                          setState(() => _reviewing = false);
+                        } else {
+                          Navigator.pop(context);
+                        }
+                      },
+                actions: [
+                  IconButton(
+                    onPressed: _loading || _paying ? null : _refresh,
+                    tooltip: '최신 주문 정보 확인',
+                    icon: const Icon(Icons.refresh, size: 20),
+                  ),
+                ],
+              ),
+              body: SafeArea(
                 top: false,
                 child: LayoutBuilder(
                   builder: (context, bounds) {
@@ -840,25 +902,100 @@ class _PrintOrderCheckoutScreenState
                         MediaQuery.orientationOf(context) ==
                             Orientation.landscape;
                     return Align(
-                      heightFactor: 1,
+                      alignment: Alignment.topCenter,
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
                           maxWidth: wide ? 1040 : 640,
                         ),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: wide ? 20 : 24,
-                            vertical: wide ? 8 : 12,
-                          ),
-                          child: _paymentActions(wide: wide),
-                        ),
+                        child: wide
+                            ? Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                ),
+                                child: Row(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    SizedBox(
+                                      width: (bounds.maxWidth * .33).clamp(
+                                        180,
+                                        280,
+                                      ),
+                                      child: SingleChildScrollView(
+                                        key: const PageStorageKey(
+                                          'print-checkout-summary',
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 12,
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            _albumSummary(compact: true),
+                                            const SizedBox(height: 8),
+                                            _priceDetails(compact: true),
+                                            const SizedBox(height: 16),
+                                            Divider(
+                                              color: ExperienceFormStyle.line(
+                                                context,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            _configuration(
+                                              includeProduct: true,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 20),
+                                    VerticalDivider(
+                                      width: 1,
+                                      color: ExperienceFormStyle.line(context),
+                                    ),
+                                    const SizedBox(width: 20),
+                                    Expanded(
+                                      child: _checkoutContent(wide: true),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : _checkoutContent(wide: false),
                       ),
                     );
                   },
                 ),
-              )
-            : null,
-      ),
+              ),
+              bottomNavigationBar: _reviewing
+                  ? SafeArea(
+                      top: false,
+                      child: LayoutBuilder(
+                        builder: (context, bounds) {
+                          final wide =
+                              bounds.maxWidth >= 540 &&
+                              MediaQuery.orientationOf(context) ==
+                                  Orientation.landscape;
+                          return Align(
+                            heightFactor: 1,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: wide ? 1040 : 640,
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: wide ? 20 : 24,
+                                  vertical: wide ? 8 : 12,
+                                ),
+                                child: _paymentActions(wide: wide),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  : null,
+            ),
     );
   }
 
@@ -876,67 +1013,113 @@ class _PrintOrderCheckoutScreenState
     section: WebSection.orders,
     showNavigation: false,
     actions: [
-      TextButton.icon(onPressed: _paying ? null : _webBack, icon: const Icon(Icons.arrow_back, size: 18), label: Text(_reviewing ? '배송지 수정' : '이전')),
-      IconButton(onPressed: _loading || _paying ? null : _refresh, tooltip: '최신 주문 정보 확인', icon: const Icon(Icons.refresh, size: 20)),
-    ],
-    child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      WebPageHeading(
-        eyebrow: '앨범  /  인쇄 주문  /  ${_reviewing ? '03 주문 확인' : '02 배송지'}',
-        title: _reviewing ? '주문 내용을 확인하세요' : '책을 받을 곳을 알려주세요',
-        description: _reviewing
-            ? '앨범 구성과 배송지, 안내된 금액을 확인한 뒤 다음 단계로 진행하세요.'
-            : '받는 분과 배송지 정보를 입력하면 최종 주문 내용을 확인할 수 있습니다.',
-        trailing: widget.testMode ? Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-          decoration: BoxDecoration(color: WebPalette.of(context).softBrand, borderRadius: BorderRadius.circular(12)),
-          child: Text('TEST · 실제 청구 없음', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: WebPalette.of(context).brandInk)),
-        ) : null,
+      TextButton.icon(
+        onPressed: _paying ? null : _webBack,
+        icon: const Icon(Icons.arrow_back, size: 18),
+        label: Text(_reviewing ? '배송지 수정' : '이전'),
       ),
-      const SizedBox(height: 20),
-      _steps(),
-      const SizedBox(height: 24),
-      Expanded(child: LayoutBuilder(builder: (context, bounds) {
-        final form = WebSurface(child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          ..._orderNotices(),
-          _heading(_reviewing ? '배송 정보' : '배송지 입력'),
-          const SizedBox(height: 24),
-          if (_reviewing) _reviewDetails(wide: true) else _deliveryForm(),
-        ]));
-        final summary = WebSurface(child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text('주문 요약', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: WebPalette.of(context).muted)),
-          const SizedBox(height: 18),
-          _albumSummary(compact: true),
-          const SizedBox(height: 24),
-          Divider(color: WebPalette.of(context).line),
-          const SizedBox(height: 18),
-          _configuration(includeProduct: true),
-          const SizedBox(height: 24),
-          Divider(color: WebPalette.of(context).line),
-          const SizedBox(height: 18),
-          _priceDetails(compact: true),
-          const SizedBox(height: 24),
-          if (_reviewing) _paymentActions(wide: false) else ...[
-            Icon(Icons.local_shipping_outlined, color: WebPalette.of(context).brandInk, size: 24),
-            _note('배송지 입력 후 주문 내용을 확인합니다. 결제 가능 여부와 최종 금액은 주문 확인 단계에서 안내합니다.'),
-          ],
-          const SizedBox(height: 16),
-          _note(widget.testMode ? 'TEST 결제와 개발 주문만 진행합니다. 실제 책은 제작·배송되지 않습니다.' : '결제 전에 인쇄 파일을 준비합니다. 결제 확인 후에는 창을 닫아도 주문 처리가 이어집니다.'),
-        ]));
-        if (bounds.maxWidth >= 980) {
-          return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Expanded(child: ListView(key: const PageStorageKey('print-checkout-content'), controller: _scroll, keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag, children: [form, const SizedBox(height: 24)])),
-            const SizedBox(width: 24),
-            SizedBox(width: 350, height: bounds.maxHeight, child: SingleChildScrollView(child: summary)),
-          ]);
-        }
-        return ListView(
-          key: const PageStorageKey('print-checkout-content'),
-          controller: _scroll,
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          children: [form, const SizedBox(height: 20), summary, const SizedBox(height: 24)],
-        );
-      })),
-    ]),
+      IconButton(
+        onPressed: _loading || _paying ? null : _refresh,
+        tooltip: '최신 주문 정보 확인',
+        icon: const Icon(Icons.refresh, size: 20),
+      ),
+    ],
+    child: ListView(
+      key: const PageStorageKey('print-checkout-content'),
+      controller: _scroll,
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      children: [
+        WebPageHeading(
+          title: _reviewing ? '주문 확인' : '배송지 입력',
+          description: _reviewing
+              ? '앨범 사양, 배송지와 최종 금액을 확인하세요.'
+              : '책을 받을 분과 배송지 정보를 입력하세요.',
+          trailing: widget.testMode
+              ? Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: WebPalette.of(context).softBrand,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'TEST · 실제 청구 없음',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: WebPalette.of(context).brandInk,
+                    ),
+                  ),
+                )
+              : null,
+        ),
+        const SizedBox(height: 20),
+        _steps(),
+        const SizedBox(height: 24),
+        CustomerWebColumns(
+          breakpoint: 980,
+          summaryWidth: 350,
+          primary: WebSurface(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ..._orderNotices(),
+                _heading(_reviewing ? '배송 정보' : '받는 분과 주소'),
+                const SizedBox(height: 24),
+                if (_reviewing) _reviewDetails(wide: true) else _deliveryForm(),
+              ],
+            ),
+          ),
+          secondary: WebSurface(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  '주문 요약',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: WebPalette.of(context).ink,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                _albumSummary(compact: true),
+                const SizedBox(height: 24),
+                Divider(color: WebPalette.of(context).line),
+                const SizedBox(height: 18),
+                _configuration(includeProduct: true),
+                const SizedBox(height: 24),
+                Divider(color: WebPalette.of(context).line),
+                const SizedBox(height: 18),
+                _priceDetails(compact: true),
+                const SizedBox(height: 24),
+                if (_reviewing)
+                  _paymentActions(wide: false)
+                else ...[
+                  Icon(
+                    Icons.local_shipping_outlined,
+                    color: WebPalette.of(context).brandInk,
+                    size: 24,
+                  ),
+                  _note(
+                    '배송지 입력 후 주문 내용을 확인합니다. 결제 가능 여부와 최종 금액은 주문 확인 단계에서 안내합니다.',
+                  ),
+                ],
+                const SizedBox(height: 16),
+                _note(
+                  widget.testMode
+                      ? 'TEST 결제와 개발 주문만 진행합니다. 실제 책은 제작·배송되지 않습니다.'
+                      : '결제 전에 인쇄 파일을 준비합니다. 결제 확인 후에는 창을 닫아도 주문 처리가 이어집니다.',
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
+    ),
   );
 
   Widget _checkoutContent({required bool wide}) => ListView(
@@ -972,7 +1155,7 @@ class _PrintOrderCheckoutScreenState
         style: ExperienceFormStyle.text(
           context,
           compact ? 16 : 24,
-          weight: FontWeight.w600,
+          weight: compact ? FontWeight.w600 : FontWeight.w700,
         ),
       ),
       if (!compact) ...[
@@ -1074,6 +1257,7 @@ class _PrintOrderCheckoutScreenState
                         albumTitle: _pendingCanResume
                             ? widget.albumTitle
                             : null,
+                        albumId: _pendingCanResume ? widget.albumId : null,
                         initialType: 'CANCEL',
                         initialReason: !_pendingSdkStarted
                             ? '인쇄 파일을 다시 준비하기 위해 기존 주문 취소를 요청합니다.'
@@ -1087,7 +1271,7 @@ class _PrintOrderCheckoutScreenState
                   if (!mounted || !_ownerCurrent) return;
                   if (result == 'request_resolved' ||
                       result == 'preparation_aborted') {
-                    setState(() => _agreed = false);
+                    setState(_clearConsent);
                   }
                   if (result == 'preparation_aborted' && !_pendingPayment) {
                     Navigator.pop(context, 'edit_album');
@@ -1375,10 +1559,60 @@ class _PrintOrderCheckoutScreenState
             ? null
             : (v) => setState(() => _agreed = v == true),
         title: Text(
-          '앨범 내용, 제작 구성, 배송지와 금액을 확인했습니다.',
+          PrintCheckoutConsent.reviewNotice,
           style: ExperienceFormStyle.text(context, 13),
         ),
       ),
+      Wrap(
+        spacing: 8,
+        runSpacing: 4,
+        children: [
+          TextButton(
+            onPressed: _paying
+                ? null
+                : () => Navigator.pop(context, 'review_again'),
+            child: const Text('최종 인쇄 미리보기 다시 확인'),
+          ),
+          _policyLink('이용약관', TermsPolicyDocType.terms),
+          _policyLink('취소·환불 정책', TermsPolicyDocType.refund),
+          _policyLink('제작·배송 안내', TermsPolicyDocType.shipping),
+          _policyLink('개인정보 처리방침', TermsPolicyDocType.privacy),
+        ],
+      ),
+      CheckboxListTile(
+        key: const ValueKey('print-checkout-policy-agreement'),
+        contentPadding: EdgeInsets.zero,
+        controlAffinity: ListTileControlAffinity.leading,
+        value: _policyAccepted,
+        onChanged: _paying || _loading || _reviewChanged
+            ? null
+            : (v) => setState(() => _policyAccepted = v == true),
+        title: Text(
+          '[필수] 이용약관과 취소·환불·제작·배송 정책을 확인하고 동의합니다.',
+          style: ExperienceFormStyle.text(context, 13),
+        ),
+      ),
+      const SizedBox(height: 8),
+      Text(
+        '주문제작 상품의 청약철회 안내',
+        style: ExperienceFormStyle.text(context, 13, weight: FontWeight.w600),
+      ),
+      _note(CommercePolicy.customProductionConsent),
+      CheckboxListTile(
+        key: const ValueKey('print-checkout-custom-production-agreement'),
+        contentPadding: EdgeInsets.zero,
+        controlAffinity: ListTileControlAffinity.leading,
+        value: _customProductionAccepted,
+        onChanged: _paying || _loading || _reviewChanged
+            ? null
+            : (v) => setState(() => _customProductionAccepted = v == true),
+        title: Text(
+          '[필수·별도 동의] 위 주문제작 상품의 청약철회 제한 안내를 확인하고 동의합니다.',
+          style: ExperienceFormStyle.text(context, 13),
+        ),
+      ),
+      if (!widget.testMode && _readiness?.canPay != true)
+        _note('현재 정책은 판매 준비용 초안입니다. 실제 결제와 제작 요청은 열리지 않습니다.'),
       const SizedBox(height: 8),
       if (widget.testMode && _testCapability == null) ...[
         _message('이 앨범의 TEST 주문 권한이나 제작 구성을 확인하지 못했어요.'),
@@ -1397,6 +1631,18 @@ class _PrintOrderCheckoutScreenState
         '결제 전에 인쇄 PDF를 만들고 업로드·검수합니다. 파일 준비 중에는 앱을 열어두세요. 결제 완료 후에는 앱을 닫아도 주문 처리가 이어집니다.',
       ),
     ],
+  );
+
+  Widget _policyLink(String label, TermsPolicyDocType type) => TextButton(
+    onPressed: _paying
+        ? null
+        : () => Navigator.push<void>(
+            context,
+            MaterialPageRoute(
+              builder: (_) => TermsPolicyScreen(initialDocType: type),
+            ),
+          ),
+    child: Text(label),
   );
 
   Widget _paymentActions({required bool wide}) {
@@ -1438,7 +1684,7 @@ class _PrintOrderCheckoutScreenState
       style: OutlinedButton.styleFrom(
         minimumSize: const Size(0, 48),
         textStyle: ExperienceFormStyle.text(context, 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kIsWeb ? 12 : 6)),
+        shape: const StadiumBorder(),
       ),
       onPressed: _paying ? null : () => Navigator.pop(context, 'edit_album'),
       child: const Text('앨범 계속 편집하기'),
@@ -1475,16 +1721,22 @@ class _PrintOrderCheckoutScreenState
     ],
   );
 
+  String get _priceHeading => widget.testMode
+      ? 'TEST 결제금액'
+      : kIsWeb
+      ? (_quote.hasPlannedRetailPrice && !_quote.hasFinalRetailPrice
+            ? '예정 판매가'
+            : '판매가')
+      : _readiness?.canPay == true
+      ? '총 결제금액'
+      : '예정 결제금액';
+
   Widget _priceDetails({bool compact = false}) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       if (compact || MediaQuery.textScalerOf(context).scale(24) > 32) ...[
         Text(
-          widget.testMode
-              ? 'TEST 결제금액'
-              : _readiness?.canPay == true
-              ? '총 결제금액'
-              : '예정 결제금액',
+          _priceHeading,
           style: ExperienceFormStyle.text(
             context,
             compact ? 13 : 16,
@@ -1497,27 +1749,33 @@ class _PrintOrderCheckoutScreenState
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Expanded(
-              child: _heading(
-                widget.testMode
-                    ? 'TEST 결제금액'
-                    : _readiness?.canPay == true
-                    ? '총 결제금액'
-                    : '예정 결제금액',
-              ),
-            ),
+            Expanded(child: _heading(_priceHeading)),
             _priceAmount(),
           ],
         ),
       if (_quote.hasPlannedRetailPrice && _quote.shippingIncluded)
         _note('기본 배송비 포함'),
-      if (_quote.priceNotice.isNotEmpty) _note(_quote.priceNotice),
+      if (kIsWeb && _quote.hasPlannedRetailPrice) ...[
+        _note('부가세 포함 · 1권 기준'),
+        if (!_quote.shippingIncluded)
+          _note('배송비가 확정되지 않았습니다. 배송비를 포함한 최종 금액 확인 전에는 결제할 수 없습니다.'),
+        if (!_quote.hasFinalRetailPrice)
+          _note('판매 준비 중인 예정 가격입니다. 정식 판매 전 가격·제작 조건이 변경될 수 있습니다.'),
+      ],
+      if (_quote.priceNotice.isNotEmpty)
+        _note(_quote.priceNotice)
+      else if (kIsWeb && !_quote.hasPlannedRetailPrice)
+        _note('이 규격·페이지 조합의 제작비를 아직 확인하지 못했습니다. 비용 확인 후 판매가를 안내합니다.'),
     ],
   );
 
   Widget _priceAmount() => Text(
-    _quote.hasPlannedRetailPrice ? '${_won(_quote.amount)}원' : '견적 확인 중',
-    style: ExperienceFormStyle.text(context, 24, weight: FontWeight.w600),
+    _quote.hasPlannedRetailPrice
+        ? '${_won(_quote.amount)}원'
+        : kIsWeb
+        ? '가격 확인 필요'
+        : '견적 확인 중',
+    style: ExperienceFormStyle.text(context, 24, weight: FontWeight.w700),
   );
 
   String _productLabel() {
@@ -1541,7 +1799,7 @@ class _PrintOrderCheckoutScreenState
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
       color: ExperienceFormStyle.surface(context),
-      borderRadius: BorderRadius.circular(kIsWeb ? 12 : 6),
+      borderRadius: BorderRadius.circular(SnapFitRadius.lg),
     ),
     child: Text(text, style: ExperienceFormStyle.text(context, 14)),
   );
@@ -1599,7 +1857,9 @@ class _AddressSearchSheetState extends ConsumerState<_AddressSearchSheet> {
   Widget build(BuildContext context) => Padding(
     padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
     child: FractionallySizedBox(
-      heightFactor: kIsWeb ? 1 : MediaQuery.orientationOf(context) == Orientation.landscape
+      heightFactor: kIsWeb
+          ? 1
+          : MediaQuery.orientationOf(context) == Orientation.landscape
           ? .94
           : .85,
       child: Column(

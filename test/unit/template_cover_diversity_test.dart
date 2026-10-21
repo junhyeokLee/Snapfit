@@ -10,36 +10,65 @@ import 'package:snap_fit/core/templates/data_template_engine.dart';
 import 'package:snap_fit/core/templates/free_template_material_policy.dart';
 import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
 import 'package:snap_fit/features/album/domain/entities/layer.dart';
-import '../widget/ai_album_start_step_test.dart' show loadCreationFonts;
+
+Rect _rect(LayerModel layer) =>
+    layer.position & Size(layer.width, layer.height);
+
+// Map a known source face zone through the same cover fit and editable crop
+// alignment used by the renderer, rather than assuming an uncropped photo.
+Rect _sourceZone(LayerModel photo, Rect zone, Size sourceSize) {
+  final fit = applyBoxFit(
+    BoxFit.cover,
+    sourceSize,
+    Size(photo.width, photo.height),
+  );
+  final source = photo.imageAlignment.inscribe(
+    fit.source,
+    Offset.zero & sourceSize,
+  );
+  final target = Alignment.center.inscribe(fit.destination, _rect(photo));
+  return Rect.fromLTRB(
+    target.left + (zone.left - source.left) / source.width * target.width,
+    target.top + (zone.top - source.top) / source.height * target.height,
+    target.left + (zone.right - source.left) / source.width * target.width,
+    target.top + (zone.bottom - source.top) / source.height * target.height,
+  );
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() async {
-    await loadCreationFonts();
-    for (final f in [
-      ('Eulyoo', 'Eulyoo1945-Regular.ttf'),
-      ('BookMyungjo', 'BookkMyungjo_Bold.ttf'),
-      ('Cormorant Garamond', 'Cormorant-Regular.ttf'),
-    ]) {
-      await (FontLoader(
-        f.$1,
-      )..addFont(rootBundle.load('assets/fonts/${f.$2}'))).load();
+    final manifest =
+        jsonDecode(await rootBundle.loadString('FontManifest.json')) as List;
+    for (final entry in manifest.whereType<Map>()) {
+      final loader = FontLoader(entry['family'] as String);
+      for (final font in (entry['fonts'] as List).whereType<Map>()) {
+        loader.addFont(rootBundle.load(font['asset'] as String));
+      }
+      await loader.load();
     }
   });
 
   for (final aspect in CollectionAspect.values) {
     test(
-      'all 51 covers have exclusive photographs and fitting text: ${aspect.name}',
+      'all 68 covers have exclusive photographs and fitting text: ${aspect.name}',
       () {
         final owners = <String, String>{};
+        expect(publishedCreationTemplates, hasLength(68));
         for (final template in publishedCreationTemplates) {
           final catalog =
               jsonDecode(template.templateJson!) as Map<String, dynamic>;
           final doc = catalog['variants'][aspect.name] as Map<String, dynamic>;
           final cover = doc['cover'] as Map<String, dynamic>;
-          for (final photo in (cover['layers'] as List).where(
-            (l) => l['type'] == 'image',
-          )) {
+          final photographs = (cover['layers'] as List)
+              .where((l) => l['type'] == 'image')
+              .toList();
+          expect(
+            photographs,
+            isNotEmpty,
+            reason: '${template.title}: real cover subject',
+          );
+          for (final photo in photographs) {
             final path = photo['imageUrl'] as String;
             expect(path.startsWith('asset:'), true);
             expect(
@@ -102,7 +131,10 @@ void main() {
             }
           }
         }
-        expect(owners, hasLength(57));
+        expect(
+          owners.length,
+          greaterThanOrEqualTo(publishedCreationTemplates.length),
+        );
       },
     );
   }
@@ -111,11 +143,13 @@ void main() {
     'renaming an identical photo cannot bypass the cover uniqueness rule',
     () async {
       final fingerprints = <String, Uint8List>{};
+      var photographCount = 0;
       for (final template in publishedCreationTemplates) {
         final doc = jsonDecode(template.templateJson!) as Map<String, dynamic>;
         for (final photo in (doc['cover']['layers'] as List).where(
           (l) => l['type'] == 'image',
         )) {
+          photographCount++;
           final path = (photo['imageUrl'] as String).substring(6);
           final codec = await ui.instantiateImageCodec(
             File(path).readAsBytesSync(),
@@ -144,7 +178,11 @@ void main() {
           codec.dispose();
         }
       }
-      expect(fingerprints, hasLength(57));
+      expect(fingerprints, hasLength(photographCount));
+      expect(
+        photographCount,
+        greaterThanOrEqualTo(publishedCreationTemplates.length),
+      );
     },
   );
 
@@ -206,22 +244,37 @@ void main() {
     'evening wedding cover type leaves the photographed faces clear in every ratio',
     () {
       for (final aspect in CollectionAspect.values) {
-        final doc = FreeCollectionVolume.cinema.document(aspect);
+        final doc = authoredCollections
+            .singleWhere(
+              (collection) => collection.id == FreeCollectionVolume.cinema.id,
+            )
+            .document(aspect);
         final layers = DataTemplateEngine.buildLayersFromJson(
           doc['cover'],
           aspect.canvas,
         );
-        // Face zone measured from the square source and its centered wide crop.
-        final faces = Rect.fromLTWH(
-          aspect.canvas.width * .375,
-          aspect.canvas.height *
-              (aspect == CollectionAspect.landscape ? .12 : .22),
-          aspect.canvas.width * .325,
-          aspect.canvas.height * .30,
+        // The square original now fills each jacket. Apply its actual crop
+        // before checking the photographed face zone against editable type.
+        final photo = layers.singleWhere((l) => l.type == LayerType.image);
+        expect(
+          photo.width / photo.height,
+          closeTo(aspect.canvas.aspectRatio, .00001),
+        );
+        expect(
+          photo.width *
+              photo.height /
+              (aspect.canvas.width * aspect.canvas.height),
+          greaterThanOrEqualTo(.8),
+        );
+        expect(photo.imageZoom, 1);
+        final faces = _sourceZone(
+          photo,
+          const Rect.fromLTWH(.375, .22, .325, .30),
+          const Size(1, 1),
         );
         for (final layer in layers.where((l) => l.type == LayerType.text)) {
           expect(
-            (layer.position & Size(layer.width, layer.height)).overlaps(faces),
+            _rect(layer).deflate(.5).overlaps(faces.deflate(.5)),
             false,
             reason: '${aspect.name}: ${layer.text} covers the dancing couple',
           );
@@ -231,24 +284,125 @@ void main() {
   );
 
   test(
-    'catalog baseline covers improve without changing draft or saved interiors',
+    'birthday photographic crop retains the baby face in every jacket ratio',
+    () {
+      for (final aspect in CollectionAspect.values) {
+        final doc = authoredCollections
+            .singleWhere(
+              (collection) => collection.id == FreeCollectionVolume.birthday.id,
+            )
+            .document(aspect);
+        final layers = DataTemplateEngine.buildLayersFromJson(
+          doc['cover'],
+          aspect.canvas,
+        );
+        final photo = layers.singleWhere((l) => l.type == LayerType.image);
+        // Convert the normalized face zone's horizontal coordinates to the
+        // original 3:2 image before mapping its actual crop and alignment.
+        final sourceFace = _sourceZone(
+          photo,
+          const Rect.fromLTWH(.215 * 1.5, .31, .115 * 1.5, .19),
+          const Size(1.5, 1),
+        );
+        expect(sourceFace.isFinite, isTrue);
+        expect(
+          _rect(photo).contains(sourceFace.topLeft),
+          isTrue,
+          reason: '${aspect.name}: do not crop the left half of the baby face',
+        );
+        expect(_rect(photo).contains(sourceFace.bottomRight), isTrue);
+        for (final text in layers.where((l) => l.type == LayerType.text)) {
+          expect(
+            _rect(text).deflate(.5).overlaps(sourceFace.deflate(.5)),
+            isFalse,
+            reason: '${aspect.name}: ${text.text} covers the baby face',
+          );
+        }
+      }
+    },
+  );
+
+  test('wide pet jackets place their titles below the photographed heads', () {
+    for (final id in ['a-day-with-you', 'our-walking-promise']) {
+      final aspect = CollectionAspect.landscape;
+      final doc = authoredCollections
+          .singleWhere((c) => c.id == id)
+          .document(aspect);
+      final title = (doc['cover']['layers'] as List).singleWhere(
+        (l) => l['typographyRole'] == 'signature-title',
+      );
+      expect((title['y'] as num).toDouble(), greaterThan(.5), reason: id);
+    }
+  });
+
+  test('dates-of-us keeps place, author and date in separate cover fields', () {
+    for (final aspect in CollectionAspect.values) {
+      final document = authoredCollections
+          .singleWhere((collection) => collection.id == 'dates-of-us')
+          .document(aspect);
+      final layers = DataTemplateEngine.buildLayersFromJson(
+        document['cover'],
+        aspect.canvas,
+      );
+      final fields = layers
+          .where(
+            (l) =>
+                l.type == LayerType.text &&
+                RegExp(r'_signature_(?:place|byline|period)$').hasMatch(l.id),
+          )
+          .toList();
+      expect(fields, hasLength(3));
+      final place = fields.singleWhere(
+        (l) => l.id.endsWith('_signature_place'),
+      );
+      expect(
+        place.textStyle!.fontSize,
+        greaterThanOrEqualTo(11),
+        reason: '${aspect.name}: body text must retain its readable minimum',
+      );
+      for (var first = 0; first < fields.length; first++) {
+        for (var second = first + 1; second < fields.length; second++) {
+          expect(
+            _rect(
+              fields[first],
+            ).deflate(.5).overlaps(_rect(fields[second]).deflate(.5)),
+            isFalse,
+            reason:
+                '${aspect.name}: a collection name must not classify '
+                '${fields[first].id} or ${fields[second].id} as a date',
+          );
+        }
+      }
+      final author = fields.singleWhere(
+        (l) => l.id.endsWith('_signature_byline'),
+      );
+      final date = fields.singleWhere(
+        (l) => l.id.endsWith('_signature_period'),
+      );
+      expect(author.position.dx, lessThan(date.position.dx));
+    }
+  });
+
+  test(
+    'photographic catalog jackets retain draft and saved-album source versions',
     () {
       for (final collection in baselineAuthoredCollections) {
         for (final aspect in CollectionAspect.values) {
-          final original = switch (collection.id) {
+          Map<String, dynamic> source() => switch (collection.id) {
             'lightbound' => buildLightboundWeddingDraft(aspect),
             'journey' => EditorialVolume.journey.document(aspect),
             'small-days' => EditorialVolume.smallDays.document(aspect),
             _ => throw StateError(collection.id),
           };
+          final original = source();
           final unchanged = jsonEncode(original);
           final current = collection.document(aspect);
-          expect(current['coverRevision'], baselineCoverRevision);
+          expect(current['coverRevision'], 'open-photographic-type-2026-10-21');
+          expect(current['cover']['coverRevision'], current['coverRevision']);
           expect(current['version'], (original['version'] as int) + 1);
           expect(current['cover'], isNot(original['cover']));
           for (final field in [
             'id',
-            'pages',
             'innerPageCount',
             'chapters',
             'accessTier',
@@ -265,12 +419,57 @@ void main() {
           final afterPhoto = (current['cover']['layers'] as List).singleWhere(
             (l) => l['type'] == 'image',
           );
-          expect(afterPhoto['imageUrl'], beforePhoto['imageUrl']);
           expect(
-            afterPhoto['w'] * afterPhoto['h'],
-            greaterThan(beforePhoto['w'] * beforePhoto['h']),
+            afterPhoto['imageUrl'],
+            collection.id == 'journey'
+                ? 'asset:assets/templates/original_editorial/images/travel_cafe.png'
+                : beforePhoto['imageUrl'],
+            reason:
+                'The public journey jacket must differ from wind-atlas; '
+                'the original draft photograph stays untouched',
           );
+          // Photography fills the jacket. Type is painted straight onto the
+          // photo; neither a plate nor a scrim can substitute for its placement.
+          final layers = DataTemplateEngine.buildLayersFromJson(
+            current['cover'],
+            aspect.canvas,
+          );
+          final photo = layers.singleWhere((l) => l.type == LayerType.image);
+          expect(
+            photo.width / photo.height,
+            closeTo(aspect.canvas.aspectRatio, .00001),
+          );
+          expect(
+            photo.width *
+                photo.height /
+                (aspect.canvas.width * aspect.canvas.height),
+            greaterThanOrEqualTo(.8),
+          );
+          expect(photo.imageZoom, 1);
+          expect(photo.imageBackground, 'none');
+          expect(current['cover']['typographyPanelCoverageFraction'], 0.0);
+          final photoIndex = layers.indexOf(photo);
+          expect(
+            layers
+                .skip(photoIndex + 1)
+                .where(
+                  (l) => l.type != LayerType.text && l.type != LayerType.image,
+                ),
+            isEmpty,
+          );
+          for (final text in layers) {
+            if (text.type != LayerType.text) continue;
+            expect(text.textFillMode, 'solid', reason: text.id);
+            expect(text.textStyle!.color!.a, 1, reason: text.id);
+            expect(text.textStyle!.shadows, isNotEmpty, reason: text.id);
+          }
           expect(jsonEncode(original), unchanged);
+          expect(
+            source(),
+            original,
+            reason:
+                '${collection.id}: current-catalog work must not rewrite archived interiors',
+          );
           expect(freeTemplateMaterialIssues(current), isEmpty);
         }
       }

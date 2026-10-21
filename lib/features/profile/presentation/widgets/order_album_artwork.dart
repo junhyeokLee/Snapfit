@@ -38,6 +38,7 @@ class OrderDetailWorkspace extends ConsumerStatefulWidget {
 
 class _OrderDetailWorkspaceState extends ConsumerState<OrderDetailWorkspace> {
   final _informationKey = GlobalKey();
+  final _previewKey = GlobalKey();
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, box) {
@@ -52,6 +53,7 @@ class _OrderDetailWorkspaceState extends ConsumerState<OrderDetailWorkspace> {
           box.maxWidth >= 520 &&
           MediaQuery.orientationOf(context) == Orientation.landscape;
       final preview = Column(
+        key: _previewKey,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(child: OrderAlbumArtwork(albumId: widget.albumId)),
@@ -72,7 +74,7 @@ class _OrderDetailWorkspaceState extends ConsumerState<OrderDetailWorkspace> {
         padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
         children: [
           if (!wide) ...[
-            SizedBox(height: 236, child: preview),
+            SizedBox(height: 260, child: preview),
             const SizedBox(height: 20),
           ],
           ...widget.children,
@@ -82,7 +84,7 @@ class _OrderDetailWorkspaceState extends ConsumerState<OrderDetailWorkspace> {
           ? Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(flex: 5, child: preview),
+                Expanded(flex: 4, child: preview),
                 VerticalDivider(
                   width: 1,
                   color: ExperienceFormStyle.line(context),

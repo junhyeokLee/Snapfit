@@ -309,8 +309,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           WebPageHeading(
-            title: shared ? '함께 만드는 앨범' : '나의 앨범 모음',
-            eyebrow: shared ? 'SHARED ALBUMS' : 'MY COLLECTION',
+            title: shared ? '공유 앨범' : '앨범 모음',
             description: shared
                 ? '참여한 앨범을 확인하고 부여된 권한으로 함께 작업하세요.'
                 : '앨범의 진행 상황과 즐겨찾기를 한곳에서 관리하세요.',
@@ -357,19 +356,14 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
               onPressed: _isRefreshing ? null : _handlePullToRefresh,
               icon: const Icon(Icons.refresh, size: 21),
             );
-            if (box.maxWidth < 760) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [tabs, const SizedBox(height: 16), Row(children: [
-                  Expanded(child: search), const SizedBox(width: 8), refresh,
-                ])],
-              );
-            }
-            return Row(children: [
-              tabs, const Spacer(),
-              SizedBox(width: 320, child: search),
-              const SizedBox(width: 8), refresh,
-            ]);
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(children: [Expanded(child: search), const SizedBox(width: 8), refresh]),
+                const SizedBox(height: 16),
+                tabs,
+              ],
+            );
           }),
           const SizedBox(height: 22),
           Text('${albums.length}개의 앨범', style: TextStyle(
@@ -379,8 +373,16 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
           Expanded(
             child: albums.isEmpty
                 ? Center(child: WebSurface(
-                    child: Text(_searchQuery.isNotEmpty
-                        ? '검색 결과가 없습니다.' : '표시할 앨범이 없습니다.'),
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      Text(_searchQuery.isNotEmpty || _selectedTab != 0
+                        ? '조건에 맞는 앨범이 없습니다.' : '표시할 앨범이 없습니다.'),
+                      if (_searchQuery.isNotEmpty || _selectedTab != 0) ...[
+                        const SizedBox(height: 16),
+                        OutlinedButton(onPressed: () => setState(() {
+                          _searchController.clear(); _searchQuery = ''; _selectedTab = 0;
+                        }), child: const Text('검색·필터 초기화')),
+                      ],
+                    ]),
                   ))
                 : LayoutBuilder(builder: (context, box) {
                     final columns = (box.maxWidth / 280).floor().clamp(1, 4);
@@ -615,7 +617,7 @@ class _TopTabBar extends StatelessWidget {
                   border: Border(
                     bottom: BorderSide(
                       color: selected
-                          ? ExperienceFormStyle.ink(context)
+                          ? ExperienceFormStyle.selectionInk(context)
                           : Colors.transparent,
                       width: 2,
                     ),
@@ -627,8 +629,10 @@ class _TopTabBar extends StatelessWidget {
                   style: ExperienceFormStyle.text(
                     context,
                     14,
-                    weight: selected ? FontWeight.w600 : FontWeight.w400,
-                    secondary: !selected,
+                    weight: selected ? FontWeight.w700 : FontWeight.w500,
+                    color: selected
+                        ? ExperienceFormStyle.selectionInk(context)
+                        : ExperienceFormStyle.muted(context),
                   ),
                 ),
               ),

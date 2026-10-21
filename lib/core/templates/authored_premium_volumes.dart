@@ -123,6 +123,8 @@ enum PremiumVolume {
       'version': 3,
       'editionId': '$id-$count',
       'source': 'snapfit-authored-volume',
+      if (this == wedding || this == baby)
+        'interiorQualityRevision': 'individual-records-2026-10-16',
       'innerPageCount': count,
       'availableInnerPageCounts': pageCounts,
       'baselinePageMap': baselineMap,
@@ -327,7 +329,7 @@ class _VolumeAuthor {
       );
     p.photo(
       'photo_${p.layers.length}',
-      '$_editorial$file.png',
+      file.startsWith('assets/') ? file : '$_editorial$file.png',
       r.left,
       r.top,
       r.width,

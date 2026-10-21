@@ -36,10 +36,12 @@ import 'package:snap_fit/features/profile/presentation/views/my_page_screen.dart
 import 'package:snap_fit/features/profile/presentation/views/order_history_screen.dart';
 import 'package:snap_fit/features/profile/presentation/views/admin_point_shop_management_screen.dart';
 import 'package:snap_fit/features/profile/presentation/widgets/order_album_artwork.dart';
+import 'package:snap_fit/features/profile/presentation/widgets/order_journey_progress.dart';
 import 'package:snap_fit/features/profile/presentation/widgets/personal_collection_shelf.dart';
 import 'package:snap_fit/features/store/data/api/template_provider.dart';
 import 'package:snap_fit/features/store/presentation/views/material_catalog_screen.dart';
 import 'package:snap_fit/features/store/presentation/views/template_detail_screen.dart';
+import 'package:snap_fit/features/store/presentation/views/material_detail_screen.dart';
 import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
 
 import '../helpers/mock_repositories.dart';
@@ -238,6 +240,11 @@ void main() {
       );
     });
     when(() => repository.fetchMyOrders()).thenAnswer((_) async => orders);
+    when(() => repository.fetchMyPrintOrder(any())).thenAnswer(
+      (invocation) async => orders.firstWhere(
+        (order) => order.orderId == invocation.positionalArguments.first,
+      ),
+    );
     when(() => repository.fetchMyPrintOrderProgress(any())).thenAnswer(
       (invocation) async => PrintOrderProgress(
         orderId: invocation.positionalArguments.first as String,
@@ -292,7 +299,11 @@ void main() {
             (ref) async => StorageQuotaStatus.fromJson({}),
           ),
           myOrderSummaryProvider.overrideWith(
-            (ref) async => OrderSummaryResult.fromJson({}),
+            (ref) async => OrderSummaryResult.fromJson({
+              'inProduction': emptyOrders ? 0 : 1,
+              'shipping': emptyOrders ? 0 : 1,
+              'delivered': emptyOrders ? 0 : 1,
+            }),
           ),
           myOrderStatusBadgesProvider.overrideWith(
             (ref) async => const OrderStatusBadges.zero(),
@@ -307,6 +318,10 @@ void main() {
             theme: dark ? SnapFitTheme.dark() : SnapFitTheme.light(),
             builder: (context, body) => MediaQuery(
               data: MediaQuery.of(context).copyWith(
+                devicePixelRatio:
+                    const bool.fromEnvironment('PERSONAL_WORKSHOP_QA')
+                    ? 2
+                    : MediaQuery.devicePixelRatioOf(context),
                 disableAnimations: true,
                 textScaler: TextScaler.linear(scale),
               ),
@@ -394,6 +409,98 @@ void main() {
     category: AlbumCategory.recent,
     initialAlbums: albums,
     currentUserId: 'qa',
+  );
+  for (final size in [const Size(390, 844), const Size(844, 390)]) {
+    for (final dark in [false, true]) {
+      testWidgets('refined personal workspace navigation $size dark=$dark', (
+        tester,
+      ) async {
+        reset(tester);
+        viewport(tester, size);
+        await mount(tester, const MyPageScreen(), scale: 1, dark: dark);
+        expect(find.byTooltip('뒤로가기'), findsNothing);
+        await capture(tester, 'personal-refresh-profile', size, dark);
+        await reveal(tester, key('profile-order-shortcut'));
+        await capture(tester, 'personal-refresh-account-actions', size, dark);
+        await tap(tester, key('profile-order-shortcut'));
+        expect(find.byType(OrderHistoryScreen), findsOneWidget);
+        await capture(tester, 'personal-refresh-orders', size, dark);
+        await tap(tester, key('personal-order-${orders.first.orderId}'));
+        expect(find.byType(OrderJourneyProgress), findsOneWidget);
+        expect(key('order-detail-refresh-error'), findsNothing);
+        await capture(tester, 'personal-refresh-order-detail', size, dark);
+        await reveal(tester, find.text('배송 조회'));
+        expect(find.text('배송 조회').hitTestable(), findsOneWidget);
+        await tap(tester, find.byTooltip('닫기'));
+        tester.state<NavigatorState>(find.byType(Navigator)).pop();
+        await paint(tester);
+        await tap(tester, find.byTooltip('내 보관함 모두 보기'));
+        await capture(tester, 'personal-refresh-library', size, dark);
+        await tap(tester, key('library-type-템플릿'));
+        await capture(tester, 'personal-refresh-templates', size, dark);
+        await tap(
+          tester,
+          key('material-item-${pointShopTemplateKey(templates.first)}'),
+        );
+        expect(find.byType(TemplateDetailScreen), findsOneWidget);
+        tester.state<NavigatorState>(find.byType(Navigator)).pop();
+        await paint(tester);
+        expect(find.text('3개 항목'), findsOneWidget);
+        await tap(tester, key('library-type-프레임'));
+        await capture(tester, 'personal-refresh-materials', size, dark);
+        await tester.pumpWidget(const SizedBox());
+        await tester.pump();
+      });
+    }
+  }
+
+  testWidgets(
+    'order journey never confirms an unverified payment or canceled order',
+    (tester) async {
+      reset(tester);
+      viewport(tester, const Size(390, 844));
+      final semantics = tester.ensureSemantics();
+      try {
+        for (final status in [
+          'PAYMENT_PENDING',
+          'PAYMENT_COMPLETED',
+          'SHIPPING',
+          'DELIVERED',
+          'CANCELED',
+          'PREPARATION_CANCELED',
+          'UNKNOWN',
+        ]) {
+          final item = OrderHistoryItem(
+            orderId: 'state-$status',
+            title: '내 앨범',
+            amount: 59900,
+            status: status,
+            statusLabel: status,
+            progress: 1,
+            orderedAt: DateTime(2026, 10, 19),
+          );
+          await mount(
+            tester,
+            Scaffold(body: OrderJourneyProgress(order: item)),
+            scale: 1.8,
+          );
+          if (status == 'PAYMENT_PENDING' || status == 'PAYMENT_COMPLETED') {
+            expect(find.bySemanticsLabel('결제, 현재 단계'), findsOneWidget);
+            expect(find.bySemanticsLabel('결제, 완료'), findsNothing);
+          } else if (status == 'SHIPPING') {
+            expect(find.bySemanticsLabel('배송, 현재 단계'), findsOneWidget);
+          } else if (status == 'DELIVERED') {
+            expect(find.bySemanticsLabel('완료, 완료'), findsOneWidget);
+          } else {
+            expect(find.text('완료'), findsNothing);
+            expect(find.text('제작'), findsNothing);
+          }
+          expect(tester.takeException(), isNull);
+        }
+      } finally {
+        semantics.dispose();
+      }
+    },
   );
   for (final size in [
     const Size(320, 568),
@@ -564,7 +671,15 @@ void main() {
         );
         expect(input.widget.focusNode.hasFocus, isTrue);
         expect(input.widget.controller.text, '리넨');
-        expect(find.text('1개 항목'), findsOneWidget);
+        expect(
+          find.text('1개 항목'),
+          findsOneWidget,
+          reason: find
+              .textContaining('개 항목')
+              .evaluate()
+              .map((element) => (element.widget as Text).data)
+              .join(', '),
+        );
         expect(tester.takeException(), isNull);
         FocusManager.instance.primaryFocus?.unfocus();
         viewport(tester, size);
@@ -601,6 +716,28 @@ void main() {
     );
   }
 
+  for (final size in [
+    const Size(320, 568),
+    const Size(648, 320),
+    const Size(844, 390),
+  ]) {
+    testWidgets('profile collections and points fit large type $size', (
+      tester,
+    ) async {
+      reset(tester);
+      viewport(tester, size);
+      await mount(tester, const MyPageScreen(), scale: 1.8, dark: true);
+      expect(tester.takeException(), isNull);
+      final charge = key('my-point-charge');
+      await reveal(tester, charge);
+      expect(charge.hitTestable(), findsOneWidget);
+      expect(tester.getSize(charge).height, greaterThanOrEqualTo(44));
+      await reveal(tester, key('profile-design-collection'));
+      expect(tester.takeException(), isNull);
+      await capture(tester, 'personal-atelier-profile-large', size, true);
+    });
+  }
+
   testWidgets(
     'profile only previews confirmed purchases and opens their type',
     (tester) async {
@@ -625,6 +762,61 @@ void main() {
         '프레임',
       );
       expect(find.text('1개 항목'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('profile paper preview opens the paper collection', (
+    tester,
+  ) async {
+    reset(tester);
+    viewport(tester, const Size(390, 844));
+    await mount(
+      tester,
+      const MyPageScreen(),
+      owned: {'sticker:studioCottonRag'},
+    );
+    await reveal(tester, key('profile-design-collection'));
+    await tap(tester, key('personal-design-sticker:studioCottonRag'));
+    expect(
+      tester
+          .widget<MaterialCatalogScreen>(find.byType(MaterialCatalogScreen))
+          .initialType,
+      '종이',
+    );
+    expect(find.text('1개 항목'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'bookmarking a library item never opens its detail or changes ownership',
+    (tester) async {
+      reset(tester);
+      viewport(tester, const Size(390, 844));
+      var ownershipCalls = 0;
+      await mount(
+        tester,
+        const MaterialCatalogScreen(library: true),
+        loadOwned: () async {
+          ownershipCalls++;
+          return {'frame:materialLinenOval'};
+        },
+      );
+      final favorite = key(
+        'favorite-${CatalogFavoriteKeys.frame('materialLinenOval')}',
+      );
+      await tap(tester, favorite);
+      expect(
+        CatalogFavorites.instance.contains(
+          CatalogFavoriteKeys.frame('materialLinenOval'),
+        ),
+        isTrue,
+      );
+      expect(find.byType(MaterialDetailScreen), findsNothing);
+      expect(find.text('구매 완료'), findsOneWidget);
+      expect(ownershipCalls, 1);
+      await tap(tester, key('material-item-frame:materialLinenOval'));
+      expect(find.byType(MaterialDetailScreen), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

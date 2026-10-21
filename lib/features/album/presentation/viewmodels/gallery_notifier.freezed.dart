@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$GalleryState {
 
- List<AssetPathEntity> get albums; AssetPathEntity? get selectedAlbum; List<AssetEntity> get images; int get currentPage; bool get hasMore; bool get isLoading; Object? get error;
+ List<AssetPathEntity> get albums; AssetPathEntity? get selectedAlbum; List<AssetEntity> get images; int get currentPage; bool get hasMore; bool get isLoading; Object? get error; GalleryDateRange? get dateRange;
 /// Create a copy of GalleryState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $GalleryStateCopyWith<GalleryState> get copyWith => _$GalleryStateCopyWithImpl<G
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GalleryState&&const DeepCollectionEquality().equals(other.albums, albums)&&(identical(other.selectedAlbum, selectedAlbum) || other.selectedAlbum == selectedAlbum)&&const DeepCollectionEquality().equals(other.images, images)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&const DeepCollectionEquality().equals(other.error, error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GalleryState&&const DeepCollectionEquality().equals(other.albums, albums)&&(identical(other.selectedAlbum, selectedAlbum) || other.selectedAlbum == selectedAlbum)&&const DeepCollectionEquality().equals(other.images, images)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&const DeepCollectionEquality().equals(other.error, error)&&(identical(other.dateRange, dateRange) || other.dateRange == dateRange));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(albums),selectedAlbum,const DeepCollectionEquality().hash(images),currentPage,hasMore,isLoading,const DeepCollectionEquality().hash(error));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(albums),selectedAlbum,const DeepCollectionEquality().hash(images),currentPage,hasMore,isLoading,const DeepCollectionEquality().hash(error),dateRange);
 
 @override
 String toString() {
-  return 'GalleryState(albums: $albums, selectedAlbum: $selectedAlbum, images: $images, currentPage: $currentPage, hasMore: $hasMore, isLoading: $isLoading, error: $error)';
+  return 'GalleryState(albums: $albums, selectedAlbum: $selectedAlbum, images: $images, currentPage: $currentPage, hasMore: $hasMore, isLoading: $isLoading, error: $error, dateRange: $dateRange)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $GalleryStateCopyWith<$Res>  {
   factory $GalleryStateCopyWith(GalleryState value, $Res Function(GalleryState) _then) = _$GalleryStateCopyWithImpl;
 @useResult
 $Res call({
- List<AssetPathEntity> albums, AssetPathEntity? selectedAlbum, List<AssetEntity> images, int currentPage, bool hasMore, bool isLoading, Object? error
+ List<AssetPathEntity> albums, AssetPathEntity? selectedAlbum, List<AssetEntity> images, int currentPage, bool hasMore, bool isLoading, Object? error, GalleryDateRange? dateRange
 });
 
 
@@ -62,7 +62,7 @@ class _$GalleryStateCopyWithImpl<$Res>
 
 /// Create a copy of GalleryState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? albums = null,Object? selectedAlbum = freezed,Object? images = null,Object? currentPage = null,Object? hasMore = null,Object? isLoading = null,Object? error = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? albums = null,Object? selectedAlbum = freezed,Object? images = null,Object? currentPage = null,Object? hasMore = null,Object? isLoading = null,Object? error = freezed,Object? dateRange = freezed,}) {
   return _then(_self.copyWith(
 albums: null == albums ? _self.albums : albums // ignore: cast_nullable_to_non_nullable
 as List<AssetPathEntity>,selectedAlbum: freezed == selectedAlbum ? _self.selectedAlbum : selectedAlbum // ignore: cast_nullable_to_non_nullable
@@ -70,7 +70,8 @@ as AssetPathEntity?,images: null == images ? _self.images : images // ignore: ca
 as List<AssetEntity>,currentPage: null == currentPage ? _self.currentPage : currentPage // ignore: cast_nullable_to_non_nullable
 as int,hasMore: null == hasMore ? _self.hasMore : hasMore // ignore: cast_nullable_to_non_nullable
 as bool,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
-as bool,error: freezed == error ? _self.error : error ,
+as bool,error: freezed == error ? _self.error : error ,dateRange: freezed == dateRange ? _self.dateRange : dateRange // ignore: cast_nullable_to_non_nullable
+as GalleryDateRange?,
   ));
 }
 
@@ -155,10 +156,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<AssetPathEntity> albums,  AssetPathEntity? selectedAlbum,  List<AssetEntity> images,  int currentPage,  bool hasMore,  bool isLoading,  Object? error)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<AssetPathEntity> albums,  AssetPathEntity? selectedAlbum,  List<AssetEntity> images,  int currentPage,  bool hasMore,  bool isLoading,  Object? error,  GalleryDateRange? dateRange)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GalleryState() when $default != null:
-return $default(_that.albums,_that.selectedAlbum,_that.images,_that.currentPage,_that.hasMore,_that.isLoading,_that.error);case _:
+return $default(_that.albums,_that.selectedAlbum,_that.images,_that.currentPage,_that.hasMore,_that.isLoading,_that.error,_that.dateRange);case _:
   return orElse();
 
 }
@@ -176,10 +177,10 @@ return $default(_that.albums,_that.selectedAlbum,_that.images,_that.currentPage,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<AssetPathEntity> albums,  AssetPathEntity? selectedAlbum,  List<AssetEntity> images,  int currentPage,  bool hasMore,  bool isLoading,  Object? error)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<AssetPathEntity> albums,  AssetPathEntity? selectedAlbum,  List<AssetEntity> images,  int currentPage,  bool hasMore,  bool isLoading,  Object? error,  GalleryDateRange? dateRange)  $default,) {final _that = this;
 switch (_that) {
 case _GalleryState():
-return $default(_that.albums,_that.selectedAlbum,_that.images,_that.currentPage,_that.hasMore,_that.isLoading,_that.error);case _:
+return $default(_that.albums,_that.selectedAlbum,_that.images,_that.currentPage,_that.hasMore,_that.isLoading,_that.error,_that.dateRange);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -196,10 +197,10 @@ return $default(_that.albums,_that.selectedAlbum,_that.images,_that.currentPage,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<AssetPathEntity> albums,  AssetPathEntity? selectedAlbum,  List<AssetEntity> images,  int currentPage,  bool hasMore,  bool isLoading,  Object? error)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<AssetPathEntity> albums,  AssetPathEntity? selectedAlbum,  List<AssetEntity> images,  int currentPage,  bool hasMore,  bool isLoading,  Object? error,  GalleryDateRange? dateRange)?  $default,) {final _that = this;
 switch (_that) {
 case _GalleryState() when $default != null:
-return $default(_that.albums,_that.selectedAlbum,_that.images,_that.currentPage,_that.hasMore,_that.isLoading,_that.error);case _:
+return $default(_that.albums,_that.selectedAlbum,_that.images,_that.currentPage,_that.hasMore,_that.isLoading,_that.error,_that.dateRange);case _:
   return null;
 
 }
@@ -211,7 +212,7 @@ return $default(_that.albums,_that.selectedAlbum,_that.images,_that.currentPage,
 
 
 class _GalleryState implements GalleryState {
-  const _GalleryState({final  List<AssetPathEntity> albums = const [], this.selectedAlbum, final  List<AssetEntity> images = const [], this.currentPage = 0, this.hasMore = true, this.isLoading = false, this.error}): _albums = albums,_images = images;
+  const _GalleryState({final  List<AssetPathEntity> albums = const [], this.selectedAlbum, final  List<AssetEntity> images = const [], this.currentPage = 0, this.hasMore = true, this.isLoading = false, this.error, this.dateRange}): _albums = albums,_images = images;
   
 
  final  List<AssetPathEntity> _albums;
@@ -233,6 +234,7 @@ class _GalleryState implements GalleryState {
 @override@JsonKey() final  bool hasMore;
 @override@JsonKey() final  bool isLoading;
 @override final  Object? error;
+@override final  GalleryDateRange? dateRange;
 
 /// Create a copy of GalleryState
 /// with the given fields replaced by the non-null parameter values.
@@ -244,16 +246,16 @@ _$GalleryStateCopyWith<_GalleryState> get copyWith => __$GalleryStateCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GalleryState&&const DeepCollectionEquality().equals(other._albums, _albums)&&(identical(other.selectedAlbum, selectedAlbum) || other.selectedAlbum == selectedAlbum)&&const DeepCollectionEquality().equals(other._images, _images)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&const DeepCollectionEquality().equals(other.error, error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GalleryState&&const DeepCollectionEquality().equals(other._albums, _albums)&&(identical(other.selectedAlbum, selectedAlbum) || other.selectedAlbum == selectedAlbum)&&const DeepCollectionEquality().equals(other._images, _images)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&const DeepCollectionEquality().equals(other.error, error)&&(identical(other.dateRange, dateRange) || other.dateRange == dateRange));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_albums),selectedAlbum,const DeepCollectionEquality().hash(_images),currentPage,hasMore,isLoading,const DeepCollectionEquality().hash(error));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_albums),selectedAlbum,const DeepCollectionEquality().hash(_images),currentPage,hasMore,isLoading,const DeepCollectionEquality().hash(error),dateRange);
 
 @override
 String toString() {
-  return 'GalleryState(albums: $albums, selectedAlbum: $selectedAlbum, images: $images, currentPage: $currentPage, hasMore: $hasMore, isLoading: $isLoading, error: $error)';
+  return 'GalleryState(albums: $albums, selectedAlbum: $selectedAlbum, images: $images, currentPage: $currentPage, hasMore: $hasMore, isLoading: $isLoading, error: $error, dateRange: $dateRange)';
 }
 
 
@@ -264,7 +266,7 @@ abstract mixin class _$GalleryStateCopyWith<$Res> implements $GalleryStateCopyWi
   factory _$GalleryStateCopyWith(_GalleryState value, $Res Function(_GalleryState) _then) = __$GalleryStateCopyWithImpl;
 @override @useResult
 $Res call({
- List<AssetPathEntity> albums, AssetPathEntity? selectedAlbum, List<AssetEntity> images, int currentPage, bool hasMore, bool isLoading, Object? error
+ List<AssetPathEntity> albums, AssetPathEntity? selectedAlbum, List<AssetEntity> images, int currentPage, bool hasMore, bool isLoading, Object? error, GalleryDateRange? dateRange
 });
 
 
@@ -281,7 +283,7 @@ class __$GalleryStateCopyWithImpl<$Res>
 
 /// Create a copy of GalleryState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? albums = null,Object? selectedAlbum = freezed,Object? images = null,Object? currentPage = null,Object? hasMore = null,Object? isLoading = null,Object? error = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? albums = null,Object? selectedAlbum = freezed,Object? images = null,Object? currentPage = null,Object? hasMore = null,Object? isLoading = null,Object? error = freezed,Object? dateRange = freezed,}) {
   return _then(_GalleryState(
 albums: null == albums ? _self._albums : albums // ignore: cast_nullable_to_non_nullable
 as List<AssetPathEntity>,selectedAlbum: freezed == selectedAlbum ? _self.selectedAlbum : selectedAlbum // ignore: cast_nullable_to_non_nullable
@@ -289,7 +291,8 @@ as AssetPathEntity?,images: null == images ? _self._images : images // ignore: c
 as List<AssetEntity>,currentPage: null == currentPage ? _self.currentPage : currentPage // ignore: cast_nullable_to_non_nullable
 as int,hasMore: null == hasMore ? _self.hasMore : hasMore // ignore: cast_nullable_to_non_nullable
 as bool,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
-as bool,error: freezed == error ? _self.error : error ,
+as bool,error: freezed == error ? _self.error : error ,dateRange: freezed == dateRange ? _self.dateRange : dateRange // ignore: cast_nullable_to_non_nullable
+as GalleryDateRange?,
   ));
 }
 

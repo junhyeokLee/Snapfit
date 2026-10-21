@@ -6,7 +6,7 @@ export type EvaluationCase = {
   brief: TemplateBrief;
   expectations: string[];
 };
-export const suiteVersion = 1;
+export const suiteVersion = 2;
 const requests = [
   {
     id: "travel",
@@ -90,5 +90,29 @@ export const evaluationCases: EvaluationCase[] = requests.flatMap((r) =>
     label: r.label,
     brief: { prompt: r.prompt, pageCount: r.pages, aspect, designVersion: 2 },
     expectations: r.checks,
+  }))
+);
+
+const originalCounts = [20, 24, 24, 32, 24, 36];
+export const originalBookCases: EvaluationCase[] = requests.flatMap((
+  request,
+  i,
+) =>
+  (["portrait", "square", "landscape"] as const).map((aspect) => ({
+    id: `${request.id}-${aspect}`,
+    label: request.label,
+    brief: {
+      prompt: request.id === "editorial"
+        ? 'Make a 36-page editorial travel photobook plus cover, with crisp black, white and electric blue. English copy only. Cover title: "OFF THE GRID". Alternate full-scale photographs, asymmetric galleries and quiet typography pages. No invented names, places or dates. Facing pages should feel composed together, not repeated grids.'
+        : request.prompt,
+      pageCount: originalCounts[i],
+      aspect,
+      designVersion: 3,
+    },
+    expectations: [
+      ...request.checks.filter((check) => !check.includes("16쪽")),
+      `${originalCounts[i]}쪽 전체에서 복제·좌우 반전만 한 내지 없음`,
+      "사용자의 평범한 사진에서도 프레임·종이·문구가 어울림",
+    ],
   }))
 );

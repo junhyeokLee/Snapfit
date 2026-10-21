@@ -81,6 +81,7 @@ void main() {
         await tester.ensureVisible(
           find.byKey(const ValueKey('creation-template-99001')),
         );
+        await tester.pumpAndSettle();
         await tester.tap(find.byKey(const ValueKey('creation-template-99001')));
         await tester.pumpAndSettle();
         final preview = tester.widget<CreationTemplatePreview>(
@@ -115,6 +116,7 @@ void main() {
         await tester.ensureVisible(
           find.byKey(const ValueKey('creation-template-99001')),
         );
+        await tester.pumpAndSettle();
         await tester.tap(find.byKey(const ValueKey('creation-template-99001')));
         await tester.pumpAndSettle();
         await tester.tap(find.text('이 디자인 선택'));

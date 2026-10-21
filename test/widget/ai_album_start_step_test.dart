@@ -97,6 +97,45 @@ Future<List<PremiumTemplate>> creationFixtures() async {
 }
 
 void main() {
+  for (final firstFree in [false, true]) {
+    testWidgets(
+      'AI start explains the result and supplied point conditions: free=$firstFree',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(390, 844));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        var starts = 0;
+        await tester.pumpWidget(
+          wrapCreation(
+            AiAlbumStartStep(
+              aiPointCost: 780,
+              isFirstAiDraftFree: firstFree,
+              freeDraftLabel: '사진은 직접 고르고 바꿀 수 있어요',
+              onAiStart: () => starts++,
+              onManualStart: () {},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(
+          find.text(
+            firstFree
+                ? '첫 AI 템플릿 1회 무료 · 이후 현재 구성 기준 780P'
+                : 'AI 템플릿 · 현재 구성 780P',
+          ),
+          findsOneWidget,
+        );
+        expect(find.text('쪽수에 따라 달라져요. 최종 포인트는 생성 전에 확인해요.'), findsOneWidget);
+        expect(find.text('사진은 직접 고르고 바꿀 수 있어요'), findsOneWidget);
+        expect(find.text('빈 앨범부터'), findsOneWidget);
+        expect(find.text('분위기로 생성'), findsOneWidget);
+        expect(find.text('디자인 선택'), findsOneWidget);
+        await tester.tap(find.text('AI 템플릿'));
+        expect(starts, 1);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets(
     'manual, AI, free and point previews use server pricing without buying',
     (tester) async {
@@ -133,6 +172,14 @@ void main() {
             onTemplateSelected: (value) => selected = value,
           ),
           shopProducts: const [
+            PointShopProduct(
+              productKey: 'template:server-1',
+              kind: 'template',
+              assetId: 'server-1',
+              title: '여행 일기',
+              pointPrice: 0,
+              isActive: true,
+            ),
             PointShopProduct(
               productKey: 'template:server-2',
               kind: 'template',
@@ -178,6 +225,45 @@ void main() {
       expect(find.text('검색 결과가 없어요'), findsOneWidget);
     },
   );
+
+  testWidgets('an unlisted paid template is never advertised as free', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      wrapCreation(
+        AiAlbumStartStep(
+          onManualStart: () {},
+          onAiStart: () {},
+          templates: AsyncData([
+            PremiumTemplate(
+              id: 9,
+              title: '판매 대기 디자인',
+              coverImageUrl: '',
+              previewImages: [],
+              pageCount: 24,
+              userCount: 0,
+              isPremium: true,
+            ),
+          ]),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('무료').first);
+    await tester.tap(find.text('무료').first);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('creation-template-9')), findsNothing);
+    expect(find.text('검색 결과가 없어요'), findsOneWidget);
+    await tester.tap(find.text('유료').first);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('creation-template-9')),
+    );
+    expect(find.text('판매 준비 중'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
   for (final size in [
     const Size(390, 844),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 
@@ -10,13 +11,17 @@ import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/widgets/experience_style.dart';
 import '../../../../shared/web/web_design.dart';
+import '../../../profile/presentation/widgets/customer_web_page.dart';
 import '../../../profile/data/order_repository.dart';
 import '../../../profile/data/print_dev_checkout.dart';
 import '../../../profile/data/customer_print_test_checkout.dart';
 import '../../../profile/presentation/views/order_history_screen.dart';
 import '../../../profile/domain/print_checkout.dart';
+import '../../../profile/domain/order_visibility_owner.dart';
 import '../../printing/album_print_exporter.dart';
 import '../../printing/print_album_document.dart';
+import '../utils/print_photo_issue.dart';
+import '../utils/open_print_photo_editor.dart';
 import '../widgets/print_fulfillment_notice.dart';
 import 'print_order_checkout_screen.dart';
 import 'print_dev_checkout_screen.dart';
@@ -31,9 +36,11 @@ class PrintOrderPreviewScreen extends ConsumerStatefulWidget {
     super.key,
     required this.albumId,
     required this.albumTitle,
+    this.onEditPhotoIssue,
   });
   final int albumId;
   final String albumTitle;
+  final Future<bool> Function(PrintPhotoEditTarget target)? onEditPhotoIssue;
 
   @override
   ConsumerState<PrintOrderPreviewScreen> createState() =>
@@ -41,36 +48,137 @@ class PrintOrderPreviewScreen extends ConsumerStatefulWidget {
 }
 
 class _PrintOrderPreviewScreenState
-    extends ConsumerState<PrintOrderPreviewScreen> {
+    extends ConsumerState<PrintOrderPreviewScreen>
+    with WidgetsBindingObserver {
   OrderQuoteResult? _quote;
   PrintAlbumDocument? _document;
   Map<String, dynamic>? _snapshot;
   PrintVendorSpec? _spec;
   PrintProduct? _product;
   Map<String, dynamic>? _report;
+  List<PrintPhotoIssue> _photoIssues = const [];
+  final GlobalKey _previewStageKey = GlobalKey();
   AlbumPrintExport? _export;
   bool _loading = true;
   bool _busy = false;
   bool _openingCheckout = false;
+  bool _openingPhotoEditor = false;
   bool _checkedLayout = false;
   bool _quoteIsFinal = false;
+  bool _refreshingPrice = false;
   String? _error;
+  String? _priceRefreshError;
+  String? _priceUpdateNotice;
   String? _progress;
   int _page = 0;
 
   @override
   void initState() {
     super.initState();
+    if (kIsWeb) WidgetsBinding.instance.addObserver(this);
     _load();
+  }
+
+  @override
+  void dispose() {
+    if (kIsWeb) WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (kIsWeb &&
+        state == AppLifecycleState.resumed &&
+        mounted &&
+        ModalRoute.of(context)?.isCurrent == true) {
+      unawaited(_refreshDisplayedQuote());
+    }
+  }
+
+  // A price update does not change the reviewed artwork or require fetching
+  // the original photos and fonts again. Changed geometry needs a new review.
+  Future<void> _refreshDisplayedQuote() async {
+    final previous = _quote;
+    final snapshot = _snapshot;
+    if (!kIsWeb ||
+        _loading ||
+        _busy ||
+        _openingCheckout ||
+        _openingPhotoEditor ||
+        _refreshingPrice ||
+        previous == null ||
+        snapshot == null) {
+      return;
+    }
+    setState(() => _refreshingPrice = true);
+    try {
+      final readiness = await ref
+          .read(orderRepositoryProvider)
+          .fetchPrintCheckoutReadiness(albumId: widget.albumId);
+      if (!mounted ||
+          !identical(_quote, previous) ||
+          !identical(_snapshot, snapshot)) {
+        return;
+      }
+      final quote = readiness.quote;
+      final reviewChanged =
+          readiness.reviewedRevision != null &&
+              readiness.reviewedRevision != printCheckoutRevision(snapshot) ||
+          quote.productCode != previous.productCode ||
+          quote.pageCount != previous.pageCount ||
+          quote.sourcePageCount != previous.sourcePageCount ||
+          quote.specMissing != previous.specMissing ||
+          printSpecRevision(quote.printSpec) !=
+              printSpecRevision(previous.printSpec) ||
+          readiness.reviewedSpecRevision != null &&
+              readiness.reviewedSpecRevision !=
+                  printSpecRevision(quote.printSpec);
+      setState(() {
+        if (reviewChanged) {
+          _checkedLayout = false;
+          _report = null;
+          _photoIssues = const [];
+          _export = null;
+          _priceRefreshError = '앨범 내용이나 제작 규격이 바뀌었어요. 최신 앨범으로 다시 확인해주세요.';
+          _priceUpdateNotice = null;
+          return;
+        }
+        final priceChanged =
+            quote.amount != previous.amount ||
+            quote.pricePolicyVersion != previous.pricePolicyVersion ||
+            quote.shippingIncluded != previous.shippingIncluded ||
+            quote.retailPriceStatus != previous.retailPriceStatus;
+        _quote = quote;
+        _quoteIsFinal = quote.hasFinalRetailPrice;
+        _priceRefreshError = null;
+        if (priceChanged) {
+          _priceUpdateNotice = '판매가 안내가 갱신되었습니다. 현재 금액을 확인해주세요.';
+        }
+      });
+    } catch (_) {
+      if (mounted &&
+          identical(_quote, previous) &&
+          identical(_snapshot, snapshot)) {
+        setState(() {
+          _priceRefreshError = '최신 판매가를 확인하지 못했어요. 다시 확인한 뒤 주문 내용을 이어가주세요.';
+          _priceUpdateNotice = null;
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _refreshingPrice = false);
+    }
   }
 
   Future<void> _load() async {
     setState(() {
       _loading = true;
       _error = null;
+      _priceRefreshError = null;
+      _priceUpdateNotice = null;
       _checkedLayout = false;
       _quoteIsFinal = false;
       _report = null;
+      _photoIssues = const [];
       _export = null;
       _quote = null;
       _document = null;
@@ -125,11 +233,7 @@ class _PrintOrderPreviewScreenState
       if (!mounted) return;
       setState(() {
         _quote = quote;
-        _quoteIsFinal =
-            quote.hasPlannedRetailPrice &&
-            !quote.priceIsEstimate &&
-            quote.shippingCostVerified &&
-            quote.packagingCostVerified;
+        _quoteIsFinal = quote.hasFinalRetailPrice;
         _document = document;
         _snapshot = snapshot;
         _spec = spec;
@@ -150,9 +254,24 @@ class _PrintOrderPreviewScreenState
                 );
             },
           );
-      if (mounted) setState(() => _report = report);
+      if (mounted) {
+        setState(() {
+          _report = report;
+          _photoIssues = printPhotoIssues(
+            document: document,
+            reviewedRevision: printCheckoutRevision(snapshot),
+            recommendedPpi: spec.dpi,
+            report: report,
+          );
+        });
+      }
     } catch (e) {
-      if (mounted) setState(() => _error = printPreviewErrorMessage(e));
+      if (mounted) {
+        setState(() {
+          _error = printPreviewErrorMessage(e);
+          _setFailurePhotoIssue(e);
+        });
+      }
     } finally {
       if (mounted)
         setState(() {
@@ -162,8 +281,84 @@ class _PrintOrderPreviewScreenState
     }
   }
 
+  void _setFailurePhotoIssue(Object error) {
+    final document = _document;
+    final snapshot = _snapshot;
+    final spec = _spec;
+    if (error is! PrintPreflightException ||
+        document == null ||
+        snapshot == null ||
+        spec == null)
+      return;
+    _photoIssues = printPhotoIssues(
+      document: document,
+      reviewedRevision: printCheckoutRevision(snapshot),
+      recommendedPpi: spec.dpi,
+      report: _report,
+      failure: error,
+    );
+  }
+
+  Future<void> _showPhotoIssue(PrintPhotoIssue issue) async {
+    if (_loading || _busy || _openingCheckout || _openingPhotoEditor) return;
+    setState(() {
+      _page = issue.target.pageIndex;
+      _checkedLayout = false;
+    });
+    await WidgetsBinding.instance.endOfFrame;
+    final stageContext = _previewStageKey.currentContext;
+    if (mounted && stageContext != null) {
+      await Scrollable.ensureVisible(stageContext, alignment: .15);
+    }
+  }
+
+  Future<void> _editPhotoIssue(PrintPhotoIssue issue) async {
+    final edit = widget.onEditPhotoIssue;
+    if (_loading ||
+        _busy ||
+        _openingCheckout ||
+        _openingPhotoEditor ||
+        _refreshingPrice ||
+        !_photoIssues.contains(issue))
+      return;
+    final owner = ref.read(visibleOrderOwnerProvider);
+    setState(() {
+      _openingPhotoEditor = true;
+      _checkedLayout = false;
+      _export = null;
+    });
+    try {
+      await (edit != null
+          ? edit(issue.target)
+          : openPrintPhotoEditor(
+              context,
+              ref,
+              albumId: widget.albumId,
+              target: issue.target,
+            ));
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('사진 편집을 열지 못했어요. 앨범에서 다시 시도해 주세요.')),
+        );
+      }
+    } finally {
+      if (mounted &&
+          owner != null &&
+          ref.read(visibleOrderOwnerProvider) == owner) {
+        await _load();
+      }
+      if (mounted) setState(() => _openingPhotoEditor = false);
+    }
+  }
+
   Future<void> _generate() async {
-    if (_busy || _spec == null || _report == null || !_checkedLayout) return;
+    if (_busy ||
+        _openingPhotoEditor ||
+        _spec == null ||
+        _report == null ||
+        !_checkedLayout)
+      return;
     setState(() {
       _busy = true;
       _error = null;
@@ -180,7 +375,12 @@ class _PrintOrderPreviewScreenState
           );
       if (mounted) setState(() => _export = output);
     } catch (e) {
-      if (mounted) setState(() => _error = printPreviewErrorMessage(e));
+      if (mounted) {
+        setState(() {
+          _error = printPreviewErrorMessage(e);
+          _setFailurePhotoIssue(e);
+        });
+      }
     } finally {
       if (mounted)
         setState(() {
@@ -194,8 +394,11 @@ class _PrintOrderPreviewScreenState
     if (_loading ||
         _busy ||
         _openingCheckout ||
+        _openingPhotoEditor ||
+        _refreshingPrice ||
         !_checkedLayout ||
         _error != null ||
+        _priceRefreshError != null ||
         _report == null ||
         _spec == null ||
         _quote == null ||
@@ -237,6 +440,9 @@ class _PrintOrderPreviewScreenState
         await _load();
       } else if (result == 'edit_album') {
         Navigator.pop(context, 'edit_album');
+      } else if (kIsWeb) {
+        setState(() => _openingCheckout = false);
+        await _refreshDisplayedQuote();
       }
     } catch (_) {
       if (mounted) {
@@ -296,85 +502,107 @@ class _PrintOrderPreviewScreenState
         ? _spec!.front.size.aspectRatio
         : _product?.aspectRatio ?? 1;
     return PopScope(
-      canPop: !_busy,
-      child: kIsWeb ? _webPreview(document, quote, previewRatio) : Scaffold(
-        backgroundColor: SnapFitColors.backgroundOf(context),
-        appBar: ExperienceHeader(
-          title: '인쇄 미리보기',
-          themeAware: true,
-          actions: [
-            IconButton(
-              onPressed: _loading || _busy ? null : _load,
-              icon: const Icon(Icons.refresh, size: 20),
-              tooltip: '최신 앨범으로 다시 확인',
-            ),
-          ],
-        ),
-        body: SafeArea(
-          top: false,
-          child: LayoutBuilder(
-            builder: (context, bounds) {
-              final hasPreview = document != null && quote != null;
-              final wide =
-                  bounds.maxWidth >= 520 && bounds.maxWidth > bounds.maxHeight;
-              if (wide && hasPreview) {
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      flex: 6,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 12, 20, 12),
-                        child: _previewStage(document, quote, previewRatio),
-                      ),
-                    ),
-                    VerticalDivider(
-                      width: 1,
-                      color: ExperienceFormStyle.line(context),
-                    ),
-                    Expanded(
-                      flex: 5,
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(24),
-                        child: _details(context),
-                      ),
-                    ),
-                  ],
-                );
-              }
-              return ListView(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-                children: [
-                  if (hasPreview) ...[
-                    Text(
-                      widget.albumTitle,
-                      style: ExperienceFormStyle.text(
-                        context,
-                        22,
-                        weight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      height: math
-                          .min(380, bounds.maxHeight * .62)
-                          .clamp(220, 380)
-                          .toDouble(),
-                      child: _previewStage(document, quote, previewRatio),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                  _details(context, showTitle: !hasPreview),
+      canPop: !_busy && !_openingPhotoEditor,
+      child: kIsWeb
+          ? _webPreview(document, quote, previewRatio)
+          : Scaffold(
+              backgroundColor: SnapFitColors.backgroundOf(context),
+              appBar: ExperienceHeader(
+                title: '인쇄 미리보기',
+                themeAware: true,
+                actions: [
+                  IconButton(
+                    onPressed: _loading || _busy || _openingPhotoEditor
+                        ? null
+                        : _load,
+                    icon: const Icon(Icons.refresh, size: 20),
+                    tooltip: '최신 앨범으로 다시 확인',
+                  ),
                 ],
-              );
-            },
-          ),
-        ),
-      ),
+              ),
+              body: SafeArea(
+                top: false,
+                child: LayoutBuilder(
+                  builder: (context, bounds) {
+                    final hasPreview = document != null && quote != null;
+                    final wide =
+                        bounds.maxWidth >= 520 &&
+                        bounds.maxWidth > bounds.maxHeight;
+                    if (wide && hasPreview) {
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            flex: 6,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                24,
+                                12,
+                                20,
+                                12,
+                              ),
+                              child: _previewStage(
+                                document,
+                                quote,
+                                previewRatio,
+                              ),
+                            ),
+                          ),
+                          VerticalDivider(
+                            width: 1,
+                            color: ExperienceFormStyle.line(context),
+                          ),
+                          Expanded(
+                            flex: 5,
+                            child: SingleChildScrollView(
+                              key: const ValueKey(
+                                'print-preview-details-scroll',
+                              ),
+                              padding: const EdgeInsets.all(24),
+                              child: _details(context),
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+                    return ListView(
+                      key: const ValueKey('print-preview-details-scroll'),
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+                      children: [
+                        if (hasPreview) ...[
+                          Text(
+                            widget.albumTitle,
+                            style: ExperienceFormStyle.text(
+                              context,
+                              22,
+                              weight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            height: math
+                                .min(380, bounds.maxHeight * .62)
+                                .clamp(220, 380)
+                                .toDouble(),
+                            child: _previewStage(document, quote, previewRatio),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+                        _details(context, showTitle: !hasPreview),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
     );
   }
 
-  Widget _webPreview(PrintAlbumDocument? document, OrderQuoteResult? quote, double ratio) {
+  Widget _webPreview(
+    PrintAlbumDocument? document,
+    OrderQuoteResult? quote,
+    double ratio,
+  ) {
     final hasPreview = document != null && quote != null;
     return SnapFitWebShell(
       title: '앨범 주문',
@@ -382,58 +610,100 @@ class _PrintOrderPreviewScreenState
       showNavigation: false,
       actions: [
         TextButton.icon(
-          onPressed: _busy ? null : () => Navigator.pop(context),
+          onPressed: _busy || _openingPhotoEditor
+              ? null
+              : () => Navigator.pop(context),
           icon: const Icon(Icons.arrow_back, size: 18),
           label: const Text('앨범으로'),
         ),
         IconButton(
-          onPressed: _loading || _busy ? null : _load,
+          onPressed:
+              _loading || _busy || _refreshingPrice || _openingPhotoEditor
+              ? null
+              : _load,
           tooltip: '최신 앨범으로 다시 확인',
           icon: const Icon(Icons.refresh, size: 20),
         ),
       ],
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        const WebPageHeading(
-          eyebrow: '앨범  /  인쇄 주문  /  01 미리보기',
-          title: '책으로 만들기 전에 확인하세요',
-          description: '선택한 책 규격에서 사진과 글의 배치, 여백과 페이지 구성을 확인하세요.',
-        ),
-        const SizedBox(height: 24),
-        Expanded(child: LayoutBuilder(builder: (context, bounds) {
-          final stage = WebSurface(
-            padding: const EdgeInsets.all(20),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Row(children: [
-                Expanded(child: Text(widget.albumTitle, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
-                if (_product != null) ...[
-                  const SizedBox(width: 16),
-                  Text(_product!.sizeLabel, style: TextStyle(fontSize: 12, color: WebPalette.of(context).muted)),
-                ],
-              ]),
-              const SizedBox(height: 18),
-              Expanded(child: DecoratedBox(
-                decoration: BoxDecoration(color: WebPalette.of(context).canvas, borderRadius: BorderRadius.circular(12)),
-                child: Padding(padding: const EdgeInsets.all(20), child: hasPreview
-                    ? _previewStage(document, quote, ratio)
-                    : Center(child: _loading ? const CircularProgressIndicator() : const Text('앨범 정보를 다시 확인해주세요.'))),
-              )),
-            ]),
+      child: LayoutBuilder(
+        builder: (context, viewport) {
+          final stageHeight = (viewport.maxHeight - 130)
+              .clamp(360.0, 720.0)
+              .toDouble();
+          return ListView(
+            key: const ValueKey('web-print-preview-scroll'),
+            children: [
+              const WebPageHeading(
+                title: '인쇄 미리보기',
+                description: '사진과 글의 배치, 여백과 페이지 구성을 확인하세요.',
+              ),
+              const SizedBox(height: 24),
+              CustomerWebColumns(
+                breakpoint: 980,
+                summaryWidth: 360,
+                primary: SizedBox(
+                  height: stageHeight,
+                  child: WebSurface(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Wrap(
+                          spacing: 16,
+                          runSpacing: 8,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(
+                              widget.albumTitle,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            if (_product != null)
+                              Text(
+                                _product!.sizeLabel,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: WebPalette.of(context).muted,
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+                        Expanded(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: WebPalette.of(context).canvas,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: hasPreview
+                                  ? _previewStage(document, quote, ratio)
+                                  : Center(
+                                      child: _loading
+                                          ? const CircularProgressIndicator()
+                                          : const Text('앨범 정보를 다시 확인해주세요.'),
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                secondary: WebSurface(
+                  child: _details(context, showTitle: false),
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
           );
-          final details = WebSurface(child: _details(context, showTitle: false));
-          if (bounds.maxWidth >= 980) {
-            return Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Expanded(flex: 7, child: stage),
-              const SizedBox(width: 24),
-              SizedBox(width: 360, child: SingleChildScrollView(child: details)),
-            ]);
-          }
-          return ListView(children: [
-            SizedBox(height: 440, child: stage),
-            const SizedBox(height: 20),
-            details,
-          ]);
-        })),
-      ]),
+        },
+      ),
     );
   }
 
@@ -445,6 +715,7 @@ class _PrintOrderPreviewScreenState
     final pages = [document.cover, ...document.interiors];
     final page = _page < pages.length ? pages[_page] : null;
     return Column(
+      key: _previewStageKey,
       children: [
         Expanded(
           child: LayoutBuilder(
@@ -471,8 +742,16 @@ class _PrintOrderPreviewScreenState
                     child: page == null
                         ? const ColoredBox(
                             color: Colors.white,
-                            child: Center(child: Text('빈 페이지',
-                              style: TextStyle(color: kIsWeb ? SnapFitColors.deepCharcoal : null))),
+                            child: Center(
+                              child: Text(
+                                '빈 페이지',
+                                style: TextStyle(
+                                  color: kIsWeb
+                                      ? SnapFitColors.deepCharcoal
+                                      : null,
+                                ),
+                              ),
+                            ),
                           )
                         : PrintPageLayoutPreview(
                             page: page,
@@ -525,12 +804,6 @@ class _PrintOrderPreviewScreenState
 
   Widget _details(BuildContext context, {bool showTitle = true}) {
     final quote = _quote;
-    final warnings =
-        (_report?['imageResolution'] as List?)
-            ?.whereType<Map>()
-            .where((item) => (item['effectivePpi'] as num? ?? 300) < 300)
-            .length ??
-        0;
     Widget note(String value) => Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Text(
@@ -551,7 +824,7 @@ class _PrintOrderPreviewScreenState
             style: ExperienceFormStyle.text(
               context,
               22,
-              weight: FontWeight.w600,
+              weight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 8),
@@ -561,31 +834,66 @@ class _PrintOrderPreviewScreenState
             '${_product!.label} · 1권',
             style: ExperienceFormStyle.text(context, 13, secondary: true),
           ),
-        if (_loading || _busy) ...[
+        if (_loading || _busy || _refreshingPrice) ...[
           const SizedBox(height: 16),
           const LinearProgressIndicator(),
-          note(_progress ?? '앨범과 제작 금액을 불러오는 중'),
+          note(
+            _refreshingPrice
+                ? '최신 판매가를 확인하는 중'
+                : _progress ?? '앨범과 제작 금액을 불러오는 중',
+          ),
         ],
         if (_error != null) ...[
           const SizedBox(height: 16),
           Text(_error!, style: ExperienceFormStyle.text(context, 14)),
-          if (!_loading && !_busy)
+          if (!_loading && !_busy && !_openingPhotoEditor)
             OutlinedButton.icon(
               onPressed: _load,
               icon: const Icon(Icons.refresh, size: 18),
               label: const Text('다시 확인'),
             ),
         ],
+        if (_priceRefreshError != null) ...[
+          const SizedBox(height: 16),
+          Text(
+            _priceRefreshError!,
+            key: const ValueKey('print-preview-price-refresh-error'),
+            style: ExperienceFormStyle.text(context, 14),
+          ),
+          if (!_loading && !_busy && !_refreshingPrice && !_openingPhotoEditor)
+            OutlinedButton.icon(
+              onPressed: _load,
+              icon: const Icon(Icons.refresh, size: 18),
+              label: const Text('최신 앨범으로 다시 확인'),
+            ),
+        ],
+        if (_priceUpdateNotice != null) note(_priceUpdateNotice!),
+        if (_photoIssues.isNotEmpty) ...[
+          const SizedBox(height: 20),
+          heading('선명도를 확인할 사진'),
+          note('원본 사진으로 바꾸거나 사진을 작게 배치하면 선명도를 높일 수 있어요.'),
+          for (final issue in _photoIssues) _photoIssueCard(context, issue),
+          if (_openingPhotoEditor) note('사진 편집 권한과 최신 앨범을 확인하고 있어요.'),
+        ],
         if (quote != null) ...[
           const SizedBox(height: 20),
+          if (kIsWeb) ...[
+            Text(
+              quote.hasPlannedRetailPrice && !_quoteIsFinal ? '예정 판매가' : '판매가',
+              style: ExperienceFormStyle.text(context, 13, secondary: true),
+            ),
+            const SizedBox(height: 6),
+          ],
           Text(
-            quote.hasPlannedRetailPrice
-                ? '${_won(quote.amount)}원${_quoteIsFinal ? '' : ' 예정'}'
+            quote.hasPlannedRetailPrice && _priceRefreshError == null
+                ? '${_won(quote.amount)}원${!kIsWeb && !_quoteIsFinal ? ' 예정' : ''}'
+                : kIsWeb
+                ? '가격 확인 필요'
                 : '견적 확인 중',
             style: ExperienceFormStyle.text(
               context,
               26,
-              weight: FontWeight.w600,
+              weight: FontWeight.w700,
             ),
           ),
           if (quote.hasPlannedRetailPrice)
@@ -597,6 +905,8 @@ class _PrintOrderPreviewScreenState
                 ? '확인된 최종 판매가입니다. 배송지를 입력한 뒤 주문 내용을 확인해주세요.'
                 : quote.hasPlannedRetailPrice
                 ? '제작 견적을 반영한 예정 판매가입니다. 현재 주문·결제는 준비 중입니다.'
+                : kIsWeb
+                ? '이 규격·페이지 조합의 제작비를 아직 확인하지 못했습니다. 비용 확인 후 판매가를 안내합니다.'
                 : '이 규격·페이지 조합의 제작 견적을 확인한 뒤 판매가를 안내합니다.',
           ),
           const SizedBox(height: 24),
@@ -626,12 +936,14 @@ class _PrintOrderPreviewScreenState
           const SizedBox(height: 24),
           heading('인쇄 전 확인'),
           note('사진 원본과 글꼴 확인을 마쳤습니다.'),
-          if (warnings > 0)
-            note('$warnings개 사진은 권장 해상도보다 낮아 인쇄 시 선명도가 낮아질 수 있습니다.'),
+          if (_photoIssues.isNotEmpty)
+            note(
+              '${_photoIssues.length}개 사진은 권장 해상도보다 낮아 인쇄 시 선명도가 낮아질 수 있습니다.',
+            ),
           CheckboxListTile(
             contentPadding: EdgeInsets.zero,
             value: _checkedLayout,
-            onChanged: _busy
+            onChanged: _busy || _openingPhotoEditor
                 ? null
                 : (value) => setState(() => _checkedLayout = value == true),
             title: Text(
@@ -648,8 +960,11 @@ class _PrintOrderPreviewScreenState
                   _loading ||
                       _busy ||
                       _openingCheckout ||
+                      _openingPhotoEditor ||
+                      _refreshingPrice ||
                       !_checkedLayout ||
-                      _error != null
+                      _error != null ||
+                      _priceRefreshError != null
                   ? null
                   : _continueToCheckout,
               style: ExperienceFormStyle.primary(context),
@@ -663,7 +978,12 @@ class _PrintOrderPreviewScreenState
             const SizedBox(height: 12),
             OutlinedButton.icon(
               key: const ValueKey('print-admin-development-order'),
-              onPressed: _loading || _busy || !_checkedLayout || _error != null
+              onPressed:
+                  _loading ||
+                      _busy ||
+                      _openingPhotoEditor ||
+                      !_checkedLayout ||
+                      _error != null
                   ? null
                   : _openDevelopmentCheckout,
               icon: const Icon(Icons.science_outlined),
@@ -684,7 +1004,11 @@ class _PrintOrderPreviewScreenState
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: _busy || !_checkedLayout || _error != null
+                  onPressed:
+                      _busy ||
+                          _openingPhotoEditor ||
+                          !_checkedLayout ||
+                          _error != null
                       ? null
                       : _generate,
                   icon: const Icon(Icons.picture_as_pdf, size: 19),
@@ -720,10 +1044,78 @@ class _PrintOrderPreviewScreenState
         const PrintFulfillmentNotice(),
         const SizedBox(height: 16),
         TextButton(
-          onPressed: _busy ? null : () => Navigator.pop(context, 'edit_album'),
+          onPressed: _busy || _openingPhotoEditor
+              ? null
+              : () => Navigator.pop(context, 'edit_album'),
           child: const Text('앨범 계속 편집하기'),
         ),
       ],
+    );
+  }
+
+  Widget _photoIssueCard(BuildContext context, PrintPhotoIssue issue) {
+    final disabled =
+        _loading ||
+        _busy ||
+        _openingCheckout ||
+        _openingPhotoEditor ||
+        _refreshingPrice;
+    return Container(
+      key: ValueKey(
+        'print-photo-issue-${issue.target.pageIndex}-${issue.target.layerId}',
+      ),
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        border: Border.all(color: ExperienceFormStyle.line(context)),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            issue.label,
+            style: ExperienceFormStyle.text(
+              context,
+              14,
+              weight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            issue.blocksPrinting
+                ? '인쇄하려면 이 사진을 수정해 주세요.'
+                : '이 크기로 인쇄하면 사진이 흐릿할 수 있어요.',
+            style: ExperienceFormStyle.text(context, 13, secondary: true),
+          ),
+          if (issue.effectivePpi != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              '현재 ${issue.effectivePpi!.round()}ppi · 권장 ${issue.recommendedPpi}ppi',
+              style: ExperienceFormStyle.text(context, 12, secondary: true),
+            ),
+          ],
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              OutlinedButton.icon(
+                key: ValueKey(
+                  'print-edit-photo-${issue.target.pageIndex}-${issue.target.layerId}',
+                ),
+                onPressed: disabled ? null : () => _editPhotoIssue(issue),
+                icon: const Icon(Icons.edit_outlined, size: 18),
+                label: const Text('이 사진 수정하기'),
+              ),
+              TextButton(
+                onPressed: disabled ? null : () => _showPhotoIssue(issue),
+                child: const Text('페이지 보기'),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

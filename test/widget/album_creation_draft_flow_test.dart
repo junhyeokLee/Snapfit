@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:snap_fit/features/album/presentation/providers/home_ui_state_provider.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -523,6 +524,9 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
+              homeUiStateProvider.overrideWith(
+                () => HomeUiStateNotifier(initialIndex: 0),
+              ),
               albumCreationDraftStoreProvider.overrideWithValue(store),
               albumRepositoryProvider.overrideWithValue(repo),
               authViewModelProvider.overrideWith(

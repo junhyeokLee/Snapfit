@@ -1,5 +1,6 @@
 import 'dart:collection';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
@@ -20,6 +21,11 @@ class SnapfitImage extends StatelessWidget {
   final int? maxHeightDiskCache;
   final Widget Function(BuildContext, ImageProvider)? imageBuilder;
 
+  @visibleForTesting
+  final Future<String> Function(String)? resolveStorageUrlForTesting;
+  @visibleForTesting
+  final bool? enableWebStorageRecoveryForTesting;
+
   const SnapfitImage({
     super.key,
     required this.urlOrGs,
@@ -33,6 +39,8 @@ class SnapfitImage extends StatelessWidget {
     this.maxWidthDiskCache,
     this.maxHeightDiskCache,
     this.imageBuilder,
+    this.resolveStorageUrlForTesting,
+    this.enableWebStorageRecoveryForTesting,
   });
 
   /// gs:// → https:// 변환 Future 캐시
@@ -72,17 +80,30 @@ class SnapfitImage extends StatelessWidget {
     }
 
     final future = () async {
-      final url = await resolveStorageImageUrl(urlOrGs);
+      final url = await (resolveStorageUrlForTesting ?? resolveStorageImageUrl)(
+        urlOrGs,
+      );
       _touchResolved(urlOrGs, url);
       return url;
     }();
 
     _touchInFlight(urlOrGs, future);
-    future.whenComplete(() => _resolvedUrlFutures.remove(urlOrGs));
+    // Consume the bookkeeping future's failure too: FutureBuilder owns the
+    // actual error UI. Do not remove a newer retry's in-flight resolution.
+    void finished() {
+      if (identical(_resolvedUrlFutures[urlOrGs], future)) {
+        _resolvedUrlFutures.remove(urlOrGs);
+      }
+    }
+
+    future.then<void>(
+      (_) => finished(),
+      onError: (Object _, StackTrace __) => finished(),
+    );
     return future;
   }
 
-  Widget _buildCachedNetwork(String url) {
+  Widget _buildCachedNetwork(String url, {Widget Function()? failureBuilder}) {
     return CachedNetworkImage(
       imageUrl: url,
       fit: fit,
@@ -108,6 +129,7 @@ class SnapfitImage extends StatelessWidget {
             ),
           ),
       errorWidget: (_, __, ___) =>
+          failureBuilder?.call() ??
           error ??
           Container(
             color: Colors.grey[300],
@@ -118,6 +140,11 @@ class SnapfitImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isStorageUri =
+        urlOrGs.startsWith('gs://') || parseSupabaseStorageUri(urlOrGs) != null;
+    if ((enableWebStorageRecoveryForTesting ?? kIsWeb) && isStorageUri) {
+      return _WebStorageImage(key: ValueKey(urlOrGs), image: this);
+    }
     if (!urlOrGs.startsWith('gs://') &&
         parseSupabaseStorageUri(urlOrGs) == null) {
       return _buildCachedNetwork(urlOrGs);
@@ -159,4 +186,125 @@ class SnapfitImage extends StatelessWidget {
       },
     );
   }
+}
+
+/// Browser download failures can outlive a route because its signed URL is
+/// shared. Recovery is explicit and bounded to one attempt per user click.
+/// Native images and ordinary external URLs keep their existing render path.
+class _WebStorageImage extends StatefulWidget {
+  const _WebStorageImage({super.key, required this.image});
+  final SnapfitImage image;
+
+  @override
+  State<_WebStorageImage> createState() => _WebStorageImageState();
+}
+
+class _WebStorageImageState extends State<_WebStorageImage> {
+  late Future<String> _resolved;
+  bool _retrying = false;
+  int _attempt = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolved = widget.image._resolveUrl();
+  }
+
+  Future<void> _retry(String? failedUrl) async {
+    if (_retrying || !mounted) return;
+    setState(() => _retrying = true);
+    final image = widget.image;
+    // Leave an independently refreshed URL alone. A failed signing request has
+    // no download URL; its own failed future has already been removed above.
+    if (failedUrl != null &&
+        SnapfitImage._resolvedUrls[image.urlOrGs] == failedUrl) {
+      SnapfitImage._resolvedUrls.remove(image.urlOrGs);
+    }
+    try {
+      if (failedUrl != null) {
+        final provider = ResizeImage.resizeIfNeeded(
+          image.memCacheWidth,
+          image.memCacheHeight,
+          CachedNetworkImageProvider(
+            failedUrl,
+            maxWidth: image.maxWidthDiskCache,
+            maxHeight: image.maxHeightDiskCache,
+            cacheManager: image.cacheManager,
+          ),
+        );
+        await provider.evict();
+      }
+    } catch (_) {
+      // A cache cleanup failure must not block a fresh authorized URL request.
+    }
+    if (!mounted) return;
+    setState(() {
+      _attempt++;
+      _resolved = widget.image._resolveUrl();
+      _retrying = false;
+    });
+  }
+
+  Widget _placeholder() =>
+      widget.image.placeholder ??
+      Container(
+        color: Colors.grey[300],
+        child: const Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      );
+
+  Widget _failure(String? failedUrl) {
+    if (widget.image.error != null) return widget.image.error!;
+    return Container(
+      color: Colors.grey[300],
+      child: Center(
+        child: LayoutBuilder(
+          builder: (context, bounds) {
+            final action = _retrying ? null : () => _retry(failedUrl);
+            if (bounds.maxWidth < 180 || bounds.maxHeight < 80) {
+              return IconButton(
+                key: const ValueKey('web-storage-image-retry'),
+                tooltip: '사진 다시 불러오기',
+                onPressed: action,
+                icon: const Icon(Icons.refresh, size: 20),
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                padding: const EdgeInsets.all(4),
+              );
+            }
+            return TextButton.icon(
+              key: const ValueKey('web-storage-image-retry'),
+              onPressed: action,
+              icon: const Icon(Icons.refresh, size: 18),
+              label: const Text('사진 다시 불러오기', style: TextStyle(fontSize: 12)),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<String>(
+    future: _resolved,
+    builder: (context, snapshot) {
+      if (_retrying || snapshot.connectionState != ConnectionState.done) {
+        return _placeholder();
+      }
+      final url = snapshot.data;
+      if (snapshot.hasError || url == null || url.isEmpty)
+        return _failure(null);
+      return KeyedSubtree(
+        key: ValueKey(_attempt),
+        child: widget.image._buildCachedNetwork(
+          url,
+          failureBuilder: () => _failure(url),
+        ),
+      );
+    },
+  );
 }
