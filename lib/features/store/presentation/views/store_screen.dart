@@ -85,8 +85,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     // Comparison tray must show selected templates even when they're filtered
     // out of the current view (e.g. after switching to a different category).
     // Fall back to the filtered catalog only when the full list isn't ready yet.
-    final fullCatalog =
-        ref.read(templateListProvider).asData?.value ?? catalog;
+    final fullCatalog = ref.read(templateListProvider).asData?.value ?? catalog;
     final selected = [
       for (final id in _comparison.ids)
         ...fullCatalog.where((template) => template.id == id).take(1),
@@ -336,9 +335,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                 t.subTitle ?? '',
                                 t.description ?? '',
                                 ...?t.tags,
-                              ].any(
-                                (v) => v.toLowerCase().contains(query),
-                              )) &&
+                              ].any((v) => v.toLowerCase().contains(query))) &&
                           (_priceFilter == '전체' ||
                               (_priceFilter == '보유'
                                   ? (ownedRef?.contains(
@@ -584,10 +581,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                         .read(
                                           storeTemplateFeedProvider.notifier,
                                         )
-                                        .setFilters(
-                                          category: value,
-                                          query: '',
-                                        );
+                                        .setFilters(category: value, query: '');
                                   },
                                 ),
                               const SizedBox(height: 20),
@@ -739,7 +733,10 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                         ),
                                       );
                                     },
-                                    childCount: min(_visibleCount, filtered.length),
+                                    childCount: min(
+                                      _visibleCount,
+                                      filtered.length,
+                                    ),
                                     addAutomaticKeepAlives: false,
                                     addRepaintBoundaries: false,
                                   ),

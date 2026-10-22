@@ -366,10 +366,7 @@ class StoreTemplateFeedNotifier extends Notifier<StoreTemplateFeedState> {
         current.filterCategory,
         current.filterQuery,
       );
-      final merged = mergeTemplatesWithServer(
-        _bundled,
-        result.content,
-      );
+      final merged = mergeTemplatesWithServer(_bundled, result.content);
       final existingIds = {for (final t in state.items) t.id};
       final newItems = merged
           .where((t) => !existingIds.contains(t.id))
