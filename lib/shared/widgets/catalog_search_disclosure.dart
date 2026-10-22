@@ -72,10 +72,7 @@ class _CatalogSearchDisclosureState extends State<CatalogSearchDisclosure> {
           children: [
             Row(
               children: [
-                if (widget.leading != null)
-                  widget.leading!
-                else
-                  const Spacer(),
+                if (widget.leading != null) widget.leading! else const Spacer(),
                 const SizedBox(width: 8),
                 if (widget.compactAction)
                   Flexible(child: _toggle(context))
