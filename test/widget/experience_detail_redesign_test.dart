@@ -49,8 +49,7 @@ Widget reviewApp(
       (ref) async => catalog == null ? [] : await catalog(),
     ),
     ownedPointShopKeysProvider.overrideWith((ref) async => owned),
-    mockTemplateList(() async => publishedCreationTemplates,
-    ),
+    mockTemplateList(() async => publishedCreationTemplates),
     pointShopAccessGateProvider.overrideWithValue(
       gate ??
           (context, ref, {required productKey, required title}) async => false,

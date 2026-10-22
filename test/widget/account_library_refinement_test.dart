@@ -93,7 +93,8 @@ Widget _app(
       (_) => owned?.call() ?? Future.value(<String>{}),
     ),
     pointShopCatalogProvider.overrideWith((_) async => []),
-    mockTemplateList(() => templates?.call() ?? Future.value(publishedCreationTemplates),
+    mockTemplateList(
+      () => templates?.call() ?? Future.value(publishedCreationTemplates),
     ),
   ],
   child: ScreenUtilInit(

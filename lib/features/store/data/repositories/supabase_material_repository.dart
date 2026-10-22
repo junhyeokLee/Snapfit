@@ -10,10 +10,7 @@ class SupabaseMaterialRepository implements MaterialRepository {
 
   String get _userId => client.auth.currentUser?.id.trim() ?? '';
 
-  CatalogMaterial _fromRow(
-    Map<String, dynamic> row, {
-    bool isLiked = false,
-  }) =>
+  CatalogMaterial _fromRow(Map<String, dynamic> row, {bool isLiked = false}) =>
       CatalogMaterial(
         productKey: row['product_key']?.toString() ?? '',
         label: row['label']?.toString() ?? '',
@@ -38,16 +35,16 @@ class SupabaseMaterialRepository implements MaterialRepository {
         .eq('is_active', true)
         .order('weekly_score', ascending: false)
         .order('product_key', ascending: true);
-    return rows.map<CatalogMaterial>((row) {
-      final likes = row['material_likes'];
-      final isLiked =
-          userId.isNotEmpty &&
-          likes is List &&
-          likes.any(
-            (l) => l is Map && l['user_id']?.toString() == userId,
-          );
-      return _fromRow(Map<String, dynamic>.from(row), isLiked: isLiked);
-    }).toList(growable: false);
+    return rows
+        .map<CatalogMaterial>((row) {
+          final likes = row['material_likes'];
+          final isLiked =
+              userId.isNotEmpty &&
+              likes is List &&
+              likes.any((l) => l is Map && l['user_id']?.toString() == userId);
+          return _fromRow(Map<String, dynamic>.from(row), isLiked: isLiked);
+        })
+        .toList(growable: false);
   }
 
   @override

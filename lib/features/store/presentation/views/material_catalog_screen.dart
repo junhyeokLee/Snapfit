@@ -1072,23 +1072,58 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                               ? null
                               : catalogPreviewAssets[item.key];
                           if (!widget.library) {
-                            return RepaintBoundary(child: MaterialCatalogTile(
-                              key: ValueKey('material-item-${item.key}'),
-                              productKey: item.key,
-                              title: item.title,
-                              type: item.type,
-                              favoriteKey: item.favoriteKey,
-                              isNew: item.isNew,
-                              isBest: item.isBest,
-                              onOpen: () => _open(item),
-                              preview: CatalogArtworkHero(
-                                tag: (this, item.key),
-                                child: thumbnail != null
+                            return RepaintBoundary(
+                              child: MaterialCatalogTile(
+                                key: ValueKey('material-item-${item.key}'),
+                                productKey: item.key,
+                                title: item.title,
+                                type: item.type,
+                                favoriteKey: item.favoriteKey,
+                                isNew: item.isNew,
+                                isBest: item.isBest,
+                                onOpen: () => _open(item),
+                                preview: CatalogArtworkHero(
+                                  tag: (this, item.key),
+                                  child: thumbnail != null
+                                      ? Image.asset(
+                                          thumbnail,
+                                          fit: BoxFit.contain,
+                                          cacheWidth: 384,
+                                          errorBuilder: (_, _, _) =>
+                                              MaterialOriginalPreview(
+                                                productKey: item.key,
+                                                child: item.preview(false),
+                                              ),
+                                        )
+                                      : MaterialOriginalPreview(
+                                          productKey: item.key,
+                                          child: item.preview(false),
+                                        ),
+                                ),
+                              ),
+                            );
+                          }
+                          if (!kIsWeb) {
+                            return RepaintBoundary(
+                              child: LibraryDesignTile(
+                                key: ValueKey('material-item-${item.key}'),
+                                productKey: item.key,
+                                title: item.title,
+                                type: item.type,
+                                template: item.template,
+                                owned: ownedKeys.contains(item.key),
+                                favoriteKey: item.favoriteKey,
+                                heroTag: (this, item.key),
+                                previewHeight: previewHeight,
+                                onOpen: () => _open(item),
+                                preview: item.template != null
+                                    ? item.preview(false)
+                                    : thumbnail != null
                                     ? Image.asset(
                                         thumbnail,
                                         fit: BoxFit.contain,
                                         cacheWidth: 384,
-                                        errorBuilder: (_, _, _) =>
+                                        errorBuilder: (_, __, ___) =>
                                             MaterialOriginalPreview(
                                               productKey: item.key,
                                               child: item.preview(false),
@@ -1099,182 +1134,156 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                                         child: item.preview(false),
                                       ),
                               ),
-                            ));
+                            );
                           }
-                          if (!kIsWeb) {
-                            return RepaintBoundary(child: LibraryDesignTile(
+                          return RepaintBoundary(
+                            child: InkWell(
                               key: ValueKey('material-item-${item.key}'),
-                              productKey: item.key,
-                              title: item.title,
-                              type: item.type,
-                              template: item.template,
-                              owned: ownedKeys.contains(item.key),
-                              favoriteKey: item.favoriteKey,
-                              heroTag: (this, item.key),
-                              previewHeight: previewHeight,
-                              onOpen: () => _open(item),
-                              preview: item.template != null
-                                  ? item.preview(false)
-                                  : thumbnail != null
-                                  ? Image.asset(
-                                      thumbnail,
-                                      fit: BoxFit.contain,
-                                      cacheWidth: 384,
-                                      errorBuilder: (_, __, ___) =>
-                                          MaterialOriginalPreview(
-                                            productKey: item.key,
-                                            child: item.preview(false),
+                              onTap: () => _open(item),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    height: previewHeight,
+                                    width: double.infinity,
+                                    child: Stack(
+                                      fit: StackFit.expand,
+                                      children: [
+                                        DecoratedBox(
+                                          decoration: BoxDecoration(
+                                            gradient: item.template != null
+                                                ? AlbumStageStyle.gradient(
+                                                    context,
+                                                  )
+                                                : null,
+                                            color: item.template == null
+                                                ? MaterialOriginalPreview.backgroundFor(
+                                                    item.key,
+                                                  )
+                                                : null,
                                           ),
-                                    )
-                                  : MaterialOriginalPreview(
-                                      productKey: item.key,
-                                      child: item.preview(false),
-                                    ),
-                            ));
-                          }
-                          return RepaintBoundary(child: InkWell(
-                            key: ValueKey('material-item-${item.key}'),
-                            onTap: () => _open(item),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  height: previewHeight,
-                                  width: double.infinity,
-                                  child: Stack(
-                                    fit: StackFit.expand,
-                                    children: [
-                                      DecoratedBox(
-                                        decoration: BoxDecoration(
-                                          gradient: item.template != null
-                                              ? AlbumStageStyle.gradient(
-                                                  context,
-                                                )
-                                              : null,
-                                          color: item.template == null
-                                              ? MaterialOriginalPreview.backgroundFor(
-                                                  item.key,
-                                                )
-                                              : null,
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(13),
-                                          child: RepaintBoundary(
-                                            child: CatalogArtworkHero(
-                                              tag: (this, item.key),
-                                              child: item.template != null
-                                                  ? item.preview(false)
-                                                  : thumbnail != null
-                                                  ? Image.asset(
-                                                      thumbnail,
-                                                      fit: BoxFit.contain,
-                                                      cacheWidth: 384,
-                                                      errorBuilder: (_, __, ___) =>
-                                                          MaterialOriginalPreview(
-                                                            productKey:
-                                                                item.key,
-                                                            child: item.preview(
-                                                              false,
-                                                            ),
-                                                          ),
-                                                    )
-                                                  : MaterialOriginalPreview(
-                                                      productKey: item.key,
-                                                      child: item.preview(
-                                                        false,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(13),
+                                            child: RepaintBoundary(
+                                              child: CatalogArtworkHero(
+                                                tag: (this, item.key),
+                                                child: item.template != null
+                                                    ? item.preview(false)
+                                                    : thumbnail != null
+                                                    ? Image.asset(
+                                                        thumbnail,
+                                                        fit: BoxFit.contain,
+                                                        cacheWidth: 384,
+                                                        errorBuilder:
+                                                            (_, __, ___) =>
+                                                                MaterialOriginalPreview(
+                                                                  productKey:
+                                                                      item.key,
+                                                                  child: item
+                                                                      .preview(
+                                                                        false,
+                                                                      ),
+                                                                ),
+                                                      )
+                                                    : MaterialOriginalPreview(
+                                                        productKey: item.key,
+                                                        child: item.preview(
+                                                          false,
+                                                        ),
                                                       ),
-                                                    ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      if (item.isNew || item.isBest)
-                                        Positioned(
-                                          left: 8,
-                                          bottom: 8,
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 6,
-                                              vertical: 2,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: item.isBest
-                                                  ? const Color(0xFFD4A853)
-                                                  : const Color(0xFF14AAA8),
-                                              borderRadius:
-                                                  BorderRadius.circular(4),
-                                            ),
-                                            child: Text(
-                                              item.isBest ? 'BEST' : 'NEW',
-                                              style: const TextStyle(
-                                                fontSize: 9,
-                                                fontWeight: FontWeight.w700,
-                                                color: Colors.white,
-                                                letterSpacing: 0.5,
                                               ),
                                             ),
                                           ),
                                         ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 9),
-                                SizedBox(
-                                  height: titleHeight,
-                                  child: Text(
-                                    item.title,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: ExperienceStyle.text(
-                                      widget.library ? 14 : 13,
-                                      weight: widget.library
-                                          ? FontWeight.w600
-                                          : FontWeight.w500,
-                                      color: ExperienceFormStyle.ink(context),
+                                        if (item.isNew || item.isBest)
+                                          Positioned(
+                                            left: 8,
+                                            bottom: 8,
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 6,
+                                                    vertical: 2,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: item.isBest
+                                                    ? const Color(0xFFD4A853)
+                                                    : const Color(0xFF14AAA8),
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                item.isBest ? 'BEST' : 'NEW',
+                                                style: const TextStyle(
+                                                  fontSize: 9,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Colors.white,
+                                                  letterSpacing: 0.5,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                      ],
                                     ),
                                   ),
-                                ),
-                                if (widget.library)
+                                  const SizedBox(height: 9),
                                   SizedBox(
-                                    height: typeHeight,
+                                    height: titleHeight,
                                     child: Text(
-                                      item.template != null
-                                          ? '템플릿 · 내지 ${item.template!.pageCount}쪽'
-                                          : item.type,
-                                      maxLines: 1,
+                                      item.title,
+                                      maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
-                                      style: ExperienceFormStyle.text(
-                                        context,
-                                        11,
-                                        secondary: true,
+                                      style: ExperienceStyle.text(
+                                        widget.library ? 14 : 13,
+                                        weight: widget.library
+                                            ? FontWeight.w600
+                                            : FontWeight.w500,
+                                        color: ExperienceFormStyle.ink(context),
                                       ),
                                     ),
                                   ),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: PointShopProductBadge(
-                                          productKey: item.key,
-                                          unlistedLabel:
-                                              item.template?.isPremium == true
-                                              ? '판매 준비 중'
-                                              : null,
+                                  if (widget.library)
+                                    SizedBox(
+                                      height: typeHeight,
+                                      child: Text(
+                                        item.template != null
+                                            ? '템플릿 · 내지 ${item.template!.pageCount}쪽'
+                                            : item.type,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: ExperienceFormStyle.text(
+                                          context,
+                                          11,
+                                          secondary: true,
                                         ),
                                       ),
                                     ),
-                                    CatalogFavoriteButton(
-                                      bookmark: true,
-                                      unframed: true,
-                                      itemKey: item.favoriteKey,
-                                      label: item.title,
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: PointShopProductBadge(
+                                            productKey: item.key,
+                                            unlistedLabel:
+                                                item.template?.isPremium == true
+                                                ? '판매 준비 중'
+                                                : null,
+                                          ),
+                                        ),
+                                      ),
+                                      CatalogFavoriteButton(
+                                        bookmark: true,
+                                        unframed: true,
+                                        itemKey: item.favoriteKey,
+                                        label: item.title,
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ));
+                          );
                         },
                         childCount: _visible.clamp(0, items.length),
                         addAutomaticKeepAlives: false,

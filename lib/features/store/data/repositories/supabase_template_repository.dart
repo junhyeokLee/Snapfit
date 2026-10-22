@@ -112,21 +112,25 @@ class SupabaseTemplateRepository implements TemplateRepository {
         .order('created_at', ascending: false)
         .range(from, to);
 
-    final content = rows.map<PremiumTemplate>((row) {
-      final likes = row['template_likes'];
-      final isLiked =
-          userId.isNotEmpty &&
-          likes is List &&
-          likes.any(
-            (like) => like is Map && like['user_id']?.toString() == userId,
-          );
-      return _fromRow(Map<String, dynamic>.from(row), isLiked: isLiked);
-    }).toList(growable: false);
+    final content = rows
+        .map<PremiumTemplate>((row) {
+          final likes = row['template_likes'];
+          final isLiked =
+              userId.isNotEmpty &&
+              likes is List &&
+              likes.any(
+                (like) => like is Map && like['user_id']?.toString() == userId,
+              );
+          return _fromRow(Map<String, dynamic>.from(row), isLiked: isLiked);
+        })
+        .toList(growable: false);
 
     // hasNext: if we got a full page there are likely more items.
     // A separate count query is only needed when displaying total pages UI.
     final hasNext = content.length >= size;
-    final estimatedTotal = hasNext ? from + content.length + 1 : from + content.length;
+    final estimatedTotal = hasNext
+        ? from + content.length + 1
+        : from + content.length;
     final totalPages = size <= 0 ? 0 : ((estimatedTotal + size - 1) ~/ size);
 
     return TemplateSummaryPage(

@@ -60,8 +60,7 @@ Widget _app(Widget child, ValueNotifier<bool> dark, {GlobalKey? captureKey}) =>
         homeUiStateProvider.overrideWith(
           () => HomeUiStateNotifier(initialIndex: 0),
         ),
-        mockTemplateList(() async => publishedCreationTemplates,
-        ),
+        mockTemplateList(() async => publishedCreationTemplates),
         pointShopCatalogProvider.overrideWith(
           (ref) async => [
             for (final entry in pointShopLaunchPrices.entries)

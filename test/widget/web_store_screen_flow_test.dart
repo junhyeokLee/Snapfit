@@ -90,7 +90,8 @@ Widget _app(
     albumCreationDraftProvider.overrideWith((ref) async => null),
     authViewModelProvider.overrideWith(_LocalAuth.new),
     authUserIdProvider.overrideWith((ref) async => 'catalog-layout-fixture'),
-    mockTemplateList(() async => curated ? publishedCreationTemplates : _templates,
+    mockTemplateList(
+      () async => curated ? publishedCreationTemplates : _templates,
     ),
     storeCurationsProvider.overrideWith(
       (ref) async => curated

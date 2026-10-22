@@ -80,10 +80,7 @@ void main() {
   testWidgets('renders nothing when templates are empty', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          mockTemplateList(() async => const <PremiumTemplate>[],
-          ),
-        ],
+        overrides: [mockTemplateList(() async => const <PremiumTemplate>[])],
         child: _wrap(const PremiumTemplateList()),
       ),
     );
@@ -111,9 +108,7 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          mockTemplateList(() async => templates),
-        ],
+        overrides: [mockTemplateList(() async => templates)],
         child: _wrap(const PremiumTemplateList()),
       ),
     );
@@ -149,9 +144,7 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          mockTemplateList(() async => templates),
-        ],
+        overrides: [mockTemplateList(() async => templates)],
         child: _wrap(const PremiumTemplateList()),
       ),
     );
@@ -199,9 +192,7 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            mockTemplateList(() async => templates),
-          ],
+          overrides: [mockTemplateList(() async => templates)],
           child: _wrap(const PremiumTemplateList()),
         ),
       );
@@ -255,9 +246,7 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          mockTemplateList(() async => templates),
-        ],
+        overrides: [mockTemplateList(() async => templates)],
         child: _wrap(const PremiumTemplateList()),
       ),
     );

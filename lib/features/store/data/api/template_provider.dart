@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/templates/catalog_favorites.dart';
@@ -109,8 +108,8 @@ final templateRepositoryProvider = Provider<TemplateRepository>((ref) {
 /// The store appears on the first frame; counts and like-badges update silently.
 final templateListProvider =
     AsyncNotifierProvider<_TemplateCatalogNotifier, List<PremiumTemplate>>(
-  _TemplateCatalogNotifier.new,
-);
+      _TemplateCatalogNotifier.new,
+    );
 
 /// Test helper — creates a provider override that skips all background work
 /// and returns a fixed dataset. Drop-in replacement for the old FutureProvider
@@ -119,10 +118,10 @@ final templateListProvider =
 // ignore: invalid_use_of_internal_member
 // Returns the same type as provider.overrideWith() — tests use it as Override.
 // ignore_for_file: library_prefixes
-dynamic mockTemplateList(
-  FutureOr<List<PremiumTemplate>> Function() data,
-) =>
-    templateListProvider.overrideWith(() => _FixedTemplateCatalogNotifier(data));
+dynamic mockTemplateList(FutureOr<List<PremiumTemplate>> Function() data) =>
+    templateListProvider.overrideWith(
+      () => _FixedTemplateCatalogNotifier(data),
+    );
 
 class _FixedTemplateCatalogNotifier extends _TemplateCatalogNotifier {
   _FixedTemplateCatalogNotifier(this._data);
@@ -132,11 +131,12 @@ class _FixedTemplateCatalogNotifier extends _TemplateCatalogNotifier {
   Future<List<PremiumTemplate>> build() async => _data();
 
   @override
-  void _enrichInBackground(bool Function() _) {/* no-op in tests */}
+  void _enrichInBackground(bool Function() _) {
+    /* no-op in tests */
+  }
 }
 
-class _TemplateCatalogNotifier
-    extends AsyncNotifier<List<PremiumTemplate>> {
+class _TemplateCatalogNotifier extends AsyncNotifier<List<PremiumTemplate>> {
   @override
   Future<List<PremiumTemplate>> build() {
     // Track disposal so background tasks can bail out safely.
@@ -184,8 +184,9 @@ class _TemplateCatalogNotifier
 
         // ── Phase 3b: Supabase server sync (network) ──────────────────────
         try {
-          final serverTemplates =
-              await ref.read(templateRepositoryProvider).getTemplates();
+          final serverTemplates = await ref
+              .read(templateRepositoryProvider)
+              .getTemplates();
           if (isDisposed()) return;
           final merged = _mergeWithServer(enriched, serverTemplates);
           state = AsyncData(List.unmodifiable(merged));
@@ -201,8 +202,7 @@ class _TemplateCatalogNotifier
   static List<PremiumTemplate> _mergeWithServer(
     List<PremiumTemplate> bundled,
     List<PremiumTemplate> server,
-  ) =>
-      mergeTemplatesWithServer(bundled, server);
+  ) => mergeTemplatesWithServer(bundled, server);
 }
 
 Future<List<PremiumTemplate>> loadCanonicalStoreTemplatesForRuntime() async =>
@@ -219,15 +219,17 @@ List<PremiumTemplate> mergeTemplatesWithServer(
   for (final s in server) {
     final b = bundledById[s.id];
     if (b != null) {
-      result.add(b.copyWith(
-        likeCount: s.likeCount,
-        userCount: s.userCount,
-        isLiked: b.isLiked || s.isLiked,
-        weeklyScore: s.weeklyScore,
-        isNew: s.isNew,
-        isBest: s.isBest,
-        isPremium: s.isPremium,
-      ));
+      result.add(
+        b.copyWith(
+          likeCount: s.likeCount,
+          userCount: s.userCount,
+          isLiked: b.isLiked || s.isLiked,
+          weeklyScore: s.weeklyScore,
+          isNew: s.isNew,
+          isBest: s.isBest,
+          isPremium: s.isPremium,
+        ),
+      );
     } else {
       result.add(s);
     }
@@ -271,18 +273,17 @@ class StoreTemplateFeedState {
     Object? error = const _NoUpdate(),
     String? filterCategory,
     String? filterQuery,
-  }) =>
-      StoreTemplateFeedState(
-        items: items ?? this.items,
-        isInitialLoading: isInitialLoading ?? this.isInitialLoading,
-        isLoadingMore: isLoadingMore ?? this.isLoadingMore,
-        hasNext: hasNext ?? this.hasNext,
-        page: page ?? this.page,
-        lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
-        error: error is _NoUpdate ? this.error : error,
-        filterCategory: filterCategory ?? this.filterCategory,
-        filterQuery: filterQuery ?? this.filterQuery,
-      );
+  }) => StoreTemplateFeedState(
+    items: items ?? this.items,
+    isInitialLoading: isInitialLoading ?? this.isInitialLoading,
+    isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+    hasNext: hasNext ?? this.hasNext,
+    page: page ?? this.page,
+    lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+    error: error is _NoUpdate ? this.error : error,
+    filterCategory: filterCategory ?? this.filterCategory,
+    filterQuery: filterQuery ?? this.filterQuery,
+  );
 }
 
 class _NoUpdate {
@@ -340,15 +341,19 @@ class StoreTemplateFeedNotifier extends Notifier<StoreTemplateFeedState> {
     state = state.copyWith(isLoadingMore: true);
     try {
       final nextPage = current.page + 1;
-      final result =
-          await _fetch(nextPage, current.filterCategory, current.filterQuery);
+      final result = await _fetch(
+        nextPage,
+        current.filterCategory,
+        current.filterQuery,
+      );
       final merged = mergeTemplatesWithServer(
         publishedCreationTemplates,
         result.content,
       );
       final existingIds = {for (final t in state.items) t.id};
-      final newItems =
-          merged.where((t) => !existingIds.contains(t.id)).toList();
+      final newItems = merged
+          .where((t) => !existingIds.contains(t.id))
+          .toList();
       state = state.copyWith(
         items: List.unmodifiable([...state.items, ...newItems]),
         isLoadingMore: false,
@@ -441,17 +446,16 @@ class StoreTemplateFeedNotifier extends Notifier<StoreTemplateFeedState> {
   static List<PremiumTemplate> mergeServerSummaryWithLocalStatic({
     required List<PremiumTemplate> server,
     required List<PremiumTemplate> local,
-  }) =>
-      withBundledCreationTemplates([...local, ...server]);
+  }) => withBundledCreationTemplates([...local, ...server]);
 
   Future<void> loadInitial() => refresh();
 
-  Future<dynamic> _fetch(int page, String category, String query) =>
-      ref.read(templateRepositoryProvider).getTemplateSummaries(
+  Future<dynamic> _fetch(int page, String category, String query) => ref
+      .read(templateRepositoryProvider)
+      .getTemplateSummaries(
         page: page,
         size: _pageSize,
-        category:
-            category.isEmpty || category == '전체' ? null : category,
+        category: category.isEmpty || category == '전체' ? null : category,
         query: query.isEmpty ? null : query,
       );
 
@@ -459,22 +463,20 @@ class StoreTemplateFeedNotifier extends Notifier<StoreTemplateFeedState> {
     List<PremiumTemplate> templates,
     String category,
     String query,
-  ) =>
-      templates.where((t) {
-        if (category.isNotEmpty &&
-            category != '전체' &&
-            t.category != category) return false;
-        if (query.isNotEmpty) {
-          final q = query.toLowerCase();
-          return [
-            t.title,
-            t.subTitle ?? '',
-            t.description ?? '',
-            ...?t.tags,
-          ].any((v) => v.toLowerCase().contains(q));
-        }
-        return true;
-      }).toList();
+  ) => templates.where((t) {
+    if (category.isNotEmpty && category != '전체' && t.category != category)
+      return false;
+    if (query.isNotEmpty) {
+      final q = query.toLowerCase();
+      return [
+        t.title,
+        t.subTitle ?? '',
+        t.description ?? '',
+        ...?t.tags,
+      ].any((v) => v.toLowerCase().contains(q));
+    }
+    return true;
+  }).toList();
 }
 
 final storeTemplateFeedProvider =

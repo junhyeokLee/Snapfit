@@ -291,8 +291,7 @@ void main() {
                 ),
             ],
           ),
-          mockTemplateList(() async => publishedCreationTemplates,
-          ),
+          mockTemplateList(() async => publishedCreationTemplates),
           myPointBalanceProvider.overrideWith((ref) async => 2400),
           myStorageQuotaProvider.overrideWith(
             (ref) async => StorageQuotaStatus.fromJson({}),

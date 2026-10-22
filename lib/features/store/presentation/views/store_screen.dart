@@ -170,10 +170,12 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     if (_searchController.text == _lastSearchText) return;
     _lastSearchText = _searchController.text;
     setState(_resetPage);
-    ref.read(storeTemplateFeedProvider.notifier).setFilters(
-      query: _searchController.text.trim().toLowerCase(),
-      category: _selectedCategory,
-    );
+    ref
+        .read(storeTemplateFeedProvider.notifier)
+        .setFilters(
+          query: _searchController.text.trim().toLowerCase(),
+          category: _selectedCategory,
+        );
   }
 
   void _openTemplate(PremiumTemplate template) {
@@ -266,213 +268,301 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             }
             // A pending reveal may have waited while a refresh showed its
             // loading state. Data is mounted again at the end of this frame.
-              _scheduleCatalogReveal();
-              final categories = [
-                '전체',
-                ...orderedTemplateTopics(
-                  publishedCreationTemplates.map((t) => t.category ?? ''),
-                ),
-              ];
-              final query = _searchController.text.trim().toLowerCase();
-              bool paid(PremiumTemplate template) {
-                final product = prices[pointShopTemplateKey(template)];
-                return product?.pointPrice != null
-                    ? product!.pointPrice! > 0
-                    : template.isPremium;
-              }
+            _scheduleCatalogReveal();
+            final categories = [
+              '전체',
+              ...orderedTemplateTopics(
+                publishedCreationTemplates.map((t) => t.category ?? ''),
+              ),
+            ];
+            final query = _searchController.text.trim().toLowerCase();
+            bool paid(PremiumTemplate template) {
+              final product = prices[pointShopTemplateKey(template)];
+              return product?.pointPrice != null
+                  ? product!.pointPrice! > 0
+                  : template.isPremium;
+            }
 
-              // ── Memoized filter ──────────────────────────────────────────
-              // Only recompute when filter params or source data change.
-              // loadMore/setState only changes _visibleCount — skipped here.
-              final catalogRef = ref
-                  .watch(pointShopCatalogProvider)
-                  .asData
-                  ?.value;
-              final ownedRef = owned?.asData?.value;
-              final dataChanged =
-                  !identical(_cachedTemplateRef, templates) ||
-                  !identical(_cachedCatalogRef, catalogRef) ||
-                  !identical(_cachedOwnedRef, ownedRef);
-              if (dataChanged) _filterVersion++;
-              if (_filterVersion != _cachedFilterVersion || dataChanged) {
-                _cachedFilterVersion = _filterVersion;
-                _cachedTemplateRef = templates;
-                _cachedCatalogRef = catalogRef;
-                _cachedOwnedRef = ownedRef;
+            // ── Memoized filter ──────────────────────────────────────────
+            // Only recompute when filter params or source data change.
+            // loadMore/setState only changes _visibleCount — skipped here.
+            final catalogRef = ref
+                .watch(pointShopCatalogProvider)
+                .asData
+                ?.value;
+            final ownedRef = owned?.asData?.value;
+            final dataChanged =
+                !identical(_cachedTemplateRef, templates) ||
+                !identical(_cachedCatalogRef, catalogRef) ||
+                !identical(_cachedOwnedRef, ownedRef);
+            if (dataChanged) _filterVersion++;
+            if (_filterVersion != _cachedFilterVersion || dataChanged) {
+              _cachedFilterVersion = _filterVersion;
+              _cachedTemplateRef = templates;
+              _cachedCatalogRef = catalogRef;
+              _cachedOwnedRef = ownedRef;
 
-                final free = templates.where((t) => !paid(t)).toList();
-                final premium = templates.where(paid).toList();
-                final ordered = <PremiumTemplate>[];
-                var f = 0;
-                var p = 0;
-                while (f < free.length || p < premium.length) {
-                  for (var n = 0; n < 2 && f < free.length; n++) {
-                    ordered.add(free[f++]);
-                  }
-                  if (p < premium.length) ordered.add(premium[p++]);
+              final free = templates.where((t) => !paid(t)).toList();
+              final premium = templates.where(paid).toList();
+              final ordered = <PremiumTemplate>[];
+              var f = 0;
+              var p = 0;
+              while (f < free.length || p < premium.length) {
+                for (var n = 0; n < 2 && f < free.length; n++) {
+                  ordered.add(free[f++]);
                 }
-                final sorted = ordered;
-                if (_sort == '이름순') {
-                  sorted.sort((a, b) => a.title.compareTo(b.title));
-                }
-                _cachedFiltered = favorites.arrange(
-                  sorted
-                      .where(
-                        (t) =>
-                            (_priceFilter == '전체' ||
-                                (_priceFilter == '보유'
-                                    ? (ownedRef?.contains(
-                                            pointShopTemplateKey(t),
-                                          ) ??
-                                          false)
-                                    : (_priceFilter == '유료') == paid(t))) &&
-                            (!widget.ownedOnly ||
-                                (ownedRef?.contains(
-                                      pointShopTemplateKey(t),
-                                    ) ??
-                                    false)),
-                      )
-                      .toList(),
-                  (t) => CatalogFavoriteKeys.template(t.id),
-                  onlyFavorites: _favoritesOnly,
-                );
-                _cachedSpotlight =
-                    !widget.ownedOnly &&
-                            !widget.searchMode &&
-                            _cachedFiltered.isNotEmpty &&
-                            query.isEmpty &&
-                            _priceFilter == '전체' &&
-                            !_favoritesOnly &&
-                            _sort == '추천순'
-                        ? _cachedFiltered.where(paid).firstOrNull ??
-                              _cachedFiltered.first
-                        : null;
+                if (p < premium.length) ordered.add(premium[p++]);
               }
-              final filtered = _cachedFiltered;
-              final spotlight = _cachedSpotlight;
-              final curation = !widget.ownedOnly
-                  ? ref.watch(storeCurationsProvider).asData?.value['templates']
+              final sorted = ordered;
+              if (_sort == '이름순') {
+                sorted.sort((a, b) => a.title.compareTo(b.title));
+              }
+              _cachedFiltered = favorites.arrange(
+                sorted
+                    .where(
+                      (t) =>
+                          (_priceFilter == '전체' ||
+                              (_priceFilter == '보유'
+                                  ? (ownedRef?.contains(
+                                          pointShopTemplateKey(t),
+                                        ) ??
+                                        false)
+                                  : (_priceFilter == '유료') == paid(t))) &&
+                          (!widget.ownedOnly ||
+                              (ownedRef?.contains(pointShopTemplateKey(t)) ??
+                                  false)),
+                    )
+                    .toList(),
+                (t) => CatalogFavoriteKeys.template(t.id),
+                onlyFavorites: _favoritesOnly,
+              );
+              _cachedSpotlight =
+                  !widget.ownedOnly &&
+                      !widget.searchMode &&
+                      _cachedFiltered.isNotEmpty &&
+                      query.isEmpty &&
+                      _priceFilter == '전체' &&
+                      !_favoritesOnly &&
+                      _sort == '추천순'
+                  ? _cachedFiltered.where(paid).firstOrNull ??
+                        _cachedFiltered.first
                   : null;
-              final showDiscoveryFeatures =
-                  _selectedCategory == '전체' && spotlight != null;
-              return _withComparison(
-                templates,
-                RefreshIndicator(
-                  onRefresh: () async {
-                    setState(() {
-                      _resetPage();
-                      _requestCatalogReveal(atTop: true);
-                    });
-                    ref.invalidate(storeCurationsProvider);
-                    ref.invalidate(pointShopCatalogProvider);
-                    ref.invalidate(publicPointShopCatalogProvider);
-                    try {
-                      await Future.wait([
-                        ref
-                            .read(storeTemplateFeedProvider.notifier)
-                            .refresh(),
-                        ref.read(storeCurationsProvider.future),
-                        ref.read(pointShopCatalogProvider.future),
-                      ]);
-                    } catch (_) {
-                      /* Catalog widgets retain scoped errors. */
-                    }
-                  },
-                  child: CustomScrollView(
-                    controller: _scrollController,
-                    // A bounded warm-up area avoids building covers at the visible edge.
-                    cacheExtent: 280,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    slivers: [
-                      if (!widget.embedded && !kIsWeb && !widget.searchMode)
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
-                            child: Text(
-                              widget.ownedOnly ? '내가 고른 디자인' : '앨범 템플릿',
-                              style: ExperienceFormStyle.text(
-                                context,
-                                28,
-                                weight: FontWeight.w700,
-                              ).copyWith(height: 1.2, letterSpacing: -0.4),
-                            ),
+            }
+            final filtered = _cachedFiltered;
+            final spotlight = _cachedSpotlight;
+            final curation = !widget.ownedOnly
+                ? ref.watch(storeCurationsProvider).asData?.value['templates']
+                : null;
+            final showDiscoveryFeatures =
+                _selectedCategory == '전체' && spotlight != null;
+            return _withComparison(
+              templates,
+              RefreshIndicator(
+                onRefresh: () async {
+                  setState(() {
+                    _resetPage();
+                    _requestCatalogReveal(atTop: true);
+                  });
+                  ref.invalidate(storeCurationsProvider);
+                  ref.invalidate(pointShopCatalogProvider);
+                  ref.invalidate(publicPointShopCatalogProvider);
+                  try {
+                    await Future.wait([
+                      ref.read(storeTemplateFeedProvider.notifier).refresh(),
+                      ref.read(storeCurationsProvider.future),
+                      ref.read(pointShopCatalogProvider.future),
+                    ]);
+                  } catch (_) {
+                    /* Catalog widgets retain scoped errors. */
+                  }
+                },
+                child: CustomScrollView(
+                  controller: _scrollController,
+                  // A bounded warm-up area avoids building covers at the visible edge.
+                  cacheExtent: 280,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    if (!widget.embedded && !kIsWeb && !widget.searchMode)
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+                          child: Text(
+                            widget.ownedOnly ? '내가 고른 디자인' : '앨범 템플릿',
+                            style: ExperienceFormStyle.text(
+                              context,
+                              28,
+                              weight: FontWeight.w700,
+                            ).copyWith(height: 1.2, letterSpacing: -0.4),
                           ),
                         ),
-                      if (showDiscoveryFeatures && curation != null)
-                        SliverToBoxAdapter(
-                          key: const ValueKey('store-curation-sliver'),
-                          child: SizedBox(
-                            key: const ValueKey('store-collection-spotlight'),
-                            child: TemplateCuration(
-                              templates: filtered.where((t) {
-                                final product = prices[pointShopTemplateKey(t)];
-                                return product == null ||
-                                    (product.isActive &&
-                                        product.pointPrice != null);
-                              }).toList(),
-                              selection: curation,
-                              onOpen: _openTemplate,
-                            ),
+                      ),
+                    if (showDiscoveryFeatures && curation != null)
+                      SliverToBoxAdapter(
+                        key: const ValueKey('store-curation-sliver'),
+                        child: SizedBox(
+                          key: const ValueKey('store-collection-spotlight'),
+                          child: TemplateCuration(
+                            templates: filtered.where((t) {
+                              final product = prices[pointShopTemplateKey(t)];
+                              return product == null ||
+                                  (product.isActive &&
+                                      product.pointPrice != null);
+                            }).toList(),
+                            selection: curation,
+                            onOpen: _openTemplate,
                           ),
                         ),
-                      if (widget.editorial &&
-                          showDiscoveryFeatures &&
-                          widget.onBrowseMaterials != null)
-                        SliverToBoxAdapter(
-                          child: StoreMaterialDiscovery(
-                            onBrowse: widget.onBrowseMaterials!,
-                          ),
+                      ),
+                    if (widget.editorial &&
+                        showDiscoveryFeatures &&
+                        widget.onBrowseMaterials != null)
+                      SliverToBoxAdapter(
+                        child: StoreMaterialDiscovery(
+                          onBrowse: widget.onBrowseMaterials!,
                         ),
-                      SliverPadding(
-                        key: const ValueKey('store-filters-sliver'),
-                        padding: EdgeInsets.fromLTRB(
-                          kIsWeb ? 0 : 20,
-                          0,
-                          kIsWeb ? 0 : 20,
-                          0,
-                        ),
-                        sliver: SliverToBoxAdapter(
-                          child: Column(
-                            key: _filterAnchor,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (!widget.ownedOnly &&
-                                  !kIsWeb &&
-                                  !widget.editorial) ...[
-                                const SizedBox(height: 18),
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 3,
-                                      height: 18,
-                                      decoration: BoxDecoration(
-                                        color: ExperienceFormStyle.selectionInk(
-                                          context,
-                                        ),
-                                        borderRadius: BorderRadius.circular(2),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      '주제별 템플릿',
-                                      style: ExperienceFormStyle.text(
+                      ),
+                    SliverPadding(
+                      key: const ValueKey('store-filters-sliver'),
+                      padding: EdgeInsets.fromLTRB(
+                        kIsWeb ? 0 : 20,
+                        0,
+                        kIsWeb ? 0 : 20,
+                        0,
+                      ),
+                      sliver: SliverToBoxAdapter(
+                        child: Column(
+                          key: _filterAnchor,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (!widget.ownedOnly &&
+                                !kIsWeb &&
+                                !widget.editorial) ...[
+                              const SizedBox(height: 18),
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 3,
+                                    height: 18,
+                                    decoration: BoxDecoration(
+                                      color: ExperienceFormStyle.selectionInk(
                                         context,
-                                        17,
-                                        weight: FontWeight.w600,
                                       ),
+                                      borderRadius: BorderRadius.circular(2),
                                     ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                              ],
-                              if (kIsWeb)
-                                WebCatalogToolbar(
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '주제별 템플릿',
+                                    style: ExperienceFormStyle.text(
+                                      context,
+                                      17,
+                                      weight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+                            if (kIsWeb)
+                              WebCatalogToolbar(
+                                controller: _searchController,
+                                searchHint: '템플릿 이름, 주제, 키워드 검색',
+                                onSearchChanged: (_) {},
+                                categories: categories,
+                                category: _selectedCategory,
+                                onCategoryChanged: (value) {
+                                  setState(() {
+                                    _selectedCategory = value;
+                                    _resetFilteredPage();
+                                  });
+                                  ref
+                                      .read(storeTemplateFeedProvider.notifier)
+                                      .setFilters(
+                                        category: value,
+                                        query: _searchController.text
+                                            .trim()
+                                            .toLowerCase(),
+                                      );
+                                },
+                                price: _priceFilter,
+                                onPriceChanged: (value) => setState(() {
+                                  _priceFilter = value;
+                                  _resetFilteredPage();
+                                }),
+                                favoritesOnly: _favoritesOnly,
+                                onFavoritesChanged: () => setState(() {
+                                  _favoritesOnly = !_favoritesOnly;
+                                  _resetFilteredPage();
+                                }),
+                                resultLabel: '${filtered.length}개의 템플릿',
+                                sort: _sort,
+                                onSortChanged: (value) => setState(() {
+                                  _sort = value;
+                                  _resetFilteredPage();
+                                }),
+                                filtersActive:
+                                    query.isNotEmpty ||
+                                    _selectedCategory != '전체' ||
+                                    _priceFilter != '전체' ||
+                                    _favoritesOnly ||
+                                    _sort != '추천순',
+                                onReset: _resetWebFilters,
+                              )
+                            else ...[
+                              if (widget.searchMode) ...[
+                                TextField(
                                   controller: _searchController,
-                                  searchHint: '템플릿 이름, 주제, 키워드 검색',
-                                  onSearchChanged: (_) {},
+                                  autofocus: true,
+                                  style: ExperienceFormStyle.text(context, 14),
+                                  decoration: InputDecoration(
+                                    hintText: '어떤 순간을 담고 싶나요?',
+                                    hintStyle: ExperienceFormStyle.text(
+                                      context,
+                                      14,
+                                      color: ExperienceFormStyle.muted(context),
+                                    ),
+                                    prefixIcon: const Icon(
+                                      Icons.search,
+                                      size: 21,
+                                    ),
+                                    suffixIcon: query.isEmpty
+                                        ? null
+                                        : IconButton(
+                                            tooltip: '검색 지우기',
+                                            onPressed: _searchController.clear,
+                                            icon: const Icon(
+                                              Icons.close,
+                                              size: 20,
+                                            ),
+                                          ),
+                                    filled: true,
+                                    fillColor: ExperienceFormStyle.surface(
+                                      context,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 12,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        SnapFitRadius.md,
+                                      ),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        SnapFitRadius.md,
+                                      ),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                  ),
+                                ),
+                              ] else
+                                StoreTopicShelf(
                                   categories: categories,
-                                  category: _selectedCategory,
-                                  onCategoryChanged: (value) {
+                                  templates: templates,
+                                  selected: _selectedCategory,
+                                  onSelect: (value) {
                                     setState(() {
                                       _selectedCategory = value;
                                       _resetFilteredPage();
@@ -488,310 +578,206 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                               .toLowerCase(),
                                         );
                                   },
-                                  price: _priceFilter,
-                                  onPriceChanged: (value) => setState(() {
-                                    _priceFilter = value;
-                                    _resetFilteredPage();
-                                  }),
-                                  favoritesOnly: _favoritesOnly,
-                                  onFavoritesChanged: () => setState(() {
-                                    _favoritesOnly = !_favoritesOnly;
-                                    _resetFilteredPage();
-                                  }),
-                                  resultLabel: '${filtered.length}개의 템플릿',
-                                  sort: _sort,
-                                  onSortChanged: (value) => setState(() {
-                                    _sort = value;
-                                    _resetFilteredPage();
-                                  }),
-                                  filtersActive:
-                                      query.isNotEmpty ||
-                                      _selectedCategory != '전체' ||
-                                      _priceFilter != '전체' ||
-                                      _favoritesOnly ||
-                                      _sort != '추천순',
-                                  onReset: _resetWebFilters,
-                                )
-                              else ...[
-                                if (widget.searchMode) ...[
-                                  TextField(
-                                    controller: _searchController,
-                                    autofocus: true,
-                                    style: ExperienceFormStyle.text(
-                                      context,
-                                      14,
-                                    ),
-                                    decoration: InputDecoration(
-                                      hintText: '어떤 순간을 담고 싶나요?',
-                                      hintStyle: ExperienceFormStyle.text(
-                                        context,
-                                        14,
-                                        color: ExperienceFormStyle.muted(
-                                          context,
-                                        ),
-                                      ),
-                                      prefixIcon: const Icon(
-                                        Icons.search,
-                                        size: 21,
-                                      ),
-                                      suffixIcon: query.isEmpty
-                                          ? null
-                                          : IconButton(
-                                              tooltip: '검색 지우기',
-                                              onPressed:
-                                                  _searchController.clear,
-                                              icon: const Icon(
-                                                Icons.close,
-                                                size: 20,
-                                              ),
-                                            ),
-                                      filled: true,
-                                      fillColor: ExperienceFormStyle.surface(
-                                        context,
-                                      ),
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                            horizontal: 14,
-                                            vertical: 12,
-                                          ),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          SnapFitRadius.md,
-                                        ),
-                                        borderSide: BorderSide.none,
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          SnapFitRadius.md,
-                                        ),
-                                        borderSide: BorderSide.none,
-                                      ),
-                                    ),
-                                  ),
-                                ] else
-                                  StoreTopicShelf(
-                                    categories: categories,
-                                    templates: templates,
-                                    selected: _selectedCategory,
-                                    onSelect: (value) {
-                                      setState(() {
-                                        _selectedCategory = value;
-                                        _resetFilteredPage();
-                                      });
-                                      ref
-                                          .read(
-                                            storeTemplateFeedProvider.notifier,
-                                          )
-                                          .setFilters(
-                                            category: value,
-                                            query: _searchController.text
-                                                .trim()
-                                                .toLowerCase(),
-                                          );
-                                    },
-                                  ),
-                                const SizedBox(height: 20),
-                                Text(
-                                  _selectedCategory == '전체'
-                                      ? '모든 템플릿'
-                                      : '$_selectedCategory 템플릿',
-                                  style: ExperienceFormStyle.text(
-                                    context,
-                                    18,
-                                    weight: FontWeight.w700,
-                                  ).copyWith(letterSpacing: -0.2),
                                 ),
-                                const SizedBox(height: 8),
-                                CatalogFilterBar(
-                                  price: _priceFilter,
-                                  onPriceChanged: (value) => setState(() {
-                                    _priceFilter = value;
-                                    _resetFilteredPage();
-                                  }),
-                                  favoritesOnly: _favoritesOnly,
-                                  onFavoritesChanged: () => setState(() {
-                                    _favoritesOnly = !_favoritesOnly;
-                                    _resetFilteredPage();
-                                  }),
-                                  resultLabel: _selectedCategory == '전체'
-                                      ? '${filtered.length}개의 디자인'
-                                      : '$_selectedCategory · ${filtered.length}종',
-                                  sort: _sort,
-                                  onSortChanged: (value) => setState(() {
-                                    _sort = value;
-                                    _resetFilteredPage();
-                                  }),
-                                ),
-                              ],
-                              const SizedBox(height: 10),
-                            ],
-                          ),
-                        ),
-                      ),
-                      if (filtered.isEmpty)
-                        SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: !kIsWeb
-                              ? const Center(child: Text('조건에 맞는 디자인이 없어요'))
-                              : Center(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(Icons.search_off, size: 36),
-                                      const SizedBox(height: 12),
-                                      Text(
-                                        kIsWeb &&
-                                                _priceFilter == '보유' &&
-                                                owned?.isLoading == true
-                                            ? '보유한 디자인을 확인하고 있어요'
-                                            : '조건에 맞는 디자인이 없어요',
-                                      ),
-                                      if (kIsWeb)
-                                        TextButton(
-                                          onPressed:
-                                              _priceFilter == '보유' &&
-                                                  owned?.hasError == true
-                                              ? () => ref.invalidate(
-                                                  ownedPointShopKeysProvider,
-                                                )
-                                              : _resetWebFilters,
-                                          child: Text(
-                                            _priceFilter == '보유' &&
-                                                    owned?.hasError == true
-                                                ? '보유 목록 다시 불러오기'
-                                                : '검색·필터 초기화',
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                        ),
-                      SliverPadding(
-                        key: const ValueKey('store-grid-sliver'),
-                        padding: EdgeInsets.fromLTRB(
-                          kIsWeb ? 0 : 16,
-                          0,
-                          kIsWeb ? 0 : 16,
-                          32,
-                        ),
-                        sliver: widget.editorial && spotlight != null
-                            ? TemplateEditorialList(
-                                templates: filtered,
-                                visibleCount: filtered.length,
-                                onOpen: _openTemplate,
-                                onCompare: _toggleComparison,
-                                comparisonIds: _comparison.ids,
-                                heroTag: (t) => (this, t.id),
-                                scrollController: _scrollController,
-                              )
-                            : SliverLayoutBuilder(
-                                builder: (context, constraints) {
-                                  final columns = kIsWeb
-                                      ? (constraints.crossAxisExtent >= 1080
-                                            ? 4
-                                            : constraints.crossAxisExtent >= 760
-                                            ? 3
-                                            : constraints.crossAxisExtent >= 430
-                                            ? 2
-                                            : 1)
-                                      : constraints.crossAxisExtent > 650
-                                      ? 3
-                                      : 2;
-                                  final gap = kIsWeb ? 16.0 : 14.0;
-                                  final width =
-                                      (constraints.crossAxisExtent -
-                                          gap * (columns - 1)) /
-                                      columns;
-                                  final scaler = MediaQuery.textScalerOf(
-                                    context,
-                                  );
-                                  final screen = MediaQuery.sizeOf(context);
-                                  final previewRatio = kIsWeb
-                                      ? 1.06
-                                      : screen.width > screen.height
-                                      ? 1.12
-                                      : .92;
-                                  return SliverGrid(
-                                    gridDelegate:
-                                        SliverGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisCount: columns,
-                                          crossAxisSpacing: gap,
-                                          mainAxisSpacing: 18,
-                                          mainAxisExtent:
-                                              TemplateCatalogTile.extent(
-                                                width,
-                                                previewRatio,
-                                                scaler,
-                                              ),
-                                        ),
-                                    delegate: SliverChildBuilderDelegate(
-                                      (context, i) {
-                                        final template = filtered[i];
-                                        return RepaintBoundary(
-                                          child: TemplateCatalogTile(
-                                            template: template,
-                                            onCompare: () =>
-                                                _toggleComparison(template),
-                                            comparisonSelected: _comparison
-                                                .contains(template.id),
-                                            onOpen: () =>
-                                                _openTemplate(template),
-                                            heroTag: (this, template.id),
-                                            scrollController: _scrollController,
-                                            previewRatio: previewRatio,
-                                          ),
-                                        );
-                                      },
-                                      childCount: filtered.length,
-                                      addAutomaticKeepAlives: false,
-                                      addRepaintBoundaries: false,
-                                    ),
-                                  );
-                                },
-                              ),
-                      ),
-                      if (feed.isLoadingMore)
-                        const SliverToBoxAdapter(
-                          child: SizedBox(
-                            height: 56,
-                            child: Center(
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  ),
-                                  SizedBox(width: 10),
-                                  Text('템플릿을 더 불러오고 있어요'),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      if (filtered.isNotEmpty && !feed.hasNext)
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 24),
-                            child: Center(
-                              child: Text(
-                                '${filtered.length}개 템플릿을 모두 확인했어요',
+                              const SizedBox(height: 20),
+                              Text(
+                                _selectedCategory == '전체'
+                                    ? '모든 템플릿'
+                                    : '$_selectedCategory 템플릿',
                                 style: ExperienceFormStyle.text(
                                   context,
-                                  12,
-                                  color: ExperienceFormStyle.muted(context),
+                                  18,
+                                  weight: FontWeight.w700,
+                                ).copyWith(letterSpacing: -0.2),
+                              ),
+                              const SizedBox(height: 8),
+                              CatalogFilterBar(
+                                price: _priceFilter,
+                                onPriceChanged: (value) => setState(() {
+                                  _priceFilter = value;
+                                  _resetFilteredPage();
+                                }),
+                                favoritesOnly: _favoritesOnly,
+                                onFavoritesChanged: () => setState(() {
+                                  _favoritesOnly = !_favoritesOnly;
+                                  _resetFilteredPage();
+                                }),
+                                resultLabel: _selectedCategory == '전체'
+                                    ? '${filtered.length}개의 디자인'
+                                    : '$_selectedCategory · ${filtered.length}종',
+                                sort: _sort,
+                                onSortChanged: (value) => setState(() {
+                                  _sort = value;
+                                  _resetFilteredPage();
+                                }),
+                              ),
+                            ],
+                            const SizedBox(height: 10),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (filtered.isEmpty)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: !kIsWeb
+                            ? const Center(child: Text('조건에 맞는 디자인이 없어요'))
+                            : Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.search_off, size: 36),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      kIsWeb &&
+                                              _priceFilter == '보유' &&
+                                              owned?.isLoading == true
+                                          ? '보유한 디자인을 확인하고 있어요'
+                                          : '조건에 맞는 디자인이 없어요',
+                                    ),
+                                    if (kIsWeb)
+                                      TextButton(
+                                        onPressed:
+                                            _priceFilter == '보유' &&
+                                                owned?.hasError == true
+                                            ? () => ref.invalidate(
+                                                ownedPointShopKeysProvider,
+                                              )
+                                            : _resetWebFilters,
+                                        child: Text(
+                                          _priceFilter == '보유' &&
+                                                  owned?.hasError == true
+                                              ? '보유 목록 다시 불러오기'
+                                              : '검색·필터 초기화',
+                                        ),
+                                      ),
+                                  ],
                                 ),
+                              ),
+                      ),
+                    SliverPadding(
+                      key: const ValueKey('store-grid-sliver'),
+                      padding: EdgeInsets.fromLTRB(
+                        kIsWeb ? 0 : 16,
+                        0,
+                        kIsWeb ? 0 : 16,
+                        32,
+                      ),
+                      sliver: widget.editorial && spotlight != null
+                          ? TemplateEditorialList(
+                              templates: filtered,
+                              visibleCount: filtered.length,
+                              onOpen: _openTemplate,
+                              onCompare: _toggleComparison,
+                              comparisonIds: _comparison.ids,
+                              heroTag: (t) => (this, t.id),
+                              scrollController: _scrollController,
+                            )
+                          : SliverLayoutBuilder(
+                              builder: (context, constraints) {
+                                final columns = kIsWeb
+                                    ? (constraints.crossAxisExtent >= 1080
+                                          ? 4
+                                          : constraints.crossAxisExtent >= 760
+                                          ? 3
+                                          : constraints.crossAxisExtent >= 430
+                                          ? 2
+                                          : 1)
+                                    : constraints.crossAxisExtent > 650
+                                    ? 3
+                                    : 2;
+                                final gap = kIsWeb ? 16.0 : 14.0;
+                                final width =
+                                    (constraints.crossAxisExtent -
+                                        gap * (columns - 1)) /
+                                    columns;
+                                final scaler = MediaQuery.textScalerOf(context);
+                                final screen = MediaQuery.sizeOf(context);
+                                final previewRatio = kIsWeb
+                                    ? 1.06
+                                    : screen.width > screen.height
+                                    ? 1.12
+                                    : .92;
+                                return SliverGrid(
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: columns,
+                                        crossAxisSpacing: gap,
+                                        mainAxisSpacing: 18,
+                                        mainAxisExtent:
+                                            TemplateCatalogTile.extent(
+                                              width,
+                                              previewRatio,
+                                              scaler,
+                                            ),
+                                      ),
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, i) {
+                                      final template = filtered[i];
+                                      return RepaintBoundary(
+                                        child: TemplateCatalogTile(
+                                          template: template,
+                                          onCompare: () =>
+                                              _toggleComparison(template),
+                                          comparisonSelected: _comparison
+                                              .contains(template.id),
+                                          onOpen: () => _openTemplate(template),
+                                          heroTag: (this, template.id),
+                                          scrollController: _scrollController,
+                                          previewRatio: previewRatio,
+                                        ),
+                                      );
+                                    },
+                                    childCount: filtered.length,
+                                    addAutomaticKeepAlives: false,
+                                    addRepaintBoundaries: false,
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                    if (feed.isLoadingMore)
+                      const SliverToBoxAdapter(
+                        child: SizedBox(
+                          height: 56,
+                          child: Center(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                Text('템플릿을 더 불러오고 있어요'),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (filtered.isNotEmpty && !feed.hasNext)
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 24),
+                          child: Center(
+                            child: Text(
+                              '${filtered.length}개 템플릿을 모두 확인했어요',
+                              style: ExperienceFormStyle.text(
+                                context,
+                                12,
+                                color: ExperienceFormStyle.muted(context),
                               ),
                             ),
                           ),
                         ),
-                    ],
-                  ),
+                      ),
+                  ],
                 ),
-              );
+              ),
+            );
           }()),
         ),
       );

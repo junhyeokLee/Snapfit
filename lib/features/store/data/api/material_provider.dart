@@ -42,11 +42,7 @@ List<CatalogMaterial> get bundledMaterials => [
       collection: phrase.category,
     ),
   for (final art in studioWordArts)
-    CatalogMaterial(
-      productKey: art.productKey,
-      label: art.label,
-      type: '문구',
-    ),
+    CatalogMaterial(productKey: art.productKey, label: art.label, type: '문구'),
 ];
 
 /// Three-phase material catalog load:
@@ -58,14 +54,14 @@ List<CatalogMaterial> get bundledMaterials => [
 /// Bundled-only items (not yet in DB) remain visible with default metadata.
 final materialListProvider =
     AsyncNotifierProvider<_MaterialCatalogNotifier, List<CatalogMaterial>>(
-  _MaterialCatalogNotifier.new,
-);
+      _MaterialCatalogNotifier.new,
+    );
 
 /// Test helper — returns a fixed list, skipping all background work.
-dynamic mockMaterialList(
-  FutureOr<List<CatalogMaterial>> Function() data,
-) =>
-    materialListProvider.overrideWith(() => _FixedMaterialCatalogNotifier(data));
+dynamic mockMaterialList(FutureOr<List<CatalogMaterial>> Function() data) =>
+    materialListProvider.overrideWith(
+      () => _FixedMaterialCatalogNotifier(data),
+    );
 
 class _FixedMaterialCatalogNotifier extends _MaterialCatalogNotifier {
   _FixedMaterialCatalogNotifier(this._data);
@@ -75,11 +71,12 @@ class _FixedMaterialCatalogNotifier extends _MaterialCatalogNotifier {
   Future<List<CatalogMaterial>> build() async => _data();
 
   @override
-  void _syncInBackground(bool Function() _) {/* no-op in tests */}
+  void _syncInBackground(bool Function() _) {
+    /* no-op in tests */
+  }
 }
 
-class _MaterialCatalogNotifier
-    extends AsyncNotifier<List<CatalogMaterial>> {
+class _MaterialCatalogNotifier extends AsyncNotifier<List<CatalogMaterial>> {
   @override
   Future<List<CatalogMaterial>> build() {
     var disposed = false;
@@ -92,8 +89,9 @@ class _MaterialCatalogNotifier
     Future.microtask(() async {
       if (isDisposed()) return;
       try {
-        final serverMaterials =
-            await ref.read(materialRepositoryProvider).getMaterials();
+        final serverMaterials = await ref
+            .read(materialRepositoryProvider)
+            .getMaterials();
         if (isDisposed()) return;
         final merged = _mergeWithServer(bundledMaterials, serverMaterials);
         state = AsyncData(List.unmodifiable(merged));

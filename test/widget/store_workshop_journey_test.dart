@@ -236,8 +236,7 @@ void main() {
             MemoryCreationDraftStore(),
           ),
           templateRepositoryProvider.overrideWithValue(templates),
-          mockTemplateList(() async => publishedCreationTemplates,
-          ),
+          mockTemplateList(() async => publishedCreationTemplates),
           albumCreationCatalogProvider.overrideWith(
             (ref) => Stream.value(publishedCreationTemplates),
           ),

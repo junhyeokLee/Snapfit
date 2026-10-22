@@ -265,8 +265,7 @@ void main() {
                   ),
                 ),
                 notificationUnreadCountProvider.overrideWith((_) async => 0),
-                mockTemplateList(() async => publishedCreationTemplates,
-                ),
+                mockTemplateList(() async => publishedCreationTemplates),
                 storeCurationsProvider.overrideWith(
                   (_) async => {
                     'templates': StoreCuration.templates,
@@ -563,8 +562,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
-              mockTemplateList(() async => publishedCreationTemplates,
-              ),
+              mockTemplateList(() async => publishedCreationTemplates),
               storeCurationsProvider.overrideWith(
                 (_) async => {
                   'materials': StoreCuration.materials,

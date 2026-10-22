@@ -164,8 +164,7 @@ Widget _app(
         FakeAlbumPersistenceService(),
       ),
       storageServiceProvider.overrideWithValue(FakeStorageService()),
-      mockTemplateList(() async => publishedCreationTemplates,
-      ),
+      mockTemplateList(() async => publishedCreationTemplates),
       ownedPointShopKeysProvider.overrideWith((ref) async => {_material}),
       pointShopCatalogProvider.overrideWith(
         (ref) async => [
