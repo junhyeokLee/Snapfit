@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../../../core/navigation/web_app_location.dart';
 import '../../../../shared/web/web_design.dart';
@@ -38,6 +39,7 @@ class _StoreHubScreenState extends State<StoreHubScreen> {
 
   void _selectCatalog(int index) {
     if (_index == index) return;
+    HapticFeedback.selectionClick();
     setState(() {
       FocusManager.instance.primaryFocus?.unfocus();
       _index = index;

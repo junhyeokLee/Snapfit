@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'experience_icon.dart';
 import 'experience_form_style.dart';
@@ -46,6 +47,7 @@ class CatalogFavoriteButton extends StatelessWidget {
       final selected = favorites.contains(itemKey);
       final tooltip = '$label 즐겨찾기 ${selected ? '해제' : '추가'}';
       Future<void> toggle() async {
+        HapticFeedback.selectionClick();
         final messenger = ScaffoldMessenger.maybeOf(context);
         if (!await favorites.toggle(itemKey) &&
             messenger != null &&

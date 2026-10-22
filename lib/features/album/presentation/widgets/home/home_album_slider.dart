@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/entities/album.dart';
 import 'home_album_actions.dart';
@@ -125,6 +126,7 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
     final from = _visualPage;
     final to = target.toDouble();
     if (target == _focusedIndex && (to - from).abs() < .0001) return;
+    if (target != _focusedIndex) HapticFeedback.selectionClick();
     setState(() {
       _focusedIndex = target;
     });

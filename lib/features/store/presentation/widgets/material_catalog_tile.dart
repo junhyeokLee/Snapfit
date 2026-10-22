@@ -61,133 +61,140 @@ class _MaterialCatalogTileState extends State<MaterialCatalogTile> {
         : paper;
     final previewInk = dark ? Color.lerp(ink, Colors.white, .72)! : ink;
     final elevated = _hovered || _pressed;
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: widget.onOpen,
-          onTapDown: (_) => setState(() => _pressed = true),
-          onTapUp: (_) => setState(() => _pressed = false),
-          onTapCancel: () => setState(() => _pressed = false),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  curve: Curves.easeOut,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(SnapFitRadius.lg),
-                    boxShadow: elevated ? SnapFitShadow.artwork(dark) : [],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(SnapFitRadius.lg),
-                    child: ColoredBox(
-                      color: previewPaper,
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.fromLTRB(
-                              12,
-                              widget.compact ? 28 : 30,
-                              12,
-                              10,
-                            ),
-                            child: RepaintBoundary(child: widget.preview),
-                          ),
-                          Positioned(
-                            left: 9,
-                            top: 9,
-                            child: Text(
-                              widget.type,
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: previewInk,
+    return Semantics(
+      button: true,
+      label: '${widget.title} ${widget.type}',
+      onTap: widget.onOpen,
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            excludeFromSemantics: true,
+            onTap: widget.onOpen,
+            onTapDown: (_) => setState(() => _pressed = true),
+            onTapUp: (_) => setState(() => _pressed = false),
+            onTapCancel: () => setState(() => _pressed = false),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeOut,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(SnapFitRadius.lg),
+                      boxShadow: elevated ? SnapFitShadow.artwork(dark) : [],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(SnapFitRadius.lg),
+                      child: ColoredBox(
+                        color: previewPaper,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(
+                                12,
+                                widget.compact ? 28 : 30,
+                                12,
+                                10,
                               ),
+                              child: RepaintBoundary(child: widget.preview),
                             ),
-                          ),
-                          if (widget.isNew || widget.isBest)
                             Positioned(
                               left: 9,
-                              bottom: 9,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
+                              top: 9,
+                              child: Text(
+                                widget.type,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: previewInk,
                                 ),
-                                decoration: BoxDecoration(
-                                  color: widget.isBest
-                                      ? const Color(0xFFD4A853)
-                                      : const Color(0xFF14AAA8),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  widget.isBest ? 'BEST' : 'NEW',
-                                  style: const TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                    letterSpacing: 0.5,
+                              ),
+                            ),
+                            if (widget.isNew || widget.isBest)
+                              Positioned(
+                                left: 9,
+                                bottom: 9,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: widget.isBest
+                                        ? const Color(0xFFD4A853)
+                                        : const Color(0xFF14AAA8),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    widget.isBest ? 'BEST' : 'NEW',
+                                    style: const TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                      letterSpacing: 0.5,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          if (widget.showCommerce && widget.favoriteKey != null)
-                            Positioned(
-                              right: 3,
-                              top: 3,
-                              child: CatalogFavoriteButton(
-                                itemKey: widget.favoriteKey!,
-                                label: widget.title,
-                                bookmark: true,
-                                unframed: true,
+                            if (widget.showCommerce &&
+                                widget.favoriteKey != null)
+                              Positioned(
+                                right: 3,
+                                top: 3,
+                                child: CatalogFavoriteButton(
+                                  itemKey: widget.favoriteKey!,
+                                  label: widget.title,
+                                  bookmark: true,
+                                  unframed: true,
+                                ),
                               ),
-                            ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  2,
-                  12,
-                  2,
-                  widget.showCommerce ? 0 : 12,
-                ),
-                child: SizedBox(
-                  height: MediaQuery.textScalerOf(context).scale(14) * 2.9,
-                  child: CatalogItemTitle(
-                    widget.title,
-                    style: ExperienceFormStyle.text(
-                      context,
-                      14,
-                      weight: FontWeight.w600,
-                    ).copyWith(height: 1.45),
-                  ),
-                ),
-              ),
-              if (widget.showCommerce)
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(2, 5, 2, 12),
-                  child: PointShopProductBadge(
-                    productKey: widget.productKey,
-                    compact: false,
-                    fontSize: 14,
-                    unlistedLabel:
-                        freeTemplateMaterialProductKeys.contains(
-                          widget.productKey,
-                        )
-                        ? '무료'
-                        : '판매 준비 중',
+                  padding: EdgeInsets.fromLTRB(
+                    2,
+                    12,
+                    2,
+                    widget.showCommerce ? 0 : 12,
+                  ),
+                  child: SizedBox(
+                    height: MediaQuery.textScalerOf(context).scale(14) * 2.9,
+                    child: CatalogItemTitle(
+                      widget.title,
+                      style: ExperienceFormStyle.text(
+                        context,
+                        14,
+                        weight: FontWeight.w600,
+                      ).copyWith(height: 1.45),
+                    ),
                   ),
                 ),
-            ],
+                if (widget.showCommerce)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(2, 5, 2, 12),
+                    child: PointShopProductBadge(
+                      productKey: widget.productKey,
+                      compact: false,
+                      fontSize: 14,
+                      unlistedLabel:
+                          freeTemplateMaterialProductKeys.contains(
+                            widget.productKey,
+                          )
+                          ? '무료'
+                          : '판매 준비 중',
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
