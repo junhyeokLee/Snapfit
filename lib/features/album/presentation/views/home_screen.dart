@@ -120,6 +120,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final uiStateNotifier = ref.read(homeUiStateProvider.notifier);
     final currentIndex = ref.read(homeUiStateProvider).bottomNavIndex;
     if (currentIndex == index) return;
+    HapticFeedback.selectionClick();
 
     final existingIndex = _bottomNavHistory.lastIndexOf(index);
     if (existingIndex != -1) {
