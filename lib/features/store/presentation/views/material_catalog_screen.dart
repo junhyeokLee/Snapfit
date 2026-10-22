@@ -249,7 +249,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        _libraryFavorites(),
+        Align(alignment: Alignment.centerLeft, child: _libraryFavorites()),
         const SizedBox(height: 8),
         _librarySearch(),
       ],
