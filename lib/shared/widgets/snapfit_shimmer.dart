@@ -275,6 +275,66 @@ class SnapFitShimmerNotificationList extends StatelessWidget {
   );
 }
 
+/// Skeleton row matching a compact order history card layout.
+class SnapFitShimmerOrderRow extends StatelessWidget {
+  const SnapFitShimmerOrderRow({super.key});
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 20),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(SnapFitRadius.md),
+          child: const ColoredBox(
+            color: Colors.white,
+            child: SizedBox(width: 100, height: 130),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SnapFitShimmerBox(width: 80, height: 13),
+              const SizedBox(height: 8),
+              const SnapFitShimmerBox(height: 15),
+              const SizedBox(height: 6),
+              const SnapFitShimmerBox(width: 120, height: 12),
+              const SizedBox(height: 12),
+              const SnapFitShimmerBox(width: 60, height: 11),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+/// A list of skeleton order rows.
+class SnapFitShimmerOrderList extends StatelessWidget {
+  const SnapFitShimmerOrderList({
+    super.key,
+    this.rows = 4,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16),
+  });
+  final int rows;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) => SnapFitShimmer(
+    child: Padding(
+      padding: padding,
+      child: Column(
+        children: [
+          for (var i = 0; i < rows; i++) const SnapFitShimmerOrderRow(),
+        ],
+      ),
+    ),
+  );
+}
+
 /// Single-line text placeholder (width as fraction of available space).
 class SnapFitShimmerLine extends StatelessWidget {
   const SnapFitShimmerLine({

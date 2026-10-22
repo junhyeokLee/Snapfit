@@ -23,6 +23,7 @@ import '../widgets/order_album_artwork.dart';
 import '../widgets/order_journey_progress.dart';
 import '../widgets/web_order_history_row.dart';
 import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../shared/widgets/snapfit_shimmer.dart';
 import '../../../../shared/web/web_design.dart';
 import 'customer_print_test_order_history.dart';
 
@@ -1598,7 +1599,7 @@ class _OrderPagedTabState extends ConsumerState<_OrderPagedTab> {
   @override
   Widget build(BuildContext context) {
     if (_initialLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const SingleChildScrollView(child: SnapFitShimmerOrderList());
     }
 
     if (_items.isEmpty) {

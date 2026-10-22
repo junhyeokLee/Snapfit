@@ -5,6 +5,7 @@ import '../../../../core/theme/snapfit_design_tokens.dart';
 import '../../../../shared/widgets/experience_style.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../shared/widgets/snapfit_shimmer.dart';
 import '../../../billing/data/billing_provider.dart';
 
 class MyPointBalanceCard extends ConsumerWidget {
@@ -37,7 +38,12 @@ class MyPointBalanceCard extends ConsumerWidget {
           weight: FontWeight.w600,
         ),
       ),
-      loading: () => Text('확인 중', style: ExperienceFormStyle.text(context, 14)),
+      loading: () => SnapFitShimmer(
+        child: SnapFitShimmerBox(
+          width: compact ? 72 : 96,
+          height: compact ? 17 : 24,
+        ),
+      ),
       error: (_, __) => TextButton(
         onPressed: () => ref.invalidate(myPointBalanceProvider),
         child: const Text('다시 확인'),

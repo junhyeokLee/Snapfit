@@ -15,6 +15,7 @@ import '../../../profile/presentation/views/notification_settings_screen.dart';
 import '../../../profile/domain/order_visibility_owner.dart';
 import '../../../../shared/web/web_design.dart';
 import '../../../../shared/widgets/snapfit_shimmer.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 class NotificationScreen extends ConsumerStatefulWidget {
   const NotificationScreen({super.key});
@@ -434,52 +435,56 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
           for (final item in section.$2) (null, item),
         ],
       ];
-      return ListView.builder(
-        key: const PageStorageKey('inbox-list'),
-        padding: kIsWeb
-            ? EdgeInsets.zero
-            : const EdgeInsets.fromLTRB(16, 10, 16, 16),
-        itemCount: entries.length,
-        itemBuilder: (context, index) {
-          final (label, item) = entries[index];
-          if (item == null) {
-            return Padding(
-              padding: const EdgeInsets.only(top: 12, bottom: 8),
-              child: Text(
-                label!,
-                style: ExperienceFormStyle.text(
-                  context,
-                  13,
-                  weight: FontWeight.w600,
-                  secondary: true,
+      return SnapFitFadeIn(
+        duration: SnapFitMotion.normal,
+        beginOffset: Offset.zero,
+        child: ListView.builder(
+          key: const PageStorageKey('inbox-list'),
+          padding: kIsWeb
+              ? EdgeInsets.zero
+              : const EdgeInsets.fromLTRB(16, 10, 16, 16),
+          itemCount: entries.length,
+          itemBuilder: (context, index) {
+            final (label, item) = entries[index];
+            if (item == null) {
+              return Padding(
+                padding: const EdgeInsets.only(top: 12, bottom: 8),
+                child: Text(
+                  label!,
+                  style: ExperienceFormStyle.text(
+                    context,
+                    13,
+                    weight: FontWeight.w600,
+                    secondary: true,
+                  ),
                 ),
-              ),
+              );
+            }
+            return _NotificationCard(
+              key: ValueKey('inbox-item-${item.id}'),
+              item: item,
+              onTap: () async {
+                if (kIsWeb && !_webOwnerCurrent) return;
+                try {
+                  // The shared tap handler saves the read state independently.
+                  // A slow or failed read receipt must not block the destination.
+                  await FcmNotificationService.openNotification({
+                    ...item.data,
+                    'type': item.type,
+                    'notificationId': item.id.toString(),
+                    'userId': item.userId,
+                    'deeplink': item.deeplink,
+                  });
+                } catch (_) {
+                  if (!context.mounted || (kIsWeb && !_webOwnerCurrent)) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('알림을 열지 못했어요. 다시 시도해주세요.')),
+                  );
+                }
+              },
             );
-          }
-          return _NotificationCard(
-            key: ValueKey('inbox-item-${item.id}'),
-            item: item,
-            onTap: () async {
-              if (kIsWeb && !_webOwnerCurrent) return;
-              try {
-                // The shared tap handler saves the read state independently.
-                // A slow or failed read receipt must not block the destination.
-                await FcmNotificationService.openNotification({
-                  ...item.data,
-                  'type': item.type,
-                  'notificationId': item.id.toString(),
-                  'userId': item.userId,
-                  'deeplink': item.deeplink,
-                });
-              } catch (_) {
-                if (!context.mounted || (kIsWeb && !_webOwnerCurrent)) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('알림을 열지 못했어요. 다시 시도해주세요.')),
-                );
-              }
-            },
-          );
-        },
+          },
+        ),
       );
     },
   );
