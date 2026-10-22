@@ -183,7 +183,10 @@ void main() {
         userId: 'reader',
       );
       final scope = container();
-      final catalog = await scope.read(templateListProvider.future);
+      await scope.read(templateListProvider.future);
+      // Allow background enrichment (phases 2 & 3a) to complete.
+      for (var i = 0; i < 5; i++) await Future<void>.delayed(Duration.zero);
+      final catalog = scope.read(templateListProvider).requireValue;
       expect(catalog.map((t) => t.id), _publishedIds);
       expect(catalog[1].isLiked, true);
       expect(catalog[1].likeCount, 1);

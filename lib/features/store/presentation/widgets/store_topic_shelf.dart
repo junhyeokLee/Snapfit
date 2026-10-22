@@ -18,9 +18,9 @@ class StoreTopicShelf extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SingleChildScrollView(
+    key: const ValueKey('store-topic-filters'),
     scrollDirection: Axis.horizontal,
     child: Row(
-      key: const ValueKey('store-topic-filters'),
       children: [
         for (final category in categories)
           Padding(

@@ -103,6 +103,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
   Object? _cachedOwnedRef;
   Object? _cachedTemplatesRef;
   Object? _cachedMaterialRef;
+  int _cachedFavoritesVersion = -1;
   List<_CatalogItem> _cachedItems = const [];
   int _cachedTotal = 0;
 
@@ -610,11 +611,13 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
       final ownedRef = owned.asData?.value;
       final templatesRef = templates?.asData?.value;
       final materialRef = materialMeta.asData?.value;
+      final favoritesVersion = favorites.version;
       final dataChanged =
           !identical(_cachedCatalogRef, catalogRef) ||
           !identical(_cachedOwnedRef, ownedRef) ||
           !identical(_cachedTemplatesRef, templatesRef) ||
-          !identical(_cachedMaterialRef, materialRef);
+          !identical(_cachedMaterialRef, materialRef) ||
+          _cachedFavoritesVersion != favoritesVersion;
       if (dataChanged) _filterVersion++;
       if (_filterVersion != _cachedFilterVersion || dataChanged) {
         _cachedFilterVersion = _filterVersion;
@@ -622,6 +625,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
         _cachedOwnedRef = ownedRef;
         _cachedTemplatesRef = templatesRef;
         _cachedMaterialRef = materialRef;
+        _cachedFavoritesVersion = favoritesVersion;
 
         final computed = favorites.arrange(
           _items(templatesRef ?? [], materialRef ?? [])

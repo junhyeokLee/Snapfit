@@ -23,6 +23,7 @@ import 'package:snap_fit/features/point_shop/domain/point_shop_product.dart';
 import 'package:snap_fit/features/point_shop/presentation/point_shop_access.dart';
 import 'package:snap_fit/features/profile/data/order_repository.dart';
 import 'package:snap_fit/features/profile/presentation/views/my_page_screen.dart';
+import 'package:snap_fit/features/store/data/api/material_provider.dart';
 import 'package:snap_fit/features/store/data/api/template_provider.dart';
 import 'package:snap_fit/features/store/presentation/views/material_catalog_screen.dart';
 import 'package:snap_fit/features/store/presentation/views/material_detail_screen.dart';
@@ -50,6 +51,7 @@ Widget reviewApp(
     ),
     ownedPointShopKeysProvider.overrideWith((ref) async => owned),
     mockTemplateList(() async => publishedCreationTemplates),
+    mockMaterialList(() async => bundledMaterials),
     pointShopAccessGateProvider.overrideWithValue(
       gate ??
           (context, ref, {required productKey, required title}) async => false,

@@ -1,3 +1,4 @@
+import 'dart:math' show min;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -81,9 +82,14 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }
 
   Widget _withComparison(List<PremiumTemplate> catalog, Widget content) {
+    // Comparison tray must show selected templates even when they're filtered
+    // out of the current view (e.g. after switching to a different category).
+    // Fall back to the filtered catalog only when the full list isn't ready yet.
+    final fullCatalog =
+        ref.read(templateListProvider).asData?.value ?? catalog;
     final selected = [
       for (final id in _comparison.ids)
-        ...catalog.where((template) => template.id == id).take(1),
+        ...fullCatalog.where((template) => template.id == id).take(1),
     ];
     void remove(PremiumTemplate template) =>
         setState(() => _comparison = _comparison.remove(template.id));
@@ -119,6 +125,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
 
   void _resetPage() {
     _filterVersion++; // data/filter changed — invalidate cache
+    _visibleCount = _pageSize;
   }
 
   void _resetFilteredPage() {
@@ -170,12 +177,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     if (_searchController.text == _lastSearchText) return;
     _lastSearchText = _searchController.text;
     setState(_resetPage);
-    ref
-        .read(storeTemplateFeedProvider.notifier)
-        .setFilters(
-          query: _searchController.text.trim().toLowerCase(),
-          category: _selectedCategory,
-        );
   }
 
   void _openTemplate(PremiumTemplate template) {
@@ -197,13 +198,17 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }
 
   void _loadNearEnd() {
+    if (_revealing) return;
+    if (!_scrollController.hasClients) return;
+    if (_scrollController.position.extentAfter >= 300) return;
+    // First extend the client-side window through already-loaded items.
+    if (_visibleCount < _cachedFiltered.length) {
+      setState(() => _visibleCount += _pageSize);
+      return;
+    }
+    // All local items shown — ask the notifier for the next server page.
     final feed = ref.read(storeTemplateFeedProvider);
-    if (!_revealing &&
-        _scrollController.hasClients &&
-        _scrollController.position.extentAfter < 300 &&
-        feed.hasNext &&
-        !feed.isLoadingMore &&
-        !feed.isInitialLoading) {
+    if (feed.hasNext && !feed.isLoadingMore && !feed.isInitialLoading) {
       ref.read(storeTemplateFeedProvider.notifier).loadMore();
     }
   }
@@ -211,9 +216,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   String _selectedCategory = '전체';
   bool _favoritesOnly = false;
 
+  // ── Client-side pagination ───────────────────────────────────────────────
+  static const _pageSize = 12;
+  int _visibleCount = _pageSize;
+
   // ── Filter memoization ───────────────────────────────────────────────────
-  // Avoids O(n) recomputation on every loadMore/setState that only changes
-  // _visibleCount. Re-runs only when data or filter params actually change.
+  // Avoids O(n) recomputation on every setState that only changes _visibleCount.
+  // Re-runs only when data or filter params actually change.
   int _filterVersion = 0;
   int _cachedFilterVersion = -1;
   Object? _cachedTemplateRef;
@@ -321,6 +330,15 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                 sorted
                     .where(
                       (t) =>
+                          (query.isEmpty ||
+                              [
+                                t.title,
+                                t.subTitle ?? '',
+                                t.description ?? '',
+                                ...?t.tags,
+                              ].any(
+                                (v) => v.toLowerCase().contains(query),
+                              )) &&
                           (_priceFilter == '전체' ||
                               (_priceFilter == '보유'
                                   ? (ownedRef?.contains(
@@ -477,12 +495,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                   });
                                   ref
                                       .read(storeTemplateFeedProvider.notifier)
-                                      .setFilters(
-                                        category: value,
-                                        query: _searchController.text
-                                            .trim()
-                                            .toLowerCase(),
-                                      );
+                                      .setFilters(category: value, query: '');
                                 },
                                 price: _priceFilter,
                                 onPriceChanged: (value) => setState(() {
@@ -573,9 +586,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                         )
                                         .setFilters(
                                           category: value,
-                                          query: _searchController.text
-                                              .trim()
-                                              .toLowerCase(),
+                                          query: '',
                                         );
                                   },
                                 ),
@@ -728,7 +739,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                         ),
                                       );
                                     },
-                                    childCount: filtered.length,
+                                    childCount: min(_visibleCount, filtered.length),
                                     addAutomaticKeepAlives: false,
                                     addRepaintBoundaries: false,
                                   ),

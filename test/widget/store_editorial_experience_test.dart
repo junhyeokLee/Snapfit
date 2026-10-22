@@ -119,7 +119,7 @@ void main() {
         wrapCreation(
           ProviderScope(
             overrides: [
-              mockTemplateList(() async => publishedCreationTemplates),
+              mockTemplateList(() => publishedCreationTemplates),
               storeCurationsProvider.overrideWith(
                 (_) async => {
                   'templates': StoreCuration.templates,

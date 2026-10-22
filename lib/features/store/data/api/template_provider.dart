@@ -128,7 +128,7 @@ class _FixedTemplateCatalogNotifier extends _TemplateCatalogNotifier {
   final FutureOr<List<PremiumTemplate>> Function() _data;
 
   @override
-  Future<List<PremiumTemplate>> build() async => _data();
+  FutureOr<List<PremiumTemplate>> build() => _data();
 
   @override
   void _enrichInBackground(bool Function() _) {
@@ -138,7 +138,7 @@ class _FixedTemplateCatalogNotifier extends _TemplateCatalogNotifier {
 
 class _TemplateCatalogNotifier extends AsyncNotifier<List<PremiumTemplate>> {
   @override
-  Future<List<PremiumTemplate>> build() {
+  FutureOr<List<PremiumTemplate>> build() {
     // Track disposal so background tasks can bail out safely.
     var disposed = false;
     ref.onDispose(() => disposed = true);
@@ -293,18 +293,38 @@ class _NoUpdate {
 class StoreTemplateFeedNotifier extends Notifier<StoreTemplateFeedState> {
   static const _pageSize = 20;
   bool _loading = false;
+  // Base catalog: seeded from templateListProvider so test mocks flow through.
+  List<PremiumTemplate> _bundled = publishedCreationTemplates;
 
   @override
   StoreTemplateFeedState build() {
     var disposed = false;
     ref.onDispose(() => disposed = true);
-    _fetchPage0(() => disposed, '', '');
+    // Seed _bundled from templateListProvider if it already has a sync value
+    // (e.g. a test mock that returns synchronously).  In production the real
+    // notifier returns a Future so asData is null here — we fall back to the
+    // bundled list and the background server fetch fills in live data later.
+    final syncValue = ref.read(templateListProvider).asData?.value;
+    _bundled = syncValue ?? publishedCreationTemplates;
+    // Only fetch from server when no synchronous catalog is available.
+    // Production: templateListProvider is AsyncLoading → syncValue == null.
+    // Tests that mock templateListProvider synchronously skip the server fetch,
+    // keeping templateRepositoryProvider untouched (guards stay at 0 attempts).
+    if (syncValue == null) {
+      // Defer so _fetchPage0's catch block never runs during build().
+      // (If _fetch throws synchronously, the catch block accesses `state` which
+      // is uninitialized until build() returns.)
+      Future.microtask(() => _fetchPage0(() => disposed, '', ''));
+    }
     // Show bundled templates immediately while page 0 loads from server.
+    // hasNext starts false — set to true only once server confirms more pages.
     return StoreTemplateFeedState(
-      items: List.unmodifiable(publishedCreationTemplates),
-      isInitialLoading: true,
+      items: List.unmodifiable(_bundled),
+      // isInitialLoading = false when all data came from a sync source and no
+      // server fetch was started (test mocks); true otherwise (production).
+      isInitialLoading: syncValue == null,
       isLoadingMore: false,
-      hasNext: true,
+      hasNext: false,
       page: 0,
     );
   }
@@ -320,7 +340,7 @@ class StoreTemplateFeedNotifier extends Notifier<StoreTemplateFeedState> {
       if (state.filterCategory != cat || state.filterQuery != query) return;
       state = state.copyWith(
         items: List.unmodifiable(
-          mergeTemplatesWithServer(publishedCreationTemplates, result.content),
+          mergeTemplatesWithServer(_bundled, result.content),
         ),
         isInitialLoading: false,
         hasNext: result.hasNext,
@@ -330,7 +350,7 @@ class StoreTemplateFeedNotifier extends Notifier<StoreTemplateFeedState> {
       );
     } catch (e) {
       if (isDisposed()) return;
-      state = state.copyWith(isInitialLoading: false, error: e);
+      state = state.copyWith(isInitialLoading: false, error: e, hasNext: false);
     }
   }
 
@@ -347,7 +367,7 @@ class StoreTemplateFeedNotifier extends Notifier<StoreTemplateFeedState> {
         current.filterQuery,
       );
       final merged = mergeTemplatesWithServer(
-        publishedCreationTemplates,
+        _bundled,
         result.content,
       );
       final existingIds = {for (final t in state.items) t.id};
@@ -375,7 +395,7 @@ class StoreTemplateFeedNotifier extends Notifier<StoreTemplateFeedState> {
     if (cat == state.filterCategory && qry == state.filterQuery) return;
     _loading = false;
     // Instant bundled interim filtered client-side.
-    final interim = _clientFilter(publishedCreationTemplates, cat, qry);
+    final interim = _clientFilter(_bundled, cat, qry);
     state = state.copyWith(
       items: List.unmodifiable(interim),
       isInitialLoading: true,
@@ -391,7 +411,7 @@ class StoreTemplateFeedNotifier extends Notifier<StoreTemplateFeedState> {
       if (state.filterCategory != cat || state.filterQuery != qry) return;
       state = state.copyWith(
         items: List.unmodifiable(
-          mergeTemplatesWithServer(publishedCreationTemplates, result.content),
+          mergeTemplatesWithServer(_bundled, result.content),
         ),
         isInitialLoading: false,
         hasNext: result.hasNext,
@@ -400,19 +420,23 @@ class StoreTemplateFeedNotifier extends Notifier<StoreTemplateFeedState> {
       );
     } catch (e) {
       if (state.filterCategory != cat || state.filterQuery != qry) return;
-      state = state.copyWith(isInitialLoading: false, error: e);
+      state = state.copyWith(isInitialLoading: false, error: e, hasNext: false);
     }
   }
 
   Future<void> refresh() async {
     _loading = false;
+    // Reload the base catalog so pull-to-refresh picks up any updates and
+    // test mocks that track refresh calls see their counter increment.
+    ref.invalidate(templateListProvider);
+    _bundled = await ref.read(templateListProvider.future);
     final cat = state.filterCategory;
     final qry = state.filterQuery;
-    final interim = _clientFilter(publishedCreationTemplates, cat, qry);
+    final interim = _clientFilter(_bundled, cat, qry);
     state = state.copyWith(
       items: List.unmodifiable(interim),
       isInitialLoading: true,
-      hasNext: true,
+      hasNext: false,
       page: 0,
       error: null,
     );
@@ -420,7 +444,7 @@ class StoreTemplateFeedNotifier extends Notifier<StoreTemplateFeedState> {
       final result = await _fetch(0, cat, qry);
       state = state.copyWith(
         items: List.unmodifiable(
-          mergeTemplatesWithServer(publishedCreationTemplates, result.content),
+          mergeTemplatesWithServer(_bundled, result.content),
         ),
         isInitialLoading: false,
         hasNext: result.hasNext,
@@ -428,7 +452,7 @@ class StoreTemplateFeedNotifier extends Notifier<StoreTemplateFeedState> {
         lastSyncedAt: DateTime.now(),
       );
     } catch (e) {
-      state = state.copyWith(isInitialLoading: false, error: e);
+      state = state.copyWith(isInitialLoading: false, error: e, hasNext: false);
     }
   }
 

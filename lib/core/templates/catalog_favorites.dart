@@ -34,6 +34,12 @@ class CatalogFavorites extends ChangeNotifier {
   bool _loaded = false;
   bool _disposed = false;
 
+  int _version = 0;
+
+  /// Increments every time the favorites set changes. Widgets that memoize
+  /// filtered lists based on favorites can compare this to detect stale caches.
+  int get version => _version;
+
   List<String> get keys => List.unmodifiable(_keys);
   bool contains(String key) => _keys.contains(key);
 
@@ -143,6 +149,7 @@ class CatalogFavorites extends ChangeNotifier {
     }),
   );
   void _notify() {
+    _version++;
     if (!_disposed) notifyListeners();
   }
 

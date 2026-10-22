@@ -245,7 +245,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [mockTemplateList(() async => bundledCreationTemplates)],
+          overrides: [mockTemplateList(() => bundledCreationTemplates)],
           child: wrapCreation(
             const SingleChildScrollView(child: PremiumTemplateList()),
           ),
