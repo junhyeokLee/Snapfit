@@ -8,6 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/core/templates/catalog_preview_assets.g.dart';
+import 'package:snap_fit/core/templates/template_document_pages.dart';
+import 'package:snap_fit/features/store/presentation/widgets/template_page_renderer.dart';
 import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/creation_catalog_cover.dart';
 
@@ -33,6 +35,19 @@ Future<Uint8List> _pixels(String path, {int? size}) async {
   return pixels;
 }
 
+Uint8List _fingerprint(Uint8List pixels, {required int width}) {
+  expect(pixels.length, width * width * 4);
+  final result = Uint8List(32 * 32 * 4);
+  for (var y = 0; y < 32; y++) {
+    for (var x = 0; x < 32; x++) {
+      final source = ((y * width ~/ 32) * width + x * width ~/ 32) * 4;
+      final target = (y * 32 + x) * 4;
+      result.setRange(target, target + 4, pixels, source);
+    }
+  }
+  return result;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -56,7 +71,7 @@ void main() {
     },
   );
 
-  testWidgets('cached covers match the actual published native artwork', (
+  testWidgets('catalog thumbnail mode keeps the current published artwork', (
     tester,
   ) async {
     final manifest =
@@ -72,79 +87,95 @@ void main() {
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    final issues = <String>[];
-    final results = <Map<String, Object>>[];
+    expect(publishedCreationTemplates, hasLength(68));
+    final fingerprints = <String, Uint8List>{};
     for (final template in publishedCreationTemplates) {
-      final boundary = GlobalKey();
-      await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pumpWidget(
-        ScreenUtilInit(
-          designSize: const Size(390, 844),
-          builder: (_, __) => MaterialApp(
-            home: Scaffold(
-              body: Center(
-                child: RepaintBoundary(
-                  key: boundary,
-                  child: SizedBox.square(
-                    dimension: 220,
-                    child: CreationCatalogCover(
-                      template: template,
-                      useThumbnail: false,
+      expect(usesLiveCatalogArtwork(template), isTrue, reason: template.title);
+      final document =
+          jsonDecode(template.templateJson!) as Map<String, dynamic>;
+      final cover = templateDocumentPages(document).first;
+      final expectedIds = (cover['layers'] as List)
+          .map((layer) => layer['id'] as String)
+          .toList();
+      Future<Uint8List> render({required bool thumbnail}) async {
+        final boundary = GlobalKey();
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pumpWidget(
+          ScreenUtilInit(
+            designSize: const Size(390, 844),
+            builder: (_, __) => MaterialApp(
+              home: Scaffold(
+                body: Center(
+                  child: RepaintBoundary(
+                    key: boundary,
+                    child: SizedBox.square(
+                      dimension: 220,
+                      child: CreationCatalogCover(
+                        template: template,
+                        useThumbnail: thumbnail,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      await tester.runAsync(() async {
-        for (final element in find.byType(Image).evaluate()) {
-          await precacheImage(
-            (element.widget as Image).image,
-            element,
-            onError: (error, _) =>
-                throw StateError('${template.title}: $error'),
-          );
+        );
+        await tester.pumpAndSettle();
+        await tester.runAsync(() async {
+          for (final element in find.byType(Image).evaluate()) {
+            await precacheImage(
+              (element.widget as Image).image,
+              element,
+              onError: (error, _) =>
+                  throw StateError('${template.title}: $error'),
+            );
+          }
+        });
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull, reason: template.title);
+        // A legacy PNG must never replace the current editable cover, even
+        // when a lazy catalog card requests thumbnail mode.
+        final artwork = tester.widget<TemplatePageRenderer>(
+          find.byType(TemplatePageRenderer),
+        );
+        expect(
+          artwork.layers.map((layer) => layer.id),
+          expectedIds,
+          reason: '${template.title}: current cover layers',
+        );
+        expect(find.byType(RawImage), findsWidgets, reason: template.title);
+        for (final image in tester.widgetList<RawImage>(
+          find.byType(RawImage),
+        )) {
+          expect(image.image, isNotNull, reason: template.title);
         }
-      });
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull, reason: template.title);
-      final mean = (await tester.runAsync(() async {
-        final image =
-            await (boundary.currentContext!.findRenderObject()
-                    as RenderRepaintBoundary)
-                .toImage(pixelRatio: 3);
-        final fresh = (await image.toByteData())!.buffer.asUint8List();
-        image.dispose();
-        final cached = await _pixels(
-          catalogPreviewAssets['template:${template.id}']!,
+        return (await tester.runAsync(() async {
+          final image =
+              await (boundary.currentContext!.findRenderObject()
+                      as RenderRepaintBoundary)
+                  .toImage(pixelRatio: 3);
+          final pixels = (await image.toByteData())!.buffer.asUint8List();
+          image.dispose();
+          return pixels;
+        }))!;
+      }
+
+      // Compare two actual UI paths on the same engine. Historical cached
+      // bitmaps are neither the published source nor a portable font baseline.
+      final fullArtwork = await render(thumbnail: false);
+      final cardArtwork = await render(thumbnail: true);
+      expect(_difference(fullArtwork, cardArtwork), 0, reason: template.title);
+      final fingerprint = _fingerprint(fullArtwork, width: 660);
+      for (final previous in fingerprints.entries) {
+        expect(
+          _difference(fingerprint, previous.value),
+          greaterThan(2),
+          reason: '${template.title}: current artwork repeats ${previous.key}',
         );
-        return _difference(fresh, cached);
-      }))!;
-      if (mean > .2)
-        issues.add('${template.id} ${template.title}: pixel difference $mean');
-      results.add({
-        'id': template.id,
-        'title': template.title,
-        'meanPixelDifference': mean,
-        'matches': mean <= .2,
-      });
+      }
+      fingerprints[template.title] = fingerprint;
     }
-    if (const bool.fromEnvironment('EXPORT_COVER_AUDIT')) {
-      File('output/settings-template-qa/catalog-cover-audit.json')
-        ..parent.createSync(recursive: true)
-        ..writeAsStringSync(
-          const JsonEncoder.withIndent('  ').convert({
-            'publishedCoverCount': results.length,
-            'cachedCoverMatches': results
-                .where((r) => r['matches'] == true)
-                .length,
-            'results': results,
-          }),
-        );
-    }
-    expect(issues, isEmpty, reason: 'Regenerate stale catalog thumbnails.');
+    expect(fingerprints, hasLength(68));
   }, timeout: const Timeout(Duration(minutes: 3)));
 }

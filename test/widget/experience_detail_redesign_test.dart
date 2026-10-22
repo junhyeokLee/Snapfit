@@ -49,8 +49,7 @@ Widget reviewApp(
       (ref) async => catalog == null ? [] : await catalog(),
     ),
     ownedPointShopKeysProvider.overrideWith((ref) async => owned),
-    templateListProvider.overrideWith(
-      (ref) async => publishedCreationTemplates,
+    mockTemplateList(() async => publishedCreationTemplates,
     ),
     pointShopAccessGateProvider.overrideWithValue(
       gate ??
@@ -209,17 +208,24 @@ void main() {
       );
       expect(
         find.byKey(ValueKey('material-item-sticker:${favorite.id}')),
-        findsNothing,
+        findsOneWidget,
       );
-      await tester.tap(find.text('즐겨찾기'));
+      final favoriteAction = find.byKey(
+        ValueKey(
+          'favorite-${CatalogFavoriteKeys.decoration(favorite.insertionValue)}',
+        ),
+      );
+      await tester.ensureVisible(favoriteAction);
+      expect(favoriteAction.hitTestable(), findsOneWidget);
+      await tester.tap(favoriteAction);
       await tester.pumpAndSettle();
       expect(
         find.byKey(ValueKey('material-item-sticker:${favorite.id}')),
-        findsOneWidget,
+        findsNothing,
       );
       expect(
         find.byKey(ValueKey('material-item-sticker:${spec.id}')),
-        findsNothing,
+        findsOneWidget,
       );
       expect(tester.takeException(), isNull);
       await capture(tester, key, 'library-${size.width.toInt()}');

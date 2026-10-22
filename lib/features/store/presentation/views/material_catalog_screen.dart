@@ -33,7 +33,9 @@ import '../../../album/presentation/widgets/create_flow/creation_catalog_cover.d
 import '../../../point_shop/data/point_shop_provider.dart';
 import '../../../point_shop/domain/point_shop_template_key.dart';
 import '../../../point_shop/presentation/point_shop_access.dart';
+import '../../data/api/material_provider.dart';
 import '../../data/api/template_provider.dart';
+import '../../domain/entities/catalog_material.dart';
 import '../../domain/entities/premium_template.dart';
 import 'template_detail_screen.dart';
 import 'material_detail_screen.dart';
@@ -48,10 +50,13 @@ class _CatalogItem {
     this.type,
     this.preview, {
     this.template,
+    this.isNew = false,
+    this.isBest = false,
   });
   final String key, favoriteKey, title, type;
   final Widget Function(bool detail) preview;
   final PremiumTemplate? template;
+  final bool isNew, isBest;
 }
 
 enum _LibrarySort { favorites, name }
@@ -91,6 +96,16 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
   bool _loading = false;
   late final _materials = _buildMaterials();
 
+  // ── Filter memoization ─────────────────────────────────────────────────
+  int _filterVersion = 0;
+  int _cachedFilterVersion = -1;
+  Object? _cachedCatalogRef;
+  Object? _cachedOwnedRef;
+  Object? _cachedTemplatesRef;
+  Object? _cachedMaterialRef;
+  List<_CatalogItem> _cachedItems = const [];
+  int _cachedTotal = 0;
+
   @override
   void initState() {
     super.initState();
@@ -117,6 +132,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
 
   void _resetPage() {
     _generation++;
+    _filterVersion++; // invalidate filter cache on any page reset
     _visible = _pageSize;
     _loading = false;
     if (_scroll.hasClients) _scroll.jumpTo(0);
@@ -232,9 +248,19 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
           ),
         ),
         const SizedBox(height: 8),
+        _libraryFavorites(),
+        const SizedBox(height: 8),
         _librarySearch(),
       ],
     ),
+  );
+
+  Widget _libraryFavorites() => CatalogFavoriteFilter(
+    selected: _favoritesOnly,
+    onChanged: (value) => setState(() {
+      _favoritesOnly = value;
+      _resetPage();
+    }),
   );
 
   Widget _librarySearch({Widget? leading}) => CatalogSearchDisclosure(
@@ -330,6 +356,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
   Future<void> _refreshCatalog() async {
     setState(_resetPage);
     ref.invalidate(pointShopCatalogProvider);
+    ref.invalidate(materialListProvider);
     if (!widget.library) ref.invalidate(storeCurationsProvider);
     if (widget.library) ref.invalidate(ownedPointShopKeysProvider);
     final needsTemplates = widget.library && (_type == '전체' || _type == '템플릿');
@@ -338,6 +365,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
     try {
       await Future.wait<Object?>([
         ref.read(pointShopCatalogProvider.future),
+        ref.read(materialListProvider.future),
         if (!widget.library) ref.read(storeCurationsProvider.future),
         if (widget.library) ref.read(ownedPointShopKeysProvider.future),
         if (needsTemplates) ref.read(templateListProvider.future),
@@ -399,23 +427,48 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
     ),
   );
 
-  List<_CatalogItem> _items(List<PremiumTemplate> templates) => [
-    if (widget.library)
-      for (final t in templates)
-        _CatalogItem(
-          pointShopTemplateKey(t),
-          CatalogFavoriteKeys.template(t.id),
-          t.title,
-          '템플릿',
-          (detail) => CreationCatalogCover(
+  List<_CatalogItem> _items(
+    List<PremiumTemplate> templates,
+    List<CatalogMaterial> dbMeta,
+  ) {
+    final metaByKey = {for (final m in dbMeta) m.productKey: m};
+    final deactivated = {
+      for (final m in dbMeta)
+        if (!m.isActive) m.productKey,
+    };
+    return [
+      if (widget.library)
+        for (final t in templates)
+          _CatalogItem(
+            pointShopTemplateKey(t),
+            CatalogFavoriteKeys.template(t.id),
+            t.title,
+            '템플릿',
+            (detail) => CreationCatalogCover(
+              template: t,
+              useThumbnail: !detail,
+              showBookMaterial: true,
+            ),
             template: t,
-            useThumbnail: !detail,
-            showBookMaterial: true,
           ),
-          template: t,
-        ),
-    ..._materials,
-  ];
+      for (final item in _materials)
+        if (!deactivated.contains(item.key))
+          () {
+            final meta = metaByKey[item.key];
+            if (meta == null) return item;
+            return _CatalogItem(
+              item.key,
+              item.favoriteKey,
+              item.title,
+              item.type,
+              item.preview,
+              template: item.template,
+              isNew: meta.isNew,
+              isBest: meta.isBest,
+            );
+          }(),
+    ];
+  }
 
   List<_CatalogItem> _buildMaterials() => [
     for (final spec in studioDecorations)
@@ -548,32 +601,54 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
       final templates = widget.library && (_type == '전체' || _type == '템플릿')
           ? ref.watch(templateListProvider)
           : null;
-      final items = favorites.arrange(
-        _items(
-              templates != null && templates.hasValue
-                  ? templates.requireValue
-                  : [],
-            )
-            .where(
-              (item) =>
-                  (_type == '전체' || item.type == _type) &&
-                  (_query.isEmpty ||
-                      item.title.toLowerCase().contains(_query) ||
-                      item.type.contains(_query)) &&
-                  matchesPrice(item) &&
-                  (!widget.library ||
-                      ownedKeys.contains(item.key) ||
-                      favorites.contains(item.favoriteKey)),
-            )
-            .toList(),
-        (item) => item.favoriteKey,
-        onlyFavorites: widget.library ? false : _favoritesOnly,
-      );
-      if ((!widget.library && kIsWeb && _catalogSort == '이름순') ||
-          (widget.library && _librarySort == _LibrarySort.name)) {
-        items.sort((a, b) => a.title.compareTo(b.title));
+      final materialMeta = ref.watch(materialListProvider);
+
+      // ── Memoized filter ──────────────────────────────────────────────────
+      // Re-run only when source data or filter params change — not on every
+      // loadMore setState that only increments _visible.
+      final catalogRef = catalog.asData?.value;
+      final ownedRef = owned.asData?.value;
+      final templatesRef = templates?.asData?.value;
+      final materialRef = materialMeta.asData?.value;
+      final dataChanged =
+          !identical(_cachedCatalogRef, catalogRef) ||
+          !identical(_cachedOwnedRef, ownedRef) ||
+          !identical(_cachedTemplatesRef, templatesRef) ||
+          !identical(_cachedMaterialRef, materialRef);
+      if (dataChanged) _filterVersion++;
+      if (_filterVersion != _cachedFilterVersion || dataChanged) {
+        _cachedFilterVersion = _filterVersion;
+        _cachedCatalogRef = catalogRef;
+        _cachedOwnedRef = ownedRef;
+        _cachedTemplatesRef = templatesRef;
+        _cachedMaterialRef = materialRef;
+
+        final computed = favorites.arrange(
+          _items(templatesRef ?? [], materialRef ?? [])
+              .where(
+                (item) =>
+                    (_type == '전체' || item.type == _type) &&
+                    (_query.isEmpty ||
+                        item.title.toLowerCase().contains(_query) ||
+                        item.type.contains(_query)) &&
+                    matchesPrice(item) &&
+                    (!widget.library ||
+                        ownedKeys.contains(item.key) ||
+                        favorites.contains(item.favoriteKey)),
+              )
+              .toList(),
+          (item) => item.favoriteKey,
+          onlyFavorites: _favoritesOnly,
+        );
+        if ((!widget.library && kIsWeb && _catalogSort == '이름순') ||
+            (widget.library && _librarySort == _LibrarySort.name)) {
+          computed.sort((a, b) => a.title.compareTo(b.title));
+        }
+        _cachedItems = computed;
+        _cachedTotal = computed.length;
       }
-      _total = items.length;
+      final items = _cachedItems;
+      _total = _cachedTotal;
       final curation = !widget.library
           ? ref.watch(storeCurationsProvider).asData?.value['materials']
           : null;
@@ -777,6 +852,8 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                           !widget.searchMode)
                         _typeFilters(tabs),
                       SizedBox(height: libraryWide ? 0 : 10),
+                      if (widget.library && !libraryWide)
+                        _librarySearch(leading: _libraryFavorites()),
                       if (!widget.library)
                         CatalogFilterBar(
                           price: _priceFilter,
@@ -995,12 +1072,14 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                               ? null
                               : catalogPreviewAssets[item.key];
                           if (!widget.library) {
-                            return MaterialCatalogTile(
+                            return RepaintBoundary(child: MaterialCatalogTile(
                               key: ValueKey('material-item-${item.key}'),
                               productKey: item.key,
                               title: item.title,
                               type: item.type,
                               favoriteKey: item.favoriteKey,
+                              isNew: item.isNew,
+                              isBest: item.isBest,
                               onOpen: () => _open(item),
                               preview: CatalogArtworkHero(
                                 tag: (this, item.key),
@@ -1020,10 +1099,10 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                                         child: item.preview(false),
                                       ),
                               ),
-                            );
+                            ));
                           }
                           if (!kIsWeb) {
-                            return LibraryDesignTile(
+                            return RepaintBoundary(child: LibraryDesignTile(
                               key: ValueKey('material-item-${item.key}'),
                               productKey: item.key,
                               title: item.title,
@@ -1051,9 +1130,9 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                                       productKey: item.key,
                                       child: item.preview(false),
                                     ),
-                            );
+                            ));
                           }
-                          return InkWell(
+                          return RepaintBoundary(child: InkWell(
                             key: ValueKey('material-item-${item.key}'),
                             onTap: () => _open(item),
                             child: Column(
@@ -1109,6 +1188,33 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                                           ),
                                         ),
                                       ),
+                                      if (item.isNew || item.isBest)
+                                        Positioned(
+                                          left: 8,
+                                          bottom: 8,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 2,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: item.isBest
+                                                  ? const Color(0xFFD4A853)
+                                                  : const Color(0xFF14AAA8),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              item.isBest ? 'BEST' : 'NEW',
+                                              style: const TextStyle(
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.w700,
+                                                color: Colors.white,
+                                                letterSpacing: 0.5,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                     ],
                                   ),
                                 ),
@@ -1168,10 +1274,11 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                                 ),
                               ],
                             ),
-                          );
+                          ));
                         },
                         childCount: _visible.clamp(0, items.length),
                         addAutomaticKeepAlives: false,
+                        addRepaintBoundaries: false,
                       ),
                     );
                   },

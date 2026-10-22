@@ -115,8 +115,18 @@ abstract final class SnapFitType {
     fontSize: size,
     fontWeight: weight,
     // Display-size headings breathe tighter; body text keeps generous Korean spacing.
-    height: size >= 32 ? 1.2 : size >= 20 ? 1.3 : 1.55,
-    letterSpacing: size >= 32 ? -0.6 : size >= 24 ? -0.4 : size >= 20 ? -0.3 : -0.1,
+    height: size >= 32
+        ? 1.2
+        : size >= 20
+        ? 1.3
+        : 1.55,
+    letterSpacing: size >= 32
+        ? -0.6
+        : size >= 24
+        ? -0.4
+        : size >= 20
+        ? -0.3
+        : -0.1,
     color: color,
   );
 }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SnapFit 가입과 앨범 제작</title>
+  <title>SnapFit 앨범 제작 여정</title>
   <style>
     *{box-sizing:border-box;letter-spacing:0}
     body{margin:0;background:#f3f6f5;color:#222a2b;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif}
@@ -24,12 +24,35 @@
 </head>
 <body>
   <header>
-    <h1>SnapFit 가입과 앨범 제작</h1>
+    <h1>SnapFit 앨범 제작 여정</h1>
     <nav aria-label="디자인 검토">
       <button type="button" id="previous" aria-label="이전 화면" title="이전 화면">&larr;</button>
       <select id="screen" aria-label="화면">
+        <optgroup label="앨범 제작 · 앱 반영 화면">
+          <option value="creation-atelier-start" selected>시작 · 세 가지 제작 방식</option>
+          <option value="creation-atelier-catalog">선택 · 표지와 내지로 고르는 템플릿</option>
+          <option value="creation-atelier-preview">선택 · 실제 표지 미리보기</option>
+          <option value="creation-atelier-spread">선택 · 펼친 내지 미리보기</option>
+          <option value="creation-atelier-manual">설정 · 직접 만들기</option>
+          <option value="creation-atelier-settings">설정 · 선택한 템플릿</option>
+          <option value="creation-atelier-settings-spread">설정 · 내지 확인</option>
+          <option value="creation-atelier-ai-brief">AI · 디자인 요청</option>
+          <option value="creation-atelier-ai-confirm">AI · 요청과 비용 확인</option>
+          <option value="creation-atelier-ai-generating">AI · 생성 대기</option>
+          <option value="creation-atelier-ai-result">AI · 결과 확인</option>
+          <option value="creation-atelier-photos">사진 · 표지 채우기</option>
+          <option value="creation-atelier-photos-spread">사진 · 내지 채우기</option>
+          <option value="creation-atelier-review">편집 전 · 전체 확인</option>
+          <option value="creation-atelier-review-spread">편집 전 · 펼친 앨범 확인</option>
+          <option value="creation-atelier-invite">생성 후 · 앨범과 초대</option>
+          <option value="creation-atelier-invite-spread">생성 후 · 내지와 초대</option>
+          <option value="creation-atelier-invite-options">생성 후 · 초대 설정</option>
+          <option value="creation-atelier-shell-settings">실제 경로 · 앨범 설정</option>
+          <option value="creation-atelier-shell-photos">실제 경로 · 사진 채우기</option>
+        </optgroup>
+        <optgroup label="가입 및 이전 검증 화면">
         <option value="home-empty">홈 · 첫 앨범 만들기</option>
-        <option value="flow-start" selected>생성 · 디자인 선택</option>
+        <option value="flow-start">생성 · 디자인 선택 · 이전 검증</option>
         <option value="flow-preview">생성 · 템플릿 미리보기</option>
         <option value="flow-setup">생성 · 앨범 설정</option>
         <option value="flow-photos">생성 · 표지 사진 채우기</option>
@@ -55,30 +78,47 @@
         <option value="photos">사진 채우기</option>
         <option value="invite">초대 · 별도 구성 요소</option>
         <option value="consent">이용 동의 · 큰 글자 · 다크</option>
+        </optgroup>
       </select>
       <button type="button" id="next" aria-label="다음 화면" title="다음 화면">&rarr;</button>
       <select id="viewport" aria-label="화면 크기">
         <option value="390">세로 390</option>
         <option value="320">작은 화면 320</option>
         <option value="844">가로 844</option>
+        <option value="740">가로 740</option>
+        <option value="648">작은 가로 648</option>
+      </select>
+      <select id="theme" aria-label="테마">
+        <option value="light">라이트</option>
+        <option value="dark">다크</option>
       </select>
     </nav>
-    <p class="note">홈에서 표지 확인까지 실제 앱 경로를 연결해 검토했습니다. 기존 앨범이 있는 홈, 리더, 페이지 편집은 유지합니다. 화면은 로컬 검증 데이터로 렌더링했으며 실제 저장·결제·AI 생성은 실행하지 않았습니다.</p>
+    <p class="note">제작 방식 선택 → 앨범 설정 → 사진 채우기 → 표지 편집 → 전체 확인 → 초대의 흐름입니다. 홈과 리더 디자인은 변경하지 않았습니다.</p>
+    <p class="note">‘앱 반영 화면’은 실제 Flutter 화면을 글자 크기 130%로 렌더링했습니다. AI 결과·앨범·포인트는 검증용 데이터이며 실제 AI 생성·결제·저장·초대 발송은 실행하지 않았습니다. 기기 설치 확인과는 별도입니다.</p>
     <p class="note">사진 채우기·표지 편집의 빈 사진 자리는 사용자 사진을 넣기 전 상태입니다. 템플릿 미리보기에서는 예시 사진이 포함된 원본 디자인을 볼 수 있습니다.</p>
   </header>
   <main>
     <figure id="figure">
       <figcaption id="caption">디자인 선택</figcaption>
-      <img id="preview" src="flow-start-390-after.png" alt="디자인 선택 화면">
+      <img id="preview" src="../all-screens-qa/creation-atelier-start-390-light.png" alt="제작 방식 선택 화면">
     </figure>
   </main>
   <script>
     const screen = document.getElementById('screen');
     const viewport = document.getElementById('viewport');
     const preview = document.getElementById('preview');
+    const theme = document.getElementById('theme');
     function render(){
+      const native = screen.value.startsWith('creation-atelier-');
+      for (const option of viewport.options) option.disabled = !native && ['648','740'].includes(option.value);
+      if (!native && ['648','740'].includes(viewport.value)) viewport.value = '390';
+      theme.disabled = !native;
       const title = screen.selectedOptions[0].textContent;
-      preview.src = `${screen.value}-${viewport.value}-after.png`;
+      const source = screen.value === 'creation-atelier-review-spread' && ['320','390'].includes(viewport.value)
+        ? 'creation-atelier-review' : screen.value;
+      preview.src = native
+        ? `../all-screens-qa/${source}-${viewport.value}-${theme.value}.png`
+        : `${screen.value}-${viewport.value}-after.png`;
       preview.alt = `${title} 화면`;
       document.getElementById('caption').textContent = title;
       document.getElementById('figure').style.width = `${viewport.value}px`;
@@ -91,6 +131,7 @@
     });
     screen.addEventListener('change',render);
     viewport.addEventListener('change',render);
+    theme.addEventListener('change',render);
     const initial = location.hash.slice(1);
     if ([...screen.options].some(option => option.value === initial)) screen.value = initial;
     render();

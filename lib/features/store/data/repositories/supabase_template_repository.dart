@@ -83,18 +83,59 @@ class SupabaseTemplateRepository implements TemplateRepository {
   Future<TemplateSummaryPage> getTemplateSummaries({
     int page = 0,
     int size = 20,
+    String? category,
+    String? query,
+    bool? isPaid,
   }) async {
-    final all = await getTemplates();
-    final start = (page * size).clamp(0, all.length).toInt();
-    final end = (start + size).clamp(0, all.length).toInt();
-    final content = all.sublist(start, end);
+    final userId = await _userId();
+    final from = page * size;
+    final to = from + size - 1;
+
+    // Build the query with server-side filtering — avoids fetching all rows.
+    var q = client
+        .from('templates')
+        .select('*, template_likes(user_id)')
+        .eq('is_active', true);
+
+    if (category != null && category.isNotEmpty && category != '전체') {
+      q = q.eq('category', category);
+    }
+    if (query != null && query.isNotEmpty) {
+      q = q.ilike('title', '%$query%');
+    }
+    if (isPaid != null) {
+      q = q.eq('is_premium', isPaid);
+    }
+
+    final rows = await q
+        .order('weekly_score', ascending: false)
+        .order('created_at', ascending: false)
+        .range(from, to);
+
+    final content = rows.map<PremiumTemplate>((row) {
+      final likes = row['template_likes'];
+      final isLiked =
+          userId.isNotEmpty &&
+          likes is List &&
+          likes.any(
+            (like) => like is Map && like['user_id']?.toString() == userId,
+          );
+      return _fromRow(Map<String, dynamic>.from(row), isLiked: isLiked);
+    }).toList(growable: false);
+
+    // hasNext: if we got a full page there are likely more items.
+    // A separate count query is only needed when displaying total pages UI.
+    final hasNext = content.length >= size;
+    final estimatedTotal = hasNext ? from + content.length + 1 : from + content.length;
+    final totalPages = size <= 0 ? 0 : ((estimatedTotal + size - 1) ~/ size);
+
     return TemplateSummaryPage(
       content: content,
       page: page,
       size: size,
-      totalPages: size <= 0 ? 0 : ((all.length + size - 1) ~/ size),
-      totalElements: all.length,
-      hasNext: end < all.length,
+      totalPages: totalPages,
+      totalElements: estimatedTotal,
+      hasNext: hasNext,
     );
   }
 

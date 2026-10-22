@@ -42,7 +42,7 @@ void main() {
       );
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [templateListProvider.overrideWith((ref) async => items)],
+          overrides: [mockTemplateList(() async => items)],
           child: wrapCreation(
             const MediaQuery(
               data: MediaQueryData(disableAnimations: true),

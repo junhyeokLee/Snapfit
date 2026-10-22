@@ -228,13 +228,29 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(
-        find.byTooltip('즐겨찾기만 보기'),
-        250,
-        scrollable: find.byType(Scrollable).first,
+      final hubScroll = find
+          .descendant(
+            of: find.byKey(const PageStorageKey('albumCreationHub')),
+            matching: find.byType(Scrollable),
+          )
+          .first;
+      final favoritesFilter = find.byWidgetPredicate(
+        (widget) => widget is IconButton && widget.tooltip == '즐겨찾기만 보기',
       );
-      await tester.tap(find.byTooltip('즐겨찾기만 보기'));
+      await tester.scrollUntilVisible(
+        favoritesFilter,
+        250,
+        scrollable: hubScroll,
+      );
+      await Scrollable.ensureVisible(
+        tester.element(favoritesFilter),
+        alignment: .5,
+      );
       await tester.pumpAndSettle();
+      expect(favoritesFilter.hitTestable(), findsOneWidget);
+      await tester.tap(favoritesFilter);
+      await tester.pumpAndSettle();
+      expect(tester.widget<IconButton>(favoritesFilter).isSelected, isTrue);
       final star = find.byType(CatalogFavoriteButton).first;
       await tester.ensureVisible(star);
       await tester.pumpAndSettle();
@@ -247,6 +263,7 @@ void main() {
       expect(selected, 0);
       expect(CatalogFavorites.instance.keys, isEmpty);
       expect(find.text('즐겨찾기한 항목이 없어요'), findsOneWidget);
+      expect(tester.takeException(), isNull);
     },
   );
 }

@@ -62,7 +62,7 @@ Future<ProviderContainer> _mountReturnFlow(
       overrides: [
         authViewModelProvider.overrideWith(() => auth),
         homeViewModelProvider.overrideWith(() => FakeHomeViewModel(const [])),
-        templateListProvider.overrideWith((_) async => []),
+        mockTemplateList(() async => []),
         pointShopCatalogProvider.overrideWith((_) async => []),
         publicPointShopCatalogProvider.overrideWith((_) async => []),
         ownedPointShopKeysProvider.overrideWith((_) async => <String>{}),
@@ -113,7 +113,7 @@ void main() {
         overrides: [
           authViewModelProvider.overrideWith(() => FakeAuthViewModel(user)),
           homeViewModelProvider.overrideWith(() => FakeHomeViewModel(const [])),
-          templateListProvider.overrideWith((_) async => []),
+          mockTemplateList(() async => []),
         ],
         child: ScreenUtilInit(
           designSize: const Size(390, 844),

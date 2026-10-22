@@ -49,9 +49,7 @@ void main() {
       now: DateTime.utc(2026, 10, 18),
     );
     nav.currentState!.push<void>(
-      MaterialPageRoute(
-        builder: (_) => Scaffold(body: Text('주문 상세 $order')),
-      ),
+      MaterialPageRoute(builder: (_) => Scaffold(body: Text('주문 상세 $order'))),
     );
     await tester.pumpAndSettle();
     expect(find.text('주문 상세 web-order'), findsOneWidget);

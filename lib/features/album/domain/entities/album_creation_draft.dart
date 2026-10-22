@@ -50,7 +50,8 @@ class AlbumCreationEditorCheckpoint {
     final innerCanvas = AlbumCreationDraft._decodeSize(json['innerCanvas']);
     final metadata = json['pages'] as List;
     final layers = AlbumCreationDraft._decodePages(
-      json['layers'], photoDecoder: photoDecoder,
+      json['layers'],
+      photoDecoder: photoDecoder,
     )!;
     final pageIndex = json['pageIndex'] as int;
     if (metadata.isEmpty ||
@@ -265,7 +266,8 @@ class AlbumCreationDraft {
       basePages: _decodePages(json['basePages'], photoDecoder: photoDecoder),
       variants: (json['variants'] as Map?)?.map(
         (key, value) => MapEntry(
-          key as String, _decodePages(value, photoDecoder: photoDecoder)!,
+          key as String,
+          _decodePages(value, photoDecoder: photoDecoder)!,
         ),
       ),
       canvasSizes: (json['canvasSizes'] as Map).map(
@@ -285,7 +287,8 @@ class AlbumCreationDraft {
           ? null
           : (page: slot['page'] as int, id: slot['id'] as String),
       editedCover: _decodePages(
-        json['editedCover'], photoDecoder: photoDecoder,
+        json['editedCover'],
+        photoDecoder: photoDecoder,
       )?.firstOrNull,
       editedCoverCanvasSize: json['editedCoverCanvasSize'] == null
           ? null
@@ -307,13 +310,16 @@ class AlbumCreationDraft {
     'height': photo.height,
   };
   static AssetEntity _decodePhoto(
-    dynamic json, [AssetEntity Function(Map<String, dynamic>)? decoder]
-  ) => decoder?.call(Map<String, dynamic>.from(json as Map)) ?? AssetEntity(
-    id: json['id'] as String,
-    typeInt: 1,
-    width: json['width'] as int,
-    height: json['height'] as int,
-  );
+    dynamic json, [
+    AssetEntity Function(Map<String, dynamic>)? decoder,
+  ]) =>
+      decoder?.call(Map<String, dynamic>.from(json as Map)) ??
+      AssetEntity(
+        id: json['id'] as String,
+        typeInt: 1,
+        width: json['width'] as int,
+        height: json['height'] as int,
+      );
 
   // Unit canvas retains logical coordinates and uses the existing layer schema.
   static List<List<Map<String, dynamic>>>? _encodePages(

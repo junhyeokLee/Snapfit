@@ -30,8 +30,15 @@ Future<ui.Image> capture(WidgetTester tester, Widget child) async {
   await tester.pumpWidget(
     Directionality(
       textDirection: TextDirection.ltr,
-      child: Center(
-        child: RepaintBoundary(key: key, child: child),
+      // Match the canvas clip at an integer origin. A fractional centered
+      // origin can quantize a painter's last translucent edge differently from
+      // the template canvas, even though the artwork is identical.
+      child: Align(
+        alignment: Alignment.topLeft,
+        child: RepaintBoundary(
+          key: key,
+          child: ClipRect(child: child),
+        ),
       ),
     ),
   );
@@ -49,6 +56,12 @@ Future<ui.Image> capture(WidgetTester tester, Widget child) async {
 }
 
 class _Interaction extends Mock implements LayerInteractionManager {
+  @override
+  bool get isPrintPreview => false;
+
+  @override
+  bool get isPreviewMode => false;
+
   @override
   Widget buildInteractiveLayer({
     required LayerModel layer,
@@ -191,6 +204,36 @@ void main() {
     );
   }
 
+  Future<void> chooseSticker(WidgetTester tester, String label) async {
+    final target = find.text(label);
+    final grid = find.byType(GridView).first;
+    final scroll = find
+        .descendant(of: grid, matching: find.byType(Scrollable))
+        .first;
+    // The full collection grows with every release. Drag inside its actual
+    // visible viewport, so compact layouts do not start a gesture above it.
+    final step = tester.getSize(grid).height * .65;
+    expect(step, greaterThan(0));
+    for (
+      var attempt = 0;
+      target.evaluate().isEmpty && attempt < studioDecorations.length * 4;
+      attempt++
+    ) {
+      await tester.drag(scroll, Offset(0, -step));
+      await tester.pumpAndSettle();
+    }
+    expect(
+      target,
+      findsOneWidget,
+      reason: 'The selected category contains $label',
+    );
+    await tester.ensureVisible(target);
+    await tester.pumpAndSettle();
+    expect(target.hitTestable(), findsOneWidget);
+    await tester.tap(target);
+    await tester.pumpAndSettle();
+  }
+
   for (final size in [
     const Size(320, 568),
     const Size(390, 844),
@@ -217,49 +260,22 @@ void main() {
             ),
           );
           await tester.pumpAndSettle();
-          await tester.scrollUntilVisible(
-            find.text('코스모스 압화'),
-            120,
-            maxScrolls: studioDecorations.length * 2,
-            scrollable: find.descendant(
-              of: find.byType(GridView),
-              matching: find.byType(Scrollable),
-            ),
-          );
-          await tester.pumpAndSettle();
-          await tester.tap(find.text('코스모스 압화'));
+          expect(find.text('새 컬렉션'), findsOneWidget);
+          await chooseSticker(tester, '코스모스 압화');
           expect(
             selected,
             studioDecorationById('studioPressedCosmos')!.insertionValue,
           );
           await tester.tap(find.text('종이'));
           await tester.pumpAndSettle();
-          await tester.scrollUntilVisible(
-            find.text('코튼 페이퍼'),
-            120,
-            scrollable: find.descendant(
-              of: find.byType(GridView),
-              matching: find.byType(Scrollable),
-            ),
-          );
-          await tester.pumpAndSettle();
-          await tester.tap(find.text('코튼 페이퍼'));
+          await chooseSticker(tester, '코튼 페이퍼');
           expect(
             selected,
             studioDecorationById('studioCotton')!.insertionValue,
           );
           await tester.tap(find.text('테이프'));
           await tester.pumpAndSettle();
-          await tester.scrollUntilVisible(
-            find.text('핀스트라이프'),
-            120,
-            scrollable: find.descendant(
-              of: find.byType(GridView),
-              matching: find.byType(Scrollable),
-            ),
-          );
-          await tester.pumpAndSettle();
-          await tester.tap(find.text('핀스트라이프'));
+          await chooseSticker(tester, '핀스트라이프');
           expect(
             selected,
             studioDecorationById('studioWashiSage')!.insertionValue,

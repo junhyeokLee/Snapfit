@@ -137,6 +137,32 @@ class _TemplateCatalogTileState extends State<TemplateCatalogTile> {
                                 label: widget.template.title,
                               ),
                             ),
+                            if (widget.template.isBest || widget.template.isNew)
+                              Positioned(
+                                left: 9,
+                                bottom: 9,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: widget.template.isBest
+                                        ? const Color(0xFFD4A853)
+                                        : const Color(0xFF14AAA8),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    widget.template.isBest ? 'BEST' : 'NEW',
+                                    style: const TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                       ),

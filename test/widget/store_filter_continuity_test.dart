@@ -68,7 +68,7 @@ class _Fixture {
     bool editorial = false,
   }) => ProviderScope(
     overrides: [
-      templateListProvider.overrideWith((_) async {
+      mockTemplateList(() async {
         catalogLoads++;
         return templates;
       }),

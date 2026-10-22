@@ -67,6 +67,7 @@ class _LayerBuilder extends LayerBuilder {
 _Interaction _interaction({bool preview = false}) {
   final interaction = _Interaction();
   when(() => interaction.enableWebTransforms).thenReturn(false);
+  when(() => interaction.isPrintPreview).thenReturn(false);
   when(() => interaction.isPreviewMode).thenReturn(preview);
   when(() => interaction.isInteractingNow).thenReturn(false);
   when(

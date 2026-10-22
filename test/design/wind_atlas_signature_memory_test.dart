@@ -35,52 +35,46 @@ const _emptyCopy = EditorialCopy(place: '', period: '', byline: '', note: '');
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  testWidgets(
-    'signature cover and facing spreads render in RAM with real fonts',
-    (tester) async {
-      await tester.runAsync(_loadFonts);
-      tester.view.physicalSize = const Size(1600, 1500);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets('signature cover and facing spreads render in RAM with real fonts', (
+    tester,
+  ) async {
+    await tester.runAsync(_loadFonts);
+    tester.view.physicalSize = const Size(1600, 1500);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
 
-      final summaries = <Map<String, Object?>>[];
-      for (final aspect in CollectionAspect.values) {
-        summaries.add(
-          await _inspect(tester, aspect, 'authored', windAtlasCopy),
-        );
-        summaries.add(await _inspect(tester, aspect, 'long-copy', _longCopy));
-        summaries.add(await _inspect(tester, aspect, 'empty-copy', _emptyCopy));
-      }
-      // Existing local samples exercise portrait, group, dark and ordinary
-      // landscape crops. They are samples, never customer photographs.
-      for (final sample in const {
-        'people': 'assets/templates/original_editorial/images/couple_walk.png',
-        'portrait':
-            'assets/templates/scrapbook/images/sources/city_weekend.png',
-        'group':
-            'assets/templates/original_editorial/images/family_friends.png',
-        'dark':
-            'assets/templates/original_editorial/images/cover_friends_evening.png',
-        'landscape':
-            'assets/templates/jeju_travel/images/sources/jeju_ocean.jpg',
-      }.entries) {
-        summaries.add(
-          await _inspect(
-            tester,
-            CollectionAspect.square,
-            sample.key,
-            windAtlasCopy,
-            replacement: sample.value,
-          ),
-        );
-      }
-      // This is a stdout protocol. Image-enabled output MUST be consumed in RAM,
-      // never redirected to a file. No filesystem or export API is imported.
-      // ignore: avoid_print
-      print('SNAPFIT_WIND_ATLAS_METRICS_V1:${jsonEncode(summaries)}');
-    },
-  );
+    final summaries = <Map<String, Object?>>[];
+    for (final aspect in CollectionAspect.values) {
+      summaries.add(await _inspect(tester, aspect, 'authored', windAtlasCopy));
+      summaries.add(await _inspect(tester, aspect, 'long-copy', _longCopy));
+      summaries.add(await _inspect(tester, aspect, 'empty-copy', _emptyCopy));
+    }
+    // Existing local samples exercise portrait, group, dark and ordinary
+    // landscape crops. They are samples, never customer photographs.
+    for (final sample in const {
+      'people': 'assets/templates/original_editorial/images/couple_walk.png',
+      'portrait': 'assets/templates/scrapbook/images/sources/city_weekend.png',
+      'group': 'assets/templates/original_editorial/images/family_friends.png',
+      'dark':
+          'assets/templates/original_editorial/images/cover_friends_evening.png',
+      'landscape': 'assets/templates/jeju_travel/images/sources/jeju_ocean.jpg',
+    }.entries) {
+      summaries.add(
+        await _inspect(
+          tester,
+          CollectionAspect.square,
+          sample.key,
+          windAtlasCopy,
+          replacement: sample.value,
+        ),
+      );
+    }
+    // This is a stdout protocol. Image-enabled output MUST be consumed in RAM,
+    // never redirected to a file. No filesystem or export API is imported.
+    // ignore: avoid_print
+    print('SNAPFIT_WIND_ATLAS_METRICS_V1:${jsonEncode(summaries)}');
+  });
 }
 
 Future<void> _loadFonts() async {

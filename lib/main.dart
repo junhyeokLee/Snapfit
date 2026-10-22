@@ -24,8 +24,9 @@ import 'core/theme/snapfit_theme.dart';
 import 'core/theme/theme_mode_controller.dart';
 import 'core/utils/app_logger.dart';
 import 'core/utils/frame_timing_monitor.dart';
-import 'features/album/presentation/views/add_cover_screen.dart';
 import 'features/album/presentation/views/album_create_flow_screen.dart';
+import 'features/album/presentation/views/album_creation_entry_screen.dart';
+import 'features/album/presentation/utils/album_creation_entry.dart';
 import 'features/album/presentation/web/web_album_library_screen.dart';
 import 'features/album/presentation/views/page_editor_screen.dart';
 import 'features/album/presentation/views/print_order_preview_screen.dart';
@@ -33,7 +34,6 @@ import 'features/album/presentation/viewmodels/album_editor_view_model.dart';
 import 'features/album/presentation/viewmodels/home_view_model.dart';
 import 'features/album/service/pending_album_invite.dart';
 import 'features/album/data/api/album_provider.dart';
-import 'features/album/data/album_creation_draft_store.dart';
 import 'features/album/domain/entities/album.dart';
 import 'features/album/presentation/widgets/home/home_album_actions.dart';
 import 'features/billing/data/billing_provider.dart';
@@ -191,7 +191,7 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
         routeBuilder: (settings) => settings.name == '/add_cover'
             ? MaterialPageRoute<void>(
                 settings: const WebAppRouteSettings(WebAppLocation.create),
-                builder: (_) => const AlbumCreateFlowScreen(),
+                builder: (_) => const AlbumCreationEntryScreen(),
               )
             : MaterialPageRoute<void>(
                 settings: const AppRootRouteSettings(),
@@ -828,43 +828,24 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
           );
         case WebAppPage.create:
         case WebAppPage.aiCreate:
-          final draft = await ref.read(albumCreationDraftProvider.future);
+          final decision = await resolveAlbumCreationEntry(
+            nav.context,
+            ref,
+            isStillCurrent: () =>
+                mounted &&
+                revision == _webNavigationRevision &&
+                Supabase.instance.client.auth.currentUser?.id == owner,
+          );
           if (!mounted ||
               revision != _webNavigationRevision ||
               Supabase.instance.client.auth.currentUser?.id != owner)
             return;
-          var resume = false;
-          if (draft != null) {
-            final choice = await showDialog<bool>(
-              context: nav.context,
-              builder: (dialogContext) => AlertDialog(
-                title: const Text('만들던 앨범이 있습니다'),
-                content: Text(
-                  '${draft.title.trim().isEmpty ? '제목 없는 앨범' : draft.title}\n'
-                  '이어서 만들거나 새 앨범을 시작하세요. 새 앨범을 임시 저장하면 기존 임시 저장을 대체합니다.',
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(dialogContext, false),
-                    child: const Text('새 앨범 만들기'),
-                  ),
-                  FilledButton(
-                    onPressed: () => Navigator.pop(dialogContext, true),
-                    child: const Text('이어서 만들기'),
-                  ),
-                ],
-              ),
-            );
-            if (!mounted ||
-                revision != _webNavigationRevision ||
-                Supabase.instance.client.auth.currentUser?.id != owner)
-              return;
-            if (choice == null) {
-              router.restoreObservedLocation();
-              return;
-            }
-            resume = choice;
+          if (decision == null) {
+            router.restoreObservedLocation();
+            return;
           }
+          final draft = decision.draft;
+          final resume = draft != null;
           final startAi = !resume && target.page == WebAppPage.aiCreate;
           if (resume) target = WebAppLocation.create;
           unawaited(
@@ -1181,7 +1162,7 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
         child: child!,
       ),
       home: const SplashScreen(),
-      routes: {'/add_cover': (context) => const AddCoverScreen()},
+      routes: {'/add_cover': (context) => const AlbumCreationEntryScreen()},
     );
   }
 }

@@ -60,8 +60,7 @@ Widget _app(Widget child, ValueNotifier<bool> dark, {GlobalKey? captureKey}) =>
         homeUiStateProvider.overrideWith(
           () => HomeUiStateNotifier(initialIndex: 0),
         ),
-        templateListProvider.overrideWith(
-          (ref) async => publishedCreationTemplates,
+        mockTemplateList(() async => publishedCreationTemplates,
         ),
         pointShopCatalogProvider.overrideWith(
           (ref) async => [
@@ -250,7 +249,19 @@ void main() {
         final nav = tester.widget<Material>(
           find.byKey(const ValueKey('home-navigation-surface')),
         );
-        expect(nav.color, SnapFitColors.backgroundOf(context));
+        expect(
+          nav.color,
+          SnapFitColors.backgroundOf(
+            context,
+          ).withValues(alpha: isDark ? .82 : .86),
+        );
+        expect(
+          find.ancestor(
+            of: find.byKey(const ValueKey('home-navigation-surface')),
+            matching: find.byType(BackdropFilter),
+          ),
+          findsOneWidget,
+        );
         expect(
           AlbumStageStyle.overlay(context).systemNavigationBarIconBrightness,
           isDark ? Brightness.light : Brightness.dark,
@@ -461,7 +472,7 @@ void main() {
               find.byKey(const ValueKey('home-navigation-surface')),
             )
             .color,
-        SnapFitColors.deepCharcoal,
+        SnapFitColors.deepCharcoal.withValues(alpha: .82),
       );
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());

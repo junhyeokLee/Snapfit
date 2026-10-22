@@ -1,4 +1,16 @@
-.PHONY: template-release template-release-dry template-gate
+.PHONY: template-release template-release-dry template-gate ci-check ci-generated install-pre-push
+
+# The same pinned SDK, generation, formatting, analysis, audits and one full
+# Flutter test run as CI. Regenerated sources must be reviewed and committed.
+ci-check:
+	bash scripts/check_flutter_quality.sh all
+
+ci-generated:
+	bash scripts/check_flutter_quality.sh generated
+
+# Optional. Preserves an existing hooksPath and every non-sample hook.
+install-pre-push:
+	bash tool/install_pre_push_hook.sh
 
 # Usage:
 # make template-release HANDOFF=assets/templates/save_the_date_handoff.json PAGES=12 SUPABASE_URL=https://rrbhxdtriummqpztpjrk.supabase.co

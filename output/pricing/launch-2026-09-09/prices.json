@@ -1,10 +1,506 @@
 {
-  "revision": "2026-09-10-catalog-5",
-  "scope": "37-free-collections-14-premium-collections-83-recent-materials",
+  "revision": "2026-10-18-owner-approved-catalog",
+  "scope": "42-free-26-approved-premium-154-materials",
   "marketValidated": false,
   "changesCustomerAccess": false,
   "grantsIncludedMaterials": false,
   "products": [
+    {
+      "productKey": "frame:storyVowGate",
+      "title": "벨벳 양문 접지",
+      "kind": "frame",
+      "launchPointPrice": 400,
+      "reason": "사진 교체 가능한 컨셉 전용 절개·접지 구조",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:storyVowCotton",
+      "title": "코튼 압인 카메오",
+      "kind": "frame",
+      "launchPointPrice": 400,
+      "reason": "사진 교체 가능한 컨셉 전용 절개·접지 구조",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:storyDiscoverySlide",
+      "title": "발견 색인 슬라이드",
+      "kind": "frame",
+      "launchPointPrice": 300,
+      "reason": "사진 교체 가능한 컨셉 전용 절개·접지 구조",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:storyDiscoveryStitch",
+      "title": "탐험 접지 스티치",
+      "kind": "frame",
+      "launchPointPrice": 300,
+      "reason": "사진 교체 가능한 컨셉 전용 절개·접지 구조",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:signatureVowPocket",
+      "title": "서약 글라신 포켓",
+      "kind": "frame",
+      "launchPointPrice": 400,
+      "reason": "컨셉 전용 포켓·절개·봉제 구조",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:signatureRailWallet",
+      "title": "기차표 보관 지갑",
+      "kind": "frame",
+      "launchPointPrice": 400,
+      "reason": "컨셉 전용 포켓·절개·봉제 구조",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:signatureHerbariumSleeve",
+      "title": "식물 표본 슬리브",
+      "kind": "frame",
+      "launchPointPrice": 400,
+      "reason": "컨셉 전용 포켓·절개·봉제 구조",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:signatureOrbitQuilt",
+      "title": "첫해의 코튼 퀼트",
+      "kind": "frame",
+      "launchPointPrice": 400,
+      "reason": "컨셉 전용 포켓·절개·봉제 구조",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:signatureKitchenFold",
+      "title": "접어 둔 키친 레시피",
+      "kind": "frame",
+      "launchPointPrice": 400,
+      "reason": "컨셉 전용 포켓·절개·봉제 구조",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:signatureCinemaGate",
+      "title": "둘만의 필름 게이트",
+      "kind": "frame",
+      "launchPointPrice": 400,
+      "reason": "컨셉 전용 포켓·절개·봉제 구조",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:signatureTrailPocket",
+      "title": "산책 기록 포켓",
+      "kind": "frame",
+      "launchPointPrice": 400,
+      "reason": "컨셉 전용 포켓·절개·봉제 구조",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:atelierWritingVow",
+      "title": "서약을 쓰는 이중 코튼지",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:atelierWritingReceipt",
+      "title": "직접 쓰는 절취 영수지",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:atelierWritingLetter",
+      "title": "문구 없는 편지 인쇄지",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:atelierWritingRecord",
+      "title": "직접 기록하는 관찰지",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionGardenPaper",
+      "title": "달빛 코튼 인쇄지",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "신규 기본 받침 종이 무료 · 기존 무료 소재의 권한 유지",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionRailPaper",
+      "title": "철도 노선 접지",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "신규 기본 받침 종이 무료 · 기존 무료 소재의 권한 유지",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionHerbariumPaper",
+      "title": "식물 표본 관찰지",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "신규 기본 받침 종이 무료 · 기존 무료 소재의 권한 유지",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionOrbitPaper",
+      "title": "별자리 코튼 인쇄지",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "신규 기본 받침 종이 무료 · 기존 무료 소재의 권한 유지",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionKitchenPaper",
+      "title": "세이지 체크 키친 페이퍼",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "신규 기본 받침 종이 무료 · 기존 무료 소재의 권한 유지",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionCinemaPaper",
+      "title": "극장 프로그램 인쇄지",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "신규 기본 받침 종이 무료 · 기존 무료 소재의 권한 유지",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionWalkPaper",
+      "title": "산책 등고선 기록지",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "신규 기본 받침 종이 무료 · 기존 무료 소재의 권한 유지",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:studioArch",
+      "title": "아치 컷",
+      "kind": "frame",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:studioCapsule",
+      "title": "캡슐 컷",
+      "kind": "frame",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:studioDeckle",
+      "title": "수제지 프레임",
+      "kind": "frame",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:studioDoubleMat",
+      "title": "이중 매트",
+      "kind": "frame",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:studioFilm",
+      "title": "필름 프레임",
+      "kind": "frame",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:studioGallery",
+      "title": "갤러리 매트",
+      "kind": "frame",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:studioInstant",
+      "title": "인화지 프레임",
+      "kind": "frame",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:studioOval",
+      "title": "오벌",
+      "kind": "frame",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:studioOvalMat",
+      "title": "타원 매트",
+      "kind": "frame",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:studioPhotoCorners",
+      "title": "사진 코너",
+      "kind": "frame",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:studioPostage",
+      "title": "우표 인화지",
+      "kind": "frame",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:studioPostcard",
+      "title": "에어메일 엽서",
+      "kind": "frame",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:studioRounded",
+      "title": "라운드 컷",
+      "kind": "frame",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:studioScallop",
+      "title": "우표 컷",
+      "kind": "frame",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:studioSticker",
+      "title": "다이컷 스티커",
+      "kind": "frame",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:studioTicket",
+      "title": "티켓 컷",
+      "kind": "frame",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:studioWave",
+      "title": "물결 컷",
+      "kind": "frame",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:studyArchWindow",
+      "title": "이중 아치 창",
+      "kind": "frame",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:studyFloatMount",
+      "title": "여백 매트",
+      "kind": "frame",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "frame:studyNotchedMat",
+      "title": "모서리 매트",
+      "kind": "frame",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:studioBlushPaper",
+      "title": "블러시 한지",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:studioBotanicalStamp",
+      "title": "보태니컬 우표",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:studioCottonRag",
+      "title": "수제지 조각",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:studioPressedCosmos",
+      "title": "코스모스 압화",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:studioSageRibbon",
+      "title": "세이지 리본",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:studioWashiIndigo",
+      "title": "잉크 도트",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:studioWashiRose",
+      "title": "로즈 체크",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:studioWashiSage",
+      "title": "핀스트라이프",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "무료 템플릿 기본 소재 · 별도 구매 없이 사용",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:materialBlindEmboss",
+      "title": "압인 문장 카드",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "기본 기록 카드 무료",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:materialVellumBand",
+      "title": "반투명 봉합 띠",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "기본 봉합 띠 무료",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:materialTransitPunch",
+      "title": "펀칭 여행 태그",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "기본 태그 무료",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:materialIndexTabs",
+      "title": "컬러 인덱스 탭",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "기본 인덱스 무료",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:materialScallopNote",
+      "title": "꽃잎 가장자리 노트",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "기본 메모지 무료",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:materialCrossStitchBand",
+      "title": "크로스 스티치 띠",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "기본 테이프 무료",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:materialWalkLedger",
+      "title": "산책 관찰 수첩",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "기본 기록지 무료",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:atelierTitlePlate",
+      "title": "서체용 이중 압인판",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "기본 문구 받침판 무료",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:atelierPostalBand",
+      "title": "두 겹 우편 띠",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "기본 우편 띠 무료",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:atelierGridLeaf",
+      "title": "접힌 모눈 인쇄지",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "기본 모눈지 무료",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:atelierColorSlips",
+      "title": "오려 붙인 컬러 종이",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "기본 컬러 종이 무료",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:atelierCornerBrackets",
+      "title": "네 귀퉁이 포토 홀더",
+      "kind": "sticker",
+      "launchPointPrice": 0,
+      "reason": "기본 사진 홀더 무료",
+      "status": "scheduled-not-live"
+    },
     {
       "productKey": "template:lightbound",
       "title": "빛으로 엮은 우리",
@@ -302,6 +798,214 @@
       "status": "scheduled-not-live"
     },
     {
+      "productKey": "template:alley-afternoon",
+      "title": "골목의 오후",
+      "kind": "template",
+      "launchPointPrice": 0,
+      "reason": "기존 무료 완성 템플릿 기준 유지 · 세 규격 포함",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "template:saturday-together",
+      "title": "같이 보낸 토요일",
+      "kind": "template",
+      "launchPointPrice": 0,
+      "reason": "기존 무료 완성 템플릿 기준 유지 · 세 규격 포함",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "template:daily-paw-walk",
+      "title": "오늘도 산책!",
+      "kind": "template",
+      "launchPointPrice": 0,
+      "reason": "기존 무료 완성 템플릿 기준 유지 · 세 규격 포함",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "template:our-first-promise",
+      "title": "우리의 첫 약속",
+      "kind": "template",
+      "launchPointPrice": 0,
+      "reason": "기존 무료 완성 템플릿 기준 유지 · 세 규격 포함",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "template:little-day-discoveries",
+      "title": "작은 날의 발견",
+      "kind": "template",
+      "launchPointPrice": 0,
+      "reason": "기존 무료 완성 템플릿 기준 유지 · 세 규격 포함",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionNightSeal",
+      "title": "나이트 가든 새틴 봉인",
+      "kind": "sticker",
+      "launchPointPrice": 300,
+      "reason": "투명 경계를 보존한 주제별 복합 꾸밈 오브젝트",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionRailBundle",
+      "title": "레일 티켓과 접힌 노선도",
+      "kind": "sticker",
+      "launchPointPrice": 300,
+      "reason": "투명 경계를 보존한 주제별 복합 꾸밈 오브젝트",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionBotanicalPassport",
+      "title": "압화 식물 기록 라벨",
+      "kind": "sticker",
+      "launchPointPrice": 300,
+      "reason": "투명 경계를 보존한 주제별 복합 꾸밈 오브젝트",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionOrbitMobile",
+      "title": "달과 별 패브릭 모빌",
+      "kind": "sticker",
+      "launchPointPrice": 300,
+      "reason": "투명 경계를 보존한 주제별 복합 꾸밈 오브젝트",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionRecipeBundle",
+      "title": "허브와 체크 레시피 카드",
+      "kind": "sticker",
+      "launchPointPrice": 300,
+      "reason": "투명 경계를 보존한 주제별 복합 꾸밈 오브젝트",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionCinemaBundle",
+      "title": "필름과 두 장의 영화표",
+      "kind": "sticker",
+      "launchPointPrice": 300,
+      "reason": "투명 경계를 보존한 주제별 복합 꾸밈 오브젝트",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionWalkPatch",
+      "title": "워크 클럽 자수 패치",
+      "kind": "sticker",
+      "launchPointPrice": 300,
+      "reason": "투명 경계를 보존한 주제별 복합 꾸밈 오브젝트",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionGardenMount",
+      "title": "금박 아치 초대장 매트",
+      "kind": "sticker",
+      "launchPointPrice": 200,
+      "reason": "주제별 절개 창·인쇄·봉제 디테일의 독립 포토 매트",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionGardenBand",
+      "title": "접어 묶은 네이비 새틴 띠",
+      "kind": "sticker",
+      "launchPointPrice": 100,
+      "reason": "주제별 겹침 바인딩 · 편집 가능한 문구와 분리된 장식 띠",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionRailMount",
+      "title": "접힌 승차권 포토 매트",
+      "kind": "sticker",
+      "launchPointPrice": 200,
+      "reason": "주제별 절개 창·인쇄·봉제 디테일의 독립 포토 매트",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionRailBand",
+      "title": "절취 반권과 펀칭 띠",
+      "kind": "sticker",
+      "launchPointPrice": 100,
+      "reason": "주제별 겹침 바인딩 · 편집 가능한 문구와 분리된 장식 띠",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionHerbariumMount",
+      "title": "표본 보관 폴더 매트",
+      "kind": "sticker",
+      "launchPointPrice": 200,
+      "reason": "주제별 절개 창·인쇄·봉제 디테일의 독립 포토 매트",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionHerbariumBand",
+      "title": "잎맥과 봉제 표본 띠",
+      "kind": "sticker",
+      "launchPointPrice": 100,
+      "reason": "주제별 겹침 바인딩 · 편집 가능한 문구와 분리된 장식 띠",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionOrbitMount",
+      "title": "달 궤도 자수 원형 매트",
+      "kind": "sticker",
+      "launchPointPrice": 200,
+      "reason": "주제별 절개 창·인쇄·봉제 디테일의 독립 포토 매트",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionOrbitBand",
+      "title": "열두 달 성장 눈금 띠",
+      "kind": "sticker",
+      "launchPointPrice": 100,
+      "reason": "주제별 겹침 바인딩 · 편집 가능한 문구와 분리된 장식 띠",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionKitchenMount",
+      "title": "물결 절개 레시피 매트",
+      "kind": "sticker",
+      "launchPointPrice": 200,
+      "reason": "주제별 절개 창·인쇄·봉제 디테일의 독립 포토 매트",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionKitchenBand",
+      "title": "크로스 스티치 체크 바인딩",
+      "kind": "sticker",
+      "launchPointPrice": 100,
+      "reason": "주제별 겹침 바인딩 · 편집 가능한 문구와 분리된 장식 띠",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionCinemaMount",
+      "title": "35밀리 네거티브 포토 매트",
+      "kind": "sticker",
+      "launchPointPrice": 200,
+      "reason": "주제별 절개 창·인쇄·봉제 디테일의 독립 포토 매트",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionCinemaBand",
+      "title": "두 좌석의 필름 반권 띠",
+      "kind": "sticker",
+      "launchPointPrice": 100,
+      "reason": "주제별 겹침 바인딩 · 편집 가능한 문구와 분리된 장식 띠",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionWalkMount",
+      "title": "라일락 트레일 패치 매트",
+      "kind": "sticker",
+      "launchPointPrice": 200,
+      "reason": "주제별 절개 창·인쇄·봉제 디테일의 독립 포토 매트",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "sticker:editionWalkBand",
+      "title": "워크 클럽 직조 이름 띠",
+      "kind": "sticker",
+      "launchPointPrice": 100,
+      "reason": "주제별 겹침 바인딩 · 편집 가능한 문구와 분리된 장식 띠",
+      "status": "scheduled-not-live"
+    },
+    {
       "productKey": "sticker:lifeRattle",
       "title": "첫 놀이 나무 딸랑이",
       "kind": "sticker",
@@ -518,22 +1222,6 @@
       "status": "scheduled-not-live"
     },
     {
-      "productKey": "sticker:materialBlindEmboss",
-      "title": "압인 문장 카드",
-      "kind": "sticker",
-      "launchPointPrice": 0,
-      "reason": "기본 기록 카드 무료",
-      "status": "scheduled-not-live"
-    },
-    {
-      "productKey": "sticker:materialVellumBand",
-      "title": "반투명 봉합 띠",
-      "kind": "sticker",
-      "launchPointPrice": 0,
-      "reason": "기본 봉합 띠 무료",
-      "status": "scheduled-not-live"
-    },
-    {
       "productKey": "sticker:materialContourMap",
       "title": "등고선 여행지",
       "kind": "sticker",
@@ -542,35 +1230,11 @@
       "status": "scheduled-not-live"
     },
     {
-      "productKey": "sticker:materialTransitPunch",
-      "title": "펀칭 여행 태그",
-      "kind": "sticker",
-      "launchPointPrice": 0,
-      "reason": "기본 태그 무료",
-      "status": "scheduled-not-live"
-    },
-    {
       "productKey": "sticker:materialSpecimenPocket",
       "title": "표본 보관 포켓",
       "kind": "sticker",
       "launchPointPrice": 100,
       "reason": "접힌 보관 포켓",
-      "status": "scheduled-not-live"
-    },
-    {
-      "productKey": "sticker:materialIndexTabs",
-      "title": "컬러 인덱스 탭",
-      "kind": "sticker",
-      "launchPointPrice": 0,
-      "reason": "기본 인덱스 무료",
-      "status": "scheduled-not-live"
-    },
-    {
-      "productKey": "sticker:materialScallopNote",
-      "title": "꽃잎 가장자리 노트",
-      "kind": "sticker",
-      "launchPointPrice": 0,
-      "reason": "기본 메모지 무료",
       "status": "scheduled-not-live"
     },
     {
@@ -590,14 +1254,6 @@
       "status": "scheduled-not-live"
     },
     {
-      "productKey": "sticker:materialCrossStitchBand",
-      "title": "크로스 스티치 띠",
-      "kind": "sticker",
-      "launchPointPrice": 0,
-      "reason": "기본 테이프 무료",
-      "status": "scheduled-not-live"
-    },
-    {
       "productKey": "sticker:materialTicketDuo",
       "title": "나란한 두 좌석",
       "kind": "sticker",
@@ -614,27 +1270,11 @@
       "status": "scheduled-not-live"
     },
     {
-      "productKey": "sticker:materialWalkLedger",
-      "title": "산책 관찰 수첩",
-      "kind": "sticker",
-      "launchPointPrice": 0,
-      "reason": "기본 기록지 무료",
-      "status": "scheduled-not-live"
-    },
-    {
       "productKey": "sticker:materialNamePatch",
       "title": "이름 자수 패치",
       "kind": "sticker",
       "launchPointPrice": 100,
       "reason": "이름표용 자수 경계",
-      "status": "scheduled-not-live"
-    },
-    {
-      "productKey": "sticker:atelierTitlePlate",
-      "title": "서체용 이중 압인판",
-      "kind": "sticker",
-      "launchPointPrice": 0,
-      "reason": "기본 문구 받침판 무료",
       "status": "scheduled-not-live"
     },
     {
@@ -654,43 +1294,11 @@
       "status": "scheduled-not-live"
     },
     {
-      "productKey": "sticker:atelierPostalBand",
-      "title": "두 겹 우편 띠",
-      "kind": "sticker",
-      "launchPointPrice": 0,
-      "reason": "기본 우편 띠 무료",
-      "status": "scheduled-not-live"
-    },
-    {
-      "productKey": "sticker:atelierGridLeaf",
-      "title": "접힌 모눈 인쇄지",
-      "kind": "sticker",
-      "launchPointPrice": 0,
-      "reason": "기본 모눈지 무료",
-      "status": "scheduled-not-live"
-    },
-    {
       "productKey": "sticker:atelierArchiveSeal",
       "title": "아카이브 타원 인장",
       "kind": "sticker",
       "launchPointPrice": 100,
       "reason": "타원선과 인장 눈금",
-      "status": "scheduled-not-live"
-    },
-    {
-      "productKey": "sticker:atelierColorSlips",
-      "title": "오려 붙인 컬러 종이",
-      "kind": "sticker",
-      "launchPointPrice": 0,
-      "reason": "기본 컬러 종이 무료",
-      "status": "scheduled-not-live"
-    },
-    {
-      "productKey": "sticker:atelierCornerBrackets",
-      "title": "네 귀퉁이 포토 홀더",
-      "kind": "sticker",
-      "launchPointPrice": 0,
-      "reason": "기본 사진 홀더 무료",
       "status": "scheduled-not-live"
     },
     {
@@ -1075,6 +1683,102 @@
       "kind": "template",
       "launchPointPrice": 1800,
       "reason": "컨셉별 24쪽 조판과 세 규격을 묶은 단일 에디션 출시 가격",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "template:night-vows",
+      "title": "밤에 피어난 약속",
+      "kind": "template",
+      "launchPointPrice": 2800,
+      "reason": "신규 표지 사진·32쪽 조판·세 규격을 묶은 출시 가격",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "template:slow-rail",
+      "title": "느린 열차의 기록",
+      "kind": "template",
+      "launchPointPrice": 2800,
+      "reason": "신규 표지 사진·32쪽 조판·세 규격을 묶은 출시 가격",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "template:green-hours",
+      "title": "초록을 돌보는 날",
+      "kind": "template",
+      "launchPointPrice": 2800,
+      "reason": "신규 표지 사진·32쪽 조판·세 규격을 묶은 출시 가격",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "template:first-orbit",
+      "title": "너의 첫 번째 행성",
+      "kind": "template",
+      "launchPointPrice": 2800,
+      "reason": "신규 표지 사진·32쪽 조판·세 규격을 묶은 출시 가격",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "template:family-recipe-book",
+      "title": "우리 집의 한 접시",
+      "kind": "template",
+      "launchPointPrice": 2800,
+      "reason": "신규 표지 사진·32쪽 조판·세 규격을 묶은 출시 가격",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "template:private-cinema",
+      "title": "둘만의 상영관",
+      "kind": "template",
+      "launchPointPrice": 2800,
+      "reason": "신규 표지 사진·32쪽 조판·세 규격을 묶은 출시 가격",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "template:walk-map",
+      "title": "너와 걷는 지도",
+      "kind": "template",
+      "launchPointPrice": 2800,
+      "reason": "신규 표지 사진·32쪽 조판·세 규격을 묶은 출시 가격",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "template:city-afterglow",
+      "title": "도시의 잔광",
+      "kind": "template",
+      "launchPointPrice": 2800,
+      "reason": "도시 전용 포토저널 조판 · 내지 32쪽 · 세 규격",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "template:summer-keepsake-box",
+      "title": "한여름 수집함",
+      "kind": "template",
+      "launchPointPrice": 2800,
+      "reason": "여름 전용 직조·접지·겹침 조판 · 내지 32쪽 · 세 규격",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "template:companion-journal",
+      "title": "우리 집 주인공",
+      "kind": "template",
+      "launchPointPrice": 2800,
+      "reason": "반려생활 매거진 조판 · 내지 32쪽 · 세 규격",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "template:velvet-vow-archive",
+      "title": "벨벳 서약집",
+      "kind": "template",
+      "launchPointPrice": 2800,
+      "reason": "웨딩 접지·서약문·압인 사진 창 · 내지 32쪽 · 세 규격",
+      "status": "scheduled-not-live"
+    },
+    {
+      "productKey": "template:little-explorer-book",
+      "title": "꼬마 탐험 사전",
+      "kind": "template",
+      "launchPointPrice": 2800,
+      "reason": "발견 기록·그림책형 조판·전용 사진 창 · 내지 32쪽 · 세 규격",
       "status": "scheduled-not-live"
     }
   ]

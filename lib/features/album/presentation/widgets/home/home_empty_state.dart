@@ -44,7 +44,11 @@ class HomeEmptyState extends StatelessWidget {
             key: const ValueKey('empty-home-create'),
             onPressed: onCreate,
             style: ExperienceFormStyle.primary(context),
-            icon: const ExperienceIcon('BookOpen', size: 20, color: Colors.white),
+            icon: const ExperienceIcon(
+              'BookOpen',
+              size: 20,
+              color: Colors.white,
+            ),
             label: const Text('앨범 만들기'),
           ),
           if (onResumeDraft != null)

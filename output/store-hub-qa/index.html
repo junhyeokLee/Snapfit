@@ -3,63 +3,105 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SnapFit 스토어 디자인 검토</title>
+  <title>SnapFit 스토어 · 상세 화면 검토</title>
   <style>
     *{box-sizing:border-box;letter-spacing:0}
-    body{margin:0;background:#f5f7f6;color:#222a2b;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif}
-    header{background:white;border-bottom:1px solid #e6ebea;padding:20px 24px}
-    h1{font-size:20px;margin:0 0 16px;font-weight:650}
+    body{margin:0;background:#f3f6f5;color:#222a2b;font:14px/1.6 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif}
+    header{background:#fff;border-bottom:1px solid #dfe6e3;padding:20px 24px}
+    .heading{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap}
+    h1{font-size:20px;margin:0;font-weight:650}
+    .date,p,figcaption{color:#5c6c68}
+    header p{margin:8px 0 16px}
     nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-    button,select{font:inherit;color:inherit;min-height:44px;background:white;border:1px solid #dce3e1;border-radius:6px;padding:8px 14px;cursor:pointer}
-    button[aria-pressed="true"]{background:#222a2b;color:white;border-color:#222a2b}
-    button:focus-visible,select:focus-visible{outline:2px solid #08b8d0;outline-offset:3px}
-    select{margin-left:auto}
-    main{padding:24px;max-width:1120px;margin:auto;display:flex;align-items:flex-start;justify-content:center;gap:24px}
-    figure{margin:0;flex:0 1 390px;min-width:0}
-    figcaption{margin-bottom:12px;font-weight:600}
-    img{display:block;width:100%;height:auto;background:white;border:1px solid #e6ebea}
-    main.wide figure{flex-basis:844px}
-    main.single figure{flex-basis:390px}
-    main.single.wide figure{flex-basis:844px}
-    [hidden]{display:none!important}
-    @media(max-width:600px){header{padding:16px}main{padding:16px;gap:12px}nav{gap:6px}button{padding:8px 10px}select{margin-left:0;width:100%}}
+    button,select{font:inherit;color:inherit;min-height:44px;background:#fff;border:1px solid #d7e0dc;border-radius:6px;padding:8px 14px;cursor:pointer}
+    button[aria-pressed="true"]{background:#24342e;color:#fff;border-color:#24342e}
+    button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid #08b8d0;outline-offset:3px}
+    .options{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+    label{display:flex;align-items:center;gap:8px}
+    select:disabled{cursor:default;color:#71817a;background:#f3f6f5}
+    main{padding:24px;max-width:1120px;margin:auto}
+    figure{margin:0 auto;width:min(100%,390px)}
+    figure.wide{width:min(100%,844px)}
+    figcaption{margin-bottom:12px}
+    img{display:block;width:100%;height:auto;background:#fff;border:1px solid #dfe6e3}
+    footer{max-width:1120px;margin:auto;padding:0 24px 32px;color:#5c6c68;font-size:12px}
+    footer p{margin:0}
+    a{color:#247069}
+    @media(max-width:600px){header{padding:16px}main{padding:20px 16px}nav{gap:6px}button{padding:8px 10px}footer{padding:0 16px 24px}}
   </style>
 </head>
 <body>
   <header>
-    <h1>SnapFit 스토어 디자인 검토</h1>
-    <nav aria-label="검토 화면">
-      <button type="button" data-screen="materials" aria-pressed="true">꾸밈소재 비교</button>
-      <button type="button" data-screen="templates" aria-pressed="false">템플릿</button>
+    <div class="heading"><h1>스토어 · 템플릿 · 소재</h1><span class="date">2026.10.19</span></div>
+    <p>이번 개편의 실제 앱 화면입니다. 홈과 리더 디자인은 유지했습니다.</p>
+    <nav aria-label="검토할 화면">
+      <button type="button" data-screen="templates" aria-pressed="true">스토어</button>
+      <button type="button" data-screen="materials" aria-pressed="false">꾸밈소재</button>
       <button type="button" data-screen="papers" aria-pressed="false">종이와 라벨</button>
-      <select id="viewport" aria-label="화면 크기">
-        <option value="390">세로 390</option>
-        <option value="320">작은 화면 320</option>
-        <option value="844">가로 844</option>
-      </select>
+      <button type="button" data-screen="cover" aria-pressed="false">템플릿 표지</button>
+      <button type="button" data-screen="spread" aria-pressed="false">펼친 내지</button>
+      <button type="button" data-screen="usage" aria-pressed="false">가격·이용 범위</button>
+      <button type="button" data-screen="included" aria-pressed="false">포함 소재</button>
+      <button type="button" data-screen="material" aria-pressed="false">소재 상세</button>
+      <button type="button" data-screen="large" aria-pressed="false">큰 글씨</button>
     </nav>
+    <div class="options">
+      <label>화면 <select id="viewport" aria-label="화면 크기"><option value="390">세로 390 × 844</option><option value="320">작은 세로 320 × 568</option><option value="844">가로 844 × 390</option></select></label>
+      <label>테마 <select id="theme" aria-label="테마" disabled><option value="light">밝게</option><option value="dark">어둡게</option></select></label>
+    </div>
   </header>
-  <main id="preview">
-    <figure id="before"><figcaption>개선 전</figcaption><img id="before-image" src="materials-390-before.png" alt="개선 전 꾸밈소재 화면"></figure>
-    <figure><figcaption id="after-label">개선 후</figcaption><img id="after-image" src="materials-390.png" alt="개선 후 꾸밈소재 화면"></figure>
+  <main>
+    <figure id="preview">
+      <figcaption id="caption">실제 표지와 내지가 함께 보이는 큐레이션</figcaption>
+      <a id="original" href="templates-390.png" aria-label="원본 화면 이미지 열기"><img id="screen-image" src="templates-390.png" alt="개편한 스토어 세로 화면"></a>
+    </figure>
   </main>
+  <footer>
+    <p>앱 위젯 렌더링 검증입니다. 금액·소유 여부는 검증용 데이터이며 실제 판매가·구매 내역은 변경하지 않았습니다. 실기기 설치·스크롤 성능 확인은 별도입니다.</p>
+    <p><a href="../curation-editorial-qa/index.html#lists">큐레이션과 아래 목록 더 보기</a></p>
+  </footer>
   <script>
-    let screen = 'materials';
-    const viewport = document.getElementById('viewport');
-    const buttons = [...document.querySelectorAll('[data-screen]')];
+    const views = {
+      templates:{title:'스토어',caption:'실제 표지와 내지가 함께 보이는 큐레이션',widths:[390,320,844]},
+      materials:{title:'꾸밈소재',caption:'소재 자체를 보여주는 선반과 통일된 즐겨찾기',widths:[390,320,844]},
+      papers:{title:'종이와 라벨',caption:'재질과 형태를 확인하기 좋은 배경과 목록',widths:[390,320,844]},
+      cover:{title:'템플릿 표지',caption:'홈과 같은 제본·재질의 표지. 가로에서는 미리보기와 구매 영역을 분리합니다.',widths:[390,320,648,740,844],detail:true},
+      spread:{title:'펼친 내지',caption:'세로는 아래 가로 목록, 가로는 옆 세로 목록. 실제 두 페이지를 함께 보여줍니다.',widths:[390,320,648,740,844],detail:true},
+      usage:{title:'가격·이용 범위',caption:'템플릿 적용과 개별 소재 재사용 권한을 구분해 안내합니다.',widths:[390,320,648,740,844],detail:true},
+      included:{title:'포함 소재',caption:'포함된 프레임·종이·문구를 확인하고 소재 상세로 이동할 수 있습니다.',widths:[390,320,648,740,844],detail:true,file:'materials'},
+      material:{title:'소재 상세',caption:'원본 소재와 앨범 적용 예시, 사진 포함 여부와 다른 앨범 사용 안내',widths:[390,320,740,844],detail:true},
+      large:{title:'큰 글씨',caption:'글씨 1.8배. 목록 카드도 글씨 크기에 맞춰 높이가 늘어납니다.',widths:[320,648]}
+    };
+    const sizes = {320:'작은 세로 320 × 568',390:'세로 390 × 844',648:'작은 가로 648 × 320',740:'가로 740 × 360',844:'가로 844 × 390'};
+    const viewport=document.getElementById('viewport'),theme=document.getElementById('theme');
+    const buttons=[...document.querySelectorAll('[data-screen]')];
+    const params=new URLSearchParams(location.hash.slice(1));
+    let screen=Object.hasOwn(views,params.get('screen'))?params.get('screen'):'templates';
+    let width=Number(params.get('size'))||390;
+    theme.value=params.get('theme')==='dark'?'dark':'light';
     function render(){
-      const width = viewport.value;
-      const compare = screen === 'materials';
-      document.getElementById('before').hidden = !compare;
-      document.getElementById('before-image').src = `materials-${width}-before.png`;
-      document.getElementById('after-image').src = `${screen}-${width}.png`;
-      document.getElementById('after-image').alt = `${screen === 'templates' ? '템플릿' : screen === 'papers' ? '종이와 라벨' : '꾸밈소재'} 개선 화면`;
-      document.getElementById('after-label').textContent = compare ? '개선 후' : screen === 'templates' ? '템플릿' : '종이와 라벨';
-      document.getElementById('preview').className = [!compare ? 'single' : '', width === '844' ? 'wide' : ''].join(' ');
-      buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.screen === screen)));
+      const view=views[screen];
+      if(!view.widths.includes(width))width=view.widths[0];
+      viewport.replaceChildren(...view.widths.map(size=>{
+        const option=document.createElement('option');
+        option.value=String(size);option.textContent=sizes[size];return option;
+      }));
+      viewport.value=String(width);
+      theme.disabled=!view.detail;
+      const file=view.detail?'../template-book-detail-qa/'+(view.file||screen)+'-'+width+'-'+theme.value+'.png':
+        screen==='large'?'templates-'+width+'-large.png':screen+'-'+width+'.png';
+      const image=document.getElementById('screen-image');
+      image.src=file;image.alt=view.title+' '+sizes[width]+(view.detail?' '+(theme.value==='dark'?'어두운':'밝은')+' 테마':'');
+      document.getElementById('original').href=file;
+      document.getElementById('caption').textContent=view.caption;
+      document.getElementById('preview').classList.toggle('wide',width>500);
+      buttons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.screen===screen)));
+      history.replaceState(null,'','#'+new URLSearchParams({screen,size:String(width),theme:theme.value}));
     }
-    buttons.forEach(button => button.addEventListener('click', () => {screen = button.dataset.screen;render()}));
-    viewport.addEventListener('change', render);
+    buttons.forEach(button=>button.addEventListener('click',()=>{screen=button.dataset.screen;render()}));
+    viewport.addEventListener('change',()=>{width=Number(viewport.value);render()});
+    theme.addEventListener('change',render);
+    render();
   </script>
 </body>
 </html>

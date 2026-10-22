@@ -265,8 +265,7 @@ void main() {
                   ),
                 ),
                 notificationUnreadCountProvider.overrideWith((_) async => 0),
-                templateListProvider.overrideWith(
-                  (_) async => publishedCreationTemplates,
+                mockTemplateList(() async => publishedCreationTemplates,
                 ),
                 storeCurationsProvider.overrideWith(
                   (_) async => {
@@ -395,16 +394,15 @@ void main() {
           await _paint(tester);
           await tester.tap(find.byKey(const ValueKey('store-topic-여행')));
           await _paint(tester);
-          // The current shelf stays within the selected subject. Verify its
-          // inputs and then mount actual result cards, rather than accepting an
-          // empty lazy grid as a passing filter assertion.
-          final curated = tester.widget<TemplateCuration>(
-            find.byType(TemplateCuration),
-          );
-          expect(curated.templates, isNotEmpty);
+          // Choosing a topic removes the large discovery shelf so the controls
+          // and actual matching designs remain the next visible action.
           expect(
-            curated.templates.every((template) => template.category == '여행'),
-            isTrue,
+            find.byKey(const ValueKey('store-collection-spotlight')),
+            findsNothing,
+          );
+          expect(
+            find.byKey(const ValueKey('store-topic-여행')).hitTestable(),
+            findsOneWidget,
           );
           await tester.scrollUntilVisible(
             find.byKey(const ValueKey('store-topic-여행')),
@@ -565,8 +563,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
-              templateListProvider.overrideWith(
-                (_) async => publishedCreationTemplates,
+              mockTemplateList(() async => publishedCreationTemplates,
               ),
               storeCurationsProvider.overrideWith(
                 (_) async => {

@@ -51,14 +51,23 @@ class TemplateBookArtwork extends StatelessWidget {
       );
       final height = width / ratio / (paired ? 2 : 1);
       if (width <= 0 || height <= 0) return const SizedBox();
-      if (kIsWeb) return Center(child: RepaintBoundary(child: SizedBox(
-        width: width,
-        height: height,
-        child: ClipRect(child: Row(children: [
-          Expanded(child: _page(firstPage)),
-          if (paired) Expanded(child: _page(firstPage + 1)),
-        ])),
-      )));
+      if (kIsWeb)
+        return Center(
+          child: RepaintBoundary(
+            child: SizedBox(
+              width: width,
+              height: height,
+              child: ClipRect(
+                child: Row(
+                  children: [
+                    Expanded(child: _page(firstPage)),
+                    if (paired) Expanded(child: _page(firstPage + 1)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
       final cover = firstPage == 0;
       final artwork = cover
           ? CatalogArtworkHero(

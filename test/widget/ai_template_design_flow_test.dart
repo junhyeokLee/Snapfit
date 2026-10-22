@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snap_fit/features/album/ai_album/domain/ai_album_models.dart';
@@ -7,17 +6,10 @@ import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_temp
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_template_design_review.dart';
 import 'package:snap_fit/features/store/presentation/widgets/template_page_renderer.dart';
 import '../fixtures/ai_template_design_fixture.dart';
+import 'ai_album_start_step_test.dart' show loadCreationFonts;
 
 void main() {
-  setUp(() async {
-    final loader = FontLoader('Roboto')
-      ..addFont(rootBundle.load('assets/fonts/NotoSansKR-Regular.ttf'))
-      ..addFont(rootBundle.load('assets/fonts/NotoSansKR-SemiBold.ttf'));
-    await loader.load();
-    await (FontLoader(
-      'MaterialIcons',
-    )..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'))).load();
-  });
+  setUp(loadCreationFonts);
 
   for (final surface in [
     const Size(390, 844),

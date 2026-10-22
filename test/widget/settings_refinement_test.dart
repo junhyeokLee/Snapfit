@@ -247,10 +247,24 @@ void main() {
         );
         await tester.pumpAndSettle();
         await _capture(tester, key, 'print-$id');
-        await tester.scrollUntilVisible(find.text('기존 주문 내역 보기'), 180);
+        final printScroll = find
+            .descendant(
+              of: find.byType(PrintOrderUnavailableScreen),
+              matching: find.byType(Scrollable),
+            )
+            .first;
+        await tester.scrollUntilVisible(
+          find.text('기존 주문 내역 보기'),
+          180,
+          scrollable: printScroll,
+        );
         await tester.pumpAndSettle();
         await _capture(tester, key, 'print-bottom-$id');
-        await tester.scrollUntilVisible(find.text('결제 준비 중'), -160);
+        await tester.scrollUntilVisible(
+          find.text('결제 준비 중'),
+          -160,
+          scrollable: printScroll,
+        );
         expect(
           tester
               .widget<ElevatedButton>(

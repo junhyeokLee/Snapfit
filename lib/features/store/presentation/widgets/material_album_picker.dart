@@ -25,18 +25,24 @@ import 'template_page_renderer.dart';
 import 'material_original_preview.dart';
 import 'template_book_artwork.dart';
 
-Future<T?> _choose<T>(BuildContext context, Widget child) =>
-    kIsWeb ? showWebAwareDialog<T>(context: context, maxWidth: 1000, maxHeight: 800, builder: (_) => child) : showModalBottomSheet<T>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: SnapFitColors.backgroundOf(context),
-      constraints: const BoxConstraints(maxWidth: 760),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
-      ),
-      builder: (_) => child,
-    );
+Future<T?> _choose<T>(BuildContext context, Widget child) => kIsWeb
+    ? showWebAwareDialog<T>(
+        context: context,
+        maxWidth: 1000,
+        maxHeight: 800,
+        builder: (_) => child,
+      )
+    : showModalBottomSheet<T>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        backgroundColor: SnapFitColors.backgroundOf(context),
+        constraints: const BoxConstraints(maxWidth: 760),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+        ),
+        builder: (_) => child,
+      );
 
 Future<void> pickAlbumForMaterial(
   BuildContext context,
@@ -95,7 +101,9 @@ Future<void> pickAlbumForMaterial(
       context,
       MaterialPageRoute(
         settings: kIsWeb
-            ? WebAppRouteSettings(WebAppLocation(WebAppPage.editor, '${album.id}'))
+            ? WebAppRouteSettings(
+                WebAppLocation(WebAppPage.editor, '${album.id}'),
+              )
             : null,
         builder: (_) => PageEditorScreen(
           initialPageIndex: page,
@@ -156,7 +164,9 @@ class _PickerShell extends StatelessWidget {
           child: DecoratedBox(
             // Keep the original artwork legible on either app theme.
             decoration: BoxDecoration(
-              color: kIsWeb ? WebPalette.of(context).canvas : const Color(0xFFF3F4EF),
+              color: kIsWeb
+                  ? WebPalette.of(context).canvas
+                  : const Color(0xFFF3F4EF),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Padding(
@@ -390,12 +400,12 @@ class MaterialAlbumPicker extends ConsumerWidget {
                                     child: kIsWeb
                                         ? WebSavedAlbumArtwork(album: album)
                                         : HomeAlbumCoverThumbnail(
-                                      album: album,
-                                      height: 88,
-                                      maxWidth: 80,
-                                      showShadow: false,
-                                      showBookDepth: true,
-                                    ),
+                                            album: album,
+                                            height: 88,
+                                            maxWidth: 80,
+                                            showShadow: false,
+                                            showBookDepth: true,
+                                          ),
                                   ),
                                 ),
                               ),
@@ -468,8 +478,10 @@ class MaterialPagePicker extends StatelessWidget {
         '${albumTitle == null || albumTitle!.isEmpty ? '' : '$albumTitle · '}표지 + ${math.max(0, pages.length - 1)}쪽',
     child: LayoutBuilder(
       builder: (context, box) {
-        final columns = ((box.maxWidth - 24) / 156)
-            .floor().clamp(kIsWeb ? 1 : 2, kIsWeb ? 6 : 5);
+        final columns = ((box.maxWidth - 24) / 156).floor().clamp(
+          kIsWeb ? 1 : 2,
+          kIsWeb ? 6 : 5,
+        );
         final compact =
             MediaQuery.sizeOf(context).width >
             MediaQuery.sizeOf(context).height;

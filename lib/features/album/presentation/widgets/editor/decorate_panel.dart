@@ -46,7 +46,9 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> {
 
   @override
   Widget build(BuildContext context) {
-    final surfaceColor = kIsWeb ? WebPalette.of(context).surface : SnapFitColors.surfaceOf(context);
+    final surfaceColor = kIsWeb
+        ? WebPalette.of(context).surface
+        : SnapFitColors.surfaceOf(context);
     final media = MediaQuery.of(context);
     final isLandscape = media.size.width > media.size.height;
     final preferredHeight = (media.size.height * (isLandscape ? 0.90 : 0.90))
@@ -107,17 +109,33 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> {
           );
 
     if (kIsWeb) {
-      return ColoredBox(color: WebPalette.of(context).surface, child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        if (widget.onClose == null) ...[
-          ListTile(
-            contentPadding: const EdgeInsets.fromLTRB(24, 12, 12, 12),
-            title: Text(widget.mode == DecorateSheetMode.sticker ? '꾸미기' : '배경 색', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700)),
-            trailing: IconButton(onPressed: _closeSheet, tooltip: '닫기', icon: const Icon(Icons.close, size: 20)),
-          ),
-          Divider(height: 1, color: WebPalette.of(context).line),
-        ],
-        Expanded(child: content),
-      ]));
+      return ColoredBox(
+        color: WebPalette.of(context).surface,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (widget.onClose == null) ...[
+              ListTile(
+                contentPadding: const EdgeInsets.fromLTRB(24, 12, 12, 12),
+                title: Text(
+                  widget.mode == DecorateSheetMode.sticker ? '꾸미기' : '배경 색',
+                  style: const TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                trailing: IconButton(
+                  onPressed: _closeSheet,
+                  tooltip: '닫기',
+                  icon: const Icon(Icons.close, size: 20),
+                ),
+              ),
+              Divider(height: 1, color: WebPalette.of(context).line),
+            ],
+            Expanded(child: content),
+          ],
+        ),
+      );
     }
     return Container(
       height: panelHeight,

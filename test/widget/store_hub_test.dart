@@ -126,8 +126,7 @@ void main() {
           wrapCreation(
             ProviderScope(
               overrides: [
-                templateListProvider.overrideWith(
-                  (ref) async => publishedCreationTemplates,
+                mockTemplateList(() async => publishedCreationTemplates,
                 ),
               ],
               child: MediaQuery(

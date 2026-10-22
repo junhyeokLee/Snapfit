@@ -1,12 +1,100 @@
 {
-  "revision": "free-materials-2026-10-07",
-  "pricingRevision": "2026-10-07-free-material-policy-6",
+  "revision": "free-materials-2026-10-16-writing",
+  "pricingRevision": "2026-10-18-wedding-growth-draft",
   "targetProject": "rrbhxdtriummqpztpjrk",
   "status": "prepared-not-executed",
   "changesPaidProducts": false,
   "changesWallets": false,
   "grantsOwnership": false,
   "rows": [
+    {
+      "product_key": "sticker:atelierWritingVow",
+      "asset_id": "atelierWritingVow",
+      "kind": "sticker",
+      "title": "서약을 쓰는 이중 코튼지",
+      "point_price": 0,
+      "is_active": true
+    },
+    {
+      "product_key": "sticker:atelierWritingReceipt",
+      "asset_id": "atelierWritingReceipt",
+      "kind": "sticker",
+      "title": "직접 쓰는 절취 영수지",
+      "point_price": 0,
+      "is_active": true
+    },
+    {
+      "product_key": "sticker:atelierWritingLetter",
+      "asset_id": "atelierWritingLetter",
+      "kind": "sticker",
+      "title": "문구 없는 편지 인쇄지",
+      "point_price": 0,
+      "is_active": true
+    },
+    {
+      "product_key": "sticker:atelierWritingRecord",
+      "asset_id": "atelierWritingRecord",
+      "kind": "sticker",
+      "title": "직접 기록하는 관찰지",
+      "point_price": 0,
+      "is_active": true
+    },
+    {
+      "product_key": "sticker:editionGardenPaper",
+      "asset_id": "editionGardenPaper",
+      "kind": "sticker",
+      "title": "달빛 코튼 인쇄지",
+      "point_price": 0,
+      "is_active": true
+    },
+    {
+      "product_key": "sticker:editionRailPaper",
+      "asset_id": "editionRailPaper",
+      "kind": "sticker",
+      "title": "철도 노선 접지",
+      "point_price": 0,
+      "is_active": true
+    },
+    {
+      "product_key": "sticker:editionHerbariumPaper",
+      "asset_id": "editionHerbariumPaper",
+      "kind": "sticker",
+      "title": "식물 표본 관찰지",
+      "point_price": 0,
+      "is_active": true
+    },
+    {
+      "product_key": "sticker:editionOrbitPaper",
+      "asset_id": "editionOrbitPaper",
+      "kind": "sticker",
+      "title": "별자리 코튼 인쇄지",
+      "point_price": 0,
+      "is_active": true
+    },
+    {
+      "product_key": "sticker:editionKitchenPaper",
+      "asset_id": "editionKitchenPaper",
+      "kind": "sticker",
+      "title": "세이지 체크 키친 페이퍼",
+      "point_price": 0,
+      "is_active": true
+    },
+    {
+      "product_key": "sticker:editionCinemaPaper",
+      "asset_id": "editionCinemaPaper",
+      "kind": "sticker",
+      "title": "극장 프로그램 인쇄지",
+      "point_price": 0,
+      "is_active": true
+    },
+    {
+      "product_key": "sticker:editionWalkPaper",
+      "asset_id": "editionWalkPaper",
+      "kind": "sticker",
+      "title": "산책 등고선 기록지",
+      "point_price": 0,
+      "is_active": true
+    },
     {
       "product_key": "frame:studioArch",
       "asset_id": "studioArch",
@@ -622,6 +710,46 @@
       "title": "함께여서 좋은 날",
       "point_price": 0,
       "is_active": true
+    },
+    {
+      "product_key": "template:alley-afternoon",
+      "asset_id": "alley-afternoon",
+      "kind": "template",
+      "title": "골목의 오후",
+      "point_price": 0,
+      "is_active": true
+    },
+    {
+      "product_key": "template:saturday-together",
+      "asset_id": "saturday-together",
+      "kind": "template",
+      "title": "같이 보낸 토요일",
+      "point_price": 0,
+      "is_active": true
+    },
+    {
+      "product_key": "template:daily-paw-walk",
+      "asset_id": "daily-paw-walk",
+      "kind": "template",
+      "title": "오늘도 산책!",
+      "point_price": 0,
+      "is_active": true
+    },
+    {
+      "product_key": "template:our-first-promise",
+      "asset_id": "our-first-promise",
+      "kind": "template",
+      "title": "우리의 첫 약속",
+      "point_price": 0,
+      "is_active": true
+    },
+    {
+      "product_key": "template:little-day-discoveries",
+      "asset_id": "little-day-discoveries",
+      "kind": "template",
+      "title": "작은 날의 발견",
+      "point_price": 0,
+      "is_active": true
     }
   ],
   "collections": [
@@ -715,7 +843,7 @@
       "id": "one-fine-film",
       "title": "영화 같던 하루",
       "category": "웨딩",
-      "coverTreatment": "composed",
+      "coverTreatment": "full-bleed-photo",
       "materialKeys": [
         "frame:studioDeckle",
         "frame:studioFilm",
@@ -1266,6 +1394,112 @@
         "frame:studyArchWindow",
         "frame:studyFloatMount",
         "frame:studyNotchedMat"
+      ],
+      "issues": []
+    },
+    {
+      "id": "alley-afternoon",
+      "title": "골목의 오후",
+      "category": "일상",
+      "coverTreatment": "composed",
+      "materialKeys": [
+        "frame:studioArch",
+        "frame:studioDeckle",
+        "frame:studioGallery",
+        "frame:studioOval",
+        "frame:studioPhotoCorners",
+        "frame:studioPostcard",
+        "sticker:studioCottonRag",
+        "sticker:studioWashiRose"
+      ],
+      "issues": []
+    },
+    {
+      "id": "saturday-together",
+      "title": "같이 보낸 토요일",
+      "category": "가족·친구",
+      "coverTreatment": "composed",
+      "materialKeys": [
+        "frame:studioArch",
+        "frame:studioDoubleMat",
+        "frame:studioGallery",
+        "frame:studioInstant",
+        "frame:studioOval",
+        "frame:studioPhotoCorners",
+        "frame:studioPostage",
+        "frame:studioPostcard",
+        "frame:studioRounded",
+        "frame:studioScallop",
+        "frame:studioWave",
+        "sticker:atelierGridLeaf",
+        "sticker:studioCottonRag",
+        "sticker:studioWashiRose",
+        "sticker:studioWashiSage"
+      ],
+      "issues": []
+    },
+    {
+      "id": "daily-paw-walk",
+      "title": "오늘도 산책!",
+      "category": "반려동물",
+      "coverTreatment": "composed",
+      "materialKeys": [
+        "frame:studioArch",
+        "frame:studioCapsule",
+        "frame:studioDoubleMat",
+        "frame:studioGallery",
+        "frame:studioOval",
+        "frame:studioPhotoCorners",
+        "frame:studioPostage",
+        "frame:studioPostcard",
+        "frame:studioRounded",
+        "frame:studioTicket",
+        "frame:studioWave",
+        "sticker:materialWalkLedger"
+      ],
+      "issues": []
+    },
+    {
+      "id": "our-first-promise",
+      "title": "우리의 첫 약속",
+      "category": "웨딩",
+      "coverTreatment": "composed",
+      "materialKeys": [
+        "frame:studioDeckle",
+        "frame:studioDoubleMat",
+        "frame:studioGallery",
+        "frame:studioOval",
+        "frame:studioOvalMat",
+        "frame:studioPhotoCorners",
+        "frame:studioPostcard",
+        "frame:studioRounded",
+        "frame:studyArchWindow",
+        "frame:studyFloatMount",
+        "sticker:atelierWritingLetter",
+        "sticker:atelierWritingVow"
+      ],
+      "issues": []
+    },
+    {
+      "id": "little-day-discoveries",
+      "title": "작은 날의 발견",
+      "category": "성장·육아",
+      "coverTreatment": "composed",
+      "materialKeys": [
+        "frame:studioArch",
+        "frame:studioCapsule",
+        "frame:studioDoubleMat",
+        "frame:studioOval",
+        "frame:studioOvalMat",
+        "frame:studioPhotoCorners",
+        "frame:studioPostage",
+        "frame:studioPostcard",
+        "frame:studioRounded",
+        "frame:studioScallop",
+        "frame:studyFloatMount",
+        "frame:studyNotchedMat",
+        "sticker:atelierWritingRecord",
+        "sticker:materialScallopNote"
       ],
       "issues": []
     }

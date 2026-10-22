@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/core/constants/cover_size.dart';
 import 'package:snap_fit/features/album/ai_album/domain/ai_album_models.dart';
@@ -7,6 +9,20 @@ import 'package:snap_fit/features/album/ai_album/data/supabase_ai_album_draft_pr
 import 'package:snap_fit/features/album/domain/entities/layer.dart';
 import '../fixtures/ai_template_design_fixture.dart';
 import '../fixtures/ai_template_v3_fixture.dart';
+
+Map<String, Object?> _readyJob(
+  Map<String, Object?> request,
+  Map<String, Object?> draft,
+) => {
+  'job': {
+    'id': request['generationRequestId'],
+    'state': 'ready',
+    'stage': 'complete',
+    'completedStages': 4,
+    'safeDesign': request['safeDesign'],
+  },
+  'draft': draft,
+};
 
 void main() {
   for (final pageCount in [20, 22, 52, 80]) {
@@ -70,10 +86,11 @@ void main() {
     () async {
       const brief = AiTemplateBrief(prompt: '여행', pageCount: 80);
       var returnedCount = 80;
+      final requests = <Map<String, Object?>>[];
       final provider = SupabaseAiAlbumDraftProvider(
         invokeFunction: (_, body) async {
-          expect((body['designBrief'] as Map)['pageCount'], 80);
-          return {
+          requests.add(body);
+          return _readyJob(body, {
             'draftId': 'expanded-80',
             'title': '여행',
             'pageCount': returnedCount,
@@ -87,7 +104,7 @@ void main() {
               },
             ],
             'design': templateDesignJson(pageCount: returnedCount),
-          };
+          });
         },
       );
       final result = await provider.createTemplate(brief);
@@ -100,10 +117,17 @@ void main() {
           isA<SupabaseAiAlbumDraftProviderException>().having(
             (error) => error.code,
             'code',
-            'template_page_count_mismatch',
+            'malformed_response',
           ),
         ),
       );
+      expect(requests, hasLength(2));
+      for (final request in requests) {
+        expect(request['action'], 'create');
+        expect((request['safeDesign'] as Map)['pageCount'], 80);
+        expect(request, isNot(contains('designBrief')));
+        expect(request, isNot(contains('candidates')));
+      }
     },
   );
 
@@ -179,26 +203,35 @@ void main() {
   test(
     'brief-only request bypasses photo permissions and preview upload',
     () async {
-      const brief = AiTemplateBrief(prompt: '여백이 넓은 초록 사진집');
+      const brief = AiTemplateBrief(
+        prompt: '여백이 넓은 초록 사진집',
+        pageCount: 20,
+        expectedPointCost: 0,
+        safeOptions: AiTemplateSafeOptions(
+          mood: AiDesignMood.minimal,
+          palette: AiDesignPalette.cool,
+          density: AiDesignDensity.quiet,
+        ),
+      );
+      final requests = <Map<String, Object?>>[];
       final provider = SupabaseAiAlbumDraftProvider(
         invokeFunction: (_, body) async {
-          expect(body['designBrief'], brief.toJson());
-          expect(body['candidates'], isEmpty);
-          return {
+          requests.add(body);
+          return _readyJob(body, {
             'draftId': 'generated-1',
             'title': '제주',
-            'pageCount': 8,
+            'pageCount': 20,
             'recommendedPhotos': [],
             'templateSlots': [
               {
-                'slotId': 'photo-0',
+                'slotId': 'p0_photo',
                 'pageIndex': 0,
                 'role': 'cover',
                 'hint': '표지',
               },
             ],
-            'design': originalTemplateDesignJson(brief: brief),
-          };
+            'design': originalTemplateDesignJson(brief: brief.publicBrief),
+          });
         },
       );
       final service = AiAlbumDraftGenerationService(
@@ -214,18 +247,30 @@ void main() {
         designBrief: brief,
       );
       expect(result.status, AiAlbumDraftGenerationStatus.success);
-      expect(result.draft!.design!.pages, hasLength(9));
+      expect(result.draft!.design!.pages, hasLength(21));
+      expect(requests, hasLength(1));
+      expect(requests.single['action'], 'create');
+      expect(requests.single['expectedPointCost'], 0);
+      expect(requests.single['safeDesign'], brief.toSafeDesignJson());
+      expect(requests.single, isNot(contains('candidates')));
+      expect(jsonEncode(requests), isNot(contains(brief.prompt)));
+      expect(jsonEncode(requests), isNot(contains('prompt')));
     },
   );
 
   test('missing generated design never reaches point charging', () async {
+    var requestCount = 0;
     final provider = SupabaseAiAlbumDraftProvider(
-      invokeFunction: (_, __) async => {
-        'pageCount': 8,
-        'recommendedPhotos': [],
-        'templateSlots': [
-          {'slotId': 'x', 'pageIndex': 0, 'role': 'cover', 'hint': '표지'},
-        ],
+      invokeFunction: (_, body) async {
+        requestCount++;
+        return _readyJob(body, {
+          'draftId': 'missing-generated-design',
+          'pageCount': 20,
+          'recommendedPhotos': [],
+          'templateSlots': [
+            {'slotId': 'x', 'pageIndex': 0, 'role': 'cover', 'hint': '표지'},
+          ],
+        });
       },
     );
     final result =
@@ -235,9 +280,10 @@ void main() {
         ).generate(
           theme: AlbumTheme.custom,
           range: AiPhotoRange.manualSelection,
-          designBrief: const AiTemplateBrief(prompt: '여백'),
+          designBrief: const AiTemplateBrief(prompt: '여백', pageCount: 20),
         );
     expect(result.shouldChargePoints, isFalse);
     expect(result.status, AiAlbumDraftGenerationStatus.failed);
+    expect(requestCount, 1);
   });
 }

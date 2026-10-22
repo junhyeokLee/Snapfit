@@ -16,6 +16,7 @@ import 'package:snap_fit/features/album/domain/entities/album.dart';
 import 'package:snap_fit/features/album/domain/entities/layer.dart';
 import 'package:snap_fit/features/album/domain/entities/layer_export_mapper.dart';
 import 'package:snap_fit/features/album/presentation/widgets/home/home_album_tab_screen.dart';
+import 'package:snap_fit/features/album/presentation/views/album_category_screen.dart';
 import 'package:snap_fit/features/album/presentation/widgets/reader/reader_page_gallery.dart';
 import 'package:snap_fit/features/point_shop/data/point_shop_provider.dart';
 import 'package:snap_fit/features/point_shop/domain/point_shop_template_key.dart';
@@ -76,7 +77,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          templateListProvider.overrideWith((_) async => templates),
+          mockTemplateList(() async => templates),
           storeCurationsProvider.overrideWith(
             (_) async => {
               'templates': StoreCuration.templates,
@@ -294,11 +295,17 @@ void main() {
                   albumTabIndex: tab,
                   favoriteAlbumIds: favorites,
                   onAlbumTabChanged: (value) => update(() => tab = value),
-                  onToggleFavorite: (id) => update(() {
-                    favorites.contains(id)
-                        ? favorites.remove(id)
-                        : favorites.add(id);
-                  }),
+                  onToggleFavorite: (id) async {
+                    update(() {
+                      favorites.contains(id)
+                          ? favorites.remove(id)
+                          : favorites.add(id);
+                    });
+                    await (await SharedPreferences.getInstance()).setStringList(
+                      'album_favorite_ids_v1',
+                      favorites.map((id) => '$id').toList(),
+                    );
+                  },
                   onRefresh: () async {},
                 ),
               ),
@@ -317,25 +324,23 @@ void main() {
         await tester.tap(find.byTooltip('즐겨찾기').first);
         await tester.pump();
         expect(favorites, isNotEmpty);
-        tester
-            .widget<CustomScrollView>(find.byType(CustomScrollView))
-            .controller
-            ?.jumpTo(0);
-        final scrollable = tester.state<ScrollableState>(
-          find
-              .descendant(
-                of: find.byKey(const PageStorageKey('home-album-collection')),
-                matching: find.byType(Scrollable),
-              )
-              .first,
-        );
-        scrollable.position.jumpTo(0);
-        await tester.pump();
+        // Collection filtering now lives in the explicit management screen.
+        // Use that entry and the same persisted favorites as the real host.
+        await tester.tap(find.byTooltip('앨범 검색 및 관리'));
+        await tester.pumpAndSettle();
+        expect(find.byType(AlbumCategoryScreen), findsOneWidget);
         await tester.ensureVisible(find.text('즐겨찾기'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('즐겨찾기'));
         await tester.pumpAndSettle();
-        expect(tab, 3);
+        expect(
+          find.byKey(ValueKey('personal-record-${favorites.single}')),
+          findsOneWidget,
+        );
+        expect(find.byKey(const ValueKey('personal-record-2')), findsNothing);
         expect(tester.takeException(), isNull);
+        Navigator.of(tester.element(find.byType(AlbumCategoryScreen))).pop();
+        await tester.pumpAndSettle();
 
         await mount(
           tester,

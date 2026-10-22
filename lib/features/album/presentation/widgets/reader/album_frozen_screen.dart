@@ -90,11 +90,13 @@ class AlbumFrozenScreen extends StatelessWidget {
   Widget _buildWeb(BuildContext context) => SnapFitWebShell(
     title: '책으로 만들기',
     showNavigation: false,
-    actions: [TextButton.icon(
-      onPressed: onClose,
-      icon: const Icon(Icons.close, size: 17),
-      label: const Text('닫기'),
-    )],
+    actions: [
+      TextButton.icon(
+        onPressed: onClose,
+        icon: const Icon(Icons.close, size: 17),
+        label: const Text('닫기'),
+      ),
+    ],
     child: SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -105,65 +107,109 @@ class AlbumFrozenScreen extends StatelessWidget {
             description: '앨범은 보관하고 계속 수정할 수 있습니다. 책 주문은 다음 단계에서 준비합니다.',
           ),
           const SizedBox(height: 30),
-          LayoutBuilder(builder: (context, box) {
-            final preview = WebSurface(
-              child: SizedBox(
-                height: 380,
-                child: album == null
-                    ? Center(child: Icon(Icons.auto_stories_outlined,
-                        size: 42, color: WebPalette.of(context).muted))
-                    : Center(child: WebSavedAlbumArtwork(album: album!)),
-              ),
-            );
-            final details = WebSurface(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(children: [
-                    Icon(Icons.check_circle_outline, size: 20, color: WebPalette.of(context).brandInk),
-                    SizedBox(width: 10), Text('책으로 만들기', style: TextStyle(
-                      fontSize: 13, color: WebPalette.of(context).brandInk, fontWeight: FontWeight.w600,
-                    )),
-                  ]),
-                  const SizedBox(height: 22),
-                  Text(album?.title.isNotEmpty == true ? album!.title : '스냅핏 앨범',
-                    style: TextStyle(color: WebPalette.of(context).ink,
-                      fontSize: 25, fontWeight: FontWeight.w700)),
-                  if (album != null) ...[
+          LayoutBuilder(
+            builder: (context, box) {
+              final preview = WebSurface(
+                child: SizedBox(
+                  height: 380,
+                  child: album == null
+                      ? Center(
+                          child: Icon(
+                            Icons.auto_stories_outlined,
+                            size: 42,
+                            color: WebPalette.of(context).muted,
+                          ),
+                        )
+                      : Center(child: WebSavedAlbumArtwork(album: album!)),
+                ),
+              );
+              final details = WebSurface(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.check_circle_outline,
+                          size: 20,
+                          color: WebPalette.of(context).brandInk,
+                        ),
+                        SizedBox(width: 10),
+                        Text(
+                          '책으로 만들기',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: WebPalette.of(context).brandInk,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 22),
+                    Text(
+                      album?.title.isNotEmpty == true ? album!.title : '스냅핏 앨범',
+                      style: TextStyle(
+                        color: WebPalette.of(context).ink,
+                        fontSize: 25,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    if (album != null) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        album!.physicalCoverSize.displayName,
+                        style: TextStyle(
+                          color: WebPalette.of(context).muted,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 24),
+                    Divider(height: 1, color: WebPalette.of(context).line),
+                    const SizedBox(height: 24),
+                    Text(
+                      '책으로 간직하기',
+                      style: TextStyle(
+                        color: WebPalette.of(context).ink,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      '책의 전체 배치와 제작 금액을 확인한 뒤 배송지를 입력할 수 있습니다.',
+                      style: TextStyle(
+                        color: WebPalette.of(context).muted,
+                        fontSize: 14,
+                        height: 1.7,
+                      ),
+                    ),
+                    const SizedBox(height: 26),
+                    FilledButton.icon(
+                      onPressed: onOrder,
+                      icon: const Icon(Icons.auto_stories_outlined, size: 18),
+                      label: const Text('책 주문 준비하기'),
+                    ),
                     const SizedBox(height: 12),
-                    Text(album!.physicalCoverSize.displayName,
-                      style: TextStyle(color: WebPalette.of(context).muted, fontSize: 13)),
+                    TextButton(onPressed: onClose, child: const Text('내 앨범으로')),
                   ],
-                  const SizedBox(height: 24),
-                  Divider(height: 1, color: WebPalette.of(context).line),
-                  const SizedBox(height: 24),
-                  Text('책으로 간직하기', style: TextStyle(
-                    color: WebPalette.of(context).ink, fontSize: 17, fontWeight: FontWeight.w700,
-                  )),
-                  const SizedBox(height: 10),
-                  Text('책의 전체 배치와 제작 금액을 확인한 뒤 배송지를 입력할 수 있습니다.',
-                    style: TextStyle(color: WebPalette.of(context).muted, fontSize: 14, height: 1.7)),
-                  const SizedBox(height: 26),
-                  FilledButton.icon(
-                    onPressed: onOrder,
-                    icon: const Icon(Icons.auto_stories_outlined, size: 18),
-                    label: const Text('책 주문 준비하기'),
-                  ),
-                  const SizedBox(height: 12),
-                  TextButton(onPressed: onClose, child: const Text('내 앨범으로')),
+                ),
+              );
+              if (box.maxWidth < 900)
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [preview, const SizedBox(height: 22), details],
+                );
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: preview),
+                  const SizedBox(width: 28),
+                  Expanded(child: details),
                 ],
-              ),
-            );
-            if (box.maxWidth < 900) return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [preview, const SizedBox(height: 22), details],
-            );
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [Expanded(child: preview), const SizedBox(width: 28),
-                Expanded(child: details)],
-            );
-          }),
+              );
+            },
+          ),
           const SizedBox(height: 32),
         ],
       ),

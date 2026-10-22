@@ -106,13 +106,19 @@ class _StoreFloatingCoverState extends State<StoreFloatingCover>
     builder: (context, child) {
       final phase = math.sin(_motion.value * math.pi * 2);
       final reduced = MediaQuery.disableAnimationsOf(context);
+      // Avoid perspective entry (setEntry(3,2,x)) — it forces a compositing
+      // layer on every tile, causing GPU pressure when 12+ tiles are visible.
+      // A Z-axis rotation + Y-axis scale gives the same book-floating look
+      // without promoting each tile to its own compositor layer.
+      final tiltY = reduced ? -.06 : -.09 + phase * .035;
+      final tiltZ = reduced ? -.02 : -.02 + phase * .018;
+      final dy = reduced ? 0.0 : -3.0 * (phase + 1);
       return Transform(
         alignment: Alignment.center,
         transform: Matrix4.identity()
-          ..setEntry(3, 2, .001)
-          ..translate(0.0, reduced ? 0.0 : -3.0 * (phase + 1))
-          ..rotateY(reduced ? -.06 : -.09 + phase * .035)
-          ..rotateZ(reduced ? -.02 : -.02 + phase * .018),
+          ..translate(0.0, dy)
+          ..rotateZ(tiltZ)
+          ..scale(1.0 - tiltY.abs() * 0.04, 1.0),
         child: child,
       );
     },

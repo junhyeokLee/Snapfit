@@ -41,7 +41,10 @@ Future<void> _mount(
         body: Row(
           children: [
             if (textController != null)
-              SizedBox(width: 180, child: TextField(controller: textController)),
+              SizedBox(
+                width: 180,
+                child: TextField(controller: textController),
+              ),
             Expanded(
               child: saving == null
                   ? viewport(enabled)
@@ -58,11 +61,7 @@ Future<void> _mount(
   await tester.pumpAndSettle();
 }
 
-Future<bool?> _wheel(
-  WidgetTester tester,
-  Offset position,
-  double dy,
-) async {
+Future<bool?> _wheel(WidgetTester tester, Offset position, double dy) async {
   bool? allowDefault;
   await tester.sendEventToBinding(
     PointerScrollEvent(
@@ -138,30 +137,37 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Ctrl and Cmd wheel zoom around the pointer without changing layout', (
-    tester,
-  ) async {
-    await _mount(tester);
-    final document = tester.renderObject<RenderBox>(find.byKey(_documentKey));
-    final anchor = tester.getTopLeft(find.byKey(_viewportKey)) +
-        const Offset(170, 120);
-    final before = document.globalToLocal(anchor);
-    final layout = document.size;
-    expect(await _wheel(tester, anchor, -90), isTrue);
-    expect(_zoom(tester), 1);
-    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
-    expect(await _wheel(tester, anchor, -90), isFalse);
-    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
-    expect(_zoom(tester), greaterThan(1));
-    expect((document.globalToLocal(anchor) - before).distance, lessThan(.0001));
-    expect(document.size, layout);
-    final previousZoom = _zoom(tester);
-    await tester.sendKeyDownEvent(LogicalKeyboardKey.metaLeft);
-    expect(await _wheel(tester, anchor, 40), isFalse);
-    await tester.sendKeyUpEvent(LogicalKeyboardKey.metaLeft);
-    expect(_zoom(tester), lessThan(previousZoom));
-    expect((document.globalToLocal(anchor) - before).distance, lessThan(.0001));
-  });
+  testWidgets(
+    'Ctrl and Cmd wheel zoom around the pointer without changing layout',
+    (tester) async {
+      await _mount(tester);
+      final document = tester.renderObject<RenderBox>(find.byKey(_documentKey));
+      final anchor =
+          tester.getTopLeft(find.byKey(_viewportKey)) + const Offset(170, 120);
+      final before = document.globalToLocal(anchor);
+      final layout = document.size;
+      expect(await _wheel(tester, anchor, -90), isTrue);
+      expect(_zoom(tester), 1);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      expect(await _wheel(tester, anchor, -90), isFalse);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      expect(_zoom(tester), greaterThan(1));
+      expect(
+        (document.globalToLocal(anchor) - before).distance,
+        lessThan(.0001),
+      );
+      expect(document.size, layout);
+      final previousZoom = _zoom(tester);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.metaLeft);
+      expect(await _wheel(tester, anchor, 40), isFalse);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.metaLeft);
+      expect(_zoom(tester), lessThan(previousZoom));
+      expect(
+        (document.globalToLocal(anchor) - before).distance,
+        lessThan(.0001),
+      );
+    },
+  );
 
   testWidgets('ordinary mouse drags stay with the document layer gesture', (
     tester,
@@ -175,7 +181,10 @@ void main() {
       ),
     );
     final start = tester.getCenter(find.byKey(_viewportKey));
-    final mouse = await tester.startGesture(start, kind: PointerDeviceKind.mouse);
+    final mouse = await tester.startGesture(
+      start,
+      kind: PointerDeviceKind.mouse,
+    );
     await mouse.moveBy(const Offset(30, 0));
     await mouse.moveBy(const Offset(30, 10));
     await mouse.up();
@@ -185,33 +194,34 @@ void main() {
     expect(_translation(tester), Offset.zero);
   });
 
-  testWidgets('Space held before entering pans the view without dragging a layer', (
-    tester,
-  ) async {
-    var layerMoves = 0;
-    await _mount(
-      tester,
-      child: GestureDetector(
-        onScaleUpdate: (_) => layerMoves++,
-        child: const ColoredBox(color: Colors.white),
-      ),
-    );
-    await tester.sendKeyDownEvent(LogicalKeyboardKey.space);
-    final start = tester.getCenter(find.byKey(_viewportKey));
-    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
-    await mouse.addPointer(location: start);
-    await tester.pump();
-    await mouse.down(start);
-    await mouse.moveBy(const Offset(45, 32));
-    await mouse.up();
-    await tester.sendKeyUpEvent(LogicalKeyboardKey.space);
-    await mouse.removePointer();
-    await tester.pump();
-    expect(layerMoves, 0);
-    expect(_translation(tester).dx, closeTo(45, .001));
-    expect(_translation(tester).dy, closeTo(32, .001));
-    expect(_zoom(tester), 1);
-  });
+  testWidgets(
+    'Space held before entering pans the view without dragging a layer',
+    (tester) async {
+      var layerMoves = 0;
+      await _mount(
+        tester,
+        child: GestureDetector(
+          onScaleUpdate: (_) => layerMoves++,
+          child: const ColoredBox(color: Colors.white),
+        ),
+      );
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.space);
+      final start = tester.getCenter(find.byKey(_viewportKey));
+      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await mouse.addPointer(location: start);
+      await tester.pump();
+      await mouse.down(start);
+      await mouse.moveBy(const Offset(45, 32));
+      await mouse.up();
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.space);
+      await mouse.removePointer();
+      await tester.pump();
+      expect(layerMoves, 0);
+      expect(_translation(tester).dx, closeTo(45, .001));
+      expect(_translation(tester).dy, closeTo(32, .001));
+      expect(_zoom(tester), 1);
+    },
+  );
 
   testWidgets('middle mouse pans and fit clears the pan', (tester) async {
     var layerMoves = 0;
@@ -238,41 +248,51 @@ void main() {
     expect(_translation(tester), Offset.zero);
   });
 
-  testWidgets('text focus preserves typing and never enables viewport gestures', (
-    tester,
-  ) async {
-    final controller = TextEditingController(text: '앨범 이름');
-    addTearDown(controller.dispose);
-    await _mount(tester, textController: controller);
-    await tester.tap(find.byType(TextField));
-    await tester.pump();
-    final position = tester.getCenter(find.byKey(_viewportKey));
-    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
-    await mouse.addPointer(location: position);
-    await tester.sendKeyDownEvent(LogicalKeyboardKey.space);
-    await tester.pump();
-    expect(tester.widget<EditableText>(find.byType(EditableText)).focusNode.hasFocus, isTrue);
-    await tester.sendKeyUpEvent(LogicalKeyboardKey.space);
-    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
-    expect(await _wheel(tester, position, -100), isTrue);
-    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
-    // A deliberate click outside the field may dismiss its focus. The earlier
-    // Space key press must not leave a sticky viewport-pan mode behind.
-    await mouse.down(position);
-    await mouse.moveBy(const Offset(40, 35));
-    await mouse.up();
-    await mouse.removePointer();
-    expect(_translation(tester), Offset.zero);
-    expect(_zoom(tester), 1);
-    expect(controller.text, '앨범 이름');
-  });
+  testWidgets(
+    'text focus preserves typing and never enables viewport gestures',
+    (tester) async {
+      final controller = TextEditingController(text: '앨범 이름');
+      addTearDown(controller.dispose);
+      await _mount(tester, textController: controller);
+      await tester.tap(find.byType(TextField));
+      await tester.pump();
+      final position = tester.getCenter(find.byKey(_viewportKey));
+      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await mouse.addPointer(location: position);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.space);
+      await tester.pump();
+      expect(
+        tester
+            .widget<EditableText>(find.byType(EditableText))
+            .focusNode
+            .hasFocus,
+        isTrue,
+      );
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.space);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      expect(await _wheel(tester, position, -100), isTrue);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      // A deliberate click outside the field may dismiss its focus. The earlier
+      // Space key press must not leave a sticky viewport-pan mode behind.
+      await mouse.down(position);
+      await mouse.moveBy(const Offset(40, 35));
+      await mouse.up();
+      await mouse.removePointer();
+      expect(_translation(tester), Offset.zero);
+      expect(_zoom(tester), 1);
+      expect(controller.text, '앨범 이름');
+    },
+  );
 
   testWidgets('wheel cannot change the view during an active layer drag', (
     tester,
   ) async {
     await _mount(tester);
     final position = tester.getCenter(find.byKey(_viewportKey));
-    final mouse = await tester.startGesture(position, kind: PointerDeviceKind.mouse);
+    final mouse = await tester.startGesture(
+      position,
+      kind: PointerDeviceKind.mouse,
+    );
     await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
     expect(await _wheel(tester, position, -100), isTrue);
     expect(_zoom(tester), 1);
@@ -310,7 +330,9 @@ void main() {
       isNull,
     );
     expect(
-      tester.widget<TextButton>(find.byKey(const ValueKey('web-editor-zoom-fit'))).onPressed,
+      tester
+          .widget<TextButton>(find.byKey(const ValueKey('web-editor-zoom-fit')))
+          .onPressed,
       isNull,
     );
     await tester.sendKeyDownEvent(LogicalKeyboardKey.metaLeft);

@@ -88,20 +88,29 @@ class _CustomerPrintTestOrderHistoryState
   void _openDetail(String runId) {
     if (!mounted || !_ownerCurrent) return;
     if (kIsWeb) {
-      unawaited(showDialog<void>(
-        context: context,
-        builder: (dialogContext) => Dialog(
-          backgroundColor: WebPalette.of(dialogContext).surface,
-          surfaceTintColor: Colors.transparent,
-          insetPadding: const EdgeInsets.all(32),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 860,
-              maxHeight: MediaQuery.sizeOf(dialogContext).height * .88),
-            child: _CustomerPrintTestDetail(ownerId: widget.ownerId, runId: runId),
+      unawaited(
+        showDialog<void>(
+          context: context,
+          builder: (dialogContext) => Dialog(
+            backgroundColor: WebPalette.of(dialogContext).surface,
+            surfaceTintColor: Colors.transparent,
+            insetPadding: const EdgeInsets.all(32),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: 860,
+                maxHeight: MediaQuery.sizeOf(dialogContext).height * .88,
+              ),
+              child: _CustomerPrintTestDetail(
+                ownerId: widget.ownerId,
+                runId: runId,
+              ),
+            ),
           ),
-        ),
-      ).then((_) => _refresh()));
+        ).then((_) => _refresh()),
+      );
       return;
     }
     unawaited(
@@ -183,33 +192,95 @@ class _CustomerPrintTestOrderHistoryState
                   final order = items[index];
                   if (kIsWeb && MediaQuery.sizeOf(context).width >= 980) {
                     return InkWell(
-                      key: ValueKey('customer-test-order-${order.session.runId}'),
+                      key: ValueKey(
+                        'customer-test-order-${order.session.runId}',
+                      ),
                       onTap: () => _openDetail(order.session.runId),
                       hoverColor: WebPalette.of(context).background,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 24),
-                        child: Row(children: [
-                          Expanded(flex: 3, child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start, children: [
-                              Text(order.albumTitle, style: TextStyle(fontSize: 14,
-                                fontWeight: FontWeight.w600, color: WebPalette.of(context).ink)),
-                              const SizedBox(height: 7),
-                              Text('TEST · ${order.session.runId}', maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 11, color: WebPalette.of(context).muted)),
-                            ])),
-                          const SizedBox(width: 20),
-                          Expanded(flex: 2, child: Text('300×300mm 하드커버\n80페이지 · 1권',
-                            style: TextStyle(fontSize: 12, height: 1.7, color: WebPalette.of(context).muted))),
-                          SizedBox(width: 120, child: Text(_date(order.createdAt),
-                            style: TextStyle(fontSize: 12, color: WebPalette.of(context).muted))),
-                          SizedBox(width: 140, child: Text('${_amount(order.session.totalAmount)}원',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,
-                              color: WebPalette.of(context).ink))),
-                          SizedBox(width: 160, child: Text(_stage(order.session),
-                            style: TextStyle(fontSize: 12, height: 1.6, color: WebPalette.of(context).brandInk))),
-                          Icon(Icons.chevron_right, size: 18, color: WebPalette.of(context).muted),
-                        ]),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 24,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    order.albumTitle,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: WebPalette.of(context).ink,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 7),
+                                  Text(
+                                    'TEST · ${order.session.runId}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: WebPalette.of(context).muted,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 20),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                '300×300mm 하드커버\n80페이지 · 1권',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  height: 1.7,
+                                  color: WebPalette.of(context).muted,
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 120,
+                              child: Text(
+                                _date(order.createdAt),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: WebPalette.of(context).muted,
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 140,
+                              child: Text(
+                                '${_amount(order.session.totalAmount)}원',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: WebPalette.of(context).ink,
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 160,
+                              child: Text(
+                                _stage(order.session),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  height: 1.6,
+                                  color: WebPalette.of(context).brandInk,
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              Icons.chevron_right,
+                              size: 18,
+                              color: WebPalette.of(context).muted,
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   }

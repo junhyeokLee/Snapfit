@@ -831,8 +831,6 @@ class LayerInteractionManager {
                               fallback: layer,
                               globalPoint: details.globalPosition,
                             ),
-                            keepSelected:
-                                details.kind == PointerDeviceKind.mouse,
                           );
                         },
                         onDoubleTap: () {
@@ -912,7 +910,7 @@ class LayerInteractionManager {
   // ==================== 제스처 핸들러 ====================
 
   /// 탭 이벤트 처리
-  void _handleTap(LayerModel layer, {bool keepSelected = false}) {
+  void _handleTap(LayerModel layer) {
     // 이미지 플레이스홀더(사진 없음) 탭 시 바로 갤러리 진입 (페이지 편집용)
     final isImagePlaceholder =
         layer.type == LayerType.image &&
@@ -924,20 +922,14 @@ class LayerInteractionManager {
     }
 
     if (_selectedLayerId != layer.id) {
-      final isBackground = _isBackgroundLayer(layer);
       setState(() {
         _selectedLayerId = layer.id;
         _editingLayerId = null;
-        if (!isBackground && !keepSelected) {
-          _z[layer.id] = ++_zCounter;
-        }
+        _imagePanMode = false;
       });
-      if (!isBackground && !keepSelected) _bringLayerToFrontInPage(layer.id);
+      // Selecting artwork must preserve its authored overlap order. Only an
+      // explicit layer-list reorder changes the document or its undo history.
       onLayerTap?.call(layer);
-    } else {
-      if (!keepSelected && layer.type != LayerType.text) {
-        clearSelection();
-      }
     }
   }
 
@@ -958,31 +950,11 @@ class LayerInteractionManager {
       lastGlobalFocalPoint: details.focalPoint,
     );
 
-    final isBackground = _isBackgroundLayer(layer);
     setState(() {
+      if (_selectedLayerId != layer.id) _imagePanMode = false;
       _selectedLayerId = layer.id;
       _editingLayerId = null;
-      if (!isBackground && details.kind != PointerDeviceKind.mouse) {
-        _z[layer.id] = ++_zCounter; // 맨 앞으로 가져오기
-      }
     });
-    if (!isBackground && details.kind != PointerDeviceKind.mouse) {
-      _bringLayerToFrontInPage(layer.id);
-    }
-  }
-
-  /// 선택된 레이어를 페이지 레이어 리스트에서 맨 위(맨 앞)로 올림 — 레이어 바텀시트 순서와 동기화
-  void _bringLayerToFrontInPage(String layerId) {
-    final state = ref.read(albumEditorViewModelProvider).value;
-    if (state == null) return;
-    final layers = state.layers;
-    if (layers.isEmpty) return;
-    final idx = layers.indexWhere((l) => l.id == layerId);
-    if (idx < 0 || idx >= layers.length - 1) return;
-    if (_isBackgroundLayer(layers[idx])) return;
-    ref
-        .read(albumEditorViewModelProvider.notifier)
-        .reorderLayer(idx, layers.length - 1);
   }
 
   bool _isBackgroundLayer(LayerModel layer) {

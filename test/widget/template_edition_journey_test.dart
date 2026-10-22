@@ -1,3 +1,5 @@
+import '../helpers/creation_draft_fixtures.dart'
+    show FakeAuthViewModel, MemoryCreationDraftStore;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -16,12 +18,15 @@ import 'package:snap_fit/core/templates/data_template_engine.dart';
 import 'package:snap_fit/core/templates/published_premium_templates.dart';
 import 'package:snap_fit/core/templates/template_document_pages.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
+import 'package:snap_fit/features/album/data/album_creation_draft_store.dart';
 import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
 import 'package:snap_fit/features/album/domain/entities/album_creation_template.dart';
 import 'package:snap_fit/features/album/domain/entities/layer.dart';
 import 'package:snap_fit/features/album/domain/entities/layer_export_mapper.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/creation_document_preview.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/creation_template_preview.dart';
+import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
+import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
 import 'package:snap_fit/features/point_shop/data/point_shop_provider.dart';
 import 'package:snap_fit/features/point_shop/domain/point_shop_product.dart';
 import 'package:snap_fit/features/point_shop/presentation/point_shop_access.dart';
@@ -45,6 +50,14 @@ Widget _app(
   GlobalKey? captureKey,
 }) => ProviderScope(
   overrides: [
+    authViewModelProvider.overrideWith(
+      () => FakeAuthViewModel(
+        const UserInfo(id: 'edition-owner', name: '앨범 사용자', provider: 'email'),
+      ),
+    ),
+    albumCreationDraftStoreProvider.overrideWithValue(
+      MemoryCreationDraftStore(),
+    ),
     pointShopCatalogProvider.overrideWith(
       (ref) async => const [
         PointShopProduct(

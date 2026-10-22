@@ -252,29 +252,21 @@ void main() {
   );
 
   test(
-    'v2 actual-font overflow fails before point charging; valid text-only pages pass',
+    'legacy v2 text preflight is retained without sending or charging a retired four-page request',
     () async {
       for (final overflow in [false, true]) {
         final document = _document();
         if (overflow) _element(document, 1, 0)['height'] = .01;
+        final design = AiTemplateDesign.fromJson(document, 4);
+        expect(
+          () => validateAiTemplateText(design),
+          overflow ? throwsFormatException : returnsNormally,
+        );
+        var requests = 0;
         final provider = SupabaseAiAlbumDraftProvider(
           invokeFunction: (_, body) async {
-            expect((body['designBrief'] as Map)['designVersion'], 2);
-            return {
-              'draftId': 'v2-fixture',
-              'pageCount': 4,
-              'title': document['concept'],
-              'recommendedPhotos': [],
-              'templateSlots': [
-                {
-                  'slotId': 'cover-photo',
-                  'pageIndex': 0,
-                  'role': 'cover',
-                  'hint': '표지',
-                },
-              ],
-              'design': document,
-            };
+            requests++;
+            throw StateError('A retired request must not reach the server.');
           },
         );
         final service = AiAlbumDraftGenerationService(
@@ -291,13 +283,9 @@ void main() {
             designVersion: 2,
           ),
         );
-        expect(
-          result.status,
-          overflow
-              ? AiAlbumDraftGenerationStatus.failed
-              : AiAlbumDraftGenerationStatus.success,
-        );
-        expect(result.shouldChargePoints, !overflow);
+        expect(result.status, AiAlbumDraftGenerationStatus.failed);
+        expect(result.shouldChargePoints, isFalse);
+        expect(requests, 0);
       }
     },
   );

@@ -8,6 +8,7 @@ void syncWebDocumentTheme(bool dark) {
   root?.setAttribute('data-snapfit-theme', scheme);
   root?.style.setProperty('color-scheme', scheme);
   root?.style.setProperty('--snapfit-web-background', background);
-  web.document.querySelector('meta[name="theme-color"]')
+  web.document
+      .querySelector('meta[name="theme-color"]')
       ?.setAttribute('content', background);
 }

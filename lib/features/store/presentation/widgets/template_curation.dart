@@ -29,6 +29,10 @@ class TemplateCuration extends StatefulWidget {
 class _TemplateCurationState extends State<TemplateCuration> {
   final _controller = PageController();
   int _index = 0;
+  // Cached title-height measurement — recomputed only when item ids change.
+  String? _measuredItemKey;
+  double _cachedTitleHeight = 0;
+
   List<PremiumTemplate> _items(TemplateCuration widget) =>
       widget.selection.resolve(widget.templates, pointShopTemplateKey);
 
@@ -86,18 +90,26 @@ class _TemplateCurationState extends State<TemplateCuration> {
                     (horizontal ? 48 : 40) -
                     35)
                 .clamp(1.0, double.infinity);
-        var titleHeight = 0.0;
         // Keep the shelf below still while titles with different lengths change.
-        for (final item in items) {
-          final measure = TextPainter(
-            text: TextSpan(text: item.title, style: titleStyle),
-            textDirection: Directionality.of(context),
-            textScaler: MediaQuery.textScalerOf(context),
-            maxLines: 2,
-          )..layout(maxWidth: titleWidth);
-          titleHeight = math.max(titleHeight, measure.height);
-          measure.dispose();
+        // Cache the measurement: re-measure only when item ids or layout change.
+        final itemKey =
+            '${items.map((t) => t.id).join(',')}:$titleWidth:${horizontal ? 1 : 0}';
+        if (itemKey != _measuredItemKey) {
+          _measuredItemKey = itemKey;
+          var computed = 0.0;
+          for (final item in items) {
+            final measure = TextPainter(
+              text: TextSpan(text: item.title, style: titleStyle),
+              textDirection: Directionality.of(context),
+              textScaler: MediaQuery.textScalerOf(context),
+              maxLines: 2,
+            )..layout(maxWidth: titleWidth);
+            computed = math.max(computed, measure.height);
+            measure.dispose();
+          }
+          _cachedTitleHeight = computed;
         }
+        final titleHeight = _cachedTitleHeight;
         final artwork = SizedBox(
           height: artHeight,
           child: PageView.builder(

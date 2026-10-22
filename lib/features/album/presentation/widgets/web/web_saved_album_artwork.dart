@@ -32,9 +32,13 @@ class WebSavedAlbumArtwork extends ConsumerWidget {
     ].whereType<String>().where((value) => value.trim().isNotEmpty).firstOrNull;
     final empty = ColoredBox(
       color: WebPalette.of(context).canvas,
-      child: Center(child: Icon(
-        Icons.auto_stories_outlined, size: 32, color: WebPalette.of(context).muted,
-      )),
+      child: Center(
+        child: Icon(
+          Icons.auto_stories_outlined,
+          size: 32,
+          color: WebPalette.of(context).muted,
+        ),
+      ),
     );
 
     Widget artwork;
@@ -51,7 +55,9 @@ class WebSavedAlbumArtwork extends ConsumerWidget {
               isInteracting: false,
               leftSpine: kCoverSpineWidth,
               flatPresentation: true,
-              backgroundColor: extractCoverBackgroundColor(album.coverLayersJson),
+              backgroundColor: extractCoverBackgroundColor(
+                album.coverLayersJson,
+              ),
               onCoverSizeChanged: (_) {},
               buildImage: (layer) => builder.buildImage(layer, isCover: true),
               buildText: (layer) => builder.buildText(layer, isCover: true),
@@ -64,6 +70,9 @@ class WebSavedAlbumArtwork extends ConsumerWidget {
     } else {
       artwork = SnapfitImage(urlOrGs: image, fit: BoxFit.contain, error: empty);
     }
-    return AspectRatio(aspectRatio: ratio, child: ClipRect(child: artwork));
+    return AspectRatio(
+      aspectRatio: ratio,
+      child: ClipRect(child: artwork),
+    );
   }
 }

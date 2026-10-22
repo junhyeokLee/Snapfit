@@ -7,12 +7,14 @@ import 'package:snap_fit/features/album/data/gallery/browser_gallery_repository.
 import 'package:snap_fit/features/album/data/gallery/browser_photo_asset.dart';
 import 'package:snap_fit/features/album/data/gallery/browser_photo_files.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/template_photo_fill_step.dart';
+import 'package:snap_fit/features/album/presentation/widgets/create_flow/photo_crop_sheet.dart';
 import 'package:snap_fit/features/profile/domain/order_visibility_owner.dart';
 import 'package:snap_fit/shared/widgets/browser_photo_selection_sheet.dart';
 
 import '../fixtures/ai_template_design_fixture.dart';
 import '../unit/browser_photo_import_test.dart' show browserPhotoFixture;
 import 'ai_album_start_step_test.dart' show wrapCreation;
+import 'photo_crop_sheet_test.dart' show waitForCropPhoto;
 
 class _Owner extends Notifier<String?> {
   @override
@@ -149,8 +151,10 @@ void main() {
       var pages = design.buildLayers(
         targetSize: coverCanvasBaseSize(design.coverSize),
       );
-      await tester.binding.setSurfaceSize(const Size(1000, 800));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
+      tester.view.physicalSize = const Size(1000, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(
         ProviderScope(
           child: wrapCreation(
@@ -167,11 +171,23 @@ void main() {
         ),
       );
       await tester.tap(find.text('사진 추가'));
+      await waitForCropPhoto(tester);
+      expect(find.byType(PhotoCropSheet), findsOneWidget);
+      expect(
+        pages.first.where((layer) => layer.type.name == 'image').single.asset,
+        isNull,
+      );
+      expect(
+        tester.widget<PhotoCropSheet>(find.byType(PhotoCropSheet)).layer.asset,
+        same(photo),
+      );
+      await tester.tap(find.byKey(const ValueKey('photo-crop-apply')));
       await tester.pumpAndSettle();
       expect(
         pages.first.where((layer) => layer.type.name == 'image').single.asset,
         same(photo),
       );
+      expect(find.byType(PhotoCropSheet), findsNothing);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     },

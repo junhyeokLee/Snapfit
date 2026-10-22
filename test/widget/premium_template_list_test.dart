@@ -49,7 +49,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          templateListProvider.overrideWith((ref) async {
+          mockTemplateList(() async {
             return completer.future;
           }),
         ],
@@ -64,7 +64,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          templateListProvider.overrideWith((ref) async {
+          mockTemplateList(() async {
             throw Exception('fail');
           }),
         ],
@@ -81,8 +81,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          templateListProvider.overrideWith(
-            (ref) async => const <PremiumTemplate>[],
+          mockTemplateList(() async => const <PremiumTemplate>[],
           ),
         ],
         child: _wrap(const PremiumTemplateList()),
@@ -113,7 +112,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          templateListProvider.overrideWith((ref) async => templates),
+          mockTemplateList(() async => templates),
         ],
         child: _wrap(const PremiumTemplateList()),
       ),
@@ -151,7 +150,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          templateListProvider.overrideWith((ref) async => templates),
+          mockTemplateList(() async => templates),
         ],
         child: _wrap(const PremiumTemplateList()),
       ),
@@ -201,7 +200,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            templateListProvider.overrideWith((ref) async => templates),
+            mockTemplateList(() async => templates),
           ],
           child: _wrap(const PremiumTemplateList()),
         ),
@@ -257,7 +256,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          templateListProvider.overrideWith((ref) async => templates),
+          mockTemplateList(() async => templates),
         ],
         child: _wrap(const PremiumTemplateList()),
       ),

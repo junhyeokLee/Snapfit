@@ -108,7 +108,8 @@ class _AlbumInviteAcceptScreenState
             if (!mounted ||
                 _failure == null ||
                 _loginRequested ||
-                ModalRoute.of(context)?.isCurrent != true) return;
+                ModalRoute.of(context)?.isCurrent != true)
+              return;
             final errorContext = _failureKey.currentContext;
             if (errorContext != null) {
               Scrollable.ensureVisible(
@@ -168,36 +169,47 @@ class _AlbumInviteAcceptScreenState
         onPopInvokedWithResult: (didPop, _) {
           if (!didPop) setState(() => _loginRequested = false);
         },
-        child: kIsWeb ? Column(
-          children: [
-            Container(
-              width: double.infinity,
-              color: WebPalette.of(context).surface,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Wrap(
-                spacing: 20,
-                crossAxisAlignment: WrapCrossAlignment.center,
+        child: kIsWeb
+            ? Column(
                 children: [
-                  TextButton.icon(
-                    onPressed: () => setState(() => _loginRequested = false),
-                    icon: const Icon(Icons.arrow_back, size: 17),
-                    label: const Text('초대로 돌아가기'),
+                  Container(
+                    width: double.infinity,
+                    color: WebPalette.of(context).surface,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 8,
+                    ),
+                    child: Wrap(
+                      spacing: 20,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        TextButton.icon(
+                          onPressed: () =>
+                              setState(() => _loginRequested = false),
+                          icon: const Icon(Icons.arrow_back, size: 17),
+                          label: const Text('초대로 돌아가기'),
+                        ),
+                        Text(
+                          '로그인 후 같은 초대에서 참여를 계속할 수 있습니다.',
+                          style: TextStyle(
+                            color: WebPalette.of(context).muted,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  Text('로그인 후 같은 초대에서 참여를 계속할 수 있습니다.',
-                    style: TextStyle(color: WebPalette.of(context).muted, fontSize: 12)),
+                  const Expanded(child: LoginScreen()),
                 ],
+              )
+            : Scaffold(
+                appBar: ExperienceHeader(
+                  title: '초대에 참여하기',
+                  showNotifications: false,
+                  onBack: () => setState(() => _loginRequested = false),
+                ),
+                body: const LoginScreen(),
               ),
-            ),
-            const Expanded(child: LoginScreen()),
-          ],
-        ) : Scaffold(
-          appBar: ExperienceHeader(
-            title: '초대에 참여하기',
-            showNotifications: false,
-            onBack: () => setState(() => _loginRequested = false),
-          ),
-          body: const LoginScreen(),
-        ),
       );
     }
     final invite = ref.watch(albumInviteInfoProvider(widget.invite.token));
@@ -225,180 +237,192 @@ class _AlbumInviteAcceptScreenState
               .read(pendingAlbumInviteProvider.notifier)
               .clearIfCurrent(widget.invite);
       },
-      child: kIsWeb ? _buildWeb(
-        invite: invite,
-        user: user,
-        joined: joined,
-        failure: failure,
-        terminal: terminal,
-        canAct: canAct,
-      ) : Scaffold(
-        backgroundColor: SnapFitColors.backgroundOf(context),
-        appBar: ExperienceHeader(
-          title: '앨범 초대',
-          showNotifications: false,
-          onBack: _busy ? () {} : () => Navigator.of(context).maybePop(),
-        ),
-        body: SafeArea(
-          top: false,
-          bottom: false,
-          child: LayoutBuilder(
-            builder: (context, box) => SingleChildScrollView(
-              key: const ValueKey('inviteAcceptContent'),
-              padding: EdgeInsets.symmetric(
-                horizontal: box.maxWidth < 360 ? 20 : 28,
-                vertical: box.maxHeight < 300 ? 16 : 32,
+      child: kIsWeb
+          ? _buildWeb(
+              invite: invite,
+              user: user,
+              joined: joined,
+              failure: failure,
+              terminal: terminal,
+              canAct: canAct,
+            )
+          : Scaffold(
+              backgroundColor: SnapFitColors.backgroundOf(context),
+              appBar: ExperienceHeader(
+                title: '앨범 초대',
+                showNotifications: false,
+                onBack: _busy ? () {} : () => Navigator.of(context).maybePop(),
               ),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth:
-                        box.maxWidth >= 540 &&
-                            MediaQuery.orientationOf(context) ==
-                                Orientation.landscape
-                        ? 960
-                        : 680,
-                  ),
-                  child: invite.when(
-                    loading: () => const Padding(
-                      padding: EdgeInsets.all(36),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          CircularProgressIndicator(),
-                          SizedBox(height: 20),
-                          Text('초대를 확인하고 있어요'),
-                        ],
-                      ),
-                    ),
-                    error: (error, _) =>
-                        _error(AlbumInviteFailure.from(error), reload: true),
-                    data: (info) => _content(
-                      info,
-                      user,
-                      joined,
-                      failure,
-                      box.maxWidth >= 540 &&
-                          MediaQuery.orientationOf(context) ==
-                              Orientation.landscape,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        bottomNavigationBar: SafeArea(
-          top: false,
-          minimum: const EdgeInsets.symmetric(horizontal: 20),
-          child: Padding(
-            padding: EdgeInsets.only(
-              top: 8,
-              bottom: MediaQuery.orientationOf(context) == Orientation.landscape
-                  ? 8
-                  : 16,
-            ),
-            child: Center(
-              heightFactor: 1,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 960),
+              body: SafeArea(
+                top: false,
+                bottom: false,
                 child: LayoutBuilder(
-                  builder: (context, box) {
-                    final landscape =
-                        MediaQuery.orientationOf(context) ==
-                        Orientation.landscape;
-                    final primary = FilledButton.icon(
-                      key: const ValueKey('inviteAcceptAction'),
-                      style: ExperienceFormStyle.primary(context).copyWith(
-                        padding: WidgetStatePropertyAll(
-                          EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: landscape ? 8 : 12,
+                  builder: (context, box) => SingleChildScrollView(
+                    key: const ValueKey('inviteAcceptContent'),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: box.maxWidth < 360 ? 20 : 28,
+                      vertical: box.maxHeight < 300 ? 16 : 32,
+                    ),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth:
+                              box.maxWidth >= 540 &&
+                                  MediaQuery.orientationOf(context) ==
+                                      Orientation.landscape
+                              ? 960
+                              : 680,
+                        ),
+                        child: invite.when(
+                          loading: () => const Padding(
+                            padding: EdgeInsets.all(36),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(height: 20),
+                                Text('초대를 확인하고 있어요'),
+                              ],
+                            ),
+                          ),
+                          error: (error, _) => _error(
+                            AlbumInviteFailure.from(error),
+                            reload: true,
+                          ),
+                          data: (info) => _content(
+                            info,
+                            user,
+                            joined,
+                            failure,
+                            box.maxWidth >= 540 &&
+                                MediaQuery.orientationOf(context) ==
+                                    Orientation.landscape,
                           ),
                         ),
                       ),
-                      onPressed: canAct
-                          ? () => terminal
-                                ? Navigator.of(context).maybePop()
-                                : joined
-                                ? _openAlbum()
-                                : _accept(invite.requireValue)
-                          : null,
-                      icon: _busy
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : ExperienceIcon(
-                              terminal
-                                  ? 'ArrowLeft'
+                    ),
+                  ),
+                ),
+              ),
+              bottomNavigationBar: SafeArea(
+                top: false,
+                minimum: const EdgeInsets.symmetric(horizontal: 20),
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top: 8,
+                    bottom:
+                        MediaQuery.orientationOf(context) ==
+                            Orientation.landscape
+                        ? 8
+                        : 16,
+                  ),
+                  child: Center(
+                    heightFactor: 1,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 960),
+                      child: LayoutBuilder(
+                        builder: (context, box) {
+                          final landscape =
+                              MediaQuery.orientationOf(context) ==
+                              Orientation.landscape;
+                          final primary = FilledButton.icon(
+                            key: const ValueKey('inviteAcceptAction'),
+                            style: ExperienceFormStyle.primary(context)
+                                .copyWith(
+                                  padding: WidgetStatePropertyAll(
+                                    EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: landscape ? 8 : 12,
+                                    ),
+                                  ),
+                                ),
+                            onPressed: canAct
+                                ? () => terminal
+                                      ? Navigator.of(context).maybePop()
+                                      : joined
+                                      ? _openAlbum()
+                                      : _accept(invite.requireValue)
+                                : null,
+                            icon: _busy
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : ExperienceIcon(
+                                    terminal
+                                        ? 'ArrowLeft'
+                                        : joined
+                                        ? 'BookOpen'
+                                        : 'ArrowRight',
+                                    size: 19,
+                                    color: canAct
+                                        ? Colors.white
+                                        : ExperienceFormStyle.muted(context),
+                                  ),
+                            label: Text(
+                              _busy
+                                  ? (joined ? '앨범 불러오는 중' : '참여하는 중')
+                                  : terminal
+                                  ? '초대 닫기'
                                   : joined
-                                  ? 'BookOpen'
-                                  : 'ArrowRight',
-                              size: 19,
-                              color: canAct
-                                  ? Colors.white
-                                  : ExperienceFormStyle.muted(context),
+                                  ? '앨범 열기'
+                                  : user == null
+                                  ? '로그인하고 참여하기'
+                                  : '초대 수락하기',
+                              textAlign: TextAlign.center,
                             ),
-                      label: Text(
-                        _busy
-                            ? (joined ? '앨범 불러오는 중' : '참여하는 중')
-                            : terminal
-                            ? '초대 닫기'
-                            : joined
-                            ? '앨범 열기'
-                            : user == null
-                            ? '로그인하고 참여하기'
-                            : '초대 수락하기',
-                        textAlign: TextAlign.center,
-                      ),
-                    );
-                    final dismiss = !_busy && !terminal
-                        ? TextButton(
-                            key: const ValueKey('inviteAcceptDismiss'),
-                            onPressed: () => Navigator.of(context).maybePop(),
-                            style: TextButton.styleFrom(
-                              minimumSize: const Size(0, 48),
-                            ),
-                            child: Text(
-                              joined ? '돌아가기' : '초대 닫기',
-                              style: ExperienceStyle.text(
-                                13,
-                                color: SnapFitColors.textSecondaryOf(context),
+                          );
+                          final dismiss = !_busy && !terminal
+                              ? TextButton(
+                                  key: const ValueKey('inviteAcceptDismiss'),
+                                  onPressed: () =>
+                                      Navigator.of(context).maybePop(),
+                                  style: TextButton.styleFrom(
+                                    minimumSize: const Size(0, 48),
+                                  ),
+                                  child: Text(
+                                    joined ? '돌아가기' : '초대 닫기',
+                                    style: ExperienceStyle.text(
+                                      13,
+                                      color: SnapFitColors.textSecondaryOf(
+                                        context,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : null;
+                          if (landscape && box.maxWidth >= 480) {
+                            return IntrinsicHeight(
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  if (dismiss != null) ...[
+                                    Expanded(child: dismiss),
+                                    const SizedBox(width: 12),
+                                  ],
+                                  Expanded(flex: 2, child: primary),
+                                ],
                               ),
+                            );
+                          }
+                          return ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 680),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [primary, if (dismiss != null) dismiss],
                             ),
-                          )
-                        : null;
-                    if (landscape && box.maxWidth >= 480) {
-                      return IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            if (dismiss != null) ...[
-                              Expanded(child: dismiss),
-                              const SizedBox(width: 12),
-                            ],
-                            Expanded(flex: 2, child: primary),
-                          ],
-                        ),
-                      );
-                    }
-                    return ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 680),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [primary, if (dismiss != null) dismiss],
+                          );
+                        },
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -410,62 +434,95 @@ class _AlbumInviteAcceptScreenState
     required bool terminal,
     required bool canAct,
   }) {
-    Widget failureView(AlbumInviteFailure value, {bool reload = false}) => Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(value.title, style: TextStyle(
-          color: WebPalette.of(context).ink, fontSize: 18, fontWeight: FontWeight.w700,
-        )),
-        const SizedBox(height: 10),
-        Text(value.message, style: TextStyle(
-          color: WebPalette.of(context).muted, fontSize: 14, height: 1.6,
-        )),
-        if (reload && value.retryable) ...[
-          const SizedBox(height: 16),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: OutlinedButton.icon(
-              onPressed: () => ref.invalidate(
-                albumInviteInfoProvider(widget.invite.token),
+    Widget failureView(AlbumInviteFailure value, {bool reload = false}) =>
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              value.title,
+              style: TextStyle(
+                color: WebPalette.of(context).ink,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
               ),
-              icon: const Icon(Icons.refresh, size: 17),
-              label: const Text('초대 다시 확인'),
             ),
-          ),
-        ],
-      ],
-    );
+            const SizedBox(height: 10),
+            Text(
+              value.message,
+              style: TextStyle(
+                color: WebPalette.of(context).muted,
+                fontSize: 14,
+                height: 1.6,
+              ),
+            ),
+            if (reload && value.retryable) ...[
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  onPressed: () => ref.invalidate(
+                    albumInviteInfoProvider(widget.invite.token),
+                  ),
+                  icon: const Icon(Icons.refresh, size: 17),
+                  label: const Text('초대 다시 확인'),
+                ),
+              ),
+            ],
+          ],
+        );
 
     final action = FilledButton.icon(
       key: const ValueKey('inviteAcceptAction'),
-      onPressed: canAct ? () {
-        if (terminal) {
-          Navigator.of(context).maybePop();
-        } else if (joined) {
-          _openAlbum();
-        } else {
-          _accept(invite.requireValue);
-        }
-      } : null,
-      icon: _busy ? const SizedBox(
-        width: 17, height: 17,
-        child: CircularProgressIndicator(strokeWidth: 2),
-      ) : Icon(terminal ? Icons.arrow_back
-          : joined ? Icons.auto_stories_outlined : Icons.arrow_forward, size: 18),
-      label: Text(_busy ? joined ? '앨범을 불러오는 중' : '참여하는 중'
-          : terminal ? '초대 닫기'
-          : joined ? '앨범 열기'
-          : user == null ? '로그인하고 참여하기' : '초대 수락하기'),
+      onPressed: canAct
+          ? () {
+              if (terminal) {
+                Navigator.of(context).maybePop();
+              } else if (joined) {
+                _openAlbum();
+              } else {
+                _accept(invite.requireValue);
+              }
+            }
+          : null,
+      icon: _busy
+          ? const SizedBox(
+              width: 17,
+              height: 17,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Icon(
+              terminal
+                  ? Icons.arrow_back
+                  : joined
+                  ? Icons.auto_stories_outlined
+                  : Icons.arrow_forward,
+              size: 18,
+            ),
+      label: Text(
+        _busy
+            ? joined
+                  ? '앨범을 불러오는 중'
+                  : '참여하는 중'
+            : terminal
+            ? '초대 닫기'
+            : joined
+            ? '앨범 열기'
+            : user == null
+            ? '로그인하고 참여하기'
+            : '초대 수락하기',
+      ),
     );
 
     return SnapFitWebShell(
       title: '앨범 초대',
       showNavigation: false,
-      actions: [TextButton.icon(
-        onPressed: _busy ? null : () => Navigator.of(context).maybePop(),
-        icon: const Icon(Icons.close, size: 17),
-        label: const Text('초대 닫기'),
-      )],
+      actions: [
+        TextButton.icon(
+          onPressed: _busy ? null : () => Navigator.of(context).maybePop(),
+          icon: const Icon(Icons.close, size: 17),
+          label: const Text('초대 닫기'),
+        ),
+      ],
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -482,57 +539,97 @@ class _AlbumInviteAcceptScreenState
               loading: () => const WebSurface(
                 child: Padding(
                   padding: EdgeInsets.all(24),
-                  child: Row(children: [
-                    SizedBox(width: 22, height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2)),
-                    SizedBox(width: 16), Text('초대를 확인하고 있습니다'),
-                  ]),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      SizedBox(width: 16),
+                      Text('초대를 확인하고 있습니다'),
+                    ],
+                  ),
                 ),
               ),
-              error: (error, _) => WebSurface(child: failureView(
-                AlbumInviteFailure.from(error), reload: true,
-              )),
+              error: (error, _) => WebSurface(
+                child: failureView(
+                  AlbumInviteFailure.from(error),
+                  reload: true,
+                ),
+              ),
               data: (info) {
-                final editable = ['OWNER', 'EDITOR'].contains(
-                  joined ? _acceptedRole : info.role,
-                );
+                final editable = [
+                  'OWNER',
+                  'EDITOR',
+                ].contains(joined ? _acceptedRole : info.role);
                 final identity = WebSurface(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text('${info.inviterName}님의 초대', style: TextStyle(
-                        color: WebPalette.of(context).muted, fontSize: 13,
-                      )),
+                      Text(
+                        '${info.inviterName}님의 초대',
+                        style: TextStyle(
+                          color: WebPalette.of(context).muted,
+                          fontSize: 13,
+                        ),
+                      ),
                       const SizedBox(height: 14),
-                      Text(info.albumTitle,
+                      Text(
+                        info.albumTitle,
                         key: const ValueKey('inviteAcceptTitle'),
-                        style: TextStyle(color: WebPalette.of(context).ink,
-                          fontSize: 26, fontWeight: FontWeight.w700)),
+                        style: TextStyle(
+                          color: WebPalette.of(context).ink,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                       const SizedBox(height: 24),
                       Divider(color: WebPalette.of(context).line, height: 1),
                       const SizedBox(height: 22),
-                      Text('참여할 계정', style: TextStyle(
-                        color: WebPalette.of(context).muted, fontSize: 12,
-                      )),
+                      Text(
+                        '참여할 계정',
+                        style: TextStyle(
+                          color: WebPalette.of(context).muted,
+                          fontSize: 12,
+                        ),
+                      ),
                       const SizedBox(height: 7),
-                      Text(user == null ? '로그인이 필요합니다' : user.name,
-                        style: TextStyle(color: WebPalette.of(context).ink,
-                          fontSize: 15, fontWeight: FontWeight.w600)),
+                      Text(
+                        user == null ? '로그인이 필요합니다' : user.name,
+                        style: TextStyle(
+                          color: WebPalette.of(context).ink,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                       const SizedBox(height: 8),
-                      Text(user == null
-                          ? '로그인을 완료해도 이 초대는 유지됩니다.'
-                          : joined ? '내 앨범에서도 다시 열 수 있습니다.'
-                          : '수락하면 이 계정의 내 앨범에 추가됩니다.',
-                        style: TextStyle(color: WebPalette.of(context).muted,
-                          fontSize: 13, height: 1.6)),
+                      Text(
+                        user == null
+                            ? '로그인을 완료해도 이 초대는 유지됩니다.'
+                            : joined
+                            ? '내 앨범에서도 다시 열 수 있습니다.'
+                            : '수락하면 이 계정의 내 앨범에 추가됩니다.',
+                        style: TextStyle(
+                          color: WebPalette.of(context).muted,
+                          fontSize: 13,
+                          height: 1.6,
+                        ),
+                      ),
                       if (failure != null) ...[
-                        const SizedBox(height: 24), failureView(failure),
+                        const SizedBox(height: 24),
+                        failureView(failure),
                       ],
                       if (_openError != null) ...[
                         const SizedBox(height: 22),
-                        Text(_openError!, style: TextStyle(
-                          color: WebPalette.of(context).muted, fontSize: 13, height: 1.6,
-                        )),
+                        Text(
+                          _openError!,
+                          style: TextStyle(
+                            color: WebPalette.of(context).muted,
+                            fontSize: 13,
+                            height: 1.6,
+                          ),
+                        ),
                       ],
                     ],
                   ),
@@ -541,41 +638,69 @@ class _AlbumInviteAcceptScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Icon(Icons.group_outlined,
-                        size: 26, color: WebPalette.of(context).brandInk),
+                      Icon(
+                        Icons.group_outlined,
+                        size: 26,
+                        color: WebPalette.of(context).brandInk,
+                      ),
                       const SizedBox(height: 18),
-                      Text('참여 권한', style: TextStyle(
-                        color: WebPalette.of(context).muted, fontSize: 12,
-                      )),
+                      Text(
+                        '참여 권한',
+                        style: TextStyle(
+                          color: WebPalette.of(context).muted,
+                          fontSize: 12,
+                        ),
+                      ),
                       const SizedBox(height: 8),
-                      Text(editable ? '보기 및 편집' : '보기 전용',
-                        style: TextStyle(color: WebPalette.of(context).brandInk,
-                          fontSize: 18, fontWeight: FontWeight.w700)),
+                      Text(
+                        editable ? '보기 및 편집' : '보기 전용',
+                        style: TextStyle(
+                          color: WebPalette.of(context).brandInk,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                       const SizedBox(height: 12),
-                      Text(editable ? '사진과 글, 페이지 구성을 함께 편집할 수 있습니다.'
-                          : '앨범을 볼 수 있으며 편집 권한은 포함되지 않습니다.',
-                        style: TextStyle(color: WebPalette.of(context).muted,
-                          fontSize: 13, height: 1.6)),
+                      Text(
+                        editable
+                            ? '사진과 글, 페이지 구성을 함께 편집할 수 있습니다.'
+                            : '앨범을 볼 수 있으며 편집 권한은 포함되지 않습니다.',
+                        style: TextStyle(
+                          color: WebPalette.of(context).muted,
+                          fontSize: 13,
+                          height: 1.6,
+                        ),
+                      ),
                     ],
                   ),
                 );
-                return LayoutBuilder(builder: (context, box) {
-                  if (box.maxWidth < 850) return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [identity, const SizedBox(height: 20), permissions],
-                  );
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [Expanded(child: identity),
-                      const SizedBox(width: 26),
-                      SizedBox(width: 320, child: permissions)],
-                  );
-                });
+                return LayoutBuilder(
+                  builder: (context, box) {
+                    if (box.maxWidth < 850)
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          identity,
+                          const SizedBox(height: 20),
+                          permissions,
+                        ],
+                      );
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: identity),
+                        const SizedBox(width: 26),
+                        SizedBox(width: 320, child: permissions),
+                      ],
+                    );
+                  },
+                );
               },
             ),
             const SizedBox(height: 24),
             Wrap(
-              spacing: 12, runSpacing: 12,
+              spacing: 12,
+              runSpacing: 12,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 action,
@@ -698,41 +823,42 @@ class _AlbumInviteAcceptScreenState
     );
   }
 
-  Widget _detail(String title, String message, {String? accountEmail}) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 14),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: ExperienceStyle.text(
-            14,
-            weight: FontWeight.w600,
-            color: SnapFitColors.textPrimaryOf(context),
-          ),
-        ),
-        const SizedBox(height: 4),
-        if (accountEmail?.trim().isNotEmpty == true) ...[
-          SelectableText(
-            accountEmail!.trim(),
-            key: const ValueKey('inviteAcceptAccountEmail'),
-            style: ExperienceStyle.text(
-              13,
-              color: SnapFitColors.textSecondaryOf(context),
+  Widget _detail(String title, String message, {String? accountEmail}) =>
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: ExperienceStyle.text(
+                14,
+                weight: FontWeight.w600,
+                color: SnapFitColors.textPrimaryOf(context),
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-        ],
-        Text(
-          message,
-          style: ExperienceStyle.text(
-            13,
-            color: SnapFitColors.textSecondaryOf(context),
-          ),
+            const SizedBox(height: 4),
+            if (accountEmail?.trim().isNotEmpty == true) ...[
+              SelectableText(
+                accountEmail!.trim(),
+                key: const ValueKey('inviteAcceptAccountEmail'),
+                style: ExperienceStyle.text(
+                  13,
+                  color: SnapFitColors.textSecondaryOf(context),
+                ),
+              ),
+              const SizedBox(height: 4),
+            ],
+            Text(
+              message,
+              style: ExperienceStyle.text(
+                13,
+                color: SnapFitColors.textSecondaryOf(context),
+              ),
+            ),
+          ],
         ),
-      ],
-    ),
-  );
+      );
 
   Widget _error(AlbumInviteFailure failure, {bool reload = false}) => Semantics(
     key: kIsWeb ? null : _failureKey,

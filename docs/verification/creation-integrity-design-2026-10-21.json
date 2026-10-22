@@ -1,0 +1,151 @@
+{
+  "status": "production_web_deployed_verified",
+  "date": "2026-10-21",
+  "scope": [
+    "Preserve authored stacking order when selecting or dragging artwork; retain same-photo pan mode",
+    "Check latest account-scoped draft before creation from home, library, categories, design detail and legacy routes; offer resume or explicit new album",
+    "Keep unplaced photo selections through size/template changes for the same verified account; reset document placement history",
+    "Retain photo work during transient account refresh, clear on confirmed account changes, and prioritize real book workspace at small sizes and 200 percent text"
+  ],
+  "files": {
+    "lib/features/album/presentation/controllers/layer_interaction_manager.dart": "de81fca24bb81eddfe13e9139ddac59c8ef86680206d308b2cc425f930227ac2",
+    "lib/features/album/presentation/utils/album_creation_entry.dart": "81fc906e56f5b3de4473ea846486da00ec87860e035309d36c07a935457d48b6",
+    "lib/features/album/presentation/views/album_category_screen.dart": "9e3ad1d232adef11e4ff904e49dd47bc092090f30f33d18916b053448a23823a",
+    "lib/features/album/presentation/views/album_create_flow_screen.dart": "f8a57c7ce009f48bb922584e4c14aadd47159a317074f2027bc5afa11c052b6f",
+    "lib/features/album/presentation/views/album_creation_entry_screen.dart": "3af34e6ee6841ebeabc942b1cc5f01e9b8afafd50758bd38d13cc03293f4a976",
+    "lib/features/album/presentation/views/home_screen.dart": "3f7c4f1d3cf25965c6220624ee823fd839f5656d45c1b7709a3fb3a8afad7f49",
+    "lib/features/album/presentation/web/web_album_library_screen.dart": "16a8e4c4fcb4ef534f2391017422bd15bdfc60ad40c581e2f448ee5cd6725b93",
+    "lib/features/album/presentation/widgets/create_flow/template_photo_fill_step.dart": "bbe5f667517c4a9d1c2e0cbd7c7adf3051f2103e411d86b1a28a6c8481a841d8",
+    "lib/features/store/presentation/views/template_detail_screen.dart": "dfa26d1bb84cbba07d29103a21dbaba5bee9fcf77947b3106344322d4ba711cb",
+    "lib/main.dart": "38c4ecaa18d4becc4c0a970222cb690b494ddc8d096c8d401bc6948556652cef",
+    "test/helpers/creation_draft_fixtures.dart": "ed4fa610022960a703c9b45ce82d032889dfc6f179e21e08c919405ee0e8d683",
+    "test/widget/album_creation_entry_test.dart": "6fb329b4b20a7913294f0e5eff8d0223d1b4cfe145cce7ca48f4d0b1d0aeff80",
+    "test/widget/creation_entry_routes_test.dart": "b4e012b916b1fe18dddad5efc1d82ddc762dc3fc4fbf6e26792772ddf830bcd8",
+    "test/widget/creation_photo_selection_continuity_test.dart": "a551867308173542850cdcb364c348a44479a12b90583c8d38d089302d701525",
+    "test/widget/editor_selection_integrity_test.dart": "383f438fba6777c4f14fcb264e90495365e339dbd0bf4f5058be59effe520108",
+    "test/widget/home_screen_test.dart": "4b6e823830c5576b2701cfd930e622d1b48242d6783b3da5cd2bda69af0789a3",
+    "test/widget/store_detail_continuation_test.dart": "5e6be6be49a0727f0df1eaabd838ca3d476c0d89e4103b9933331c5226a1ede9",
+    "test/widget/store_workshop_journey_test.dart": "f6019da8915e415b0eaf9dbf2f04328530f8b1236dab19fc52336f0d2b40b200",
+    "test/widget/template_edition_journey_test.dart": "b2351feb25052fa5ef3cb498875cd7a6ca4a05a3462bdf27c6821ebae2f12547",
+    "test/widget/template_photo_fill_history_test.dart": "d37b0454c34934cf84728811c721bc742d34d74c56f918f66968b5e71647879a"
+  },
+  "validation": {
+    "nativeEditorRegression": {
+      "passed": 69,
+      "failed": 0,
+      "files": 3
+    },
+    "nativeEntryAndSelection": {
+      "passed": 76,
+      "failed": 0,
+      "files": 5
+    },
+    "nativePhotoContinuity": {
+      "passed": 11,
+      "failed": 0,
+      "files": 1
+    },
+    "nativeDraftHistoryAi": {
+      "passed": 55,
+      "failed": 0,
+      "files": 3
+    },
+    "nativeStore": {
+      "passed": 55,
+      "failed": 0,
+      "files": 3
+    },
+    "browserEntryAndSelection": {
+      "passed": 49,
+      "failed": 0,
+      "files": 3
+    },
+    "browserPhotoContinuityAndRealCover": {
+      "passed": 13,
+      "failed": 0,
+      "files": 2
+    },
+    "analysis": {
+      "files": 20,
+      "issues": 0
+    },
+    "ramVisualCases": 2,
+    "imageFilesWritten": 0,
+    "checksAcrossPlatforms": 328,
+    "ramVisualNotes": [
+      "Native 320x568 and 844x390 at 200 percent text inspected in memory",
+      "Expanded vertical photo guidance width with text scaling so instruction and a pending photo remain visible",
+      "Browser 200 percent text cases assert actual visible canvas height of at least 120px plus hit testing and real workspace/tray scrolling"
+    ]
+  },
+  "preserved": {
+    "originalMediaFiles": 367,
+    "originalMediaBytes": 524789581,
+    "originalMediaInventoryUnchanged": true,
+    "noPreviewFilesCreated": true,
+    "coverAndInteriorAuthoringSourcesUnchanged": true,
+    "existingAuthenticationPurchaseAndAiPrivacyGatesRetained": true,
+    "sourceOutsideTaskScopeUnchangedExcludingExistingUserScratch": true,
+    "existingUserScratchUntouchedByTask": {
+      "lib/ㅇ": "538b188733f60fb6a51214f30b5ba2adc4187fad4c7be4b2e57f0661c7397c7b"
+    },
+    "originalMediaInventorySha256": "163779b65bb5147b302cde3d34e22b858c550054d82b0cb6fb370b30ac693a9e"
+  },
+  "frozenBuildInputs": 1403,
+  "storage": {
+    "freeBytesAtStart": 27533860864,
+    "generatedCachesRemoved": [
+      {
+        "path": "build",
+        "bytes": 1759772109
+      },
+      {
+        "path": ".dart_tool/flutter_build",
+        "bytes": 70521409
+      },
+      {
+        "path": ".dart_tool/hooks_runner",
+        "bytes": 23007771
+      }
+    ],
+    "generatedCachesRemovedBytes": 1853301289,
+    "freeBytesAfterCleanup": 23830405120,
+    "ramImagesReleased": true,
+    "temporaryVerificationFilesRemoved": 28,
+    "temporaryVerificationFilesRemovedBytes": 1748072
+  },
+  "productionBuild": {
+    "main_sha256": "213f26e2b825eb5fee051f0e3747348902a4c9cd97c567f171b4f8ef921cc3bf",
+    "main_file": "main.213f26e2b825eb5fee05.dart.js",
+    "bootstrap_sha256": "e58d48e446705b4cdeaba423dc5209c30e5a8c87218ddbeeea2a798092d0f0c5",
+    "bootstrap_file": "flutter_bootstrap.e58d48e446705b4cdeab.js",
+    "mainBytes": 7453769
+  },
+  "production": {
+    "url": "https://snapfit-c719d.web.app/",
+    "deployment": "Firebase hosting only",
+    "main_sha256": "213f26e2b825eb5fee051f0e3747348902a4c9cd97c567f171b4f8ef921cc3bf",
+    "main_file": "main.213f26e2b825eb5fee05.dart.js",
+    "bootstrap_sha256": "e58d48e446705b4cdeaba423dc5209c30e5a8c87218ddbeeea2a798092d0f0c5",
+    "bootstrap_file": "flutter_bootstrap.e58d48e446705b4cdeab.js",
+    "mainBytes": 7453769,
+    "tlsVerified": true,
+    "indexToBootstrapToMainVerified": true,
+    "frozenInputsMatchedAfterBuild": true,
+    "files": 829
+  },
+  "verifiedAtUtc": "2026-10-21T13:20:50.319035+00:00",
+  "productionVisual": {
+    "route": "/#/designs/templates/-9302",
+    "viewport": "1280x720",
+    "theme": "dark",
+    "observations": [
+      "All 68 published design cards load",
+      "Travel full-photo cover and interior spread thumbnails load without cover text backgrounds",
+      "Existing free price and login/start gate are available"
+    ],
+    "imageFilesWritten": 0
+  },
+  "completedAtUtc": "2026-10-21T13:22:11.470326+00:00",
+  "frozenBuildInputsSha256": "159fc2b513ff0c0499c5c21ad498f6c5fb7a3fc4e3548c84e9a2c3a9aac88f13"
+}

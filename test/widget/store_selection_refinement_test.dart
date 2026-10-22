@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:snap_fit/core/templates/data_template_engine.dart';
+import 'package:snap_fit/core/templates/studio_decoration_catalog.dart';
 import 'package:snap_fit/core/templates/template_document_pages.dart';
 import 'package:snap_fit/core/templates/template_visual_material_inventory.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
@@ -20,6 +21,7 @@ import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
 import 'package:snap_fit/features/album/domain/entities/album.dart';
 import 'package:snap_fit/features/album/domain/entities/album_page.dart';
 import 'package:snap_fit/features/album/domain/entities/layer_export_mapper.dart';
+import 'package:snap_fit/features/album/presentation/controllers/store_material_insertion.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/home_view_model.dart';
 import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
 import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
@@ -51,16 +53,29 @@ class _PaintBinding extends AutomatedTestWidgetsFlutterBinding {
 
 class _Shop extends Mock implements PointShopRepository {}
 
-const _material = 'frame:materialLinenOval';
-const _title = '리넨 자수 타원';
+final _reusablePaidMaterials = {
+  for (final spec in studioDecorations)
+    if ((pointShopLaunchPrices['sticker:${spec.id}']?.points ?? 0) > 0 &&
+        isStoreMaterialSupported('sticker:${spec.id}'))
+      'sticker:${spec.id}',
+};
 
+// Current editorial books contain independent paper and sticker materials.
+// Select a published paid book and a real reusable paid material it includes.
 final _template = publishedCreationTemplates.firstWhere(
   (template) =>
       template.isPremium &&
       templateVisualMaterialKeys(
         jsonDecode(template.templateJson!),
-      ).any((key) => key.startsWith('frame:')),
+      ).any(_reusablePaidMaterials.contains),
 );
+final _material = templateVisualMaterialKeys(
+  jsonDecode(_template.templateJson!),
+).firstWhere(_reusablePaidMaterials.contains);
+final _materialSpec = studioDecorations.firstWhere(
+  (spec) => 'sticker:${spec.id}' == _material,
+);
+final _title = _materialSpec.label;
 
 final _albumTemplates = [
   _template,
@@ -149,8 +164,7 @@ Widget _app(
         FakeAlbumPersistenceService(),
       ),
       storageServiceProvider.overrideWithValue(FakeStorageService()),
-      templateListProvider.overrideWith(
-        (ref) async => publishedCreationTemplates,
+      mockTemplateList(() async => publishedCreationTemplates,
       ),
       ownedPointShopKeysProvider.overrideWith((ref) async => {_material}),
       pointShopCatalogProvider.overrideWith(
@@ -196,10 +210,10 @@ Widget _app(
 
 Widget _detail() => MaterialDetailScreen(
   productKey: _material,
-  favoriteKey: 'frame:materialLinenOval',
+  favoriteKey: _material,
   title: _title,
-  type: '프레임',
-  preview: (_) => const PointShopArtwork(productKey: _material),
+  type: '꾸밈 소재',
+  preview: (_) => PointShopArtwork(productKey: _material),
 );
 
 Future<void> _paint(WidgetTester tester) async {
@@ -244,6 +258,13 @@ void _size(WidgetTester tester, Size size) {
 void main() {
   _PaintBinding();
   setUpAll(() async {
+    expect(_template.isPremium, true);
+    expect(
+      templateVisualMaterialKeys(jsonDecode(_template.templateJson!)),
+      contains(_material),
+    );
+    expect(isStoreMaterialSupported(_material), true);
+    expect(pointShopLaunchPrices[_material]!.points, greaterThan(0));
     await loadCreationFonts();
     final manifest =
         jsonDecode(await rootBundle.loadString('FontManifest.json')) as List;
@@ -368,7 +389,7 @@ void main() {
                               context,
                               access: access,
                               title: _title,
-                              purchase: const PointShopPurchase(
+                              purchase: PointShopPurchase(
                                 productKey: _material,
                                 owned: true,
                                 isFree: false,
@@ -412,7 +433,7 @@ void main() {
       });
 
       testWidgets(
-        'template materials include real frames, papers and lazy list $suffix',
+        'template materials include real paid artwork and lazy list $suffix',
         (tester) async {
           _size(tester, size);
           final key = GlobalKey();
@@ -424,18 +445,27 @@ void main() {
             ),
           );
           await _paint(tester);
-          final frame = find.byWidgetPredicate(
+          final materialPreviews = find.byWidgetPredicate(
             (widget) =>
                 widget.key is ValueKey<String> &&
                 (widget.key as ValueKey<String>).value.startsWith(
-                  'template-material-preview-frame:',
+                  'template-material-preview-',
                 ),
           );
-          await tester.ensureVisible(frame);
+          expect(materialPreviews, findsWidgets);
+          final material = materialPreviews.first;
+          final previewKey = tester.widget(material).key! as ValueKey<String>;
+          expect(
+            templateVisualMaterialKeys(jsonDecode(_template.templateJson!)),
+            contains(
+              previewKey.value.substring('template-material-preview-'.length),
+            ),
+          );
+          await tester.ensureVisible(material);
           await tester.pumpAndSettle();
-          expect(frame, findsOneWidget);
+          expect(material, findsOneWidget);
           await _capture(tester, key, 'included-$suffix');
-          await tester.tap(frame);
+          await tester.tap(material);
           await _paint(tester);
           expect(find.text('사용한 꾸밈 소재'), findsOneWidget);
           final keys = templateVisualMaterialKeys(
@@ -526,7 +556,7 @@ void main() {
         pages: _pages(1),
         ratio: 1,
       ),
-      const PointShopPurchaseSheet(
+      PointShopPurchaseSheet(
         title: '매우 긴 이름의 리넨 자수 타원 프레임과 꾸밈 소재',
         access: PointShopAccess(
           productKey: _material,

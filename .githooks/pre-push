@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Optional repo-local hook. Installation never overwrites an existing hook.
+set -euo pipefail
+hook_root="$(git rev-parse --show-toplevel)"
+hook_updates="$(cat)"
+if printf '%s\n' "$hook_updates" | python3 "$hook_root/tool/ci/flutter_quality.py" pre-push; then
+  bash "$hook_root/scripts/check_flutter_quality.sh" all </dev/null
+  # Do not allow an edit/commit made during a long test run to change which
+  # sources or ref the hook just validated.
+  printf '%s\n' "$hook_updates" | python3 "$hook_root/tool/ci/flutter_quality.py" pre-push
+else
+  hook_status=$?
+  if [[ "$hook_status" == 10 ]]; then
+    exit 0
+  fi
+  exit "$hook_status"
+fi

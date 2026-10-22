@@ -27,6 +27,12 @@ import 'studio_decorations_test.dart' show capture;
 
 class _Interaction extends Mock implements LayerInteractionManager {
   @override
+  bool get isPrintPreview => false;
+
+  @override
+  bool get isPreviewMode => false;
+
+  @override
   Widget buildInteractiveLayer({
     required LayerModel layer,
     required double baseWidth,

@@ -22,7 +22,8 @@ class BrowserDraftDatabase {
       JSObject? current,
       void Function(JSObject value) put,
       void Function() remove,
-    ) action,
+    )
+    action,
   }) async {
     if (owner.trim().isEmpty) {
       throw ArgumentError.value(owner, 'owner', 'Draft owner is required');
@@ -70,7 +71,9 @@ class BrowserDraftDatabase {
         }
       }).toJS;
       transaction.onabort = ((web.Event _) {
-        failCompletion(failure ?? _failure('transaction_aborted', transaction.error));
+        failCompletion(
+          failure ?? _failure('transaction_aborted', transaction.error),
+        );
       }).toJS;
       transaction.onerror = ((web.Event _) {
         remember(_failure('transaction_failed', transaction.error));
@@ -215,8 +218,10 @@ class BrowserDraftDatabase {
     return completed.future;
   }
 
-  static BrowserDraftDatabaseException _failure(String code, web.DOMException? error) =>
-      BrowserDraftDatabaseException(code, browserName: error?.name);
+  static BrowserDraftDatabaseException _failure(
+    String code,
+    web.DOMException? error,
+  ) => BrowserDraftDatabaseException(code, browserName: error?.name);
 }
 
 class BrowserDraftDatabaseException implements Exception {
@@ -225,5 +230,6 @@ class BrowserDraftDatabaseException implements Exception {
   final String? browserName;
 
   @override
-  String toString() => 'BrowserDraftDatabaseException($code${browserName == null ? '' : ': $browserName'})';
+  String toString() =>
+      'BrowserDraftDatabaseException($code${browserName == null ? '' : ': $browserName'})';
 }

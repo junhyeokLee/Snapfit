@@ -69,7 +69,7 @@ Widget _host(Widget screen, _PrivateReadGuard guard, {required bool guest}) {
   ];
   return ProviderScope(
     overrides: [
-      templateListProvider.overrideWith((ref) async => _designs),
+      mockTemplateList(() async => _designs),
       templateRepositoryProvider.overrideWith((ref) => guard.forbidden()),
       storeCurationsProvider.overrideWith((ref) async => {}),
       publicPointShopCatalogProvider.overrideWith((ref) async => products),

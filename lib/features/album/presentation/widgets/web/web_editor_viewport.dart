@@ -18,7 +18,9 @@ class WebEditorViewportScale extends InheritedWidget {
   final double zoom;
 
   static double of(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<WebEditorViewportScale>()?.zoom ??
+      context
+          .dependOnInheritedWidgetOfExactType<WebEditorViewportScale>()
+          ?.zoom ??
       1;
 
   @override
@@ -135,9 +137,7 @@ class _WebEditorViewportState extends State<WebEditorViewport>
       if (owned && mounted) setState(() => _spacePressed = false);
       return owned;
     }
-    if (!mounted ||
-        !_hovering ||
-        !_canUsePanKey) {
+    if (!mounted || !_hovering || !_canUsePanKey) {
       return false;
     }
     if (!_spacePressed) setState(() => _spacePressed = true);

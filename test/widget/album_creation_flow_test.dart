@@ -2,15 +2,22 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:snap_fit/core/constants/cover_size.dart';
 import 'package:snap_fit/features/album/data/album_creation_catalog_provider.dart';
+import 'package:snap_fit/features/album/data/album_creation_draft_store.dart';
 import 'package:snap_fit/features/album/domain/entities/layer.dart';
 import 'package:snap_fit/features/album/presentation/views/album_create_flow_screen.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/album_create_step1.dart';
+import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_album_start_step.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/creation_template_preview.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/template_photo_fill_step.dart';
 import 'package:snap_fit/features/store/data/api/template_provider.dart';
 import 'package:snap_fit/features/store/domain/entities/premium_template.dart';
+import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
+import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
+import '../helpers/creation_draft_fixtures.dart';
 import '../helpers/mock_repositories.dart';
 import 'ai_album_start_step_test.dart' show wrapCreation;
 
@@ -57,15 +64,38 @@ PremiumTemplate _catalogTemplate(bool premium) => PremiumTemplate(
 );
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    FlutterSecureStorage.setMockInitialValues({});
+  });
   for (final premium in [false, true]) {
     testWidgets(
       'allowed catalog selection premium=$premium uses price-neutral source copy',
       (tester) async {
-        await tester.binding.setSurfaceSize(const Size(390, 844));
-        addTearDown(() => tester.binding.setSurfaceSize(null));
+        tester.view.physicalSize = const Size(390, 844);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
         final template = _catalogTemplate(premium);
         final repo = MockTemplateRepository();
         stubGetTemplates(repo, [template]);
+        final accessRequests = <String>[];
+        final card = find.byKey(const ValueKey('creation-template-99001'));
+        Future<void> revealCard() async {
+          await tester.scrollUntilVisible(
+            card,
+            300,
+            scrollable: find
+                .descendant(
+                  of: find.byType(AiAlbumStartStep),
+                  matching: find.byType(Scrollable),
+                )
+                .first,
+          );
+          await tester.pumpAndSettle();
+          expect(card.hitTestable(), findsOneWidget);
+        }
+
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
@@ -73,16 +103,37 @@ void main() {
                 (ref) => Stream.value([template]),
               ),
               templateRepositoryProvider.overrideWithValue(repo),
+              authViewModelProvider.overrideWith(
+                () => FakeAuthViewModel(
+                  const UserInfo(
+                    id: 'creation-test-owner',
+                    name: '테스트',
+                    provider: 'email',
+                  ),
+                ),
+              ),
+              albumCreationDraftStoreProvider.overrideWithValue(
+                MemoryCreationDraftStore(),
+              ),
             ],
-            child: wrapCreation(const AlbumCreateFlowScreen()),
+            child: wrapCreation(
+              const AlbumCreateFlowScreen(),
+              pointShopGate:
+                  (context, ref, {required productKey, required title}) async {
+                    accessRequests.add(productKey);
+                    expect(title, template.title);
+                    return true;
+                  },
+            ),
           ),
         );
         await tester.pumpAndSettle();
-        await tester.ensureVisible(
-          find.byKey(const ValueKey('creation-template-99001')),
+        expect(
+          MediaQuery.sizeOf(tester.element(find.byType(AlbumCreateFlowScreen))),
+          const Size(390, 844),
         );
-        await tester.pumpAndSettle();
-        await tester.tap(find.byKey(const ValueKey('creation-template-99001')));
+        await revealCard();
+        await tester.tap(card);
         await tester.pumpAndSettle();
         final preview = tester.widget<CreationTemplatePreview>(
           find.byType(CreationTemplatePreview),
@@ -91,6 +142,7 @@ void main() {
         expect(preview.pages.first.single.id, 'cover-photo');
         await tester.tap(find.text('이 디자인 선택'));
         await tester.pumpAndSettle();
+        expect(accessRequests, ['template:server-99001']);
         expect(find.byType(AlbumCreateFlowScreen), findsOneWidget);
         final setup = tester.widget<AlbumCreateStep1>(
           find.byType(AlbumCreateStep1),
@@ -113,14 +165,15 @@ void main() {
         await tester.ensureVisible(find.byTooltip('시작 방식 변경'));
         await tester.tap(find.byTooltip('시작 방식 변경'));
         await tester.pumpAndSettle();
-        await tester.ensureVisible(
-          find.byKey(const ValueKey('creation-template-99001')),
-        );
-        await tester.pumpAndSettle();
-        await tester.tap(find.byKey(const ValueKey('creation-template-99001')));
+        await revealCard();
+        await tester.tap(card);
         await tester.pumpAndSettle();
         await tester.tap(find.text('이 디자인 선택'));
         await tester.pumpAndSettle();
+        expect(accessRequests, [
+          'template:server-99001',
+          'template:server-99001',
+        ]);
         expect(
           tester
               .widget<AlbumCreateStep1>(find.byType(AlbumCreateStep1))
@@ -156,6 +209,7 @@ void main() {
         await tester.tap(find.byTooltip('시작 방식 변경'));
         await tester.pumpAndSettle();
         expect(find.text('디자인을 변경할까요?'), findsNothing);
+        await revealCard();
         expect(
           find.byKey(const ValueKey('creation-template-99001')),
           findsOneWidget,

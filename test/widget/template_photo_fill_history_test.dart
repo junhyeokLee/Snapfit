@@ -373,6 +373,17 @@ void main() {
           expect(shownPhoto().path, 'assets/frame_preview/forest_trail.jpg');
           expect(current().imageZoom, 1);
           expect(current().imageOffset, isNull);
+          await tester.scrollUntilVisible(
+            find.byKey(const ValueKey('tray-photo-lake')),
+            70,
+            scrollable: find
+                .descendant(
+                  of: find.byKey(const ValueKey('photo-fill-tray')),
+                  matching: find.byType(Scrollable),
+                )
+                .first,
+          );
+          await _paint(tester);
           expect(find.byKey(const ValueKey('tray-photo-lake')), findsOneWidget);
           expect(current().width, original.width);
           expect(current().imageBackground, original.imageBackground);

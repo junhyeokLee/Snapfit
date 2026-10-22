@@ -246,8 +246,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            templateListProvider.overrideWith(
-              (ref) async => bundledCreationTemplates,
+            mockTemplateList(() async => bundledCreationTemplates,
             ),
           ],
           child: wrapCreation(

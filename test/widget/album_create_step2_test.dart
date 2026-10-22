@@ -9,6 +9,7 @@ import 'package:snap_fit/features/album/data/api/album_provider.dart';
 import 'package:snap_fit/features/album/data/dto/response/invite_link_response.dart';
 import 'package:snap_fit/features/album/domain/repositories/album_member_repository.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/album_create_step2.dart';
+import 'ai_album_start_step_test.dart' show loadCreationFonts;
 
 class MockAlbumMemberRepository extends Mock implements AlbumMemberRepository {}
 
@@ -18,6 +19,7 @@ Future<void> _loadKoreanFonts() async {
     ..addFont(rootBundle.load('assets/fonts/NotoSansKR-SemiBold.ttf'))
     ..addFont(rootBundle.load('assets/fonts/NotoSansKR-Bold.ttf'));
   await loader.load();
+  await loadCreationFonts();
 }
 
 Widget _wrap(Widget child) {

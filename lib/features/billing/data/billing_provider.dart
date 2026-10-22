@@ -65,7 +65,9 @@ final myPointBalanceProvider = FutureProvider<int>((ref) async {
       .timeout(const Duration(seconds: 8));
 });
 
-final isFirstAiDraftFreeProvider = FutureProvider.autoDispose<bool>((ref) async {
+final isFirstAiDraftFreeProvider = FutureProvider.autoDispose<bool>((
+  ref,
+) async {
   try {
     return await ref
         .watch(billingRepositoryProvider)

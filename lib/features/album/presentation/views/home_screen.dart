@@ -25,6 +25,7 @@ import '../../../notification/presentation/views/notification_screen.dart';
 import '../../../store/presentation/views/store_hub_screen.dart';
 import '../providers/home_ui_state_provider.dart';
 import '../utils/home_album_section_builder.dart';
+import '../utils/album_creation_entry.dart';
 import '../../data/album_creation_draft_store.dart';
 import '../../domain/entities/album_creation_draft.dart';
 import '../web/web_album_library_screen.dart';
@@ -42,6 +43,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   late final List<int> _bottomNavHistory;
   final _destinationBodyKey = GlobalKey();
   bool _albumsVisited = false;
+  bool _creatingAlbum = false;
 
   @override
   void initState() {
@@ -79,15 +81,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     await ref.read(homeViewModelProvider.notifier).refresh();
   }
 
-  Future<void> _resumeDraft(AlbumCreationDraft draft) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        settings: const WebAppRouteSettings(WebAppLocation.create),
-        builder: (_) => AlbumCreateFlowScreen(initialDraft: draft),
-      ),
-    );
-    if (mounted) ref.invalidate(albumCreationDraftProvider);
+  Future<void> _resumeDraft(AlbumCreationDraft draft) =>
+      _createAlbum(requestedDraftId: draft.id);
+
+  Future<void> _createAlbum({String? requestedDraftId}) async {
+    if (_creatingAlbum) return;
+    _creatingAlbum = true;
+    final destination = ref.read(homeUiStateProvider).bottomNavIndex;
+    try {
+      final decision = await resolveAlbumCreationEntry(
+        context,
+        ref,
+        requestedDraftId: requestedDraftId,
+        isStillCurrent: () =>
+            mounted &&
+            ref.read(homeUiStateProvider).bottomNavIndex == destination,
+      );
+      if (!mounted || decision == null) return;
+      final created = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          settings: const WebAppRouteSettings(WebAppLocation.create),
+          builder: (_) => AlbumCreateFlowScreen(initialDraft: decision.draft),
+        ),
+      );
+      if (!mounted) return;
+      ref.invalidate(albumCreationDraftProvider);
+      if (created == true) {
+        await ref.read(homeViewModelProvider.notifier).refresh();
+      }
+    } finally {
+      _creatingAlbum = false;
+    }
   }
 
   void _handleBottomNavTap(int index) {
@@ -138,41 +163,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       data: (count) => count > 0,
       orElse: () => false,
     );
-    Future<void> handleCreateAlbum() async {
-      if (draft != null) {
-        final resume = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('만들던 앨범이 있어요'),
-            content: Text(
-              '${draft.title.trim().isEmpty ? '제목 없는 앨범' : draft.title}\n새 앨범을 임시 저장하면 기존 임시 저장을 대체해요.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('새 앨범'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('이어 만들기'),
-              ),
-            ],
-          ),
-        );
-        if (!context.mounted || resume == null) return;
-        if (resume) return _resumeDraft(draft);
-      }
-      final created = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          settings: const WebAppRouteSettings(WebAppLocation.create),
-          builder: (_) => const AlbumCreateFlowScreen(),
-        ),
-      );
-      if (created == true && context.mounted) {
-        await ref.read(homeViewModelProvider.notifier).refresh();
-      }
-    }
+    Future<void> handleCreateAlbum() => _createAlbum();
 
     final baseBackground = SnapFitColors.backgroundOf(context);
     final homeBackground = uiState.bottomNavIndex == 0

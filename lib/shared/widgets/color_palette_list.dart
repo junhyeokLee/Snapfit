@@ -22,9 +22,14 @@ class ColorPaletteList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (kIsWeb) {
-      return Wrap(spacing: 4, runSpacing: 4, children: [
-        for (final color in colors) _colorDot(context, color, current, onPick),
-      ]);
+      return Wrap(
+        spacing: 4,
+        runSpacing: 4,
+        children: [
+          for (final color in colors)
+            _colorDot(context, color, current, onPick),
+        ],
+      );
     }
     return SizedBox(
       height: 56,
@@ -75,9 +80,11 @@ class ColorPaletteList extends StatelessWidget {
                     color: color,
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
-                      color: kIsWeb ? WebPalette.of(context).ink.withValues(alpha: .6) : SnapFitColors.textPrimaryOf(
-                        context,
-                      ).withValues(alpha: .6),
+                      color: kIsWeb
+                          ? WebPalette.of(context).ink.withValues(alpha: .6)
+                          : SnapFitColors.textPrimaryOf(
+                              context,
+                            ).withValues(alpha: .6),
                       width: selected ? 2 : 1,
                     ),
                   ),

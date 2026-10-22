@@ -22,9 +22,13 @@ Map<String, dynamic> buildGardenLetters(CollectionAspect aspect) {
   const paper = '#F9FAF7';
   const gold = '#AA9467';
   final pages = <Map<String, dynamic>>[];
-  _Sheet sheet(int index, [String background = paper]) =>
-      _Sheet('garden-letters', aspect, index, background,
-          ink: background == ink ? '#F0E9D5' : ink);
+  _Sheet sheet(int index, [String background = paper]) => _Sheet(
+    'garden-letters',
+    aspect,
+    index,
+    background,
+    ink: background == ink ? '#F0E9D5' : ink,
+  );
 
   void photo(
     _Sheet s,

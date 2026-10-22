@@ -164,6 +164,11 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
   }
 
   void _discardAiAccountWork() {
+    _resetDesign();
+    _currentStep = 0;
+    _isAiCreationMode = false;
+    _createdAlbumId = null;
+    _onCompletePressed = null;
     _stopAiObservation();
     _aiCurrentJob = null;
     _aiResumeCandidate = null;
@@ -721,7 +726,19 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
         : normalized;
   }
 
-  void _resetDesign() {
+  void _resetPhotoDocument() {
+    final owner = ref.read(visibleOrderOwnerProvider);
+    final photosBelongToOwner = _photoSession.pendingPhotos.every(
+      (photo) => photo is! BrowserPhotoAsset || photo.ownerId == owner,
+    );
+    if (owner != null && owner == _draftOwner && photosBelongToOwner) {
+      _photoSession.resetDocumentKeepingPendingPhotos();
+    } else {
+      _photoSession.reset();
+    }
+  }
+
+  void _resetDesign({bool keepPendingPhotos = false}) {
     _stopAiObservation();
     _aiCurrentJob = null;
     _aiResumeCandidate = null;
@@ -731,7 +748,11 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
     _aiDeviceMessage = null;
     _clearAiResultHistory();
     _aiRequestOwner = null;
-    _photoSession.reset();
+    if (keepPendingPhotos) {
+      _resetPhotoDocument();
+    } else {
+      _photoSession.reset();
+    }
     _draftCoverLayers = null;
     _draftCoverCanvasSize = null;
     _usesPhysicalTemplateCanvas = false;
@@ -757,7 +778,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
   }
 
   void _useTemplate(AlbumCreationTemplate selection) {
-    _resetDesign();
+    _resetDesign(keepPendingPhotos: true);
     _preserveTemplateTypography = selection.preserveTypography;
     _usesPhysicalTemplateCanvas = true;
     _selectedCover = newAlbumCoverSize(
@@ -789,7 +810,17 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
     _hasSelectedCreationMode = true;
   }
 
+  bool _canChangeDraftDesign(String? owner) {
+    if (_draftOwner == null || owner == _draftOwner) return true;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('계정 정보를 확인하고 있어요. 잠시 후 다시 시도해주세요.')),
+    );
+    return false;
+  }
+
   Future<void> _selectTemplate(PremiumTemplate template) async {
+    final owner = ref.read(visibleOrderOwnerProvider);
+    if (!_canChangeDraftDesign(owner)) return;
     final selection = await Navigator.push<AlbumCreationTemplate>(
       context,
       MaterialPageRoute(
@@ -797,7 +828,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
             TemplateDetailScreen(template: template, selectForCreation: true),
       ),
     );
-    if (!mounted || selection == null) return;
+    if (!mounted ||
+        selection == null ||
+        ref.read(visibleOrderOwnerProvider) != owner)
+      return;
     setState(() => _useTemplate(selection));
   }
 
@@ -833,18 +867,20 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
   }
 
   Future<void> _selectCover(CoverSize cover) async {
+    final owner = ref.read(visibleOrderOwnerProvider);
     if (cover.productId == _selectedCover?.productId) return;
+    if (!_canChangeDraftDesign(owner)) return;
     final sameSize = cover.sizeProductId == _selectedCover?.sizeProductId;
     if (!sameSize &&
         _resolvedTemplatePages != null &&
         !await _confirmDesignChange())
       return;
-    if (!mounted) return;
+    if (!mounted || ref.read(visibleOrderOwnerProvider) != owner) return;
     setState(() {
       _selectedCover = cover;
       _preferredCoverType = cover.coverType;
       if (!sameSize) {
-        _photoSession.reset();
+        _resetPhotoDocument();
         _applyTemplateByCoverIfNeeded(cover);
         _hasFilledPhotos =
             _resolvedTemplatePages
@@ -1211,6 +1247,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
   @override
   void dispose() {
     _stopAiObservation();
+    _photoSession.reset();
     WidgetsBinding.instance.removeObserver(this);
     _aiDraftRequestId += 1;
     super.dispose();
@@ -1486,14 +1523,26 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
         );
   }
 
+  void _observeCreationOwner() {
+    final profile = ref.read(authViewModelProvider).asData;
+    final session = ref.read(orderSessionOwnerProvider);
+    bool changed(String? owner) =>
+        owner != null &&
+        (profile != null && profile.value?.id != owner ||
+            session.observed && session.ownerId != owner);
+    // Refreshing the same profile briefly hides its visible owner. Only a
+    // confirmed profile or an observed SDK session can discard account work.
+    if (changed(_draftOwner) || changed(_aiRequestOwner)) {
+      setState(_discardAiAccountWork);
+      return;
+    }
+    _draftOwner ??= ref.read(visibleOrderOwnerProvider);
+  }
+
   @override
   Widget build(BuildContext context) {
-    ref.listen(visibleOrderOwnerProvider, (_, next) {
-      final owner = _aiRequestOwner;
-      if (owner != null && next != owner) {
-        setState(_discardAiAccountWork);
-      }
-    });
+    ref.listen(authViewModelProvider, (_, __) => _observeCreationOwner());
+    ref.listen(orderSessionOwnerProvider, (_, __) => _observeCreationOwner());
     return WebUnsavedWorkGuard(
       hasUnsavedChanges: _hasUnsavedBrowserPhotoWork,
       child: WillPopScope(
@@ -1618,6 +1667,12 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
 
   Widget _buildWebCreation() {
     final compactHeader = MediaQuery.sizeOf(context).width < 700;
+    final photoWorkspaceNeedsRoom =
+        _currentStep == 1 &&
+        _showPhotoFill &&
+        MediaQuery.textScalerOf(context).scale(11) > 14 &&
+        (MediaQuery.sizeOf(context).width < 760 ||
+            MediaQuery.sizeOf(context).height < 560);
     final hasPhotos = _resolvedTemplatePages != null || _isAiCreationMode;
     final labels = hasPhotos
         ? [
@@ -1653,15 +1708,54 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
       title: '앨범 만들기',
       compactBrand: true,
       denseHeader: true,
-      headerTitle: WebAlbumDocumentTitle(
-        key: const ValueKey('web-creation-document-header'),
-        title: '앨범 만들기 · $title',
-        subtitle: '${selected + 1} / ${labels.length}단계 · $description',
-        onBack: _handleBack,
-        backLabel: '이전 단계',
-        busy:
-            _savingDraft || _startingAlbum || _reviewing || _isAcceptingAiDraft,
-      ),
+      headerTitle: photoWorkspaceNeedsRoom
+          ? Row(
+              key: const ValueKey('web-creation-document-header'),
+              children: [
+                IconButton(
+                  tooltip: '이전 단계',
+                  onPressed: _savingDraft || _startingAlbum || _reviewing
+                      ? null
+                      : _handleBack,
+                  icon: const Icon(Icons.arrow_back, size: 20),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: WebPalette.of(context).ink,
+                      fontSize: 14,
+                      height: 1.3,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '${selected + 1}/${labels.length}',
+                  style: TextStyle(
+                    color: WebPalette.of(context).muted,
+                    fontSize: 11,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            )
+          : WebAlbumDocumentTitle(
+              key: const ValueKey('web-creation-document-header'),
+              title: '앨범 만들기 · $title',
+              subtitle: '${selected + 1} / ${labels.length}단계 · $description',
+              onBack: _handleBack,
+              backLabel: '이전 단계',
+              busy:
+                  _savingDraft ||
+                  _startingAlbum ||
+                  _reviewing ||
+                  _isAcceptingAiDraft,
+            ),
       section: WebSection.create,
       workspace: true,
       showNavigation: false,
@@ -1782,15 +1876,16 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
           final compact = bounds.maxWidth < 760;
           return Padding(
             padding: EdgeInsets.fromLTRB(
-              compact ? 12 : 24,
-              16,
-              compact ? 12 : 24,
-              16,
+              compact || photoWorkspaceNeedsRoom ? 12 : 24,
+              photoWorkspaceNeedsRoom ? 8 : 16,
+              compact || photoWorkspaceNeedsRoom ? 12 : 24,
+              photoWorkspaceNeedsRoom ? 8 : 16,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (MediaQuery.sizeOf(context).width < 1000) ...[
+                if (!photoWorkspaceNeedsRoom &&
+                    MediaQuery.sizeOf(context).width < 1000) ...[
                   SizedBox(
                     key: const ValueKey('web-creation-compact-stages'),
                     height: 38,
@@ -1831,7 +1926,8 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
                 ],
                 if (_selectedCover != null &&
                     _hasSelectedCreationMode &&
-                    !_isAiCreationMode) ...[
+                    !_isAiCreationMode &&
+                    !photoWorkspaceNeedsRoom) ...[
                   Wrap(
                     spacing: 16,
                     runSpacing: 6,

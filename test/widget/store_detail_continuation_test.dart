@@ -1,3 +1,5 @@
+import '../helpers/creation_draft_fixtures.dart'
+    show FakeAuthViewModel, MemoryCreationDraftStore;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -13,8 +15,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:snap_fit/core/supabase/supabase_provider.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
+import 'package:snap_fit/features/album/data/album_creation_draft_store.dart';
 import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
 import 'package:snap_fit/features/album/presentation/widgets/home/home_cover_frame.dart';
+import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
+import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
 import 'package:snap_fit/features/point_shop/data/point_shop_provider.dart';
 import 'package:snap_fit/features/point_shop/domain/point_shop_product.dart';
 import 'package:snap_fit/features/point_shop/domain/point_shop_template_key.dart';
@@ -156,6 +161,18 @@ void main() {
       ProviderScope(
         retry: (_, __) => null,
         overrides: [
+          authViewModelProvider.overrideWith(
+            () => FakeAuthViewModel(
+              const UserInfo(
+                id: 'detail-owner',
+                name: '앨범 사용자',
+                provider: 'email',
+              ),
+            ),
+          ),
+          albumCreationDraftStoreProvider.overrideWithValue(
+            MemoryCreationDraftStore(),
+          ),
           pointShopCatalogProvider.overrideWith(
             (_) => catalog?.call() ?? Future.value([_product()]),
           ),

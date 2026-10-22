@@ -13,6 +13,7 @@ import '../../../store/presentation/views/material_catalog_screen.dart';
 import '../../data/album_creation_draft_store.dart';
 import '../../domain/entities/album.dart';
 import '../../domain/entities/album_creation_draft.dart';
+import '../utils/album_creation_entry.dart';
 import '../viewmodels/home_view_model.dart';
 import '../views/album_create_flow_screen.dart';
 import '../views/print_order_preview_screen.dart';
@@ -34,6 +35,7 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
   String _filter = '전체';
   String _sort = '최근 수정순';
   bool _listView = false;
+  bool _creatingAlbum = false;
 
   void _resetFilters() => setState(() {
     _filter = '전체';
@@ -74,59 +76,35 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
   }
 
   Future<void> _create({AlbumCreationDraft? resume, bool ai = false}) async {
-    var draft = resume;
-    AlbumCreationDraft? saved;
+    if (_creatingAlbum) return;
+    _creatingAlbum = true;
     try {
-      saved = await ref.read(albumCreationDraftProvider.future);
-    } catch (_) {
-      if (mounted)
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('임시 저장한 앨범을 확인하지 못했습니다. 다시 불러온 뒤 시작해주세요.'),
+      final decision = await resolveAlbumCreationEntry(
+        context,
+        ref,
+        requestedDraftId: resume?.id,
+      );
+      if (!mounted || decision == null) return;
+      final draft = decision.draft;
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          settings: WebAppRouteSettings(
+            ai && draft == null
+                ? WebAppLocation.aiCreate
+                : WebAppLocation.create,
           ),
-        );
-      return;
-    }
-    if (!mounted) return;
-    final existing = saved;
-    if (draft == null && existing != null) {
-      final choice = await showDialog<bool>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: const Text('만들던 앨범이 있습니다'),
-          content: Text(
-            '${existing.title.trim().isEmpty ? '제목 없는 앨범' : existing.title}\n이어서 만들거나 새 앨범을 시작하세요. 새 앨범을 임시 저장하면 기존 임시 저장을 대체합니다.',
+          builder: (_) => AlbumCreateFlowScreen(
+            initialDraft: draft,
+            initialAiMode: ai && draft == null,
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('새 앨범 만들기'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('이어서 만들기'),
-            ),
-          ],
         ),
       );
-      if (!mounted || choice == null) return;
-      if (choice) draft = existing;
-    }
-    if (!mounted) return;
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        settings: WebAppRouteSettings(
-          ai && draft == null ? WebAppLocation.aiCreate : WebAppLocation.create,
-        ),
-        builder: (_) => AlbumCreateFlowScreen(
-          initialDraft: draft,
-          initialAiMode: ai && draft == null,
-        ),
-      ),
-    );
-    if (mounted) {
-      ref.invalidate(albumCreationDraftProvider);
-      ref.invalidate(homeViewModelProvider);
+      if (mounted) {
+        ref.invalidate(albumCreationDraftProvider);
+        ref.invalidate(homeViewModelProvider);
+      }
+    } finally {
+      _creatingAlbum = false;
     }
   }
 

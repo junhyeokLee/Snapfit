@@ -83,14 +83,6 @@ Future<void> _loadGoldenFonts() async {
     ..addFont(rootBundle.load('assets/fonts/NotoSansKR-SemiBold.ttf'))
     ..addFont(rootBundle.load('assets/fonts/NotoSansKR-Bold.ttf'));
   await korean.load();
-
-  final flutterRoot = Platform.environment['FLUTTER_ROOT'];
-  final materialIconPath = flutterRoot == null
-      ? '/opt/data/flutter-sdk-release/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf'
-      : '$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf';
-  final materialIcons = FontLoader('MaterialIcons')
-    ..addFont(File(materialIconPath).readAsBytes().then(ByteData.sublistView));
-  await materialIcons.load();
 }
 
 List<Override> _editorOverrides() {
@@ -180,6 +172,7 @@ Widget _wrapEditor() {
       designSize: const Size(390, 844),
       minTextAdapt: true,
       builder: (_, __) => MaterialApp(
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(fontFamily: 'Noto Sans KR'),
         home: const _EditorGoldenBoot(),
       ),

@@ -24,6 +24,21 @@ const _out = 'output/template-preview/collections';
 
 class _PreviewInteraction extends Mock implements LayerInteractionManager {
   @override
+  bool get isPrintPreview => false;
+
+  @override
+  bool get isPreviewMode => true;
+
+  @override
+  bool get isInteractingNow => false;
+
+  @override
+  bool get isImagePanMode => false;
+
+  @override
+  String? get selectedLayerId => null;
+
+  @override
   Widget buildInteractiveLayer({
     required LayerModel layer,
     required double baseWidth,

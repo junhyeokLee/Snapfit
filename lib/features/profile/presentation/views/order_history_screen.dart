@@ -373,10 +373,14 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
                               labelPadding: const EdgeInsets.symmetric(
                                 horizontal: 14,
                               ),
-                              indicatorColor: ExperienceFormStyle.selectionInk(context),
+                              indicatorColor: ExperienceFormStyle.selectionInk(
+                                context,
+                              ),
                               indicatorSize: TabBarIndicatorSize.label,
                               dividerColor: Colors.transparent,
-                              labelColor: ExperienceFormStyle.selectionInk(context),
+                              labelColor: ExperienceFormStyle.selectionInk(
+                                context,
+                              ),
                               unselectedLabelColor: ExperienceFormStyle.muted(
                                 context,
                               ),

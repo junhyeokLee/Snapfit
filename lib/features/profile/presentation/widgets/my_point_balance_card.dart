@@ -48,7 +48,9 @@ class MyPointBalanceCard extends ConsumerWidget {
       onPressed: onCharge,
       style: OutlinedButton.styleFrom(
         foregroundColor: ExperienceFormStyle.selectionInk(context),
-        side: BorderSide(color: ExperienceFormStyle.selectionInk(context).withOpacity(.4)),
+        side: BorderSide(
+          color: ExperienceFormStyle.selectionInk(context).withOpacity(.4),
+        ),
         textStyle: ExperienceStyle.text(14),
         minimumSize: const Size(0, 36),
         padding: const EdgeInsets.symmetric(horizontal: 14),

@@ -13,6 +13,9 @@ import 'package:snap_fit/core/templates/data_template_engine.dart';
 import 'package:snap_fit/core/templates/template_document_pages.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
 import 'package:snap_fit/features/album/ai_album/domain/ai_album_models.dart';
+import 'package:snap_fit/features/album/ai_album/domain/ai_album_draft_generation_service.dart';
+import 'package:snap_fit/features/album/data/api/album_provider.dart';
+import 'package:snap_fit/features/album/data/album_creation_draft_store.dart';
 import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
 import 'package:snap_fit/features/album/data/album_creation_catalog_provider.dart';
 import 'package:snap_fit/features/album/domain/entities/album_creation_template.dart';
@@ -32,12 +35,25 @@ import 'package:snap_fit/features/album/presentation/widgets/create_flow/creatio
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/template_photo_fill_step.dart';
 import 'package:snap_fit/features/album/presentation/widgets/reader/album_frozen_screen.dart';
 import 'package:snap_fit/features/point_shop/data/point_shop_provider.dart';
+import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
+import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
+import 'package:snap_fit/features/billing/data/billing_provider.dart';
 import 'package:snap_fit/features/store/presentation/widgets/template_page_renderer.dart';
 import '../fixtures/ai_template_design_fixture.dart';
+import '../helpers/creation_draft_fixtures.dart' show MemoryCreationDraftStore;
 
 class _Binding extends AutomatedTestWidgetsFlutterBinding {
   @override
   bool get disableShadows => false;
+}
+
+class _Auth extends AuthViewModel {
+  @override
+  UserInfo? build() => const UserInfo(
+    id: 'creation-workshop-owner',
+    name: '제작 검수',
+    provider: 'EMAIL',
+  );
 }
 
 void main() {
@@ -113,6 +129,18 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authViewModelProvider.overrideWith(_Auth.new),
+          albumCreationDraftStoreProvider.overrideWithValue(
+            MemoryCreationDraftStore(),
+          ),
+          isFirstAiDraftFreeProvider.overrideWith((_) async => true),
+          myPointBalanceProvider.overrideWith((_) async => 2000),
+          aiAlbumDraftGenerationServiceProvider.overrideWithValue(
+            AiAlbumDraftGenerationService(
+              collectCandidates: (_) async =>
+                  throw StateError('Request editing must not access photos.'),
+            ),
+          ),
           albumCreationCatalogProvider.overrideWith(
             (ref) => Stream.value(publishedCreationTemplates),
           ),

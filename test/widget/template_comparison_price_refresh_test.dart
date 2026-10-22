@@ -50,7 +50,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          templateListProvider.overrideWith((_) async => designs),
+          mockTemplateList(() async => designs),
           storeCurationsProvider.overrideWith((_) async => {}),
           pointShopCatalogProvider.overrideWith((_) async {
             signedCatalogReads++;

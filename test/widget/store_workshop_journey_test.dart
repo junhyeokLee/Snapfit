@@ -13,16 +13,19 @@ import '../support/store_catalog_navigation.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:snap_fit/core/templates/data_template_engine.dart';
+import 'package:snap_fit/core/templates/studio_decoration_catalog.dart';
 import 'package:snap_fit/core/templates/template_document_pages.dart';
 import 'package:snap_fit/core/templates/template_visual_material_inventory.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
 import 'package:snap_fit/features/album/data/api/album_provider.dart';
+import 'package:snap_fit/features/album/data/album_creation_draft_store.dart';
 import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
 import 'package:snap_fit/features/album/data/album_creation_catalog_provider.dart';
 import 'package:snap_fit/features/album/domain/entities/album.dart';
 import 'package:snap_fit/features/album/domain/entities/album_page.dart';
 import 'package:snap_fit/features/album/domain/entities/layer_export_mapper.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/home_view_model.dart';
+import 'package:snap_fit/features/album/presentation/controllers/store_material_insertion.dart';
 import 'package:snap_fit/features/album/presentation/views/album_create_flow_screen.dart';
 import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
 import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
@@ -44,6 +47,7 @@ import '../helpers/mock_repositories.dart';
 import '../unit/album_editor_view_model_test.dart'
     show FakeStorageService, FakeAlbumPersistenceService;
 import 'auth_gate_test.dart' show FakeHomeViewModel;
+import '../helpers/creation_draft_fixtures.dart' show MemoryCreationDraftStore;
 import 'my_page_screen_test.dart' show FakeAuthViewModel;
 
 class _PaintBinding extends AutomatedTestWidgetsFlutterBinding {
@@ -55,14 +59,28 @@ class _Shop extends Mock implements PointShopRepository {}
 
 void main() {
   _PaintBinding();
-  const material = 'frame:materialLinenOval', materialTitle = '리넨 자수 타원';
+  final reusablePaidMaterials = {
+    for (final spec in studioDecorations)
+      if ((pointShopLaunchPrices['sticker:${spec.id}']?.points ?? 0) > 0 &&
+          isStoreMaterialSupported('sticker:${spec.id}'))
+        'sticker:${spec.id}',
+  };
+  // Current editorial books use independent paper/sticker materials rather
+  // than the old framed-photo layouts. Exercise a real, paid included item.
   final template = publishedCreationTemplates.firstWhere(
     (t) =>
         t.isPremium &&
         templateVisualMaterialKeys(
           jsonDecode(t.templateJson!),
-        ).any((key) => key.startsWith('frame:')),
+        ).any(reusablePaidMaterials.contains),
   );
+  final material = templateVisualMaterialKeys(
+    jsonDecode(template.templateJson!),
+  ).firstWhere(reusablePaidMaterials.contains);
+  final materialSpec = studioDecorations.firstWhere(
+    (spec) => 'sticker:${spec.id}' == material,
+  );
+  final materialTitle = materialSpec.label;
   final boundary = GlobalKey();
   late List<AlbumPage> pages;
   late List<Album> albums;
@@ -78,6 +96,13 @@ void main() {
       ),
   ];
   setUpAll(() async {
+    expect(template.isPremium, true);
+    expect(
+      templateVisualMaterialKeys(jsonDecode(template.templateJson!)),
+      contains(material),
+    );
+    expect(isStoreMaterialSupported(material), true);
+    expect(pointShopLaunchPrices[material]!.points, greaterThan(0));
     WidgetController.hitTestWarningShouldBeFatal = true;
     final fonts =
         jsonDecode(await rootBundle.loadString('FontManifest.json')) as List;
@@ -207,9 +232,11 @@ void main() {
       ProviderScope(
         key: UniqueKey(),
         overrides: [
+          albumCreationDraftStoreProvider.overrideWithValue(
+            MemoryCreationDraftStore(),
+          ),
           templateRepositoryProvider.overrideWithValue(templates),
-          templateListProvider.overrideWith(
-            (ref) async => publishedCreationTemplates,
+          mockTemplateList(() async => publishedCreationTemplates,
           ),
           albumCreationCatalogProvider.overrideWith(
             (ref) => Stream.value(publishedCreationTemplates),
@@ -292,8 +319,8 @@ void main() {
     productKey: material,
     favoriteKey: material,
     title: materialTitle,
-    type: '프레임',
-    preview: (_) => const PointShopArtwork(productKey: material),
+    type: materialSpec.category.label,
+    preview: (_) => PointShopArtwork(productKey: material),
   );
   Future<void> purchase(
     WidgetTester tester,
@@ -378,17 +405,8 @@ void main() {
           await selectStoreCatalog(tester, 1);
           await capture(tester, 'shop-atelier-materials', extent, dark);
           await selectStoreCatalog(tester, 0);
-          await tester.scrollUntilVisible(
-            find.text('검색'),
-            180,
-            scrollable: find
-                .descendant(
-                  of: find.byType(CustomScrollView).first,
-                  matching: find.byType(Scrollable),
-                )
-                .first,
-          );
-          await tap(tester, find.text('검색'));
+          await tap(tester, find.byTooltip('스토어 검색'));
+          expect(find.byType(TextField).hitTestable(), findsOneWidget);
           await tester.enterText(find.byType(TextField), '바다');
           final keyboard = extent.width > extent.height ? 140.0 : 260.0;
           size(tester, extent, keyboard: keyboard);
@@ -516,17 +534,8 @@ void main() {
         reset(tester);
         size(tester, extent);
         await mount(tester, const StoreHubScreen(), scale: 1.8, dark: true);
-        await tester.scrollUntilVisible(
-          find.text('검색'),
-          180,
-          scrollable: find
-              .descendant(
-                of: find.byType(CustomScrollView).first,
-                matching: find.byType(Scrollable),
-              )
-              .first,
-        );
-        await tap(tester, find.text('검색'));
+        await tap(tester, find.byTooltip('스토어 검색'));
+        expect(find.byType(TextField).hitTestable(), findsOneWidget);
         await tester.enterText(find.byType(TextField), '웨딩');
         await paint(tester);
         final input = tester.state<EditableTextState>(
@@ -667,13 +676,13 @@ void main() {
     );
     await paint(tester);
     quote.complete(
-      const PointShopAccess(
+      PointShopAccess(
         productKey: material,
         title: materialTitle,
         available: true,
         isFree: false,
         owned: false,
-        pointPrice: 300,
+        pointPrice: pointShopLaunchPrices[material]!.points,
         remainingBalance: 6000,
       ),
     );

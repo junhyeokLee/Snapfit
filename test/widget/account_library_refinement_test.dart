@@ -25,6 +25,8 @@ import 'package:snap_fit/features/store/data/api/template_provider.dart';
 import 'package:snap_fit/features/store/domain/entities/premium_template.dart';
 import 'package:snap_fit/features/store/presentation/views/material_catalog_screen.dart';
 import 'package:snap_fit/features/store/presentation/widgets/template_page_renderer.dart';
+import 'package:snap_fit/features/store/presentation/widgets/catalog_edition_artwork.dart';
+import 'package:snap_fit/features/store/presentation/widgets/library_design_tile.dart';
 import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
 import 'package:snap_fit/shared/widgets/experience_form_style.dart';
 import 'package:snap_fit/shared/widgets/image_frame_style_picker.dart';
@@ -91,8 +93,7 @@ Widget _app(
       (_) => owned?.call() ?? Future.value(<String>{}),
     ),
     pointShopCatalogProvider.overrideWith((_) async => []),
-    templateListProvider.overrideWith(
-      (_) => templates?.call() ?? Future.value(publishedCreationTemplates),
+    mockTemplateList(() => templates?.call() ?? Future.value(publishedCreationTemplates),
     ),
   ],
   child: ScreenUtilInit(
@@ -288,7 +289,24 @@ void main() {
         await _paintArtwork(tester);
         await _capture(tester, key, 'library-$id');
         expect(find.byType(HomeCoverFrame), findsWidgets);
-        expect(find.byType(TemplatePageRenderer), findsNothing);
+        expect(find.byType(CatalogSpreadPreview), findsOneWidget);
+        expect(
+          tester
+              .widget<CatalogSpreadPreview>(find.byType(CatalogSpreadPreview))
+              .template,
+          same(template),
+        );
+        expect(find.byType(TemplatePageRenderer), findsWidgets);
+        expect(
+          tester
+              .widgetList<TemplatePageRenderer>(
+                find.byType(TemplatePageRenderer),
+              )
+              .every(
+                (page) => page.layers.isNotEmpty && !page.showCanvasChrome,
+              ),
+          isTrue,
+        );
         expect(
           tester
               .widgetList<HomeCoverFrame>(find.byType(HomeCoverFrame))
@@ -444,7 +462,7 @@ void main() {
     expect(find.text('판매 준비 중'), findsOneWidget);
     expect(find.text('무료'), findsNothing);
     expect(find.text('구매 완료'), findsNothing);
-    expect(find.text('최근 즐겨찾기순'), findsOneWidget);
+    expect(find.text('즐겨찾기 먼저'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -708,12 +726,12 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('아직 보관한 항목이 없어요.'), findsOneWidget);
-    expect(find.text('구매한 템플릿과 소재가 여기에 모여요.'), findsOneWidget);
+    expect(find.text('구매한 소재와 즐겨찾기가 여기에 모여요.'), findsOneWidget);
     await _capture(tester, key, 'library-empty');
     await tester.tap(find.text('즐겨찾기'));
     await tester.pumpAndSettle();
     expect(find.text('즐겨찾는 항목이 없어요.'), findsOneWidget);
-    expect(find.text('구매한 템플릿과 소재가 여기에 모여요.'), findsNothing);
+    expect(find.text('보관함을 불러오지 못했어요'), findsNothing);
     await _capture(tester, key, 'favorites-empty');
     expect(tester.takeException(), isNull);
   });
@@ -739,7 +757,11 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.byKey(ValueKey('material-item-$secondKey')), findsNothing);
+      // Favorites are visible in the library before purchase, but never gain
+      // ownership until the refreshed entitlement response grants the item.
+      final secondCard = find.byKey(ValueKey('material-item-$secondKey'));
+      expect(secondCard, findsOneWidget);
+      expect(tester.widget<LibraryDesignTile>(secondCard).owned, isFalse);
       owned = {firstKey, secondKey};
       await tester.runAsync(
         tester
@@ -747,7 +769,8 @@ void main() {
             .onRefresh,
       );
       await tester.pumpAndSettle();
-      expect(find.byKey(ValueKey('material-item-$secondKey')), findsOneWidget);
+      expect(secondCard, findsOneWidget);
+      expect(tester.widget<LibraryDesignTile>(secondCard).owned, isTrue);
       await tester.tap(find.text('즐겨찾기'));
       await tester.pumpAndSettle();
       expect(

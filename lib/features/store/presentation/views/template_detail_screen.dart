@@ -58,6 +58,7 @@ import '../widgets/material_original_preview.dart';
 import 'template_full_screen_view.dart';
 import 'material_detail_screen.dart';
 import '../../../album/presentation/views/album_create_flow_screen.dart';
+import '../../../album/presentation/utils/album_creation_entry.dart';
 import '../../../album/presentation/widgets/create_flow/creation_template_preview.dart';
 import '../widgets/store_detail_workspace.dart';
 import '../utils/published_template_share_uri.dart';
@@ -651,6 +652,32 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     }
     setState(() => _isUsing = true);
     try {
+      AlbumCreationEntryDecision? entry;
+      if (!widget.selectForCreation) {
+        entry = await resolveAlbumCreationEntry(
+          context,
+          ref,
+          selectedDesignTitle: _template.title,
+          isStillCurrent: () =>
+              mounted && ModalRoute.of(context)?.isCurrent != false,
+        );
+        if (!mounted ||
+            ModalRoute.of(context)?.isCurrent == false ||
+            entry == null)
+          return;
+        if (entry.draft != null) {
+          await Navigator.push(
+            context,
+            snapFitRoute(
+              page: AlbumCreateFlowScreen(initialDraft: entry.draft),
+              settings: kIsWeb
+                  ? const WebAppRouteSettings(WebAppLocation.create)
+                  : null,
+            ),
+          );
+          return;
+        }
+      }
       final volume = publishedPremiumVolume(_template.id);
       if (volume != null && volume.pageCounts.length > 1) {
         final count = await showTemplateEditionSheet(
@@ -725,6 +752,10 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
         pagesCanvasSize: coverCanvasBaseSize(cover),
       );
 
+      if (entry != null &&
+          !await validateAlbumCreationEntry(context, ref, entry)) {
+        return;
+      }
       final granted = await ensurePointShopAccess(
         context,
         ref,
@@ -735,6 +766,10 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
         return;
       if (widget.selectForCreation) {
         Navigator.pop(context, selection);
+        return;
+      }
+      if (entry == null ||
+          !await validateAlbumCreationEntry(context, ref, entry)) {
         return;
       }
       await Navigator.push(

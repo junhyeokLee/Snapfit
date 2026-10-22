@@ -78,13 +78,32 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     if (kIsWeb) {
       return Scaffold(
         backgroundColor: WebPalette.of(context).background,
-        body: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(Icons.auto_stories_outlined, size: 34, color: WebPalette.of(context).brand),
-          SizedBox(height: 16),
-          Text('스냅핏', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: WebPalette.of(context).ink)),
-          SizedBox(height: 24),
-          SizedBox(width: 160, child: LinearProgressIndicator(minHeight: 2)),
-        ])),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.auto_stories_outlined,
+                size: 34,
+                color: WebPalette.of(context).brand,
+              ),
+              SizedBox(height: 16),
+              Text(
+                '스냅핏',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: WebPalette.of(context).ink,
+                ),
+              ),
+              SizedBox(height: 24),
+              SizedBox(
+                width: 160,
+                child: LinearProgressIndicator(minHeight: 2),
+              ),
+            ],
+          ),
+        ),
       );
     }
     return Scaffold(

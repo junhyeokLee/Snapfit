@@ -97,15 +97,21 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, box) => Container(
-        height: widget.showHandle && kIsWeb ? double.infinity : widget.showHandle
+        height: widget.showHandle && kIsWeb
+            ? double.infinity
+            : widget.showHandle
             ? math.min(
                 box.maxHeight,
                 (MediaQuery.sizeOf(context).height * .90).clamp(0.0, 900.0),
               )
             : null,
         decoration: BoxDecoration(
-          color: kIsWeb ? WebPalette.of(context).surface : ExperienceFormStyle.surface(context),
-          borderRadius: kIsWeb ? BorderRadius.circular(12) : widget.showHandle
+          color: kIsWeb
+              ? WebPalette.of(context).surface
+              : ExperienceFormStyle.surface(context),
+          borderRadius: kIsWeb
+              ? BorderRadius.circular(12)
+              : widget.showHandle
               ? const BorderRadius.vertical(top: Radius.circular(8))
               : null,
         ),

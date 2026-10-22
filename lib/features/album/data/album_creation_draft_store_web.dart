@@ -44,6 +44,7 @@ class BrowserAlbumCreationDraftStore
       }
       photos[photo.id] = photo;
     }
+
     void addPages(List<List<LayerModel>>? pages) {
       if (pages == null) return;
       for (final page in pages) {
@@ -52,13 +53,14 @@ class BrowserAlbumCreationDraftStore
         }
       }
     }
+
     for (final photo in draft.pendingPhotos) {
       addPhoto(photo);
     }
     addPages(draft.pages);
     addPages(draft.basePages);
-    for (final pages in draft.variants?.values ??
-        const <List<List<LayerModel>>>[]) {
+    for (final pages
+        in draft.variants?.values ?? const <List<List<LayerModel>>>[]) {
       addPages(pages);
     }
     if (draft.editedCover != null) addPages([draft.editedCover!]);
@@ -68,16 +70,21 @@ class BrowserAlbumCreationDraftStore
     return _StoredBrowserDraft(
       owner: owner.toJS,
       json: json.toJS,
-      photos: photos.values.map((photo) => _StoredBrowserPhoto(
-        id: photo.id.toJS,
-        name: (photo.title ?? '사진').toJS,
-        width: photo.width.toJS,
-        height: photo.height.toJS,
-        createdAtSecond: (photo.createDateSecond ?? 0).toJS,
-        contentSha256: photo.contentSha256.toJS,
-        original: photo.originalBytes.toJS,
-        preview: photo.previewBytes.toJS,
-      )).toList().toJS,
+      photos: photos.values
+          .map(
+            (photo) => _StoredBrowserPhoto(
+              id: photo.id.toJS,
+              name: (photo.title ?? '사진').toJS,
+              width: photo.width.toJS,
+              height: photo.height.toJS,
+              createdAtSecond: (photo.createDateSecond ?? 0).toJS,
+              contentSha256: photo.contentSha256.toJS,
+              original: photo.originalBytes.toJS,
+              preview: photo.previewBytes.toJS,
+            ),
+          )
+          .toList()
+          .toJS,
     );
   }
 
@@ -169,20 +176,23 @@ class BrowserAlbumCreationDraftStore
       );
       photos[restored.id] = restored;
     }
-    return AlbumCreationDraft.fromJson(metadata, photoDecoder: (reference) {
-      final photo = photos[reference['id']];
-      if (photo == null ||
-          photo.width != reference['width'] ||
-          photo.height != reference['height']) {
-        throw const BrowserPhotoException('임시 저장한 사진 원본을 찾지 못했어요.');
-      }
-      return photo;
-    });
+    return AlbumCreationDraft.fromJson(
+      metadata,
+      photoDecoder: (reference) {
+        final photo = photos[reference['id']];
+        if (photo == null ||
+            photo.width != reference['width'] ||
+            photo.height != reference['height']) {
+          throw const BrowserPhotoException('임시 저장한 사진 원본을 찾지 못했어요.');
+        }
+        return photo;
+      },
+    );
   }
 
   @override
-  Future<AlbumCreationDraft?> load(String owner) => _serial(() =>
-    _database.transaction<AlbumCreationDraft?>(
+  Future<AlbumCreationDraft?> load(String owner) => _serial(
+    () => _database.transaction<AlbumCreationDraft?>(
       owner: owner,
       write: false,
       action: (value, _, __) => value == null ? null : _decode(owner, value),
@@ -190,7 +200,10 @@ class BrowserAlbumCreationDraftStore
   );
 
   @override
-  Future<void> save(String owner, AlbumCreationDraft draft) => _serial(() async {
+  Future<void> save(
+    String owner,
+    AlbumCreationDraft draft,
+  ) => _serial(() async {
     final key = (owner: owner, draftId: draft.id);
     if (!_writeBaselines.containsKey(key)) throw _staleWrite;
     final baseline = _writeBaselines[key];
@@ -245,8 +258,8 @@ class BrowserAlbumCreationDraftStore
   });
 
   @override
-  Future<void> remove(String owner, String draftId) => _serial(() =>
-    _database.transaction<void>(
+  Future<void> remove(String owner, String draftId) => _serial(
+    () => _database.transaction<void>(
       owner: owner,
       write: true,
       action: (value, _, remove) {

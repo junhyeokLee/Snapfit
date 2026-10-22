@@ -11,15 +11,26 @@ import '../../store/presentation/widgets/material_original_preview.dart';
 
 enum PointShopPurchaseAction { buy, topUp }
 
-Future<T?> _showPointShopDialog<T>({required BuildContext context, required WidgetBuilder builder}) {
-  if (kIsWeb) return showWebAwareDialog<T>(context: context, builder: builder, maxWidth: 920, maxHeight: 760);
+Future<T?> _showPointShopDialog<T>({
+  required BuildContext context,
+  required WidgetBuilder builder,
+}) {
+  if (kIsWeb)
+    return showWebAwareDialog<T>(
+      context: context,
+      builder: builder,
+      maxWidth: 920,
+      maxHeight: 760,
+    );
   return showModalBottomSheet<T>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: SnapFitColors.backgroundOf(context),
     constraints: const BoxConstraints(maxWidth: 920),
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(8))),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+    ),
     builder: builder,
   );
 }
@@ -52,7 +63,8 @@ class PointShopPurchaseSheet extends StatelessWidget {
     final insufficient = purchase == null && access.remainingBalance < price;
     final template = access.productKey.startsWith('template:');
     final complete = purchase != null;
-    final landscape = kIsWeb ||
+    final landscape =
+        kIsWeb ||
         MediaQuery.sizeOf(context).width > MediaQuery.sizeOf(context).height;
     final artwork = PointShopArtwork(
       productKey: access.productKey,
@@ -72,8 +84,12 @@ class PointShopPurchaseSheet extends StatelessWidget {
           child: DecoratedBox(
             key: const ValueKey('shop-purchase-artwork'),
             decoration: BoxDecoration(
-              gradient: template && !kIsWeb ? AlbumStageStyle.gradient(context) : null,
-              color: kIsWeb ? WebPalette.of(context).canvas : template
+              gradient: template && !kIsWeb
+                  ? AlbumStageStyle.gradient(context)
+                  : null,
+              color: kIsWeb
+                  ? WebPalette.of(context).canvas
+                  : template
                   ? null
                   : MaterialOriginalPreview.backgroundFor(access.productKey),
             ),
@@ -166,7 +182,12 @@ class PointShopPurchaseSheet extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
-                padding: EdgeInsets.fromLTRB(20, kIsWeb ? 18 : 4, 8, kIsWeb ? 16 : 4),
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  kIsWeb ? 18 : 4,
+                  8,
+                  kIsWeb ? 16 : 4,
+                ),
                 child: Row(
                   children: [
                     if (complete) ...[
@@ -246,8 +267,12 @@ class PointShopPurchaseSheet extends StatelessWidget {
                         key: const ValueKey('shop-purchase-action'),
                         style: kIsWeb
                             ? ExperienceFormStyle.primary(context).copyWith(
-                                backgroundColor: WidgetStatePropertyAll(WebPalette.of(context).brand),
-                                foregroundColor: WidgetStatePropertyAll(WebPalette.of(context).onBrand),
+                                backgroundColor: WidgetStatePropertyAll(
+                                  WebPalette.of(context).brand,
+                                ),
+                                foregroundColor: WidgetStatePropertyAll(
+                                  WebPalette.of(context).onBrand,
+                                ),
                               )
                             : ExperienceFormStyle.primary(context),
                         onPressed: () => Navigator.pop(

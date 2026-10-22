@@ -9,6 +9,7 @@ import 'package:snap_fit/features/album/presentation/views/album_create_flow_scr
 import 'package:snap_fit/features/album/presentation/widgets/home/home_album_tab_screen.dart';
 import 'package:snap_fit/features/notification/presentation/providers/notification_provider.dart';
 import 'package:snap_fit/features/album/data/api/album_provider.dart';
+import 'package:snap_fit/features/album/data/album_creation_draft_store.dart';
 import 'package:snap_fit/features/album/presentation/views/home_screen.dart';
 import 'package:snap_fit/features/album/presentation/widgets/home/home_album_slider.dart';
 import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
@@ -17,6 +18,7 @@ import 'package:snap_fit/features/store/data/api/template_provider.dart';
 
 import '../helpers/fake_album.dart';
 import '../helpers/mock_repositories.dart';
+import '../helpers/creation_draft_fixtures.dart' show MemoryCreationDraftStore;
 
 class FakeAuthViewModel extends AuthViewModel {
   FakeAuthViewModel(this.user);
@@ -45,6 +47,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          albumCreationDraftStoreProvider.overrideWithValue(
+            MemoryCreationDraftStore(),
+          ),
           homeUiStateProvider.overrideWith(
             () => HomeUiStateNotifier(initialIndex: 0),
           ),
@@ -54,7 +59,7 @@ void main() {
               const UserInfo(id: '1', name: 'User', provider: 'kakao'),
             ),
           ),
-          templateListProvider.overrideWith((ref) async => const []),
+          mockTemplateList(() async => const []),
         ],
         child: ScreenUtilInit(
           designSize: const Size(390, 844),
@@ -82,6 +87,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          albumCreationDraftStoreProvider.overrideWithValue(
+            MemoryCreationDraftStore(),
+          ),
           homeUiStateProvider.overrideWith(
             () => HomeUiStateNotifier(initialIndex: 0),
           ),
@@ -91,7 +99,7 @@ void main() {
               const UserInfo(id: '1', name: 'User', provider: 'kakao'),
             ),
           ),
-          templateListProvider.overrideWith((ref) async => const []),
+          mockTemplateList(() async => const []),
         ],
         child: ScreenUtilInit(
           designSize: const Size(390, 844),
@@ -123,6 +131,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          albumCreationDraftStoreProvider.overrideWithValue(
+            MemoryCreationDraftStore(),
+          ),
           homeUiStateProvider.overrideWith(
             () => HomeUiStateNotifier(initialIndex: 0),
           ),
@@ -132,7 +143,7 @@ void main() {
               const UserInfo(id: '1', name: 'User', provider: 'kakao'),
             ),
           ),
-          templateListProvider.overrideWith((ref) async => const []),
+          mockTemplateList(() async => const []),
         ],
         child: ScreenUtilInit(
           designSize: const Size(390, 844),
@@ -161,6 +172,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          albumCreationDraftStoreProvider.overrideWithValue(
+            MemoryCreationDraftStore(),
+          ),
           homeUiStateProvider.overrideWith(
             () => HomeUiStateNotifier(initialIndex: 0),
           ),
@@ -170,7 +184,7 @@ void main() {
               const UserInfo(id: '1', name: 'User', provider: 'kakao'),
             ),
           ),
-          templateListProvider.overrideWith((ref) async => const []),
+          mockTemplateList(() async => const []),
         ],
         child: ScreenUtilInit(
           designSize: const Size(390, 844),
@@ -191,14 +205,15 @@ void main() {
     expect(find.byType(AlbumCreateFlowScreen), findsOneWidget);
   });
 
-  testWidgets('앨범 탭은 올드한 서재 카피와 대형 생성 CTA 없이 앨범/필터만 보여준다', (
-    WidgetTester tester,
-  ) async {
+  testWidgets('앨범 목록은 작품 수와 검색·관리 행동을 보여준다', (WidgetTester tester) async {
     await _setLargeSurface(tester);
     stubFetchMyAlbums(mockRepo, [fakeAlbum(id: 44, ratio: '0.75')]);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          albumCreationDraftStoreProvider.overrideWithValue(
+            MemoryCreationDraftStore(),
+          ),
           homeUiStateProvider.overrideWith(
             () => HomeUiStateNotifier(initialIndex: 0),
           ),
@@ -208,7 +223,7 @@ void main() {
               const UserInfo(id: '1', name: 'User', provider: 'kakao'),
             ),
           ),
-          templateListProvider.overrideWith((ref) async => const []),
+          mockTemplateList(() async => const []),
         ],
         child: ScreenUtilInit(
           designSize: const Size(390, 844),
@@ -230,7 +245,12 @@ void main() {
     expect(find.text('새 포토북 만들기'), findsNothing);
     expect(find.text('포토북 시작하기'), findsNothing);
     expect(find.text('앨범 만들기'), findsNothing);
-    expect(find.text('전체'), findsOneWidget);
+    expect(find.text('1권'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('home-collection-album-44')),
+      findsOneWidget,
+    );
+    expect(find.byTooltip('앨범 검색 및 관리').hitTestable(), findsOneWidget);
     expect(find.byKey(const Key('homeCreateAlbumFab')), findsNothing);
     expect(find.byType(HomeAlbumTabScreen), findsOneWidget);
   });
@@ -254,6 +274,9 @@ void main() {
       ProviderScope(
         retry: (_, __) => null,
         overrides: [
+          albumCreationDraftStoreProvider.overrideWithValue(
+            MemoryCreationDraftStore(),
+          ),
           homeUiStateProvider.overrideWith(
             () => HomeUiStateNotifier(initialIndex: 0),
           ),
@@ -264,7 +287,7 @@ void main() {
             ),
           ),
           notificationUnreadCountProvider.overrideWith((ref) async => 0),
-          templateListProvider.overrideWith((ref) async => const []),
+          mockTemplateList(() async => const []),
         ],
         child: ScreenUtilInit(
           designSize: const Size(390, 844),
@@ -299,6 +322,9 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
+              albumCreationDraftStoreProvider.overrideWithValue(
+                MemoryCreationDraftStore(),
+              ),
               homeUiStateProvider.overrideWith(
                 () => HomeUiStateNotifier(initialIndex: 0),
               ),
@@ -309,7 +335,7 @@ void main() {
                 ),
               ),
               notificationUnreadCountProvider.overrideWith((ref) async => 0),
-              templateListProvider.overrideWith((ref) async => const []),
+              mockTemplateList(() async => const []),
             ],
             child: ScreenUtilInit(
               designSize: const Size(390, 844),
@@ -338,6 +364,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          albumCreationDraftStoreProvider.overrideWithValue(
+            MemoryCreationDraftStore(),
+          ),
           homeUiStateProvider.overrideWith(
             () => HomeUiStateNotifier(initialIndex: 0),
           ),
@@ -348,7 +377,7 @@ void main() {
             ),
           ),
           notificationUnreadCountProvider.overrideWith((ref) async => 0),
-          templateListProvider.overrideWith((ref) async => const []),
+          mockTemplateList(() async => const []),
         ],
         child: ScreenUtilInit(
           designSize: const Size(390, 844),

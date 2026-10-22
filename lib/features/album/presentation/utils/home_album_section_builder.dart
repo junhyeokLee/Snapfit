@@ -44,13 +44,10 @@ HomeAlbumTabPreparedData buildHomeAlbumTabData({
   required int albumTabIndex,
 }) {
   // Favorites first, then remaining sorted by latest
-  final favorites = allAlbums
-      .where((a) => favoriteAlbumIds.contains(a.id))
-      .toList()
-    ..sort(compareAlbumByLatestDesc);
-  final rest = allAlbums
-      .where((a) => !favoriteAlbumIds.contains(a.id))
-      .toList()
+  final favorites =
+      allAlbums.where((a) => favoriteAlbumIds.contains(a.id)).toList()
+        ..sort(compareAlbumByLatestDesc);
+  final rest = allAlbums.where((a) => !favoriteAlbumIds.contains(a.id)).toList()
     ..sort(compareAlbumByLatestDesc);
   final sortedAlbums = [...favorites, ...rest];
 

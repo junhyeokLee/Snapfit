@@ -273,7 +273,7 @@ void main() {
           albumCreationDraftProvider.overrideWith((_) async => null),
           notificationUnreadCountProvider.overrideWith((_) async => 0),
           templateRepositoryProvider.overrideWithValue(templates),
-          templateListProvider.overrideWith((_) async => const []),
+          mockTemplateList(() async => const []),
           pointShopCatalogProvider.overrideWith((_) async => const []),
           ownedPointShopKeysProvider.overrideWith(
             (_) async => const <String>{},

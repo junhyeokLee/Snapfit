@@ -54,14 +54,16 @@ class AlbumReaderPageContent extends StatelessWidget {
                     color:
                         backgroundColor ??
                         (theme == null ? Colors.white : null),
-                    image: theme?.imageAsset != null &&
+                    image:
+                        theme?.imageAsset != null &&
                             (!flatPresentation || backgroundColor == null)
                         ? DecorationImage(
                             image: AssetImage(theme!.imageAsset!),
                             fit: BoxFit.cover,
                           )
                         : null,
-                    gradient: (!flatPresentation || backgroundColor == null) &&
+                    gradient:
+                        (!flatPresentation || backgroundColor == null) &&
                             theme?.imageAsset == null
                         ? theme?.gradient
                         : null,

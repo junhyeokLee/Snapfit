@@ -18,6 +18,7 @@ import 'package:snap_fit/features/album/ai_album/domain/ai_template_text_preflig
 import 'package:snap_fit/features/album/domain/entities/layer.dart';
 import 'package:snap_fit/features/album/domain/entities/layer_export_mapper.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/creation_template_preview.dart';
+import '../fixtures/ai_template_design_fixture.dart';
 import '../fixtures/ai_template_v3_fixture.dart';
 
 class _Binding extends AutomatedTestWidgetsFlutterBinding {
@@ -204,30 +205,50 @@ void main() {
   );
 
   test(
-    'new requests require the original-book version and fail without making points chargeable',
+    'safe-only jobs require original books and reject invented copy without making points chargeable',
     () async {
-      const brief = AiTemplateBrief(prompt: '제주 산책', pageCount: 24);
+      const brief = AiTemplateBrief(
+        prompt: '기기에만 보관할 제목은 "꼭 지켜줘"',
+        pageCount: 24,
+        expectedPointCost: 0,
+      );
       var requestCount = 0;
-      final original = originalTemplateDesignJson(brief: brief);
+      final requests = <Map<String, Object?>>[];
+      final legacy = templateDesignJson(pageCount: brief.pageCount);
+      expect(AiTemplateDesign.fromJson(legacy, brief.pageCount).version, 1);
       final provider = SupabaseAiAlbumDraftProvider(
         invokeFunction: (_, body) async {
-          expect((body['designBrief'] as Map)['designVersion'], 3);
-          expect(body['candidates'], isEmpty);
+          requests.add(body);
           requestCount++;
+          final original = requestCount == 2
+              ? legacy
+              : originalTemplateDesignJson(brief: brief.publicBrief);
+          if (requestCount == 3) {
+            _element(original, 0, 1)['text'] = '2026년 10월 19일';
+          }
           return {
-            'draftId': 'v3-contract-only',
-            'pageCount': 24,
-            'title': original['concept'],
-            'recommendedPhotos': [],
-            'templateSlots': [
-              {
-                'slotId': 'p0_photo',
-                'pageIndex': 0,
-                'role': 'cover',
-                'hint': '표지',
-              },
-            ],
-            'design': original,
+            'job': {
+              'id': body['generationRequestId'],
+              'state': 'ready',
+              'stage': 'complete',
+              'completedStages': 4,
+              'safeDesign': body['safeDesign'],
+            },
+            'draft': {
+              'draftId': 'v3-contract-only-$requestCount',
+              'pageCount': 24,
+              'title': original['concept'],
+              'recommendedPhotos': [],
+              'templateSlots': [
+                {
+                  'slotId': requestCount == 2 ? 'photo-0' : 'p0_photo',
+                  'pageIndex': 0,
+                  'role': 'cover',
+                  'hint': '표지',
+                },
+              ],
+              'design': original,
+            },
           };
         },
       );
@@ -241,17 +262,43 @@ void main() {
         range: AiPhotoRange.manualSelection,
         designBrief: brief,
       );
+      expect(accepted.status, AiAlbumDraftGenerationStatus.success);
+      expect(accepted.draft!.design!.version, 3);
       expect(accepted.shouldChargePoints, true);
-      final missingCopy = await service.generate(
+      final wrongVersion = await service.generate(
         theme: AlbumTheme.custom,
         range: AiPhotoRange.manualSelection,
-        designBrief: const AiTemplateBrief(
-          prompt: '제목은 "꼭 지켜줘"',
-          pageCount: 24,
-        ),
+        designBrief: brief,
       );
-      expect(missingCopy.shouldChargePoints, false);
-      expect(requestCount, 2);
+      expect(wrongVersion.status, AiAlbumDraftGenerationStatus.failed);
+      expect(wrongVersion.shouldChargePoints, false);
+      expect(wrongVersion.draft, isNull);
+      final inventedCopy = await service.generate(
+        theme: AlbumTheme.custom,
+        range: AiPhotoRange.manualSelection,
+        designBrief: brief,
+      );
+      expect(inventedCopy.status, AiAlbumDraftGenerationStatus.failed);
+      expect(inventedCopy.shouldChargePoints, false);
+      expect(inventedCopy.draft, isNull);
+      expect(inventedCopy.failureTitle, '디자인을 조금 더 다듬어야 해요');
+      expect(requestCount, 3);
+      for (final request in requests) {
+        expect(
+          request.keys,
+          unorderedEquals([
+            'action',
+            'generationRequestId',
+            'expectedPointCost',
+            'safeDesign',
+          ]),
+        );
+        expect(request['action'], 'create');
+        expect(request['expectedPointCost'], 0);
+        expect(request['safeDesign'], brief.toSafeDesignJson());
+      }
+      expect(jsonEncode(requests), isNot(contains('꼭 지켜줘')));
+      expect(jsonEncode(requests), isNot(contains('prompt')));
       expect(brief.toJson()['designVersion'], 3);
     },
   );

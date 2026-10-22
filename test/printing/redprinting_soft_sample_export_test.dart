@@ -48,44 +48,61 @@ void main() {
         expect(crops.any((row) => row['cropZoom'] == 4), isTrue);
         expect(output.coverPdf.length, lessThan(100 * 1024 * 1024));
         expect(output.interiorPdf.length, lessThan(100 * 1024 * 1024));
-        final directory = Directory(
-          Platform.environment['SNAPFIT_PRINT_SAMPLE_OUTPUT'] ??
-              '/Users/devsheep/SnapFit/SnapFitAdmin/output/print-samples/2026-10-12/soft-200x150-20',
-        )..createSync(recursive: true);
+        final exportPath = Platform.environment['SNAPFIT_PRINT_SAMPLE_OUTPUT'];
+        final directory = exportPath == null
+            ? Directory.systemTemp.createTempSync('snapfit-print-sample-')
+            : (Directory(exportPath)..createSync(recursive: true));
+        if (exportPath == null) {
+          addTearDown(() {
+            if (directory.existsSync()) directory.deleteSync(recursive: true);
+          });
+        }
         File('${directory.path}/cover.pdf').writeAsBytesSync(output.coverPdf);
         File(
           '${directory.path}/interior.pdf',
         ).writeAsBytesSync(output.interiorPdf);
-        File('${directory.path}/source-album.json').writeAsStringSync(
-          const JsonEncoder.withIndent('  ').convert(snapshot),
+        expect(
+          File('${directory.path}/cover.pdf').readAsBytesSync(),
+          orderedEquals(output.coverPdf),
         );
-        File(
-          '${directory.path}/generated-test-card.png',
-        ).writeAsBytesSync(card);
-        File('${directory.path}/report.json').writeAsStringSync(
-          const JsonEncoder.withIndent('  ').convert({
-            ...output.report,
-            'samplePurpose': 'operator-owned physical print validation',
-            'containsCustomerData': false,
-            'testCardSource':
-                'code-generated color/gradient/grayscale/line card',
-            'sourceTestCardPixels': [4800, 3600],
-            'naturalPhotoQualityValidated': false,
-            'physicalSampleValidated': false,
-            'productionApproved': false,
-            'pageTemplateIds': document.interiors
-                .take(12)
-                .map(
-                  (page) => page.layers
-                      .firstWhere((layer) => layer.type.name == 'image')
-                      .id,
-                )
-                .toList(),
-            'coverPdfBytes': output.coverPdf.length,
-            'interiorPdfBytes': output.interiorPdf.length,
-          }),
+        expect(
+          File('${directory.path}/interior.pdf').readAsBytesSync(),
+          orderedEquals(output.interiorPdf),
         );
-        File('${directory.path}/README.md').writeAsStringSync('''# 스냅핏 실물 검수 샘플
+        // Operator exports are opt-in. CI checks the real PDFs in a temporary
+        // directory without leaving sample images or a separate design export.
+        if (exportPath != null) {
+          File('${directory.path}/source-album.json').writeAsStringSync(
+            const JsonEncoder.withIndent('  ').convert(snapshot),
+          );
+          File(
+            '${directory.path}/generated-test-card.png',
+          ).writeAsBytesSync(card);
+          File('${directory.path}/report.json').writeAsStringSync(
+            const JsonEncoder.withIndent('  ').convert({
+              ...output.report,
+              'samplePurpose': 'operator-owned physical print validation',
+              'containsCustomerData': false,
+              'testCardSource':
+                  'code-generated color/gradient/grayscale/line card',
+              'sourceTestCardPixels': [4800, 3600],
+              'naturalPhotoQualityValidated': false,
+              'physicalSampleValidated': false,
+              'productionApproved': false,
+              'pageTemplateIds': document.interiors
+                  .take(12)
+                  .map(
+                    (page) => page.layers
+                        .firstWhere((layer) => layer.type.name == 'image')
+                        .id,
+                  )
+                  .toList(),
+              'coverPdfBytes': output.coverPdf.length,
+              'interiorPdfBytes': output.interiorPdf.length,
+            }),
+          );
+          File('${directory.path}/README.md').writeAsStringSync(
+            '''# 스냅핏 실물 검수 샘플
 
 200×150mm 소프트커버, 내지 20쪽, 1권용입니다. PDF 생성만 진행했고 주문·결제·발송은 하지 않았습니다.
 
@@ -102,7 +119,9 @@ void main() {
 앞표지는 앱에서 장식 책등을 제외하고 전체 배치를 맞춘 결과입니다. 뒤표지와 실제 책등은 앞표지 배경색으로 만들어집니다. 샘플을 받은 후 재단, 책등, 색상, 한글, 사진 확대 후 선명함, 내지 순서, 종이·제본·포장을 확인해야 합니다. 이 카드는 자연사진의 피부색이나 실제 고객 사진 품질을 확인하지 않습니다.
 
 `report.json`은 파일 생성 검사 결과이고, 실물 승인이나 운영 발주 승인이 아닙니다. `source-album.json`과 `generated-test-card.png`는 재현 자료이며 제작사에는 표지와 내지 PDF만 전달합니다.
-''');
+''',
+          );
+        }
       });
     },
     timeout: const Timeout(Duration(minutes: 8)),

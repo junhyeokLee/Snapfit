@@ -44,6 +44,18 @@ class TemplatePhotoFillSession {
     _fileRequests.clear();
   }
 
+  /// Keep only unplaced choices when the same owner's document changes.
+  /// Old geometry, selected slots and history must never enter the new design.
+  void resetDocumentKeepingPendingPhotos() {
+    final pending = List<AssetEntity>.of(pendingPhotos);
+    final selectedId = selectedPhoto?.id;
+    reset();
+    pendingPhotos.addAll(pending);
+    selectedPhoto =
+        pending.where((photo) => photo.id == selectedId).firstOrNull ??
+        pending.firstOrNull;
+  }
+
   void updateCover(List<LayerModel> cover) {
     final pages = _pages;
     if (pages == null || pages.isEmpty) return;
@@ -762,82 +774,145 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
     }
   }
 
-  Widget _buildPhotoTray({bool vertical = false, bool compact = false}) =>
-      SizedBox(
-        width: vertical ? 86 : null,
-        height: vertical
-            ? null
-            : compact
-            ? 64
-            : 80,
-        child: Flex(
-          direction: vertical ? Axis.vertical : Axis.horizontal,
+  Widget _buildPhotoTray({bool vertical = false, bool compact = false}) {
+    final scaler = MediaQuery.textScalerOf(context);
+    final headerWidth = (96 * scaler.scale(11) / 11).clamp(96.0, 160.0);
+    final headingStyle = ExperienceFormStyle.text(
+      context,
+      11,
+      weight: FontWeight.w600,
+    ).copyWith(height: 1.35);
+    final guidanceStyle = ExperienceFormStyle.text(
+      context,
+      10,
+      secondary: true,
+    ).copyWith(height: 1.35);
+    final heading = '넣을 사진 ${_pendingPhotos.length}장';
+    const guidance = '사진 선택 후\n빈 칸 누르기';
+    double textHeight(String text, TextStyle style) {
+      final painter = TextPainter(
+        text: TextSpan(text: text, style: style),
+        textScaler: scaler,
+        textDirection: Directionality.of(context),
+      )..layout(maxWidth: headerWidth);
+      final height = painter.height;
+      painter.dispose();
+      return height;
+    }
+
+    final header = Semantics(
+      key: const ValueKey('photo-fill-tray-guidance'),
+      container: true,
+      liveRegion: true,
+      label: '$heading. 사진을 선택한 뒤 빈 사진 칸을 누르세요.',
+      excludeSemantics: true,
+      child: SizedBox(
+        width: headerWidth,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: ListView.separated(
-                key: const ValueKey('photo-fill-tray'),
-                scrollDirection: vertical ? Axis.vertical : Axis.horizontal,
-                padding: EdgeInsets.symmetric(
-                  horizontal: vertical ? 8 : 16,
-                  vertical: 6,
-                ),
-                itemCount: _pendingPhotos.length,
-                separatorBuilder: (_, __) =>
-                    const SizedBox(width: 8, height: 8),
-                itemBuilder: (context, index) {
-                  final photo = _pendingPhotos[index];
+            Text(heading, style: headingStyle),
+            const SizedBox(height: 4),
+            Text(guidance, style: guidanceStyle),
+          ],
+        ),
+      ),
+    );
+    return SizedBox(
+      width: vertical ? headerWidth + 16 : null,
+      height: vertical
+          ? null
+          : math.max(
+              compact ? 64.0 : 80.0,
+              (textHeight(heading, headingStyle) +
+                      textHeight(guidance, guidanceStyle) +
+                      16)
+                  .ceilToDouble(),
+            ),
+      child: Flex(
+        direction: vertical ? Axis.vertical : Axis.horizontal,
+        children: [
+          Expanded(
+            child: ListView.custom(
+              key: const ValueKey('photo-fill-tray'),
+              scrollDirection: vertical ? Axis.vertical : Axis.horizontal,
+              padding: EdgeInsets.symmetric(
+                horizontal: vertical ? 8 : 16,
+                vertical: 6,
+              ),
+              semanticChildCount: _pendingPhotos.length,
+              childrenDelegate: SliverChildBuilderDelegate(
+                (context, rawIndex) {
+                  if (rawIndex.isOdd)
+                    return const SizedBox(width: 8, height: 8);
+                  final index = rawIndex ~/ 2;
+                  if (index == 0) return header;
+                  final photo = _pendingPhotos[index - 1];
                   return Semantics(
                     button: true,
                     selected: _selectedPhoto == photo,
-                    label: '선택한 사진 ${index + 1}',
-                    child: InkWell(
-                      key: ValueKey('tray-photo-${photo.id}'),
-                      onTap: _picking
-                          ? null
-                          : () => setState(() => _selectedPhoto = photo),
-                      child: Container(
-                        width: compact ? 52 : 68,
-                        height: compact ? 52 : 68,
-                        padding: const EdgeInsets.all(3),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(
-                            color: _selectedPhoto == photo
-                                ? ExperienceFormStyle.selectionInk(context)
-                                : ExperienceFormStyle.line(context),
-                            width: _selectedPhoto == photo ? 2 : 1,
+                    enabled: !_picking,
+                    label: '넣을 사진 $index',
+                    hint: _selectedPhoto == photo
+                        ? '빈 사진 칸을 누르면 이 사진을 넣어요.'
+                        : '이 사진을 선택한 뒤 빈 사진 칸을 누르세요.',
+                    child: Align(
+                      child: InkWell(
+                        key: ValueKey('tray-photo-${photo.id}'),
+                        onTap: _picking
+                            ? null
+                            : () => setState(() => _selectedPhoto = photo),
+                        child: Container(
+                          width: compact ? 52 : 68,
+                          height: compact ? 52 : 68,
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: _selectedPhoto == photo
+                                  ? ExperienceFormStyle.selectionInk(context)
+                                  : ExperienceFormStyle.line(context),
+                              width: _selectedPhoto == photo ? 2 : 1,
+                            ),
                           ),
-                        ),
-                        child: GalleryThumbTile(
-                          asset: photo,
-                          isSelected: false,
-                          simpleMode: true,
+                          child: GalleryThumbTile(
+                            asset: photo,
+                            isSelected: false,
+                            simpleMode: true,
+                          ),
                         ),
                       ),
                     ),
                   );
                 },
+                childCount: _pendingPhotos.length * 2 + 1,
+                semanticIndexCallback: (_, index) =>
+                    index > 0 && index.isEven ? index ~/ 2 - 1 : null,
               ),
             ),
-            IconButton(
-              tooltip: '선택한 사진 제외',
-              onPressed: _picking || _selectedPhoto == null
-                  ? null
-                  : () {
-                      _remember();
-                      setState(() {
-                        _pendingPhotos.removeWhere(
-                          (photo) => photo.id == _selectedPhoto?.id,
-                        );
-                        _selectedPhoto = _pendingPhotos.firstOrNull;
-                      });
-                    },
-              icon: const Icon(Icons.remove_circle_outline, size: 22),
-            ),
-            const SizedBox(width: 8, height: 8),
-          ],
-        ),
-      );
+          ),
+          IconButton(
+            tooltip: '선택한 사진 제외',
+            onPressed: _picking || _selectedPhoto == null
+                ? null
+                : () {
+                    _remember();
+                    setState(() {
+                      _pendingPhotos.removeWhere(
+                        (photo) => photo.id == _selectedPhoto?.id,
+                      );
+                      _selectedPhoto = _pendingPhotos.firstOrNull;
+                    });
+                  },
+            icon: const Icon(Icons.remove_circle_outline, size: 22),
+          ),
+          const SizedBox(width: 8, height: 8),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -868,6 +943,10 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
               MediaQuery.orientationOf(context) == Orientation.landscape;
           final compact = !wide && constraints.maxHeight < 600;
           final lowWide = wide && constraints.maxHeight < 260;
+          final separateHistory =
+              compact &&
+              constraints.maxWidth < 360 &&
+              MediaQuery.textScalerOf(context).scale(11) > 14;
           final tileHeight =
               (lowWide ? 52 : 88) +
               MediaQuery.textScalerOf(context).scale(11) * 1.5;
@@ -1073,133 +1152,273 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
               );
             },
           );
-          return Column(
-            children: [
-              Padding(
-                padding: compact
-                    ? const EdgeInsets.fromLTRB(16, 4, 16, 6)
-                    : lowWide
-                    ? const EdgeInsets.fromLTRB(24, 4, 24, 4)
-                    : const EdgeInsets.fromLTRB(24, 8, 24, 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          final header = Padding(
+            padding: compact
+                ? const EdgeInsets.fromLTRB(16, 4, 16, 6)
+                : lowWide
+                ? const EdgeInsets.fromLTRB(24, 4, 24, 4)
+                : const EdgeInsets.fromLTRB(24, 8, 24, 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            wide || compact ? positionLabel : '사진 채우기',
-                            maxLines: wide ? 1 : 2,
-                            overflow: TextOverflow.ellipsis,
-                            key: wide || compact
-                                ? const ValueKey('fill-current-page')
-                                : null,
-                            style: ExperienceFormStyle.text(
-                              context,
-                              wide || compact ? 13 : 20,
-                              weight: wide || compact
-                                  ? FontWeight.w600
-                                  : FontWeight.w700,
-                            ),
-                          ),
+                    Expanded(
+                      child: Text(
+                        wide || compact ? positionLabel : '사진 채우기',
+                        maxLines: wide ? 1 : 2,
+                        overflow: TextOverflow.ellipsis,
+                        key: wide || compact
+                            ? const ValueKey('fill-current-page')
+                            : null,
+                        style: ExperienceFormStyle.text(
+                          context,
+                          wide || compact ? 13 : 20,
+                          weight: wide || compact
+                              ? FontWeight.w600
+                              : FontWeight.w700,
                         ),
-                        if (wide || compact) ..._historyButtons(),
-                        Semantics(
-                          key: const ValueKey('fill-progress-status'),
-                          container: true,
-                          liveRegion: true,
-                          label: allPhotosPlaced
-                              ? '사진 ${slots.length}장 모두 배치됨. 표지를 확인해주세요.'
-                              : '전체 사진 ${slots.length}장 중 $filled장 추가됨',
-                          excludeSemantics: true,
-                          child: Column(
+                      ),
+                    ),
+                    if ((wide || compact) && !separateHistory)
+                      ..._historyButtons(),
+                    Semantics(
+                      key: const ValueKey('fill-progress-status'),
+                      container: true,
+                      liveRegion: true,
+                      label: allPhotosPlaced
+                          ? '사진 ${slots.length}장 모두 배치됨. 표지를 확인해주세요.'
+                          : '전체 사진 ${slots.length}장 중 $filled장 추가됨',
+                      excludeSemantics: true,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Row(
                             mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (allPhotosPlaced) ...[
-                                    Icon(
-                                      Icons.check_circle,
-                                      size: 16,
-                                      color: ExperienceFormStyle.selectionInk(
-                                        context,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                  ],
-                                  Text(
-                                    '$filled / ${slots.length}',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: allPhotosPlaced ? ink : muted,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              if (allPhotosPlaced)
-                                Text(
-                                  '모두 배치됨',
-                                  key: const ValueKey('fill-all-photos-placed'),
-                                  style: ExperienceFormStyle.text(
+                              if (allPhotosPlaced) ...[
+                                Icon(
+                                  Icons.check_circle,
+                                  size: 16,
+                                  color: ExperienceFormStyle.selectionInk(
                                     context,
-                                    11,
-                                    color: ExperienceFormStyle.selectionInk(
-                                      context,
-                                    ),
                                   ),
                                 ),
+                                const SizedBox(width: 6),
+                              ],
+                              Text(
+                                '$filled / ${slots.length}',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: allPhotosPlaced ? ink : muted,
+                                ),
+                              ),
                             ],
                           ),
-                        ),
-                        if (filled < slots.length)
-                          IconButton(
-                            key: const ValueKey('fill-next-empty'),
-                            tooltip: '다음 빈 자리',
-                            icon: const Icon(
-                              Icons.skip_next_outlined,
-                              size: 21,
-                            ),
-                            onPressed: _picking
-                                ? null
-                                : () => _nextEmpty(pick: false),
-                          ),
-                      ],
-                    ),
-                    if (!wide && !compact) ...[
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              positionLabel,
-                              key: const ValueKey('fill-current-page'),
+                          if (allPhotosPlaced)
+                            Text(
+                              '모두 배치됨',
+                              key: const ValueKey('fill-all-photos-placed'),
                               style: ExperienceFormStyle.text(
                                 context,
-                                12,
-                                secondary: true,
+                                11,
+                                color: ExperienceFormStyle.selectionInk(
+                                  context,
+                                ),
                               ),
                             ),
-                          ),
-                          ..._historyButtons(),
                         ],
                       ),
-                    ],
-                    if (slots.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      ExcludeSemantics(
-                        child: LinearProgressIndicator(
-                          value: filled / slots.length,
-                          minHeight: 2,
-                          color: ExperienceFormStyle.selectionInk(context),
-                          backgroundColor: ExperienceFormStyle.line(context),
-                        ),
+                    ),
+                    if (filled < slots.length)
+                      IconButton(
+                        key: const ValueKey('fill-next-empty'),
+                        tooltip: '다음 빈 자리',
+                        icon: const Icon(Icons.skip_next_outlined, size: 21),
+                        onPressed: _picking
+                            ? null
+                            : () => _nextEmpty(pick: false),
                       ),
-                    ],
                   ],
                 ),
-              ),
+                if (!wide && (!compact || separateHistory)) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      if (compact)
+                        const Spacer()
+                      else
+                        Expanded(
+                          child: Text(
+                            positionLabel,
+                            key: const ValueKey('fill-current-page'),
+                            style: ExperienceFormStyle.text(
+                              context,
+                              12,
+                              secondary: true,
+                            ),
+                          ),
+                        ),
+                      ..._historyButtons(),
+                    ],
+                  ),
+                ],
+                if (slots.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  ExcludeSemantics(
+                    child: LinearProgressIndicator(
+                      value: filled / slots.length,
+                      minHeight: 2,
+                      color: ExperienceFormStyle.selectionInk(context),
+                      backgroundColor: ExperienceFormStyle.line(context),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+          final footer = Padding(
+            padding: compact
+                ? const EdgeInsets.fromLTRB(16, 4, 16, 12)
+                : lowWide
+                ? const EdgeInsets.fromLTRB(24, 4, 24, 8)
+                : const EdgeInsets.fromLTRB(24, 4, 24, 12),
+            child: Row(
+              children: [
+                if (wide && _selectedLayer?.hasImageSource == true) ...[
+                  _buildSlotTools(compact: true),
+                  const SizedBox(width: 16),
+                ],
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: wide ? 420 : double.infinity,
+                      ),
+                      child: LayoutBuilder(
+                        builder: (context, actionsBox) {
+                          final needsPhotos = filled < slots.length;
+                          final add = FilledButton.icon(
+                            key: const ValueKey('fill-add-photos'),
+                            onPressed: _picking ? null : _addPhotos,
+                            icon: const Icon(
+                              Icons.add_photo_alternate_outlined,
+                              size: 20,
+                            ),
+                            label: const Text('사진 추가'),
+                            style: CreationStyle.primary(context),
+                          );
+                          final next = needsPhotos
+                              ? TextButton(
+                                  key: const ValueKey('fill-continue'),
+                                  onPressed: _picking
+                                      ? null
+                                      : widget.onContinue,
+                                  child: const Text('나중에 채우기'),
+                                )
+                              : FilledButton(
+                                  key: const ValueKey('fill-continue'),
+                                  onPressed: _picking
+                                      ? null
+                                      : widget.onContinue,
+                                  style: CreationStyle.primary(context),
+                                  child: const Text('표지 확인'),
+                                );
+                          final stacked = actionsBox.maxWidth < 380;
+                          if (stacked) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (needsPhotos) ...[
+                                  add,
+                                  const SizedBox(height: 4),
+                                ],
+                                next,
+                              ],
+                            );
+                          }
+                          return Row(
+                            children: [
+                              if (needsPhotos) ...[
+                                Expanded(child: add),
+                                const SizedBox(width: 12),
+                              ],
+                              Expanded(child: next),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+          // A short display with larger text needs a real page to work on.
+          // Let its guidance and rails scroll above the fixed next action.
+          final scrollWorkspace =
+              (compact || wide && constraints.maxHeight < 400) &&
+              MediaQuery.textScalerOf(context).scale(11) > 14;
+          if (scrollWorkspace) {
+            return Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    key: const ValueKey('photo-fill-workspace-scroll'),
+                    child: Column(
+                      children: [
+                        header,
+                        if (wide)
+                          SizedBox(
+                            height: 208,
+                            child: Row(
+                              children: [
+                                if (_pendingPhotos.isNotEmpty)
+                                  _buildPhotoTray(vertical: true),
+                                Expanded(
+                                  child: CreationPaperStage(
+                                    inset: 0,
+                                    child: preview,
+                                  ),
+                                ),
+                                SizedBox(width: 98, child: rail),
+                              ],
+                            ),
+                          )
+                        else ...[
+                          SizedBox(
+                            height: (constraints.maxWidth + 24).clamp(
+                              200.0,
+                              320.0,
+                            ),
+                            child: CreationPaperStage(inset: 0, child: preview),
+                          ),
+                          SizedBox(
+                            height:
+                                72 +
+                                MediaQuery.textScalerOf(context).scale(11) *
+                                    1.5,
+                            child: rail,
+                          ),
+                        ],
+                        if (!wide && _selectedLayer?.hasImageSource == true)
+                          _buildSlotTools(compact: compact),
+                        if (!wide && _pendingPhotos.isNotEmpty)
+                          _buildPhotoTray(compact: compact),
+                      ],
+                    ),
+                  ),
+                ),
+                footer,
+              ],
+            );
+          }
+          return Column(
+            children: [
+              header,
               Expanded(
                 child: wide
                     ? Row(
@@ -1231,86 +1450,7 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
                 _buildSlotTools(compact: compact),
               if (!wide && _pendingPhotos.isNotEmpty)
                 _buildPhotoTray(compact: compact),
-              Padding(
-                padding: compact
-                    ? const EdgeInsets.fromLTRB(16, 4, 16, 12)
-                    : lowWide
-                    ? const EdgeInsets.fromLTRB(24, 4, 24, 8)
-                    : const EdgeInsets.fromLTRB(24, 4, 24, 12),
-                child: Row(
-                  children: [
-                    if (wide && _selectedLayer?.hasImageSource == true) ...[
-                      _buildSlotTools(compact: true),
-                      const SizedBox(width: 16),
-                    ],
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: wide ? 420 : double.infinity,
-                          ),
-                          child: LayoutBuilder(
-                            builder: (context, actionsBox) {
-                              final needsPhotos = filled < slots.length;
-                              final add = FilledButton.icon(
-                                key: const ValueKey('fill-add-photos'),
-                                onPressed: _picking ? null : _addPhotos,
-                                icon: const Icon(
-                                  Icons.add_photo_alternate_outlined,
-                                  size: 20,
-                                ),
-                                label: const Text('사진 추가'),
-                                style: CreationStyle.primary(context),
-                              );
-                              final next = needsPhotos
-                                  ? TextButton(
-                                      key: const ValueKey('fill-continue'),
-                                      onPressed: _picking
-                                          ? null
-                                          : widget.onContinue,
-                                      child: const Text('나중에 채우기'),
-                                    )
-                                  : FilledButton(
-                                      key: const ValueKey('fill-continue'),
-                                      onPressed: _picking
-                                          ? null
-                                          : widget.onContinue,
-                                      style: CreationStyle.primary(context),
-                                      child: const Text('표지 확인'),
-                                    );
-                              final stacked = actionsBox.maxWidth < 380;
-                              if (stacked) {
-                                return Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (needsPhotos) ...[
-                                      add,
-                                      const SizedBox(height: 4),
-                                    ],
-                                    next,
-                                  ],
-                                );
-                              }
-                              return Row(
-                                children: [
-                                  if (needsPhotos) ...[
-                                    Expanded(child: add),
-                                    const SizedBox(width: 12),
-                                  ],
-                                  Expanded(child: next),
-                                ],
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              footer,
             ],
           );
         },

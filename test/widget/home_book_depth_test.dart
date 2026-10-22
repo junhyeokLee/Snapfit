@@ -151,7 +151,7 @@ Future<GlobalKey> _boot(
           ),
         ),
         notificationUnreadCountProvider.overrideWith((ref) async => 0),
-        templateListProvider.overrideWith((ref) async => const []),
+        mockTemplateList(() async => const []),
       ],
       child: ScreenUtilInit(
         designSize: const Size(390, 844),

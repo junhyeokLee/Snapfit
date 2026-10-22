@@ -51,7 +51,7 @@ Use case: photorealistic-natural. Asset type: one exclusive full-bleed sample ph
 - `test/unit/template_cover_diversity_test.dart`: 전체 사진 독점 사용, 파일·픽셀 중복, 3규격 타이포그래피, 유료 내지·기존 판본 보존.
 - `test/tool/template_cover_review_test.dart`: 실제 Flutter 렌더러로 51종 × 3규격 표지와 사진 목록 출력.
 - `test/tool/catalog_thumbnail_export_test.dart`: 앱 스토어용 캐시 미리보기 재생성. 스크롤 중 복잡한 템플릿을 다시 그리지 않는 기존 구조를 유지한다.
-- `test/tool/catalog_cover_audit_test.dart`: 캐시 51종 중복 검사 및 실제 최신 표지와 660px 렌더링 대조. `--dart-define=EXPORT_COVER_AUDIT=true` 실행 시 `output/settings-template-qa/catalog-cover-audit.json` 출력.
+- `test/tool/catalog_cover_audit_test.dart`: 공개 표지 68종의 현재 레이어와 사진 로딩을 확인하고, 썸네일 모드와 전체 표지의 660px 렌더링이 동일한지 검사한다. 현재 렌더링 간 시각적 중복과 기존 캐시의 중복도 확인하며, 모든 비교는 메모리에서 수행하고 미리보기·검사 결과 파일을 만들지 않는다.
 - 동일 갤러리 `output/settings-template-qa/index.html#cover-diversity`에서 전체 표지를 나란히 검토한다.
 
 기존 스톡 사진의 원출처·권리 검토는 각 `_licenses` 문서의 기록을 유지한다. 이번 변경이 기존 미확인 권리를 확인된 것으로 바꾸지는 않는다.

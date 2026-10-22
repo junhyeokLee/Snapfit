@@ -132,7 +132,10 @@ class _EditTextOverlayState extends State<EditTextOverlay> {
       final idx = _fontFamilies.indexOf(_currentFont);
       if (idx >= 0 && _fontScroll.hasClients) {
         _fontScroll.jumpTo(
-          (idx * (kIsWeb ? 64.0 : 200.0)).clamp(0, _fontScroll.position.maxScrollExtent),
+          (idx * (kIsWeb ? 64.0 : 200.0)).clamp(
+            0,
+            _fontScroll.position.maxScrollExtent,
+          ),
         );
       }
       // Scroll color list to current color
@@ -669,59 +672,179 @@ class _EditTextOverlayState extends State<EditTextOverlay> {
     color: WebPalette.of(context).surface,
     child: AbsorbPointer(
       absorbing: _finishing,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
-          child: Row(children: [
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('문구 편집', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: WebPalette.of(context).ink)),
-              SizedBox(height: 5),
-              Text('내용과 스타일을 확인한 뒤 적용하세요.', style: TextStyle(fontSize: 13, color: WebPalette.of(context).muted)),
-            ])),
-            OutlinedButton(key: const ValueKey('text-edit-cancel'), onPressed: _finishing ? null : _cancel, child: const Text('취소')),
-            const SizedBox(width: 10),
-            FilledButton(key: const ValueKey('text-edit-done'), onPressed: _finishing ? null : _submit, child: const Text('문구 적용')),
-          ]),
-        ),
-        Divider(height: 1, color: WebPalette.of(context).line),
-        Expanded(child: LayoutBuilder(builder: (context, bounds) {
-          final settings = SingleChildScrollView(
-            key: const PageStorageKey('text-edit-settings'),
-            padding: const EdgeInsets.all(22),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              const Text('글자 스타일', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 16),
-              Wrap(spacing: 8, runSpacing: 8, children: [
-                ChoiceChip(key: const ValueKey('text-edit-font-tool'), selected: _panelMode == EditPanelMode.font, label: const Text('글꼴'), onSelected: (_) => _togglePanel(EditPanelMode.font)),
-                ChoiceChip(key: const ValueKey('text-edit-color-tool'), selected: _panelMode == EditPanelMode.color, label: const Text('글자 색'), onSelected: (_) => _togglePanel(EditPanelMode.color)),
-              ]),
-              const SizedBox(height: 16),
-              _settings(),
-              const SizedBox(height: 20),
-              Divider(color: WebPalette.of(context).line),
-              const SizedBox(height: 14),
-              TextButton.icon(key: const ValueKey('text-edit-align-tool'), onPressed: () => _togglePanel(EditPanelMode.align), icon: Icon(_align == TextAlign.left ? Icons.format_align_left : _align == TextAlign.right ? Icons.format_align_right : Icons.format_align_center, size: 18), label: Text(_align == TextAlign.left ? '왼쪽 정렬' : _align == TextAlign.right ? '오른쪽 정렬' : '가운데 정렬')),
-              TextButton.icon(key: const ValueKey('text-edit-outline-tool'), onPressed: _toggleBackground, icon: const Icon(Icons.auto_awesome_outlined, size: 18), label: Text(_textStyleType == TextStyleType.none ? '글자 윤곽선 없음' : _textStyleType == TextStyleType.textOuter ? '바깥 윤곽선' : '안쪽 윤곽선')),
-              const SizedBox(height: 16),
-              OutlinedButton.icon(key: const ValueKey('studio-phrase-tool'), onPressed: _choosePhrase, icon: const Icon(Icons.format_quote_outlined, size: 18), label: const Text('문구 찾아보기')),
-            ]),
-          );
-          final editor = Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Text('입력 · 미리보기', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: WebPalette.of(context).muted)),
-              const SizedBox(height: 14),
-              Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(12), child: _editor())),
-            ]),
-          );
-          if (bounds.maxWidth < 760) return Column(children: [Expanded(child: editor), SizedBox(height: 250, child: settings)]);
-          return Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Expanded(child: editor),
-            VerticalDivider(width: 1, color: WebPalette.of(context).line),
-            SizedBox(width: 340, child: settings),
-          ]);
-        })),
-      ]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '문구 편집',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: WebPalette.of(context).ink,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        '내용과 스타일을 확인한 뒤 적용하세요.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: WebPalette.of(context).muted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                OutlinedButton(
+                  key: const ValueKey('text-edit-cancel'),
+                  onPressed: _finishing ? null : _cancel,
+                  child: const Text('취소'),
+                ),
+                const SizedBox(width: 10),
+                FilledButton(
+                  key: const ValueKey('text-edit-done'),
+                  onPressed: _finishing ? null : _submit,
+                  child: const Text('문구 적용'),
+                ),
+              ],
+            ),
+          ),
+          Divider(height: 1, color: WebPalette.of(context).line),
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, bounds) {
+                final settings = SingleChildScrollView(
+                  key: const PageStorageKey('text-edit-settings'),
+                  padding: const EdgeInsets.all(22),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        '글자 스타일',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          ChoiceChip(
+                            key: const ValueKey('text-edit-font-tool'),
+                            selected: _panelMode == EditPanelMode.font,
+                            label: const Text('글꼴'),
+                            onSelected: (_) => _togglePanel(EditPanelMode.font),
+                          ),
+                          ChoiceChip(
+                            key: const ValueKey('text-edit-color-tool'),
+                            selected: _panelMode == EditPanelMode.color,
+                            label: const Text('글자 색'),
+                            onSelected: (_) =>
+                                _togglePanel(EditPanelMode.color),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _settings(),
+                      const SizedBox(height: 20),
+                      Divider(color: WebPalette.of(context).line),
+                      const SizedBox(height: 14),
+                      TextButton.icon(
+                        key: const ValueKey('text-edit-align-tool'),
+                        onPressed: () => _togglePanel(EditPanelMode.align),
+                        icon: Icon(
+                          _align == TextAlign.left
+                              ? Icons.format_align_left
+                              : _align == TextAlign.right
+                              ? Icons.format_align_right
+                              : Icons.format_align_center,
+                          size: 18,
+                        ),
+                        label: Text(
+                          _align == TextAlign.left
+                              ? '왼쪽 정렬'
+                              : _align == TextAlign.right
+                              ? '오른쪽 정렬'
+                              : '가운데 정렬',
+                        ),
+                      ),
+                      TextButton.icon(
+                        key: const ValueKey('text-edit-outline-tool'),
+                        onPressed: _toggleBackground,
+                        icon: const Icon(Icons.auto_awesome_outlined, size: 18),
+                        label: Text(
+                          _textStyleType == TextStyleType.none
+                              ? '글자 윤곽선 없음'
+                              : _textStyleType == TextStyleType.textOuter
+                              ? '바깥 윤곽선'
+                              : '안쪽 윤곽선',
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      OutlinedButton.icon(
+                        key: const ValueKey('studio-phrase-tool'),
+                        onPressed: _choosePhrase,
+                        icon: const Icon(Icons.format_quote_outlined, size: 18),
+                        label: const Text('문구 찾아보기'),
+                      ),
+                    ],
+                  ),
+                );
+                final editor = Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        '입력 · 미리보기',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: WebPalette.of(context).muted,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: _editor(),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+                if (bounds.maxWidth < 760)
+                  return Column(
+                    children: [
+                      Expanded(child: editor),
+                      SizedBox(height: 250, child: settings),
+                    ],
+                  );
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(child: editor),
+                    VerticalDivider(
+                      width: 1,
+                      color: WebPalette.of(context).line,
+                    ),
+                    SizedBox(width: 340, child: settings),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     ),
   );
 

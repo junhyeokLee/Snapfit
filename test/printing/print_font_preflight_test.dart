@@ -266,9 +266,12 @@ void main() {
         expect(result.interiorPageCount, 20);
         expect(result.report['missingAssets'], isEmpty);
         expect(latin1.decode(result.coverPdf), contains('/ICCBased'));
-        final directory = Directory(
-          '/private/tmp/snapfit-gongryongal-restored-proof',
-        )..createSync(recursive: true);
+        final directory = Directory.systemTemp.createTempSync(
+          'snapfit-original-font-proof-',
+        );
+        addTearDown(() {
+          if (directory.existsSync()) directory.deleteSync(recursive: true);
+        });
         File('${directory.path}/cover.pdf').writeAsBytesSync(result.coverPdf);
         File(
           '${directory.path}/interior.pdf',
@@ -276,6 +279,14 @@ void main() {
         File(
           '${directory.path}/report.json',
         ).writeAsStringSync(jsonEncode(result.report));
+        expect(
+          File('${directory.path}/cover.pdf').readAsBytesSync(),
+          orderedEquals(result.coverPdf),
+        );
+        expect(
+          File('${directory.path}/interior.pdf').readAsBytesSync(),
+          orderedEquals(result.interiorPdf),
+        );
       });
     },
     timeout: const Timeout(Duration(minutes: 4)),

@@ -380,32 +380,90 @@ class _PrintDevCheckoutScreenState
   }
 
   Widget _frame({required Widget body}) {
-    if (!kIsWeb) return Scaffold(backgroundColor: SnapFitColors.backgroundOf(context), appBar: AppBar(title: const Text('개발 주문 테스트')), body: body);
+    if (!kIsWeb)
+      return Scaffold(
+        backgroundColor: SnapFitColors.backgroundOf(context),
+        appBar: AppBar(title: const Text('개발 주문 테스트')),
+        body: body,
+      );
     return SnapFitWebShell(
       title: '개발 주문',
       section: WebSection.orders,
       showNavigation: false,
-      actions: [TextButton.icon(onPressed: _busy ? null : () => Navigator.maybePop(context), icon: const Icon(Icons.close, size: 18), label: const Text('돌아가기'))],
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        const WebPageHeading(eyebrow: 'ADMIN / DEVELOPMENT ONLY', title: '개발 주문 테스트', description: '관리자에게만 제공되는 TEST 주문 도구입니다. 실제 결제·제작·배송은 진행되지 않습니다.'),
-        const SizedBox(height: 24),
-        Expanded(child: LayoutBuilder(builder: (context, bounds) {
-          if (bounds.maxWidth < 980) return WebSurface(padding: EdgeInsets.zero, child: body);
-          return Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Expanded(child: WebSurface(padding: EdgeInsets.zero, child: body)),
-            const SizedBox(width: 24),
-            SizedBox(width: 300, child: SingleChildScrollView(child: WebSurface(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('테스트 범위', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-              SizedBox(height: 16),
-              Text('인쇄 파일 준비\nTEST 결제 확인\n업체 개발 주문 상태', style: TextStyle(fontSize: 13, height: 2, color: WebPalette.of(context).muted)),
-              SizedBox(height: 20),
-              Divider(color: WebPalette.of(context).line),
-              SizedBox(height: 16),
-              Text('화면을 여는 것만으로 테스트가 시작되지는 않습니다.', style: TextStyle(fontSize: 12, height: 1.8, color: WebPalette.of(context).muted)),
-            ])))),
-          ]);
-        })),
-      ]),
+      actions: [
+        TextButton.icon(
+          onPressed: _busy ? null : () => Navigator.maybePop(context),
+          icon: const Icon(Icons.close, size: 18),
+          label: const Text('돌아가기'),
+        ),
+      ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const WebPageHeading(
+            eyebrow: 'ADMIN / DEVELOPMENT ONLY',
+            title: '개발 주문 테스트',
+            description: '관리자에게만 제공되는 TEST 주문 도구입니다. 실제 결제·제작·배송은 진행되지 않습니다.',
+          ),
+          const SizedBox(height: 24),
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, bounds) {
+                if (bounds.maxWidth < 980)
+                  return WebSurface(padding: EdgeInsets.zero, child: body);
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: WebSurface(padding: EdgeInsets.zero, child: body),
+                    ),
+                    const SizedBox(width: 24),
+                    SizedBox(
+                      width: 300,
+                      child: SingleChildScrollView(
+                        child: WebSurface(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '테스트 범위',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                '인쇄 파일 준비\nTEST 결제 확인\n업체 개발 주문 상태',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  height: 2,
+                                  color: WebPalette.of(context).muted,
+                                ),
+                              ),
+                              SizedBox(height: 20),
+                              Divider(color: WebPalette.of(context).line),
+                              SizedBox(height: 16),
+                              Text(
+                                '화면을 여는 것만으로 테스트가 시작되지는 않습니다.',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  height: 1.8,
+                                  color: WebPalette.of(context).muted,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 

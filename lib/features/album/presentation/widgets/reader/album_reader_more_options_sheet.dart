@@ -27,14 +27,28 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (kIsWeb) {
-      Widget action(String label, IconData icon, VoidCallback onTap,
-          {bool destructive = false}) => ListTile(
-        leading: Icon(icon, size: 19,
-          color: destructive ? Theme.of(context).colorScheme.error : WebPalette.of(context).muted),
-        title: Text(label, style: TextStyle(
-          fontSize: 14,
-          color: destructive ? Theme.of(context).colorScheme.error : WebPalette.of(context).ink,
-        )),
+      Widget action(
+        String label,
+        IconData icon,
+        VoidCallback onTap, {
+        bool destructive = false,
+      }) => ListTile(
+        leading: Icon(
+          icon,
+          size: 19,
+          color: destructive
+              ? Theme.of(context).colorScheme.error
+              : WebPalette.of(context).muted,
+        ),
+        title: Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            color: destructive
+                ? Theme.of(context).colorScheme.error
+                : WebPalette.of(context).ink,
+          ),
+        ),
         onTap: onTap,
         contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
       );
@@ -47,16 +61,25 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 18, 12, 12),
-                child: Row(children: [
-                  Expanded(child: Text('앨범 관리', style: TextStyle(
-                    fontSize: 17, fontWeight: FontWeight.w700, color: WebPalette.of(context).ink,
-                  ))),
-                  IconButton(
-                    tooltip: '메뉴 닫기',
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close, size: 18),
-                  ),
-                ]),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '앨범 관리',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: WebPalette.of(context).ink,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: '메뉴 닫기',
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close, size: 18),
+                    ),
+                  ],
+                ),
               ),
               Divider(height: 1, color: WebPalette.of(context).line),
               if (onDetail != null) action('페이지 상세', Icons.zoom_in, onDetail!),
@@ -66,7 +89,12 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
               action('책으로 만들기', Icons.auto_stories_outlined, onConfirm),
               if (onDelete != null) ...[
                 Divider(height: 1, color: WebPalette.of(context).line),
-                action('앨범 삭제', Icons.delete_outline, onDelete!, destructive: true),
+                action(
+                  '앨범 삭제',
+                  Icons.delete_outline,
+                  onDelete!,
+                  destructive: true,
+                ),
               ],
               const SizedBox(height: 12),
             ],

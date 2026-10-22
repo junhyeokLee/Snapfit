@@ -10,7 +10,16 @@ void main() {
       source,
       contains("import '../core/utils/storage_url_resolver.dart';"),
     );
-    expect(source, contains('resolveStorageImageUrl(urlOrGs)'));
+    // The production resolver remains the fallback behind the injected test
+    // resolver; bounded URL caching must not replace storage URI resolution.
+    expect(
+      source,
+      matches(
+        RegExp(
+          r'\(\s*resolveStorageUrlForTesting\s*\?\?\s*resolveStorageImageUrl\s*\)\s*\(\s*urlOrGs\s*,?\s*\)',
+        ),
+      ),
+    );
     expect(source, contains('parseSupabaseStorageUri(urlOrGs)'));
     expect(
       source,

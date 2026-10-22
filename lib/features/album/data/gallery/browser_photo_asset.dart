@@ -69,7 +69,10 @@ class BrowserPhotoAsset extends AssetEntity {
     final size = printEncodedImageSize(originalBytes);
     if (width != size.width.toInt() ||
         height != size.height.toInt() ||
-        width <= 0 || height <= 0 || width > 20000 || height > 20000 ||
+        width <= 0 ||
+        height <= 0 ||
+        width > 20000 ||
+        height > 20000 ||
         width * height > 80000000) {
       throw const BrowserPhotoException('임시 저장한 사진 크기를 확인하지 못했어요.');
     }

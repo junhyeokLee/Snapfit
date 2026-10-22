@@ -45,6 +45,10 @@ class _Binding extends AutomatedTestWidgetsFlutterBinding {
 class _Photo extends Mock implements AssetEntity {}
 
 class _Interaction extends Mock implements LayerInteractionManager {
+  @override
+  bool get isPrintPreview => false;
+  @override
+  bool get isPreviewMode => false;
   String? selected;
   List<LayerModel>? reordered;
   @override

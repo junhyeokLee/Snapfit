@@ -119,8 +119,7 @@ void main() {
         wrapCreation(
           ProviderScope(
             overrides: [
-              templateListProvider.overrideWith(
-                (_) async => publishedCreationTemplates,
+              mockTemplateList(() async => publishedCreationTemplates,
               ),
               storeCurationsProvider.overrideWith(
                 (_) async => {
@@ -293,8 +292,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            templateListProvider.overrideWith(
-              (_) async => publishedCreationTemplates,
+            mockTemplateList(() async => publishedCreationTemplates,
             ),
             storeCurationsProvider.overrideWith(
               (_) async => {

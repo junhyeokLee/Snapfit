@@ -7,6 +7,9 @@ abstract class TemplateRepository {
   Future<TemplateSummaryPage> getTemplateSummaries({
     int page = 0,
     int size = 20,
+    String? category,
+    String? query,
+    bool? isPaid,
   });
   Future<PremiumTemplate> getTemplate(int id);
   Future<void> likeTemplate(int id);

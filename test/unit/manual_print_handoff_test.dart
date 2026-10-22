@@ -11,19 +11,38 @@ void main() {
   test(
     'ready files remain production preparation until actual vendor acceptance',
     () {
-      OrderHistoryItem order(String stage, String status) =>
-          OrderHistoryItem.fromJson({
-            'orderId': 'o1',
-            'status': status,
-            'statusLabel': status == 'IN_PRODUCTION' ? '제작중' : '결제완료',
-            'printFulfillmentStatus': stage,
-            'printCoverPdfPath': 'private/cover.pdf',
-            'printInteriorPdfPath': 'private/interior.pdf',
-          });
-      expect(order('READY', 'PAYMENT_COMPLETED').customerStatusLabel, '제작 준비중');
+      OrderHistoryItem order(
+        String stage,
+        String status, {
+        bool paymentConfirmed = true,
+      }) => OrderHistoryItem.fromJson({
+        'orderId': 'o1',
+        'status': status,
+        'statusLabel': status == 'IN_PRODUCTION' ? '제작중' : '결제완료',
+        'printFulfillmentStatus': stage,
+        'printCoverPdfPath': 'private/cover.pdf',
+        'printInteriorPdfPath': 'private/interior.pdf',
+        if (paymentConfirmed) 'paymentConfirmedAt': '2026-10-20T00:00:00Z',
+      });
+      expect(
+        order('READY', 'PAYMENT_COMPLETED').customerStatusLabel,
+        '자동 발주 대기',
+      );
       expect(
         order('SUBMITTED', 'PAYMENT_COMPLETED').customerStatusLabel,
-        '제작 접수 확인중',
+        '제작사 접수 확인 중',
+      );
+      expect(
+        order('ACCEPTED', 'PAYMENT_COMPLETED').customerStatusLabel,
+        '인쇄 파일 확인 중',
+      );
+      expect(
+        order(
+          'READY',
+          'PAYMENT_COMPLETED',
+          paymentConfirmed: false,
+        ).customerStatusLabel,
+        '결제 상태 확인 중',
       );
       expect(order('ACCEPTED', 'IN_PRODUCTION').customerStatusLabel, '제작중');
       expect(

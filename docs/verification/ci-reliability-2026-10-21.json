@@ -1,0 +1,170 @@
+{
+  "status": "locally_verified_production_web_updated_github_pending_commit_push",
+  "date": "2026-10-21",
+  "head": "d36272ff02279f2389ef641a4af2a7451d4530c5",
+  "commitCreated": false,
+  "pushAttempted": false,
+  "causes": [
+    "Duplicate workflows used Flutter stable 3.47.7 versus pinned 3.47.1, producing inconsistent formatting checks",
+    "build_runner removed a standalone AI contract, while CI did not regenerate it",
+    "The early CI failures concealed stale fixtures and screen expectations in the full suite"
+  ],
+  "changes": [
+    "Single automatic CI entry calling the shared reusable workflow",
+    "Shared Flutter 3.47.1 / Dart 3.13.1 pins, dependency lockfile enforcement and local/CI check script",
+    "Regenerate both standalone AI contracts after build_runner; format using the target package language version",
+    "Install repository-local pre-push guard; verify the pushed HEAD and committed inputs before and after all checks",
+    "Fix narrow library search and favorites; preserve input focus on rotation",
+    "Update obsolete test fixtures and fonts, preserving functional assertions and exact golden comparisons"
+  ],
+  "sourceHashes": {
+    ".github/workflows/ci.yml": "e9ecc7bda161808d489a0c0eb4eda67f37d513b42e6d3e0a8cc157d34e2e8be1",
+    ".github/workflows/flutter-ci.yml": "c8b63fb34d5cd53c74cbed4c461be440af2071a8fc01e9cebedf92fcc3098ec5",
+    "Makefile": "b12d5fc99243d1ccae4e595c35e604372e96a030d139a778073924d8a52beab1",
+    "scripts/check_flutter_quality.sh": "2848003399c1bad5157545bf16222e357868789985e08cf14b1f439b55973abc",
+    ".githooks/pre-push": "64948141163f2ed3c1d9aa791740157a6db9ffdb87f396a5e0b51db588950174",
+    "tool/install_pre_push_hook.sh": "bba7789feefd0712d80d7e6b890d12e40ec1d2e773f630aabb4206dee53bd8ca",
+    "tool/ci/flutter_quality.py": "33d914c5617de964a8ac6869b6ea43ce692db9d9c892dfda2c4e2acd936f6ba9",
+    "tool/ci/test_flutter_quality.py": "06ddb327d768c6976cb7a8445bd6afe7546490ae5977498f823c08c9d0e3d281",
+    "tool/ci/README.md": "9281bdb77b96f0528a809f2bff33e8f7bdeacc63f75d955be0589be81278e21f",
+    "tool/ai_contract_generator.dart": "503694ec12d474a55dcab023012b949a63a50926c2f5267d37b04b0b34088623",
+    "tool/generate_ai_composition.dart": "0a55e62b0c349a0b8a2431564812606190856f5be1625f0e453fc01ae199a55d",
+    "tool/generate_ai_typography.dart": "1653a7124cef718625d8d0f6ad2ab0f5bbf23257347ffac1b99ef7eb2185657a",
+    "test/flutter_test_config.dart": "a4d4f893f1ec3e92a30fa69a5bcdea9bd55affb0ec58d1972c2f9a03b7d77724",
+    "test/support/golden_failure_output_io.dart": "f0f0678ecceb7a12237a1559bf82900d7fa3d8747c171f5f31bf4306b7348841",
+    "test/support/golden_failure_output_stub.dart": "4669ec22c0c8938151a34ec25a29093b85436ee6bcf0a4b44ebffadb01f9977b",
+    "lib/features/store/presentation/views/material_catalog_screen.dart": "8a39c716f8c33bf0eebfd0c4da64253c4363e4efbb6ab50eadaae320104a5d60",
+    "test/widget/album_creation_flow_test.dart": "00ba37a242b731d9ed438930a17e75f31a20c3de8e6d140295525c2472220179"
+  },
+  "validation": {
+    "formattedDartFilesChecked": 913,
+    "pendingFormattingChanges": 0,
+    "analysisIssues": 0,
+    "buildRunnerExitCode": 0,
+    "standaloneGeneratorsFresh": true,
+    "generatedSourcesPendingCommit": [
+      "lib/core/templates/catalog_preview_assets.g.dart",
+      "lib/features/album/ai_album/domain/ai_template_composition.g.dart",
+      "lib/features/album/ai_album/domain/ai_template_typography.g.dart"
+    ],
+    "pythonGuardTestsPassed": 24,
+    "supabaseCodeOnlyAudit": "passed, remote skipped",
+    "templateQualityAudit": {
+      "templates": 9,
+      "issues": 0
+    },
+    "nativeFullSweep": {
+      "passed": 4373,
+      "failed": 2,
+      "skipped": 61,
+      "files": 343,
+      "completedSuccessfully": false,
+      "durationMs": 1298641,
+      "failureNames": [
+        "allowed catalog selection premium=false uses price-neutral source copy",
+        "allowed catalog selection premium=true uses price-neutral source copy"
+      ]
+    },
+    "correctedNativeFixtureRecheck": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "files": 1,
+      "completedSuccessfully": true,
+      "durationMs": 8982,
+      "failureNames": []
+    },
+    "onlyFileChangedAfterFullSweepStarted": [
+      "test/widget/album_creation_flow_test.dart"
+    ],
+    "latestNativeResults": {
+      "passed": 4375,
+      "failed": 0,
+      "skipped": 61,
+      "method": "Full sweep results, replacing the two failed cases with the complete corrected-file rerun; no other input changed"
+    },
+    "browser": {
+      "passed": 66,
+      "failed": 0,
+      "skipped": 0,
+      "files": 6,
+      "completedSuccessfully": true,
+      "durationMs": 452952,
+      "failureNames": []
+    },
+    "goldens": {
+      "existingReferencesUpdated": 24,
+      "newPaths": 0,
+      "byteDelta": 150617,
+      "exactPixelComparisonRetained": true,
+      "failureImagesSaved": false,
+      "visualReview": "All 24 references inspected in RAM after fixing missing test fonts; no masking or tolerance changes"
+    },
+    "prePush": {
+      "installed": true,
+      "localHooksPath": ".githooks",
+      "dirtyInputRejectionVerifiedWithoutRemotePush": true,
+      "deletionOnlyPushSkipsSdk": true
+    }
+  },
+  "production": {
+    "main_sha256": "bcd57d726b33d721035b7916948cd0ee2d9ce603f9ccb086c87711fc1deed612",
+    "main_file": "main.bcd57d726b33d721035b.dart.js",
+    "bootstrap_sha256": "03ca68d93c86de71ae00d77f90075b13f57e84bbef7df4c9ae5bd20e9a5f41f8",
+    "bootstrap_file": "flutter_bootstrap.03ca68d93c86de71ae00.js",
+    "mainBytes": 7453755,
+    "frozenInputsMatchedAfterBuild": true,
+    "frozenInputs": 1404,
+    "url": "https://snapfit-c719d.web.app/",
+    "tlsVerified": true,
+    "indexToBootstrapToMainVerified": true,
+    "deployment": "Firebase hosting only",
+    "files": 829,
+    "verifiedAtUtc": "2026-10-21T14:58:47.358637+00:00"
+  },
+  "productionVisual": {
+    "route": "/#/designs/templates/-9302",
+    "viewport": "1280x720",
+    "observations": [
+      "Travel full-photo cover and interior thumbnails loaded",
+      "Free price 0P and guest login/start button loaded"
+    ],
+    "newImageFiles": 0
+  },
+  "preserved": {
+    "originalMediaInventoryFiles": 1052,
+    "newMediaFiles": 0,
+    "removedMediaFiles": 0,
+    "changedExistingTestReferences": 24,
+    "assetsAndExistingOutputUnchanged": true,
+    "existingScratchFileUntouched": true,
+    "activeAndroidRunAndItsBuildFilesPreserved": true
+  },
+  "storage": {
+    "freeBytesAtTaskStart": 21542744064,
+    "ramPreviewKernelReset": true,
+    "freeBytesBeforeCleanup": 14841397248,
+    "generatedOutputsRemoved": [
+      {
+        "path": "build/review-web",
+        "bytes": 769213756
+      },
+      {
+        "path": "build/unit_test_assets",
+        "bytes": 715382054
+      },
+      {
+        "path": "build/test_cache",
+        "bytes": 0
+      }
+    ],
+    "generatedOutputsRemovedBytes": 1484595810,
+    "temporaryVerificationFilesRemoved": 30,
+    "temporaryVerificationFilesRemovedBytes": 10856100,
+    "activeAndroidBuildAndSdkCachesPreserved": true,
+    "freeBytesAfterCleanup": 16341934080
+  },
+  "verifiedAtUtc": "2026-10-21T15:00:42.922800+00:00",
+  "completedAtUtc": "2026-10-21T15:01:36.714236+00:00",
+  "completedAtKst": "2026-10-22T00:01:36.714520+09:00"
+}

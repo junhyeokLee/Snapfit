@@ -59,7 +59,7 @@ void main() {
     expect(shadow.offset, const Offset(0, 1));
     expect(restored.textStyle!.fontSize, 40);
     expect(restored.text, text.text);
-      final cover = defaultCoverSize;
+    final cover = defaultCoverSize;
     final target = coverCanvasBaseSize(cover);
     final prepared = AlbumCreationTemplate.preparePages(
       [

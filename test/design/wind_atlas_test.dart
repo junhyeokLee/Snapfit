@@ -55,10 +55,29 @@ void main() {
         containsAll(['portrait', 'square', 'landscape']),
       );
       for (final aspect in CollectionAspect.values) {
-        expect(catalog['variants'][aspect.name], {
-          ...buildWindAtlas(aspect),
-          'materialPolicyRevision': freeTemplateMaterialPolicyRevision,
-        });
+        final original = buildWindAtlas(aspect);
+        final published = catalog['variants'][aspect.name] as Map;
+        // Catalog jackets and interiors include the current authored design
+        // refinements; the raw studio document remains a separate fixture.
+        expect(published, collection.document(aspect));
+        for (final key in [
+          'id',
+          'title',
+          'artworkProvenance',
+          'innerPageCount',
+          'chapters',
+          'accessTier',
+        ]) {
+          expect(published[key], original[key], reason: '${aspect.name}: $key');
+        }
+        expect(
+          published['materialPolicyRevision'],
+          freeTemplateMaterialPolicyRevision,
+        );
+        expect(
+          templateDocumentPages(Map<String, dynamic>.from(published)),
+          hasLength(33),
+        );
         expect(
           freeTemplateMaterialIssues(catalog['variants'][aspect.name]),
           isEmpty,

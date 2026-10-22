@@ -25,5 +25,6 @@ class BrowserPushState {
   final BrowserPushEnvironment environment;
   final bool enabled;
   final bool registered;
-  bool get active => enabled && registered && environment.permission == 'granted';
+  bool get active =>
+      enabled && registered && environment.permission == 'granted';
 }

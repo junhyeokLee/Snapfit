@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SnapFit 계정 · 보관함 화면 검증</title>
+  <title>SnapFit 마이페이지 · 디자인 보관함</title>
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; color: #222a2b; background: #f3f6f5; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif; letter-spacing: 0; }
@@ -14,7 +14,7 @@
     fieldset { border: 0; margin: 20px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 16px; }
     label { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; cursor: pointer; }
     input { accent-color: #007e90; }
-    select { min-height: 40px; padding: 6px 12px; border: 1px solid #dce4e2; border-radius: 4px; background: #fff; color: #222a2b; font: inherit; }
+    select { min-height: 44px; padding: 6px 12px; border: 1px solid #dce4e2; border-radius: 4px; background: #fff; color: #222a2b; font: inherit; }
     main { padding: 28px 24px 48px; }
     h2 { font-size: 18px; margin: 0 0 16px; }
     section { margin-bottom: 36px; }
@@ -32,14 +32,15 @@
 </head>
 <body>
   <header><div class="inner">
-    <h1>내 보관함 · 책과 소재</h1>
-    <p>실제 Flutter 위젯 캡처입니다. 표지는 홈과 같은 책등·사진 곡면·그림자를 사용하며, 가로 화면은 분류와 항목 목록을 나누었습니다. 즐겨찾기 우선·이름순 정렬, 검색·분류의 회전 유지, 12개씩 지연 표시를 검증했습니다. 홈·리더는 변경하지 않았습니다.</p>
-    <p>320·390·844 너비와 라이트·다크 모드를 비교할 수 있습니다. 예시 구매 내역이며 운영 구매·소재 지급·기기 설치는 하지 않았습니다. 가격을 확인할 수 없는 유료 템플릿은 무료로 안내하지 않습니다.</p>
+    <h1>마이페이지 · 내 디자인 보관함</h1>
+    <p>2026.10.19 · 실제 앱 렌더링입니다. 더 큰 내 앨범 선반과 이름이 보이는 구매 디자인, 표지·내지·소재 중심의 보관함으로 정리했습니다. 홈·리더 디자인은 유지했습니다.</p>
+    <p>가로·세로와 라이트·다크 모드를 비교할 수 있습니다. 금액·구매 상태는 검증용 데이터이며 실제 가격·구매 내역·이용 권한은 변경하지 않았습니다. 실기기 설치·성능 검증은 별도입니다.</p>
     <fieldset aria-label="화면 선택">
-      <label>화면 <select id="screen"><option value="library" selected>내 보관함</option><option value="account">계정 설정</option><option value="delete">탈퇴 확인</option><option value="all">전체 비교</option></select></label>
+      <label>화면 <select id="screen"><option value="profile" selected>마이페이지</option><option value="collection">구매 디자인 미리보기</option><option value="library">내 보관함</option><option value="templates">템플릿 보관함</option><option value="materials">소재 보관함</option><option value="favorites">즐겨찾기</option><option value="account">계정 설정</option><option value="delete">탈퇴 확인</option><option value="all">전체 비교</option></select></label>
       <label><input type="radio" name="theme" value="light" checked>라이트</label>
       <label><input type="radio" name="theme" value="dark">다크</label>
       <label><input type="checkbox" id="compact">작은 화면 320</label>
+      <label>가로 크기 <select id="wide"><option value="844">844 × 390</option><option value="740">740 × 360</option><option value="648">648 × 320</option></select></label>
     </fieldset>
   </div></header>
   <main>
@@ -47,9 +48,18 @@
     <section class="landscape"><h2>가로 화면</h2><div class="grid" id="landscape"></div></section>
     <section class="landscape"><h2>이름순 정렬</h2><div class="grid" id="sorting"></div></section>
     <section class="states"><h2>보관함 상태</h2><div class="grid" id="states"></div></section>
+    <section class="landscape"><h2>큰 글씨 1.8배</h2><div class="grid" id="large"></div></section>
+    <p>계정 설정·탈퇴 확인 화면의 가로 검토 이미지는 844 너비입니다.</p>
+    <p><a href="../store-hub-qa/index.html">스토어 · 템플릿 · 소재 상세 보기</a></p>
   </main>
   <script>
-    const names = { account: '계정 설정', library: '구매한 항목', delete: '탈퇴 확인' };
+    const names = { profile: '마이페이지', collection: '구매 디자인 미리보기', library: '구매한 항목', templates: '템플릿 보관함', materials: '소재 보관함', favorites: '즐겨찾기', account: '계정 설정', delete: '탈퇴 확인' };
+    const personal = { profile: 'profile', collection: 'profile-designs', library: 'library', templates: 'templates', materials: 'materials', favorites: 'favorites' };
+    function imageFile(screen, width, theme) {
+      return personal[screen]
+        ? `../all-screens-qa/personal-atelier-${personal[screen]}-${width}-${theme}.png`
+        : `${screen}-${width}-${theme}.png`;
+    }
     function frame(file, caption) {
       const figure = document.createElement('figure');
       const link = document.createElement('a');
@@ -64,19 +74,24 @@
     function render() {
       const theme = document.querySelector('input[name="theme"]:checked').value;
       const width = document.getElementById('compact').checked ? 320 : 390;
+      const wide = Number(document.getElementById('wide').value);
       const screen = document.getElementById('screen').value;
       const portrait = document.getElementById('portrait');
       const landscape = document.getElementById('landscape');
       portrait.replaceChildren(); landscape.replaceChildren();
       for (const [key, label] of Object.entries(names)) {
         if (screen !== 'all' && screen !== key) continue;
-        portrait.append(frame(`${key}-${width}-${theme}.png`, `${label} · ${width} · ${theme}`));
-        landscape.append(frame(`${key}-844-${theme}.png`, `${label} · 844 · ${theme}`));
+        const landscapeWidth = personal[key] ? wide : 844;
+        portrait.append(frame(imageFile(key,width,theme), `${label} · ${width} · ${theme}`));
+        landscape.append(frame(imageFile(key,landscapeWidth,theme), `${label} · ${landscapeWidth} · ${theme}`));
       }
     }
     document.getElementById('sorting').append(frame('library-name-order.png', '이름순 · 실제 구매 상태와 즐겨찾기 유지'));
     for (const [file, name] of [['library-loading', '불러오는 중'], ['library-error', '연결 오류 및 재시도'], ['library-empty', '구매한 항목 없음'], ['favorites-empty', '즐겨찾기 없음']]) {
       document.getElementById('states').append(frame(`${file}.png`, name));
+    }
+    for (const width of [320,648,844]) {
+      document.getElementById('large').append(frame(`../all-screens-qa/personal-atelier-profile-large-${width}-dark.png`, `큰 글씨 · ${width} · dark`));
     }
     document.querySelectorAll('input, select').forEach(input => input.addEventListener('change', render));
     render();

@@ -57,12 +57,16 @@ const catalogPreviewAssets = <String, String>{
   'sticker:lifeMug': 'assets/catalog_thumbnails/sticker_lifeMug.png',
   'sticker:lifeSlippers': 'assets/catalog_thumbnails/sticker_lifeSlippers.png',
   'sticker:lifeVase': 'assets/catalog_thumbnails/sticker_lifeVase.png',
-  'sticker:lifeFeltMouse': 'assets/catalog_thumbnails/sticker_lifeFeltMouse.png',
+  'sticker:lifeFeltMouse':
+      'assets/catalog_thumbnails/sticker_lifeFeltMouse.png',
   'sticker:lifeBowl': 'assets/catalog_thumbnails/sticker_lifeBowl.png',
-  'sticker:lifeWardrobeLabel': 'assets/catalog_thumbnails/sticker_lifeWardrobeLabel.png',
-  'sticker:lifePicnicSlip': 'assets/catalog_thumbnails/sticker_lifePicnicSlip.png',
+  'sticker:lifeWardrobeLabel':
+      'assets/catalog_thumbnails/sticker_lifeWardrobeLabel.png',
+  'sticker:lifePicnicSlip':
+      'assets/catalog_thumbnails/sticker_lifePicnicSlip.png',
   'sticker:lifeHomeNote': 'assets/catalog_thumbnails/sticker_lifeHomeNote.png',
-  'sticker:lifeCompanionTab': 'assets/catalog_thumbnails/sticker_lifeCompanionTab.png',
+  'sticker:lifeCompanionTab':
+      'assets/catalog_thumbnails/sticker_lifeCompanionTab.png',
   'sticker:lifeBonnet': 'assets/catalog_thumbnails/sticker_lifeBonnet.png',
   'sticker:lifeGingham': 'assets/catalog_thumbnails/sticker_lifeGingham.png',
   'sticker:lifeHouseKey': 'assets/catalog_thumbnails/sticker_lifeHouseKey.png',
@@ -71,120 +75,209 @@ const catalogPreviewAssets = <String, String>{
   'sticker:waveSeaGlass': 'assets/catalog_thumbnails/sticker_waveSeaGlass.png',
   'sticker:wavePencil': 'assets/catalog_thumbnails/sticker_wavePencil.png',
   'sticker:materialLace': 'assets/catalog_thumbnails/sticker_materialLace.png',
-  'sticker:materialShell': 'assets/catalog_thumbnails/sticker_materialShell.png',
-  'sticker:materialBookmark': 'assets/catalog_thumbnails/sticker_materialBookmark.png',
-  'sticker:materialBooties': 'assets/catalog_thumbnails/sticker_materialBooties.png',
-  'sticker:materialLinen': 'assets/catalog_thumbnails/sticker_materialLinen.png',
+  'sticker:materialShell':
+      'assets/catalog_thumbnails/sticker_materialShell.png',
+  'sticker:materialBookmark':
+      'assets/catalog_thumbnails/sticker_materialBookmark.png',
+  'sticker:materialBooties':
+      'assets/catalog_thumbnails/sticker_materialBooties.png',
+  'sticker:materialLinen':
+      'assets/catalog_thumbnails/sticker_materialLinen.png',
   'sticker:materialRose': 'assets/catalog_thumbnails/sticker_materialRose.png',
-  'sticker:materialLeash': 'assets/catalog_thumbnails/sticker_materialLeash.png',
+  'sticker:materialLeash':
+      'assets/catalog_thumbnails/sticker_materialLeash.png',
   'sticker:materialClip': 'assets/catalog_thumbnails/sticker_materialClip.png',
-  'sticker:materialBlindEmboss': 'assets/catalog_thumbnails/sticker_materialBlindEmboss.png',
-  'sticker:materialVellumBand': 'assets/catalog_thumbnails/sticker_materialVellumBand.png',
-  'sticker:materialContourMap': 'assets/catalog_thumbnails/sticker_materialContourMap.png',
-  'sticker:materialTransitPunch': 'assets/catalog_thumbnails/sticker_materialTransitPunch.png',
-  'sticker:materialSpecimenPocket': 'assets/catalog_thumbnails/sticker_materialSpecimenPocket.png',
-  'sticker:materialIndexTabs': 'assets/catalog_thumbnails/sticker_materialIndexTabs.png',
-  'sticker:materialScallopNote': 'assets/catalog_thumbnails/sticker_materialScallopNote.png',
-  'sticker:materialMonthDial': 'assets/catalog_thumbnails/sticker_materialMonthDial.png',
-  'sticker:materialRecipeFoldout': 'assets/catalog_thumbnails/sticker_materialRecipeFoldout.png',
-  'sticker:materialCrossStitchBand': 'assets/catalog_thumbnails/sticker_materialCrossStitchBand.png',
-  'sticker:materialTicketDuo': 'assets/catalog_thumbnails/sticker_materialTicketDuo.png',
-  'sticker:materialAirLetter': 'assets/catalog_thumbnails/sticker_materialAirLetter.png',
-  'sticker:materialWalkLedger': 'assets/catalog_thumbnails/sticker_materialWalkLedger.png',
-  'sticker:materialNamePatch': 'assets/catalog_thumbnails/sticker_materialNamePatch.png',
-  'sticker:atelierTitlePlate': 'assets/catalog_thumbnails/sticker_atelierTitlePlate.png',
-  'sticker:atelierRibbonPlate': 'assets/catalog_thumbnails/sticker_atelierRibbonPlate.png',
-  'sticker:atelierBoardingStub': 'assets/catalog_thumbnails/sticker_atelierBoardingStub.png',
-  'sticker:atelierPostalBand': 'assets/catalog_thumbnails/sticker_atelierPostalBand.png',
-  'sticker:atelierGridLeaf': 'assets/catalog_thumbnails/sticker_atelierGridLeaf.png',
-  'sticker:atelierArchiveSeal': 'assets/catalog_thumbnails/sticker_atelierArchiveSeal.png',
-  'sticker:atelierColorSlips': 'assets/catalog_thumbnails/sticker_atelierColorSlips.png',
-  'sticker:atelierCornerBrackets': 'assets/catalog_thumbnails/sticker_atelierCornerBrackets.png',
+  'sticker:materialBlindEmboss':
+      'assets/catalog_thumbnails/sticker_materialBlindEmboss.png',
+  'sticker:materialVellumBand':
+      'assets/catalog_thumbnails/sticker_materialVellumBand.png',
+  'sticker:materialContourMap':
+      'assets/catalog_thumbnails/sticker_materialContourMap.png',
+  'sticker:materialTransitPunch':
+      'assets/catalog_thumbnails/sticker_materialTransitPunch.png',
+  'sticker:materialSpecimenPocket':
+      'assets/catalog_thumbnails/sticker_materialSpecimenPocket.png',
+  'sticker:materialIndexTabs':
+      'assets/catalog_thumbnails/sticker_materialIndexTabs.png',
+  'sticker:materialScallopNote':
+      'assets/catalog_thumbnails/sticker_materialScallopNote.png',
+  'sticker:materialMonthDial':
+      'assets/catalog_thumbnails/sticker_materialMonthDial.png',
+  'sticker:materialRecipeFoldout':
+      'assets/catalog_thumbnails/sticker_materialRecipeFoldout.png',
+  'sticker:materialCrossStitchBand':
+      'assets/catalog_thumbnails/sticker_materialCrossStitchBand.png',
+  'sticker:materialTicketDuo':
+      'assets/catalog_thumbnails/sticker_materialTicketDuo.png',
+  'sticker:materialAirLetter':
+      'assets/catalog_thumbnails/sticker_materialAirLetter.png',
+  'sticker:materialWalkLedger':
+      'assets/catalog_thumbnails/sticker_materialWalkLedger.png',
+  'sticker:materialNamePatch':
+      'assets/catalog_thumbnails/sticker_materialNamePatch.png',
+  'sticker:atelierTitlePlate':
+      'assets/catalog_thumbnails/sticker_atelierTitlePlate.png',
+  'sticker:atelierRibbonPlate':
+      'assets/catalog_thumbnails/sticker_atelierRibbonPlate.png',
+  'sticker:atelierBoardingStub':
+      'assets/catalog_thumbnails/sticker_atelierBoardingStub.png',
+  'sticker:atelierPostalBand':
+      'assets/catalog_thumbnails/sticker_atelierPostalBand.png',
+  'sticker:atelierGridLeaf':
+      'assets/catalog_thumbnails/sticker_atelierGridLeaf.png',
+  'sticker:atelierArchiveSeal':
+      'assets/catalog_thumbnails/sticker_atelierArchiveSeal.png',
+  'sticker:atelierColorSlips':
+      'assets/catalog_thumbnails/sticker_atelierColorSlips.png',
+  'sticker:atelierCornerBrackets':
+      'assets/catalog_thumbnails/sticker_atelierCornerBrackets.png',
   'sticker:zineCamera': 'assets/catalog_thumbnails/sticker_zineCamera.png',
   'sticker:zineHeartKey': 'assets/catalog_thumbnails/sticker_zineHeartKey.png',
-  'sticker:zineSilverStar': 'assets/catalog_thumbnails/sticker_zineSilverStar.png',
-  'sticker:zineDaisyPatch': 'assets/catalog_thumbnails/sticker_zineDaisyPatch.png',
+  'sticker:zineSilverStar':
+      'assets/catalog_thumbnails/sticker_zineSilverStar.png',
+  'sticker:zineDaisyPatch':
+      'assets/catalog_thumbnails/sticker_zineDaisyPatch.png',
   'sticker:zineCitrus': 'assets/catalog_thumbnails/sticker_zineCitrus.png',
   'sticker:zineGlasses': 'assets/catalog_thumbnails/sticker_zineGlasses.png',
-  'sticker:zineGridPaper': 'assets/catalog_thumbnails/sticker_zineGridPaper.png',
+  'sticker:zineGridPaper':
+      'assets/catalog_thumbnails/sticker_zineGridPaper.png',
   'sticker:zineTornBlue': 'assets/catalog_thumbnails/sticker_zineTornBlue.png',
   'sticker:zineChecker': 'assets/catalog_thumbnails/sticker_zineChecker.png',
   'sticker:zineTicket': 'assets/catalog_thumbnails/sticker_zineTicket.png',
   'sticker:zineTape': 'assets/catalog_thumbnails/sticker_zineTape.png',
   'sticker:zineOrbit': 'assets/catalog_thumbnails/sticker_zineOrbit.png',
-  'sticker:zineUnderline': 'assets/catalog_thumbnails/sticker_zineUnderline.png',
+  'sticker:zineUnderline':
+      'assets/catalog_thumbnails/sticker_zineUnderline.png',
   'sticker:luminousBow': 'assets/catalog_thumbnails/sticker_luminousBow.png',
   'sticker:luminousLace': 'assets/catalog_thumbnails/sticker_luminousLace.png',
-  'sticker:luminousGingham': 'assets/catalog_thumbnails/sticker_luminousGingham.png',
-  'sticker:luminousMintStripe': 'assets/catalog_thumbnails/sticker_luminousMintStripe.png',
-  'sticker:luminousRibbon': 'assets/catalog_thumbnails/sticker_luminousRibbon.png',
-  'sticker:luminousRosette': 'assets/catalog_thumbnails/sticker_luminousRosette.png',
-  'sticker:luminousHeart': 'assets/catalog_thumbnails/sticker_luminousHeart.png',
-  'sticker:luminousPostmark': 'assets/catalog_thumbnails/sticker_luminousPostmark.png',
+  'sticker:luminousGingham':
+      'assets/catalog_thumbnails/sticker_luminousGingham.png',
+  'sticker:luminousMintStripe':
+      'assets/catalog_thumbnails/sticker_luminousMintStripe.png',
+  'sticker:luminousRibbon':
+      'assets/catalog_thumbnails/sticker_luminousRibbon.png',
+  'sticker:luminousRosette':
+      'assets/catalog_thumbnails/sticker_luminousRosette.png',
+  'sticker:luminousHeart':
+      'assets/catalog_thumbnails/sticker_luminousHeart.png',
+  'sticker:luminousPostmark':
+      'assets/catalog_thumbnails/sticker_luminousPostmark.png',
   'sticker:luminousNote': 'assets/catalog_thumbnails/sticker_luminousNote.png',
   'sticker:luminousStar': 'assets/catalog_thumbnails/sticker_luminousStar.png',
-  'sticker:studioOlivePress': 'assets/catalog_thumbnails/sticker_studioOlivePress.png',
-  'sticker:studioRoseSilk': 'assets/catalog_thumbnails/sticker_studioRoseSilk.png',
-  'sticker:studioCoastStamp': 'assets/catalog_thumbnails/sticker_studioCoastStamp.png',
-  'sticker:studioArchiveTag': 'assets/catalog_thumbnails/sticker_studioArchiveTag.png',
-  'sticker:studioGouacheCake': 'assets/catalog_thumbnails/sticker_studioGouacheCake.png',
-  'sticker:studioPaperRosette': 'assets/catalog_thumbnails/sticker_studioPaperRosette.png',
-  'sticker:studioBlueFibre': 'assets/catalog_thumbnails/sticker_studioBlueFibre.png',
-  'sticker:studioGlassineEnvelope': 'assets/catalog_thumbnails/sticker_studioGlassineEnvelope.png',
-  'sticker:travelDocumentPocket': 'assets/catalog_thumbnails/sticker_travelDocumentPocket.png',
-  'sticker:travelMarketReceipt': 'assets/catalog_thumbnails/sticker_travelMarketReceipt.png',
-  'sticker:travelStayTag': 'assets/catalog_thumbnails/sticker_travelStayTag.png',
-  'sticker:travelCafeReceipt': 'assets/catalog_thumbnails/sticker_travelCafeReceipt.png',
-  'sticker:travelCafeCoaster': 'assets/catalog_thumbnails/sticker_travelCafeCoaster.png',
-  'sticker:travelPostcard': 'assets/catalog_thumbnails/sticker_travelPostcard.png',
-  'sticker:travelLuggageLabel': 'assets/catalog_thumbnails/sticker_travelLuggageLabel.png',
-  'sticker:travelNotebook': 'assets/catalog_thumbnails/sticker_travelNotebook.png',
-  'sticker:travelPhotoSleeve': 'assets/catalog_thumbnails/sticker_travelPhotoSleeve.png',
-  'sticker:travelContourSlip': 'assets/catalog_thumbnails/sticker_travelContourSlip.png',
-  'sticker:studioTravelMap': 'assets/catalog_thumbnails/sticker_studioTravelMap.png',
-  'sticker:studioTravelTicket': 'assets/catalog_thumbnails/sticker_studioTravelTicket.png',
-  'sticker:studioPostalMark': 'assets/catalog_thumbnails/sticker_studioPostalMark.png',
-  'sticker:heirloomVowPaper': 'assets/catalog_thumbnails/sticker_heirloomVowPaper.png',
-  'sticker:heirloomLibraryCard': 'assets/catalog_thumbnails/sticker_heirloomLibraryCard.png',
-  'sticker:heirloomGrowthRuler': 'assets/catalog_thumbnails/sticker_heirloomGrowthRuler.png',
-  'sticker:heirloomTableLinen': 'assets/catalog_thumbnails/sticker_heirloomTableLinen.png',
-  'sticker:heirloomCinemaStub': 'assets/catalog_thumbnails/sticker_heirloomCinemaStub.png',
-  'sticker:heirloomPetTag': 'assets/catalog_thumbnails/sticker_heirloomPetTag.png',
-  'sticker:heirloomVowEnvelope': 'assets/catalog_thumbnails/sticker_heirloomVowEnvelope.png',
-  'sticker:heirloomVowPlaceCard': 'assets/catalog_thumbnails/sticker_heirloomVowPlaceCard.png',
-  'sticker:heirloomVowSeal': 'assets/catalog_thumbnails/sticker_heirloomVowSeal.png',
-  'sticker:studioCottonRag': 'assets/catalog_thumbnails/sticker_studioCottonRag.png',
-  'sticker:studioPressedCosmos': 'assets/catalog_thumbnails/sticker_studioPressedCosmos.png',
+  'sticker:studioOlivePress':
+      'assets/catalog_thumbnails/sticker_studioOlivePress.png',
+  'sticker:studioRoseSilk':
+      'assets/catalog_thumbnails/sticker_studioRoseSilk.png',
+  'sticker:studioCoastStamp':
+      'assets/catalog_thumbnails/sticker_studioCoastStamp.png',
+  'sticker:studioArchiveTag':
+      'assets/catalog_thumbnails/sticker_studioArchiveTag.png',
+  'sticker:studioGouacheCake':
+      'assets/catalog_thumbnails/sticker_studioGouacheCake.png',
+  'sticker:studioPaperRosette':
+      'assets/catalog_thumbnails/sticker_studioPaperRosette.png',
+  'sticker:studioBlueFibre':
+      'assets/catalog_thumbnails/sticker_studioBlueFibre.png',
+  'sticker:studioGlassineEnvelope':
+      'assets/catalog_thumbnails/sticker_studioGlassineEnvelope.png',
+  'sticker:travelDocumentPocket':
+      'assets/catalog_thumbnails/sticker_travelDocumentPocket.png',
+  'sticker:travelMarketReceipt':
+      'assets/catalog_thumbnails/sticker_travelMarketReceipt.png',
+  'sticker:travelStayTag':
+      'assets/catalog_thumbnails/sticker_travelStayTag.png',
+  'sticker:travelCafeReceipt':
+      'assets/catalog_thumbnails/sticker_travelCafeReceipt.png',
+  'sticker:travelCafeCoaster':
+      'assets/catalog_thumbnails/sticker_travelCafeCoaster.png',
+  'sticker:travelPostcard':
+      'assets/catalog_thumbnails/sticker_travelPostcard.png',
+  'sticker:travelLuggageLabel':
+      'assets/catalog_thumbnails/sticker_travelLuggageLabel.png',
+  'sticker:travelNotebook':
+      'assets/catalog_thumbnails/sticker_travelNotebook.png',
+  'sticker:travelPhotoSleeve':
+      'assets/catalog_thumbnails/sticker_travelPhotoSleeve.png',
+  'sticker:travelContourSlip':
+      'assets/catalog_thumbnails/sticker_travelContourSlip.png',
+  'sticker:studioTravelMap':
+      'assets/catalog_thumbnails/sticker_studioTravelMap.png',
+  'sticker:studioTravelTicket':
+      'assets/catalog_thumbnails/sticker_studioTravelTicket.png',
+  'sticker:studioPostalMark':
+      'assets/catalog_thumbnails/sticker_studioPostalMark.png',
+  'sticker:heirloomVowPaper':
+      'assets/catalog_thumbnails/sticker_heirloomVowPaper.png',
+  'sticker:heirloomLibraryCard':
+      'assets/catalog_thumbnails/sticker_heirloomLibraryCard.png',
+  'sticker:heirloomGrowthRuler':
+      'assets/catalog_thumbnails/sticker_heirloomGrowthRuler.png',
+  'sticker:heirloomTableLinen':
+      'assets/catalog_thumbnails/sticker_heirloomTableLinen.png',
+  'sticker:heirloomCinemaStub':
+      'assets/catalog_thumbnails/sticker_heirloomCinemaStub.png',
+  'sticker:heirloomPetTag':
+      'assets/catalog_thumbnails/sticker_heirloomPetTag.png',
+  'sticker:heirloomVowEnvelope':
+      'assets/catalog_thumbnails/sticker_heirloomVowEnvelope.png',
+  'sticker:heirloomVowPlaceCard':
+      'assets/catalog_thumbnails/sticker_heirloomVowPlaceCard.png',
+  'sticker:heirloomVowSeal':
+      'assets/catalog_thumbnails/sticker_heirloomVowSeal.png',
+  'sticker:studioCottonRag':
+      'assets/catalog_thumbnails/sticker_studioCottonRag.png',
+  'sticker:studioPressedCosmos':
+      'assets/catalog_thumbnails/sticker_studioPressedCosmos.png',
   'sticker:studioCotton': 'assets/catalog_thumbnails/sticker_studioCotton.png',
-  'sticker:studioSageRibbon': 'assets/catalog_thumbnails/sticker_studioSageRibbon.png',
-  'sticker:studioWashiSage': 'assets/catalog_thumbnails/sticker_studioWashiSage.png',
-  'sticker:studioCitrusPrint': 'assets/catalog_thumbnails/sticker_studioCitrusPrint.png',
-  'sticker:studioBlushPaper': 'assets/catalog_thumbnails/sticker_studioBlushPaper.png',
+  'sticker:studioSageRibbon':
+      'assets/catalog_thumbnails/sticker_studioSageRibbon.png',
+  'sticker:studioWashiSage':
+      'assets/catalog_thumbnails/sticker_studioWashiSage.png',
+  'sticker:studioCitrusPrint':
+      'assets/catalog_thumbnails/sticker_studioCitrusPrint.png',
+  'sticker:studioBlushPaper':
+      'assets/catalog_thumbnails/sticker_studioBlushPaper.png',
   'sticker:studioLedger': 'assets/catalog_thumbnails/sticker_studioLedger.png',
   'sticker:studioVellum': 'assets/catalog_thumbnails/sticker_studioVellum.png',
-  'sticker:studioWashiRose': 'assets/catalog_thumbnails/sticker_studioWashiRose.png',
-  'sticker:studioWashiIndigo': 'assets/catalog_thumbnails/sticker_studioWashiIndigo.png',
-  'sticker:studioKeepsakeTicket': 'assets/catalog_thumbnails/sticker_studioKeepsakeTicket.png',
-  'sticker:studioBotanicalStamp': 'assets/catalog_thumbnails/sticker_studioBotanicalStamp.png',
-  'frame:materialLaceMount': 'assets/catalog_thumbnails/frame_materialLaceMount.png',
-  'frame:materialTwinWindow': 'assets/catalog_thumbnails/frame_materialTwinWindow.png',
-  'frame:materialLinenOval': 'assets/catalog_thumbnails/frame_materialLinenOval.png',
-  'frame:materialNotebookMount': 'assets/catalog_thumbnails/frame_materialNotebookMount.png',
-  'frame:materialScallopMount': 'assets/catalog_thumbnails/frame_materialScallopMount.png',
-  'frame:materialSlideMount': 'assets/catalog_thumbnails/frame_materialSlideMount.png',
+  'sticker:studioWashiRose':
+      'assets/catalog_thumbnails/sticker_studioWashiRose.png',
+  'sticker:studioWashiIndigo':
+      'assets/catalog_thumbnails/sticker_studioWashiIndigo.png',
+  'sticker:studioKeepsakeTicket':
+      'assets/catalog_thumbnails/sticker_studioKeepsakeTicket.png',
+  'sticker:studioBotanicalStamp':
+      'assets/catalog_thumbnails/sticker_studioBotanicalStamp.png',
+  'frame:materialLaceMount':
+      'assets/catalog_thumbnails/frame_materialLaceMount.png',
+  'frame:materialTwinWindow':
+      'assets/catalog_thumbnails/frame_materialTwinWindow.png',
+  'frame:materialLinenOval':
+      'assets/catalog_thumbnails/frame_materialLinenOval.png',
+  'frame:materialNotebookMount':
+      'assets/catalog_thumbnails/frame_materialNotebookMount.png',
+  'frame:materialScallopMount':
+      'assets/catalog_thumbnails/frame_materialScallopMount.png',
+  'frame:materialSlideMount':
+      'assets/catalog_thumbnails/frame_materialSlideMount.png',
   'frame:zineContact': 'assets/catalog_thumbnails/frame_zineContact.png',
   'frame:atelierDeepMat': 'assets/catalog_thumbnails/frame_atelierDeepMat.png',
   'frame:atelierFolio': 'assets/catalog_thumbnails/frame_atelierFolio.png',
   'frame:atelierKeyhole': 'assets/catalog_thumbnails/frame_atelierKeyhole.png',
-  'frame:atelierCrossRibbon': 'assets/catalog_thumbnails/frame_atelierCrossRibbon.png',
-  'frame:atelierNegative': 'assets/catalog_thumbnails/frame_atelierNegative.png',
-  'frame:atelierEnvelope': 'assets/catalog_thumbnails/frame_atelierEnvelope.png',
+  'frame:atelierCrossRibbon':
+      'assets/catalog_thumbnails/frame_atelierCrossRibbon.png',
+  'frame:atelierNegative':
+      'assets/catalog_thumbnails/frame_atelierNegative.png',
+  'frame:atelierEnvelope':
+      'assets/catalog_thumbnails/frame_atelierEnvelope.png',
   'frame:atelierOxford': 'assets/catalog_thumbnails/frame_atelierOxford.png',
-  'frame:atelierCoastline': 'assets/catalog_thumbnails/frame_atelierCoastline.png',
+  'frame:atelierCoastline':
+      'assets/catalog_thumbnails/frame_atelierCoastline.png',
   'frame:atelierWeave': 'assets/catalog_thumbnails/frame_atelierWeave.png',
   'frame:atelierDeco': 'assets/catalog_thumbnails/frame_atelierDeco.png',
-  'frame:atelierAccordion': 'assets/catalog_thumbnails/frame_atelierAccordion.png',
-  'frame:atelierCornerFold': 'assets/catalog_thumbnails/frame_atelierCornerFold.png',
+  'frame:atelierAccordion':
+      'assets/catalog_thumbnails/frame_atelierAccordion.png',
+  'frame:atelierCornerFold':
+      'assets/catalog_thumbnails/frame_atelierCornerFold.png',
   'frame:zineDeckle': 'assets/catalog_thumbnails/frame_zineDeckle.png',
   'frame:zineTab': 'assets/catalog_thumbnails/frame_zineTab.png',
   'frame:editionLace': 'assets/catalog_thumbnails/frame_editionLace.png',
@@ -192,12 +285,18 @@ const catalogPreviewAssets = <String, String>{
   'frame:editionPostage': 'assets/catalog_thumbnails/frame_editionPostage.png',
   'frame:editionScallop': 'assets/catalog_thumbnails/frame_editionScallop.png',
   'frame:editionCameo': 'assets/catalog_thumbnails/frame_editionCameo.png',
-  'frame:editionTriptych': 'assets/catalog_thumbnails/frame_editionTriptych.png',
-  'frame:studyArchWindow': 'assets/catalog_thumbnails/frame_studyArchWindow.png',
-  'frame:studyFloatMount': 'assets/catalog_thumbnails/frame_studyFloatMount.png',
-  'frame:studyNotchedMat': 'assets/catalog_thumbnails/frame_studyNotchedMat.png',
-  'frame:studioDoubleMat': 'assets/catalog_thumbnails/frame_studioDoubleMat.png',
-  'frame:studioPhotoCorners': 'assets/catalog_thumbnails/frame_studioPhotoCorners.png',
+  'frame:editionTriptych':
+      'assets/catalog_thumbnails/frame_editionTriptych.png',
+  'frame:studyArchWindow':
+      'assets/catalog_thumbnails/frame_studyArchWindow.png',
+  'frame:studyFloatMount':
+      'assets/catalog_thumbnails/frame_studyFloatMount.png',
+  'frame:studyNotchedMat':
+      'assets/catalog_thumbnails/frame_studyNotchedMat.png',
+  'frame:studioDoubleMat':
+      'assets/catalog_thumbnails/frame_studioDoubleMat.png',
+  'frame:studioPhotoCorners':
+      'assets/catalog_thumbnails/frame_studioPhotoCorners.png',
   'frame:studioOvalMat': 'assets/catalog_thumbnails/frame_studioOvalMat.png',
   'frame:studioLinen': 'assets/catalog_thumbnails/frame_studioLinen.png',
   'frame:studioPostcard': 'assets/catalog_thumbnails/frame_studioPostcard.png',
@@ -221,7 +320,8 @@ const catalogPreviewAssets = <String, String>{
   'frame:archSoft': 'assets/catalog_thumbnails/frame_archSoft.png',
   'frame:round': 'assets/catalog_thumbnails/frame_round.png',
   'frame:polaroid': 'assets/catalog_thumbnails/frame_polaroid.png',
-  'frame:polaroidClassic': 'assets/catalog_thumbnails/frame_polaroidClassic.png',
+  'frame:polaroidClassic':
+      'assets/catalog_thumbnails/frame_polaroidClassic.png',
   'frame:polaroidWide': 'assets/catalog_thumbnails/frame_polaroidWide.png',
   'frame:polaroidFilm': 'assets/catalog_thumbnails/frame_polaroidFilm.png',
   'frame:film': 'assets/catalog_thumbnails/frame_film.png',
@@ -240,7 +340,8 @@ const catalogPreviewAssets = <String, String>{
   'frame:blob': 'assets/catalog_thumbnails/frame_blob.png',
   'frame:ticketStub': 'assets/catalog_thumbnails/frame_ticketStub.png',
   'frame:thinDoubleLine': 'assets/catalog_thumbnails/frame_thinDoubleLine.png',
-  'frame:offsetColorBlock': 'assets/catalog_thumbnails/frame_offsetColorBlock.png',
+  'frame:offsetColorBlock':
+      'assets/catalog_thumbnails/frame_offsetColorBlock.png',
   'frame:floatingGlass': 'assets/catalog_thumbnails/frame_floatingGlass.png',
   'frame:gradientEdge': 'assets/catalog_thumbnails/frame_gradientEdge.png',
   'frame:tornNotebook': 'assets/catalog_thumbnails/frame_tornNotebook.png',
@@ -253,29 +354,51 @@ const catalogPreviewAssets = <String, String>{
   'frame:stencilBlock': 'assets/catalog_thumbnails/frame_stencilBlock.png',
   'frame:midnightDrip': 'assets/catalog_thumbnails/frame_midnightDrip.png',
   'frame:vaporStreet': 'assets/catalog_thumbnails/frame_vaporStreet.png',
-  'phrase:collage-bold-cut': 'assets/catalog_thumbnails/phrase_collage-bold-cut.png',
-  'phrase:collage-ticket-label': 'assets/catalog_thumbnails/phrase_collage-ticket-label.png',
-  'phrase:collage-hand-note': 'assets/catalog_thumbnails/phrase_collage-hand-note.png',
-  'phrase:collage-diecut': 'assets/catalog_thumbnails/phrase_collage-diecut.png',
-  'phrase:collage-ribbon': 'assets/catalog_thumbnails/phrase_collage-ribbon.png',
+  'phrase:collage-bold-cut':
+      'assets/catalog_thumbnails/phrase_collage-bold-cut.png',
+  'phrase:collage-ticket-label':
+      'assets/catalog_thumbnails/phrase_collage-ticket-label.png',
+  'phrase:collage-hand-note':
+      'assets/catalog_thumbnails/phrase_collage-hand-note.png',
+  'phrase:collage-diecut':
+      'assets/catalog_thumbnails/phrase_collage-diecut.png',
+  'phrase:collage-ribbon':
+      'assets/catalog_thumbnails/phrase_collage-ribbon.png',
   'phrase:collage-seal': 'assets/catalog_thumbnails/phrase_collage-seal.png',
-  'phrase:collage-outline': 'assets/catalog_thumbnails/phrase_collage-outline.png',
-  'phrase:collage-atelier-vow': 'assets/catalog_thumbnails/phrase_collage-atelier-vow.png',
-  'phrase:collage-atelier-promise': 'assets/catalog_thumbnails/phrase_collage-atelier-promise.png',
-  'phrase:collage-atelier-ribbon': 'assets/catalog_thumbnails/phrase_collage-atelier-ribbon.png',
-  'phrase:collage-atelier-boarding': 'assets/catalog_thumbnails/phrase_collage-atelier-boarding.png',
-  'phrase:collage-atelier-route': 'assets/catalog_thumbnails/phrase_collage-atelier-route.png',
-  'phrase:collage-atelier-postcard': 'assets/catalog_thumbnails/phrase_collage-atelier-postcard.png',
-  'phrase:collage-atelier-diary': 'assets/catalog_thumbnails/phrase_collage-atelier-diary.png',
-  'phrase:collage-atelier-index': 'assets/catalog_thumbnails/phrase_collage-atelier-index.png',
-  'phrase:collage-atelier-archive': 'assets/catalog_thumbnails/phrase_collage-atelier-archive.png',
-  'phrase:collage-atelier-first-year': 'assets/catalog_thumbnails/phrase_collage-atelier-first-year.png',
-  'phrase:collage-atelier-first-time': 'assets/catalog_thumbnails/phrase_collage-atelier-first-time.png',
-  'phrase:collage-atelier-weekend': 'assets/catalog_thumbnails/phrase_collage-atelier-weekend.png',
-  'phrase:collage-atelier-anniversary': 'assets/catalog_thumbnails/phrase_collage-atelier-anniversary.png',
-  'phrase:collage-atelier-walk': 'assets/catalog_thumbnails/phrase_collage-atelier-walk.png',
-  'phrase:collage-atelier-laughter': 'assets/catalog_thumbnails/phrase_collage-atelier-laughter.png',
-  'phrase:collage-atelier-cinema': 'assets/catalog_thumbnails/phrase_collage-atelier-cinema.png',
+  'phrase:collage-outline':
+      'assets/catalog_thumbnails/phrase_collage-outline.png',
+  'phrase:collage-atelier-vow':
+      'assets/catalog_thumbnails/phrase_collage-atelier-vow.png',
+  'phrase:collage-atelier-promise':
+      'assets/catalog_thumbnails/phrase_collage-atelier-promise.png',
+  'phrase:collage-atelier-ribbon':
+      'assets/catalog_thumbnails/phrase_collage-atelier-ribbon.png',
+  'phrase:collage-atelier-boarding':
+      'assets/catalog_thumbnails/phrase_collage-atelier-boarding.png',
+  'phrase:collage-atelier-route':
+      'assets/catalog_thumbnails/phrase_collage-atelier-route.png',
+  'phrase:collage-atelier-postcard':
+      'assets/catalog_thumbnails/phrase_collage-atelier-postcard.png',
+  'phrase:collage-atelier-diary':
+      'assets/catalog_thumbnails/phrase_collage-atelier-diary.png',
+  'phrase:collage-atelier-index':
+      'assets/catalog_thumbnails/phrase_collage-atelier-index.png',
+  'phrase:collage-atelier-archive':
+      'assets/catalog_thumbnails/phrase_collage-atelier-archive.png',
+  'phrase:collage-atelier-first-year':
+      'assets/catalog_thumbnails/phrase_collage-atelier-first-year.png',
+  'phrase:collage-atelier-first-time':
+      'assets/catalog_thumbnails/phrase_collage-atelier-first-time.png',
+  'phrase:collage-atelier-weekend':
+      'assets/catalog_thumbnails/phrase_collage-atelier-weekend.png',
+  'phrase:collage-atelier-anniversary':
+      'assets/catalog_thumbnails/phrase_collage-atelier-anniversary.png',
+  'phrase:collage-atelier-walk':
+      'assets/catalog_thumbnails/phrase_collage-atelier-walk.png',
+  'phrase:collage-atelier-laughter':
+      'assets/catalog_thumbnails/phrase_collage-atelier-laughter.png',
+  'phrase:collage-atelier-cinema':
+      'assets/catalog_thumbnails/phrase_collage-atelier-cinema.png',
   'template:-9521': 'assets/catalog_thumbnails/template_-9521.png',
   'template:-9522': 'assets/catalog_thumbnails/template_-9522.png',
   'template:-9523': 'assets/catalog_thumbnails/template_-9523.png',
@@ -283,45 +406,84 @@ const catalogPreviewAssets = <String, String>{
   'template:-9525': 'assets/catalog_thumbnails/template_-9525.png',
   'template:-9526': 'assets/catalog_thumbnails/template_-9526.png',
   'template:-9527': 'assets/catalog_thumbnails/template_-9527.png',
-  'sticker:editionNightSeal': 'assets/catalog_thumbnails/sticker_editionNightSeal.png',
-  'sticker:editionRailBundle': 'assets/catalog_thumbnails/sticker_editionRailBundle.png',
-  'sticker:editionBotanicalPassport': 'assets/catalog_thumbnails/sticker_editionBotanicalPassport.png',
-  'sticker:editionOrbitMobile': 'assets/catalog_thumbnails/sticker_editionOrbitMobile.png',
-  'sticker:editionRecipeBundle': 'assets/catalog_thumbnails/sticker_editionRecipeBundle.png',
-  'sticker:editionCinemaBundle': 'assets/catalog_thumbnails/sticker_editionCinemaBundle.png',
-  'sticker:editionWalkPatch': 'assets/catalog_thumbnails/sticker_editionWalkPatch.png',
-  'sticker:editionGardenPaper': 'assets/catalog_thumbnails/sticker_editionGardenPaper.png',
-  'sticker:editionGardenMount': 'assets/catalog_thumbnails/sticker_editionGardenMount.png',
-  'sticker:editionGardenBand': 'assets/catalog_thumbnails/sticker_editionGardenBand.png',
-  'sticker:editionRailPaper': 'assets/catalog_thumbnails/sticker_editionRailPaper.png',
-  'sticker:editionRailMount': 'assets/catalog_thumbnails/sticker_editionRailMount.png',
-  'sticker:editionRailBand': 'assets/catalog_thumbnails/sticker_editionRailBand.png',
-  'sticker:editionHerbariumPaper': 'assets/catalog_thumbnails/sticker_editionHerbariumPaper.png',
-  'sticker:editionHerbariumMount': 'assets/catalog_thumbnails/sticker_editionHerbariumMount.png',
-  'sticker:editionHerbariumBand': 'assets/catalog_thumbnails/sticker_editionHerbariumBand.png',
-  'sticker:editionOrbitPaper': 'assets/catalog_thumbnails/sticker_editionOrbitPaper.png',
-  'sticker:editionOrbitMount': 'assets/catalog_thumbnails/sticker_editionOrbitMount.png',
-  'sticker:editionOrbitBand': 'assets/catalog_thumbnails/sticker_editionOrbitBand.png',
-  'sticker:editionKitchenPaper': 'assets/catalog_thumbnails/sticker_editionKitchenPaper.png',
-  'sticker:editionKitchenMount': 'assets/catalog_thumbnails/sticker_editionKitchenMount.png',
-  'sticker:editionKitchenBand': 'assets/catalog_thumbnails/sticker_editionKitchenBand.png',
-  'sticker:editionCinemaPaper': 'assets/catalog_thumbnails/sticker_editionCinemaPaper.png',
-  'sticker:editionCinemaMount': 'assets/catalog_thumbnails/sticker_editionCinemaMount.png',
-  'sticker:editionCinemaBand': 'assets/catalog_thumbnails/sticker_editionCinemaBand.png',
-  'sticker:editionWalkPaper': 'assets/catalog_thumbnails/sticker_editionWalkPaper.png',
-  'sticker:editionWalkMount': 'assets/catalog_thumbnails/sticker_editionWalkMount.png',
-  'sticker:editionWalkBand': 'assets/catalog_thumbnails/sticker_editionWalkBand.png',
-  'sticker:atelierWritingVow': 'assets/catalog_thumbnails/sticker_atelierWritingVow.png',
-  'sticker:atelierWritingReceipt': 'assets/catalog_thumbnails/sticker_atelierWritingReceipt.png',
-  'sticker:atelierWritingLetter': 'assets/catalog_thumbnails/sticker_atelierWritingLetter.png',
-  'sticker:atelierWritingRecord': 'assets/catalog_thumbnails/sticker_atelierWritingRecord.png',
-  'frame:signatureVowPocket': 'assets/catalog_thumbnails/frame_signatureVowPocket.png',
-  'frame:signatureRailWallet': 'assets/catalog_thumbnails/frame_signatureRailWallet.png',
-  'frame:signatureHerbariumSleeve': 'assets/catalog_thumbnails/frame_signatureHerbariumSleeve.png',
-  'frame:signatureOrbitQuilt': 'assets/catalog_thumbnails/frame_signatureOrbitQuilt.png',
-  'frame:signatureKitchenFold': 'assets/catalog_thumbnails/frame_signatureKitchenFold.png',
-  'frame:signatureCinemaGate': 'assets/catalog_thumbnails/frame_signatureCinemaGate.png',
-  'frame:signatureTrailPocket': 'assets/catalog_thumbnails/frame_signatureTrailPocket.png',
+  'sticker:editionNightSeal':
+      'assets/catalog_thumbnails/sticker_editionNightSeal.png',
+  'sticker:editionRailBundle':
+      'assets/catalog_thumbnails/sticker_editionRailBundle.png',
+  'sticker:editionBotanicalPassport':
+      'assets/catalog_thumbnails/sticker_editionBotanicalPassport.png',
+  'sticker:editionOrbitMobile':
+      'assets/catalog_thumbnails/sticker_editionOrbitMobile.png',
+  'sticker:editionRecipeBundle':
+      'assets/catalog_thumbnails/sticker_editionRecipeBundle.png',
+  'sticker:editionCinemaBundle':
+      'assets/catalog_thumbnails/sticker_editionCinemaBundle.png',
+  'sticker:editionWalkPatch':
+      'assets/catalog_thumbnails/sticker_editionWalkPatch.png',
+  'sticker:editionGardenPaper':
+      'assets/catalog_thumbnails/sticker_editionGardenPaper.png',
+  'sticker:editionGardenMount':
+      'assets/catalog_thumbnails/sticker_editionGardenMount.png',
+  'sticker:editionGardenBand':
+      'assets/catalog_thumbnails/sticker_editionGardenBand.png',
+  'sticker:editionRailPaper':
+      'assets/catalog_thumbnails/sticker_editionRailPaper.png',
+  'sticker:editionRailMount':
+      'assets/catalog_thumbnails/sticker_editionRailMount.png',
+  'sticker:editionRailBand':
+      'assets/catalog_thumbnails/sticker_editionRailBand.png',
+  'sticker:editionHerbariumPaper':
+      'assets/catalog_thumbnails/sticker_editionHerbariumPaper.png',
+  'sticker:editionHerbariumMount':
+      'assets/catalog_thumbnails/sticker_editionHerbariumMount.png',
+  'sticker:editionHerbariumBand':
+      'assets/catalog_thumbnails/sticker_editionHerbariumBand.png',
+  'sticker:editionOrbitPaper':
+      'assets/catalog_thumbnails/sticker_editionOrbitPaper.png',
+  'sticker:editionOrbitMount':
+      'assets/catalog_thumbnails/sticker_editionOrbitMount.png',
+  'sticker:editionOrbitBand':
+      'assets/catalog_thumbnails/sticker_editionOrbitBand.png',
+  'sticker:editionKitchenPaper':
+      'assets/catalog_thumbnails/sticker_editionKitchenPaper.png',
+  'sticker:editionKitchenMount':
+      'assets/catalog_thumbnails/sticker_editionKitchenMount.png',
+  'sticker:editionKitchenBand':
+      'assets/catalog_thumbnails/sticker_editionKitchenBand.png',
+  'sticker:editionCinemaPaper':
+      'assets/catalog_thumbnails/sticker_editionCinemaPaper.png',
+  'sticker:editionCinemaMount':
+      'assets/catalog_thumbnails/sticker_editionCinemaMount.png',
+  'sticker:editionCinemaBand':
+      'assets/catalog_thumbnails/sticker_editionCinemaBand.png',
+  'sticker:editionWalkPaper':
+      'assets/catalog_thumbnails/sticker_editionWalkPaper.png',
+  'sticker:editionWalkMount':
+      'assets/catalog_thumbnails/sticker_editionWalkMount.png',
+  'sticker:editionWalkBand':
+      'assets/catalog_thumbnails/sticker_editionWalkBand.png',
+  'sticker:atelierWritingVow':
+      'assets/catalog_thumbnails/sticker_atelierWritingVow.png',
+  'sticker:atelierWritingReceipt':
+      'assets/catalog_thumbnails/sticker_atelierWritingReceipt.png',
+  'sticker:atelierWritingLetter':
+      'assets/catalog_thumbnails/sticker_atelierWritingLetter.png',
+  'sticker:atelierWritingRecord':
+      'assets/catalog_thumbnails/sticker_atelierWritingRecord.png',
+  'frame:signatureVowPocket':
+      'assets/catalog_thumbnails/frame_signatureVowPocket.png',
+  'frame:signatureRailWallet':
+      'assets/catalog_thumbnails/frame_signatureRailWallet.png',
+  'frame:signatureHerbariumSleeve':
+      'assets/catalog_thumbnails/frame_signatureHerbariumSleeve.png',
+  'frame:signatureOrbitQuilt':
+      'assets/catalog_thumbnails/frame_signatureOrbitQuilt.png',
+  'frame:signatureKitchenFold':
+      'assets/catalog_thumbnails/frame_signatureKitchenFold.png',
+  'frame:signatureCinemaGate':
+      'assets/catalog_thumbnails/frame_signatureCinemaGate.png',
+  'frame:signatureTrailPocket':
+      'assets/catalog_thumbnails/frame_signatureTrailPocket.png',
   'template:-9471': 'assets/catalog_thumbnails/template_-9471.png',
   'template:-9531': 'assets/catalog_thumbnails/template_-9531.png',
   'template:-9472': 'assets/catalog_thumbnails/template_-9472.png',
@@ -334,6 +496,8 @@ const catalogPreviewAssets = <String, String>{
   'template:-9535': 'assets/catalog_thumbnails/template_-9535.png',
   'frame:storyVowGate': 'assets/catalog_thumbnails/frame_storyVowGate.png',
   'frame:storyVowCotton': 'assets/catalog_thumbnails/frame_storyVowCotton.png',
-  'frame:storyDiscoverySlide': 'assets/catalog_thumbnails/frame_storyDiscoverySlide.png',
-  'frame:storyDiscoveryStitch': 'assets/catalog_thumbnails/frame_storyDiscoveryStitch.png',
+  'frame:storyDiscoverySlide':
+      'assets/catalog_thumbnails/frame_storyDiscoverySlide.png',
+  'frame:storyDiscoveryStitch':
+      'assets/catalog_thumbnails/frame_storyDiscoveryStitch.png',
 };

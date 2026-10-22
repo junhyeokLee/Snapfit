@@ -31,10 +31,10 @@ void main() {
       ),
     );
 
-    expect(find.text('사진 슬롯 기준'), findsOneWidget);
+    expect(find.text('참고할 사진 범위'), findsOneWidget);
     expect(find.text('어디까지 살펴볼까요?'), findsNothing);
     expect(
-      find.textContaining('지금은 최근 30일 또는 허용한 사진을 기준으로 슬롯만'),
+      find.textContaining('지금은 최근 30일 또는 허용한 사진을 참고해 슬롯만'),
       findsOneWidget,
     );
     expect(find.text('최근 30일'), findsOneWidget);

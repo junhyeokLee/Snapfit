@@ -37,7 +37,7 @@ void main() {
       );
       final container = ProviderContainer(
         overrides: [
-          templateListProvider.overrideWith((ref) async => [remote]),
+          mockTemplateList(() async => [remote]),
         ],
       );
       addTearDown(container.dispose);
@@ -75,8 +75,10 @@ void main() {
       testWidgets(
         '${template.title} at $size: offline preview selects all five physical sizes',
         (tester) async {
-          await tester.binding.setSurfaceSize(size);
-          addTearDown(() => tester.binding.setSurfaceSize(null));
+          tester.view.physicalSize = size;
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.resetPhysicalSize);
+          addTearDown(tester.view.resetDevicePixelRatio);
           AlbumCreationTemplate? result;
           await tester.pumpWidget(
             ProviderScope(
@@ -224,8 +226,10 @@ void main() {
         when(
           () => photo.file,
         ).thenAnswer((_) async => File('assets/snapfit_home_square.jpg'));
-        await tester.binding.setSurfaceSize(const Size(390, 844));
-        addTearDown(() => tester.binding.setSurfaceSize(null));
+        tester.view.physicalSize = const Size(390, 844);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
         await tester.pumpWidget(
           ProviderScope(
             child: wrapCreation(
@@ -255,7 +259,7 @@ void main() {
           if (originals[i].id != slot.id)
             expect(pages[photoPage][i], same(originals[i]));
         }
-        await tester.binding.setSurfaceSize(const Size(844, 390));
+        tester.view.physicalSize = const Size(844, 390);
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
         expect(

@@ -21,7 +21,6 @@ import '../widgets/store_material_discovery.dart';
 import '../widgets/template_editorial_list.dart';
 import '../widgets/store_topic_shelf.dart';
 import '../widgets/web/web_catalog_toolbar.dart';
-import '../widgets/web/web_catalog_footer.dart';
 import '../widgets/template_catalog_tile.dart';
 import '../widgets/template_design_comparison.dart';
 import '../widgets/public_template_information.dart';
@@ -29,6 +28,8 @@ import '../../data/store_curation_provider.dart';
 import '../../../../core/templates/template_catalog_categories.dart';
 import '../../../point_shop/domain/point_shop_template_key.dart';
 import '../../data/api/template_provider.dart';
+import '../../../album/data/bundled_creation_templates.dart'
+    show publishedCreationTemplates;
 import '../../domain/entities/premium_template.dart';
 import 'template_detail_screen.dart';
 import '../../../point_shop/data/point_shop_provider.dart';
@@ -59,11 +60,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   bool _revealScheduled = false;
   bool _revealing = false;
   String _lastSearchText = '';
-  static const _pageSize = 12;
-  int _visibleCount = _pageSize;
-  int _resultCount = 0;
-  bool _loadingMore = false;
-  int _pageGeneration = 0;
   String _priceFilter = '전체';
   String _sort = '추천순';
   TemplateDesignComparisonSelection _comparison =
@@ -122,9 +118,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }
 
   void _resetPage() {
-    _pageGeneration++;
-    _loadingMore = false;
-    _visibleCount = _pageSize;
+    _filterVersion++; // data/filter changed — invalidate cache
   }
 
   void _resetFilteredPage() {
@@ -175,7 +169,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   void _onSearchChanged() {
     if (_searchController.text == _lastSearchText) return;
     _lastSearchText = _searchController.text;
-    setState(_resetFilteredPage);
+    setState(_resetPage);
+    ref.read(storeTemplateFeedProvider.notifier).setFilters(
+      query: _searchController.text.trim().toLowerCase(),
+      category: _selectedCategory,
+    );
   }
 
   void _openTemplate(PremiumTemplate template) {
@@ -197,30 +195,31 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }
 
   void _loadNearEnd() {
+    final feed = ref.read(storeTemplateFeedProvider);
     if (!_revealing &&
         _scrollController.hasClients &&
         _scrollController.position.extentAfter < 300 &&
-        _visibleCount < _resultCount) {
-      _loadMore();
+        feed.hasNext &&
+        !feed.isLoadingMore &&
+        !feed.isInitialLoading) {
+      ref.read(storeTemplateFeedProvider.notifier).loadMore();
     }
-  }
-
-  Future<void> _loadMore() async {
-    if (_loadingMore || _visibleCount >= _resultCount) return;
-    final generation = _pageGeneration;
-    setState(() => _loadingMore = true);
-    // Paint the progress state before mounting the next batch of native covers.
-    await WidgetsBinding.instance.endOfFrame;
-    await Future<void>.delayed(Duration.zero);
-    if (!mounted || generation != _pageGeneration) return;
-    setState(() {
-      _visibleCount = (_visibleCount + _pageSize).clamp(0, _resultCount);
-      _loadingMore = false;
-    });
   }
 
   String _selectedCategory = '전체';
   bool _favoritesOnly = false;
+
+  // ── Filter memoization ───────────────────────────────────────────────────
+  // Avoids O(n) recomputation on every loadMore/setState that only changes
+  // _visibleCount. Re-runs only when data or filter params actually change.
+  int _filterVersion = 0;
+  int _cachedFilterVersion = -1;
+  Object? _cachedTemplateRef;
+  Object? _cachedCatalogRef;
+  Object? _cachedOwnedRef;
+  List<PremiumTemplate> _cachedFiltered = const [];
+  PremiumTemplate? _cachedSpotlight;
+
   @override
   void initState() {
     super.initState();
@@ -238,7 +237,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   @override
   Widget build(BuildContext context) => CatalogFavoritesBuilder(
     builder: (context, favorites) {
-      final data = ref.watch(templateListProvider);
+      final feed = ref.watch(storeTemplateFeedProvider);
       final prices = {
         for (final product
             in ref.watch(pointShopCatalogProvider).asData?.value ?? [])
@@ -250,38 +249,28 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       return _catalogFrame(
         body: SafeArea(
           top: false,
-          child: data.when(
-            loading: () => const SingleChildScrollView(
-              child: SnapFitShimmerTemplateTileGrid(rows: 4),
-            ),
-            error: (_, __) => Center(
-              child: TextButton.icon(
-                onPressed: () => ref.invalidate(templateListProvider),
-                icon: const Icon(Icons.refresh),
-                label: const Text('다시 불러오기'),
-              ),
-            ),
-            data: (templates) {
-              if (widget.ownedOnly && owned!.isLoading) {
-                return const SingleChildScrollView(
-                  child: SnapFitShimmerTemplateTileGrid(rows: 4),
-                );
-              }
-              if (widget.ownedOnly && owned!.hasError) {
-                return Center(
-                  child: TextButton(
-                    onPressed: () => ref.invalidate(ownedPointShopKeysProvider),
-                    child: const Text('보관함 다시 불러오기'),
-                  ),
-                );
-              }
-              // A pending reveal may have waited while a refresh showed its
-              // loading state. Data is mounted again at the end of this frame.
+          child: (() {
+            final templates = feed.items;
+            if (widget.ownedOnly && owned!.isLoading) {
+              return const SingleChildScrollView(
+                child: SnapFitShimmerTemplateTileGrid(rows: 4),
+              );
+            }
+            if (widget.ownedOnly && owned!.hasError) {
+              return Center(
+                child: TextButton(
+                  onPressed: () => ref.invalidate(ownedPointShopKeysProvider),
+                  child: const Text('보관함 다시 불러오기'),
+                ),
+              );
+            }
+            // A pending reveal may have waited while a refresh showed its
+            // loading state. Data is mounted again at the end of this frame.
               _scheduleCatalogReveal();
               final categories = [
                 '전체',
                 ...orderedTemplateTopics(
-                  templates.map((t) => t.category ?? ''),
+                  publishedCreationTemplates.map((t) => t.category ?? ''),
                 ),
               ];
               final query = _searchController.text.trim().toLowerCase();
@@ -292,62 +281,75 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                     : template.isPremium;
               }
 
-              final free = templates.where((t) => !paid(t)).toList();
-              final premium = templates.where(paid).toList();
-              final ordered = <PremiumTemplate>[];
-              // Two free editions and one premium edition per recommendation group.
-              var f = 0;
-              var p = 0;
-              while (f < free.length || p < premium.length) {
-                for (var n = 0; n < 2 && f < free.length; n++) {
-                  ordered.add(free[f++]);
+              // ── Memoized filter ──────────────────────────────────────────
+              // Only recompute when filter params or source data change.
+              // loadMore/setState only changes _visibleCount — skipped here.
+              final catalogRef = ref
+                  .watch(pointShopCatalogProvider)
+                  .asData
+                  ?.value;
+              final ownedRef = owned?.asData?.value;
+              final dataChanged =
+                  !identical(_cachedTemplateRef, templates) ||
+                  !identical(_cachedCatalogRef, catalogRef) ||
+                  !identical(_cachedOwnedRef, ownedRef);
+              if (dataChanged) _filterVersion++;
+              if (_filterVersion != _cachedFilterVersion || dataChanged) {
+                _cachedFilterVersion = _filterVersion;
+                _cachedTemplateRef = templates;
+                _cachedCatalogRef = catalogRef;
+                _cachedOwnedRef = ownedRef;
+
+                final free = templates.where((t) => !paid(t)).toList();
+                final premium = templates.where(paid).toList();
+                final ordered = <PremiumTemplate>[];
+                var f = 0;
+                var p = 0;
+                while (f < free.length || p < premium.length) {
+                  for (var n = 0; n < 2 && f < free.length; n++) {
+                    ordered.add(free[f++]);
+                  }
+                  if (p < premium.length) ordered.add(premium[p++]);
                 }
-                if (p < premium.length) ordered.add(premium[p++]);
+                final sorted = ordered;
+                if (_sort == '이름순') {
+                  sorted.sort((a, b) => a.title.compareTo(b.title));
+                }
+                _cachedFiltered = favorites.arrange(
+                  sorted
+                      .where(
+                        (t) =>
+                            (_priceFilter == '전체' ||
+                                (_priceFilter == '보유'
+                                    ? (ownedRef?.contains(
+                                            pointShopTemplateKey(t),
+                                          ) ??
+                                          false)
+                                    : (_priceFilter == '유료') == paid(t))) &&
+                            (!widget.ownedOnly ||
+                                (ownedRef?.contains(
+                                      pointShopTemplateKey(t),
+                                    ) ??
+                                    false)),
+                      )
+                      .toList(),
+                  (t) => CatalogFavoriteKeys.template(t.id),
+                  onlyFavorites: _favoritesOnly,
+                );
+                _cachedSpotlight =
+                    !widget.ownedOnly &&
+                            !widget.searchMode &&
+                            _cachedFiltered.isNotEmpty &&
+                            query.isEmpty &&
+                            _priceFilter == '전체' &&
+                            !_favoritesOnly &&
+                            _sort == '추천순'
+                        ? _cachedFiltered.where(paid).firstOrNull ??
+                              _cachedFiltered.first
+                        : null;
               }
-              final sorted = ordered;
-              if (_sort == '이름순') {
-                sorted.sort((a, b) => a.title.compareTo(b.title));
-              }
-              final filtered = favorites.arrange(
-                sorted
-                    .where(
-                      (t) =>
-                          (_priceFilter == '전체' ||
-                              (_priceFilter == '보유'
-                                  ? (owned?.asData?.value.contains(
-                                          pointShopTemplateKey(t),
-                                        ) ??
-                                        false)
-                                  : (_priceFilter == '유료') == paid(t))) &&
-                          (!widget.ownedOnly ||
-                              (owned?.asData?.value.contains(
-                                    pointShopTemplateKey(t),
-                                  ) ??
-                                  false)) &&
-                          (_selectedCategory == '전체' ||
-                              t.category == _selectedCategory) &&
-                          [
-                            t.title,
-                            t.subTitle ?? '',
-                            t.description ?? '',
-                            ...?t.tags,
-                          ].any((v) => v.toLowerCase().contains(query)),
-                    )
-                    .toList(),
-                (t) => CatalogFavoriteKeys.template(t.id),
-                onlyFavorites: _favoritesOnly,
-              );
-              _resultCount = filtered.length;
-              final spotlight =
-                  !widget.ownedOnly &&
-                      !widget.searchMode &&
-                      filtered.isNotEmpty &&
-                      query.isEmpty &&
-                      _priceFilter == '전체' &&
-                      !_favoritesOnly &&
-                      _sort == '추천순'
-                  ? filtered.where(paid).firstOrNull ?? filtered.first
-                  : null;
+              final filtered = _cachedFiltered;
+              final spotlight = _cachedSpotlight;
               final curation = !widget.ownedOnly
                   ? ref.watch(storeCurationsProvider).asData?.value['templates']
                   : null;
@@ -361,13 +363,14 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                       _resetPage();
                       _requestCatalogReveal(atTop: true);
                     });
-                    ref.invalidate(templateListProvider);
                     ref.invalidate(storeCurationsProvider);
                     ref.invalidate(pointShopCatalogProvider);
                     ref.invalidate(publicPointShopCatalogProvider);
                     try {
                       await Future.wait([
-                        ref.read(templateListProvider.future),
+                        ref
+                            .read(storeTemplateFeedProvider.notifier)
+                            .refresh(),
                         ref.read(storeCurationsProvider.future),
                         ref.read(pointShopCatalogProvider.future),
                       ]);
@@ -469,10 +472,22 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                   onSearchChanged: (_) {},
                                   categories: categories,
                                   category: _selectedCategory,
-                                  onCategoryChanged: (value) => setState(() {
-                                    _selectedCategory = value;
-                                    _resetFilteredPage();
-                                  }),
+                                  onCategoryChanged: (value) {
+                                    setState(() {
+                                      _selectedCategory = value;
+                                      _resetFilteredPage();
+                                    });
+                                    ref
+                                        .read(
+                                          storeTemplateFeedProvider.notifier,
+                                        )
+                                        .setFilters(
+                                          category: value,
+                                          query: _searchController.text
+                                              .trim()
+                                              .toLowerCase(),
+                                        );
+                                  },
                                   price: _priceFilter,
                                   onPriceChanged: (value) => setState(() {
                                     _priceFilter = value;
@@ -558,10 +573,22 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                     categories: categories,
                                     templates: templates,
                                     selected: _selectedCategory,
-                                    onSelect: (value) => setState(() {
-                                      _selectedCategory = value;
-                                      _resetFilteredPage();
-                                    }),
+                                    onSelect: (value) {
+                                      setState(() {
+                                        _selectedCategory = value;
+                                        _resetFilteredPage();
+                                      });
+                                      ref
+                                          .read(
+                                            storeTemplateFeedProvider.notifier,
+                                          )
+                                          .setFilters(
+                                            category: value,
+                                            query: _searchController.text
+                                                .trim()
+                                                .toLowerCase(),
+                                          );
+                                    },
                                   ),
                                 const SizedBox(height: 20),
                                 Text(
@@ -650,7 +677,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                         sliver: widget.editorial && spotlight != null
                             ? TemplateEditorialList(
                                 templates: filtered,
-                                visibleCount: _visibleCount,
+                                visibleCount: filtered.length,
                                 onOpen: _openTemplate,
                                 onCompare: _toggleComparison,
                                 comparisonIds: _comparison.ids,
@@ -700,87 +727,52 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                     delegate: SliverChildBuilderDelegate(
                                       (context, i) {
                                         final template = filtered[i];
-                                        return TemplateCatalogTile(
-                                          template: template,
-                                          onCompare: () =>
-                                              _toggleComparison(template),
-                                          comparisonSelected: _comparison
-                                              .contains(template.id),
-                                          onOpen: () => _openTemplate(template),
-                                          heroTag: (this, template.id),
-                                          scrollController: _scrollController,
-                                          previewRatio: previewRatio,
+                                        return RepaintBoundary(
+                                          child: TemplateCatalogTile(
+                                            template: template,
+                                            onCompare: () =>
+                                                _toggleComparison(template),
+                                            comparisonSelected: _comparison
+                                                .contains(template.id),
+                                            onOpen: () =>
+                                                _openTemplate(template),
+                                            heroTag: (this, template.id),
+                                            scrollController: _scrollController,
+                                            previewRatio: previewRatio,
+                                          ),
                                         );
                                       },
-                                      childCount: _visibleCount.clamp(
-                                        0,
-                                        filtered.length,
-                                      ),
+                                      childCount: filtered.length,
                                       addAutomaticKeepAlives: false,
+                                      addRepaintBoundaries: false,
                                     ),
                                   );
                                 },
                               ),
                       ),
-                      if (_visibleCount < filtered.length)
-                        SliverToBoxAdapter(
-                          child: kIsWeb
-                              ? WebCatalogFooter(
-                                  loading: _loadingMore,
-                                  visible: _visibleCount,
-                                  total: filtered.length,
-                                  noun: '템플릿',
-                                  onMore: _loadMore,
-                                )
-                              : SizedBox(
-                                  height: 56,
-                                  child: Center(
-                                    child: _loadingMore
-                                        ? const Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              SizedBox(
-                                                width: 16,
-                                                height: 16,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                    ),
-                                              ),
-                                              SizedBox(width: 10),
-                                              Text('템플릿을 더 불러오고 있어요'),
-                                            ],
-                                          )
-                                        : OutlinedButton(
-                                            onPressed: _loadMore,
-                                            style: OutlinedButton.styleFrom(
-                                              foregroundColor:
-                                                  ExperienceFormStyle.selectionInk(
-                                                    context,
-                                                  ),
-                                              side: BorderSide(
-                                                color: ExperienceFormStyle.line(
-                                                  context,
-                                                ),
-                                              ),
-                                              minimumSize: const Size(140, 38),
-                                              shape: const StadiumBorder(),
-                                              textStyle:
-                                                  ExperienceFormStyle.text(
-                                                    context,
-                                                    13,
-                                                    weight: FontWeight.w600,
-                                                  ),
-                                            ),
-                                            child: Text(
-                                              '더 보기  $_visibleCount / ${filtered.length}',
-                                            ),
-                                          ),
+                      if (feed.isLoadingMore)
+                        const SliverToBoxAdapter(
+                          child: SizedBox(
+                            height: 56,
+                            child: Center(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
                                   ),
-                                ),
+                                  SizedBox(width: 10),
+                                  Text('템플릿을 더 불러오고 있어요'),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
-                      if (filtered.isNotEmpty &&
-                          _visibleCount >= filtered.length)
+                      if (filtered.isNotEmpty && !feed.hasNext)
                         SliverToBoxAdapter(
                           child: Padding(
                             padding: const EdgeInsets.only(bottom: 24),
@@ -800,8 +792,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                   ),
                 ),
               );
-            },
-          ),
+          }()),
         ),
       );
     },

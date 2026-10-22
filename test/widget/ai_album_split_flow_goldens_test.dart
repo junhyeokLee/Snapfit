@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +10,7 @@ import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_albu
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_album_recommendation_review_step.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_album_start_step.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_album_theme_step.dart';
+import 'ai_album_start_step_test.dart' show loadCreationFonts;
 
 Future<void> _setPhoneSurface(WidgetTester tester) async {
   tester.view.physicalSize = const Size(390, 844);
@@ -19,14 +19,6 @@ Future<void> _setPhoneSurface(WidgetTester tester) async {
     tester.view.resetPhysicalSize();
     tester.view.resetDevicePixelRatio();
   });
-}
-
-Future<void> _loadGoldenFonts() async {
-  final robotoLoader = FontLoader('Roboto')
-    ..addFont(rootBundle.load('assets/fonts/NotoSansKR-Regular.ttf'))
-    ..addFont(rootBundle.load('assets/fonts/NotoSansKR-SemiBold.ttf'))
-    ..addFont(rootBundle.load('assets/fonts/NotoSansKR-Bold.ttf'));
-  await robotoLoader.load();
 }
 
 Widget _wrap(Widget child) {
@@ -46,7 +38,7 @@ Widget _wrap(Widget child) {
 void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
-    await _loadGoldenFonts();
+    await loadCreationFonts();
   });
 
   testWidgets('AI start split flow golden', (tester) async {

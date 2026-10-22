@@ -143,9 +143,7 @@ class SnapFitShimmerTemplateTileGrid extends StatelessWidget {
               children: [
                 for (var c = 0; c < columns; c++) ...[
                   if (c > 0) const SizedBox(width: 16),
-                  Expanded(
-                    child: SnapFitShimmerTemplateTile(ratio: ratio),
-                  ),
+                  Expanded(child: SnapFitShimmerTemplateTile(ratio: ratio)),
                 ],
               ],
             ),

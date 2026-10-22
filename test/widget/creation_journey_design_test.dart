@@ -16,6 +16,7 @@ import 'package:snap_fit/core/theme/snapfit_theme.dart';
 import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
 import 'package:snap_fit/features/album/data/api/album_provider.dart';
 import 'package:snap_fit/features/album/data/album_creation_catalog_provider.dart';
+import 'package:snap_fit/features/album/data/album_creation_draft_store.dart';
 import 'package:snap_fit/features/album/presentation/views/album_create_flow_screen.dart';
 import 'package:snap_fit/features/album/presentation/views/home_screen.dart';
 import 'package:snap_fit/features/album/ai_album/domain/ai_album_models.dart';
@@ -42,6 +43,7 @@ import 'ai_album_start_step_test.dart' show loadCreationFonts, wrapCreation;
 import 'login_screen_test.dart' show FakeAuthViewModel, FakeTokenStorage;
 import 'home_screen_test.dart' as home_fixture;
 import '../helpers/mock_repositories.dart';
+import '../helpers/creation_draft_fixtures.dart' show MemoryCreationDraftStore;
 
 class _ConsentStorage extends FakeTokenStorage {
   bool saved = false;
@@ -158,6 +160,9 @@ void main() {
                 () => HomeUiStateNotifier(initialIndex: 0),
               ),
               albumRepositoryProvider.overrideWithValue(repo),
+              albumCreationDraftStoreProvider.overrideWithValue(
+                MemoryCreationDraftStore(),
+              ),
               authViewModelProvider.overrideWith(
                 () => home_fixture.FakeAuthViewModel(
                   const UserInfo(id: 'test', name: '우리', provider: 'kakao'),
