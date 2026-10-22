@@ -29,6 +29,7 @@ import '../utils/album_creation_entry.dart';
 import '../../data/album_creation_draft_store.dart';
 import '../../domain/entities/album_creation_draft.dart';
 import '../web/web_album_library_screen.dart';
+import '../../../../shared/widgets/snapfit_shimmer.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -240,11 +241,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ? albumTabContent
                           : homeContent;
                     },
-                    loading: () => const Center(
-                      child: CircularProgressIndicator(
-                        color: SnapFitColors.accent,
-                      ),
-                    ),
+                    loading: () => const SnapFitShimmerHomeSlider(),
                     error: (err, stack) {
                       final state = HomeErrorState(
                         error: err,

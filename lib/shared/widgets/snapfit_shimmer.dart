@@ -335,6 +335,51 @@ class SnapFitShimmerOrderList extends StatelessWidget {
   );
 }
 
+/// Skeleton placeholder for the home album slider screen.
+class SnapFitShimmerHomeSlider extends StatelessWidget {
+  const SnapFitShimmerHomeSlider({super.key});
+
+  @override
+  Widget build(BuildContext context) => SnapFitShimmer(
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        final coverSize = constraints.maxWidth.clamp(0.0, 440.0);
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 40, 24, 0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(SnapFitRadius.xl),
+                    child: SizedBox.square(
+                      dimension: coverSize - 48,
+                      child: const ColoredBox(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 28),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SnapFitShimmerBox(height: 22, width: 180),
+                    const SizedBox(height: 10),
+                    const SnapFitShimmerBox(height: 13, width: 120),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    ),
+  );
+}
+
 /// Single-line text placeholder (width as fraction of available space).
 class SnapFitShimmerLine extends StatelessWidget {
   const SnapFitShimmerLine({
