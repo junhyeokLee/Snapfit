@@ -155,6 +155,126 @@ class SnapFitShimmerTemplateTileGrid extends StatelessWidget {
   );
 }
 
+/// Skeleton that matches a [MaterialCatalogTile] layout (square + 2 lines).
+class SnapFitShimmerMaterialTile extends StatelessWidget {
+  const SnapFitShimmerMaterialTile({super.key, this.showCommerce = true});
+  final bool showCommerce;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      AspectRatio(
+        aspectRatio: 1,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(SnapFitRadius.lg),
+          child: const ColoredBox(color: Colors.white),
+        ),
+      ),
+      const SizedBox(height: 10),
+      const SnapFitShimmerBox(height: 13),
+      const SizedBox(height: 5),
+      const SnapFitShimmerBox(width: 52, height: 11),
+      if (showCommerce) ...[
+        const SizedBox(height: 6),
+        const SnapFitShimmerBox(width: 68, height: 11),
+      ],
+    ],
+  );
+}
+
+/// A full-width grid of skeleton material tiles.
+class SnapFitShimmerMaterialTileGrid extends StatelessWidget {
+  const SnapFitShimmerMaterialTileGrid({
+    super.key,
+    this.columns = 2,
+    this.rows = 3,
+    this.showCommerce = true,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+  });
+  final int columns;
+  final int rows;
+  final bool showCommerce;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) => SnapFitShimmer(
+    child: Padding(
+      padding: padding,
+      child: Column(
+        children: [
+          for (var r = 0; r < rows; r++) ...[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (var c = 0; c < columns; c++) ...[
+                  if (c > 0) const SizedBox(width: 12),
+                  Expanded(
+                    child: SnapFitShimmerMaterialTile(
+                      showCommerce: showCommerce,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: 20),
+          ],
+        ],
+      ),
+    ),
+  );
+}
+
+/// A list of skeleton notification rows.
+class SnapFitShimmerNotificationList extends StatelessWidget {
+  const SnapFitShimmerNotificationList({
+    super.key,
+    this.rows = 6,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+  });
+  final int rows;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) => SnapFitShimmer(
+    child: Padding(
+      padding: padding,
+      child: Column(
+        children: [
+          for (var i = 0; i < rows; i++) ...[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(9),
+                  child: const ColoredBox(
+                    color: Colors.white,
+                    child: SizedBox(width: 36, height: 36),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SnapFitShimmerBox(height: 13),
+                      const SizedBox(height: 5),
+                      const SnapFitShimmerBox(height: 11),
+                      const SizedBox(height: 4),
+                      const SnapFitShimmerBox(width: 90, height: 10),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+          ],
+        ],
+      ),
+    ),
+  );
+}
+
 /// Single-line text placeholder (width as fraction of available space).
 class SnapFitShimmerLine extends StatelessWidget {
   const SnapFitShimmerLine({

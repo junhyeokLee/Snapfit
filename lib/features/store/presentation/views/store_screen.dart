@@ -274,6 +274,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                 ),
               );
             }
+            if (!widget.ownedOnly &&
+                templates.isEmpty &&
+                feed.isInitialLoading) {
+              return const SingleChildScrollView(
+                child: SnapFitShimmerTemplateTileGrid(rows: 4),
+              );
+            }
             // A pending reveal may have waited while a refresh showed its
             // loading state. Data is mounted again at the end of this frame.
             _scheduleCatalogReveal();
@@ -626,7 +633,44 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                       SliverFillRemaining(
                         hasScrollBody: false,
                         child: !kIsWeb
-                            ? const Center(child: Text('조건에 맞는 디자인이 없어요'))
+                            ? Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(24),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        query.isNotEmpty
+                                            ? Icons.search_off_rounded
+                                            : Icons.filter_list_off_rounded,
+                                        size: 32,
+                                        color: ExperienceFormStyle.muted(
+                                          context,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        '조건에 맞는 디자인이 없어요',
+                                        style: ExperienceFormStyle.text(
+                                          context,
+                                          14,
+                                          secondary: true,
+                                        ),
+                                      ),
+                                      if (query.isNotEmpty ||
+                                          _priceFilter != '전체' ||
+                                          _favoritesOnly ||
+                                          _sort != '추천순') ...[
+                                        const SizedBox(height: 12),
+                                        TextButton(
+                                          onPressed: _resetWebFilters,
+                                          child: const Text('검색·필터 초기화'),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              )
                             : Center(
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,

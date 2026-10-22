@@ -41,6 +41,7 @@ import 'template_detail_screen.dart';
 import 'material_detail_screen.dart';
 import '../widgets/material_original_preview.dart';
 import '../../../../core/templates/catalog_preview_assets.g.dart';
+import '../../../../shared/widgets/snapfit_shimmer.dart';
 
 class _CatalogItem {
   const _CatalogItem(
@@ -921,10 +922,18 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                 ),
               ),
             if (_priceFilter == '보유' && owned.isLoading && !owned.hasValue)
-              _catalogState(
-                title: '보유한 디자인을 확인하고 있어요',
-                icon: Icons.inventory_2_outlined,
-                loading: true,
+              SliverToBoxAdapter(
+                child: SnapFitShimmerMaterialTileGrid(
+                  columns: 2,
+                  rows: 3,
+                  showCommerce: !widget.library,
+                  padding: EdgeInsets.fromLTRB(
+                    horizontalPadding,
+                    12,
+                    horizontalPadding,
+                    0,
+                  ),
+                ),
               )
             else if (_priceFilter == '보유' && owned.hasError && !owned.hasValue)
               _catalogState(
@@ -937,10 +946,18 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                 _priceFilter != '보유' &&
                 catalog.isLoading &&
                 !catalog.hasValue)
-              _catalogState(
-                title: '가격을 확인하고 있어요',
-                icon: Icons.toll_outlined,
-                loading: true,
+              SliverToBoxAdapter(
+                child: SnapFitShimmerMaterialTileGrid(
+                  columns: 2,
+                  rows: 3,
+                  showCommerce: !widget.library,
+                  padding: EdgeInsets.fromLTRB(
+                    horizontalPadding,
+                    12,
+                    horizontalPadding,
+                    0,
+                  ),
+                ),
               )
             else if (_priceFilter != '전체' &&
                 _priceFilter != '보유' &&
@@ -963,10 +980,18 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                 },
               )
             else if (loadingLibrary)
-              _catalogState(
-                title: '보관함을 불러오고 있어요',
-                icon: Icons.inventory_2_outlined,
-                loading: true,
+              SliverToBoxAdapter(
+                child: SnapFitShimmerMaterialTileGrid(
+                  columns: 2,
+                  rows: 4,
+                  showCommerce: false,
+                  padding: EdgeInsets.fromLTRB(
+                    horizontalPadding,
+                    12,
+                    horizontalPadding,
+                    0,
+                  ),
+                ),
               )
             else if (items.isEmpty)
               _catalogState(

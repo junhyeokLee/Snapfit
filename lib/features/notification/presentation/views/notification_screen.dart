@@ -14,6 +14,7 @@ import '../../../profile/presentation/widgets/customer_web_page.dart';
 import '../../../profile/presentation/views/notification_settings_screen.dart';
 import '../../../profile/domain/order_visibility_owner.dart';
 import '../../../../shared/web/web_design.dart';
+import '../../../../shared/widgets/snapfit_shimmer.dart';
 
 class NotificationScreen extends ConsumerStatefulWidget {
   const NotificationScreen({super.key});
@@ -383,7 +384,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     AsyncValue<List<AppNotificationItem>> inbox,
   ) => _visibleInbox(inbox).when(
     skipLoadingOnRefresh: !_refreshing,
-    loading: () => const Center(child: CircularProgressIndicator()),
+    loading: () => const SnapFitShimmerNotificationList(),
     error: (_, __) => Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
