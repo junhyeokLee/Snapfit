@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show listEquals;
 
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/widgets/experience_icon.dart';
@@ -29,12 +30,22 @@ class TemplateCuration extends StatefulWidget {
 class _TemplateCurationState extends State<TemplateCuration> {
   final _controller = PageController();
   int _index = 0;
-  // Cached title-height measurement — recomputed only when item ids change.
-  String? _measuredItemKey;
+  late List<PremiumTemplate> _curatedItems;
+  late List<String> _titles;
+  Object? _measuredItemKey;
   double _cachedTitleHeight = 0;
+  Widget? _artwork;
+  double? _artworkHeight;
 
-  List<PremiumTemplate> _items(TemplateCuration widget) =>
+  List<PremiumTemplate> _resolveItems() =>
       widget.selection.resolve(widget.templates, pointShopTemplateKey);
+
+  @override
+  void initState() {
+    super.initState();
+    _curatedItems = _resolveItems();
+    _titles = _curatedItems.map((item) => item.title).toList();
+  }
 
   @override
   void dispose() {
@@ -45,13 +56,60 @@ class _TemplateCurationState extends State<TemplateCuration> {
   @override
   void didUpdateWidget(TemplateCuration oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (_items(oldWidget).map((t) => t.id).join(',') !=
-        _items(widget).map((t) => t.id).join(',')) {
+    final items = _resolveItems();
+    final orderChanged = !listEquals(
+      _curatedItems.map((item) => item.id).toList(),
+      items.map((item) => item.id).toList(),
+    );
+    final titles = items.map((item) => item.title).toList();
+    if (!listEquals(_titles, titles)) {
+      _titles = titles;
+      _measuredItemKey = null;
+    }
+    if (!listEquals(_curatedItems, items)) {
+      _curatedItems = items;
+      _artwork = null;
+    }
+    if (orderChanged) {
       _index = 0;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && _controller.hasClients) _controller.jumpToPage(0);
       });
     }
+  }
+
+  Widget _artworkFor(double height) {
+    if (_artwork != null && _artworkHeight == height) return _artwork!;
+    _artworkHeight = height;
+    final items = _curatedItems;
+    // The page indicator and arrows update separately from the mounted book
+    // scenes. Pagination and a swipe settling must not rebuild their layers.
+    return _artwork = SizedBox(
+      height: height,
+      child: PageView.builder(
+        key: const ValueKey('curation-pager'),
+        controller: _controller,
+        itemCount: items.length,
+        onPageChanged: (index) => setState(() => _index = index),
+        itemBuilder: (context, index) {
+          final template = items[index];
+          return Semantics(
+            button: true,
+            label: '${template.title} 표지와 내지, 상세 보기',
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                key: ValueKey('curation-edition-${template.id}'),
+                onTap: () => widget.onOpen(template),
+                child: RepaintBoundary(
+                  child: StoreEditorialScene(template: template),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   void _move(int direction, int count) {
@@ -70,7 +128,7 @@ class _TemplateCurationState extends State<TemplateCuration> {
 
   @override
   Widget build(BuildContext context) {
-    final items = _items(widget);
+    final items = _curatedItems;
     if (items.isEmpty) return const SizedBox.shrink();
     return LayoutBuilder(
       builder: (context, bounds) {
@@ -91,9 +149,14 @@ class _TemplateCurationState extends State<TemplateCuration> {
                     35)
                 .clamp(1.0, double.infinity);
         // Keep the shelf below still while titles with different lengths change.
-        // Cache the measurement: re-measure only when item ids or layout change.
-        final itemKey =
-            '${items.map((t) => t.id).join(',')}:$titleWidth:${horizontal ? 1 : 0}';
+        // Titles invalidate this cache on data updates. Accessibility text
+        // scaling and font changes also need a fresh height measurement.
+        final itemKey = (
+          titleWidth,
+          titleStyle,
+          MediaQuery.textScalerOf(context),
+          Directionality.of(context),
+        );
         if (itemKey != _measuredItemKey) {
           _measuredItemKey = itemKey;
           var computed = 0.0;
@@ -110,32 +173,7 @@ class _TemplateCurationState extends State<TemplateCuration> {
           _cachedTitleHeight = computed;
         }
         final titleHeight = _cachedTitleHeight;
-        final artwork = SizedBox(
-          height: artHeight,
-          child: PageView.builder(
-            key: const ValueKey('curation-pager'),
-            controller: _controller,
-            itemCount: items.length,
-            onPageChanged: (index) => setState(() => _index = index),
-            itemBuilder: (context, index) {
-              final template = items[index];
-              return Semantics(
-                button: true,
-                label: '${template.title} 표지와 내지, 상세 보기',
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    key: ValueKey('curation-edition-${template.id}'),
-                    onTap: () => widget.onOpen(template),
-                    child: RepaintBoundary(
-                      child: StoreEditorialScene(template: template),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        );
+        final artwork = _artworkFor(artHeight);
         final current = items[_index.clamp(0, items.length - 1)];
         final details = Padding(
           key: const ValueKey('curation-details'),

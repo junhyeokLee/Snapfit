@@ -4,15 +4,7 @@ String? bundledTemplateAssetPath(String url) {
   final trimmed = url.trim();
   if (trimmed.isEmpty) return null;
   if (trimmed.startsWith('asset:')) return trimmed.substring('asset:'.length);
-
-  final normalized = Uri.decodeFull(trimmed).toLowerCase();
-  const prefix = 'templates/save_the_date/v1/';
-  final markerIndex = normalized.indexOf(prefix);
-  if (markerIndex < 0) return null;
-
-  final fileName = normalized.substring(markerIndex + prefix.length);
-  if (!fileName.endsWith('.png')) return null;
-  return 'assets/templates/save_the_date/images/$fileName';
+  return null;
 }
 
 String imageUrlByVariant(
@@ -30,6 +22,16 @@ String imageUrlByVariant(
   }
 
   if (!uri.hasScheme || uri.host.isEmpty) return trimmed;
+  // Storage references are object identities, not image-CDN endpoints. A
+  // query appended to supabase:// becomes part of the persisted object path
+  // when the storage resolver signs it, producing a different missing object.
+  if (uri.scheme != 'https' && uri.scheme != 'http') return trimmed;
+  // Preserve signed/private and already transformed Supabase URLs verbatim,
+  // including projects served through a custom storage domain.
+  if (uri.path.startsWith('/storage/v1/object/') ||
+      uri.path.startsWith('/storage/v1/render/image/')) {
+    return trimmed;
+  }
   if (trimmed.startsWith('asset:')) return trimmed;
   if (uri.host.contains('figma.com')) return trimmed;
   if (uri.host.contains('firebasestorage.googleapis.com')) return trimmed;

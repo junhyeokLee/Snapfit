@@ -681,7 +681,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
                 ),
               Text(
                 canReturn ? '새 생성을 시작하면 이전 결과는 비교용으로 남아요.' : '이전 결과는 비교만 가능해요.',
-                style: const TextStyle(fontSize: 12),
+                style: ExperienceFormStyle.text(context, 12, secondary: true),
               ),
             ],
           ),
@@ -705,6 +705,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
   Size? _baseTemplateCanvasSize;
   String? _templateTitle;
   String? _templatePreviewUrl;
+  String? _sourceTemplateProductKey;
   String _sourceLabel = '직접 만들기';
   bool _showPhotoFill = false;
   bool _hasFilledPhotos = false;
@@ -765,6 +766,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
     _baseTemplateCanvasSize = null;
     _templateTitle = null;
     _templatePreviewUrl = null;
+    _sourceTemplateProductKey = null;
     _templateMinPageCount = AlbumPagePolicy.minInnerPages;
     _selectedPageCount = AlbumPagePolicy.normalize(_selectedPageCount);
     _sourceLabel = '직접 만들기';
@@ -780,6 +782,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
   void _useTemplate(AlbumCreationTemplate selection) {
     _resetDesign(keepPendingPhotos: true);
     _preserveTemplateTypography = selection.preserveTypography;
+    _sourceTemplateProductKey = selection.sourceTemplateProductKey;
     _usesPhysicalTemplateCanvas = true;
     _selectedCover = newAlbumCoverSize(
       selection.cover,
@@ -1001,16 +1004,12 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
           return page
               .map((layer) {
                 if (layer.type != LayerType.image) return layer;
-                final hasUrl =
-                    (layer.previewUrl != null &&
-                        layer.previewUrl!.isNotEmpty) ||
-                    (layer.imageUrl != null && layer.imageUrl!.isNotEmpty) ||
-                    (layer.originalUrl != null &&
-                        layer.originalUrl!.isNotEmpty);
-                if (hasUrl) return layer;
+                // Local photos are already personal content, even before upload.
+                if (layer.hasImageSource) return layer;
                 final url = images[imageCursor % images.length];
                 imageCursor++;
                 return layer.copyWith(
+                  isTemplateContent: true,
                   previewUrl: url,
                   imageUrl: url,
                   originalUrl: url,
@@ -1021,12 +1020,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
         .toList(growable: false);
   }
 
-  String _aspectKeyFromCover(CoverSize cover) {
-    final ratio = cover.ratio;
-    if (ratio >= 1.05) return 'landscape';
-    if (ratio <= 0.95) return 'portrait';
-    return 'square';
-  }
+  String _aspectKeyFromCover(CoverSize cover) => templateVariantForCover(cover);
 
   CoverSize _resolveInitialCover() {
     if (widget.initialCoverSize != null) {
@@ -1037,8 +1031,13 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
         variants.isNotEmpty &&
         !variants.containsKey(defaultCoverSize.productId) &&
         !variants.containsKey('square') &&
-        variants.containsKey('landscape')) {
-      return newAlbumCoverSize(legacyCoverSizes.last);
+        (variants.containsKey('landscape4x3') ||
+            variants.containsKey('landscape') ||
+            variants.containsKey('landscape5x4'))) {
+      return variants.containsKey('landscape4x3') ||
+              variants.containsKey('landscape')
+          ? coverSizes[1]
+          : coverSizes[2];
     }
     return defaultCoverSize;
   }
@@ -1054,6 +1053,9 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
         ? sizeKey
         : variants?.containsKey(aspectKey) == true
         ? aspectKey
+        : (aspectKey == 'landscape5x4' || aspectKey == 'landscape4x3') &&
+              variants?.containsKey('landscape') == true
+        ? 'landscape'
         : null;
     var selected = key == null ? _baseTemplatePages : variants?[key];
     var source = key == null
@@ -1089,7 +1091,9 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
     if (product != null) return coverCanvasBaseSize(product);
     final ratio = key == 'portrait'
         ? 3 / 4
-        : key == 'landscape'
+        : key == 'landscape5x4'
+        ? 5 / 4
+        : key == 'landscape' || key == 'landscape4x3'
         ? 4 / 3
         : 1.0;
     return Size(kCoverReferenceWidth, kCoverReferenceWidth / ratio);
@@ -1194,6 +1198,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
       _templateTitle = draft.templateTitle;
       _templatePreviewUrl = draft.previewUrl;
       _sourceLabel = draft.sourceLabel;
+      _sourceTemplateProductKey = draft.sourceTemplateProductKey;
       _usesPhysicalTemplateCanvas = draft.usesPhysicalCanvas;
       _preserveTemplateTypography = draft.preserveTypography;
       _draftCoverLayers = draft.editedCover;
@@ -1345,6 +1350,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
       showPhotoFill: _showPhotoFill,
       hasSelectedMode: _hasSelectedCreationMode,
       sourceLabel: _sourceLabel,
+      sourceTemplateProductKey: _sourceTemplateProductKey,
       usesPhysicalCanvas: _usesPhysicalTemplateCanvas,
       preserveTypography: _preserveTemplateTypography,
       pages: _copyDraftPages(_resolvedTemplatePages),
@@ -1573,9 +1579,13 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
                   ),
                   title: Text(
                     _currentStep == 0
-                        ? '앨범 만들기'
+                        ? (widget.initialDraft == null ? '앨범 만들기' : '이어서 만들기')
                         : _currentStep == 1
-                        ? (_showPhotoFill ? '앨범 만들기' : '표지')
+                        ? (_showPhotoFill
+                              ? (widget.initialDraft == null
+                                    ? '앨범 만들기'
+                                    : '이어서 만들기')
+                              : '표지')
                         : '초대',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -1705,7 +1715,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
         ? '컴퓨터의 사진을 골라 페이지에 채우고, 사진마다 배치를 확인하세요.'
         : '표지를 편집하고 전체 구성을 확인한 뒤 내지 편집으로 이어가세요.';
     return SnapFitWebShell(
-      title: '앨범 만들기',
+      title: widget.initialDraft == null ? '앨범 만들기' : '이어서 만들기',
       compactBrand: true,
       denseHeader: true,
       headerTitle: photoWorkspaceNeedsRoom
@@ -2226,6 +2236,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
       _templateTitle = acceptedDraft.title;
       _templatePreviewUrl = null;
       _sourceLabel = 'AI 템플릿';
+      _sourceTemplateProductKey = null;
       _clearAiResultHistory();
       _usesPhysicalTemplateCanvas = true;
       _preserveTemplateTypography = acceptedDraft.design?.artDirection != null;
@@ -2419,19 +2430,6 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
               ref.invalidate(albumCreationCatalogProvider);
             },
             onTemplateSelected: _selectTemplate,
-            aiPointCost: _aiDraftPointCost,
-            freeDraftLabel: '사진은 직접 고르고 바꿀 수 있어요',
-            isFirstAiDraftFree:
-                ref.watch(isFirstAiDraftFreeProvider).asData?.value ?? false,
-            onAiStart: () {
-              setState(() {
-                _resetDesign();
-                _aiRequestOwner = ref.read(visibleOrderOwnerProvider);
-                _isAiCreationMode = true;
-                _hasSelectedCreationMode = true;
-              });
-              unawaited(_loadAiSession());
-            },
             onManualStart: () => setState(() {
               _resetDesign();
               _selectedAiTheme = null;
@@ -2729,6 +2727,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
           return const Center(child: CircularProgressIndicator());
         }
         return AddCoverScreen(
+          sourceTemplateProductKey: _sourceTemplateProductKey,
           onReviewBeforeCreate: _reviewBeforeCreate,
           isFromCreateFlow: true,
           initialCoverSize: _selectedCover,
@@ -2785,6 +2784,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
                 // 템플릿 페이지는 이미 메모리에 완성되어 있으므로 업로드 폴링을 기다리지 않는다.
                 // 업로드/대표이미지 보정은 백그라운드에서 진행하되 편집 화면은 즉시 열린다.
                 vm.beginCreatedTemplateAlbumForEdit(
+                  sourceTemplateProductKey: _sourceTemplateProductKey,
                   albumId: dummyAlbum.id,
                   albumTitle: _albumTitle,
                   pages: _resolvedTemplatePages!,
@@ -2794,6 +2794,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
                 // 일반 생성도 이미 로컬에 빈 커버/내지 페이지가 준비되어 있으므로
                 // 서버 대표이미지/업로드 폴링을 기다리지 않고 즉시 편집으로 연다.
                 vm.beginCreatedAlbumForEdit(
+                  sourceTemplateProductKey: _sourceTemplateProductKey,
                   albumId: dummyAlbum.id,
                   albumTitle: _albumTitle,
                 );
@@ -2839,6 +2840,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
         : null;
     if (editorCheckpoint != null) {
       vm.restoreCreatedEditorDraft(
+        sourceTemplateProductKey: _sourceTemplateProductKey,
         albumId: albumId,
         albumTitle: _albumTitle,
         cover: _selectedCover!,
@@ -2859,6 +2861,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
         pages.add(<LayerModel>[]);
       }
       vm.beginCreatedTemplateAlbumForEdit(
+        sourceTemplateProductKey: _sourceTemplateProductKey,
         albumId: dummyAlbum.id,
         albumTitle: _albumTitle,
         pages: pages,
@@ -2869,6 +2872,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
       );
     } else {
       vm.beginCreatedAlbumForEdit(
+        sourceTemplateProductKey: _sourceTemplateProductKey,
         albumId: dummyAlbum.id,
         albumTitle: _albumTitle,
       );

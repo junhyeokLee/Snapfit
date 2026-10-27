@@ -5,13 +5,35 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../data/api/album_provider.dart';
 import '../../data/dto/request/create_album_request.dart';
 import '../../domain/entities/album.dart';
+import '../providers/album_edit_session_provider.dart';
 
 part 'album_view_model.g.dart';
 
 @Riverpod(keepAlive: true)
 class AlbumViewModel extends _$AlbumViewModel {
+  int _operation = 0;
+  bool _disposed = false;
+  late AlbumEditorOwnerReader _readOwner;
+  String? _owner;
+
+  bool _current(int operation, String? owner) =>
+      !_disposed && operation == _operation && _readOwner() == owner;
+
   @override
   FutureOr<Album?> build() {
+    _disposed = false;
+    _readOwner = ref.read(albumEditorOwnerReaderProvider);
+    _owner = _readOwner();
+    ref.onDispose(() {
+      _disposed = true;
+      _operation++;
+    });
+    ref.listen(albumEditorOwnerChangesProvider, (_, value) {
+      if (!value.hasValue || value.value == _owner) return;
+      _owner = value.value;
+      _operation++;
+      state = const AsyncData(null);
+    });
     return null;
   }
 
@@ -26,6 +48,8 @@ class AlbumViewModel extends _$AlbumViewModel {
     String? coverPreviewUrl,
     String coverTheme = '',
   }) async {
+    final operation = ++_operation;
+    final owner = _readOwner();
     state = const AsyncLoading();
 
     try {
@@ -43,14 +67,17 @@ class AlbumViewModel extends _$AlbumViewModel {
           coverTheme: coverTheme,
         ),
       );
-      state = AsyncData(album);
+      if (_current(operation, owner)) state = AsyncData(album);
     } catch (e, st) {
-      state = AsyncError(e, st);
+      if (_current(operation, owner)) state = AsyncError(e, st);
     }
   }
 
   Future<void> updateAlbum({
     required int albumId,
+    String? expectedUpdatedAt,
+    String? requestId,
+    String? expectedUserId,
     required String coverLayersJson,
     required String ratio,
     String title = '', // 앨범 제목
@@ -61,6 +88,8 @@ class AlbumViewModel extends _$AlbumViewModel {
     String? coverPreviewUrl,
     String coverTheme = '',
   }) async {
+    final operation = ++_operation;
+    final owner = _readOwner();
     state = const AsyncLoading();
 
     try {
@@ -78,9 +107,13 @@ class AlbumViewModel extends _$AlbumViewModel {
           coverPreviewUrl: coverPreviewUrl,
           coverTheme: coverTheme,
         ),
+        expectedUpdatedAt: expectedUpdatedAt,
+        requestId: requestId,
+        expectedUserId: expectedUserId,
       );
-      state = AsyncData(album);
+      if (_current(operation, owner)) state = AsyncData(album);
     } on DioException catch (e, st) {
+      if (!_current(operation, owner)) return;
       final statusCode = e.response?.statusCode;
       if (statusCode == 405) {
         state = AsyncError(
@@ -93,7 +126,9 @@ class AlbumViewModel extends _$AlbumViewModel {
         state = AsyncError(e, st);
       }
     } catch (e, st) {
-      state = AsyncError(e, st);
+      if (_current(operation, owner)) state = AsyncError(e, st);
     }
   }
+
+  void acceptSavedAlbum(Album album) => state = AsyncData(album);
 }

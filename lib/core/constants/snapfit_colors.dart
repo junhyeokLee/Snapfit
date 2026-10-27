@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 /// SnapFit 앱 브랜드 색상
 class SnapFitColors {
@@ -8,7 +9,7 @@ class SnapFitColors {
   static const Color deepCharcoal = Color(0xFF121212);
   static const Color pureWhite = Color(0xFFFFFFFF);
 
-  /// 카드/요소: 다크/라이트 서피스
+  /// 카드/요소: 다크/라이트 서피스-
   static const Color surfaceDark = Color(0xFF1E1E1E);
   static const Color surfaceLight = Color(0xFFF7F5F2);
 
@@ -17,16 +18,21 @@ class SnapFitColors {
   @Deprecated('Use backgroundOf(context) for theme-aware colors.')
   static const Color backgroundDark = Color(0xFF0E0E0E);
 
-  /// 액센트: Muted Sage-Teal (텍스트/아이콘)
-  /// 디자인 명세: #14AAA8
-  static const Color accent = Color(0xFF14AAA8);
+  /// Cyan sampled from the production app mark.
+  static const Color accent = Color(0xFF0AB5D1);
+
+  /// Same cyan hue, deepened for readable white labels on filled controls.
+  static const Color actionAccent = Color(0xFF008298);
 
   /// Text and icons on the brand action fill, shared by light and dark UI.
-  static const Color onAccent = Color(0xFF063740);
+  static const Color onAccent = pureWhite;
 
-  /// 세컨드 액센트: Soft Sage Tint (배경/버튼)
-  /// 디자인 명세: #E4F4F3
-  static const Color accentLight = Color(0xFFE4F4F3);
+  static const Color accentInk = Color(0xFF00768A);
+  static const Color accentInkDark = Color(0xFF7ADCEB);
+
+  /// Soft cyan surfaces keep secondary information quiet.
+  static const Color accentLight = Color(0xFFE7F8FB);
+  static const Color accentSurfaceDark = Color(0xFF12343D);
 
   /// 패널/서피스 (기존 스냅핏 컬러 유지)
   static const Color surface = Color(0xFF162A2E);
@@ -83,16 +89,16 @@ class SnapFitColors {
   @Deprecated('Use textPrimaryOf(context) for theme-aware colors.')
   static const Color textPrimary = pureWhite;
   @Deprecated('Use textSecondaryOf(context) for theme-aware colors.')
-  static Color textSecondary = Colors.white.withOpacity(0.7);
+  static Color textSecondary = Colors.white.withValues(alpha: 0.7);
   @Deprecated('Use textMutedOf(context) for theme-aware colors.')
-  static Color textMuted = Colors.white.withOpacity(0.5);
+  static Color textMuted = Colors.white.withValues(alpha: 0.5);
 
   @Deprecated('Use overlayLightOf(context) for theme-aware colors.')
-  static Color overlayLight = Colors.white.withOpacity(0.08);
+  static Color overlayLight = Colors.white.withValues(alpha: 0.08);
   @Deprecated('Use overlayMediumOf(context) for theme-aware colors.')
-  static Color overlayMedium = Colors.white.withOpacity(0.15);
+  static Color overlayMedium = Colors.white.withValues(alpha: 0.15);
   @Deprecated('Use overlayStrongOf(context) for theme-aware colors.')
-  static Color overlayStrong = Colors.white.withOpacity(0.25);
+  static Color overlayStrong = Colors.white.withValues(alpha: 0.25);
 
   @Deprecated('Use editorGradientOf(context) for theme-aware colors.')
   static const List<Color> editorGradient = [
@@ -104,34 +110,47 @@ class SnapFitColors {
   static bool isDark(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark;
 
-  static Color backgroundOf(BuildContext context) =>
-      isDark(context) ? deepCharcoal : pureWhite;
+  static Color backgroundOf(BuildContext context) => kIsWeb
+      ? Theme.of(context).scaffoldBackgroundColor
+      : isDark(context)
+      ? deepCharcoal
+      : pureWhite;
 
-  static Color surfaceOf(BuildContext context) =>
-      isDark(context) ? surfaceDark : surfaceLight;
+  static Color surfaceOf(BuildContext context) => kIsWeb
+      ? Theme.of(context).colorScheme.surface
+      : isDark(context)
+      ? surfaceDark
+      : surfaceLight;
 
-  static Color textPrimaryOf(BuildContext context) =>
-      isDark(context) ? pureWhite : deepCharcoal;
+  static Color textPrimaryOf(BuildContext context) => kIsWeb
+      ? Theme.of(context).colorScheme.onSurface
+      : isDark(context)
+      ? pureWhite
+      : deepCharcoal;
 
-  static Color textSecondaryOf(BuildContext context) => isDark(context)
-      ? pureWhite.withOpacity(0.7)
-      : deepCharcoal.withOpacity(0.7);
+  static Color textSecondaryOf(BuildContext context) => kIsWeb
+      ? Theme.of(context).colorScheme.onSurfaceVariant
+      : isDark(context)
+      ? pureWhite.withValues(alpha: 0.7)
+      : deepCharcoal.withValues(alpha: 0.7);
 
-  static Color textMutedOf(BuildContext context) => isDark(context)
-      ? pureWhite.withOpacity(0.5)
-      : deepCharcoal.withOpacity(0.5);
+  static Color textMutedOf(BuildContext context) => kIsWeb
+      ? Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: .8)
+      : isDark(context)
+      ? pureWhite.withValues(alpha: 0.5)
+      : deepCharcoal.withValues(alpha: 0.5);
 
   static Color overlayLightOf(BuildContext context) => isDark(context)
-      ? pureWhite.withOpacity(0.08)
-      : deepCharcoal.withOpacity(0.06);
+      ? pureWhite.withValues(alpha: 0.08)
+      : deepCharcoal.withValues(alpha: 0.06);
 
   static Color overlayMediumOf(BuildContext context) => isDark(context)
-      ? pureWhite.withOpacity(0.15)
-      : deepCharcoal.withOpacity(0.12);
+      ? pureWhite.withValues(alpha: 0.15)
+      : deepCharcoal.withValues(alpha: 0.12);
 
   static Color overlayStrongOf(BuildContext context) => isDark(context)
-      ? pureWhite.withOpacity(0.25)
-      : deepCharcoal.withOpacity(0.18);
+      ? pureWhite.withValues(alpha: 0.25)
+      : deepCharcoal.withValues(alpha: 0.18);
 
   static List<Color> editorGradientOf(BuildContext context) =>
       isDark(context) ? editorGradientDark : editorGradientLight;

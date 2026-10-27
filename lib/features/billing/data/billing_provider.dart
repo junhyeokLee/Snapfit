@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/supabase/supabase_provider.dart';
 import '../../auth/presentation/viewmodels/auth_view_model.dart';
+import '../../profile/domain/order_visibility_owner.dart';
 import '../domain/entities/storage_quota.dart';
 import 'point_purchase_service.dart';
 import 'billing_repository.dart';
@@ -39,6 +40,7 @@ final pointPurchaseServiceProvider = Provider<PointPurchaseService>((ref) {
 });
 
 final myStorageQuotaProvider = FutureProvider<StorageQuotaStatus>((ref) async {
+  ref.watch(authViewModelProvider.select((auth) => auth.asData?.value?.id));
   try {
     return await ref
         .read(billingRepositoryProvider)
@@ -59,10 +61,15 @@ final myStorageQuotaProvider = FutureProvider<StorageQuotaStatus>((ref) async {
 });
 
 final myPointBalanceProvider = FutureProvider<int>((ref) async {
-  return ref
+  final owner = ref.watch(visibleOrderOwnerProvider);
+  if (owner == null) return 0;
+  final value = await ref
       .watch(billingRepositoryProvider)
       .getMyPointBalance()
       .timeout(const Duration(seconds: 8));
+  return ref.mounted && ref.read(visibleOrderOwnerProvider) == owner
+      ? value
+      : 0;
 });
 
 final isFirstAiDraftFreeProvider = FutureProvider.autoDispose<bool>((
@@ -81,8 +88,13 @@ final isFirstAiDraftFreeProvider = FutureProvider.autoDispose<bool>((
 final myPointLedgerProvider = FutureProvider<List<PointLedgerEntry>>((
   ref,
 ) async {
-  return ref
+  final owner = ref.watch(visibleOrderOwnerProvider);
+  if (owner == null) return const [];
+  final value = await ref
       .watch(billingRepositoryProvider)
       .getMyPointLedger()
       .timeout(const Duration(seconds: 8));
+  return ref.mounted && ref.read(visibleOrderOwnerProvider) == owner
+      ? value
+      : const [];
 });

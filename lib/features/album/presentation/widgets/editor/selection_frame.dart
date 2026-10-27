@@ -11,6 +11,7 @@ class SelectionFrame extends StatelessWidget {
   final Widget child;
   final bool isSelected;
   final bool showHandles;
+  final bool hitTestContent;
   final VoidCallback? onDelete;
   final Function(ScaleStartDetails)? onScaleStart;
   final Function(ScaleUpdateDetails)? onScaleUpdate;
@@ -31,6 +32,7 @@ class SelectionFrame extends StatelessWidget {
     this.onScaleUpdate,
     this.onScaleEnd,
     this.showHandles = true,
+    this.hitTestContent = true,
     this.onResizeStart,
     this.onResizeUpdate,
     this.onResizeEnd,
@@ -44,14 +46,17 @@ class SelectionFrame extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         // Main Content with Border
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: isSelected ? SnapFitColors.accent : Colors.transparent,
-              width: 2,
+        IgnorePointer(
+          ignoring: !hitTestContent,
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: isSelected ? SnapFitColors.accent : Colors.transparent,
+                width: 2,
+              ),
             ),
+            child: child,
           ),
-          child: child,
         ),
 
         // Corners (Visual Anchors)

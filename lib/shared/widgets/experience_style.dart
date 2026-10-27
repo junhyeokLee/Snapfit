@@ -12,7 +12,7 @@ abstract final class ExperienceStyle {
   static const muted = Color(0xFF778080);
   static const line = Color(0xFFE6EBEA);
   static const wash = Color(0xFFF3F6F5);
-  static const accent = Color(0xFF14AAA8);
+  static const accent = SnapFitColors.actionAccent;
   static TextStyle text(
     double size, {
     FontWeight weight = FontWeight.w400,

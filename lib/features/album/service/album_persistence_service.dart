@@ -3,6 +3,9 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../domain/entities/layer.dart';
 import '../domain/entities/layer_export_mapper.dart';
+import '../domain/entities/album.dart';
+import '../domain/entities/album_source_template.dart';
+import '../domain/entities/album_edit_failure.dart';
 import '../domain/repositories/album_repository.dart';
 import '../data/api/storage_service.dart';
 import '../data/gallery/browser_photo_asset.dart';
@@ -17,7 +20,12 @@ class AlbumPersistenceService {
   static const int _maxConcurrentImageUploads = 4;
   static const int _maxUploadRetries = 2;
 
-  Future<LayerModel> _uploadSingleLayerWithRetry(LayerModel layer) async {
+  Future<LayerModel> _uploadSingleLayerWithRetry(
+    LayerModel layer, {
+    required int albumId,
+    bool Function()? canContinue,
+    void Function(UploadedUrls uploaded)? onUploaded,
+  }) async {
     final browserPhoto = layer.asset is BrowserPhotoAsset;
     if (layer.type != LayerType.image ||
         (!browserPhoto &&
@@ -33,14 +41,19 @@ class AlbumPersistenceService {
 
     int attempt = 0;
     while (attempt <= _maxUploadRetries) {
+      if (canContinue?.call() == false) throw const AlbumEditSessionChanged();
       try {
-        final uploaded = await _storage.uploadImageVariants(layer.asset!);
+        final uploaded = await _storage.uploadImageVariants(
+          layer.asset!,
+          albumId: albumId,
+        );
+        onUploaded?.call(uploaded);
+        if (canContinue?.call() == false) throw const AlbumEditSessionChanged();
         final preview = uploaded.previewGsPath ?? uploaded.previewUrl;
         final original = uploaded.originalGsPath ?? uploaded.originalUrl;
-        if (layer.asset is BrowserPhotoAsset &&
-            (preview?.trim().isNotEmpty != true ||
-                original?.trim().isNotEmpty != true)) {
-          throw StateError('browser_photo_upload_incomplete');
+        if (preview?.trim().isNotEmpty != true ||
+            original?.trim().isNotEmpty != true) {
+          throw StateError('album_photo_upload_incomplete');
         }
         if (preview != null || original != null) {
           return layer.copyWith(
@@ -49,19 +62,15 @@ class AlbumPersistenceService {
             imageUrl: preview,
           );
         }
-        // 업로드는 성공했는데 URL이 없는 경우: 굳이 재시도하지 않고 원본 레이어 반환
-        return layer;
+        throw StateError('album_photo_upload_incomplete');
       } catch (e) {
-        if (e is StorageQuotaExceededException) {
+        if (e is StorageQuotaExceededException ||
+            e is AlbumEditSessionChanged) {
           rethrow;
         }
         attempt++;
         if (attempt > _maxUploadRetries) {
-          if (layer.asset is BrowserPhotoAsset) rethrow;
-          debugPrint(
-            '[Background] Image upload failed for layer ${layer.id}: $e',
-          );
-          return layer; // 실패한 레이어는 나중에 재시도할 수 있도록 그대로 둔다
+          rethrow;
         }
         await Future.delayed(const Duration(milliseconds: 500));
       }
@@ -71,6 +80,10 @@ class AlbumPersistenceService {
 
   Future<List<LayerModel>> _uploadLayersWithConcurrency(
     List<LayerModel> layers, {
+    required int albumId,
+    bool Function()? canContinue,
+    void Function(LayerModel before, LayerModel after)? onLayerUploaded,
+    void Function(UploadedUrls uploaded)? onUploaded,
     void Function(int completed, int total)? onProgress,
   }) async {
     final updated = <LayerModel>[];
@@ -79,12 +92,24 @@ class AlbumPersistenceService {
 
     // 레이어를 일정 크기(chunk)로 잘라서 동시 N개씩만 업로드
     for (var i = 0; i < layers.length; i += _maxConcurrentImageUploads) {
+      if (canContinue?.call() == false) throw const AlbumEditSessionChanged();
       final chunk = layers.sublist(
         i,
         (i + _maxConcurrentImageUploads).clamp(0, layers.length),
       );
       final chunkResults = await Future.wait(
-        chunk.map(_uploadSingleLayerWithRetry),
+        chunk.map((layer) async {
+          final uploaded = await _uploadSingleLayerWithRetry(
+            layer,
+            albumId: albumId,
+            canContinue: canContinue,
+            onUploaded: onUploaded,
+          );
+          if (canContinue?.call() == false)
+            throw const AlbumEditSessionChanged();
+          onLayerUploaded?.call(layer, uploaded);
+          return uploaded;
+        }),
       );
       updated.addAll(chunkResults);
 
@@ -98,8 +123,11 @@ class AlbumPersistenceService {
   }
 
   /// 백그라운드에서 실행될 실제 업로드 로직
-  Future<void> performBackgroundUpload({
+  Future<Album> performBackgroundUpload({
     required int albumId,
+    required String expectedUpdatedAt,
+    required String expectedUserId,
+    required String requestId,
     required Size canvasSize,
     required List<LayerModel> currentLayers,
     required Uint8List? coverImageBytes,
@@ -108,32 +136,49 @@ class AlbumPersistenceService {
     required double coverRatio,
     required int targetPages,
     Map<String, dynamic>? printProduct,
+    String? sourceTemplateProductKey,
     bool swallowErrors = true,
+    bool Function()? canContinue,
+    void Function(CreateAlbumRequest request)? onPrepared,
+    void Function(LayerModel before, LayerModel after)? onLayerUploaded,
+    void Function(UploadedUrls uploaded)? onUploaded,
     void Function(int completed, int total)? onProgress,
   }) async {
     try {
+      if (canContinue?.call() == false) throw const AlbumEditSessionChanged();
       debugPrint('[Background] Upload Started for Album $albumId');
 
       // 1. 레이어 업로드 Future (이미지 레이어 중 업로드 안 된 것만, 동시 N개 제한)
       final layersFuture = _uploadLayersWithConcurrency(
         currentLayers,
+        albumId: albumId,
+        canContinue: canContinue,
+        onLayerUploaded: onLayerUploaded,
+        onUploaded: onUploaded,
         onProgress: onProgress,
       );
 
       // 2. 커버 이미지 업로드 Future (있다면)
       Future<UploadedUrls?> coverFuture = Future.value(null);
       if (coverImageBytes != null) {
-        coverFuture = _storage.uploadCoverVariants(coverImageBytes);
+        coverFuture = _storage
+            .uploadCoverVariants(coverImageBytes, albumId: albumId)
+            .then((uploaded) {
+              onUploaded?.call(uploaded);
+              return uploaded;
+            });
       }
 
       // 3. 병렬 실행 및 대기 (레이어 업로드 + 커버 업로드)
       final results = await Future.wait([layersFuture, coverFuture]);
+      if (canContinue?.call() == false) throw const AlbumEditSessionChanged();
 
       final updatedLayers = results[0] as List<LayerModel>;
       final coverUploaded = results[1] as UploadedUrls?;
 
       // 4. 최종 JSON 생성 (실제 서버 URL 포함)
       final json = jsonEncode({
+        ...albumSourceTemplateMetadata(sourceTemplateProductKey),
         if (printProduct != null) 'printProduct': printProduct,
         'layers': updatedLayers
             .map(
@@ -172,32 +217,33 @@ class AlbumPersistenceService {
       }
 
       // 6. 앨범 정보 업데이트 (Repository 직접 호출)
-      await _albumRepository.updateAlbum(
-        albumId,
-        CreateAlbumRequest(
-          ratio: coverRatio.toString(),
-          title: title,
-          targetPages: targetPages,
-          coverLayersJson: json,
-          coverImageUrl: coverPreviewUrl ?? '',
-          coverThumbnailUrl: coverPreviewUrl ?? '',
-          coverPreviewUrl: coverPreviewUrl,
-          coverOriginalUrl: coverOriginalUrl,
-          coverTheme: themeLabel,
-        ),
+      final request = CreateAlbumRequest(
+        ratio: coverRatio.toString(),
+        title: title,
+        targetPages: targetPages,
+        coverLayersJson: json,
+        coverImageUrl: coverPreviewUrl ?? '',
+        coverThumbnailUrl: coverPreviewUrl ?? '',
+        coverPreviewUrl: coverPreviewUrl,
+        coverOriginalUrl: coverOriginalUrl,
+        coverTheme: themeLabel,
       );
-
+      onPrepared?.call(request);
+      if (canContinue?.call() == false) throw const AlbumEditSessionChanged();
+      final saved = await _albumRepository.updateAlbum(
+        albumId,
+        request,
+        expectedUpdatedAt: expectedUpdatedAt,
+        requestId: requestId,
+        expectedUserId: expectedUserId,
+      );
+      if (canContinue?.call() == false) throw const AlbumEditSessionChanged();
       debugPrint('[Background] Upload Completed for Album $albumId');
+      return saved;
     } catch (e) {
       debugPrint('[Background] Upload Failed: $e');
-      if (e is StorageQuotaExceededException) {
-        rethrow;
-      }
-      if (currentLayers.any((layer) => layer.asset is BrowserPhotoAsset))
-        rethrow;
-      if (!swallowErrors) {
-        rethrow;
-      }
+      // A failed or unconfirmed document write must never look like success.
+      rethrow;
     }
   }
 

@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AlbumMemberResponse {
 
- int get id; int get userId; String? get userName; String? get userEmail; String? get profileImageUrl; String get role; String get status;
+ int get id; int get userId;/// Authoritative identity for member mutations; legacy integer IDs are display compatibility only.
+ String? get userUuid; bool get isOwner; String? get userName; String? get userEmail; String? get profileImageUrl; String get role; String get status;
 /// Create a copy of AlbumMemberResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +29,16 @@ $AlbumMemberResponseCopyWith<AlbumMemberResponse> get copyWith => _$AlbumMemberR
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AlbumMemberResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userEmail, userEmail) || other.userEmail == userEmail)&&(identical(other.profileImageUrl, profileImageUrl) || other.profileImageUrl == profileImageUrl)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AlbumMemberResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.userUuid, userUuid) || other.userUuid == userUuid)&&(identical(other.isOwner, isOwner) || other.isOwner == isOwner)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userEmail, userEmail) || other.userEmail == userEmail)&&(identical(other.profileImageUrl, profileImageUrl) || other.profileImageUrl == profileImageUrl)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,userName,userEmail,profileImageUrl,role,status);
+int get hashCode => Object.hash(runtimeType,id,userId,userUuid,isOwner,userName,userEmail,profileImageUrl,role,status);
 
 @override
 String toString() {
-  return 'AlbumMemberResponse(id: $id, userId: $userId, userName: $userName, userEmail: $userEmail, profileImageUrl: $profileImageUrl, role: $role, status: $status)';
+  return 'AlbumMemberResponse(id: $id, userId: $userId, userUuid: $userUuid, isOwner: $isOwner, userName: $userName, userEmail: $userEmail, profileImageUrl: $profileImageUrl, role: $role, status: $status)';
 }
 
 
@@ -48,7 +49,7 @@ abstract mixin class $AlbumMemberResponseCopyWith<$Res>  {
   factory $AlbumMemberResponseCopyWith(AlbumMemberResponse value, $Res Function(AlbumMemberResponse) _then) = _$AlbumMemberResponseCopyWithImpl;
 @useResult
 $Res call({
- int id, int userId, String? userName, String? userEmail, String? profileImageUrl, String role, String status
+ int id, int userId, String? userUuid, bool isOwner, String? userName, String? userEmail, String? profileImageUrl, String role, String status
 });
 
 
@@ -65,11 +66,13 @@ class _$AlbumMemberResponseCopyWithImpl<$Res>
 
 /// Create a copy of AlbumMemberResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? userName = freezed,Object? userEmail = freezed,Object? profileImageUrl = freezed,Object? role = null,Object? status = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? userUuid = freezed,Object? isOwner = null,Object? userName = freezed,Object? userEmail = freezed,Object? profileImageUrl = freezed,Object? role = null,Object? status = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
-as int,userName: freezed == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
+as int,userUuid: freezed == userUuid ? _self.userUuid : userUuid // ignore: cast_nullable_to_non_nullable
+as String?,isOwner: null == isOwner ? _self.isOwner : isOwner // ignore: cast_nullable_to_non_nullable
+as bool,userName: freezed == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
 as String?,userEmail: freezed == userEmail ? _self.userEmail : userEmail // ignore: cast_nullable_to_non_nullable
 as String?,profileImageUrl: freezed == profileImageUrl ? _self.profileImageUrl : profileImageUrl // ignore: cast_nullable_to_non_nullable
 as String?,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
@@ -156,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  int userId,  String? userName,  String? userEmail,  String? profileImageUrl,  String role,  String status)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  int userId,  String? userUuid,  bool isOwner,  String? userName,  String? userEmail,  String? profileImageUrl,  String role,  String status)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AlbumMemberResponse() when $default != null:
-return $default(_that.id,_that.userId,_that.userName,_that.userEmail,_that.profileImageUrl,_that.role,_that.status);case _:
+return $default(_that.id,_that.userId,_that.userUuid,_that.isOwner,_that.userName,_that.userEmail,_that.profileImageUrl,_that.role,_that.status);case _:
   return orElse();
 
 }
@@ -177,10 +180,10 @@ return $default(_that.id,_that.userId,_that.userName,_that.userEmail,_that.profi
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  int userId,  String? userName,  String? userEmail,  String? profileImageUrl,  String role,  String status)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  int userId,  String? userUuid,  bool isOwner,  String? userName,  String? userEmail,  String? profileImageUrl,  String role,  String status)  $default,) {final _that = this;
 switch (_that) {
 case _AlbumMemberResponse():
-return $default(_that.id,_that.userId,_that.userName,_that.userEmail,_that.profileImageUrl,_that.role,_that.status);}
+return $default(_that.id,_that.userId,_that.userUuid,_that.isOwner,_that.userName,_that.userEmail,_that.profileImageUrl,_that.role,_that.status);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -194,10 +197,10 @@ return $default(_that.id,_that.userId,_that.userName,_that.userEmail,_that.profi
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  int userId,  String? userName,  String? userEmail,  String? profileImageUrl,  String role,  String status)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  int userId,  String? userUuid,  bool isOwner,  String? userName,  String? userEmail,  String? profileImageUrl,  String role,  String status)?  $default,) {final _that = this;
 switch (_that) {
 case _AlbumMemberResponse() when $default != null:
-return $default(_that.id,_that.userId,_that.userName,_that.userEmail,_that.profileImageUrl,_that.role,_that.status);case _:
+return $default(_that.id,_that.userId,_that.userUuid,_that.isOwner,_that.userName,_that.userEmail,_that.profileImageUrl,_that.role,_that.status);case _:
   return null;
 
 }
@@ -209,11 +212,14 @@ return $default(_that.id,_that.userId,_that.userName,_that.userEmail,_that.profi
 @JsonSerializable()
 
 class _AlbumMemberResponse implements AlbumMemberResponse {
-  const _AlbumMemberResponse({required this.id, required this.userId, this.userName, this.userEmail, this.profileImageUrl, required this.role, required this.status});
+  const _AlbumMemberResponse({required this.id, required this.userId, this.userUuid, this.isOwner = false, this.userName, this.userEmail, this.profileImageUrl, required this.role, required this.status});
   factory _AlbumMemberResponse.fromJson(Map<String, dynamic> json) => _$AlbumMemberResponseFromJson(json);
 
 @override final  int id;
 @override final  int userId;
+/// Authoritative identity for member mutations; legacy integer IDs are display compatibility only.
+@override final  String? userUuid;
+@override@JsonKey() final  bool isOwner;
 @override final  String? userName;
 @override final  String? userEmail;
 @override final  String? profileImageUrl;
@@ -233,16 +239,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AlbumMemberResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userEmail, userEmail) || other.userEmail == userEmail)&&(identical(other.profileImageUrl, profileImageUrl) || other.profileImageUrl == profileImageUrl)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AlbumMemberResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.userUuid, userUuid) || other.userUuid == userUuid)&&(identical(other.isOwner, isOwner) || other.isOwner == isOwner)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userEmail, userEmail) || other.userEmail == userEmail)&&(identical(other.profileImageUrl, profileImageUrl) || other.profileImageUrl == profileImageUrl)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,userName,userEmail,profileImageUrl,role,status);
+int get hashCode => Object.hash(runtimeType,id,userId,userUuid,isOwner,userName,userEmail,profileImageUrl,role,status);
 
 @override
 String toString() {
-  return 'AlbumMemberResponse(id: $id, userId: $userId, userName: $userName, userEmail: $userEmail, profileImageUrl: $profileImageUrl, role: $role, status: $status)';
+  return 'AlbumMemberResponse(id: $id, userId: $userId, userUuid: $userUuid, isOwner: $isOwner, userName: $userName, userEmail: $userEmail, profileImageUrl: $profileImageUrl, role: $role, status: $status)';
 }
 
 
@@ -253,7 +259,7 @@ abstract mixin class _$AlbumMemberResponseCopyWith<$Res> implements $AlbumMember
   factory _$AlbumMemberResponseCopyWith(_AlbumMemberResponse value, $Res Function(_AlbumMemberResponse) _then) = __$AlbumMemberResponseCopyWithImpl;
 @override @useResult
 $Res call({
- int id, int userId, String? userName, String? userEmail, String? profileImageUrl, String role, String status
+ int id, int userId, String? userUuid, bool isOwner, String? userName, String? userEmail, String? profileImageUrl, String role, String status
 });
 
 
@@ -270,11 +276,13 @@ class __$AlbumMemberResponseCopyWithImpl<$Res>
 
 /// Create a copy of AlbumMemberResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? userName = freezed,Object? userEmail = freezed,Object? profileImageUrl = freezed,Object? role = null,Object? status = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? userUuid = freezed,Object? isOwner = null,Object? userName = freezed,Object? userEmail = freezed,Object? profileImageUrl = freezed,Object? role = null,Object? status = null,}) {
   return _then(_AlbumMemberResponse(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
-as int,userName: freezed == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
+as int,userUuid: freezed == userUuid ? _self.userUuid : userUuid // ignore: cast_nullable_to_non_nullable
+as String?,isOwner: null == isOwner ? _self.isOwner : isOwner // ignore: cast_nullable_to_non_nullable
+as bool,userName: freezed == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
 as String?,userEmail: freezed == userEmail ? _self.userEmail : userEmail // ignore: cast_nullable_to_non_nullable
 as String?,profileImageUrl: freezed == profileImageUrl ? _self.profileImageUrl : profileImageUrl // ignore: cast_nullable_to_non_nullable
 as String?,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable

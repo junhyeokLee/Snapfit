@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../../../core/constants/cover_size.dart';
+import 'album_source_template.dart';
 
 part 'album.freezed.dart';
 part 'album.g.dart';
@@ -56,13 +57,36 @@ sealed class Album with _$Album {
   factory Album.fromJson(Map<String, dynamic> json) => _$AlbumFromJson(json);
 }
 
+// Album is immutable. Weak keys retain neither old album documents nor an
+// unbounded history of edited JSON sources after their albums are collected.
+final _physicalCoverSizes = Expando<CoverSize>('album physical cover size');
+
 extension AlbumPhysicalSize on Album {
+  /// A local hint only; publication revalidates the active product and license.
+  String? get sourceTemplateProductKey {
+    try {
+      return readAlbumSourceTemplateProductKey(jsonDecode(coverLayersJson));
+    } catch (_) {
+      return null;
+    }
+  }
+
   // Drafts and legacy local fixtures have no server-resolved role yet.
   bool get allowsEditing =>
       memberRole == null || ['OWNER', 'EDITOR'].contains(memberRole);
   bool get allowsManagement => memberRole == null || memberRole == 'OWNER';
 
+  /// Home uses the compact worker result, never a document decode in build.
+  CoverSize? get cachedPhysicalCoverSize => _physicalCoverSizes[this];
+
+  CoverSize get estimatedPhysicalCoverSize => resolveAlbumCoverSize(ratio);
+
+  void cachePhysicalCoverSize(CoverSize size) =>
+      _physicalCoverSizes[this] = size;
+
   CoverSize get physicalCoverSize {
+    final cached = _physicalCoverSizes[this];
+    if (cached != null) return cached;
     Map<String, dynamic>? product;
     try {
       final document = jsonDecode(coverLayersJson);
@@ -72,10 +96,20 @@ extension AlbumPhysicalSize on Album {
     } catch (_) {
       // Older albums may contain only a cover URL or an empty document.
     }
-    final parts = ratio.split(RegExp(r'[:/]'));
-    final parsed = parts.length == 2
-        ? (double.tryParse(parts[0]) ?? 0) / (double.tryParse(parts[1]) ?? 0)
-        : double.tryParse(ratio) ?? 1;
-    return resolveCoverSize(ratio: parsed, printProduct: product);
+    final resolved = resolveAlbumCoverSize(ratio, printProduct: product);
+    _physicalCoverSizes[this] = resolved;
+    return resolved;
   }
+}
+
+/// Resolve only the small ratio/product metadata returned by a worker.
+CoverSize resolveAlbumCoverSize(
+  String ratio, {
+  Map<String, dynamic>? printProduct,
+}) {
+  final parts = ratio.split(RegExp(r'[:/]'));
+  final parsed = parts.length == 2
+      ? (double.tryParse(parts[0]) ?? 0) / (double.tryParse(parts[1]) ?? 0)
+      : double.tryParse(ratio) ?? 1;
+  return resolveCoverSize(ratio: parsed, printProduct: printProduct);
 }

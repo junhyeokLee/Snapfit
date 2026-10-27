@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/templates/free_template_material_policy.dart';
 import '../../../../core/theme/snapfit_design_tokens.dart'
     show SnapFitRadius, SnapFitShadow;
 import '../../../../shared/widgets/catalog_favorite_widgets.dart';
+import '../../../../shared/widgets/catalog_artwork_visibility.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../point_shop/presentation/point_shop_access.dart';
 import 'catalog_item_title.dart';
@@ -101,7 +103,9 @@ class _MaterialCatalogTileState extends State<MaterialCatalogTile> {
                                 12,
                                 10,
                               ),
-                              child: RepaintBoundary(child: widget.preview),
+                              child: CatalogArtworkVisibility(
+                                child: RepaintBoundary(child: widget.preview),
+                              ),
                             ),
                             Positioned(
                               left: 9,
@@ -127,7 +131,7 @@ class _MaterialCatalogTileState extends State<MaterialCatalogTile> {
                                   decoration: BoxDecoration(
                                     color: widget.isBest
                                         ? const Color(0xFFD4A853)
-                                        : const Color(0xFF14AAA8),
+                                        : SnapFitColors.actionAccent,
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(

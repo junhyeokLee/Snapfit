@@ -7,6 +7,10 @@ import '../../../../shared/snapfit_image.dart';
 import '../../../../shared/web/web_design.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../../../profile/presentation/views/my_page_screen.dart';
+import '../../../social/presentation/views/social_feed_screen.dart';
+import '../../../social/presentation/views/social_profile_screen.dart';
+import '../../../moments/presentation/moments_navigation.dart';
+import '../../../moments/presentation/widgets/first_book_next_step_card.dart';
 import '../../../profile/presentation/views/order_history_screen.dart';
 import '../../../store/presentation/views/store_hub_screen.dart';
 import '../../../store/presentation/views/material_catalog_screen.dart';
@@ -19,6 +23,8 @@ import '../views/album_create_flow_screen.dart';
 import '../views/print_order_preview_screen.dart';
 import '../widgets/home/home_album_actions.dart';
 import '../widgets/home/home_album_helpers.dart';
+import '../../../../core/utils/context_extensions.dart';
+import '../../../home_news/presentation/widgets/home_news_gate.dart';
 
 /// The web landing page is a searchable document library, not the app's shelf.
 class WebAlbumLibraryScreen extends ConsumerStatefulWidget {
@@ -122,6 +128,20 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
     ),
   );
 
+  void _feed() => Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      settings: const WebAppRouteSettings(WebAppLocation.feed),
+      builder: (_) => const SocialFeedScreen(),
+    ),
+  );
+
+  void _myProfile() => Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      settings: const WebAppRouteSettings(WebAppLocation.myProfile),
+      builder: (_) => const SocialProfileScreen(),
+    ),
+  );
+
   void _designs({bool materials = false}) => Navigator.of(context).push(
     MaterialPageRoute<void>(
       settings: WebAppRouteSettings(
@@ -147,10 +167,7 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
         onAlbumDeleted: (_) => ref.invalidate(homeViewModelProvider),
       );
     } catch (_) {
-      if (mounted)
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('앨범을 열지 못했습니다. 잠시 후 다시 시도해 주세요.')),
-        );
+      if (mounted) context.showErrorSnack('앨범을 열지 못했습니다. 잠시 후 다시 시도해 주세요.');
     }
   }
 
@@ -201,13 +218,16 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
     final draftState = ref.watch(albumCreationDraftProvider);
     final draft = draftState.asData?.value;
     final palette = WebPalette.of(context);
-    return SnapFitWebShell(
+    final content = SnapFitWebShell(
       section: WebSection.albums,
       onHome: _resetFilters,
+      onMoments: () => openMoments(context),
+      onFeed: _feed,
       onCreate: () => _create(),
       onDesigns: () => _designs(),
       onOrders: _orders,
       onAccount: _account,
+      onMyProfile: _myProfile,
       child: CustomScrollView(
         key: const ValueKey('web-album-library-scroll'),
         slivers: [
@@ -215,14 +235,55 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
             child: WebPageHeading(
               title: '내 앨범',
               description: '만들던 이야기를 이어가거나 새로운 앨범을 시작하세요.',
-              trailing: FilledButton.icon(
-                onPressed: () => _create(),
-                icon: const Icon(Icons.add, size: 19),
-                label: const Text('새 앨범 만들기'),
+              trailing: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 12,
+                runSpacing: 8,
+                children: [
+                  if (MediaQuery.sizeOf(context).width < 1100 ||
+                      MediaQuery.textScalerOf(context).scale(14) > 20)
+                    TextButton.icon(
+                      key: const ValueKey('web-library-moments-entry'),
+                      onPressed: () => openMoments(context),
+                      icon: const Icon(Icons.photo_camera_outlined, size: 18),
+                      label: const Text('나의 기록'),
+                    ),
+                  FilledButton.icon(
+                    onPressed: () => _create(),
+                    icon: const Icon(Icons.add, size: 19),
+                    label: const Text('새 앨범 만들기'),
+                  ),
+                ],
               ),
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: FirstBookNextStepCard(
+                compact: true,
+                key: draft == null
+                    ? null
+                    : const ValueKey('web-library-resume-draft'),
+                ownerId: user?.id ?? '',
+                albums: albums.asData?.value ?? const [],
+                creationDraftTitle: draft?.title,
+                onResumeCreation: draft == null
+                    ? null
+                    : () => _create(resume: draft),
+                onMoments: () => openMoments(context),
+                onDraft: (draft) =>
+                    openMoments(context, draftRecordId: draft.recordId),
+                onContinueAlbum: (album) => HomeAlbumActions.onEditSelected(
+                  context,
+                  ref,
+                  album,
+                  startAtFirstIncompletePage: true,
+                ),
+              ),
+            ),
+          ),
           if (draftState.hasError)
             SliverToBoxAdapter(
               child: Padding(
@@ -247,77 +308,6 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
                         child: const Text('다시 불러오기'),
                       ),
                     ],
-                  ),
-                ),
-              ),
-            ),
-          if (draft != null)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: WebSurface(
-                  key: const ValueKey('web-library-resume-draft'),
-                  padding: const EdgeInsets.all(20),
-                  child: LayoutBuilder(
-                    builder: (context, bounds) {
-                      final details = Row(
-                        children: [
-                          Icon(
-                            Icons.history_rounded,
-                            color: palette.brandInk,
-                            size: 24,
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '이어서 만들기',
-                                  style: TextStyle(
-                                    color: palette.brandInk,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  draft.title.trim().isEmpty
-                                      ? '제목 없는 앨범'
-                                      : draft.title,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
-                      final button = OutlinedButton(
-                        onPressed: () => _create(resume: draft),
-                        child: const Text('임시 저장 열기'),
-                      );
-                      return bounds.maxWidth < 500
-                          ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                details,
-                                const SizedBox(height: 16),
-                                button,
-                              ],
-                            )
-                          : Row(
-                              children: [
-                                Expanded(child: details),
-                                const SizedBox(width: 24),
-                                button,
-                              ],
-                            );
-                    },
                   ),
                 ),
               ),
@@ -429,17 +419,26 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
                 else
                   SliverLayoutBuilder(
                     builder: (context, bounds) {
-                      final columns = bounds.crossAxisExtent >= 1120
-                          ? 4
-                          : bounds.crossAxisExtent >= 820
+                      final columns = bounds.crossAxisExtent >= 1040
                           ? 3
-                          : bounds.crossAxisExtent >= 520
+                          : bounds.crossAxisExtent >= 680
                           ? 2
                           : 1;
+                      final cardWidth =
+                          (bounds.crossAxisExtent - 22 * (columns - 1)) /
+                          columns;
+                      final artworkHeight = cardWidth
+                          .clamp(240.0, 420.0)
+                          .toDouble();
+                      final textScaler = MediaQuery.textScalerOf(context);
+                      final detailsHeight =
+                          42 +
+                          textScaler.scale(16) * 1.4 +
+                          textScaler.scale(12) * 2.8;
                       return SliverGrid(
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: columns,
-                          mainAxisExtent: 354,
+                          mainAxisExtent: artworkHeight + detailsHeight,
                           mainAxisSpacing: 22,
                           crossAxisSpacing: 22,
                         ),
@@ -471,6 +470,7 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
         ],
       ),
     );
+    return HomeNewsGate(respectFirstVisitGuide: false, child: content);
   }
 
   Widget _libraryToolbar() => LayoutBuilder(
@@ -685,50 +685,27 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
     final palette = WebPalette.of(context);
     return WebSurface(
       key: ValueKey('web-album-row-${album.id}'),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: LayoutBuilder(
         builder: (context, bounds) {
           final compact = bounds.maxWidth < 640;
-          final info = Row(
-            children: [
-              SizedBox(
-                width: 58,
-                height: 66,
-                child: _coverImage(album, padding: 5),
+          final info = _albumOpenRegion(
+            album,
+            key: ValueKey('web-album-row-open-${album.id}'),
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 94,
+                    height: 94,
+                    child: _coverImage(album, padding: 6),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(child: _albumDetails(album, titleSize: 15)),
+                ],
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      album.title.trim().isEmpty ? '제목 없는 앨범' : album.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: palette.ink,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      '${album.physicalCoverSize.displayName} · ${album.targetPages > 0 ? album.targetPages : album.totalPages}쪽',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 12, color: palette.muted),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      '${isCompletedAlbum(album) ? '작성 완료' : '작성 중'} · ${formatAlbumDate(album.updatedAt.isNotEmpty ? album.updatedAt : album.createdAt, useLocalTime: true)}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 12, color: palette.muted),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           );
           final actions = Wrap(
             alignment: WrapAlignment.end,
@@ -736,6 +713,7 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
             runSpacing: 8,
             children: [
               _favoriteButton(album),
+              if (album.allowsManagement) _publishButton(album),
               IconButton(
                 tooltip: '제작 사양과 주문 준비 확인',
                 onPressed: () => _print(album),
@@ -744,11 +722,6 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
                   color: palette.brandInk,
                   size: 20,
                 ),
-              ),
-              const SizedBox(width: 8),
-              OutlinedButton(
-                onPressed: () => _open(album),
-                child: const Text('앨범 열기'),
               ),
             ],
           );
@@ -788,7 +761,18 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
     ),
   );
 
-  Widget _coverImage(Album album, {double padding = 24}) {
+  Widget _publishButton(Album album) => IconButton(
+    key: ValueKey('web-album-publish-${album.id}'),
+    tooltip: '피드에 작품 공개',
+    onPressed: () => HomeAlbumActions.onPublishSelected(context, ref, album),
+    icon: Icon(
+      Icons.public_outlined,
+      color: WebPalette.of(context).brandInk,
+      size: 20,
+    ),
+  );
+
+  Widget _coverImage(Album album, {double padding = 16}) {
     final url = [
       album.coverThumbnailUrl,
       album.coverPreviewUrl,
@@ -799,14 +783,76 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
       color: WebPalette.of(context).canvas,
       child: Padding(
         padding: EdgeInsets.all(padding),
-        child: url == null
-            ? Icon(
-                Icons.auto_stories_outlined,
-                color: WebPalette.of(context).muted,
-                size: 32,
-              )
-            : SnapfitImage(urlOrGs: url, fit: BoxFit.contain),
+        child: Center(
+          child: AspectRatio(
+            key: ValueKey('web-album-artwork-ratio-${album.id}'),
+            aspectRatio: album.physicalCoverSize.ratio,
+            child: url == null
+                ? Icon(
+                    Icons.auto_stories_outlined,
+                    color: WebPalette.of(context).muted,
+                    size: 32,
+                  )
+                : SnapfitImage(urlOrGs: url, fit: BoxFit.contain),
+          ),
+        ),
       ),
+    );
+  }
+
+  Widget _albumOpenRegion(
+    Album album, {
+    required Key key,
+    required Widget child,
+  }) => Semantics(
+    button: true,
+    label: '${album.title.trim().isEmpty ? '제목 없는 앨범' : album.title} 앨범 보기',
+    onTap: () => _open(album),
+    child: ExcludeSemantics(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          key: key,
+          borderRadius: BorderRadius.circular(8),
+          onTap: () => _open(album),
+          child: child,
+        ),
+      ),
+    ),
+  );
+
+  Widget _albumDetails(Album album, {double titleSize = 16}) {
+    final palette = WebPalette.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          album.title.trim().isEmpty ? '제목 없는 앨범' : album.title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: titleSize,
+            height: 1.4,
+            fontWeight: FontWeight.w600,
+            color: palette.ink,
+          ),
+        ),
+        const SizedBox(height: 7),
+        Text(
+          '${album.physicalCoverSize.displayName} · ${album.targetPages > 0 ? album.targetPages : album.totalPages}쪽',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 12, height: 1.4, color: palette.muted),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          '${isCompletedAlbum(album) ? '작성 완료' : '작성 중'} · ${formatAlbumDate(album.updatedAt.isNotEmpty ? album.updatedAt : album.createdAt, useLocalTime: true)}',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 12, height: 1.4, color: palette.muted),
+        ),
+      ],
     );
   }
 
@@ -837,7 +883,6 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
   );
 
   Widget _albumCard(Album album) {
-    final physical = album.physicalCoverSize;
     return Container(
       key: ValueKey('web-album-card-${album.id}'),
       clipBehavior: Clip.antiAlias,
@@ -850,83 +895,40 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            child: Material(
-              color: WebPalette.of(context).canvas,
-              child: InkWell(
-                onTap: () => _open(album),
-                child: Stack(
-                  children: [
-                    Positioned.fill(child: _coverImage(album)),
-                    Positioned(
-                      top: 10,
-                      right: 10,
-                      child: _favoriteButton(album),
-                    ),
-                  ],
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: _albumOpenRegion(
+                    album,
+                    key: ValueKey('web-album-artwork-open-${album.id}'),
+                    child: _coverImage(album),
+                  ),
                 ),
-              ),
+                Positioned(top: 10, right: 10, child: _favoriteButton(album)),
+              ],
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
               children: [
-                Text(
-                  album.title.trim().isEmpty ? '제목 없는 앨범' : album.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                Expanded(
+                  child: _albumOpenRegion(
+                    album,
+                    key: ValueKey('web-album-details-open-${album.id}'),
+                    child: _albumDetails(album),
                   ),
                 ),
-                const SizedBox(height: 7),
-                Text(
-                  '${physical.displayName} · ${album.targetPages > 0 ? album.targetPages : album.totalPages}쪽',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: WebPalette.of(context).muted,
+                const SizedBox(width: 8),
+                if (album.allowsManagement) _publishButton(album),
+                IconButton(
+                  tooltip: '제작 사양과 주문 준비 확인',
+                  onPressed: () => _print(album),
+                  icon: Icon(
+                    Icons.local_printshop_outlined,
+                    color: WebPalette.of(context).brandInk,
+                    size: 20,
                   ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '${isCompletedAlbum(album) ? '작성 완료' : '작성 중'} · ${formatAlbumDate(album.updatedAt.isNotEmpty ? album.updatedAt : album.createdAt, useLocalTime: true)}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: WebPalette.of(context).muted,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => _open(album),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 13,
-                          ),
-                        ),
-                        child: const Text('앨범 열기'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Tooltip(
-                      message: '제작 사양과 주문 준비 확인',
-                      child: IconButton(
-                        onPressed: () => _print(album),
-                        icon: Icon(
-                          Icons.local_printshop_outlined,
-                          color: WebPalette.of(context).brandInk,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  ],
                 ),
               ],
             ),

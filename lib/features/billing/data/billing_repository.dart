@@ -133,6 +133,10 @@ class PointLedgerEntry {
     return switch (reason) {
       'POINT_PURCHASE' => '포인트 충전',
       'POINT_PURCHASE_REFUND' => '포인트 구매 환불',
+      'DAILY_ATTENDANCE' => '출석체크 적립',
+      'REFERRAL_INVITER' => '친구 초대 적립',
+      'REFERRAL_INVITEE' => '초대 코드 등록 적립',
+      'SIGNUP_BONUS' => '가입 축하 포인트',
       'DIGITAL_ITEM_PURCHASE' => '꾸미기 상품 구매',
       'AI_ALBUM_DRAFT_CHARGE' => 'AI 템플릿 사용',
       'AI_ALBUM_DRAFT_FREE' => '첫 AI 템플릿 무료',
@@ -146,6 +150,10 @@ class PointLedgerEntry {
       'POINT_PURCHASE' =>
         relatedEntityType == 'web_point_topup' ? '웹 결제 확인 완료' : '스토어 결제 확인 완료',
       'POINT_PURCHASE_REFUND' => '환불된 구매의 지급 포인트 회수',
+      'DAILY_ATTENDANCE' => '오늘의 출석으로 받은 무료 포인트',
+      'REFERRAL_INVITER' => '초대한 친구가 코드를 등록해 받은 포인트',
+      'REFERRAL_INVITEE' => '친구의 초대 코드를 등록해 받은 포인트',
+      'SIGNUP_BONUS' => '회원가입으로 받은 무료 포인트',
       'DIGITAL_ITEM_PURCHASE' => '구매한 상품은 계속 사용할 수 있어요',
       'AI_ALBUM_DRAFT_CHARGE' => '초안이 만들어지고 리뷰 가능할 때만 차감',
       'AI_ALBUM_DRAFT_FREE' => '첫 초안 무료 혜택 사용',

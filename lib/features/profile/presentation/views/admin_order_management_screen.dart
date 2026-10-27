@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../config/env.dart';
@@ -17,6 +17,7 @@ import '../../../album/printing/album_print_exporter.dart';
 import '../../../album/printing/redprinting_fulfillment_policy.dart';
 import '../../data/order_repository.dart';
 import '../../domain/entities/order_history_item.dart';
+import '../../../../core/utils/context_extensions.dart';
 
 class AdminOrderManagementScreen extends ConsumerStatefulWidget {
   const AdminOrderManagementScreen({super.key});
@@ -73,13 +74,13 @@ class _AdminOrderManagementScreenState
           backgroundColor: SnapFitColors.backgroundOf(context),
           elevation: 0,
           leading: const SnapFitAppBarBackButton(),
-          title: Text('주문 관리', style: context.sfTitle(size: 16.sp)),
+          title: Text('주문 관리', style: context.sfTitle(size: 16)),
         ),
         body: Center(
           child: Text(
             '관리자 키가 설정되지 않았습니다.',
             style: TextStyle(
-              fontSize: 13.sp,
+              fontSize: 13,
               color: SnapFitColors.textSecondaryOf(context),
             ),
           ),
@@ -95,7 +96,7 @@ class _AdminOrderManagementScreenState
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
         leading: const SnapFitAppBarBackButton(),
-        title: Text('주문 관리', style: context.sfTitle(size: 16.sp)),
+        title: Text('주문 관리', style: context.sfTitle(size: 16)),
         actions: [
           IconButton(
             onPressed: () => setState(() => _refreshSeed++),
@@ -104,22 +105,22 @@ class _AdminOrderManagementScreenState
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(94.h),
+          preferredSize: Size.fromHeight(94),
           child: Column(
             children: [
               Padding(
-                padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 10.h),
+                padding: EdgeInsets.fromLTRB(16, 0, 16, 10),
                 child: TextField(
                   controller: _searchController,
                   onSubmitted: (_) => _applyKeyword(),
                   style: TextStyle(
-                    fontSize: 13.sp,
+                    fontSize: 13,
                     color: SnapFitColors.textPrimaryOf(context),
                   ),
                   decoration: InputDecoration(
                     hintText: '주문번호, 앨범명, 수령인 검색',
                     hintStyle: TextStyle(
-                      fontSize: 12.sp,
+                      fontSize: 12,
                       color: SnapFitColors.textSecondaryOf(context),
                     ),
                     prefixIcon: const Icon(Icons.search_rounded),
@@ -130,17 +131,17 @@ class _AdminOrderManagementScreenState
                     filled: true,
                     fillColor: SnapFitColors.surfaceOf(context),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14.r),
+                      borderRadius: BorderRadius.circular(14),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+                    contentPadding: EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
               ),
               TabBar(
                 controller: _tabController,
                 isScrollable: true,
-                labelPadding: EdgeInsets.symmetric(horizontal: 10.w),
+                labelPadding: EdgeInsets.symmetric(horizontal: 10),
                 indicatorColor: SnapFitColors.accent,
                 indicatorWeight: 2.5,
                 indicatorSize: TabBarIndicatorSize.label,
@@ -148,12 +149,9 @@ class _AdminOrderManagementScreenState
                 overlayColor: WidgetStateProperty.all(Colors.transparent),
                 labelColor: SnapFitColors.textPrimaryOf(context),
                 unselectedLabelColor: SnapFitColors.textSecondaryOf(context),
-                labelStyle: context.sfBody(
-                  size: 12.sp,
-                  weight: FontWeight.w700,
-                ),
+                labelStyle: context.sfBody(size: 12, weight: FontWeight.w700),
                 unselectedLabelStyle: context.sfSub(
-                  size: 12.sp,
+                  size: 12,
                   weight: FontWeight.w500,
                 ),
                 tabs: const [
@@ -746,10 +744,7 @@ class _PrintFulfillmentSheetState
       '배송 메모: ${_order.deliveryMemo ?? ''}',
     ];
     await Clipboard.setData(ClipboardData(text: lines.join('\n')));
-    if (mounted)
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('발주 입력 정보를 복사했습니다.')));
+    if (mounted) context.showSnack('발주 입력 정보를 복사했습니다.');
   }
 
   @override
@@ -1278,28 +1273,28 @@ class _AdminOrderPagedTabState extends ConsumerState<_AdminOrderPagedTab> {
       if (_loadError != null) {
         return Center(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w),
+            padding: EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   '주문 목록을 불러오지 못했습니다.',
                   style: TextStyle(
-                    fontSize: 12.sp,
+                    fontSize: 12,
                     color: SnapFitColors.textPrimaryOf(context),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(height: 8.h),
+                SizedBox(height: 8),
                 Text(
                   '네트워크 상태를 확인하고 다시 시도해주세요.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 11.sp,
+                    fontSize: 11,
                     color: SnapFitColors.textSecondaryOf(context),
                   ),
                 ),
-                SizedBox(height: 10.h),
+                SizedBox(height: 10),
                 OutlinedButton.icon(
                   onPressed: _loadFirst,
                   icon: const Icon(Icons.refresh_rounded),
@@ -1314,7 +1309,7 @@ class _AdminOrderPagedTabState extends ConsumerState<_AdminOrderPagedTab> {
         child: Text(
           '조건에 맞는 주문이 없습니다.',
           style: TextStyle(
-            fontSize: 12.sp,
+            fontSize: 12,
             color: SnapFitColors.textSecondaryOf(context),
           ),
         ),
@@ -1325,9 +1320,9 @@ class _AdminOrderPagedTabState extends ConsumerState<_AdminOrderPagedTab> {
       onRefresh: _loadFirst,
       child: ListView.separated(
         controller: _scrollController,
-        padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 20.h),
+        padding: EdgeInsets.fromLTRB(20, 14, 20, 20),
         itemCount: _items.length + (_hasNext ? 1 : 0),
-        separatorBuilder: (_, __) => SizedBox(height: 10.h),
+        separatorBuilder: (_, __) => SizedBox(height: 10),
         itemBuilder: (context, index) {
           if (index >= _items.length) {
             return const Center(
@@ -1340,12 +1335,12 @@ class _AdminOrderPagedTabState extends ConsumerState<_AdminOrderPagedTab> {
           final order = _items[index];
           return InkWell(
             onTap: () => widget.onShowDetail(order),
-            borderRadius: BorderRadius.circular(18.r),
+            borderRadius: BorderRadius.circular(18),
             child: Container(
-              padding: EdgeInsets.fromLTRB(14.w, 12.h, 14.w, 12.h),
+              padding: EdgeInsets.fromLTRB(14, 12, 14, 12),
               decoration: BoxDecoration(
                 color: SnapFitColors.surfaceOf(context),
-                borderRadius: BorderRadius.circular(18.r),
+                borderRadius: BorderRadius.circular(18),
                 border: Border.all(
                   color: SnapFitColors.overlayLightOf(context),
                 ),
@@ -1360,37 +1355,37 @@ class _AdminOrderPagedTabState extends ConsumerState<_AdminOrderPagedTab> {
                       Text(
                         order.orderId,
                         style: TextStyle(
-                          fontSize: 10.sp,
+                          fontSize: 10,
                           color: SnapFitColors.textSecondaryOf(context),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 8.h),
+                  SizedBox(height: 8),
                   Text(
                     order.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 13.5.sp,
+                      fontSize: 13.5,
                       fontWeight: FontWeight.w800,
                       color: SnapFitColors.textPrimaryOf(context),
                     ),
                   ),
-                  SizedBox(height: 4.h),
+                  SizedBox(height: 4),
                   Text(
                     '${order.recipientName ?? '-'} · ${order.recipientPhone ?? '-'}',
                     style: TextStyle(
-                      fontSize: 10.8.sp,
+                      fontSize: 10.8,
                       color: SnapFitColors.textSecondaryOf(context),
                     ),
                   ),
-                  SizedBox(height: 4.h),
+                  SizedBox(height: 4),
                   Text(
                     '${order.fulfillmentLabel} · 표지/내지 ${order.hasPrintFiles ? '준비됨' : '미생성'}',
                     style: TextStyle(
-                      fontSize: 10.2.sp,
+                      fontSize: 10.2,
                       color: SnapFitColors.textSecondaryOf(context),
                     ),
                   ),
@@ -1413,16 +1408,16 @@ class _AdminOrderPagedTabState extends ConsumerState<_AdminOrderPagedTab> {
         : SnapFitColors.accent;
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(999.r),
-        border: Border.all(color: color.withOpacity(0.24)),
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.24)),
       ),
       child: Text(
         statusLabel,
         style: TextStyle(
-          fontSize: 9.8.sp,
+          fontSize: 9.8,
           fontWeight: FontWeight.w800,
           color: color,
         ),

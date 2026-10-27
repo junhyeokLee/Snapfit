@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/viewport_sliver_layout_builder.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/services.dart';
 import '../../../../shared/web/web_design.dart';
 import '../../data/store_curation_provider.dart';
 import '../widgets/material_curation.dart';
@@ -13,6 +15,8 @@ import '../../../../shared/widgets/album_stage_style.dart';
 
 import '../../../../shared/widgets/catalog_search_disclosure.dart';
 import '../../../../shared/widgets/catalog_filter_bar.dart';
+import '../../../../shared/widgets/catalog_active_filters.dart';
+import '../../../../shared/widgets/catalog_empty_result.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -20,7 +24,7 @@ import '../../../../core/templates/studio_decoration_catalog.dart';
 import '../../../../core/templates/studio_phrase_catalog.dart';
 import '../../../../core/templates/studio_word_art_catalog.dart';
 import '../../../../shared/widgets/catalog_favorite_widgets.dart';
-import '../../../../shared/widgets/experience_style.dart';
+import '../../../../shared/widgets/experience_style.dart' show ExperienceHeader;
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../core/theme/snapfit_design_tokens.dart' show SnapFitRadius;
 import '../../../../core/constants/snapfit_colors.dart';
@@ -107,6 +111,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
   int _cachedFavoritesVersion = -1;
   List<_CatalogItem> _cachedItems = const [];
   int _cachedTotal = 0;
+  Widget? _catalogContent;
 
   @override
   void initState() {
@@ -140,16 +145,67 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
     if (_scroll.hasClients) _scroll.jumpTo(0);
   }
 
-  void _resetWebFilters() => setState(() {
-    _search.clear();
-    _query = '';
-    _type = '전체';
-    _priceFilter = '전체';
-    _favoritesOnly = false;
-    _librarySort = _LibrarySort.favorites;
-    _catalogSort = '추천순';
+  void _resetFilters() {
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() {
+      _search.clear();
+      _query = '';
+      _type = '전체';
+      _priceFilter = '전체';
+      _favoritesOnly = false;
+      _librarySort = _LibrarySort.favorites;
+      _catalogSort = '추천순';
+      _resetPage();
+    });
+  }
+
+  void _changeFilter(VoidCallback update) => setState(() {
+    update();
     _resetPage();
   });
+
+  void _clearSearchFilter() => _changeFilter(() {
+    _search.clear();
+    _query = '';
+  });
+
+  List<CatalogActiveFilter> get _activeFilters => [
+    if (_query.isNotEmpty)
+      CatalogActiveFilter(
+        id: 'query',
+        label: '검색 · ${_search.text.trim()}',
+        onRemove: _clearSearchFilter,
+      ),
+    if (_type != '전체')
+      CatalogActiveFilter(
+        id: 'category',
+        label: '분류 · $_type',
+        onRemove: () => _changeFilter(() => _type = '전체'),
+      ),
+    if (_priceFilter != '전체')
+      CatalogActiveFilter(
+        id: 'price',
+        label: '가격 · $_priceFilter',
+        onRemove: () => _changeFilter(() => _priceFilter = '전체'),
+      ),
+    if (_favoritesOnly)
+      CatalogActiveFilter(
+        id: 'favorites',
+        label: '즐겨찾기만',
+        onRemove: () => _changeFilter(() => _favoritesOnly = false),
+      ),
+    if (widget.library
+        ? _librarySort == _LibrarySort.name
+        : _catalogSort != '추천순')
+      CatalogActiveFilter(
+        id: 'sort',
+        label: widget.library ? '이름순' : _catalogSort,
+        onRemove: () => _changeFilter(() {
+          _librarySort = _LibrarySort.favorites;
+          _catalogSort = '추천순';
+        }),
+      ),
+  ];
 
   String get _sortLabel =>
       _librarySort == _LibrarySort.name ? '이름순' : '즐겨찾기 먼저';
@@ -214,10 +270,14 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                     selected: _type == type,
                     child: InkWell(
                       key: ValueKey('library-type-$type'),
-                      onTap: () => setState(() {
-                        _type = type;
-                        _resetPage();
-                      }),
+                      onTap: () {
+                        if (_type == type) return;
+                        HapticFeedback.selectionClick();
+                        setState(() {
+                          _type = type;
+                          _resetPage();
+                        });
+                      },
                       child: Container(
                         alignment: Alignment.centerLeft,
                         constraints: const BoxConstraints(minHeight: 44),
@@ -303,10 +363,14 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                 key: ValueKey(
                   '${widget.library ? 'library' : 'material'}-type-$type',
                 ),
-                onTap: () => setState(() {
-                  _type = type;
-                  _resetPage();
-                }),
+                onTap: () {
+                  if (_type == type) return;
+                  HapticFeedback.selectionClick();
+                  setState(() {
+                    _type = type;
+                    _resetPage();
+                  });
+                },
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   margin: const EdgeInsets.only(right: 20),
@@ -322,7 +386,8 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                   ),
                   child: Text(
                     type,
-                    style: ExperienceStyle.text(
+                    style: ExperienceFormStyle.text(
+                      context,
                       14,
                       weight: _type == type ? FontWeight.w600 : FontWeight.w400,
                       color: _type == type
@@ -339,16 +404,23 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
   );
 
   void _nearEnd() {
+    if (!mounted || !TickerMode.of(context)) return;
     if (_scroll.hasClients && _scroll.position.extentAfter < 300) _loadMore();
   }
 
   Future<void> _loadMore() async {
     if (_loading || _visible >= _total) return;
+    if (!TickerMode.of(context)) return;
     final generation = _generation;
     setState(() => _loading = true);
     await WidgetsBinding.instance.endOfFrame;
     await Future<void>.delayed(Duration.zero);
     if (!mounted || generation != _generation) return;
+    if (!TickerMode.of(context)) {
+      // Visibility changes rebuild the catalog when it is shown again.
+      _loading = false;
+      return;
+    }
     setState(() {
       _visible = (_visible + _pageSize).clamp(0, _total);
       _loading = false;
@@ -582,6 +654,15 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
     builder: (context, favorites) {
       final owned = ref.watch(ownedPointShopKeysProvider);
       final catalog = ref.watch(pointShopCatalogProvider);
+      final templates = widget.library && (_type == '전체' || _type == '템플릿')
+          ? ref.watch(templateListProvider)
+          : null;
+      final materialMeta = ref.watch(materialListProvider);
+      // A retained department still receives provider updates. Reuse its
+      // mounted content while hidden and filter the latest data on return.
+      if (!TickerMode.of(context)) {
+        return _catalogContent ?? const SizedBox.shrink();
+      }
       final prices = {
         for (final product in catalog.hasValue ? catalog.requireValue : [])
           product.productKey: product,
@@ -599,11 +680,6 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
             ? product.pointPrice == 0
             : product.pointPrice! > 0;
       }
-
-      final templates = widget.library && (_type == '전체' || _type == '템플릿')
-          ? ref.watch(templateListProvider)
-          : null;
-      final materialMeta = ref.watch(materialListProvider);
 
       // ── Memoized filter ──────────────────────────────────────────────────
       // Re-run only when source data or filter params change — not on every
@@ -653,6 +729,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
         _cachedTotal = computed.length;
       }
       final items = _cachedItems;
+      final activeFilters = _activeFilters;
       _total = _cachedTotal;
       final curation = !widget.library
           ? ref.watch(storeCurationsProvider).asData?.value['materials']
@@ -717,8 +794,9 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
           key: const ValueKey('material-catalog-scroll'),
           controller: _scroll,
           physics: const AlwaysScrollableScrollPhysics(),
-          // Prepare roughly one row before it enters the viewport.
-          cacheExtent: 240,
+          // Prepare ~2 rows before they enter the viewport.
+          // Bound offscreen mounting and image decoding to roughly one row.
+          cacheExtent: 280,
           slivers: [
             SliverPadding(
               padding: EdgeInsets.fromLTRB(
@@ -786,7 +864,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                             _favoritesOnly ||
                             _catalogSort != '추천순' ||
                             _librarySort != _LibrarySort.favorites,
-                        onReset: _resetWebFilters,
+                        onReset: _resetFilters,
                         leading: null,
                       )
                     else ...[
@@ -795,13 +873,28 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                           !widget.embedded) ...[
                         TextField(
                           controller: _search,
+                          autofocus: true,
+                          textInputAction: TextInputAction.search,
+                          style: ExperienceFormStyle.text(context, 14),
                           decoration:
                               ExperienceFormStyle.input(
                                 context,
                                 hint: '프레임, 스티커, 문구 검색',
                               ).copyWith(
                                 prefixIcon: const Icon(Icons.search, size: 20),
+                                suffixIcon: _query.isEmpty
+                                    ? null
+                                    : IconButton(
+                                        tooltip: '검색 지우기',
+                                        onPressed: _clearSearchFilter,
+                                        icon: const Icon(
+                                          Icons.close_rounded,
+                                          size: 20,
+                                        ),
+                                      ),
                               ),
+                          onSubmitted: (_) =>
+                              FocusManager.instance.primaryFocus?.unfocus(),
                           onChanged: (value) => setState(() {
                             _query = value.trim().toLowerCase();
                             _resetPage();
@@ -818,7 +911,8 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                         if (!widget.library) ...[
                           Text(
                             'SNAPFIT MATERIALS',
-                            style: ExperienceStyle.text(
+                            style: ExperienceFormStyle.text(
+                              context,
                               11,
                               weight: FontWeight.w600,
                               color: ExperienceFormStyle.muted(context),
@@ -831,7 +925,8 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                             Expanded(
                               child: Text(
                                 widget.library ? '내 디자인' : '사진 곁에 놓는 작은 취향',
-                                style: ExperienceStyle.text(
+                                style: ExperienceFormStyle.text(
+                                  context,
                                   27,
                                   weight: FontWeight.w700,
                                   color: ExperienceFormStyle.ink(context),
@@ -845,7 +940,8 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                           widget.library
                               ? '내가 고른 디자인과 구매한 소재.'
                               : '스티커, 종이, 프레임. 한 장을 더 나답게.',
-                          style: ExperienceStyle.text(
+                          style: ExperienceFormStyle.text(
+                            context,
                             14,
                             color: ExperienceFormStyle.muted(context),
                           ),
@@ -856,7 +952,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                           !widget.library &&
                           !widget.searchMode)
                         _typeFilters(tabs),
-                      SizedBox(height: libraryWide ? 0 : 10),
+                      SizedBox(height: libraryWide ? 0 : 12),
                       if (widget.library && !libraryWide)
                         _librarySearch(leading: _libraryFavorites()),
                       if (!widget.library)
@@ -871,7 +967,18 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                             _favoritesOnly = !_favoritesOnly;
                             _resetPage();
                           }),
+                          resultLabel: _priceFilter == '보유' && !owned.hasValue
+                              ? (owned.hasError ? '보유 목록 확인 필요' : '보유한 소재 확인 중')
+                              : _priceFilter != '전체' &&
+                                    _priceFilter != '보유' &&
+                                    (catalog.hasError || !catalog.hasValue)
+                              ? (catalog.hasError ? '가격 확인 필요' : '가격 확인 중')
+                              : '${items.length}개의 소재',
                         ),
+                      CatalogActiveFilters(
+                        filters: activeFilters,
+                        onReset: _resetFilters,
+                      ),
                       SizedBox(height: libraryWide ? 8 : 16),
                     ],
                     if (kIsWeb) const SizedBox(height: 20),
@@ -994,38 +1101,33 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                 ),
               )
             else if (items.isEmpty)
-              _catalogState(
-                icon: _favoritesOnly
-                    ? Icons.bookmark_border
-                    : Icons.inventory_2_outlined,
-                title: _query.isNotEmpty
-                    ? noResultsTitle
-                    : _favoritesOnly
-                    ? '즐겨찾는 항목이 없어요.'
-                    : _priceFilter != '전체' || _type != '전체' || !widget.library
-                    ? noResultsTitle
-                    : '아직 보관한 항목이 없어요.',
-                detail: _query.isNotEmpty || _type != '전체'
-                    ? '다른 검색어나 분류로 찾아보세요.'
-                    : widget.library
-                    ? '구매한 소재와 즐겨찾기가 여기에 모여요.'
-                    : null,
-                action:
-                    _query.isNotEmpty ||
-                        _type != '전체' ||
-                        (kIsWeb && (_priceFilter != '전체' || _favoritesOnly))
-                    ? '필터 초기화'
-                    : null,
-                onAction: () => setState(() {
-                  _query = '';
-                  _search.clear();
-                  _type = '전체';
-                  _priceFilter = '전체';
-                  if (kIsWeb) {
-                    _favoritesOnly = false;
-                  }
-                  _resetPage();
-                }),
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: CatalogEmptyResult(
+                  icon: _favoritesOnly
+                      ? Icons.bookmark_border_rounded
+                      : _query.isNotEmpty
+                      ? Icons.search_off_rounded
+                      : Icons.inventory_2_outlined,
+                  title: _query.isNotEmpty
+                      ? noResultsTitle
+                      : _favoritesOnly
+                      ? '즐겨찾는 항목이 없어요.'
+                      : _priceFilter != '전체' || _type != '전체' || !widget.library
+                      ? noResultsTitle
+                      : '아직 보관한 항목이 없어요.',
+                  query: _search.text.trim(),
+                  description: _favoritesOnly
+                      ? '다른 조건을 해제하거나 마음에 드는 디자인을 즐겨찾기에 담아 보세요.'
+                      : _query.isNotEmpty ||
+                            _type != '전체' ||
+                            _priceFilter != '전체'
+                      ? '검색어를 짧게 바꾸거나 선택한 조건을 해제해 보세요.'
+                      : widget.library
+                      ? '구매한 소재와 즐겨찾기가 여기에 모여요.'
+                      : '다른 분류의 소재도 둘러보세요.',
+                  onReset: activeFilters.isEmpty ? null : _resetFilters,
+                ),
               )
             else
               SliverPadding(
@@ -1035,7 +1137,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                   horizontalPadding,
                   32,
                 ),
-                sliver: SliverLayoutBuilder(
+                sliver: ViewportSliverLayoutBuilder(
                   builder: (context, box) {
                     final columns = kIsWeb
                         ? (box.crossAxisExtent >= 1000
@@ -1237,7 +1339,8 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                                               decoration: BoxDecoration(
                                                 color: item.isBest
                                                     ? const Color(0xFFD4A853)
-                                                    : const Color(0xFF14AAA8),
+                                                    : SnapFitColors
+                                                          .actionAccent,
                                                 borderRadius:
                                                     BorderRadius.circular(4),
                                               ),
@@ -1262,7 +1365,8 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                                       item.title,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
-                                      style: ExperienceStyle.text(
+                                      style: ExperienceFormStyle.text(
+                                        context,
                                         widget.library ? 14 : 13,
                                         weight: widget.library
                                             ? FontWeight.w600
@@ -1359,7 +1463,8 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                                 )
                               : Text(
                                   '${items.length}개 항목을 모두 확인했어요',
-                                  style: ExperienceStyle.text(
+                                  style: ExperienceFormStyle.text(
+                                    context,
                                     12,
                                     color: ExperienceFormStyle.muted(context),
                                   ),
@@ -1372,8 +1477,8 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
       );
       if (kIsWeb) {
         final body = content;
-        if (widget.embedded) return body;
-        return SnapFitWebShell(
+        if (widget.embedded) return _catalogContent = body;
+        return _catalogContent = SnapFitWebShell(
           section: WebSection.designs,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1385,7 +1490,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
           ),
         );
       }
-      return Scaffold(
+      return _catalogContent = Scaffold(
         backgroundColor: SnapFitColors.backgroundOf(context),
         appBar: widget.embedded
             ? null

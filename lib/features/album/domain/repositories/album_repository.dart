@@ -7,8 +7,15 @@ abstract class AlbumRepository {
   /// 앨범 생성
   Future<Album> createAlbum(CreateAlbumRequest request);
 
-  /// 앨범 수정
-  Future<Album> updateAlbum(int albumId, CreateAlbumRequest request);
+  /// Atomically replace the document loaded at [expectedUpdatedAt]. A retry of
+  /// the same immutable save must retain [requestId] and [expectedUserId].
+  Future<Album> updateAlbum(
+    int albumId,
+    CreateAlbumRequest request, {
+    String? expectedUpdatedAt,
+    String? requestId,
+    String? expectedUserId,
+  });
 
   /// 단일 앨범 조회
   Future<Album> fetchAlbum(String albumId);

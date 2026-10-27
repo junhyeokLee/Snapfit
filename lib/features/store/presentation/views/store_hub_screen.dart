@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/navigation/web_app_location.dart';
 import '../../../../shared/web/web_design.dart';
 import '../../../../shared/widgets/experience_icon.dart';
@@ -9,6 +10,9 @@ import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import 'material_catalog_screen.dart';
 import 'store_screen.dart';
+import '../../data/api/template_provider.dart';
+import '../../../../shared/widgets/deferred_content.dart';
+import '../../../../shared/widgets/snapfit_shimmer.dart';
 
 /// Both departments retain search and scroll position, and mount on demand.
 class StoreHubScreen extends StatefulWidget {
@@ -26,6 +30,14 @@ class StoreHubScreen extends StatefulWidget {
 class _StoreHubScreenState extends State<StoreHubScreen> {
   late int _index = widget.initialMaterials ? 1 : 0;
   late final Set<int> _visited = {_index};
+  bool _searchOpen = false;
+  // The department shell changes selection; its mounted catalog widgets do
+  // not need new identities or callbacks on every navigation update.
+  late final _templates = StoreScreen(
+    embedded: true,
+    editorial: true,
+    onBrowseMaterials: () => _selectCatalog(1),
+  );
 
   @override
   void didUpdateWidget(covariant StoreHubScreen oldWidget) {
@@ -64,13 +76,33 @@ class _StoreHubScreenState extends State<StoreHubScreen> {
     }
   }
 
-  void _openSearch() => Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (_) => _index == 0
-          ? const StoreScreen(searchMode: true)
-          : const MaterialCatalogScreen(searchMode: true),
-    ),
-  );
+  Future<void> _openSearch() async {
+    if (_searchOpen) return;
+    _searchOpen = true;
+    final templates = _index == 0;
+    try {
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => templates
+              ? ProviderScope(
+                  // Search begins with all subjects and cannot replace the
+                  // maintained browse feed's category/paging state. Artwork,
+                  // prices and in-flight local catalog loads remain shared.
+                  // The route owns this notifier and disposes it on close.
+                  overrides: [
+                    storeTemplateFeedProvider.overrideWith(
+                      StoreTemplateFeedNotifier.new,
+                    ),
+                  ],
+                  child: const StoreScreen(searchMode: true),
+                )
+              : const MaterialCatalogScreen(searchMode: true),
+        ),
+      );
+    } finally {
+      _searchOpen = false;
+    }
+  }
 
   double _departmentWidth(BuildContext context) {
     var width = 24.0;
@@ -174,17 +206,26 @@ class _StoreHubScreenState extends State<StoreHubScreen> {
               TickerMode(
                 enabled: _index == 0,
                 child: _visited.contains(0)
-                    ? StoreScreen(
-                        embedded: true,
-                        editorial: true,
-                        onBrowseMaterials: () => _selectCatalog(1),
+                    ? DeferredContent(
+                        active: _index == 0,
+                        placeholder: const SingleChildScrollView(
+                          child: SnapFitShimmerTemplateTileGrid(rows: 2),
+                        ),
+                        builder: (_) => _templates,
                       )
                     : const SizedBox.shrink(),
               ),
               TickerMode(
                 enabled: _index == 1,
                 child: _visited.contains(1)
-                    ? const MaterialCatalogScreen(embedded: true)
+                    ? DeferredContent(
+                        active: _index == 1,
+                        placeholder: const SingleChildScrollView(
+                          child: SnapFitShimmerMaterialTileGrid(rows: 2),
+                        ),
+                        builder: (_) =>
+                            const MaterialCatalogScreen(embedded: true),
+                      )
                     : const SizedBox.shrink(),
               ),
             ],

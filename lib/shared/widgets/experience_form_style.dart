@@ -31,13 +31,13 @@ abstract final class ExperienceFormStyle {
   static Color selection(BuildContext context) => kIsWeb
       ? WebPalette.of(context).softBrand
       : SnapFitColors.isDark(context)
-      ? const Color(0xFF163838)
-      : const Color(0xFFE3F4F3);
+      ? SnapFitColors.accentSurfaceDark
+      : SnapFitColors.accentLight;
   static Color selectionInk(BuildContext context) => kIsWeb
       ? WebPalette.of(context).brandInk
       : SnapFitColors.isDark(context)
-      ? const Color(0xFF7DD4D2)
-      : const Color(0xFF0D8A88);
+      ? SnapFitColors.accentInkDark
+      : SnapFitColors.accentInk;
 
   static TextStyle text(
     BuildContext context,

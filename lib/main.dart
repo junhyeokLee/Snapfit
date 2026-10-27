@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,6 +23,7 @@ import 'core/theme/snapfit_theme.dart';
 import 'core/theme/theme_mode_controller.dart';
 import 'core/utils/app_logger.dart';
 import 'core/utils/frame_timing_monitor.dart';
+import 'core/cache/memory_pressure_caches.dart';
 import 'features/album/presentation/views/album_create_flow_screen.dart';
 import 'features/album/presentation/views/album_creation_entry_screen.dart';
 import 'features/album/presentation/utils/album_creation_entry.dart';
@@ -34,6 +34,7 @@ import 'features/album/presentation/viewmodels/album_editor_view_model.dart';
 import 'features/album/presentation/viewmodels/home_view_model.dart';
 import 'features/album/service/pending_album_invite.dart';
 import 'features/album/data/api/album_provider.dart';
+import 'features/album/domain/album_invite_link.dart';
 import 'features/album/domain/entities/album.dart';
 import 'features/album/presentation/widgets/home/home_album_actions.dart';
 import 'features/billing/data/billing_provider.dart';
@@ -58,6 +59,16 @@ import 'features/profile/data/order_repository.dart';
 import 'features/album/presentation/views/print_order_complete_screen.dart';
 import 'features/profile/presentation/views/order_history_screen.dart';
 import 'features/profile/presentation/views/my_page_screen.dart';
+import 'features/social/presentation/views/social_feed_screen.dart';
+import 'features/social/presentation/views/social_profile_screen.dart';
+import 'features/attendance/presentation/views/attendance_screen.dart';
+import 'features/moments/presentation/moments_navigation.dart';
+import 'features/referral/domain/referral_link.dart';
+import 'features/referral/data/pending_referral.dart';
+import 'features/referral/presentation/views/referral_screen.dart';
+import 'features/social/presentation/views/social_work_detail_screen.dart';
+import 'features/social/presentation/views/social_publish_screen.dart';
+import 'features/social/presentation/views/social_works_manage_screen.dart';
 import 'features/commerce/presentation/public_commerce_screen.dart';
 import 'core/commerce/commerce_policy.dart';
 import 'features/splash/presentation/views/splash_screen.dart';
@@ -118,20 +129,7 @@ void main() async {
     KakaoSdk.init(nativeAppKey: Env.kakaoNativeAppKey);
   }
 
-  runApp(
-    ProviderScope(
-      child: ScreenUtilInit(
-        designSize: const Size(390, 844),
-        minTextAdapt: true, // 글자 크기 자동 조정
-        splitScreenMode: true, // 분할 화면 대응 (Fold,ㄹ Split 등)
-        enableScaleWH: () => !kIsWeb,
-        enableScaleText: () => !kIsWeb,
-        builder: (context, child) {
-          return const MoaEditorApp();
-        },
-      ),
-    ),
-  );
+  runApp(const ProviderScope(child: MoaEditorApp()));
 }
 
 class MoaEditorApp extends ConsumerStatefulWidget {
@@ -159,6 +157,7 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
   String? _printRecoveryOwner;
   bool _printRecoveryNoticeShown = false;
   WebAppRouter? _webRouter;
+  WebAppRouteInformationProvider? _webRouteInformationProvider;
   WebAppLocation? _pendingWebLocation;
   WebAppLocation? _openingWebLocation;
   String? _pendingWebOwner;
@@ -185,15 +184,19 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
     super.initState();
     _appRootRouteObserver = AppRootRouteObserver(onReady: _onAppRootReady);
     if (kIsWeb) {
+      _webRouteInformationProvider = WebAppRouteInformationProvider(
+        browserUri: Uri.base,
+        onAlbumInvite: _receiveWebAlbumInvite,
+      );
       _webRouter = WebAppRouter(
         navigatorKey: _navigatorKey,
         observers: [_appRootRouteObserver],
         routeBuilder: (settings) => settings.name == '/add_cover'
-            ? MaterialPageRoute<void>(
+            ? WebAppPageRoute<void>(
                 settings: const WebAppRouteSettings(WebAppLocation.create),
                 builder: (_) => const AlbumCreationEntryScreen(),
               )
-            : MaterialPageRoute<void>(
+            : WebAppPageRoute<void>(
                 settings: const AppRootRouteSettings(),
                 builder: (_) => const AuthGate(),
               ),
@@ -286,6 +289,7 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
         ref.read(themeModeControllerProvider.notifier).loadFromStorage();
       }
       TemplateUpdateNotificationService.checkAndNotifyIfUpdated();
+      unawaited(ref.read(pendingReferralProvider.notifier).restore());
       _initDeepLinkListener();
     });
   }
@@ -296,7 +300,13 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
     _linkSub?.cancel();
     _authSub?.cancel();
     _webRouter?.dispose();
+    _webRouteInformationProvider?.dispose();
     super.dispose();
+  }
+
+  @override
+  void didHaveMemoryPressure() {
+    MemoryPressureCaches.clear();
   }
 
   @override
@@ -332,8 +342,26 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
   }
 
   Future<void> _handleIncomingUri(Uri uri) async {
+    if (referralCodeFromUri(uri) != null) {
+      ref.read(pendingReferralProvider.notifier).receive(uri);
+      return;
+    }
     if (isPrintPaymentReturn(uri)) {
       await _recoverPrintPayment();
+      return;
+    }
+    if (albumInviteTokenFromUri(uri) != null) {
+      _notificationContentNavigation.cancel();
+      _orderDetailNavigation.cancel();
+      if (kIsWeb) {
+        // A previous page fetch must not finish above a newly received invite.
+        _webNavigationRevision++;
+        _pendingWebLocation = null;
+        _pendingWebOwner = null;
+        _webRouter?.restoreObservedLocation();
+        unawaited(_clearWebReturn());
+      }
+      ref.read(pendingAlbumInviteProvider.notifier).receive(uri);
       return;
     }
     if (uri.scheme.toLowerCase() != 'snapfit') {
@@ -457,14 +485,15 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
       _openOrderDetail(orderId, ownerId: expectedOwner);
       return;
     }
+    final content = NotificationContentTarget.fromPayload(data);
+    if (content != null) {
+      if (user == null && expectedOwner == null) return;
+      _openNotificationContent(content, ownerId: expectedOwner);
+      return;
+    }
     if (nav == null || user == null) return;
     if (webLocation?.page == WebAppPage.testOrder) {
       _webRouter?.requestLocation(webLocation!);
-      return;
-    }
-    final content = NotificationContentTarget.fromPayload(data);
-    if (content != null) {
-      _openNotificationContent(content, ownerId: expectedOwner);
       return;
     }
     if (kIsWeb &&
@@ -488,14 +517,17 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
   }) {
     _orderDetailNavigation.cancel();
     if (kIsWeb) {
-      _webRouter?.requestLocation(
-        WebAppLocation(
-          target.kind == NotificationContentKind.album
-              ? WebAppPage.album
-              : WebAppPage.template,
+      _webRouter?.requestLocation(switch (target.kind) {
+        NotificationContentKind.album => WebAppLocation(
+          WebAppPage.album,
           '${target.id}',
         ),
-      );
+        NotificationContentKind.template => WebAppLocation(
+          WebAppPage.template,
+          '${target.id}',
+        ),
+        NotificationContentKind.moments => WebAppLocation.moments,
+      });
       return;
     }
     _notificationContentNavigation.receive(
@@ -576,6 +608,17 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
           ),
         );
         await Future.any<void>([ready.future, opening.cancelled]);
+      } else if (opening.target.kind == NotificationContentKind.moments) {
+        if (!current()) return;
+        unawaited(
+          nav.push<void>(
+            MaterialPageRoute<void>(
+              settings: const WebAppRouteSettings(WebAppLocation.moments),
+              builder: (_) => const MomentsDestination(),
+            ),
+          ),
+        );
+        opened = true;
       } else {
         final template = await readCurrent(
           ref.read(templateRepositoryProvider).getTemplate(opening.target.id),
@@ -675,12 +718,25 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
 
   Future<void> _clearWebReturn() => _webReturnStore.clear();
 
+  void _receiveWebAlbumInvite(Uri uri) {
+    // Browser routes can arrive before AuthGate and its invite router mount.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(_handleIncomingUri(uri));
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
+  }
+
   Future<void> _rememberWebReturn(WebAppLocation location) =>
       _webReturnStore.remember(location);
 
   Future<WebAppLocation?> _takeWebReturn() => _webReturnStore.take();
 
   void _receiveWebLocation(WebAppLocation location) {
+    if (location.page == WebAppPage.referral && location.id != null) {
+      ref
+          .read(pendingReferralProvider.notifier)
+          .receive(referralShareUri(location.id!));
+    }
     _notificationContentNavigation.cancel();
     _orderDetailNavigation.cancel();
     _webNavigationRevision++;
@@ -688,9 +744,13 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
     _pendingWebOwner = location.isPublic
         ? null
         : Supabase.instance.client.auth.currentUser?.id;
+    final previousLocation = _webRouter?.observedLocation;
     if (location == WebAppLocation.login &&
-        _webRouter?.observedLocation.page == WebAppPage.template) {
-      unawaited(_rememberWebReturn(_webRouter!.observedLocation));
+        previousLocation != null &&
+        previousLocation.isPublic &&
+        previousLocation != WebAppLocation.home &&
+        previousLocation != WebAppLocation.login) {
+      unawaited(_rememberWebReturn(previousLocation));
     }
     if (_pendingWebOwner == null && !location.isPublic)
       unawaited(_rememberWebReturn(location));
@@ -740,7 +800,7 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
         if (nav != null) {
           unawaited(
             nav.push(
-              MaterialPageRoute<void>(
+              WebAppPageRoute<void>(
                 settings: const WebAppRouteSettings(WebAppLocation.login),
                 builder: (_) => const AuthGate(allowDiscovery: false),
               ),
@@ -766,8 +826,11 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
     _openingWebLocation = target;
     final revision = _webNavigationRevision;
     try {
+      final requestedAuthRoot =
+          target == WebAppLocation.home || target == WebAppLocation.login;
       if (owner != null &&
-          (target == WebAppLocation.home || target == WebAppLocation.login)) {
+          requestedAuthRoot &&
+          ref.read(pendingAlbumInviteProvider) == null) {
         target = await _takeWebReturn() ?? WebAppLocation.home;
       }
       if (!mounted ||
@@ -775,6 +838,15 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
           (!target.isPublic &&
               Supabase.instance.client.auth.currentUser?.id != owner))
         return;
+      if (requestedAuthRoot && ref.read(pendingAlbumInviteProvider) != null) {
+        // The pending capability already owns its login/acceptance flow. An
+        // OAuth root return must not pop it and clear it as a user dismissal.
+        _pendingWebLocation = null;
+        _pendingWebOwner = null;
+        unawaited(_clearWebReturn());
+        _webRouter!.finishInitialNavigation();
+        return;
+      }
       // OAuth can restore a private destination from an originally public '/'.
       // Validate it only after rejecting an obsolete navigation or account.
       if (!target.isPublic &&
@@ -794,6 +866,19 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
         return;
       }
       if (router.updateDisplayedLocation(target)) return;
+      if (router.containsLocation(target)) {
+        final returned = await router.returnToLocation(target);
+        if (returned) await HomeAlbumActions.waitForReaderToClose();
+        if (returned &&
+            mounted &&
+            revision == _webNavigationRevision &&
+            (target.isPublic ||
+                Supabase.instance.client.auth.currentUser?.id == owner)) {
+          router.finishInitialNavigation();
+          if (target.page != WebAppPage.login) unawaited(_clearWebReturn());
+        }
+        return;
+      }
       if (!await router.returnToRoot()) return;
       await HomeAlbumActions.waitForReaderToClose();
       if (!mounted ||
@@ -801,7 +886,7 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
           (!target.isPublic &&
               Supabase.instance.client.auth.currentUser?.id != owner))
         return;
-      Route<void> route(Widget child) => MaterialPageRoute<void>(
+      Route<void> route(Widget child) => WebAppPageRoute<void>(
         settings: WebAppRouteSettings(target!),
         builder: (_) => child,
       );
@@ -862,6 +947,34 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
           unawaited(nav.push(route(const OrderHistoryScreen())));
         case WebAppPage.account:
           unawaited(nav.push(route(const MyPageScreen())));
+        case WebAppPage.feed:
+          unawaited(nav.push(route(const SocialFeedScreen())));
+        case WebAppPage.socialWork:
+          unawaited(
+            nav.push(route(SocialWorkDetailScreen(workId: target.id!))),
+          );
+        case WebAppPage.socialProfile:
+          unawaited(nav.push(route(SocialProfileScreen(userId: target.id!))));
+        case WebAppPage.myProfile:
+          unawaited(nav.push(route(const SocialProfileScreen())));
+        case WebAppPage.attendance:
+          unawaited(nav.push(route(const AttendanceScreen())));
+        case WebAppPage.moments:
+          unawaited(nav.push(route(const MomentsDestination())));
+        case WebAppPage.referral:
+          unawaited(nav.push(route(ReferralScreen(initialCode: target.id))));
+        case WebAppPage.socialManage:
+          unawaited(nav.push(route(const SocialWorksManageScreen())));
+        case WebAppPage.socialPublish:
+          final sourceAlbum = target.id == null
+              ? null
+              : await ref.read(albumRepositoryProvider).fetchAlbum(target.id!);
+          if (!mounted ||
+              revision != _webNavigationRevision ||
+              Supabase.instance.client.auth.currentUser?.id != owner) {
+            return;
+          }
+          unawaited(nav.push(route(SocialPublishScreen(album: sourceAlbum))));
         case WebAppPage.designs:
         case WebAppPage.materials:
           if (owner == null) {
@@ -876,7 +989,7 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
             unawaited(
               nav
                   .push<void>(
-                    MaterialPageRoute<void>(
+                    WebAppPageRoute<void>(
                       settings: WebAppRouteSettings(
                         target,
                         controller: catalogLocation,
@@ -1124,6 +1237,7 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
         themeMode: ref.watch(webThemeModeProvider),
         scaffoldMessengerKey: _messengerKey,
         routerDelegate: _webRouter!,
+        routeInformationProvider: _webRouteInformationProvider!,
         routeInformationParser: const WebAppRouteParser(),
         builder: (context, child) {
           syncWebDocumentTheme(Theme.of(context).brightness == Brightness.dark);
@@ -1133,10 +1247,13 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
               onNavigate: (section) =>
                   _webRouter!.requestLocation(switch (section) {
                     WebSection.albums => WebAppLocation.albums,
+                    WebSection.moments => WebAppLocation.moments,
+                    WebSection.feed => WebAppLocation.feed,
                     WebSection.create => WebAppLocation.create,
                     WebSection.designs => WebAppLocation.designs,
                     WebSection.orders => WebAppLocation.orders,
                     WebSection.account => WebAppLocation.account,
+                    WebSection.myProfile => WebAppLocation.myProfile,
                   }),
               onNotifications: () =>
                   _webRouter!.requestLocation(WebAppLocation.notifications),

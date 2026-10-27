@@ -6,10 +6,12 @@ import 'package:flutter/material.dart';
 import '../../../../shared/widgets/editor_modal_scope.dart';
 import '../../data/album_creation_draft_store.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import '../../domain/entities/layer.dart';
 import '../../domain/entities/album_save_progress.dart';
 import '../../domain/entities/album_creation_draft.dart';
+import '../../domain/entities/album_edit_failure.dart';
+import '../providers/album_edit_session_provider.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/theme/snapfit_design_tokens.dart' show SnapFitRadius;
@@ -30,6 +32,8 @@ import '../widgets/editor/page_editor_canvas.dart';
 import '../widgets/reader/album_reader_page_content.dart';
 import '../widgets/editor/page_list_selector.dart';
 import '../widgets/editor/editor_bottom_menu.dart';
+import '../widgets/editor/editor_context_dock.dart';
+import '../widgets/editor/editor_overlap_picker.dart';
 import '../widgets/editor/editor_keyboard_shortcuts.dart';
 import '../widgets/editor/decorate_panel.dart';
 import '../widgets/editor/edit_cover.dart';
@@ -49,6 +53,9 @@ import '../widgets/web/web_layer_transform_inspector.dart';
 import '../widgets/web/web_editor_tool_dialog.dart';
 import '../../data/api/storage_service.dart';
 import '../utils/album_save_error_message.dart';
+import '../utils/album_progress.dart';
+import '../utils/saved_album_experience.dart';
+import 'album_saved_experience_screen.dart';
 import '../../../point_shop/data/point_shop_provider.dart';
 
 class _PageEditorEntranceReveal extends StatelessWidget {
@@ -129,8 +136,11 @@ class _PageEditorPageTurnReveal extends StatelessWidget {
                 decoration: BoxDecoration(
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(
-                        (0.16 * (1 - t) + 0.045 * settlePulse).clamp(0.0, 0.18),
+                      color: Colors.black.withValues(
+                        alpha: (0.16 * (1 - t) + 0.045 * settlePulse).clamp(
+                          0.0,
+                          0.18,
+                        ),
                       ),
                       blurRadius: 18 + 10 * (1 - t) + 8 * settlePulse,
                       offset: Offset(0, 8 + 6 * (1 - t) + 3 * settlePulse),
@@ -216,6 +226,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
   AlbumEditCheckpoint? _entryCheckpoint;
   bool _exitPromptOpen = false;
   Timer? _editorHintTimer;
+  Timer? _remoteCheckTimer;
   int? _lastSyncedPageIndex;
   int? _initialSelectionPageIndex;
   String? _pendingInitialSelectedLayerId;
@@ -235,6 +246,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _editorHintTimer?.cancel();
+    _remoteCheckTimer?.cancel();
     _interaction.dispose();
     super.dispose();
   }
@@ -272,6 +284,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
       onLayerTap: (layer) => setState(() {}),
       onTapPlaceholder: (layer) => _openGalleryForPlaceholder(layer),
       enableWebTransforms: kIsWeb,
+      enableOverlapSelection: !kIsWeb,
     );
     _layerBuilder = LayerBuilder(_interaction, () => _canvasSize);
     _toolbarActionHandler = ToolbarActionHandler(context, ref);
@@ -287,6 +300,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
         ),
       );
       _entryCheckpoint = vm.captureEditCheckpoint();
+      _startRemoteChecks();
       final maxIdx = vm.pages.length - 1;
       final pageIndex = idx.clamp(0, maxIdx > 0 ? maxIdx : 0);
       vm.goToPage(pageIndex);
@@ -363,6 +377,11 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _startRemoteChecks();
+    } else {
+      _remoteCheckTimer?.cancel();
+    }
     if ((state == AppLifecycleState.inactive ||
             state == AppLifecycleState.paused) &&
         _hasCreationDraft &&
@@ -371,6 +390,23 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
         !_exitPromptOpen) {
       unawaited(_saveCreationEditorDraft(notify: false));
     }
+  }
+
+  void _startRemoteChecks() {
+    _remoteCheckTimer?.cancel();
+    if (!mounted) return;
+    void check() {
+      if (mounted)
+        unawaited(
+          ref.read(albumEditorViewModelProvider.notifier).checkRemoteAlbum(),
+        );
+    }
+
+    check();
+    _remoteCheckTimer = Timer.periodic(
+      const Duration(seconds: 15),
+      (_) => check(),
+    );
   }
 
   Future<bool> _saveCreationEditorDraft({
@@ -405,6 +441,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
                 ? Size(300, 300 / cover.ratio)
                 : checkpoint.innerCanvas,
             theme: checkpoint.theme,
+            sourceUpdatedAt: checkpoint.sourceAlbum?.updatedAt,
+            sourceOwnerId: checkpoint.sourceAlbum?.userId,
+            sourceMemberRole: checkpoint.sourceAlbum?.memberRole,
           );
     final store = ref.read(albumCreationDraftStoreProvider);
     setState(() {
@@ -459,6 +498,19 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
     // A pointer transform commits on pointer-up. Consume the save shortcut
     // without saving an older document while the user is still dragging.
     if (_isSaving || (kIsWeb && _interaction.isInteractingNow)) return;
+    if (!vm.editingAllowed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(const AlbumEditAccessRevoked().message)),
+      );
+      return;
+    }
+    final session = vm.editSessionIdentity;
+    final actor = ref.read(albumEditorOwnerReaderProvider)();
+    final albumBeforeSave = vm.album;
+    bool current() =>
+        mounted &&
+        identical(session, vm.editSessionIdentity) &&
+        ref.read(albumEditorOwnerReaderProvider)() == actor;
 
     try {
       setState(() {
@@ -475,7 +527,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
 
       if (_hasCreationDraft) {
         await _saveCreationEditorDraft(notify: false);
-        if (!mounted) return;
+        if (!current()) return;
       }
 
       // 2. 서버 저장
@@ -485,18 +537,26 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
       } catch (e) {
         debugPrint('Failed to capture cover in Screen: $e');
       }
+      if (!current()) return;
 
       final isSuccess = await vm.saveFullAlbum(
         coverImageBytes: coverCapture,
         onProgress: (value) {
-          if (mounted) setState(() => _saveStatus = value);
+          if (current()) setState(() => _saveStatus = value);
         },
       );
+      if (!current()) return;
       if (!isSuccess) {
         throw vm.lastSaveError ?? StateError('앨범 저장에 실패했습니다.');
       }
 
       if (context.mounted && isSuccess) {
+        if (vm.hasUnsavedChanges) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('저장 중 새 편집이 있어요. 남은 변경 내용도 저장해 주세요.')),
+          );
+          return;
+        }
         var savedMessage = '앨범을 저장했어요.';
         if (widget.creationDraftOwner != null &&
             widget.creationDraftId != null) {
@@ -510,7 +570,28 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
             savedMessage = '앨범은 저장했지만 임시 저장은 정리하지 못했어요.';
           }
         }
-        if (!mounted) return;
+        if (!current()) return;
+        final savedAlbum = vm.album;
+        var previouslyComplete = false;
+        var nowComplete = false;
+        if (savedAlbum != null && !widget.returnToPreviousOnSave) {
+          final requests = [
+            if (albumBeforeSave != null)
+              AlbumProgressLoader.request(albumBeforeSave),
+            AlbumProgressLoader.request(savedAlbum),
+          ];
+          try {
+            final progress = await Future.wait(requests.map((r) => r.result));
+            previouslyComplete =
+                albumBeforeSave != null && progress.first?.isCompleted == true;
+            nowComplete = progress.last?.isCompleted == true;
+          } finally {
+            for (final request in requests) {
+              request.cancel();
+            }
+          }
+          if (!current()) return;
+        }
         // 3. 홈 화면 갱신 및 이동
         // Refresh when observed, without holding navigation on a network request.
         ref.invalidate(homeViewModelProvider);
@@ -518,14 +599,74 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
         // popUntil 이전에 캡처해야 한다. popUntil 이후 context는 deactivated 상태가
         // 되어 SnackBar 애니메이션 완료 시점에 ancestor 조회가 실패한다.
         final messenger = ScaffoldMessenger.of(context);
+        final navigator = Navigator.of(context);
+        final container = ProviderScope.containerOf(context, listen: false);
+        final savedId = savedAlbum?.id;
+        final celebrate = shouldCelebrateAlbumSave(
+          creationFlow: widget.creationDraftId != null,
+          previouslyComplete: previouslyComplete,
+          nowComplete: nowComplete,
+          returnToPrevious: widget.returnToPreviousOnSave,
+        );
+        void openSavedAlbum() {
+          if (!navigator.mounted ||
+              actor == null ||
+              savedId == null ||
+              savedId <= 0 ||
+              container.read(albumEditorOwnerReaderProvider)() != actor)
+            return;
+          // A snackbar from an old editing session must not open over a new
+          // editor whose local canvas may have changed in the meantime.
+          if (!identical(
+            session,
+            container
+                .read(albumEditorViewModelProvider.notifier)
+                .editSessionIdentity,
+          ))
+            return;
+          navigator.push<void>(
+            MaterialPageRoute<void>(
+              builder: (_) => AlbumSavedExperienceScreen(
+                albumId: savedId,
+                ownerId: actor,
+                reason: nowComplete && !previouslyComplete
+                    ? AlbumSavedReason.completed
+                    : celebrate
+                    ? AlbumSavedReason.firstSave
+                    : AlbumSavedReason.saved,
+              ),
+            ),
+          );
+        }
+
         if (widget.returnToPreviousOnSave && Navigator.canPop(context)) {
           Navigator.pop(context, true);
         } else {
           Navigator.popUntil(context, (route) => route.isFirst);
         }
-        messenger.showSnackBar(SnackBar(content: Text(savedMessage)));
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(savedMessage),
+            action:
+                celebrate ||
+                    widget.returnToPreviousOnSave ||
+                    savedId == null ||
+                    savedId <= 0
+                ? null
+                : SnackBarAction(label: '앨범 보기', onPressed: openSavedAlbum),
+          ),
+        );
+        if (celebrate) {
+          WidgetsBinding.instance.addPostFrameCallback((_) => openSavedAlbum());
+        }
       }
     } catch (e) {
+      if (!current()) return;
+      if (e is AlbumRevisionConflict || e is AlbumRevisionRequired) {
+        setState(() => _isSaving = false);
+        await _confirmReload(vm);
+        return;
+      }
       if (e is StorageQuotaExceededException && context.mounted) {
         setState(() => _isSaving = false);
         await _showQuotaExceededSheet(context);
@@ -639,13 +780,11 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
       routeSettings: editorModalRouteSettings(context),
       builder: (ctx) => AlertDialog(
         backgroundColor: SnapFitColors.surfaceOf(context),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           '페이지 삭제',
           style: TextStyle(
-            fontSize: 18.sp,
+            fontSize: 18,
             fontWeight: FontWeight.w800,
             color: SnapFitColors.textPrimaryOf(context),
           ),
@@ -653,7 +792,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
         content: Text(
           vm.deleteCurrentPageDescription,
           style: TextStyle(
-            fontSize: 14.sp,
+            fontSize: 14,
             height: 1.5,
             color: SnapFitColors.textSecondaryOf(context),
           ),
@@ -688,12 +827,16 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
   @override
   Widget build(BuildContext context) {
     final asyncState = ref.watch(albumEditorViewModelProvider);
+    ref.watch(albumEditSyncStatusProvider);
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     final state = asyncState.value;
     final canUndo = state?.canUndo ?? false;
     final canRedo = state?.canRedo ?? false;
     final viewport = MediaQuery.sizeOf(context);
     final desktopWorkspace = viewport.width >= 1100 && viewport.height >= 600;
+    if (vm.editingAccessRevoked && vm.editingAlbumId != null) {
+      return _readOnlyAfterAccessChange(vm);
+    }
 
     // aspect: 내지 LayoutBuilder에서 canvasH 계산에 사용
     final double aspect = vm.selectedCover.ratio;
@@ -989,6 +1132,37 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
       );
     }
 
+    Widget buildContextDock() => SnapFitFadeIn(
+      key: const Key('pageEditorDockReveal'),
+      delay: const Duration(milliseconds: 140),
+      beginOffset: const Offset(0, 0.055),
+      child: EditorContextDock(
+        currentMode: _currentMode,
+        layers: layers,
+        interaction: _interaction,
+        enabled: !_isSaving,
+        canUndo: canUndo,
+        canRedo: canRedo,
+        onUndo: () {
+          vm.undo();
+          _interaction.resetForPageChange();
+        },
+        onRedo: () {
+          vm.redo();
+          _interaction.resetForPageChange();
+        },
+        onModeChanged: (mode) => _handleModeChange(mode, layers),
+        onAddPhoto: () => _toolbarActionHandler.addPhoto(),
+        onRefresh: () {
+          if (mounted) setState(() {});
+        },
+        onOpenGallery: _openGalleryForPlaceholder,
+        onOpenCrop: (layer) =>
+            editPhotoCrop(context, ref, layer, layerBuilder: _layerBuilder),
+        onOpenDecorate: _openDecorateSheetForLayer,
+      ),
+    );
+
     Widget buildLandscapeLayout() {
       return Row(
         children: [
@@ -1207,7 +1381,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
                           () => _handleModeChange(EditorMode.text, layers),
                         ),
                         desktopTool(
-                          '레이어',
+                          '재배치',
                           Icons.layers_outlined,
                           () => _handleModeChange(EditorMode.layer, layers),
                           selected: mode == EditorMode.layer,
@@ -1491,7 +1665,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
                       unawaited(_toolbarActionHandler.openCoverTheme()),
                   opensProperties: false,
                 ),
-              tool('레이어', Icons.layers_outlined, EditorMode.layer),
+              tool('재배치', Icons.layers_outlined, EditorMode.layer),
               tool('레이아웃', Icons.dashboard_outlined, EditorMode.layout),
               tool('템플릿', Icons.grid_view_outlined, EditorMode.template),
               tool('꾸미기', Icons.interests_outlined, EditorMode.sticker),
@@ -1531,7 +1705,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
       );
     }
 
-    return WebUnsavedWorkGuard(
+    final editor = WebUnsavedWorkGuard(
       hasUnsavedChanges: () =>
           ref.read(albumEditorViewModelProvider.notifier).hasUnsavedChanges,
       child: EditorKeyboardShortcuts(
@@ -1689,29 +1863,26 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
                                       ),
                                     ),
                                   ),
-                                  if (_interaction.selectedLayerId != null)
-                                    Padding(
-                                      padding: const EdgeInsets.fromLTRB(
-                                        12,
-                                        0,
-                                        12,
-                                        8,
-                                      ),
-                                      child: ConstrainedBox(
-                                        constraints: const BoxConstraints(
-                                          maxHeight: 110,
-                                        ),
-                                        child: SingleChildScrollView(
-                                          child: buildLayerActions(),
-                                        ),
-                                      ),
-                                    ),
-                                  buildBottomMenu(),
+                                  buildContextDock(),
                                 ],
                               );
                             },
                           ),
                         ),
+
+                        if (!_isSaving &&
+                            _interaction.overlapLayerIds.length > 1)
+                          Positioned(
+                            top: 90,
+                            left: 12,
+                            right: 12,
+                            child: Center(
+                              child: EditorOverlapPicker(
+                                layers: layers,
+                                interaction: _interaction,
+                              ),
+                            ),
+                          ),
 
                         if (_showEditorHint &&
                             !_isSaving &&
@@ -1737,25 +1908,25 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
                             (state?.backgroundUploadProgress ?? 0) > 0 &&
                             (state?.backgroundUploadProgress ?? 0) < 1)
                           Positioned(
-                            bottom: 80.h,
-                            left: 16.w,
-                            right: 16.w,
+                            bottom: 80,
+                            left: 16,
+                            right: 16,
                             child: Container(
                               padding: EdgeInsets.symmetric(
-                                horizontal: 12.w,
-                                vertical: 8.h,
+                                horizontal: 12,
+                                vertical: 8,
                               ),
                               decoration: BoxDecoration(
                                 color: SnapFitColors.overlayStrongOf(context),
-                                borderRadius: BorderRadius.circular(999.r),
+                                borderRadius: BorderRadius.circular(999),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   SizedBox(
-                                    width: 14.r,
-                                    height: 14.r,
+                                    width: 14,
+                                    height: 14,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
                                       value: state!.backgroundUploadProgress,
@@ -1763,12 +1934,12 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
                                       backgroundColor: Colors.white24,
                                     ),
                                   ),
-                                  SizedBox(width: 8.w),
+                                  SizedBox(width: 8),
                                   Text(
                                     '사진 업로드 중... ${(state.backgroundUploadProgress * 100).toInt()}%',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 12.sp,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w500,
                                       decoration: TextDecoration.none,
                                     ),
@@ -1788,7 +1959,168 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
         ),
       ),
     );
+    if (vm.syncKind == AlbumEditSyncKind.current) return editor;
+    return Column(
+      children: [
+        _syncNotice(vm),
+        Expanded(
+          child: MediaQuery.removePadding(
+            context: context,
+            removeTop: true,
+            child: editor,
+          ),
+        ),
+      ],
+    );
   }
+
+  Widget _syncNotice(AlbumEditorViewModel vm) => Material(
+    color: ExperienceFormStyle.surface(context),
+    child: SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 12,
+          children: [
+            Text(
+              vm.syncKind == AlbumEditSyncKind.offline
+                  ? '연결이 불안정해요. 편집 내용은 유지돼요.'
+                  : '다른 사람이 먼저 저장했어요. 내 편집은 유지돼요.',
+              style: ExperienceFormStyle.text(context, 13),
+            ),
+            TextButton(
+              onPressed: () => vm.syncKind == AlbumEditSyncKind.offline
+                  ? vm.checkRemoteAlbum()
+                  : _confirmReload(vm),
+              child: Text(
+                vm.syncKind == AlbumEditSyncKind.offline ? '다시 확인' : '최신 내용 확인',
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+
+  Future<void> _confirmReload(AlbumEditorViewModel vm) async {
+    final session = vm.editSessionIdentity;
+    final actor = ref.read(albumEditorOwnerReaderProvider)();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      useRootNavigator: false,
+      routeSettings: editorModalRouteSettings(context),
+      builder: (context) => AlertDialog(
+        title: const Text('최신 앨범을 불러올까요?'),
+        content: const Text(
+          '편집한 내용은 아직 이 화면에 유지돼요. 최신 앨범을 불러오면 지금 편집한 내용과 되돌리기 기록은 사라져요.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('편집 유지'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('버리고 불러오기'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted ||
+        confirmed != true ||
+        !identical(session, vm.editSessionIdentity) ||
+        ref.read(albumEditorOwnerReaderProvider)() != actor)
+      return;
+    if (await vm.reloadAlbumDiscardingLocalChanges()) {
+      if (!mounted || ref.read(albumEditorOwnerReaderProvider)() != actor)
+        return;
+      _entryCheckpoint = vm.captureEditCheckpoint();
+      _interaction.resetForPageChange();
+      setState(() {
+        _lastSyncedPageIndex = null;
+        _lastLayerSyncSignature = null;
+        _currentMode = EditorMode.none;
+      });
+    } else if (mounted &&
+        ref.read(albumEditorOwnerReaderProvider)() == actor &&
+        identical(session, vm.editSessionIdentity)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            albumSaveErrorMessage(
+              vm.lastSaveError ?? const AlbumEditAccessRevoked(),
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _readOnlyAfterAccessChange(AlbumEditorViewModel vm) =>
+      WebUnsavedWorkGuard(
+        hasUnsavedChanges: () => vm.hasUnsavedChanges,
+        child: WillPopScope(
+          onWillPop: () => _handleWillPop(vm, vm.layers),
+          child: Scaffold(
+            appBar: AppBar(
+              title: const Text('앨범 편집'),
+              leading: IconButton(
+                tooltip: '편집 마치기',
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () async {
+                  if (await _handleWillPop(vm, vm.layers) && mounted)
+                    Navigator.pop(context);
+                },
+              ),
+            ),
+            body: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Text(
+                    const AlbumEditAccessRevoked().message,
+                    style: ExperienceFormStyle.text(context, 14),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: vm.pages.length,
+                    itemBuilder: (context, index) => Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final page = vm.pages[index];
+                          final width = math.min(640.0, constraints.maxWidth);
+                          return Center(
+                            child: AlbumReaderPageContent(
+                              layers: page.layers,
+                              targetW: width,
+                              targetH: width / vm.selectedCover.ratio,
+                              previewBuilder: _layerBuilder,
+                              baseCanvasSize: Size(
+                                kCoverReferenceWidth,
+                                kCoverReferenceWidth / vm.selectedCover.ratio,
+                              ),
+                              backgroundColor: page.backgroundColor == null
+                                  ? null
+                                  : Color(page.backgroundColor!),
+                              theme: page.isCover ? vm.selectedTheme : null,
+                              flatPresentation: true,
+                              isCover: page.isCover,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
 
   Widget _buildWorkspaceFrame(BuildContext context, {required Widget child}) {
     // The album itself should be the visual object, matching Home/Reader.
@@ -1798,21 +2130,21 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
 
   Widget _buildEditorHint(BuildContext context, {required bool isCover}) {
     return Positioned(
-      top: 104.h,
-      left: 20.w,
-      right: 20.w,
+      top: 104,
+      left: 20,
+      right: 20,
       child: IgnorePointer(
         child: SnapFitFadeIn(
           delay: const Duration(milliseconds: 220),
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-              color: SnapFitColors.surfaceOf(context).withOpacity(0.94),
-              borderRadius: BorderRadius.circular(18.r),
+              color: SnapFitColors.surfaceOf(context).withValues(alpha: 0.94),
+              borderRadius: BorderRadius.circular(18),
               border: Border.all(color: SnapFitColors.overlayLightOf(context)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.10),
+                  color: Colors.black.withValues(alpha: 0.10),
                   blurRadius: 18,
                   offset: const Offset(0, 8),
                 ),
@@ -1821,19 +2153,19 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
             child: Row(
               children: [
                 Container(
-                  width: 34.w,
-                  height: 34.w,
+                  width: 34,
+                  height: 34,
                   decoration: BoxDecoration(
                     color: const Color(0xFFF1E1CB),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.touch_app_outlined,
-                    size: 18.sp,
+                    size: 18,
                     color: const Color(0xFF8F6846),
                   ),
                 ),
-                SizedBox(width: 10.w),
+                SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     isCover
@@ -1841,7 +2173,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
                         : '사진·레이아웃·템플릿·스티커·배경을 아래에서 바로 조정해요.',
                     style: TextStyle(
                       color: SnapFitColors.textSecondaryOf(context),
-                      fontSize: 12.sp,
+                      fontSize: 12,
                       fontWeight: FontWeight.w700,
                       height: 1.35,
                       decoration: TextDecoration.none,
@@ -1864,6 +2196,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
     if (!vm.hasUnsavedChanges) return true;
 
     _exitPromptOpen = true;
+    final session = vm.editSessionIdentity;
+    final actor = ref.read(albumEditorOwnerReaderProvider)();
+    final revoked = vm.editingAccessRevoked;
     try {
       final result = await showDialog<String>(
         context: context,
@@ -1872,13 +2207,32 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
         builder: (ctx) {
           return AlertDialog(
             scrollable: _hasCreationDraft,
-            title: Text(_hasCreationDraft ? '편집을 마칠까요?' : '변경 내용을 저장할까요?'),
+            title: Text(
+              revoked
+                  ? '편집을 마칠까요?'
+                  : _hasCreationDraft
+                  ? '편집을 마칠까요?'
+                  : '변경 내용을 저장할까요?',
+            ),
             content: Text(
-              _hasCreationDraft
+              revoked
+                  ? '편집 권한이 바뀌어 앨범에 저장할 수 없어요. 나가면 이 화면의 편집 내용은 사라져요.'
+                  : _hasCreationDraft
                   ? '임시 저장은 이 기기에 남아요.\n앨범에는 저장 후 반영돼요.'
                   : '나가기 전에 편집한 내용을 저장하시겠어요?',
             ),
-            actions: _hasCreationDraft
+            actions: revoked
+                ? [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, 'cancel'),
+                      child: const Text('편집 유지'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, 'discard'),
+                      child: const Text('버리고 나가기'),
+                    ),
+                  ]
+                : _hasCreationDraft
                 ? [_creationExitActions(ctx)]
                 : [
                     TextButton(
@@ -1897,7 +2251,10 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
           );
         },
       );
-      if (!mounted) return false;
+      if (!mounted ||
+          !identical(session, vm.editSessionIdentity) ||
+          ref.read(albumEditorOwnerReaderProvider)() != actor)
+        return false;
 
       if (result == 'draft') {
         return await _saveCreationEditorDraft();
@@ -2023,7 +2380,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
     final title = switch (mode) {
       EditorMode.layout => '레이아웃',
       EditorMode.template => '템플릿',
-      EditorMode.layer => '레이어',
+      EditorMode.layer => '재배치',
       EditorMode.sticker => '스티커',
       EditorMode.backgroundColor => '배경',
       _ => '',
@@ -2059,7 +2416,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
               child: Text(
-                mode == EditorMode.layer ? '레이어 · ${layers.length}' : title,
+                mode == EditorMode.layer ? '재배치 · ${layers.length}' : title,
                 style: TextStyle(
                   color: WebPalette.of(context).ink,
                   fontSize: 13,
@@ -2189,6 +2546,10 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
     // 세로 모드: 커버 편집과 동일하게 모달 바텀시트 사용
     setState(() => _currentMode = mode);
     final editorScope = ProviderScope.containerOf(context, listen: false);
+    final openingVm = ref.read(albumEditorViewModelProvider.notifier);
+    final session = openingVm.editSessionIdentity;
+    final pageId = openingVm.currentPage?.id;
+    final albumId = openingVm.editingAlbumId;
     showModalBottomSheet(
       context: context,
       routeSettings: editorModalRouteSettings(context),
@@ -2202,9 +2563,25 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
           EditorMode.backgroundColor => const DecoratePanel(
             mode: DecorateSheetMode.backgroundColor,
           ),
-          EditorMode.layer => LayerManagerPanel(
-            layers: layers,
-            interaction: _interaction,
+          EditorMode.layer => Consumer(
+            builder: (context, sheetRef, _) {
+              final state = sheetRef.watch(albumEditorViewModelProvider).value;
+              final vm = sheetRef.read(albumEditorViewModelProvider.notifier);
+              if (!identical(vm.editSessionIdentity, session) ||
+                  vm.currentPage?.id != pageId ||
+                  vm.editingAlbumId != albumId) {
+                return const SafeArea(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Text('편집할 페이지가 변경됐어요. 다시 열어주세요.'),
+                  ),
+                );
+              }
+              return LayerManagerPanel(
+                layers: state?.layers ?? const [],
+                interaction: _interaction,
+              );
+            },
           ),
           EditorMode.layout => const TemplateSelectionPanel(title: '레이아웃'),
           EditorMode.template => const DesignTemplatePanel(closeOnApply: false),
@@ -2311,7 +2688,7 @@ class _InlineEditorAtelierPanel extends StatelessWidget {
               Divider(
                 height: 1,
                 thickness: 1,
-                color: borderColor.withOpacity(0.78),
+                color: borderColor.withValues(alpha: 0.78),
               ),
               Expanded(
                 child: AnimatedSwitcher(

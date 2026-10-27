@@ -41,6 +41,7 @@ class BookFlipPageRasterizer extends StatefulWidget {
     required this.logicalSize,
     required this.onCaptured,
     this.pixelRatio = 1.0,
+    this.preparePage,
     this.cover = const SizedBox.expand(),
     this.onError,
     super.key,
@@ -66,6 +67,10 @@ class BookFlipPageRasterizer extends StatefulWidget {
   /// (or more) for crisp pages on high-density screens.
   final double pixelRatio;
 
+  /// Resolve asynchronous artwork before freezing a page. Only one page is
+  /// prepared at a time; a fresh painted frame follows completion.
+  final Future<void> Function(BuildContext context, int pageIndex)? preparePage;
+
   /// Painted on top of the (hidden) capture layer while rasterising — typically
   /// the loading view, so the user never sees the pages being captured.
   final Widget cover;
@@ -74,34 +79,104 @@ class BookFlipPageRasterizer extends StatefulWidget {
   State<BookFlipPageRasterizer> createState() => _BookFlipPageRasterizerState();
 }
 
-class _BookFlipPageRasterizerState extends State<BookFlipPageRasterizer> {
+/// A host can stop preparing a page when it becomes hidden. The same page is
+/// prepared again on resume, so a partial preparation is never captured as done.
+class BookFlipPreparationPaused implements Exception {
+  const BookFlipPreparationPaused();
+}
+
+class _BookFlipPageRasterizerState extends State<BookFlipPageRasterizer>
+    with WidgetsBindingObserver {
   final GlobalKey _pageKey = GlobalKey();
   final List<ui.Image> _images = <ui.Image>[];
   int _pageIndex = 0;
   bool _captured = false;
+  bool _preparing = false;
+  bool _rasterizing = false;
+  int? _preparedPage;
+
+  bool get _active {
+    // Keep the local package's Flutter 3.22 compatibility.
+    // ignore: deprecated_member_use
+    final lifecycle = WidgetsBinding.instance.lifecycleState;
+    return TickerMode.of(context) &&
+        (lifecycle == null || lifecycle == AppLifecycleState.resumed);
+  }
+
+  void _scheduleCapture([int attempt = 0]) {
+    WidgetsBinding.instance.addPostFrameCallback((_) => _capture(attempt));
+    WidgetsBinding.instance.ensureVisualUpdate();
+  }
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Capture AFTER the first frame is painted (post-frame), so every boundary's
     // layer exists. A handful of retries covers the rare not-yet-laid-out frame.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _capture());
+    _scheduleCapture();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_active) _scheduleCapture();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!mounted) return;
+    setState(() {});
+    if (state == AppLifecycleState.resumed) _scheduleCapture();
   }
 
   Future<void> _capture([int attempt = 0]) async {
-    if (_captured || !mounted) return;
+    if (_captured || _preparing || _rasterizing || !mounted || !_active) {
+      return;
+    }
+    if (_images.length > _pageIndex) {
+      _advanceCapturedPage();
+      return;
+    }
+    if (widget.preparePage != null && _preparedPage != _pageIndex) {
+      _preparing = true;
+      try {
+        await widget.preparePage!(context, _pageIndex);
+      } on BookFlipPreparationPaused {
+        // Dependencies/lifecycle schedule resume. If visibility changed twice
+        // during the await, resume now rather than losing that notification.
+        if (mounted && _active) _scheduleCapture();
+        return;
+      } on Object catch (error, stack) {
+        if (!mounted) return;
+        _captured = true;
+        for (final image in _images) {
+          image.dispose();
+        }
+        _images.clear();
+        if (widget.onError != null) {
+          widget.onError!(error, stack);
+          return;
+        }
+        Error.throwWithStackTrace(error, stack);
+      } finally {
+        _preparing = false;
+      }
+      if (!mounted) return;
+      _preparedPage = _pageIndex;
+      _scheduleCapture();
+      return;
+    }
     final object = _pageKey.currentContext?.findRenderObject();
     if (object is! RenderRepaintBoundary) {
       if (attempt < 12) {
-        WidgetsBinding.instance
-            .addPostFrameCallback((_) => _capture(attempt + 1));
+        _scheduleCapture(attempt + 1);
       }
       return;
     }
     if (object.debugNeedsPaint) {
       if (attempt < 30) {
-        WidgetsBinding.instance
-            .addPostFrameCallback((_) => _capture(attempt + 1));
+        _scheduleCapture(attempt + 1);
       } else {
         widget.onError?.call(
           StateError(
@@ -113,8 +188,11 @@ class _BookFlipPageRasterizerState extends State<BookFlipPageRasterizer> {
     }
 
     try {
+      _rasterizing = true;
       _images.add(await object.toImage(pixelRatio: widget.pixelRatio));
     } on Object catch (error, stack) {
+      if (!mounted || !_active) return;
+      _captured = true;
       for (final image in _images) {
         image.dispose(); // never leak a partial capture
       }
@@ -125,6 +203,8 @@ class _BookFlipPageRasterizerState extends State<BookFlipPageRasterizer> {
         return;
       }
       rethrow;
+    } finally {
+      _rasterizing = false;
     }
     if (!mounted) {
       for (final image in _images) {
@@ -134,9 +214,16 @@ class _BookFlipPageRasterizerState extends State<BookFlipPageRasterizer> {
       return;
     }
 
+    // A screenshot already in flight may finish after the route is covered.
+    // Keep it, but don't mount the next photo page until the route resumes.
+    if (!_active) return;
+    _advanceCapturedPage();
+  }
+
+  void _advanceCapturedPage() {
     if (_images.length < widget.pages.length) {
       setState(() => _pageIndex += 1);
-      WidgetsBinding.instance.addPostFrameCallback((_) => _capture());
+      _scheduleCapture();
       return;
     }
 
@@ -147,6 +234,7 @@ class _BookFlipPageRasterizerState extends State<BookFlipPageRasterizer> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     for (final image in _images) {
       image.dispose();
     }
@@ -156,6 +244,9 @@ class _BookFlipPageRasterizerState extends State<BookFlipPageRasterizer> {
 
   @override
   Widget build(BuildContext context) {
+    // Offstage routes still build. Mounting the next hidden page alone could
+    // start image downloads even before preparePage gets a chance to pause.
+    if (!_active) return SizedBox.expand(child: widget.cover);
     final direction = Directionality.maybeOf(context) ?? TextDirection.ltr;
     final size = widget.logicalSize;
     return Stack(

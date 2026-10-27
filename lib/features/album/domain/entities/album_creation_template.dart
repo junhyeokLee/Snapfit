@@ -15,6 +15,7 @@ class AlbumCreationTemplate {
   final Map<String, Size> variantCanvasSizes;
   final Size? pagesCanvasSize;
   final bool preserveTypography;
+  final String? sourceTemplateProductKey;
 
   const AlbumCreationTemplate({
     required this.title,
@@ -26,16 +27,13 @@ class AlbumCreationTemplate {
     this.variantCanvasSizes = const {},
     this.pagesCanvasSize,
     this.preserveTypography = false,
+    this.sourceTemplateProductKey,
   });
 
   static String variantKey(CoverSize cover) =>
       cover.productId ?? aspectKey(cover);
 
-  static String aspectKey(CoverSize cover) => cover.ratio < .95
-      ? 'portrait'
-      : cover.ratio > 1.05
-      ? 'landscape'
-      : 'square';
+  static String aspectKey(CoverSize cover) => templateVariantForCover(cover);
 
   static List<List<LayerModel>> preparePages(
     List<List<LayerModel>> pages, {
@@ -57,6 +55,9 @@ class AlbumCreationTemplate {
           (page) => page
               .map(
                 (layer) => layer.copyWith(
+                  isTemplateContent: clearSamplePhotos
+                      ? true
+                      : layer.isTemplateContent,
                   clearImage:
                       clearSamplePhotos && layer.type == LayerType.image,
                   position: layer.position * scale + origin,

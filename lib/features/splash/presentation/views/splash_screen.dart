@@ -7,6 +7,8 @@ import '../../../../core/navigation/app_root_route_observer.dart';
 import '../../../auth/data/dto/auth_response.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../../../auth/presentation/views/auth_gate.dart';
+import '../../../onboarding/presentation/app_introduction_screen.dart';
+import '../../../onboarding/presentation/first_visit_controller.dart';
 import '../../../../shared/web/web_design.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -23,12 +25,25 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   late final ProviderSubscription<AsyncValue<UserInfo?>> _authSub;
   bool _isExiting = false;
   bool _hasNavigated = false;
+  Future<FirstVisitProgress>? _firstVisit;
 
   @override
   void initState() {
     super.initState();
     ScreenLogger.enter('SplashScreen', '앱 초기 로딩 · 인증 상태 확인 후 Login/Home 분기');
     _startedAt = DateTime.now();
+    if (!kIsWeb) {
+      _firstVisit = ref.read(firstVisitProvider.future);
+      _firstVisit!.then(
+        (progress) {
+          // A first-time introduction needs no profile or album response.
+          if (mounted && !progress.introductionSeen) _startExit();
+        },
+        onError: (Object _) {
+          // The scope can be disposed while a device read is still pending.
+        },
+      );
+    }
 
     _authSub = ref.listenManual<AsyncValue<UserInfo?>>(authViewModelProvider, (
       previous,
@@ -59,12 +74,27 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       await Future.delayed(remaining);
     }
     if (!mounted) return;
+    final showIntroduction = !kIsWeb && !(await _firstVisit!).introductionSeen;
+    if (!mounted) return;
     _hasNavigated = true;
     Navigator.of(context).pushReplacement(
       PageRouteBuilder<void>(
-        settings: const AppRootRouteSettings(),
+        // Deep links wait for AuthGate, not for the introductory route.
+        settings: showIntroduction
+            ? const RouteSettings(name: '/introduction')
+            : const AppRootRouteSettings(),
         transitionDuration: kIsWeb ? Duration.zero : _fadeDuration,
-        pageBuilder: (_, __, ___) => const AuthGate(),
+        pageBuilder: (introContext, _, __) => showIntroduction
+            ? AppIntroductionScreen(
+                firstVisit: true,
+                onFinished: () => Navigator.of(introContext).pushReplacement(
+                  MaterialPageRoute<void>(
+                    settings: const AppRootRouteSettings(),
+                    builder: (_) => const AuthGate(),
+                  ),
+                ),
+              )
+            : const AuthGate(),
         transitionsBuilder: (_, animation, __, child) => FadeTransition(
           opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
           child: child,

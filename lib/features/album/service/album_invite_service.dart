@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/api/album_provider.dart';
 import 'kakao_share_service.dart';
+import 'album_collaboration_session.dart';
 
 typedef KakaoInviteShare =
     Future<bool> Function({
@@ -75,6 +76,9 @@ class AlbumInviteService {
     required BuildContext context,
   }) async {
     if (!context.mounted) return false;
+    final actor = ref.read(albumCollaborationActorProvider);
+    bool current() =>
+        context.mounted && ref.read(albumCollaborationActorProvider) == actor;
     final share = ref.read(kakaoInviteShareProvider);
     try {
       var resolvedInviteLink = inviteLink;
@@ -90,7 +94,7 @@ class AlbumInviteService {
         resolvedInviteLink = inviteResponse.link;
       }
       resolvedInviteLink = normalizeInviteLink(resolvedInviteLink);
-      if (!context.mounted) return false;
+      if (!current()) return false;
 
       var success = false;
       try {
@@ -106,22 +110,22 @@ class AlbumInviteService {
       }
 
       if (!success) {
-        if (context.mounted) {
+        if (current()) {
           try {
             await Clipboard.setData(ClipboardData(text: resolvedInviteLink));
           } catch (_) {
-            if (!context.mounted) return false;
+            if (!current()) return false;
             _showMessage(context, '공유와 복사를 완료하지 못했어요. 다시 시도해주세요.');
             return false;
           }
-          if (!context.mounted) return false;
+          if (!current()) return false;
           _showMessage(context, '카카오톡 공유를 열지 못해 초대 링크를 복사했어요.');
         }
       }
 
-      return success;
+      return current() && success;
     } catch (e) {
-      if (context.mounted) {
+      if (current()) {
         _showMessage(context, inviteErrorMessage(e));
       }
       return false;
@@ -141,6 +145,9 @@ class AlbumInviteService {
     required BuildContext context,
   }) async {
     if (!context.mounted) return null;
+    final actor = ref.read(albumCollaborationActorProvider);
+    bool current() =>
+        context.mounted && ref.read(albumCollaborationActorProvider) == actor;
     try {
       final memberRepository = ref.read(albumMemberRepositoryProvider);
 
@@ -154,16 +161,16 @@ class AlbumInviteService {
       }
 
       final link = normalizeInviteLink(inviteResponse.link);
-      if (!context.mounted) return null;
+      if (!current()) return null;
       await Clipboard.setData(ClipboardData(text: link));
 
-      if (context.mounted) {
+      if (current()) {
         _showMessage(context, '초대 링크가 클립보드에 복사되었습니다.');
       }
 
-      return link;
+      return current() ? link : null;
     } catch (e) {
-      if (context.mounted) {
+      if (current()) {
         _showMessage(context, inviteErrorMessage(e));
       }
       return null;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../shared/widgets/album_stage_style.dart';
 import '../../../../../shared/web/web_design.dart';
@@ -12,6 +12,7 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
   final VoidCallback? onDelete; // null이면 메뉴에서 숨김 처리
   final VoidCallback? onInvite; // null이면 메뉴에서 숨김 처리
   final VoidCallback? onDetail; // null이면 메뉴에서 숨김 처리
+  final VoidCallback? onPublish;
   final bool compact;
 
   const AlbumReaderMoreOptionsSheet({
@@ -21,6 +22,7 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
     this.onDelete,
     this.onInvite,
     this.onDetail,
+    this.onPublish,
     this.compact = false,
   });
 
@@ -84,6 +86,8 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
               Divider(height: 1, color: WebPalette.of(context).line),
               if (onDetail != null) action('페이지 상세', Icons.zoom_in, onDetail!),
               action('앨범 편집', Icons.edit_outlined, onEdit),
+              if (onPublish != null)
+                action('피드에 작품 공개', Icons.public_outlined, onPublish!),
               if (onInvite != null)
                 action('멤버 초대', Icons.group_add_outlined, onInvite!),
               action('책으로 만들기', Icons.auto_stories_outlined, onConfirm),
@@ -104,24 +108,26 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
     }
     final media = MediaQuery.of(context);
     final maxSheetHeight = media.size.height * (compact ? 0.72 : 0.82);
-    final radius = compact ? 16.0 : 24.r;
+    final double radius = compact ? 16.0 : 24.0;
     return Container(
       margin: compact
           ? EdgeInsets.zero
-          : EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
+          : EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       constraints: BoxConstraints(maxHeight: maxSheetHeight),
       decoration: BoxDecoration(
         color: SnapFitColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(radius),
         border: compact
             ? Border.all(
-                color: SnapFitColors.textMutedOf(context).withOpacity(0.10),
+                color: SnapFitColors.textMutedOf(
+                  context,
+                ).withValues(alpha: 0.10),
               )
             : null,
         boxShadow: compact
             ? [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.16),
+                  color: Colors.black.withValues(alpha: 0.16),
                   blurRadius: 28,
                   offset: const Offset(0, 14),
                 ),
@@ -140,16 +146,18 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
               if (!compact) ...[
                 const SizedBox(height: 6),
                 Container(
-                  width: 36.w,
-                  height: 4.h,
+                  width: 36,
+                  height: 4,
                   decoration: BoxDecoration(
-                    color: SnapFitColors.textMutedOf(context).withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(2.r),
+                    color: SnapFitColors.textMutedOf(
+                      context,
+                    ).withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                SizedBox(height: 20.h),
+                SizedBox(height: 20),
               ] else
-                SizedBox(height: 8.h),
+                SizedBox(height: 8),
 
               // 상세보기 (onDetail이 전달되었을 때만 노출)
               if (onDetail != null) ...[
@@ -161,9 +169,11 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
                 ),
                 Divider(
                   height: 1,
-                  color: SnapFitColors.textMutedOf(context).withOpacity(0.1),
-                  indent: 20.w,
-                  endIndent: 20.w,
+                  color: SnapFitColors.textMutedOf(
+                    context,
+                  ).withValues(alpha: 0.1),
+                  indent: 20,
+                  endIndent: 20,
                 ),
               ],
 
@@ -177,12 +187,30 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
 
               Divider(
                 height: 1,
-                color: SnapFitColors.textMutedOf(context).withOpacity(0.1),
-                indent: 20.w,
-                endIndent: 20.w,
+                color: SnapFitColors.textMutedOf(
+                  context,
+                ).withValues(alpha: 0.1),
+                indent: 20,
+                endIndent: 20,
               ),
 
               // 초대하기 (onInvite가 전달되었을 때만 노출)
+              if (onPublish != null) ...[
+                _SheetItem(
+                  icon: Icons.public_outlined,
+                  label: '피드에 작품 공개',
+                  onTap: onPublish!,
+                  compact: compact,
+                ),
+                Divider(
+                  height: 1,
+                  color: SnapFitColors.textMutedOf(
+                    context,
+                  ).withValues(alpha: 0.1),
+                  indent: 20,
+                  endIndent: 20,
+                ),
+              ],
               if (onInvite != null) ...[
                 _SheetItem(
                   icon: Icons.group_add_rounded,
@@ -192,9 +220,11 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
                 ),
                 Divider(
                   height: 1,
-                  color: SnapFitColors.textMutedOf(context).withOpacity(0.1),
-                  indent: 20.w,
-                  endIndent: 20.w,
+                  color: SnapFitColors.textMutedOf(
+                    context,
+                  ).withValues(alpha: 0.1),
+                  indent: 20,
+                  endIndent: 20,
                 ),
               ],
 
@@ -211,9 +241,11 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
               if (onDelete != null) ...[
                 Divider(
                   height: 1,
-                  color: SnapFitColors.textMutedOf(context).withOpacity(0.1),
-                  indent: 20.w,
-                  endIndent: 20.w,
+                  color: SnapFitColors.textMutedOf(
+                    context,
+                  ).withValues(alpha: 0.1),
+                  indent: 20,
+                  endIndent: 20,
                 ),
                 _SheetItem(
                   icon: Icons.delete_outline_rounded,
@@ -225,7 +257,7 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
                 ),
               ],
 
-              SizedBox(height: compact ? 6 : 12.h),
+              SizedBox(height: compact ? 6 : 12),
             ],
           ),
         ),
@@ -254,11 +286,11 @@ class _SheetItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = labelColor ?? SnapFitColors.textPrimaryOf(context);
-    final horizontalPadding = compact ? 14.0 : 24.w;
-    final verticalPadding = compact ? 8.5 : 18.h;
-    final iconSize = compact ? 17.5 : 22.sp;
-    final gap = compact ? 10.0 : 16.w;
-    final fontSize = compact ? 13.0 : 16.sp;
+    final double horizontalPadding = compact ? 14.0 : 24.0;
+    final double verticalPadding = compact ? 8.5 : 18.0;
+    final double iconSize = compact ? 17.5 : 22.0;
+    final double gap = compact ? 10.0 : 16.0;
+    final double fontSize = compact ? 13.0 : 16.0;
 
     return InkWell(
       onTap: onTap,
@@ -306,14 +338,14 @@ class AlbumReaderCircleBtn extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 44.w,
-        height: 44.w,
+        width: 44,
+        height: 44,
         decoration: BoxDecoration(
           color: AlbumStageStyle.glass(context),
           shape: BoxShape.circle,
           border: Border.all(color: AlbumStageStyle.line(context)),
         ),
-        child: Icon(icon, color: AlbumStageStyle.ink(context), size: 20.sp),
+        child: Icon(icon, color: AlbumStageStyle.ink(context), size: 20),
       ),
     );
   }

@@ -27,6 +27,7 @@ dependencies:
     sdk: flutter
   flutter_riverpod: 3.2.1
   crypto: 3.0.7
+  archive: 4.2.0
   riverpod_annotation: 4.0.2
   image: ^4.2.0
   image_picker: ^1.2.0
@@ -119,9 +120,44 @@ flutter:
     - assets/sticker/
     - assets/sticker/studio/
     - assets/templates/
+    # Native-font detail snapshots, including the ten club collections.
+    - assets/templates/activity_editions_2026/story-club-run-together/
+    - assets/templates/activity_editions_2026/story-club-hold-circle/
+    - assets/templates/activity_editions_2026/story-club-fairway-friends/
+    - assets/templates/activity_editions_2026/story-club-shuttle-evening/
+    - assets/templates/activity_editions_2026/story-club-pedal-company/
+    - assets/templates/activity_editions_2026/story-sport-pace-study/
+    - assets/templates/activity_editions_2026/story-sport-hold-study/
+    - assets/templates/activity_editions_2026/story-sport-swing-notes/
+    - assets/templates/activity_editions_2026/story-sport-baseline-notes/
+    - assets/templates/activity_editions_2026/story-sport-breath-lanes/
+    # Native detail snapshots include the activity expansion; decoded on demand.
+    - assets/templates/detail_documents/
     - assets/templates/original_editorial/images/
     - assets/templates/atelier_editions_2026/
+    - assets/templates/club_editions_2026/story-club-photowalk/
+    - assets/templates/club_editions_2026/story-club-book-circle/
+    - assets/templates/club_editions_2026/story-club-weekend-trail/
+    - assets/templates/club_editions_2026/story-club-rehearsal-room/
+    - assets/templates/club_editions_2026/story-club-kind-saturday/
+    - assets/templates/club_editions_2026/story-club-year-in-frames/
+    - assets/templates/club_editions_2026/story-club-before-curtain/
+    - assets/templates/club_editions_2026/story-club-same-beat/
+    - assets/templates/club_editions_2026/story-club-campfire-names/
+    - assets/templates/club_editions_2026/story-club-shared-hands/
+    - assets/templates/story_editions_2026/
+    - assets/templates/exclusive_editions_2026/story-first-five/
+    - assets/templates/exclusive_editions_2026/story-water-rhythm/
+    - assets/templates/exclusive_editions_2026/story-one-hold-higher/
+    - assets/templates/exclusive_editions_2026/story-pedal-wind/
+    - assets/templates/exclusive_editions_2026/story-court-afternoon/
+    - assets/templates/exclusive_editions_2026/story-last-classroom/
+    - assets/templates/exclusive_editions_2026/story-first-campus/
+    - assets/templates/exclusive_editions_2026/story-first-commute/
+    - assets/templates/exclusive_editions_2026/story-little-shop/
+    - assets/templates/exclusive_editions_2026/story-learning-season/
     - assets/frame_preview/
+    - assets/onboarding/
     - assets/catalog_thumbnails/
     - assets/templates/premium_wind_atlas/
     - assets/templates/prose_study/

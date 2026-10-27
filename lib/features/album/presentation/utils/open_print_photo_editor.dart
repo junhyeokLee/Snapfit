@@ -16,8 +16,10 @@ import '../../printing/print_album_document.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import '../viewmodels/cover_view_model.dart';
 import '../viewmodels/home_view_model.dart';
+import '../providers/album_edit_session_provider.dart';
 import '../views/page_editor_screen.dart';
 import 'print_photo_issue.dart';
+import '../../../../core/utils/context_extensions.dart';
 
 class PrintPhotoEditUnavailable implements Exception {
   const PrintPhotoEditUnavailable(this.message);
@@ -62,12 +64,6 @@ class PrintPhotoEditSession {
           (album.memberRole == null && album.userId != owner)) {
         throw const PrintPhotoEditUnavailable('이 앨범의 사진 수정 권한을 확인할 수 없어요.');
       }
-      final lockedBy = album.lockedById;
-      if (lockedBy != null && lockedBy.isNotEmpty && lockedBy != owner) {
-        throw const PrintPhotoEditUnavailable(
-          '앨범이 다른 사용자에게 잠겨 있어요. 잠시 후 다시 시도해 주세요.',
-        );
-      }
     }
 
     void checkSnapshot(Map<String, dynamic> snapshot) {
@@ -98,42 +94,27 @@ class PrintPhotoEditSession {
     var album = await repository.fetchAlbum('$albumId');
     ensureCurrent();
     checkAlbum(album);
-    var snapshot = await fetchSnapshot(albumId);
+    final snapshot = await fetchSnapshot(albumId);
     ensureCurrent();
     checkSnapshot(snapshot);
-    var acquired = false;
-    try {
-      // A reader can already hold this account's lock. Do not release that
-      // outer route's lock when this nested correction finishes.
-      if (album.lockedById != owner) {
-        await repository.lockAlbum(albumId);
-        acquired = true;
-        ensureCurrent();
-        album = await repository.fetchAlbum('$albumId');
-        ensureCurrent();
-        checkAlbum(album);
-        if (album.lockedById != owner) {
-          throw const PrintPhotoEditUnavailable(
-            '앨범 편집 준비를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.',
-          );
-        }
-        snapshot = await fetchSnapshot(albumId);
-        ensureCurrent();
-        checkSnapshot(snapshot);
-      }
-      checkUnsaved();
-      final result = await edit(album, snapshot);
-      ensureCurrent();
-      return result;
-    } finally {
-      if (acquired && currentOwner() == owner) {
-        try {
-          await repository.unlockAlbum(albumId);
-        } catch (_) {
-          debugPrint('Print photo correction: could not release album lock.');
-        }
-      }
+    // Role/revision can change during snapshot retrieval. A stale display lock
+    // neither grants nor denies access; the editor's atomic save is authoritative.
+    album = await repository.fetchAlbum('$albumId');
+    ensureCurrent();
+    checkAlbum(album);
+    checkSnapshot(snapshot);
+    final revision = (snapshot['album'] as Map)['updated_at'];
+    if (revision is! String ||
+        revision.isEmpty ||
+        album.updatedAt != revision) {
+      throw const PrintPhotoEditUnavailable(
+        '앨범 내용이 바뀌었어요. 새 인쇄 검토에서 사진을 다시 선택해 주세요.',
+      );
     }
+    checkUnsaved();
+    final result = await edit(album, snapshot);
+    ensureCurrent();
+    return result;
   }
 }
 
@@ -167,6 +148,7 @@ Album printPhotoEditableAlbum(Album album, Map<String, dynamic> snapshot) {
     ];
   }
   return album.copyWith(
+    updatedAt: row['updated_at'] as String? ?? '',
     title: row['title'] as String? ?? album.title,
     ratio: '${row['ratio']}',
     coverTheme: row['cover_theme'] as String? ?? album.coverTheme,
@@ -255,15 +237,10 @@ Future<bool> openPrintPhotoEditor(
       },
     );
   } on PrintPhotoEditUnavailable catch (error) {
-    if (active())
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.message)));
+    if (active()) context.showSnack(error.message);
   } catch (_) {
     if (active())
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('사진을 수정할 화면을 열지 못했어요. 잠시 후 다시 시도해 주세요.')),
-      );
+      context.showErrorSnack('사진을 수정할 화면을 열지 못했어요. 잠시 후 다시 시도해 주세요.');
   }
   return false;
 }
@@ -285,6 +262,7 @@ class PrintPhotoCorrectionEditor extends StatelessWidget {
   Widget build(BuildContext context) => ProviderScope(
     overrides: [
       albumEditorViewModelProvider.overrideWith(AlbumEditorViewModel.new),
+      albumEditSyncStatusProvider.overrideWith(AlbumEditSyncStatusNotifier.new),
       coverViewModelProvider.overrideWith(CoverViewModel.new),
     ],
     child: _CorrectionNavigator(

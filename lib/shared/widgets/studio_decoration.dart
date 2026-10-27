@@ -12,6 +12,8 @@ import 'keepsake_stationery.dart';
 import 'atelier_composition_paper.dart';
 import 'atelier_layered_paper.dart';
 import 'life_concept_paper.dart';
+import 'story_edition_stationery.dart';
+import '../../core/templates/story_edition_catalog.dart';
 
 Widget? photoCoverShadeForStyle(String? style) {
   if (!photoCoverShadeStyles.contains(style)) return null;
@@ -51,6 +53,9 @@ class StudioDecoration extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (storyMaterialsById.containsKey(spec.id)) {
+      return StoryEditionStationery(id: spec.id);
+    }
     if (spec.assetPath case final String path) {
       if (printImage != null) {
         return RawImage(

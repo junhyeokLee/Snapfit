@@ -6,9 +6,11 @@ import 'package:flutter/material.dart';
 import '../../data/gallery/photo_asset_image_provider.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/utils/text_image_shader.dart';
+import '../../../../core/utils/preview_image_decode.dart';
 import '../../../../core/utils/outline_text_style.dart';
 import '../../../../core/utils/storage_url_resolver.dart';
 import '../../../../shared/snapfit_image.dart';
+import '../../../../shared/photo_preparation.dart';
 import '../../../../shared/widgets/studio_material.dart';
 import '../../../../shared/widgets/photo_crop_viewport.dart';
 import '../../../../shared/widgets/studio_decoration.dart';
@@ -76,7 +78,16 @@ class LayerBuilder {
   /// Null preserves the interactive editor's normal image-loading behavior.
   final Map<String, ui.Image>? printImages;
 
-  LayerBuilder(this.interaction, this.getCoverSize, {this.printImages});
+  /// Small read-only covers opt into bounded decoding. Editors and print
+  /// rendering leave this unset and keep their existing image resolution.
+  final int? previewImageDecodeWidth;
+
+  LayerBuilder(
+    this.interaction,
+    this.getCoverSize, {
+    this.printImages,
+    this.previewImageDecodeWidth,
+  });
 
   /// sticker 계열 decoration을 실제 적용과 동일하게 렌더링하는 공용 빌더.
   /// (DecorateStickerTab 미리보기에서 사용)
@@ -106,6 +117,60 @@ class LayerBuilder {
     bool isCover = false,
     bool wrapSpine = false,
   }) => _buildImageImpl(this, layer, isCover: isCover, wrapSpine: wrapSpine);
+
+  /// Read-only book captures must wait for photo pixels, not just their URL.
+  /// Prepare a bounded batch and stop starting work once the page is removed.
+  Future<void> prepareImages(
+    BuildContext context,
+    List<LayerModel> layers,
+  ) async {
+    final photos = layers
+        .where(
+          (layer) =>
+              layer.type == LayerType.image || layer.type == LayerType.sticker,
+        )
+        .toList();
+    for (var start = 0; start < photos.length; start += 3) {
+      if (!checkPhotoPreparationActive(context)) return;
+      await Future.wait(
+        photos.skip(start).take(3).map((layer) async {
+          if (layer.opacity <= 0) return;
+          final width = _decodeWidthForLayer(this, layer);
+          final sources = _photoSources(layer);
+          if (layer.asset == null) {
+            if (sources.isEmpty) return;
+            await SnapfitImage(
+              urlOrGs: sources.first,
+              fallbackSources: sources.skip(1).toList(growable: false),
+              memCacheWidth: width,
+              automaticStorageRefresh: true,
+            ).prepareImage(context);
+            return;
+          }
+          final provider = ResizeImage.resizeIfNeeded(
+            width,
+            null,
+            photoAssetImageProvider(layer.asset!),
+          );
+          if (!checkPhotoPreparationActive(context)) return;
+          Object? failure;
+          StackTrace? trace;
+          await precacheImage(
+            provider,
+            context,
+            onError: (error, stack) {
+              failure = error;
+              trace = stack;
+            },
+          );
+          if (!checkPhotoPreparationActive(context)) return;
+          if (failure != null) {
+            Error.throwWithStackTrace(failure!, trace ?? StackTrace.current);
+          }
+        }),
+      );
+    }
+  }
 
   /// Non-interactive preview using the canvas's frame and crop rendering.
   Widget buildPhotoFrame(LayerModel layer, Widget photo) =>

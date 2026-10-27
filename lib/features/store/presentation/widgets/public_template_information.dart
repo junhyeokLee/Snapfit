@@ -38,9 +38,25 @@ class PublicTemplateFacts {
   factory PublicTemplateFacts.fromTemplate(PremiumTemplate template) {
     final cached = _factsCache[template];
     if (cached != null) return cached;
+    Map<String, dynamic>? document;
+    try {
+      final raw = jsonDecode(template.templateJson ?? 'null');
+      if (raw is Map<String, dynamic>) document = raw;
+    } on Object {
+      // Optional malformed data stays unknown.
+    }
+    final facts = PublicTemplateFacts.fromDocument(template.id, document);
+    _factsCache[template] = facts;
+    return facts;
+  }
+
+  factory PublicTemplateFacts.fromDocument(
+    int templateId,
+    Map<String, dynamic>? document,
+  ) {
     int? innerPageCount;
     final ratios = <double>[];
-    void readCanvas(Map<dynamic, dynamic> node) {
+    void readCanvas(Map node) {
       final metadata = node['metadata'];
       final width =
           node['designWidth'] ??
@@ -59,52 +75,36 @@ class PublicTemplateFacts {
     }
 
     try {
-      final raw = jsonDecode(template.templateJson ?? 'null');
-      if (raw is Map<String, dynamic>) {
-        final pages = templateDocumentPages(raw);
-        // The detail reader and creation flow treat the first page as a cover.
+      if (document != null) {
+        final pages = templateDocumentPages(document);
         if (pages.isNotEmpty) innerPageCount = pages.length - 1;
-        readCanvas(raw);
-        final variants = raw['variants'];
+        readCanvas(document);
+        final variants = document['variants'];
         final nodes = variants is Map
             ? variants.values
             : variants is List
             ? variants
             : const [];
         for (final node in nodes.whereType<Map>()) {
-          if (templateDocumentPages(
-            Map<String, dynamic>.from(node),
-          ).isNotEmpty) {
+          if (templateDocumentPages(Map<String, dynamic>.from(node)).isNotEmpty)
             readCanvas(node);
-          }
         }
       }
-    } on FormatException {
-      // Unknown metadata stays unknown rather than becoming a guessed size.
-    } on TypeError {
-      // A malformed optional document must not prevent browsing its artwork.
+    } on Object {
+      // Unknown document facts are not an inferred print size.
     }
-    final shapes = <String>{
-      for (final ratio in ratios)
-        if ((ratio - 1).abs() < .01)
-          '정사각형'
-        else if (ratio > 1)
-          '가로형'
-        else
-          '세로형',
-    }.toList(growable: false);
+    final sizes = [
+      for (final size in coverSizes)
+        if (ratios.any((ratio) => (ratio - size.ratio).abs() < .0001)) size,
+    ];
     final facts = PublicTemplateFacts(
       innerPageCount: innerPageCount,
-      designShapes: List.unmodifiable(shapes),
-      printSizes: List.unmodifiable([
-        for (final size in coverSizes)
-          if (ratios.any((ratio) => (ratio - size.ratio).abs() < .01)) size,
-      ]),
+      designShapes: List.unmodifiable({for (final size in sizes) size.name}),
+      printSizes: List.unmodifiable(sizes),
       availablePageCounts: List.unmodifiable(
-        publishedPremiumVolume(template.id)?.pageCounts ?? const [],
+        publishedPremiumVolume(templateId)?.pageCounts ?? const [],
       ),
     );
-    _factsCache[template] = facts;
     return facts;
   }
 
@@ -204,12 +204,17 @@ class PublicCatalogPriceLabel extends ConsumerWidget {
 }
 
 class PublicTemplateInformation extends StatelessWidget {
-  const PublicTemplateInformation({super.key, required this.template});
+  const PublicTemplateInformation({
+    super.key,
+    required this.template,
+    this.facts,
+  });
   final PremiumTemplate template;
+  final PublicTemplateFacts? facts;
 
   @override
   Widget build(BuildContext context) {
-    final facts = PublicTemplateFacts.fromTemplate(template);
+    final facts = this.facts ?? PublicTemplateFacts.fromTemplate(template);
     final colors = Theme.of(context).colorScheme;
     return Container(
       key: const ValueKey('public-template-information'),
@@ -241,12 +246,8 @@ class PublicTemplateInformation extends StatelessWidget {
           Text(
             facts.printSizes.isEmpty
                 ? '같은 비율의 인쇄 규격은 아직 확인되지 않았어요.'
-                : '같은 비율의 인쇄 규격: ${facts.printSizes.map((size) => size.displayName).join(' · ')}',
+                : '제작 가능한 책 크기: ${facts.printSizes.map((size) => size.displayName).join(' · ')}',
           ),
-          if (facts.designShapes.contains('세로형')) ...[
-            const SizedBox(height: 6),
-            const Text('세로형은 화면용 디자인 모양이며 현재 공식 인쇄 규격과 달라요.'),
-          ],
           const SizedBox(height: 14),
           const Text(
             '이용 가능 조건을 충족하면 표지와 내지에 내 사진과 글을 넣어 앨범을 만들 수 있어요. 샘플 사진은 포함되지 않아요.',

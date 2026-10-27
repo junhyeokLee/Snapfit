@@ -9,6 +9,7 @@ import '../../../point_shop/domain/point_shop_known_products.dart';
 import '../../../point_shop/domain/point_shop_product.dart';
 import '../../../point_shop/domain/premium_volume_registration.dart';
 import '../../../point_shop/domain/point_shop_launch_pricing.dart';
+import '../../../../core/utils/context_extensions.dart';
 
 /// UI visibility follows the same app-metadata claim as public.is_admin().
 /// Product writes still require the server's RLS permission on every request.
@@ -69,9 +70,7 @@ class _AdminPointShopManagementScreenState
       ),
     );
     if (saved == true && mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('상품 가격과 판매 상태를 저장했습니다.')));
+      context.showSnack('상품 가격과 판매 상태를 저장했습니다.');
     }
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/widgets/experience_style.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
+import '../../../../core/utils/context_extensions.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/utils/app_error_mapper.dart';
 import '../../data/support_inquiry_repository.dart';
@@ -129,9 +130,7 @@ class _SupportInquiryScreenState extends ConsumerState<SupportInquiryScreen> {
     final subject = _subjectController.text.trim();
     final message = _messageController.text.trim();
     if (subject.isEmpty || message.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('제목과 내용을 모두 입력해주세요.')));
+      context.showSnack('제목과 내용을 모두 입력해주세요.');
       return;
     }
     setState(() {
@@ -150,9 +149,7 @@ class _SupportInquiryScreenState extends ConsumerState<SupportInquiryScreen> {
       setState(() => _sent = true);
       if (kIsWeb && !_webOwnerCurrent) return;
       if (ModalRoute.of(context)?.isCurrent == false) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('문의가 접수되었습니다. 빠르게 답변드릴게요.')));
+      context.showSnack('문의가 접수되었습니다. 빠르게 답변드릴게요.');
       Navigator.of(context).pop();
     } catch (e) {
       if (!mounted || (kIsWeb && !_webOwnerCurrent)) return;
@@ -182,7 +179,6 @@ class _SupportInquiryScreenState extends ConsumerState<SupportInquiryScreen> {
         return CustomerWebPage(
           title: '고객센터',
           eyebrow: 'SUPPORT',
-          showNavigation: false,
           allowBack: !_submitting,
           child: const Center(
             child: Text('로그인 계정이 변경되었어요. 이 화면을 닫고 문의를 다시 작성해주세요.'),
@@ -534,7 +530,6 @@ class _SupportInquiryScreenState extends ConsumerState<SupportInquiryScreen> {
     child: CustomerWebPage(
       title: '고객센터',
       description: '궁금한 내용이나 이용 중 불편했던 점을 남겨주세요.',
-      showNavigation: false,
       allowBack: !_submitting,
       onBack: _close,
       scrollBody: true,

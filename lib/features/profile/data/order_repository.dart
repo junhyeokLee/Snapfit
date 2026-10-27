@@ -9,6 +9,7 @@ import '../../../core/interceptors/token_storage.dart';
 import '../../../core/supabase/supabase_provider.dart';
 import '../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../domain/entities/order_history_item.dart';
+import '../domain/order_visibility_owner.dart';
 import '../domain/print_checkout.dart';
 
 class OrderRepository {
@@ -903,11 +904,25 @@ final myOrderHistoryProvider = FutureProvider<List<OrderHistoryItem>>((
 });
 
 final myOrderSummaryProvider = FutureProvider<OrderSummaryResult>((ref) async {
+  final owner = ref.watch(visibleOrderOwnerProvider);
+  const empty = OrderSummaryResult(
+    paymentPending: 0,
+    paymentCompleted: 0,
+    inProduction: 0,
+    shipping: 0,
+    delivered: 0,
+    canceled: 0,
+    latestUpdatedAt: null,
+  );
+  if (owner == null) return empty;
   try {
-    return await ref
+    final result = await ref
         .read(orderRepositoryProvider)
         .fetchMyOrderSummary()
         .timeout(const Duration(seconds: 8));
+    return ref.mounted && ref.read(visibleOrderOwnerProvider) == owner
+        ? result
+        : empty;
   } catch (_) {
     return const OrderSummaryResult(
       paymentPending: 0,

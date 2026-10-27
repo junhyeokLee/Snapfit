@@ -28,11 +28,21 @@ class _BookPageViewState extends State<BookPageView> {
   @override
   void initState() {
     super.initState();
-    // 시작 시점부터 controller의 값을 가져옴 (안전 처리)
-    if (widget.pageController.hasClients) {
-      _currentPage = widget.pageController.page ?? 0;
-    }
+    _currentPage = widget.pageController.hasClients
+        ? (widget.pageController.page ??
+              widget.pageController.initialPage.toDouble())
+        : widget.pageController.initialPage.toDouble();
     widget.pageController.addListener(_onPageScroll);
+  }
+
+  @override
+  void didUpdateWidget(covariant BookPageView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.pageController == widget.pageController) return;
+    oldWidget.pageController.removeListener(_onPageScroll);
+    widget.pageController.addListener(_onPageScroll);
+    // PageView transfers its existing position to the replacement controller.
+    // Preserve that offset rather than resetting to the new initialPage.
   }
 
   @override

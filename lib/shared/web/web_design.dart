@@ -7,6 +7,8 @@ import '../../core/theme/snapfit_design_tokens.dart';
 import '../../core/navigation/web_app_location.dart';
 import 'web_theme_controller.dart';
 
+part 'web_shell.dart';
+
 /// Desktop tools and confirmations share a centered, viewport-bounded frame.
 /// The caller supplies the existing tool and keeps ownership of its result.
 Future<T?> showWebAwareDialog<T>({
@@ -108,17 +110,17 @@ class WebPalette extends ThemeExtension<WebPalette> {
       warningSurface;
 
   static const light = WebPalette(
-    background: SnapFitColors.surfaceLight,
+    background: Color(0xFFF7F9FA),
     surface: SnapFitColors.pureWhite,
-    ink: SnapFitColors.deepCharcoal,
-    muted: Color(0xFF6C6C6C),
-    line: Color(0xFFE6EBEA),
-    brand: SnapFitColors.accent,
-    brandInk: Color(0xFF007E90),
+    ink: Color(0xFF203139),
+    muted: Color(0xFF62757D),
+    line: Color(0xFFDFE8EC),
+    brand: SnapFitColors.actionAccent,
+    brandInk: SnapFitColors.accentInk,
     onBrand: SnapFitColors.onAccent,
     softBrand: SnapFitColors.accentLight,
-    secondary: SnapFitColors.primaryGradientEnd,
-    canvas: Color(0xFFF3F6F5),
+    secondary: SnapFitColors.accentInk,
+    canvas: Color(0xFFF0F6F8),
     danger: Color(0xFFB3261E),
     dangerSurface: Color(0xFFFFEDEA),
     success: Color(0xFF226843),
@@ -127,17 +129,17 @@ class WebPalette extends ThemeExtension<WebPalette> {
     warningSurface: Color(0xFFFFF4D8),
   );
   static const dark = WebPalette(
-    background: Color(0xFF111719),
-    surface: Color(0xFF1B2326),
-    ink: Color(0xFFEDF3F4),
-    muted: Color(0xFFA8B7BA),
-    line: Color(0xFF344247),
-    brand: SnapFitColors.accent,
-    brandInk: Color(0xFF71D8E6),
+    background: Color(0xFF11191D),
+    surface: Color(0xFF1A262C),
+    ink: Color(0xFFEFF6F8),
+    muted: Color(0xFFADBDC5),
+    line: Color(0xFF32434B),
+    brand: SnapFitColors.actionAccent,
+    brandInk: SnapFitColors.accentInkDark,
     onBrand: SnapFitColors.onAccent,
-    softBrand: Color(0xFF12383F),
-    secondary: Color(0xFFBAA1FF),
-    canvas: Color(0xFF141E21),
+    softBrand: SnapFitColors.accentSurfaceDark,
+    secondary: SnapFitColors.accentInkDark,
+    canvas: Color(0xFF202E35),
     danger: Color(0xFFFFB4AB),
     dangerSurface: Color(0xFF482621),
     success: Color(0xFF93D6AB),
@@ -231,10 +233,10 @@ abstract final class SnapFitWebTheme {
           onPrimary: palette.onBrand,
           primaryContainer: palette.softBrand,
           onPrimaryContainer: palette.brandInk,
-          secondary: palette.secondary,
-          onSecondary: base.brightness == Brightness.dark
-              ? const Color(0xFF261B3A)
-              : Colors.white,
+          secondary: palette.brand,
+          onSecondary: palette.onBrand,
+          secondaryContainer: palette.softBrand,
+          onSecondaryContainer: palette.brandInk,
           surfaceContainerLowest: palette.background,
           surfaceContainerLow: palette.surface,
           surfaceContainer: palette.surface,
@@ -247,7 +249,9 @@ abstract final class SnapFitWebTheme {
           errorContainer: palette.dangerSurface,
           onErrorContainer: palette.danger,
         );
-    const shape = StadiumBorder();
+    const shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.all(Radius.circular(10)),
+    );
     return base.copyWith(
       extensions: [
         ...base.extensions.values.where(
@@ -312,8 +316,10 @@ abstract final class SnapFitWebTheme {
           )
           .apply(fontFamily: 'NotoSans'),
       appBarTheme: AppBarTheme(
-        backgroundColor: palette.surface,
+        backgroundColor: palette.background,
         foregroundColor: palette.ink,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
@@ -432,7 +438,23 @@ abstract final class SnapFitWebTheme {
   }
 }
 
-enum WebSection { albums, create, designs, orders, account }
+/// All primary web pages align their titles and photographs to this grid.
+abstract final class WebPageLayout {
+  static const double maxWidth = 1168;
+  static double horizontalInset(double viewportWidth) =>
+      viewportWidth < 600 ? 16 : 24;
+}
+
+enum WebSection {
+  albums,
+  moments,
+  feed,
+  create,
+  designs,
+  orders,
+  myProfile,
+  account,
+}
 
 /// Global browser navigation is owned by the Router so every page shares the
 /// same destinations and the current document can still block an unsafe exit.
@@ -454,463 +476,6 @@ class WebNavigationScope extends InheritedWidget {
       onNavigate != oldWidget.onNavigate ||
       onNotifications != oldWidget.onNotifications ||
       onPublicNavigate != oldWidget.onPublicNavigate;
-}
-
-/// Website navigation and content grid, independent of the mobile tab shell.
-/// Callers own scrolling and navigation so workflow exit guards remain intact.
-class SnapFitWebShell extends StatelessWidget {
-  const SnapFitWebShell({
-    super.key,
-    required this.child,
-    this.title,
-    this.headerTitle,
-    this.compactBrand = false,
-    this.denseHeader = false,
-    this.section = WebSection.albums,
-    this.actions = const [],
-    this.sidebar,
-    this.workspace = false,
-    this.showNavigation = true,
-    this.onHome,
-    this.onCreate,
-    this.onOrders,
-    this.onAccount,
-    this.onDesigns,
-    this.onNotifications,
-  });
-
-  final Widget child;
-  final String? title;
-  final Widget? headerTitle;
-  final bool compactBrand, denseHeader;
-  final WebSection section;
-  final List<Widget> actions;
-  final Widget? sidebar;
-  final bool workspace;
-  final bool showNavigation;
-  final VoidCallback? onHome,
-      onCreate,
-      onOrders,
-      onAccount,
-      onDesigns,
-      onNotifications;
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: WebPalette.of(context).background,
-    body: LayoutBuilder(
-      builder: (context, bounds) {
-        final compact = bounds.maxWidth < 760;
-        // A keyboard or a short browser window must leave room for the
-        // scrollable form instead of giving all available height to chrome.
-        final shortViewport = bounds.maxHeight < 420 && headerTitle == null;
-        final scope = WebNavigationScope.maybeOf(context);
-        VoidCallback? destination(WebSection section, VoidCallback? explicit) =>
-            explicit ??
-            (scope == null ? null : () => scope.onNavigate(section));
-        final homeAction = destination(WebSection.albums, onHome);
-        final createAction = destination(WebSection.create, onCreate);
-        final designsAction = destination(WebSection.designs, onDesigns);
-        final ordersAction = destination(WebSection.orders, onOrders);
-        final accountAction = destination(WebSection.account, onAccount);
-        final notificationsAction = onNotifications ?? scope?.onNotifications;
-        final links = <Widget>[
-          if (homeAction != null)
-            _navigation(context, '내 앨범', WebSection.albums, homeAction),
-          if (createAction != null)
-            _navigation(context, '앨범 만들기', WebSection.create, createAction),
-          if (designsAction != null)
-            _navigation(context, '템플릿·소재', WebSection.designs, designsAction),
-          if (ordersAction != null)
-            _navigation(context, '주문내역', WebSection.orders, ordersAction),
-          if (accountAction != null)
-            _navigation(context, '계정', WebSection.account, accountAction),
-          if (scope?.onPublicNavigate != null)
-            TextButton(
-              key: const ValueKey('web-print-products-link'),
-              onPressed: () =>
-                  scope!.onPublicNavigate!(WebAppLocation.printProducts),
-              child: const Text('인쇄 상품·가격'),
-            ),
-        ];
-        final navigation = showNavigation && links.isNotEmpty;
-        final brand = WebBrand(
-          compact: compactBrand || shortViewport || (showNavigation && compact),
-          onPressed: showNavigation ? homeAction : null,
-        );
-        Widget content = child;
-        if (!workspace) {
-          content = Align(
-            alignment: Alignment.topCenter,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1320),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: compact ? 20 : 32,
-                  vertical: shortViewport ? 12 : (compact ? 20 : 32),
-                ),
-                child: content,
-              ),
-            ),
-          );
-        }
-        Widget chromeRow(Widget child) => showNavigation
-            ? Align(
-                alignment: Alignment.topCenter,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1320),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: compact ? 20 : 32,
-                    ),
-                    child: child,
-                  ),
-                ),
-              )
-            : Padding(
-                padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 28),
-                child: child,
-              );
-        return Column(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: WebPalette.of(context).surface,
-                border: Border(
-                  bottom: BorderSide(color: WebPalette.of(context).line),
-                ),
-              ),
-              child: Column(
-                children: [
-                  if (showNavigation)
-                    chromeRow(
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Row(
-                              key: const ValueKey('web-utility-header'),
-                              children: [
-                                brand,
-                                if (navigation &&
-                                    bounds.maxWidth >= 1180 &&
-                                    MediaQuery.textScalerOf(
-                                          context,
-                                        ).scale(14) <=
-                                        19)
-                                  Expanded(
-                                    child: Row(
-                                      key: const ValueKey(
-                                        'web-primary-navigation',
-                                      ),
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: links,
-                                    ),
-                                  )
-                                else
-                                  const Spacer(),
-                                const WebThemeMenu(),
-                                if (notificationsAction != null)
-                                  IconButton(
-                                    onPressed: notificationsAction,
-                                    tooltip: '알림',
-                                    icon: const Icon(
-                                      Icons.notifications_none,
-                                      size: 21,
-                                    ),
-                                  ),
-                                if (navigation &&
-                                    (bounds.maxWidth < 1180 ||
-                                        MediaQuery.textScalerOf(
-                                              context,
-                                            ).scale(14) >
-                                            19))
-                                  PopupMenuButton<VoidCallback>(
-                                    key: const ValueKey(
-                                      'web-primary-navigation',
-                                    ),
-                                    tooltip: '전체 메뉴',
-                                    icon: const Icon(Icons.menu),
-                                    onSelected: (action) => action(),
-                                    itemBuilder: (_) => [
-                                      for (final entry
-                                          in <
-                                            (String, WebSection, VoidCallback?)
-                                          >[
-                                            (
-                                              '내 앨범',
-                                              WebSection.albums,
-                                              homeAction,
-                                            ),
-                                            (
-                                              '앨범 만들기',
-                                              WebSection.create,
-                                              createAction,
-                                            ),
-                                            (
-                                              '템플릿·소재',
-                                              WebSection.designs,
-                                              designsAction,
-                                            ),
-                                            (
-                                              '주문내역',
-                                              WebSection.orders,
-                                              ordersAction,
-                                            ),
-                                            (
-                                              '계정',
-                                              WebSection.account,
-                                              accountAction,
-                                            ),
-                                          ])
-                                        if (entry.$3 != null)
-                                          PopupMenuItem<VoidCallback>(
-                                            key: ValueKey(
-                                              'web-navigation-${entry.$2.name}',
-                                            ),
-                                            value: entry.$3,
-                                            child: Semantics(
-                                              selected: section == entry.$2,
-                                              child: Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: Text(entry.$1),
-                                                  ),
-                                                  if (section == entry.$2)
-                                                    const Icon(
-                                                      Icons.check,
-                                                      size: 18,
-                                                    ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                      if (scope?.onPublicNavigate != null)
-                                        PopupMenuItem<VoidCallback>(
-                                          value: () => scope!.onPublicNavigate!(
-                                            WebAppLocation.printProducts,
-                                          ),
-                                          child: const Text('인쇄 상품·가격'),
-                                        ),
-                                    ],
-                                  ),
-                              ],
-                            ),
-                            if (headerTitle != null) ...[
-                              const SizedBox(height: 8),
-                              headerTitle!,
-                            ],
-                            if (actions.isNotEmpty) ...[
-                              const SizedBox(height: 6),
-                              Wrap(
-                                alignment: WrapAlignment.end,
-                                spacing: 6,
-                                runSpacing: 6,
-                                children: actions,
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    )
-                  else
-                    chromeRow(
-                      KeyedSubtree(
-                        key: const ValueKey('web-utility-header'),
-                        child: compact && !shortViewport
-                            ? Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                                child: Column(
-                                  children: [
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: Wrap(
-                                        alignment: WrapAlignment.spaceBetween,
-                                        crossAxisAlignment:
-                                            WrapCrossAlignment.center,
-                                        runSpacing: 8,
-                                        children: [
-                                          brand,
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const WebThemeMenu(),
-                                              if (showNavigation &&
-                                                  notificationsAction != null)
-                                                IconButton(
-                                                  onPressed:
-                                                      notificationsAction,
-                                                  tooltip: '알림',
-                                                  icon: const Icon(
-                                                    Icons.notifications_none,
-                                                    size: 21,
-                                                  ),
-                                                ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    if (headerTitle != null) ...[
-                                      const SizedBox(height: 8),
-                                      Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: headerTitle!,
-                                      ),
-                                    ],
-                                    if (actions.isNotEmpty) ...[
-                                      const SizedBox(height: 8),
-                                      Align(
-                                        alignment: Alignment.centerRight,
-                                        child: Wrap(
-                                          alignment: WrapAlignment.end,
-                                          spacing: 6,
-                                          runSpacing: 6,
-                                          children: actions,
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              )
-                            : SizedBox(
-                                height: shortViewport
-                                    ? math.max(
-                                        52,
-                                        MediaQuery.textScalerOf(
-                                                  context,
-                                                ).scale(14) *
-                                                1.5 +
-                                            20,
-                                      )
-                                    : denseHeader
-                                    ? 64
-                                    : 72,
-                                child: Row(
-                                  children: [
-                                    brand,
-                                    if (headerTitle != null) ...[
-                                      const SizedBox(width: 16),
-                                      Expanded(child: headerTitle!),
-                                    ] else if (title != null && !compact) ...[
-                                      const SizedBox(width: 24),
-                                      const SizedBox(
-                                        height: 20,
-                                        child: VerticalDivider(width: 1),
-                                      ),
-                                      const SizedBox(width: 24),
-                                      Expanded(
-                                        child: Text(
-                                          title!,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                    if (headerTitle == null && title == null)
-                                      const Spacer(),
-                                    const WebThemeMenu(),
-                                    if (showNavigation &&
-                                        notificationsAction != null)
-                                      IconButton(
-                                        onPressed: notificationsAction,
-                                        tooltip: '알림',
-                                        icon: const Icon(
-                                          Icons.notifications_none,
-                                          size: 21,
-                                        ),
-                                      ),
-                                    if (shortViewport && actions.isNotEmpty)
-                                      Flexible(
-                                        child: SingleChildScrollView(
-                                          scrollDirection: Axis.horizontal,
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: actions,
-                                          ),
-                                        ),
-                                      )
-                                    else
-                                      ...actions,
-                                  ],
-                                ),
-                              ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (sidebar != null && bounds.maxWidth >= 1000)
-                    SizedBox(
-                      width: 220,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: WebPalette.of(context).surface,
-                          border: Border(
-                            right: BorderSide(
-                              color: WebPalette.of(context).line,
-                            ),
-                          ),
-                        ),
-                        child: sidebar!,
-                      ),
-                    ),
-                  Expanded(child: content),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    ),
-  );
-
-  Widget _navigation(
-    BuildContext context,
-    String label,
-    WebSection target,
-    VoidCallback callback,
-  ) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 3),
-    child: MergeSemantics(
-      key: ValueKey('web-navigation-semantics-${target.name}'),
-      child: Semantics(
-        selected: section == target,
-        child: TextButton(
-          key: ValueKey('web-navigation-${target.name}'),
-          onPressed: callback,
-          style: TextButton.styleFrom(
-            minimumSize: const Size(64, 44),
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-            textStyle: const TextStyle(
-              fontFamily: 'NotoSans',
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-            foregroundColor: section == target
-                ? WebPalette.of(context).brandInk
-                : WebPalette.of(context).muted,
-            backgroundColor: section == target
-                ? WebPalette.of(context).softBrand.withValues(alpha: .55)
-                : Colors.transparent,
-          ),
-          child: Text(label),
-        ),
-      ),
-    ),
-  );
 }
 
 /// Reuses the exact app mark without recoloring or stretching it.

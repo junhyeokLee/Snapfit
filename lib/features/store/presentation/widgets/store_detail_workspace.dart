@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/widgets/experience_form_style.dart';
+import 'store_detail_gallery.dart';
 
 /// Shopping previews keep their full height beside the purchase column.
 class StoreDetailWorkspace extends StatefulWidget {
@@ -38,11 +39,15 @@ class _StoreDetailWorkspaceState extends State<StoreDetailWorkspace> {
 
   Widget _purchase(Widget actions, {required bool wide}) => DecoratedBox(
     decoration: BoxDecoration(
+      color: ExperienceFormStyle.surface(context),
       border: Border(top: BorderSide(color: ExperienceFormStyle.line(context))),
     ),
     child: Padding(
       padding: EdgeInsets.fromLTRB(wide ? 16 : 20, 12, wide ? 16 : 20, 12),
-      child: actions,
+      child: FilledButtonTheme(
+        data: FilledButtonThemeData(style: StoreGalleryStyle.primary(context)),
+        child: actions,
+      ),
     ),
   );
 

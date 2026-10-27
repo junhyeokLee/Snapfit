@@ -22,22 +22,14 @@ import 'creation_collection_showcase.dart';
 import 'creation_workspace.dart';
 
 class AiAlbumStartStep extends ConsumerStatefulWidget {
-  final VoidCallback onAiStart;
   final VoidCallback onManualStart;
-  final int aiPointCost;
-  final String? freeDraftLabel;
-  final bool isFirstAiDraftFree;
   final AsyncValue<List<PremiumTemplate>> templates;
   final ValueChanged<PremiumTemplate>? onTemplateSelected;
   final VoidCallback? onRetry;
 
   const AiAlbumStartStep({
     super.key,
-    required this.onAiStart,
     required this.onManualStart,
-    this.aiPointCost = 300,
-    this.freeDraftLabel,
-    this.isFirstAiDraftFree = false,
     this.templates = const AsyncData([]),
     this.onTemplateSelected,
     this.onRetry,
@@ -141,47 +133,6 @@ class _AiAlbumStartStepState extends ConsumerState<AiAlbumStartStep> {
                           weight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Semantics(
-                        key: const ValueKey('creation-ai-conditions'),
-                        container: true,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.isFirstAiDraftFree
-                                  ? '첫 AI 템플릿 1회 무료 · 이후 현재 구성 기준 ${widget.aiPointCost}P'
-                                  : 'AI 템플릿 · 현재 구성 ${widget.aiPointCost}P',
-                              style: ExperienceFormStyle.text(
-                                context,
-                                12,
-                                weight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '쪽수에 따라 달라져요. 최종 포인트는 생성 전에 확인해요.',
-                              style: ExperienceFormStyle.text(
-                                context,
-                                12,
-                                secondary: true,
-                              ),
-                            ),
-                            if (widget.freeDraftLabel?.trim().isNotEmpty ==
-                                true) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                widget.freeDraftLabel!,
-                                style: ExperienceFormStyle.text(
-                                  context,
-                                  12,
-                                  secondary: true,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
                       const SizedBox(height: 22),
                       LayoutBuilder(
                         builder: (context, area) {
@@ -218,21 +169,10 @@ class _AiAlbumStartStepState extends ConsumerState<AiAlbumStartStep> {
                             icon: Icons.add,
                             onTap: widget.onManualStart,
                           );
-                          final ai = _StartAction(
-                            title: 'AI 템플릿',
-                            icon: Icons.auto_awesome_outlined,
-                            ai: true,
-                            onTap: widget.onAiStart,
-                          );
                           final choices = Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               manual,
-                              Divider(
-                                height: 1,
-                                color: ExperienceFormStyle.line(context),
-                              ),
-                              ai,
                               Divider(
                                 height: 1,
                                 color: ExperienceFormStyle.line(context),
@@ -266,14 +206,6 @@ class _AiAlbumStartStepState extends ConsumerState<AiAlbumStartStep> {
                                   compact: true,
                                   exampleCaptionHeight: captionHeight,
                                   onTap: widget.onManualStart,
-                                ),
-                                _StartAction(
-                                  title: 'AI 템플릿',
-                                  icon: Icons.auto_awesome_outlined,
-                                  compact: true,
-                                  exampleCaptionHeight: captionHeight,
-                                  ai: true,
-                                  onTap: widget.onAiStart,
                                 ),
                                 _StartAction(
                                   title: '템플릿 고르기',
@@ -586,33 +518,22 @@ class _StartAction extends StatelessWidget {
     required this.title,
     required this.icon,
     required this.onTap,
-    this.ai = false,
     this.compact = false,
     this.exampleCaptionHeight,
   });
   final String title;
   final IconData icon;
   final VoidCallback onTap;
-  final bool ai, compact;
+  final bool compact;
   final double? exampleCaptionHeight;
 
-  _CreationMethod get _method => ai
-      ? _CreationMethod.ai
-      : icon == Icons.add
-      ? _CreationMethod.manual
-      : _CreationMethod.template;
+  _CreationMethod get _method =>
+      icon == Icons.add ? _CreationMethod.manual : _CreationMethod.template;
 
-  String get _description => ai
-      ? '원하는 분위기로 디자인을 만들어요. 사진은 이후 직접 추가해요.'
-      : icon == Icons.add
-      ? '빈 앨범에서 사진과 글을 직접 배치해요.'
-      : '표지와 내지 디자인을 골라 시작해요.';
+  String get _description =>
+      icon == Icons.add ? '빈 앨범에서 사진과 글을 직접 배치해요.' : '표지와 내지 디자인을 골라 시작해요.';
 
-  String get _compactDescription => ai
-      ? '분위기로 생성'
-      : icon == Icons.add
-      ? '빈 앨범부터'
-      : '디자인 선택';
+  String get _compactDescription => icon == Icons.add ? '빈 앨범부터' : '디자인 선택';
 
   @override
   Widget build(BuildContext context) => !kIsWeb && compact

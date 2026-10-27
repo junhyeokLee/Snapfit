@@ -245,7 +245,14 @@ class _BookFlipState extends State<BookFlip>
 
   // Instant jump with no animation.
   void _jumpTo(int spread) {
-    if (_phase.value != _BootPhase.ready) return;
+    if (_phase.value != _BootPhase.ready) {
+      // Navigation can arrive while a replacement atlas is being packed. Keep
+      // that request in the state as well as the controller's detached cache;
+      // boot must not restore the older spread over the latest live-page choice.
+      _spread = spread.clamp(0, math.max(0, (widget.pages.length ~/ 2) - 1));
+      widget.controller?._spreadCache = _spread;
+      return;
+    }
     // Capture before the teardown: a jump that INTERRUPTS a live flip must still
     // balance the onFlipStart it already fired, and a jump that does not move the
     // book must not emit a spurious onSpreadChanged.

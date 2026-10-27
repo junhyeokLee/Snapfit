@@ -5,7 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import 'package:snap_fit/features/album/presentation/viewmodels/cover_view_model.dart';
 import 'package:snap_fit/features/album/presentation/widgets/cover/cover.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/edit_toolbar.dart';
@@ -31,6 +31,7 @@ import './layer_action_panel.dart';
 import './text_style_picker_sheet.dart';
 import './edit_cover_top_bar.dart';
 import './page_editor_overlays.dart';
+import '../../../../../core/utils/context_extensions.dart';
 
 class EditCover extends ConsumerStatefulWidget {
   /// 편집 모드: 홈에서 앨범 선택 후 열었을 때 전달 (저장 성공 시 홈으로 pop)
@@ -372,9 +373,7 @@ class EditCoverState extends ConsumerState<EditCover> {
           if (widget.onAlbumCreated != null) {
             widget.onAlbumCreated!(createdAlbumId);
           } else {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('앨범이 성공적으로 생성되었습니다!')));
+            context.showSnack('앨범이 성공적으로 생성되었습니다!');
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
@@ -387,15 +386,11 @@ class EditCoverState extends ConsumerState<EditCover> {
           await ref.read(homeViewModelProvider.notifier).refresh();
           if (!mounted) return;
 
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('앨범이 성공적으로 생성되었습니다!')));
+          context.showSnack('앨범이 성공적으로 생성되었습니다!');
           Navigator.popUntil(context, (route) => route.isFirst);
         } else {
           // 기존 앨범(커버 탭/편집): 다음 단계(페이지 편집)로 이동
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('저장되었습니다.')));
+          context.showSnack('저장되었습니다.');
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const PageEditorScreen()),
@@ -641,10 +636,13 @@ class EditCoverState extends ConsumerState<EditCover> {
                                                 showEmptyGuide: true,
                                                 selectionOverlayBuilder:
                                                     _interaction
-                                                        .enableWebTransforms
+                                                            .enableWebTransforms ||
+                                                        _interaction
+                                                            .enableOverlapSelection
                                                     ? () => _interaction
                                                           .buildSelectionOverlay(
                                                             layers,
+                                                            isCover: true,
                                                           )
                                                     : null,
                                               ),
@@ -673,14 +671,14 @@ class EditCoverState extends ConsumerState<EditCover> {
                   bottom: 0,
                   child: SafeArea(
                     child: Padding(
-                      padding: EdgeInsets.only(bottom: 12.h),
+                      padding: EdgeInsets.only(bottom: 12),
                       child: Container(
-                        margin: EdgeInsets.symmetric(horizontal: 20.w),
+                        margin: EdgeInsets.symmetric(horizontal: 20),
                         decoration: BoxDecoration(
                           color: SnapFitColors.surfaceOf(
                             context,
                           ).withValues(alpha: 0.9), // theme support
-                          borderRadius: BorderRadius.circular(18.r),
+                          borderRadius: BorderRadius.circular(18),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(
@@ -766,9 +764,9 @@ class EditCoverState extends ConsumerState<EditCover> {
       return const SizedBox.shrink(); // 상위 LayerActionPanel 사용
 
     return Positioned(
-      bottom: 110 + 12.h + MediaQuery.paddingOf(context).bottom,
-      left: 20.w,
-      right: 20.w,
+      bottom: 110 + 12 + MediaQuery.paddingOf(context).bottom,
+      left: 20,
+      right: 20,
       child: LayerActionPanel(
         layers: layers,
         interaction: _interaction,

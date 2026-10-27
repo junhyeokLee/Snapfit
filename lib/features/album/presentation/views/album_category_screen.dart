@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,11 +13,13 @@ import '../../../../core/navigation/web_app_location.dart';
 import '../../domain/entities/album.dart';
 import '../../data/api/album_provider.dart';
 import '../../data/album_creation_draft_store.dart';
+import '../../service/album_collaboration_session.dart';
 import '../utils/album_creation_entry.dart';
 import '../widgets/home/home_album_actions.dart';
 import '../widgets/home/home_album_helpers.dart';
 import '../widgets/web/web_saved_album_artwork.dart';
 import 'album_create_flow_screen.dart';
+import '../../../../core/utils/context_extensions.dart';
 import '../../../profile/presentation/widgets/personal_collection_shelf.dart';
 
 enum AlbumCategory { recent, shared }
@@ -50,6 +53,8 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
   late List<Album> _albums;
   bool _isRefreshing = false;
   bool _creatingAlbum = false;
+  bool _sessionChanged = false;
+  int _refreshRevision = 0;
 
   Future<void> _createAlbum() async {
     if (_creatingAlbum) return;
@@ -121,23 +126,30 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
   }
 
   Future<void> _handlePullToRefresh() async {
-    if (_isRefreshing) return;
+    if (_isRefreshing || _sessionChanged) return;
+    final actor = ref.read(albumCollaborationActorProvider);
+    final revision = ++_refreshRevision;
     _isRefreshing = true;
     try {
       final repository = ref.read(albumRepositoryProvider);
       final latest = await repository.fetchMyAlbums();
-      if (!mounted) return;
+      if (!mounted ||
+          _sessionChanged ||
+          revision != _refreshRevision ||
+          ref.read(albumCollaborationActorProvider) != actor)
+        return;
       setState(() {
         _albums = latest;
       });
     } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('앨범을 새로 불러오지 못했어요. 다시 시도해주세요.')),
-        );
+      if (mounted &&
+          !_sessionChanged &&
+          revision == _refreshRevision &&
+          ref.read(albumCollaborationActorProvider) == actor) {
+        context.showErrorSnack('앨범을 새로 불러오지 못했어요. 다시 시도해주세요.');
       }
     } finally {
-      _isRefreshing = false;
+      if (revision == _refreshRevision) _isRefreshing = false;
     }
   }
 
@@ -150,11 +162,16 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
   }
 
   Future<void> _openAlbumAndSync(Album album) async {
+    final actor = ref.read(albumCollaborationActorProvider);
     await HomeAlbumActions.openAlbum(
       context,
       ref,
       album,
       onAlbumDeleted: _removeAlbumLocally,
+      canContinue: () =>
+          mounted &&
+          !_sessionChanged &&
+          ref.read(albumCollaborationActorProvider) == actor,
     );
   }
 
@@ -213,10 +230,11 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
   }
 
   String _ownerLabel(Album album) {
-    final owner = album.userId.trim();
-    if (owner.isEmpty) return '공유 앨범';
-    if (owner.length <= 4) return '소유자 $owner';
-    return '소유자 ${owner.substring(0, 2)}***${owner.substring(owner.length - 2)}';
+    return album.memberRole == 'EDITOR'
+        ? '함께 편집'
+        : album.memberRole == 'VIEWER'
+        ? '보기 전용'
+        : '공유 앨범';
   }
 
   DateTime _dateOf(Album album) {
@@ -226,6 +244,33 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(albumCollaborationActorProvider, (previous, next) {
+      if (previous != next)
+        setState(() {
+          _sessionChanged = true;
+          _refreshRevision++;
+          _isRefreshing = false;
+          _albums = [];
+        });
+    });
+    final actor = ref.watch(albumCollaborationActorProvider);
+    if (_sessionChanged || actor != null && actor != widget.currentUserId) {
+      return Scaffold(
+        appBar: const ExperienceHeader(
+          title: '공유 앨범',
+          showNotifications: false,
+        ),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(28),
+            child: Text(
+              '계정이 변경되었어요. 현재 계정의 앨범 목록에서 다시 확인해 주세요.',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
     final albums = _applyFilter(_albums);
     if (kIsWeb) return _buildWeb(albums);
     return Scaffold(
@@ -259,7 +304,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
           child: CustomScrollView(
             key: const PageStorageKey('personal-album-scroll'),
             physics: platformScrollPhysics(alwaysScrollable: true),
-            cacheExtent: 260,
+            cacheExtent: 800,
             slivers: [
               if (_isSearching)
                 SliverToBoxAdapter(
@@ -352,7 +397,10 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
                     ChoiceChip(
                       label: Text(_tabs[index]),
                       selected: _selectedTab == index,
-                      onSelected: (_) => setState(() => _selectedTab = index),
+                      onSelected: (_) {
+                        HapticFeedback.selectionClick();
+                        setState(() => _selectedTab = index);
+                      },
                       showCheckmark: false,
                       selectedColor: WebPalette.of(context).softBrand,
                       backgroundColor: WebPalette.of(context).surface,
@@ -560,67 +608,69 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 final album = sorted[index];
-                return InkWell(
-                  key: ValueKey('personal-record-${album.id}'),
-                  onTap: () {
-                    FocusManager.instance.primaryFocus?.unfocus();
-                    _openAlbumAndSync(album);
-                  },
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        height: stage,
-                        width: double.infinity,
-                        child: SavedAlbumArtwork(
-                          key: shared
-                              ? ValueKey('shared-cover-${album.id}')
-                              : null,
-                          album: album,
+                return RepaintBoundary(
+                  child: InkWell(
+                    key: ValueKey('personal-record-${album.id}'),
+                    onTap: () {
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      _openAlbumAndSync(album);
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          height: stage,
+                          width: double.infinity,
+                          child: SavedAlbumArtwork(
+                            key: shared
+                                ? ValueKey('shared-cover-${album.id}')
+                                : null,
+                            album: album,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              album.title.isEmpty ? '제목 없음' : album.title,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: ExperienceFormStyle.text(
-                                context,
-                                14,
-                                weight: FontWeight.w600,
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                album.title.isEmpty ? '제목 없음' : album.title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: ExperienceFormStyle.text(
+                                  context,
+                                  14,
+                                  weight: FontWeight.w600,
+                                ),
                               ),
                             ),
+                            _favoriteButton(album),
+                          ],
+                        ),
+                        Text(
+                          _albumSubtitle(album),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: ExperienceFormStyle.text(
+                            context,
+                            12,
+                            secondary: true,
                           ),
-                          _favoriteButton(album),
-                        ],
-                      ),
-                      Text(
-                        _albumSubtitle(album),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: ExperienceFormStyle.text(
-                          context,
-                          12,
-                          secondary: true,
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        shared
-                            ? _ownerLabel(album)
-                            : formatAlbumDate(album.createdAt),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: ExperienceFormStyle.text(
-                          context,
-                          11,
-                          secondary: true,
+                        const SizedBox(height: 4),
+                        Text(
+                          shared
+                              ? _ownerLabel(album)
+                              : formatAlbumDate(album.createdAt),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: ExperienceFormStyle.text(
+                            context,
+                            11,
+                            secondary: true,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               },
@@ -672,7 +722,10 @@ class _TopTabBar extends StatelessWidget {
           child: Semantics(
             selected: selected,
             child: InkWell(
-              onTap: () => onChanged(index),
+              onTap: () {
+                HapticFeedback.selectionClick();
+                onChanged(index);
+              },
               child: Container(
                 constraints: const BoxConstraints(minHeight: 48),
                 padding: const EdgeInsets.symmetric(

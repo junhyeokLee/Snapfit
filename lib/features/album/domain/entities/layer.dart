@@ -22,6 +22,11 @@ class LayerModel {
   final Offset position;
   final AssetEntity? asset;
   final String? text;
+
+  /// true: template content; false: known personal content; null: unverified
+  /// legacy content. Loading, resizing or resaving must not promote unknown
+  /// examples to authored content. New layers default to personal content.
+  final bool? isTemplateContent;
   final TextStyle? textStyle;
   final TextStyleType? textStyleType;
   final Color? bubbleColor;
@@ -88,6 +93,7 @@ class LayerModel {
     required this.position,
     this.asset,
     this.text,
+    this.isTemplateContent = false,
     this.textStyle,
     this.textStyleType,
     this.bubbleColor,
@@ -124,6 +130,7 @@ class LayerModel {
     Offset? position,
     AssetEntity? asset,
     String? text,
+    bool? isTemplateContent,
     TextStyle? textStyle,
     TextStyleType? textStyleType,
     Color? bubbleColor,
@@ -160,6 +167,17 @@ class LayerModel {
       position: position ?? this.position,
       asset: clearImage ? null : asset ?? this.asset,
       text: text ?? this.text,
+      isTemplateContent:
+          isTemplateContent ??
+          ((text != null &&
+                      text != this.text &&
+                      text.trim() != (this.text?.trim() ?? '')) ||
+                  (asset != null && !identical(asset, this.asset)) ||
+                  (imageUrl != null && imageUrl != this.imageUrl) ||
+                  (originalUrl != null && originalUrl != this.originalUrl) ||
+                  (previewUrl != null && previewUrl != this.previewUrl)
+              ? false
+              : this.isTemplateContent),
       textStyle: textStyle ?? this.textStyle,
       textStyleType: textStyleType ?? this.textStyleType,
       bubbleColor: bubbleColor ?? this.bubbleColor,

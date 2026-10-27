@@ -1,12 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 
 import '../../../../core/templates/catalog_editorial_assets.g.dart';
-import '../../../../core/templates/data_template_engine.dart';
-import '../../../../core/templates/template_document_pages.dart';
+import '../../../../core/data/catalog_preview.dart';
+import '../../../../shared/widgets/catalog_preview_builder.dart';
 import '../../../album/data/bundled_creation_templates.dart';
-import '../../../album/domain/entities/layer.dart';
 import '../../../album/presentation/widgets/create_flow/creation_catalog_cover.dart';
 import '../../domain/entities/premium_template.dart';
 import 'template_page_renderer.dart';
@@ -45,6 +42,16 @@ class CatalogEditionPalette {
       Color(0xFF5A4966),
       Color(0xFFD7C0DC),
     ),
+    '동아리' || '스포츠·도전' => const CatalogEditionPalette(
+      Color(0xFFE4F4F3),
+      Color(0xFF203F40),
+      Color(0xFF14AAA8),
+    ),
+    '졸업·새출발' => const CatalogEditionPalette(
+      Color(0xFFF1EEE6),
+      Color(0xFF203F40),
+      Color(0xFF14AAA8),
+    ),
     _ => const CatalogEditionPalette(
       Color(0xFFDFE5EE),
       Color(0xFF354D73),
@@ -54,9 +61,7 @@ class CatalogEditionPalette {
 }
 
 String? catalogEditorialSpread(PremiumTemplate template) {
-  final canonical = publishedCreationTemplates
-      .where((t) => t.id == template.id)
-      .firstOrNull;
+  final canonical = publishedCreationTemplateById(template.id);
   if (canonical == null ||
       !identical(canonical.documentBuilder, template.documentBuilder))
     return null;
@@ -72,147 +77,55 @@ class CatalogSpreadPreview extends StatelessWidget {
   final PremiumTemplate template;
   final int decodeWidth;
   @override
-  Widget build(BuildContext context) {
-    if (usesLiveCatalogSpreadArtwork(template)) {
-      return _LiveCatalogSpread(template: template, decodeWidth: decodeWidth);
-    }
-    final asset = catalogEditorialSpread(template);
-    if (asset == null) return const SizedBox.shrink();
-    final firstPage = catalogEditorialFirstPages[template.id];
-    return RepaintBoundary(
-      child: Image.asset(
-        asset,
-        key: ValueKey('catalog-spread-${template.id}'),
-        fit: BoxFit.contain,
-        cacheWidth: decodeWidth,
-        semanticLabel: firstPage == null
-            ? template.title
-            : '${template.title} $firstPage-${firstPage + 1}쪽',
-        errorBuilder: (_, _, _) => const SizedBox.shrink(),
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      _LiveCatalogSpread(template: template, decodeWidth: decodeWidth);
 }
 
-class _LiveCatalogSpread extends StatefulWidget {
+class _LiveCatalogSpread extends StatelessWidget {
   const _LiveCatalogSpread({required this.template, required this.decodeWidth});
 
   final PremiumTemplate template;
   final int decodeWidth;
 
   @override
-  State<_LiveCatalogSpread> createState() => _LiveCatalogSpreadState();
-}
+  Widget build(BuildContext context) => CatalogPreviewBuilder(
+    template: template,
+    needsSpread: true,
+    builder: (context, snapshot) => _artwork(snapshot.data),
+  );
 
-class _LiveCatalogSpreadState extends State<_LiveCatalogSpread> {
-  // Retain only two parsed pages per book. Bound the catalog's LRU rather
-  // than retaining widget trees or all interiors for every scrolling card.
-  static final _cache =
-      <int, ({String source, Size canvas, List<List<LayerModel>> pages})>{};
-  static const _cacheLimit = 18;
-  static const _firstPage = 3;
-  Size _canvas = const Size(500, 500);
-  List<List<LayerModel>> _pages = const [];
-
-  @override
-  void initState() {
-    super.initState();
-    _read();
-  }
-
-  @override
-  void didUpdateWidget(_LiveCatalogSpread oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (!identical(oldWidget.template, widget.template)) _read();
-  }
-
-  void _read() {
-    _pages = const [];
-    try {
-      final source = widget.template.templateJson;
-      if (source == null) return;
-      final cached = _cache.remove(widget.template.id);
-      if (cached != null && cached.source == source) {
-        _cache[widget.template.id] = cached;
-        _canvas = cached.canvas;
-        _pages = cached.pages;
-        return;
-      }
-      final document = jsonDecode(source) as Map<String, dynamic>;
-      final metadata = document['metadata'] as Map? ?? const {};
-      final canvas = Size(
-        (document['designWidth'] as num? ??
-                metadata['designWidth'] as num? ??
-                500)
-            .toDouble(),
-        (document['designHeight'] as num? ??
-                metadata['designHeight'] as num? ??
-                500)
-            .toDouble(),
-      );
-      if (!canvas.width.isFinite ||
-          !canvas.height.isFinite ||
-          canvas.width <= 0 ||
-          canvas.height <= 0) {
-        return;
-      }
-      final pages = templateDocumentPages(document)
-          .skip(_firstPage)
-          .take(2)
-          .map(
-            (page) => DataTemplateEngine.buildLayersFromJson({
-              'strictLayout': true,
-              'designWidth': canvas.width,
-              'designHeight': canvas.height,
-              'layers': page['layers'] ?? const [],
-            }, canvas),
-          )
-          .toList();
-      if (pages.length != 2 || pages.any((page) => page.isEmpty)) return;
-      _canvas = canvas;
-      _pages = pages;
-      _cache[widget.template.id] = (
-        source: source,
-        canvas: canvas,
-        pages: pages,
-      );
-      while (_cache.length > _cacheLimit) {
-        _cache.remove(_cache.keys.first);
-      }
-    } on FormatException {
-      _pages = const [];
-    } on TypeError {
-      _pages = const [];
+  Widget _artwork(CatalogPreview? preview) {
+    if (preview == null ||
+        preview.spread.length != 2 ||
+        preview.spread.any((page) => page.isEmpty)) {
+      return const SizedBox.shrink();
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_pages.length != 2) return const SizedBox.shrink();
-    final decodeWidth = ((widget.decodeWidth / 2 / 128).ceil() * 128).clamp(
+    final canvas = preview.canvas;
+    final imageDecodeWidth = ((decodeWidth / 2 / 128).ceil() * 128).clamp(
       128,
       1024,
     );
     return RepaintBoundary(
-      key: ValueKey('catalog-live-spread-${widget.template.id}'),
+      key: ValueKey('catalog-live-spread-${template.id}'),
       child: Semantics(
         image: true,
-        label: '${widget.template.title} $_firstPage-${_firstPage + 1}쪽',
+        label:
+            '${template.title} ${CatalogPreview.firstSpreadPage}-${CatalogPreview.firstSpreadPage + 1}쪽',
         child: FittedBox(
           fit: BoxFit.contain,
           child: SizedBox(
-            width: _canvas.width * 2,
-            height: _canvas.height,
+            width: canvas.width * 2,
+            height: canvas.height,
             child: Row(
               children: [
-                for (final page in _pages)
+                for (final page in preview.spread)
                   TemplatePageRenderer(
                     layers: page,
-                    width: _canvas.width,
-                    height: _canvas.height,
-                    designCanvasSize: _canvas,
+                    width: canvas.width,
+                    height: canvas.height,
+                    designCanvasSize: canvas,
                     preserveTypography: true,
-                    imageDecodeWidth: decodeWidth,
+                    imageDecodeWidth: imageDecodeWidth,
                   ),
               ],
             ),

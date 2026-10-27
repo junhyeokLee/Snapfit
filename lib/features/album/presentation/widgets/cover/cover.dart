@@ -245,9 +245,9 @@ class CoverLayout extends StatelessWidget {
                                           child: CustomPaint(
                                             painter: SpinePainter(
                                               baseStart: Colors.white
-                                                  .withOpacity(0.1),
-                                              baseEnd: Colors.white.withOpacity(
-                                                0.1,
+                                                  .withValues(alpha: 0.1),
+                                              baseEnd: Colors.white.withValues(
+                                                alpha: 0.1,
                                               ),
                                             ),
                                             size: Size(
@@ -316,10 +316,10 @@ class _CoverEmptyGuide extends StatelessWidget {
           Container(
             height: 250,
             decoration: BoxDecoration(
-              color: const Color(0xFFFFFCF7).withOpacity(0.82),
+              color: const Color(0xFFFFFCF7).withValues(alpha: 0.82),
               borderRadius: BorderRadius.circular(26),
               border: Border.all(
-                color: const Color(0xFF8E7D67).withOpacity(0.18),
+                color: const Color(0xFF8E7D67).withValues(alpha: 0.18),
                 width: 1.2,
               ),
             ),
@@ -333,7 +333,7 @@ class _CoverEmptyGuide extends StatelessWidget {
                       width: 58,
                       height: 58,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF13C8EC).withOpacity(0.12),
+                        color: const Color(0xFF13C8EC).withValues(alpha: 0.12),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -347,7 +347,9 @@ class _CoverEmptyGuide extends StatelessWidget {
                       '표지에 담을 사진을 올려보세요',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: SnapFitColors.deepCharcoal.withOpacity(0.82),
+                        color: SnapFitColors.deepCharcoal.withValues(
+                          alpha: 0.82,
+                        ),
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
                         decoration: TextDecoration.none,
@@ -362,14 +364,14 @@ class _CoverEmptyGuide extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.62),
+              color: Colors.white.withValues(alpha: 0.62),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               '앨범 제목을 입력하면 더 특별해져요',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: SnapFitColors.deepCharcoal.withOpacity(0.62),
+                color: SnapFitColors.deepCharcoal.withValues(alpha: 0.62),
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
                 decoration: TextDecoration.none,
@@ -386,7 +388,7 @@ class _DashedGuidePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF8E7D67).withOpacity(0.32)
+      ..color = const Color(0xFF8E7D67).withValues(alpha: 0.32)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.4;
     final rect = RRect.fromRectAndRadius(
@@ -421,7 +423,7 @@ class _SnapGuidePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.blue.withOpacity(0.45)
+      ..color = Colors.blue.withValues(alpha: 0.45)
       ..strokeWidth = 1.2;
 
     for (final x in verticalGuides) {
@@ -504,7 +506,7 @@ class _CoverBackground extends StatelessWidget {
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                     colors: [
-                      Colors.black.withOpacity(0.10),
+                      Colors.black.withValues(alpha: 0.10),
                       Colors.transparent,
                     ],
                     stops: const [0.0, 1.0],
@@ -559,24 +561,24 @@ class _AnimatedCoverContainerState extends State<_AnimatedCoverContainer> {
     final List<BoxShadow> boxShadow = animate
         ? [
             BoxShadow(
-              color: Colors.black.withOpacity(0.12),
+              color: Colors.black.withValues(alpha: 0.12),
               blurRadius: 18,
               offset: const Offset(24, 64),
             ),
             BoxShadow(
-              color: const Color(0xFF5c5d8d).withOpacity(0.10),
+              color: const Color(0xFF5c5d8d).withValues(alpha: 0.10),
               blurRadius: 16,
               offset: const Offset(32, 64),
             ),
           ]
         : [
             BoxShadow(
-              color: Colors.black.withOpacity(0.09),
+              color: Colors.black.withValues(alpha: 0.09),
               blurRadius: 12,
               offset: const Offset(18, 48),
             ),
             BoxShadow(
-              color: const Color(0xFF5c5d8d).withOpacity(0.08),
+              color: const Color(0xFF5c5d8d).withValues(alpha: 0.08),
               blurRadius: 12,
               offset: const Offset(26, 48),
             ),

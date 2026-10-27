@@ -32,12 +32,12 @@ class EditToolbar extends StatelessWidget {
         decoration: BoxDecoration(
           color: SnapFitColors.surfaceOf(
             context,
-          ).withOpacity(0.95), // theme support
+          ).withValues(alpha: 0.95), // theme support
           borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(
-                SnapFitColors.isDark(context) ? 0.3 : 0.1,
+              color: Colors.black.withValues(
+                alpha: SnapFitColors.isDark(context) ? 0.3 : 0.1,
               ),
               blurRadius: 16,
               offset: const Offset(0, 4),

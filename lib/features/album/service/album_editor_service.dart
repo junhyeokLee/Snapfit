@@ -82,6 +82,7 @@ class AlbumEditorService {
           LayerModel(
             id: id,
             type: LayerType.image,
+            isTemplateContent: true,
             position: pos,
             width: slotW,
             height: slotH,
@@ -96,6 +97,7 @@ class AlbumEditorService {
           LayerModel(
             id: id,
             type: LayerType.text,
+            isTemplateContent: true,
             position: pos,
             width: slotW,
             height: slotH,
@@ -318,27 +320,9 @@ class AlbumEditorService {
     final idx = page.layers.indexWhere((l) => l.id == updated.id);
     if (idx == -1) return page;
 
-    final oldLayer = page.layers[idx];
-    page.layers[idx] = oldLayer.copyWith(
-      text: updated.text ?? oldLayer.text,
-      textStyle: updated.textStyle ?? oldLayer.textStyle,
-      textStyleType: updated.textStyleType,
-      bubbleColor: updated.bubbleColor ?? oldLayer.bubbleColor,
-      position: updated.position,
-      scale: updated.scale,
-      rotation: updated.rotation,
-      textAlign: updated.textAlign ?? oldLayer.textAlign,
-      opacity: updated.opacity,
-      // [Fix] 이미지 변경 반영을 위해 asset 및 URL 관련 필드 추가
-      asset: updated.asset,
-      imageUrl: updated.imageUrl,
-      previewUrl: updated.previewUrl,
-      originalUrl: updated.originalUrl,
-      imageBackground: updated.imageBackground ?? oldLayer.imageBackground,
-      textBackground: updated.textBackground ?? oldLayer.textBackground,
-      imageOffset: updated.imageOffset ?? oldLayer.imageOffset,
-      imageZoom: updated.imageZoom,
-    );
+    // Callers provide a complete immutable layer, usually via copyWith. Merging
+    // it into the old layer would resurrect cleared photos and discard provenance.
+    page.layers[idx] = updated;
     return page;
   }
 

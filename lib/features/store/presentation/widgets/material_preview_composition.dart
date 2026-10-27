@@ -3,6 +3,7 @@ import 'package:flutter/painting.dart';
 import '../../../../core/templates/studio_decoration_catalog.dart';
 import '../../../../core/templates/studio_phrase_catalog.dart';
 import '../../../../core/templates/studio_word_art_catalog.dart';
+import '../../../../core/templates/story_edition_catalog.dart';
 
 enum MaterialPreviewPlacement { card, backing, accent, frame, lettering, band }
 
@@ -50,6 +51,31 @@ class MaterialPreviewComposition {
         .where((a) => a.productKey == productKey)
         .firstOrNull;
     final phrase = studioPhrases.where((p) => p.id == id).firstOrNull;
+    final story = storyMaterialsById[id] ?? storyEditionsById[art?.id];
+    if (story != null) {
+      final paper = id == story.paperId;
+      final lettering = art != null;
+      return MaterialPreviewComposition(
+        placement: paper
+            ? MaterialPreviewPlacement.backing
+            : lettering
+            ? MaterialPreviewPlacement.lettering
+            : MaterialPreviewPlacement.accent,
+        materialRect: lettering
+            ? const Rect.fromLTWH(62, 421, 476, 228)
+            : paper
+            ? const Rect.fromLTWH(30, 62, 540, 442)
+            : const Rect.fromLTWH(427, 403, 103, 103),
+        photoAsset: story.photoAssets[photoIndex % story.photoAssets.length],
+        photoRect: paper
+            ? const Rect.fromLTWH(73, 120, 394, 264)
+            : const Rect.fromLTWH(48, 36, 504, 354),
+        caption: story.title,
+        captionRect: lettering ? null : const Rect.fromLTWH(48, 556, 504, 76),
+        letteringSourceSize: art?.sourceSize,
+        paperColor: const Color(0xFFF7F5F2),
+      );
+    }
     final theme = _themeFor(spec?.collection ?? phrase?.category, art?.id);
     final scenes = art?.id == 'atelier-postcard'
         ? _letterScenes

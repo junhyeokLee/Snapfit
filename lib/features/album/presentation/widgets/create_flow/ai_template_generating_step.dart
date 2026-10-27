@@ -194,9 +194,9 @@ class _ShimmerStage extends StatelessWidget {
                       begin: Alignment(x - 0.6, -1),
                       end: Alignment(x + 0.6, 1),
                       colors: [
-                        Colors.white.withOpacity(0),
-                        Colors.white.withOpacity(peak),
-                        Colors.white.withOpacity(0),
+                        Colors.white.withValues(alpha: 0),
+                        Colors.white.withValues(alpha: peak),
+                        Colors.white.withValues(alpha: 0),
                       ],
                     ),
                   ),

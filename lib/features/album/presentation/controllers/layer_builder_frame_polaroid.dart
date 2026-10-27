@@ -115,7 +115,7 @@ Widget _framePolaroidImpl(Widget image) {
               border: Border.all(color: const Color(0xFFE0E3EC), width: 1),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 6,
                   offset: const Offset(0, 3),
                 ),
@@ -155,7 +155,7 @@ Widget _framePolaroidClassicImpl(Widget image) {
               border: Border.all(color: const Color(0xFFE8E4D8), width: 1.1),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 7,
                   offset: const Offset(0, 3),
                 ),
@@ -184,10 +184,13 @@ Widget _framePolaroidWideImpl(Widget image) {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: Colors.grey.withOpacity(0.35), width: 0.8),
+          border: Border.all(
+            color: Colors.grey.withValues(alpha: 0.35),
+            width: 0.8,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.18),
+              color: Colors.black.withValues(alpha: 0.18),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -224,7 +227,7 @@ Widget _framePolaroidFilmImpl(Widget image) {
               border: Border.all(color: Colors.white30, width: 1),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.4),
+                  color: Colors.black.withValues(alpha: 0.4),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),

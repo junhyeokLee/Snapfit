@@ -24,6 +24,7 @@ import '../../../point_shop/presentation/point_shop_artwork.dart';
 import 'template_page_renderer.dart';
 import 'material_original_preview.dart';
 import 'template_book_artwork.dart';
+import '../../../../core/utils/context_extensions.dart';
 
 Future<T?> _choose<T>(BuildContext context, Widget child) => kIsWeb
     ? showWebAwareDialog<T>(
@@ -114,18 +115,14 @@ Future<void> pickAlbumForMaterial(
     if (context.mounted) ref.read(homeViewModelProvider.notifier).refresh();
   } catch (error) {
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            error is PointShopException
-                ? error.message
-                : error is StateError && error.message == 'album_locked'
-                ? '다른 멤버가 편집 중이에요. 잠시 후 다시 선택해 주세요.'
-                : error is StateError && error.message == 'album_read_only'
-                ? '이 앨범은 읽기 전용이에요. 직접 만든 앨범을 선택해 주세요.'
-                : '앨범을 열지 못했어요. 잠시 후 다시 시도해 주세요.',
-          ),
-        ),
+      context.showErrorSnack(
+        error is PointShopException
+            ? error.message
+            : error is StateError && error.message == 'album_locked'
+            ? '다른 멤버가 편집 중이에요. 잠시 후 다시 선택해 주세요.'
+            : error is StateError && error.message == 'album_read_only'
+            ? '이 앨범은 읽기 전용이에요. 직접 만든 앨범을 선택해 주세요.'
+            : '앨범을 열지 못했어요. 잠시 후 다시 시도해 주세요.',
       );
     }
   } finally {

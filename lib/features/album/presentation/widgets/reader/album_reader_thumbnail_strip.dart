@@ -5,10 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../shared/widgets/album_stage_style.dart';
+import '../../../../../core/theme/snapfit_design_tokens.dart'
+    show SnapFitMotion;
 import '../../../domain/entities/album_page.dart';
 import '../../controllers/layer_builder.dart';
 import '../../controllers/layer_interaction_manager.dart';
 import '../../viewmodels/album_editor_view_model.dart';
+import '../../utils/reader_image_quality.dart';
 import '../cover/cover.dart';
 import '../home/home_album_helpers.dart';
 import 'album_reader_page_content.dart';
@@ -33,9 +36,22 @@ class AlbumReaderThumbnailStrip extends ConsumerStatefulWidget {
   final int? currentSpreadIndex;
   final ValueChanged<int>? onSpreadSelected;
 
+  static int spreadCount(int pageCount) =>
+      pageCount <= 0 ? 0 : 1 + pageCount ~/ 2;
+
+  static List<int> spreadPages(int index, int pageCount) {
+    final count = spreadCount(pageCount);
+    if (index < 0 || index >= count) {
+      throw RangeError.range(index, 0, count - 1, 'index');
+    }
+    if (index == 0) return [0];
+    final left = index * 2 - 1;
+    return [left, if (left + 1 < pageCount) left + 1];
+  }
+
   static List<List<int>> spreads(int count) => [
-    if (count > 0) [0],
-    for (var i = 1; i < count; i += 2) [i, if (i + 1 < count) i + 1],
+    for (var index = 0; index < spreadCount(count); index++)
+      spreadPages(index, count),
   ];
 
   static String label(List<int> pages) => pages.first == 0
@@ -72,8 +88,16 @@ class _ThumbnailStripState extends ConsumerState<AlbumReaderThumbnailStrip> {
         0.0,
         _scroll.position.maxScrollExtent,
       );
-      if ((target - _scroll.offset).abs() < 1) return;
-      if (animate && !MediaQuery.disableAnimationsOf(context)) {
+      final distance = (target - _scroll.offset).abs();
+      if (distance < 1) {
+        // A rapid re-selection may return to the starting position while its
+        // previous animation has not moved yet. Stop that obsolete activity.
+        if (_scroll.position.isScrollingNotifier.value) _scroll.jumpTo(target);
+        return;
+      }
+      if (animate &&
+          distance <= _scroll.position.viewportDimension * 1.5 &&
+          !SnapFitMotion.reduced(context)) {
         _scroll.animateTo(
           target,
           duration: const Duration(milliseconds: 240),
@@ -87,15 +111,16 @@ class _ThumbnailStripState extends ConsumerState<AlbumReaderThumbnailStrip> {
 
   @override
   Widget build(BuildContext context) {
-    final items = AlbumReaderThumbnailStrip.spreads(widget.pages.length);
-    if (items.isEmpty) return const SizedBox.shrink();
+    final itemCount = AlbumReaderThumbnailStrip.spreadCount(
+      widget.pages.length,
+    );
+    if (itemCount == 0) return const SizedBox.shrink();
     final aspect = widget.baseCanvasSize.width / widget.baseCanvasSize.height;
     final logical = Size(kCoverReferenceWidth, kCoverReferenceWidth / aspect);
     final coverInteraction = LayerInteractionManager.preview(
       ref,
       () => logical,
     );
-    final coverBuilder = LayerBuilder(coverInteraction, () => logical);
     final theme =
         ref.watch(
           albumEditorViewModelProvider.select(
@@ -105,6 +130,22 @@ class _ThumbnailStripState extends ConsumerState<AlbumReaderThumbnailStrip> {
         resolveCoverTheme(null);
     final singleWidth = widget.height * aspect;
     final spreadWidth = singleWidth * 2 + 1;
+    final decodeWidth = readerThumbnailDecodeWidth(
+      Size(singleWidth, widget.height),
+      MediaQuery.devicePixelRatioOf(context),
+      maximumWidth: widget.previewBuilder.previewImageDecodeWidth,
+    );
+    final coverBuilder = LayerBuilder(
+      coverInteraction,
+      () => logical,
+      previewImageDecodeWidth: decodeWidth,
+    );
+    final thumbnailBuilder = LayerBuilder(
+      widget.previewBuilder.interaction,
+      () => logical,
+      printImages: widget.previewBuilder.printImages,
+      previewImageDecodeWidth: decodeWidth,
+    );
     final captionHeight = MediaQuery.textScalerOf(context).scale(10) * 1.4;
 
     Widget artwork(List<int> indices) => RepaintBoundary(
@@ -153,7 +194,7 @@ class _ThumbnailStripState extends ConsumerState<AlbumReaderThumbnailStrip> {
                               layers: widget.pages[indices[slot]].layers,
                               targetW: singleWidth,
                               targetH: widget.height,
-                              previewBuilder: widget.previewBuilder,
+                              previewBuilder: thumbnailBuilder,
                               baseCanvasSize: logical,
                               backgroundColor:
                                   widget.pages[indices[slot]].backgroundColor ==
@@ -183,14 +224,19 @@ class _ThumbnailStripState extends ConsumerState<AlbumReaderThumbnailStrip> {
                         (widget.pageController?.hasClients == true
                             ? widget.pageController!.page?.round() ?? 0
                             : 0))
-                    .clamp(0, items.length - 1);
+                    .clamp(0, itemCount - 1);
             final coverSlot = math.max(44.0, singleWidth);
             final spreadSlot = math.max(44.0, spreadWidth);
             if (_active != active ||
                 _viewport != box.maxWidth ||
                 _coverWidth != coverSlot ||
                 _spreadWidth != spreadSlot) {
-              final animate = _active >= 0 && _active != active;
+              final animate =
+                  _active >= 0 &&
+                  _active != active &&
+                  _viewport == box.maxWidth &&
+                  _coverWidth == coverSlot &&
+                  _spreadWidth == spreadSlot;
               _active = active;
               _viewport = box.maxWidth;
               _coverWidth = coverSlot;
@@ -203,9 +249,14 @@ class _ThumbnailStripState extends ConsumerState<AlbumReaderThumbnailStrip> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               cacheExtent: spreadSlot * 2,
-              itemCount: items.length,
+              itemExtentBuilder: (index, _) =>
+                  (index == 0 ? coverSlot : spreadSlot) + _gap,
+              itemCount: itemCount,
               itemBuilder: (context, index) {
-                final indices = items[index];
+                final indices = AlbumReaderThumbnailStrip.spreadPages(
+                  index,
+                  widget.pages.length,
+                );
                 final selected = index == active;
                 final label = AlbumReaderThumbnailStrip.label(indices);
                 final enabled =
@@ -216,13 +267,15 @@ class _ThumbnailStripState extends ConsumerState<AlbumReaderThumbnailStrip> {
                   if (widget.onSpreadSelected != null) {
                     widget.onSpreadSelected!(index);
                   } else if (widget.pageController?.hasClients == true) {
-                    widget.pageController!.animateToPage(
-                      index,
-                      duration: MediaQuery.disableAnimationsOf(context)
-                          ? Duration.zero
-                          : const Duration(milliseconds: 280),
-                      curve: Curves.easeOutCubic,
-                    );
+                    if (SnapFitMotion.reduced(context)) {
+                      widget.pageController!.jumpToPage(index);
+                    } else {
+                      widget.pageController!.animateToPage(
+                        index,
+                        duration: const Duration(milliseconds: 280),
+                        curve: Curves.easeOutCubic,
+                      );
+                    }
                   }
                 }
 

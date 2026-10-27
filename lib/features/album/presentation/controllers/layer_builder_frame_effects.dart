@@ -106,7 +106,7 @@ Widget _frameFilmImpl(Widget image) {
               borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.25),
+                  color: Colors.black.withValues(alpha: 0.25),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),
@@ -189,7 +189,7 @@ Widget _frameFilmSquareImpl(Widget image) {
               borderRadius: BorderRadius.circular(4),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.22),
+                  color: Colors.black.withValues(alpha: 0.22),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),
@@ -433,7 +433,7 @@ Widget _frameNeonImpl(Widget image) {
       border: Border.all(color: const Color(0xFF00FFFF), width: 2),
       boxShadow: [
         BoxShadow(
-          color: const Color(0xFF00FFFF).withOpacity(0.6),
+          color: const Color(0xFF00FFFF).withValues(alpha: 0.6),
           blurRadius: 8,
           spreadRadius: 0,
         ),
@@ -534,7 +534,7 @@ Widget _frameTapeClipImpl(Widget image) {
       border: Border.all(color: const Color(0xFFE8E4DC)),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.06),
+          color: Colors.black.withValues(alpha: 0.06),
           blurRadius: 4,
           offset: const Offset(0, 2),
         ),
@@ -571,7 +571,7 @@ Widget _frameTapeClipImpl(Widget image) {
               width: 28,
               height: 14,
               decoration: BoxDecoration(
-                color: const Color(0xFFFFEB3B).withOpacity(0.85),
+                color: const Color(0xFFFFEB3B).withValues(alpha: 0.85),
                 borderRadius: BorderRadius.circular(2),
                 boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 2)],
               ),
@@ -606,7 +606,7 @@ Widget _frameThinDoubleLineImpl(Widget image) {
       borderRadius: BorderRadius.circular(8),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.06),
+          color: Colors.black.withValues(alpha: 0.06),
           blurRadius: 6,
           offset: const Offset(0, 2),
         ),
@@ -663,7 +663,7 @@ Widget _frameFloatingGlassImpl(Widget image) {
       borderRadius: BorderRadius.circular(16),
       boxShadow: [
         BoxShadow(
-          color: const Color(0xFFA0B0E0).withOpacity(0.25),
+          color: const Color(0xFFA0B0E0).withValues(alpha: 0.25),
           blurRadius: 16,
         ),
       ],
@@ -672,7 +672,7 @@ Widget _frameFloatingGlassImpl(Widget image) {
     child: Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
+        color: Colors.white.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(10),
       ),
       child: ClipRRect(
@@ -716,7 +716,7 @@ Widget _frameTornNotebookImpl(Widget image) {
       color: const Color(0xFFFFFBF0),
       boxShadow: [
         BoxShadow(
-          color: Colors.brown.withOpacity(0.1),
+          color: Colors.brown.withValues(alpha: 0.1),
           blurRadius: 6,
           offset: const Offset(0, 2),
         ),
@@ -776,7 +776,7 @@ Widget _framePostalStampImpl(Widget image) {
       border: Border.all(color: const Color(0xFFC0C0C0)),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.08),
+          color: Colors.black.withValues(alpha: 0.08),
           blurRadius: 4,
           offset: const Offset(0, 2),
         ),
@@ -818,7 +818,7 @@ Widget _frameKraftPaperImpl(Widget image) {
       borderRadius: BorderRadius.circular(4),
       boxShadow: [
         BoxShadow(
-          color: Colors.brown.withOpacity(0.2),
+          color: Colors.brown.withValues(alpha: 0.2),
           blurRadius: 6,
           offset: const Offset(0, 2),
         ),
@@ -847,7 +847,7 @@ Widget _frameGoldFrameImpl(Widget image) {
       border: Border.all(color: const Color(0xFFC9A227), width: 10),
       boxShadow: [
         BoxShadow(
-          color: const Color(0xFF8B6914).withOpacity(0.3),
+          color: const Color(0xFF8B6914).withValues(alpha: 0.3),
           blurRadius: 8,
           offset: const Offset(0, 2),
         ),
@@ -876,7 +876,7 @@ Widget _frameBlobImpl(Widget image) {
                 color: const Color(0xFFFFFEFB),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.10),
+                    color: Colors.black.withValues(alpha: 0.10),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -954,7 +954,7 @@ Widget _frameToxicGlowImpl(Widget image) {
       border: Border.all(color: const Color(0xFF39FF14), width: 3),
       boxShadow: [
         BoxShadow(
-          color: const Color(0xFF39FF14).withOpacity(0.5),
+          color: const Color(0xFF39FF14).withValues(alpha: 0.5),
           blurRadius: 12,
         ),
       ],
@@ -975,7 +975,7 @@ Widget _frameStencilBlockImpl(Widget image) {
       border: Border.all(color: const Color(0xFFD0B898), width: 1.5),
       boxShadow: [
         BoxShadow(
-          color: Colors.brown.withOpacity(0.06),
+          color: Colors.brown.withValues(alpha: 0.06),
           blurRadius: 4,
           offset: const Offset(0, 2),
         ),
@@ -997,7 +997,7 @@ Widget _frameMidnightDripImpl(Widget image) {
       border: Border.all(color: const Color(0xFFD8D0C0)),
       boxShadow: [
         BoxShadow(
-          color: Colors.brown.withOpacity(0.08),
+          color: Colors.brown.withValues(alpha: 0.08),
           blurRadius: 4,
           offset: const Offset(0, 2),
         ),
@@ -1022,7 +1022,7 @@ Widget _frameVaporStreetImpl(Widget image) {
       border: Border.all(color: const Color(0xFFC44DFF), width: 3),
       boxShadow: [
         BoxShadow(
-          color: const Color(0xFFC44DFF).withOpacity(0.35),
+          color: const Color(0xFFC44DFF).withValues(alpha: 0.35),
           blurRadius: 10,
         ),
       ],
@@ -1039,8 +1039,8 @@ Widget _frameVaporStreetImpl(Widget image) {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFFFF6B9D).withOpacity(0.2),
-                  const Color(0xFFC44DFF).withOpacity(0.12),
+                  const Color(0xFFFF6B9D).withValues(alpha: 0.2),
+                  const Color(0xFFC44DFF).withValues(alpha: 0.12),
                 ],
               ),
             ),

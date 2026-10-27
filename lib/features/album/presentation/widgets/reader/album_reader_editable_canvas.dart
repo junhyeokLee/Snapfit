@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../domain/entities/album_page.dart';
 import '../../../domain/entities/layer.dart';
@@ -54,12 +54,12 @@ class AlbumReaderEditableCanvas extends StatelessWidget {
       height: canvasH,
       decoration: BoxDecoration(
         color: pageBackgroundColor,
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(8),
         boxShadow: showShadow
             ? [
                 BoxShadow(
                   color: SnapFitColors.isDark(context)
-                      ? SnapFitColors.accentLight.withOpacity(0.2)
+                      ? SnapFitColors.accentLight.withValues(alpha: 0.2)
                       : Colors.black45,
                   blurRadius: 20,
                 ),
@@ -67,7 +67,7 @@ class AlbumReaderEditableCanvas extends StatelessWidget {
             : null,
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(8),
         child: Stack(
           clipBehavior: Clip.hardEdge,
           children: [

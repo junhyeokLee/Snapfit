@@ -8,6 +8,7 @@ import '../viewmodels/album_editor_view_model.dart';
 import '../widgets/create_flow/photo_crop_sheet.dart';
 import 'layer_builder.dart';
 import 'layer_interaction_manager.dart';
+import '../../../../core/utils/context_extensions.dart';
 
 ({PhotoCropPageContext context, VoidCallback dispose}) _pageCropContext(
   AlbumEditorViewModel vm,
@@ -86,9 +87,7 @@ Future<void> editPhotoCrop(
   final current = vm.findLayerById(layer.id);
   // A modal result must never overwrite a page or photo changed underneath it.
   if (vm.currentPage?.id != pageId || !identical(current, original)) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('페이지가 변경됐어요. 사진을 다시 선택해주세요.')));
+    context.showSnack('페이지가 변경됐어요. 사진을 다시 선택해주세요.');
     return;
   }
   if (original.imageZoom == result.imageZoom &&
@@ -124,9 +123,7 @@ Future<bool> replacePhotoInSlot(
   bool currentTarget() =>
       vm.currentPage?.id == pageId &&
       identical(vm.findLayerById(layer.id), original);
-  void reportStaleTarget() => ScaffoldMessenger.of(
-    context,
-  ).showSnackBar(const SnackBar(content: Text('페이지가 변경됐어요. 사진을 다시 선택해주세요.')));
+  void reportStaleTarget() => context.showSnack('페이지가 변경됐어요. 사진을 다시 선택해주세요.');
   if (!currentTarget()) {
     reportStaleTarget();
     return false;

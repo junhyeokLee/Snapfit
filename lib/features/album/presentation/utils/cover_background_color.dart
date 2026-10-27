@@ -7,7 +7,14 @@ Color? extractCoverBackgroundColor(String raw) {
   try {
     final decoded = jsonDecode(raw);
     if (decoded is! Map<String, dynamic>) return null;
+    return extractCoverBackgroundColorFromDocument(decoded);
+  } catch (_) {
+    return null;
+  }
+}
 
+Color? extractCoverBackgroundColorFromDocument(Map<String, dynamic> decoded) {
+  try {
     final coverPage = _extractCoverPage(decoded);
     final pageColor = _extractColorFromMap(coverPage, const [
       'backgroundColor',

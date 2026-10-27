@@ -450,8 +450,6 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
     if (user == null || ref.watch(visibleOrderOwnerProvider) != user.id) {
       return const CustomerWebPage(
         title: '계정 설정',
-        eyebrow: 'ACCOUNT',
-        showNavigation: false,
         child: Center(child: Text('로그인 계정을 확인하고 계정 설정을 다시 열어주세요.')),
       );
     }
@@ -459,25 +457,25 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
     return PopScope(
       canPop: !_busy,
       child: SnapFitWebShell(
-        title: '계정 설정',
         section: WebSection.account,
-        showNavigation: false,
-        actions: [
-          OutlinedButton.icon(
-            onPressed: _busy ? null : () => Navigator.maybePop(context),
-            icon: const Icon(Icons.arrow_back, size: 18),
-            label: const Text('계정'),
-          ),
-        ],
         child: AbsorbPointer(
           absorbing: _busy,
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const WebPageHeading(
-                  title: '프로필과 보안',
+                WebPageHeading(
+                  title: '계정 설정',
                   description: '로그인 정보와 계정 보안 설정을 확인하세요.',
+                  trailing: Navigator.of(context).canPop()
+                      ? OutlinedButton.icon(
+                          onPressed: _busy
+                              ? null
+                              : () => Navigator.maybePop(context),
+                          icon: const Icon(Icons.arrow_back, size: 18),
+                          label: const Text('설정으로'),
+                        )
+                      : null,
                 ),
                 const SizedBox(height: 24),
                 if (_busy) const LinearProgressIndicator(minHeight: 2),

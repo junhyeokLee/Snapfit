@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import 'package:snap_fit/features/album/presentation/widgets/editor/edit_cover.dart';
 
 import '../../../../core/constants/cover_size.dart';
@@ -76,6 +76,7 @@ class AddCoverScreen extends ConsumerStatefulWidget {
   /// 템플릿 유입 시 Step2에서 보여줄 예시 커버 레이어
   final List<LayerModel>? initialTemplateCoverLayers;
   final Size? initialTemplateCanvasSize;
+  final String? sourceTemplateProductKey;
 
   /// 앨범 생성 완료 콜백 (플로우에서 사용)
   final Function(int albumId)? onAlbumCreated;
@@ -98,6 +99,7 @@ class AddCoverScreen extends ConsumerStatefulWidget {
     this.targetPages,
     this.initialTemplateCoverLayers,
     this.initialTemplateCanvasSize,
+    this.sourceTemplateProductKey,
     this.onAlbumCreated,
     this.debugInitialSelectedLayerId,
     this.onRegisterCompleteAction,
@@ -164,6 +166,7 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
         // 생성 플로우(신규 생성): 선택된 커버로 바로 초기화
         final vm = ref.read(albumEditorViewModelProvider.notifier);
         vm.resetForCreate(
+          sourceTemplateProductKey: widget.sourceTemplateProductKey,
           initialCover: _selectedCover,
           targetPages: widget.targetPages ?? AlbumPagePolicy.minInnerPages,
         );
@@ -432,7 +435,7 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                       ? _creationDockHeight + 8
                       : coverLayerActionPanelBottom(
                           isCreateFlow: isCreateFlow,
-                          scaleBaseOffset: (value) => value.h,
+                          scaleBaseOffset: (value) => value,
                           safeAreaBottom: MediaQuery.paddingOf(context).bottom,
                         ),
                   left: 20,

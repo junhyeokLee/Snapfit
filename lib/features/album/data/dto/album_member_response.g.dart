@@ -10,6 +10,8 @@ _AlbumMemberResponse _$AlbumMemberResponseFromJson(Map<String, dynamic> json) =>
     _AlbumMemberResponse(
       id: (json['id'] as num).toInt(),
       userId: (json['userId'] as num).toInt(),
+      userUuid: json['userUuid'] as String?,
+      isOwner: json['isOwner'] as bool? ?? false,
       userName: json['userName'] as String?,
       userEmail: json['userEmail'] as String?,
       profileImageUrl: json['profileImageUrl'] as String?,
@@ -22,6 +24,8 @@ Map<String, dynamic> _$AlbumMemberResponseToJson(
 ) => <String, dynamic>{
   'id': instance.id,
   'userId': instance.userId,
+  'userUuid': instance.userUuid,
+  'isOwner': instance.isOwner,
   'userName': instance.userName,
   'userEmail': instance.userEmail,
   'profileImageUrl': instance.profileImageUrl,

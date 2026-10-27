@@ -85,7 +85,7 @@ class AlbumReaderPageContent extends StatelessWidget {
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
                           colors: [
-                            Colors.black.withOpacity(0.15),
+                            Colors.black.withValues(alpha: 0.15),
                             Colors.transparent,
                           ],
                         ),

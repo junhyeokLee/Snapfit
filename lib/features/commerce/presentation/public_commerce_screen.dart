@@ -9,6 +9,7 @@ import '../../../core/navigation/web_app_location.dart';
 import '../../../shared/web/web_design.dart';
 import '../../album/printing/print_vendor_spec.dart';
 import '../data/public_print_catalog.dart';
+import '../../../core/utils/context_extensions.dart';
 
 void openPublicCommerce(BuildContext context, WebAppLocation location) {
   final navigate = WebNavigationScope.maybeOf(context)?.onPublicNavigate;
@@ -743,11 +744,7 @@ class PublicCommerceFooter extends StatelessWidget {
                 Uri(scheme: 'mailto', path: CommercePolicy.contactEmail),
               );
               if (!opened && context.mounted)
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('문의: ${CommercePolicy.contactEmail}'),
-                  ),
-                );
+                context.showSnack('문의: ${CommercePolicy.contactEmail}');
             },
             icon: const Icon(Icons.mail_outline, size: 16),
             label: const Text('문의 ${CommercePolicy.contactEmail}'),

@@ -280,7 +280,6 @@ class _PrintOrderRequestScreenState
         return const CustomerWebPage(
           title: '주문 문의',
           eyebrow: 'ORDER SUPPORT',
-          showNavigation: false,
           child: Center(
             child: Text(
               '로그인 계정을 확인해주세요. 계정이 변경됐다면 이 화면을 닫고 주문 문의를 다시 열어주세요.',
@@ -586,7 +585,6 @@ class _PrintOrderRequestScreenState
       child: CustomerWebPage(
         title: '주문 문의',
         description: '문의·취소·환불 요청과 처리 상태를 확인하세요.',
-        showNavigation: false,
         allowBack: !_sending,
         onBack: _close,
         scrollBody: true,

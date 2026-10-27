@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../../shared/web/web_design.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import '../../../../../core/constants/page_templates.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../shared/widgets/catalog_favorite_widgets.dart';
@@ -133,14 +133,14 @@ class _PageTemplatePickerState extends State<PageTemplatePicker> {
       ),
       decoration: BoxDecoration(
         color: SnapFitColors.surfaceOf(context),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
             color: SnapFitColors.isDark(context)
-                ? SnapFitColors.accentLight.withOpacity(0.25)
-                : Colors.black.withOpacity(0.18),
-            blurRadius: 20.r,
-            offset: Offset(0, -4.h),
+                ? SnapFitColors.accentLight.withValues(alpha: 0.25)
+                : Colors.black.withValues(alpha: 0.18),
+            blurRadius: 20,
+            offset: Offset(0, -4),
           ),
         ],
       ),
@@ -149,22 +149,22 @@ class _PageTemplatePickerState extends State<PageTemplatePicker> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(height: 12.h),
+            SizedBox(height: 12),
             Container(
-              width: 48.w,
-              height: 4.h,
+              width: 48,
+              height: 4,
               decoration: BoxDecoration(
                 color: SnapFitColors.overlayMediumOf(context),
-                borderRadius: BorderRadius.circular(2.r),
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(16.w),
+              padding: EdgeInsets.all(16),
               child: Text(
                 '페이지 템플릿',
                 style: TextStyle(
                   color: SnapFitColors.textPrimaryOf(context),
-                  fontSize: 18.sp,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -179,18 +179,12 @@ class _PageTemplatePickerState extends State<PageTemplatePicker> {
                       onShowAll: () => setState(() => _favoritesOnly = false),
                     )
                   : GridView.builder(
-                      padding: EdgeInsets.fromLTRB(
-                        16.w,
-                        0,
-                        16.w,
-                        24.h + bottomInset,
-                      ),
+                      padding: EdgeInsets.fromLTRB(16, 0, 16, 24 + bottomInset),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 3,
-                        crossAxisSpacing: 12.w,
-                        mainAxisSpacing: 16.h,
-                        childAspectRatio:
-                            100.w / (118.h + 8.h + 14.sp * 1.4 + 10.h),
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: 100 / (118 + 8 + 14 * 1.4 + 10),
                       ),
                       itemCount: templates.length,
                       itemBuilder: (context, index) {
@@ -237,7 +231,7 @@ class TemplatePreviewCanvas extends StatelessWidget {
         height: height,
         decoration: BoxDecoration(
           color: SnapFitColors.overlayLightOf(context),
-          borderRadius: BorderRadius.circular(6.r),
+          borderRadius: BorderRadius.circular(6),
           border: Border.all(
             color: SnapFitColors.overlayStrongOf(context),
             width: 1,
@@ -245,7 +239,7 @@ class TemplatePreviewCanvas extends StatelessWidget {
         ),
         child: Icon(
           Icons.add_photo_alternate_outlined,
-          size: 28.sp,
+          size: 28,
           color: SnapFitColors.textSecondaryOf(context),
         ),
       );
@@ -255,18 +249,18 @@ class TemplatePreviewCanvas extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: SnapFitColors.pureWhite.withOpacity(0.95),
-        borderRadius: BorderRadius.circular(8.r),
+        color: SnapFitColors.pureWhite.withValues(alpha: 0.95),
+        borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(8),
         child: Stack(
           clipBehavior: Clip.none,
           children: template.slots.map((slot) {
@@ -298,7 +292,7 @@ class TemplatePreviewCanvas extends StatelessWidget {
                     boxShadow: isImage
                         ? [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
+                              color: Colors.black.withValues(alpha: 0.08),
                               blurRadius: 2,
                               offset: const Offset(0, 1),
                             ),
@@ -346,13 +340,13 @@ class _TemplateCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(12),
         child: Container(
-          width: 100.w,
-          padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 6.w),
+          width: 100,
+          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 6),
           decoration: BoxDecoration(
             color: SnapFitColors.overlayLightOf(context),
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: SnapFitColors.overlayStrongOf(context),
               width: 1,
@@ -366,12 +360,12 @@ class _TemplateCard extends StatelessWidget {
                   fit: BoxFit.contain,
                   child: TemplatePreviewCanvas(
                     template: template,
-                    width: 88.w,
-                    height: 118.h,
+                    width: 88,
+                    height: 118,
                   ),
                 ),
               ),
-              SizedBox(height: 8.h),
+              SizedBox(height: 8),
               Text(
                 template.name,
                 textAlign: TextAlign.center,
@@ -379,7 +373,7 @@ class _TemplateCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: SnapFitColors.textPrimaryOf(context),
-                  fontSize: 11.sp,
+                  fontSize: 11,
                   fontWeight: FontWeight.w500,
                 ),
               ),

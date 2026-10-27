@@ -16,4 +16,5 @@ export 'src/engine.dart'
         BookFlipEffects,
         BookFlipMaterial,
         BookFlipPhysics,
+        BookFlipPreparationPaused,
         FlipDirection;

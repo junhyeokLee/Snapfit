@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../config/env.dart';
@@ -52,13 +52,13 @@ class _AdminTemplateManagementScreenState
           backgroundColor: SnapFitColors.backgroundOf(context),
           elevation: 0,
           leading: const SnapFitAppBarBackButton(),
-          title: Text('템플릿 관리', style: context.sfTitle(size: 16.sp)),
+          title: Text('템플릿 관리', style: context.sfTitle(size: 16)),
         ),
         body: Center(
           child: Text(
             '관리자 키가 설정되지 않았습니다.',
             style: TextStyle(
-              fontSize: 13.sp,
+              fontSize: 13,
               color: SnapFitColors.textSecondaryOf(context),
             ),
           ),
@@ -73,7 +73,7 @@ class _AdminTemplateManagementScreenState
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: const SnapFitAppBarBackButton(),
-        title: Text('템플릿 관리', style: context.sfTitle(size: 16.sp)),
+        title: Text('템플릿 관리', style: context.sfTitle(size: 16)),
         actions: [
           IconButton(
             onPressed: _publishCanonicalTemplates,
@@ -88,7 +88,7 @@ class _AdminTemplateManagementScreenState
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openEditor(),
-        backgroundColor: SnapFitColors.accent,
+        backgroundColor: SnapFitColors.actionAccent,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
         label: const Text('템플릿 추가'),
@@ -109,7 +109,7 @@ class _AdminTemplateManagementScreenState
                   snapshot.error ?? Exception('템플릿을 불러올 수 없습니다.'),
                 ),
                 style: TextStyle(
-                  fontSize: 13.sp,
+                  fontSize: 13,
                   color: SnapFitColors.textSecondaryOf(context),
                 ),
               ),
@@ -122,7 +122,7 @@ class _AdminTemplateManagementScreenState
               child: Text(
                 '등록된 템플릿이 없습니다.',
                 style: TextStyle(
-                  fontSize: 13.sp,
+                  fontSize: 13,
                   color: SnapFitColors.textSecondaryOf(context),
                 ),
               ),
@@ -130,47 +130,47 @@ class _AdminTemplateManagementScreenState
           }
 
           return ListView.separated(
-            padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 110.h),
+            padding: EdgeInsets.fromLTRB(16, 8, 16, 110),
             itemCount: items.length,
-            separatorBuilder: (_, __) => SizedBox(height: 10.h),
+            separatorBuilder: (_, __) => SizedBox(height: 10),
             itemBuilder: (context, index) {
               final item = items[index];
               return Container(
                 decoration: BoxDecoration(
                   color: SnapFitColors.surfaceOf(context),
-                  borderRadius: BorderRadius.circular(18.r),
+                  borderRadius: BorderRadius.circular(18),
                   border: Border.all(
                     color: SnapFitColors.overlayLightOf(context),
                   ),
                 ),
                 child: ListTile(
-                  contentPadding: EdgeInsets.fromLTRB(16.w, 10.h, 12.w, 10.h),
+                  contentPadding: EdgeInsets.fromLTRB(16, 10, 12, 10),
                   title: Text(
                     item.title.isEmpty ? '제목 없음' : item.title,
                     style: TextStyle(
-                      fontSize: 14.sp,
+                      fontSize: 14,
                       fontWeight: FontWeight.w800,
                       color: SnapFitColors.textPrimaryOf(context),
                     ),
                   ),
                   subtitle: Padding(
-                    padding: EdgeInsets.only(top: 6.h),
+                    padding: EdgeInsets.only(top: 6),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           '${item.category.isEmpty ? '카테고리 없음' : item.category} · ${item.pageCount}페이지',
                           style: TextStyle(
-                            fontSize: 11.sp,
+                            fontSize: 11,
                             color: SnapFitColors.textSecondaryOf(context),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        SizedBox(height: 4.h),
+                        SizedBox(height: 4),
                         Text(
                           '관심 ${item.likeCount}명 · 사용 ${item.userCount}명',
                           style: TextStyle(
-                            fontSize: 10.sp,
+                            fontSize: 10,
                             color: SnapFitColors.textMutedOf(context),
                             fontWeight: FontWeight.w600,
                           ),
@@ -226,7 +226,7 @@ class _AdminTemplateManagementScreenState
       }
       if (!mounted) return;
       setState(() => _refreshSeed++);
-      _showToast('기본 6개 템플릿을 서버에 반영했습니다.');
+      _showToast('현재 디자인 ${templates.length}종을 서버에 반영했습니다.');
     } catch (e) {
       _showToast(AppErrorMapper.toUserMessage(e));
     }
@@ -234,7 +234,7 @@ class _AdminTemplateManagementScreenState
 
   Map<String, dynamic> _upsertPayload(PremiumTemplate template) {
     return <String, dynamic>{
-      if (template.id > 0) 'id': template.id,
+      if (template.id != 0) 'id': template.id,
       'title': template.title,
       'subTitle': template.subTitle,
       'description': template.description,
@@ -423,17 +423,17 @@ class _AdminTemplateEditorScreenState
         Text(
           label,
           style: TextStyle(
-            fontSize: 12.sp,
+            fontSize: 12,
             fontWeight: FontWeight.w700,
             color: SnapFitColors.textPrimaryOf(context),
           ),
         ),
-        SizedBox(height: 8.h),
+        SizedBox(height: 8),
         TextField(
           controller: controller,
           maxLines: maxLines,
           style: TextStyle(
-            fontSize: 13.sp,
+            fontSize: 13,
             color: SnapFitColors.textPrimaryOf(context),
           ),
           decoration: InputDecoration(
@@ -441,13 +441,13 @@ class _AdminTemplateEditorScreenState
             filled: true,
             fillColor: SnapFitColors.surfaceOf(context),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14.r),
+              borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(
                 color: SnapFitColors.overlayLightOf(context),
               ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14.r),
+              borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(
                 color: SnapFitColors.overlayLightOf(context),
               ),
@@ -469,7 +469,7 @@ class _AdminTemplateEditorScreenState
         leading: const SnapFitAppBarBackButton(),
         title: Text(
           widget.templateId == null ? '템플릿 추가' : '템플릿 수정',
-          style: context.sfTitle(size: 16.sp),
+          style: context.sfTitle(size: 16),
         ),
         actions: [
           TextButton(
@@ -487,43 +487,43 @@ class _AdminTemplateEditorScreenState
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 32.h),
+              padding: EdgeInsets.fromLTRB(16, 12, 16, 32),
               children: [
                 _field('제목', _titleController),
-                SizedBox(height: 14.h),
+                SizedBox(height: 14),
                 _field('부제목', _subTitleController),
-                SizedBox(height: 14.h),
+                SizedBox(height: 14),
                 _field('설명', _descriptionController, maxLines: 4),
-                SizedBox(height: 14.h),
+                SizedBox(height: 14),
                 _field('커버 이미지 URL', _coverController),
-                SizedBox(height: 14.h),
+                SizedBox(height: 14),
                 _field(
                   '예시 이미지 목록',
                   _previewController,
                   maxLines: 6,
                   hint: '한 줄에 하나씩 입력',
                 ),
-                SizedBox(height: 14.h),
+                SizedBox(height: 14),
                 Row(
                   children: [
                     Expanded(child: _field('카테고리', _categoryController)),
-                    SizedBox(width: 12.w),
+                    SizedBox(width: 12),
                     Expanded(child: _field('페이지 수', _pageCountController)),
                   ],
                 ),
-                SizedBox(height: 14.h),
+                SizedBox(height: 14),
                 Row(
                   children: [
                     Expanded(child: _field('관심 수', _likeCountController)),
-                    SizedBox(width: 12.w),
+                    SizedBox(width: 12),
                     Expanded(child: _field('사용 수', _userCountController)),
                   ],
                 ),
-                SizedBox(height: 14.h),
+                SizedBox(height: 14),
                 _field('태그', _tagsController, hint: '쉼표로 구분'),
-                SizedBox(height: 14.h),
+                SizedBox(height: 14),
                 _field('템플릿 JSON', _templateJsonController, maxLines: 16),
-                SizedBox(height: 18.h),
+                SizedBox(height: 18),
                 SwitchListTile(
                   value: _active,
                   activeColor: SnapFitColors.accent,

@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../../shared/web/web_design.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/constants/cover_theme.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
@@ -36,9 +35,9 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scrollController.hasClients || index < 0) return;
 
-      final double itemWidthPx = previewWidth.w;
-      final double separatorPx = 20.w;
-      final double horizontalPaddingPx = 20.w;
+      final double itemWidthPx = previewWidth;
+      final double separatorPx = 20;
+      final double horizontalPaddingPx = 20;
 
       final double screenWidth = MediaQuery.of(context).size.width;
       final double itemStart =
@@ -192,47 +191,46 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
     }
 
     return Material(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       color: Colors.transparent,
       clipBehavior: Clip.antiAlias,
       child: Container(
-        height: 300.h,
+        height: 300,
         padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
         decoration: BoxDecoration(
           color: SnapFitColors.surfaceOf(context),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           children: [
-            SizedBox(height: 12.h),
+            SizedBox(height: 12),
             Container(
-              width: 48.w,
-              height: 4.h,
+              width: 48,
+              height: 4,
               decoration: BoxDecoration(
                 color: SnapFitColors.overlayMediumOf(context),
-                borderRadius: BorderRadius.circular(4.r),
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
 
             Expanded(
               child: Center(
                 child: SizedBox(
-                  height: 160.h, // 충분한 높이 확보 (스케일 효과 고려)
+                  height: 160, // 충분한 높이 확보 (스케일 효과 고려)
                   child: ListView.separated(
                     controller: _scrollController,
                     clipBehavior: Clip.none,
                     scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    padding: EdgeInsets.symmetric(horizontal: 20),
                     itemCount: themes.length,
-                    separatorBuilder: (_, __) => SizedBox(width: 20.w),
+                    separatorBuilder: (_, __) => SizedBox(width: 20),
                     itemBuilder: (context, index) {
                       final theme = themes[index];
                       return EditCoverThemeItem(
                         theme: theme,
                         isSelected: theme == selectedTheme,
-                        width: previewBaseWidth.w,
-                        height: previewBaseHeight
-                            .w, // .w for both to preserve aspect ratio
+                        width: previewBaseWidth,
+                        height: previewBaseHeight, // preserve aspect ratio
                         onTap: () {
                           vm.updateTheme(theme);
                           editorVm.updateTheme(theme);

@@ -51,6 +51,8 @@ class PersonalOrderShortcut extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             summary.when(
+              skipLoadingOnRefresh: false,
+              skipLoadingOnReload: false,
               loading: () => Text(
                 '주문 현황 확인 중',
                 style: ExperienceFormStyle.text(context, 12, secondary: true),

@@ -13,7 +13,7 @@ Widget _framePhotoCardImpl(Widget image) {
           borderRadius: BorderRadius.circular(radius),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.16),
+              color: Colors.black.withValues(alpha: 0.16),
               blurRadius: (s * 0.05).clamp(2.0, 7.0),
               offset: const Offset(0, 2),
             ),
@@ -50,7 +50,7 @@ Widget _framePaperTapeCardImpl(Widget image) {
                   borderRadius: BorderRadius.circular(2),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.16),
+                      color: Colors.black.withValues(alpha: 0.16),
                       blurRadius: (s * 0.07).clamp(3.0, 10.0),
                       offset: const Offset(0, 3),
                     ),
@@ -83,13 +83,13 @@ Widget _framePaperTapeCardImpl(Widget image) {
                   width: tapeW,
                   height: tapeH,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE0C79F).withOpacity(0.9),
+                    color: const Color(0xFFE0C79F).withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(2),
                   ),
                   child: CustomPaint(
                     painter: _TapeDotsPainter(
                       baseColor: Colors.transparent,
-                      dotColor: const Color(0xFFC9AF85).withOpacity(0.35),
+                      dotColor: const Color(0xFFC9AF85).withValues(alpha: 0.35),
                     ),
                   ),
                 ),
@@ -120,7 +120,7 @@ Widget _framePosterPolaroidImpl(Widget image) {
           borderRadius: BorderRadius.circular(2),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: (s * 0.09).clamp(4.0, 12.0),
               offset: const Offset(0, 3),
             ),
@@ -147,7 +147,7 @@ Widget _frameTornPaperCardImpl(Widget image) {
     decoration: BoxDecoration(
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.14),
+          color: Colors.black.withValues(alpha: 0.14),
           blurRadius: 10,
           offset: const Offset(0, 4),
         ),
@@ -199,7 +199,7 @@ Widget _framePaperClipCardImpl(Widget image) {
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.14),
+                color: Colors.black.withValues(alpha: 0.14),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -296,7 +296,7 @@ Widget _frameMaskingTapeImpl(Widget image) {
         child: Container(
           height: 10,
           decoration: BoxDecoration(
-            color: const Color(0xFFE4D2A6).withOpacity(0.9),
+            color: const Color(0xFFE4D2A6).withValues(alpha: 0.9),
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -308,7 +308,7 @@ Widget _frameMaskingTapeImpl(Widget image) {
         child: Container(
           height: 9,
           decoration: BoxDecoration(
-            color: const Color(0xFFE4D2A6).withOpacity(0.82),
+            color: const Color(0xFFE4D2A6).withValues(alpha: 0.82),
             borderRadius: BorderRadius.circular(2),
           ),
         ),

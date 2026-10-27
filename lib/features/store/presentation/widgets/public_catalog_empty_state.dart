@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/web/web_design.dart';
+import '../../../../shared/widgets/experience_form_style.dart';
 
 /// Recovery actions use only subjects that are present in the public catalog.
 class PublicCatalogEmptyState extends StatelessWidget {
@@ -30,11 +31,14 @@ class PublicCatalogEmptyState extends StatelessWidget {
           catalogEmpty
               ? '둘러볼 디자인을 준비하고 있어요.'
               : '검색 결과가 없어요. 다른 이름이나 주제로 찾아보세요.',
-          style: const TextStyle(fontSize: 16, height: 1.5),
+          style: ExperienceFormStyle.text(context, 16, weight: FontWeight.w600),
         ),
         if (catalogEmpty) ...[
           const SizedBox(height: 8),
-          const Text('잠시 후 다시 확인해 주세요.'),
+          Text(
+            '잠시 후 다시 확인해 주세요.',
+            style: ExperienceFormStyle.text(context, 14, secondary: true),
+          ),
         ] else ...[
           const SizedBox(height: 12),
           OutlinedButton.icon(
@@ -45,7 +49,10 @@ class PublicCatalogEmptyState extends StatelessWidget {
           ),
           if (suggestedCategories.isNotEmpty) ...[
             const SizedBox(height: 16),
-            const Text('다른 주제 둘러보기'),
+            Text(
+              '다른 주제 둘러보기',
+              style: ExperienceFormStyle.text(context, 13, secondary: true),
+            ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,

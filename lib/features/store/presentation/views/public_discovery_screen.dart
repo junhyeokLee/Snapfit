@@ -16,6 +16,7 @@ import '../widgets/template_design_comparison.dart';
 import '../widgets/public_catalog_empty_state.dart';
 import '../widgets/public_template_information.dart';
 import 'template_detail_screen.dart';
+import '../../../../core/utils/context_extensions.dart';
 
 /// A read-only introduction backed exclusively by the published bundled catalog.
 /// Browsing never creates an anonymous account or requests customer data.
@@ -42,11 +43,7 @@ class _PublicDiscoveryScreenState extends State<PublicDiscoveryScreen> {
     if (_comparison.contains(template.id)) {
       setState(() => _comparison = _comparison.remove(template.id));
     } else if (_comparison.isFull) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(TemplateDesignComparisonSelection.limitMessage),
-        ),
-      );
+      context.showSnack(TemplateDesignComparisonSelection.limitMessage);
     } else {
       setState(() => _comparison = _comparison.add(template.id));
     }
@@ -223,6 +220,7 @@ class _PublicDiscoveryScreenState extends State<PublicDiscoveryScreen> {
             CustomScrollView(
               key: const ValueKey('public-discovery-scroll'),
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              cacheExtent: 800,
               slivers: [
                 if (!widget.catalogOnly)
                   SliverToBoxAdapter(
@@ -349,104 +347,112 @@ class _PublicDiscoveryScreenState extends State<PublicDiscoveryScreen> {
                         48 +
                         28,
                   ),
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final template = templates[index];
-                    return Material(
-                      color: palette.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      clipBehavior: Clip.antiAlias,
-                      child: InkWell(
-                        key: ValueKey('discovery-template-${template.id}'),
-                        onTap: () => _preview(template),
-                        child: Padding(
-                          padding: const EdgeInsets.all(14),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              AspectRatio(
-                                aspectRatio: 1,
-                                child: CreationCatalogCover(
-                                  template: template,
-                                  useThumbnail: true,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                template.title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  height: 1.5,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${template.category ?? '앨범'} · 표지와 내지 보기',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: palette.muted,
-                                  fontSize: 12,
-                                  height: 1.5,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                PublicTemplateFacts.fromTemplate(
-                                  template,
-                                ).compactLabel,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: palette.muted,
-                                  fontSize: 12,
-                                  height: 1.5,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              PublicTemplatePriceLabel(template: template),
-                              const SizedBox(height: 4),
-                              Text(
-                                TemplateDesignProfile.of(
-                                  template,
-                                ).compositionLabel,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: palette.muted,
-                                  fontSize: 12,
-                                  height: 1.5,
-                                ),
-                              ),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: Semantics(
-                                  toggled: _comparison.contains(template.id),
-                                  label: '${template.title} 비교',
-                                  child: OutlinedButton.icon(
-                                    key: ValueKey(
-                                      'discovery-compare-${template.id}',
+                  delegate: SliverChildBuilderDelegate(
+                    addAutomaticKeepAlives: false,
+                    (context, index) {
+                      final template = templates[index];
+                      return RepaintBoundary(
+                        child: Material(
+                          color: palette.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          clipBehavior: Clip.antiAlias,
+                          child: InkWell(
+                            key: ValueKey('discovery-template-${template.id}'),
+                            onTap: () => _preview(template),
+                            child: Padding(
+                              padding: const EdgeInsets.all(14),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  AspectRatio(
+                                    aspectRatio: 1,
+                                    child: CreationCatalogCover(
+                                      template: template,
+                                      useThumbnail: true,
                                     ),
-                                    onPressed: () =>
-                                        _toggleComparison(template),
-                                    icon: Icon(
-                                      _comparison.contains(template.id)
-                                          ? Icons.check
-                                          : Icons.compare_arrows,
-                                      size: 16,
-                                    ),
-                                    label: const Text('비교'),
                                   ),
-                                ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    template.title,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      height: 1.5,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${template.category ?? '앨범'} · 표지와 내지 보기',
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: palette.muted,
+                                      fontSize: 12,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    PublicTemplateFacts.fromTemplate(
+                                      template,
+                                    ).compactLabel,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: palette.muted,
+                                      fontSize: 12,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  PublicTemplatePriceLabel(template: template),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    TemplateDesignProfile.of(
+                                      template,
+                                    ).compositionLabel,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: palette.muted,
+                                      fontSize: 12,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Semantics(
+                                      toggled: _comparison.contains(
+                                        template.id,
+                                      ),
+                                      label: '${template.title} 비교',
+                                      child: OutlinedButton.icon(
+                                        key: ValueKey(
+                                          'discovery-compare-${template.id}',
+                                        ),
+                                        onPressed: () =>
+                                            _toggleComparison(template),
+                                        icon: Icon(
+                                          _comparison.contains(template.id)
+                                              ? Icons.check
+                                              : Icons.compare_arrows,
+                                          size: 16,
+                                        ),
+                                        label: const Text('비교'),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  }, childCount: templates.length.clamp(0, _limit)),
+                      );
+                    },
+                    childCount: templates.length.clamp(0, _limit),
+                  ),
                 ),
                 if (templates.length > _limit)
                   SliverToBoxAdapter(

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../../../shared/web/web_design.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../../../shared/widgets/experience_icon.dart';
@@ -13,6 +12,7 @@ import '../../../../../core/theme/snapfit_design_tokens.dart'
     show SnapFitRadius;
 import '../../../../../core/utils/screen_logger.dart';
 import '../../../data/api/album_provider.dart';
+import '../../../../../core/utils/context_extensions.dart';
 import '../../../service/album_invite_service.dart';
 import '../../../domain/entities/layer.dart';
 import 'creation_document_preview.dart';
@@ -427,26 +427,12 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
   /// 카카오톡으로 초대 링크 공유
   Future<void> _inviteViaKakaoTalk() async {
     if (_albumId == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('앨범 정보를 불러오는 중입니다. 잠시만 기다려주세요.'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
+      if (mounted) context.showSnack('앨범 정보를 불러오는 중입니다. 잠시만 기다려주세요.');
       return;
     }
 
     if (_inviteLink == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('초대 링크를 생성하는 중입니다. 잠시만 기다려주세요.'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
+      if (mounted) context.showSnack('초대 링크를 생성하는 중입니다. 잠시만 기다려주세요.');
       // 초대 링크가 없으면 다시 생성 시도
       await _createInviteLink();
       if (_inviteLink == null) {
@@ -494,16 +480,16 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
               children: [
                 Icon(
                   Icons.check_circle,
-                  color: kIsWeb ? WebPalette.of(context).onBrand : Colors.white,
-                  size: 20.sp,
+                  color: const Color(0xFF191919),
+                  size: 20,
                 ),
-                SizedBox(width: 8.w),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     '카카오톡 공유 화면을 열었어요.',
                     style: TextStyle(
-                      fontSize: 14.sp,
-                      color: kIsWeb ? WebPalette.of(context).onBrand : null,
+                      fontSize: 14,
+                      color: const Color(0xFF191919),
                     ),
                   ),
                 ),
@@ -513,7 +499,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
             duration: const Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.r),
+              borderRadius: BorderRadius.circular(8),
             ),
           ),
         );
@@ -525,14 +511,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
   /// 초대 링크 복사
   Future<void> _copyInviteLink() async {
     if (_inviteLink == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('초대 링크를 생성하는 중입니다. 잠시만 기다려주세요.'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
+      if (mounted) context.showSnack('초대 링크를 생성하는 중입니다. 잠시만 기다려주세요.');
       // 초대 링크가 없으면 다시 생성 시도
       await _createInviteLink();
       if (_inviteLink == null) {
@@ -549,21 +528,23 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
               Icon(
                 Icons.check_circle,
                 color: kIsWeb ? WebPalette.of(context).onBrand : Colors.white,
-                size: 20.sp,
+                size: 20,
               ),
-              SizedBox(width: 8.w),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   '초대 링크가 클립보드에 복사되었습니다.',
                   style: TextStyle(
-                    fontSize: 14.sp,
-                    color: kIsWeb ? WebPalette.of(context).onBrand : null,
+                    fontSize: 14,
+                    color: kIsWeb
+                        ? WebPalette.of(context).onBrand
+                        : SnapFitColors.onAccent,
                   ),
                 ),
               ),
             ],
           ),
-          backgroundColor: SnapFitColors.accent,
+          backgroundColor: SnapFitColors.actionAccent,
           duration: const Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
         ),
@@ -581,7 +562,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
         title: Text(
           '초대를 건너뛸까요?',
           style: TextStyle(
-            fontSize: 17.sp,
+            fontSize: 17,
             fontWeight: FontWeight.w800,
             color: SnapFitColors.textPrimaryOf(context),
           ),
@@ -589,7 +570,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
         content: Text(
           '지금은 초대하지 않고 다음 단계로 이동합니다.\n멤버 초대는 앨범에서도 언제든 할 수 있어요.',
           style: TextStyle(
-            fontSize: 13.sp,
+            fontSize: 13,
             color: SnapFitColors.textSecondaryOf(context),
             height: 1.45,
           ),

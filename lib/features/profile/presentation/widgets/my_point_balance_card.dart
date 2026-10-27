@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/snapfit_design_tokens.dart';
-import '../../../../shared/widgets/experience_style.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/widgets/experience_icon.dart';
 import '../../../../shared/widgets/snapfit_shimmer.dart';
@@ -12,9 +11,11 @@ class MyPointBalanceCard extends ConsumerWidget {
   const MyPointBalanceCard({
     super.key,
     required this.onCharge,
+    this.onHistory,
     this.compact = false,
   });
   final VoidCallback onCharge;
+  final VoidCallback? onHistory;
   final bool compact;
 
   @override
@@ -30,6 +31,8 @@ class MyPointBalanceCard extends ConsumerWidget {
       ),
     );
     final amount = balance.when(
+      skipLoadingOnRefresh: false,
+      skipLoadingOnReload: false,
       data: (value) => Text(
         '${value.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')} P',
         style: ExperienceFormStyle.text(
@@ -55,10 +58,12 @@ class MyPointBalanceCard extends ConsumerWidget {
       style: OutlinedButton.styleFrom(
         foregroundColor: ExperienceFormStyle.selectionInk(context),
         side: BorderSide(
-          color: ExperienceFormStyle.selectionInk(context).withOpacity(.4),
+          color: ExperienceFormStyle.selectionInk(
+            context,
+          ).withValues(alpha: .4),
         ),
-        textStyle: ExperienceStyle.text(14),
-        minimumSize: const Size(0, 36),
+        textStyle: ExperienceFormStyle.text(context, 14),
+        minimumSize: const Size(0, 44),
         padding: const EdgeInsets.symmetric(horizontal: 14),
         shape: const StadiumBorder(),
       ),
@@ -84,6 +89,32 @@ class MyPointBalanceCard extends ConsumerWidget {
       ),
       child: LayoutBuilder(
         builder: (context, bounds) {
+          if (onHistory != null) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                label,
+                const SizedBox(height: 8),
+                amount,
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    charge,
+                    TextButton(
+                      key: const ValueKey('my-point-history'),
+                      onPressed: onHistory,
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(0, 44),
+                      ),
+                      child: const Text('이용내역'),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          }
           if (compact &&
               bounds.maxWidth >= 260 &&
               MediaQuery.textScalerOf(context).scale(14) <= 20) {

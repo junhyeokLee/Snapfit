@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import '../../../../../core/constants/snapfit_colors.dart';
 
 /// EditCover 전용 상단 액션 바
@@ -29,12 +29,12 @@ class EditCoverTopBar extends StatelessWidget {
               DecoratedBox(
                 decoration: BoxDecoration(
                   color: SnapFitColors.accent.withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(20.r),
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: TextButton(
                   style: TextButton.styleFrom(
-                    minimumSize: Size(64.w, 32.h),
-                    padding: EdgeInsets.symmetric(horizontal: 12.w),
+                    minimumSize: Size(64, 32),
+                    padding: EdgeInsets.symmetric(horizontal: 12),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   onPressed: isCreating ? null : onAction,
@@ -42,13 +42,13 @@ class EditCoverTopBar extends StatelessWidget {
                     !isEditMode ? '완료' : '다음',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 13.sp,
+                      fontSize: 13,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
               ),
-              SizedBox(width: 16.w),
+              SizedBox(width: 16),
             ],
           ),
         ),

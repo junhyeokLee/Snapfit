@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../../../shared/widgets/snapfit_motion.dart';
@@ -94,7 +94,7 @@ class _PageListSelectorState extends ConsumerState<PageListSelector> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final vertical = constraints.maxWidth < 120;
-        final thumbHeight = vertical ? 54.0 : 56.h.clamp(44.0, 56.0);
+        final double thumbHeight = vertical ? 54.0 : 56.0.clamp(44.0, 56.0);
         final captionHeight = MediaQuery.textScalerOf(context).scale(11) * 1.5;
         final height = thumbHeight + captionHeight + 16;
         final extent = vertical
@@ -285,10 +285,10 @@ class _PageListSelectorState extends ConsumerState<PageListSelector> {
       builder: (context, constraints) {
         final targetW = constraints.maxWidth.isFinite
             ? constraints.maxWidth
-            : 24.w;
+            : 24.0;
         final targetH = constraints.maxHeight.isFinite
             ? constraints.maxHeight
-            : 44.h;
+            : 44.0;
         return AlbumReaderPageContent(
           layers: page.layers,
           targetW: targetW,

@@ -12,6 +12,7 @@ import '../../../../shared/widgets/studio_decoration.dart';
 import '../../../../core/templates/studio_decoration_catalog.dart';
 import '../../../../core/utils/image_url_policy.dart';
 import '../../../../core/utils/text_image_shader.dart';
+import '../../../../core/utils/preview_image_decode.dart';
 import '../../../album/domain/entities/layer.dart';
 import '../../../album/presentation/widgets/cover/album_spine_image.dart';
 import '../../../../shared/snapfit_image.dart';
@@ -90,7 +91,7 @@ class TemplatePageRenderer extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4),
         ],
       ),
       child: stack,
@@ -174,6 +175,13 @@ class TemplatePageRenderer extends StatelessWidget {
     final drawH = h.isFinite ? h.clamp(1.0, canvasH * 4).toDouble() : 1.0;
     final drawX = x.isFinite ? x : 0.0;
     final drawY = y.isFinite ? y : 0.0;
+    final decodeWidth = previewLayerDecodeWidth(
+      canvasDecodeWidth: imageDecodeWidth,
+      widthFraction: layer.width / bounds.width,
+      heightFraction: layer.height / bounds.height,
+      scale: layer.scale,
+      zoom: layer.imageZoom,
+    );
 
     final imageUrl = layer.previewUrl ?? layer.imageUrl ?? layer.originalUrl;
     if (layer.type == LayerType.image ||
@@ -203,25 +211,17 @@ class TemplatePageRenderer extends StatelessWidget {
 
       Widget imageContent;
       if (layer.type == LayerType.image && photoBuilder != null) {
-        imageContent = photoBuilder!(layer, imageDecodeWidth);
+        imageContent = photoBuilder!(layer, decodeWidth);
       } else if (layer.asset is BrowserPhotoAsset) {
         final provider = photoAssetImageProvider(layer.asset!);
         imageContent = curvePhoto
             ? AlbumSpineImage(
-                image: ResizeImage.resizeIfNeeded(
-                  imageDecodeWidth,
-                  null,
-                  provider,
-                ),
+                image: ResizeImage.resizeIfNeeded(decodeWidth, null, provider),
                 alignment: layer.imageAlignment,
                 zoom: layer.imageZoom,
               )
             : Image(
-                image: ResizeImage.resizeIfNeeded(
-                  imageDecodeWidth,
-                  null,
-                  provider,
-                ),
+                image: ResizeImage.resizeIfNeeded(decodeWidth, null, provider),
                 fit: fit,
                 alignment: layer.imageAlignment,
               );
@@ -241,7 +241,7 @@ class TemplatePageRenderer extends StatelessWidget {
             ? SnapfitImage(
                 urlOrGs: imageUrlByVariant(url, variant: ImageVariant.detail),
                 cacheManager: snapfitImageCacheManager,
-                memCacheWidth: imageDecodeWidth,
+                memCacheWidth: decodeWidth,
                 placeholder: const TemplatePaperPlaceholder(compact: true),
                 error: const TemplatePaperPlaceholder(compact: true),
                 imageBuilder: (context, image) => AlbumSpineImage(
@@ -251,11 +251,7 @@ class TemplatePageRenderer extends StatelessWidget {
                 ),
               )
             : AlbumSpineImage(
-                image: ResizeImage.resizeIfNeeded(
-                  imageDecodeWidth,
-                  null,
-                  provider,
-                ),
+                image: ResizeImage.resizeIfNeeded(decodeWidth, null, provider),
                 alignment: layer.imageAlignment,
                 zoom: layer.imageZoom,
               );
@@ -264,21 +260,21 @@ class TemplatePageRenderer extends StatelessWidget {
           localFile,
           fit: fit,
           alignment: layer.imageAlignment,
-          cacheWidth: imageDecodeWidth,
+          cacheWidth: decodeWidth,
         );
       } else if (url != null && bundledTemplateAssetPath(url) != null) {
         imageContent = Image.asset(
           bundledTemplateAssetPath(url)!,
           fit: fit,
           alignment: layer.imageAlignment,
-          cacheWidth: imageDecodeWidth,
+          cacheWidth: decodeWidth,
         );
       } else if (url != null && url.startsWith('asset:')) {
         imageContent = Image.asset(
           url.substring('asset:'.length),
           fit: fit,
           alignment: layer.imageAlignment,
-          cacheWidth: imageDecodeWidth,
+          cacheWidth: decodeWidth,
         );
       } else if (url != null && cacheNetworkImages) {
         imageContent = SnapfitImage(
@@ -286,7 +282,7 @@ class TemplatePageRenderer extends StatelessWidget {
           fit: fit,
           alignment: layer.imageAlignment,
           cacheManager: snapfitImageCacheManager,
-          memCacheWidth: imageDecodeWidth,
+          memCacheWidth: decodeWidth,
           placeholder: const TemplatePaperPlaceholder(compact: true),
           error: const TemplatePaperPlaceholder(compact: true),
         );
@@ -295,7 +291,7 @@ class TemplatePageRenderer extends StatelessWidget {
           imageUrlByVariant(url, variant: ImageVariant.detail),
           fit: fit,
           alignment: layer.imageAlignment,
-          cacheWidth: imageDecodeWidth,
+          cacheWidth: decodeWidth,
           loadingBuilder: (context, child, progress) {
             if (progress == null) return child;
             return const TemplatePaperPlaceholder(compact: true);
@@ -418,7 +414,11 @@ class TemplatePageRenderer extends StatelessWidget {
       final baseStyle = style.copyWith(
         fontSize: scaledFont,
         shadows: TextShadowCodec.scaled(style.shadows, scaleY),
-        letterSpacing: preserveTypography ? 0 : style.letterSpacing,
+        // Authored tracking is part of the measured text box. Resetting it to
+        // zero can wrap a fitted title onto an extra line in store previews.
+        letterSpacing: preserveTypography
+            ? (style.letterSpacing ?? 0) * scaleY
+            : style.letterSpacing,
         color: style.color ?? Colors.black,
         height: effectiveHeight,
       );
@@ -461,6 +461,7 @@ class TemplatePageRenderer extends StatelessWidget {
                       style: effectiveStyle.copyWith(color: Colors.white),
                       strutStyle: effectiveStrut,
                       imageUrl: textFillImageUrl,
+                      decodeWidth: decodeWidth,
                     )
                   : Text(
                       textValue,
@@ -631,7 +632,7 @@ class TemplatePageRenderer extends StatelessWidget {
     if (bg == 'saveDateHaze') {
       return Container(
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.08),
+          color: Colors.white.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(
             radiusPx ?? math.max(drawWidth, drawHeight),
           ),
@@ -641,7 +642,7 @@ class TemplatePageRenderer extends StatelessWidget {
     if (bg == 'chipPill' || bg == 'chipPillDark') {
       return Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF111827).withOpacity(0.42),
+          color: const Color(0xFF111827).withValues(alpha: 0.42),
           borderRadius: BorderRadius.circular(999),
         ),
       );
@@ -649,7 +650,7 @@ class TemplatePageRenderer extends StatelessWidget {
     if (bg == 'chipPillLight') {
       return Container(
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.18),
+          color: Colors.white.withValues(alpha: 0.18),
           borderRadius: BorderRadius.circular(999),
         ),
       );
@@ -682,9 +683,9 @@ class TemplatePageRenderer extends StatelessWidget {
 
       return Container(
         decoration: BoxDecoration(
-          color: color.withOpacity(0.18),
+          color: color.withValues(alpha: 0.18),
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: color.withOpacity(0.45)),
+          border: Border.all(color: color.withValues(alpha: 0.45)),
         ),
         alignment: Alignment.center,
         child: Icon(icon, size: 14, color: color),
@@ -1075,6 +1076,7 @@ class _StoreImageClipText extends StatefulWidget {
   final TextStyle style;
   final StrutStyle? strutStyle;
   final String imageUrl;
+  final int? decodeWidth;
 
   const _StoreImageClipText({
     required this.text,
@@ -1082,6 +1084,7 @@ class _StoreImageClipText extends StatefulWidget {
     required this.style,
     this.strutStyle,
     required this.imageUrl,
+    this.decodeWidth,
   });
 
   @override
@@ -1089,7 +1092,8 @@ class _StoreImageClipText extends StatefulWidget {
 }
 
 class _StoreImageClipTextState extends State<_StoreImageClipText> {
-  ui.Image? _image;
+  ImageInfo? _imageInfo;
+  ui.Image? get _image => _imageInfo?.image;
   ImageStream? _stream;
   ImageStreamListener? _listener;
 
@@ -1102,7 +1106,8 @@ class _StoreImageClipTextState extends State<_StoreImageClipText> {
   @override
   void didUpdateWidget(covariant _StoreImageClipText oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.imageUrl != widget.imageUrl) {
+    if (oldWidget.imageUrl != widget.imageUrl ||
+        oldWidget.decodeWidth != widget.decodeWidth) {
       _removeListener();
       _resolveImage();
     }
@@ -1120,6 +1125,16 @@ class _StoreImageClipTextState extends State<_StoreImageClipText> {
     }
     _stream = null;
     _listener = null;
+    _replaceImage(null);
+  }
+
+  void _replaceImage(ImageInfo? info) {
+    final previous = _imageInfo;
+    _imageInfo = info;
+    if (previous != null) {
+      // ShaderMask may still paint the old image during the current frame.
+      WidgetsBinding.instance.addPostFrameCallback((_) => previous.dispose());
+    }
   }
 
   void _resolveImage() {
@@ -1132,25 +1147,33 @@ class _StoreImageClipTextState extends State<_StoreImageClipText> {
                 ),
               )
               as ImageProvider;
-    final stream = provider.resolve(const ImageConfiguration());
+    final stream = ResizeImage.resizeIfNeeded(
+      widget.decodeWidth,
+      null,
+      provider,
+    ).resolve(const ImageConfiguration());
     final listener = ImageStreamListener(
       (info, _) {
-        if (!mounted) return;
-        setState(() => _image = info.image);
+        if (!mounted) {
+          info.dispose();
+          return;
+        }
+        setState(() => _replaceImage(info));
       },
       onError: (_, __) {
         if (!mounted) return;
-        setState(() => _image = null);
+        setState(() => _replaceImage(null));
       },
     );
-    stream.addListener(listener);
     _stream = stream;
     _listener = listener;
+    stream.addListener(listener);
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_image == null) {
+    final image = _image;
+    if (image == null) {
       return Text(
         widget.text,
         textAlign: widget.textAlign,
@@ -1164,7 +1187,7 @@ class _StoreImageClipTextState extends State<_StoreImageClipText> {
     }
     return ShaderMask(
       blendMode: BlendMode.srcIn,
-      shaderCallback: (bounds) => textImageCoverShader(_image!, bounds),
+      shaderCallback: (bounds) => textImageCoverShader(image, bounds),
       child: Text(
         widget.text,
         textAlign: widget.textAlign,

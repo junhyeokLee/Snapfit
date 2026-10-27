@@ -401,8 +401,8 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
               ? const []
               : [
                   BoxShadow(
-                    color: Colors.black.withOpacity(
-                      SnapFitColors.isDark(context) ? 0.24 : 0.07,
+                    color: Colors.black.withValues(
+                      alpha: SnapFitColors.isDark(context) ? 0.24 : 0.07,
                     ),
                     blurRadius: isSelected ? 22 : 14,
                     offset: const Offset(0, 9),
@@ -449,7 +449,7 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.38),
+                          color: Colors.black.withValues(alpha: 0.38),
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(

@@ -257,8 +257,8 @@ class _TemplateCard extends StatelessWidget {
               ? const []
               : [
                   BoxShadow(
-                    color: Colors.black.withOpacity(
-                      SnapFitColors.isDark(context) ? 0.22 : 0.06,
+                    color: Colors.black.withValues(
+                      alpha: SnapFitColors.isDark(context) ? 0.22 : 0.06,
                     ),
                     blurRadius: isSelected ? 20 : 12,
                     offset: const Offset(0, 8),

@@ -55,7 +55,7 @@ Widget _buildRoundStyle(
           border: Border.all(color: borderColor, width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 4,
               offset: const Offset(0, 1),
             ),
@@ -138,7 +138,7 @@ Widget _buildSquareStyle(
           border: Border.all(color: borderColor, width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 4,
               offset: const Offset(0, 1),
             ),
@@ -208,7 +208,7 @@ Widget _buildRoundSoftStyle(
           borderRadius: BorderRadius.circular(999),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.22),
+              color: Colors.black.withValues(alpha: 0.22),
               blurRadius: 8,
               offset: const Offset(0, 3),
               spreadRadius: 0,
@@ -279,7 +279,7 @@ Widget _buildSoftPill2Style(
           borderRadius: BorderRadius.zero,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.22),
+              color: Colors.black.withValues(alpha: 0.22),
               blurRadius: 8,
               offset: const Offset(0, 3),
               spreadRadius: 0,
@@ -335,7 +335,7 @@ Widget _buildSoftPill2Style(
       );
     default:
       return (
-        bg: SnapFitColors.accent.withOpacity(0.25),
+        bg: SnapFitColors.accent.withValues(alpha: 0.25),
         text: SnapFitColors.accent,
       );
   }
@@ -554,7 +554,7 @@ Widget _buildLabelGoldStyle(
           borderRadius: BorderRadius.circular(999),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFB8860B).withOpacity(0.25),
+              color: const Color(0xFFB8860B).withValues(alpha: 0.25),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -592,7 +592,7 @@ Widget _buildLabelNeonStyle(
           border: Border.all(color: const Color(0xFF00E5FF), width: 2),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF00E5FF).withOpacity(0.5),
+              color: const Color(0xFF00E5FF).withValues(alpha: 0.5),
               blurRadius: 8,
               spreadRadius: 0,
             ),
@@ -634,7 +634,7 @@ Widget _buildLabelRoseStyle(
           borderRadius: BorderRadius.circular(999),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFAD1457).withOpacity(0.2),
+              color: const Color(0xFFAD1457).withValues(alpha: 0.2),
               blurRadius: 4,
               offset: const Offset(0, 1),
             ),
@@ -712,7 +712,7 @@ Widget _buildBubbleStyle(
             : 0.28);
   final fillColor = _bubbleFillColor(bg);
   final borderColor = fillColor == Colors.white
-      ? Colors.black.withOpacity(0.22)
+      ? Colors.black.withValues(alpha: 0.22)
       : Color.lerp(fillColor, Colors.black, 0.12) ?? Colors.black26;
 
   return IntrinsicWidth(
@@ -806,7 +806,7 @@ Widget _buildNoteStyle(
           borderRadius: BorderRadius.zero,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 3,
               offset: const Offset(0, 1),
             ),
@@ -843,7 +843,7 @@ Widget _buildNoteTornStyle(
             color: background,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -882,7 +882,7 @@ Widget _buildTapeTornStyle(
             color: colors.bg,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 3,
                 offset: const Offset(0, 1),
               ),
@@ -919,7 +919,7 @@ Widget _buildCalligraphyStyle(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.92),
+          color: Colors.white.withValues(alpha: 0.92),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: Colors.amber.shade700, width: 1),
         ),
@@ -956,7 +956,7 @@ Widget _buildStickerStyle(
           border: Border.all(color: Colors.black, width: 3),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 4,
               offset: const Offset(2, 2),
             ),
@@ -984,16 +984,16 @@ Widget _buildHighlightStyle(
   Color textColor;
   switch (layer.textBackground) {
     case "highlightGreen":
-      bg = const Color(0xFF9CCC65).withOpacity(0.7);
+      bg = const Color(0xFF9CCC65).withValues(alpha: 0.7);
       textColor = const Color(0xFF1B5E20);
       break;
     case "highlightPink":
-      bg = const Color(0xFFF48FB1).withOpacity(0.75);
+      bg = const Color(0xFFF48FB1).withValues(alpha: 0.75);
       textColor = const Color(0xFF880E4F);
       break;
     case "highlightYellow":
     default:
-      bg = const Color(0xFFFFF59D).withOpacity(0.75);
+      bg = const Color(0xFFFFF59D).withValues(alpha: 0.75);
       textColor = const Color(0xFFF57F17);
       break;
   }
@@ -1010,7 +1010,7 @@ Widget _buildHighlightStyle(
           borderRadius: BorderRadius.zero,
           boxShadow: [
             BoxShadow(
-              color: textColor.withOpacity(0.2),
+              color: textColor.withValues(alpha: 0.2),
               blurRadius: 0,
               offset: const Offset(0, 2),
             ),
@@ -1054,12 +1054,12 @@ Widget _buildStampStyle(
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 1,
               offset: const Offset(0, 0),
             ),
@@ -1096,7 +1096,7 @@ Widget _buildQuoteStyle(
           ),
           boxShadow: [
             BoxShadow(
-              color: SnapFitColors.accent.withOpacity(0.08),
+              color: SnapFitColors.accent.withValues(alpha: 0.08),
               blurRadius: 6,
               offset: const Offset(2, 0),
             ),
@@ -1135,7 +1135,7 @@ Widget _buildChalkboardStyle(
           border: Border.all(color: const Color(0xFF546E7A), width: 2),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.25),
+              color: Colors.black.withValues(alpha: 0.25),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -1411,7 +1411,7 @@ Widget _buildTapeStyle(
             borderRadius: BorderRadius.circular(4),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 3,
                 offset: const Offset(0, 1),
               ),
@@ -1458,7 +1458,7 @@ Widget _buildTapeStyle(
             borderRadius: BorderRadius.circular(4),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.06),
+                color: Colors.black.withValues(alpha: 0.06),
                 blurRadius: 2,
                 offset: const Offset(0, 1),
               ),
@@ -1512,7 +1512,7 @@ Widget _buildTapeStyle(
             borderRadius: BorderRadius.circular(4),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.06),
+                color: Colors.black.withValues(alpha: 0.06),
                 blurRadius: 2,
                 offset: const Offset(0, 1),
               ),
@@ -1547,7 +1547,7 @@ Widget _buildTapeStyle(
             borderRadius: BorderRadius.circular(4),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.06),
+                color: Colors.black.withValues(alpha: 0.06),
                 blurRadius: 2,
                 offset: const Offset(0, 1),
               ),

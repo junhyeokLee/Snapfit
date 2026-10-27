@@ -12,6 +12,7 @@ import '../../../../shared/web/web_design.dart';
 import '../../data/api/album_provider.dart';
 import '../../domain/entities/album.dart';
 import '../../service/album_invite_service.dart';
+import '../../service/album_collaboration_session.dart';
 import '../widgets/home/home_album_cover_thumbnail.dart';
 import '../widgets/web/web_saved_album_artwork.dart';
 
@@ -41,6 +42,8 @@ class _AlbumInviteScreenState extends ConsumerState<AlbumInviteScreen> {
   bool _isCopying = false;
   bool _copied = false;
   String? _inviteError;
+  int _revision = 0;
+  bool _sessionChanged = false;
 
   bool get _busy => _isCreatingInvite || _isSharing || _isCopying;
 
@@ -54,115 +57,159 @@ class _AlbumInviteScreenState extends ConsumerState<AlbumInviteScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => kIsWeb
-      ? _buildWeb()
-      : Scaffold(
-          backgroundColor: SnapFitColors.backgroundOf(context),
-          appBar: const ExperienceHeader(
-            title: '멤버 초대',
-            showNotifications: false,
+  Widget build(BuildContext context) {
+    ref.listen(albumCollaborationActorProvider, (previous, next) {
+      if (previous == next) return;
+      setState(() {
+        _revision++;
+        _sessionChanged = true;
+        _inviteLink = null;
+        _copied = false;
+        _isCreatingInvite = _isSharing = _isCopying = false;
+      });
+    });
+    if (_sessionChanged) {
+      return Scaffold(
+        appBar: const ExperienceHeader(
+          title: '멤버 초대',
+          showNotifications: false,
+        ),
+        body: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  '계정이 변경되었어요',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  '현재 계정의 앨범에서 초대를 다시 시작해 주세요.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                OutlinedButton(
+                  onPressed: () => Navigator.maybePop(context),
+                  child: const Text('돌아가기'),
+                ),
+              ],
+            ),
           ),
-          body: SafeArea(
-            top: false,
-            bottom: false,
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 960),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final wide =
-                        constraints.maxWidth >= 540 &&
-                        MediaQuery.orientationOf(context) ==
-                            Orientation.landscape;
-                    final compact = constraints.maxHeight < 420;
-                    if (wide) {
-                      return Padding(
+        ),
+      );
+    }
+    return kIsWeb
+        ? _buildWeb()
+        : Scaffold(
+            backgroundColor: SnapFitColors.backgroundOf(context),
+            appBar: const ExperienceHeader(
+              title: '멤버 초대',
+              showNotifications: false,
+            ),
+            body: SafeArea(
+              top: false,
+              bottom: false,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 960),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final wide =
+                          constraints.maxWidth >= 540 &&
+                          MediaQuery.orientationOf(context) ==
+                              Orientation.landscape;
+                      final compact = constraints.maxHeight < 420;
+                      if (wide) {
+                        return Padding(
+                          key: const ValueKey('inviteContent'),
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              SizedBox(
+                                width: (constraints.maxWidth * .36).clamp(
+                                  180,
+                                  300,
+                                ),
+                                child: SingleChildScrollView(
+                                  key: const PageStorageKey('invite-album'),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  child: _albumIdentity(
+                                    compact: true,
+                                    stacked: true,
+                                    previewHeight: (constraints.maxHeight * .68)
+                                        .clamp(96, 192),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 20),
+                              VerticalDivider(
+                                width: 1,
+                                color: ExperienceFormStyle.line(context),
+                              ),
+                              const SizedBox(width: 20),
+                              Expanded(
+                                child: SingleChildScrollView(
+                                  key: const PageStorageKey('invite-settings'),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  child: _linkSettings(
+                                    compact: true,
+                                    linkFirst: true,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                      return SingleChildScrollView(
                         key: const ValueKey('inviteContent'),
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Row(
+                        padding: EdgeInsets.fromLTRB(
+                          24,
+                          compact ? 12 : 24,
+                          24,
+                          20,
+                        ),
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            SizedBox(
-                              width: (constraints.maxWidth * .36).clamp(
-                                180,
-                                300,
-                              ),
-                              child: SingleChildScrollView(
-                                key: const PageStorageKey('invite-album'),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                                child: _albumIdentity(
-                                  compact: true,
-                                  stacked: true,
-                                  previewHeight: (constraints.maxHeight * .68)
-                                      .clamp(96, 192),
-                                ),
-                              ),
+                            _albumIdentity(
+                              compact: compact,
+                              previewHeight: compact ? 104 : 164,
                             ),
-                            const SizedBox(width: 20),
-                            VerticalDivider(
-                              width: 1,
+                            SizedBox(height: compact ? 10 : 24),
+                            Divider(
                               color: ExperienceFormStyle.line(context),
+                              height: 1,
                             ),
-                            const SizedBox(width: 20),
-                            Expanded(
-                              child: SingleChildScrollView(
-                                key: const PageStorageKey('invite-settings'),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                                child: _linkSettings(
-                                  compact: true,
-                                  linkFirst: true,
-                                ),
-                              ),
-                            ),
+                            SizedBox(height: compact ? 8 : 20),
+                            _linkSettings(compact: compact),
                           ],
                         ),
                       );
-                    }
-                    return SingleChildScrollView(
-                      key: const ValueKey('inviteContent'),
-                      padding: EdgeInsets.fromLTRB(
-                        24,
-                        compact ? 12 : 24,
-                        24,
-                        20,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _albumIdentity(
-                            compact: compact,
-                            previewHeight: compact ? 104 : 164,
-                          ),
-                          SizedBox(height: compact ? 10 : 24),
-                          Divider(
-                            color: ExperienceFormStyle.line(context),
-                            height: 1,
-                          ),
-                          SizedBox(height: compact ? 8 : 20),
-                          _linkSettings(compact: compact),
-                        ],
-                      ),
-                    );
-                  },
+                    },
+                  ),
                 ),
               ),
             ),
-          ),
-          bottomNavigationBar: SafeArea(
-            top: false,
-            child: Center(
-              heightFactor: 1,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 960),
-                child: _actions(),
+            bottomNavigationBar: SafeArea(
+              top: false,
+              child: Center(
+                heightFactor: 1,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 960),
+                  child: _actions(),
+                ),
               ),
             ),
-          ),
-        );
+          );
+  }
 
   Widget _buildWeb() => SnapFitWebShell(
     title: '앨범 공유',
@@ -520,7 +567,7 @@ class _AlbumInviteScreenState extends ConsumerState<AlbumInviteScreen> {
         ],
         const SizedBox(height: 12),
         Text(
-          '링크를 받은 사람이 앨범에 참여할 수 있어요. 믿을 수 있는 사람에게만 공유해주세요.',
+          '한 명이 참여할 수 있는 1회용 링크예요. 믿을 수 있는 사람에게만 공유하고, 다른 사람을 초대할 때는 새 링크를 만들어 주세요.',
           style: ExperienceFormStyle.text(context, 12, secondary: true),
         ),
         const SizedBox(height: 8),
@@ -649,7 +696,9 @@ class _AlbumInviteScreenState extends ConsumerState<AlbumInviteScreen> {
   }
 
   Future<void> _createInviteLink() async {
-    if (_busy) return;
+    if (_busy || _sessionChanged) return;
+    final actor = ref.read(albumCollaborationActorProvider);
+    final revision = ++_revision;
     // One issued link belongs to one permission; never reuse a stale role.
     final role = _allowEditing ? 'EDITOR' : 'VIEWER';
     setState(() {
@@ -662,25 +711,27 @@ class _AlbumInviteScreenState extends ConsumerState<AlbumInviteScreen> {
       final response = await ref
           .read(albumMemberRepositoryProvider)
           .invite(widget.albumId, role: role);
-      if (!mounted) return;
+      if (!_current(actor, revision)) return;
       if (response.albumId != widget.albumId) {
         throw const FormatException('Invite album mismatch');
       }
       final link = AlbumInviteService.normalizeInviteLink(response.link);
       setState(() => _inviteLink = link);
     } catch (error) {
-      if (!mounted) return;
+      if (!_current(actor, revision)) return;
       setState(
         () => _inviteError = AlbumInviteService.inviteErrorMessage(error),
       );
     } finally {
-      if (mounted) setState(() => _isCreatingInvite = false);
+      if (_current(actor, revision)) setState(() => _isCreatingInvite = false);
     }
   }
 
   Future<void> _inviteViaKakaoTalk() async {
     final link = _inviteLink;
-    if (_busy || link == null) return;
+    if (_busy || link == null || _sessionChanged) return;
+    final actor = ref.read(albumCollaborationActorProvider);
+    final revision = ++_revision;
     setState(() => _isSharing = true);
     try {
       final success = await AlbumInviteService.inviteViaKakaoTalk(
@@ -691,29 +742,37 @@ class _AlbumInviteScreenState extends ConsumerState<AlbumInviteScreen> {
         inviteLink: link,
         context: context,
       );
-      if (!mounted || !success) return;
+      if (!_current(actor, revision) || !success) return;
       _showMessage('카카오톡 공유 화면을 열었어요.');
     } finally {
-      if (mounted) setState(() => _isSharing = false);
+      if (_current(actor, revision)) setState(() => _isSharing = false);
     }
   }
 
   Future<void> _copyInviteLink() async {
     final link = _inviteLink;
-    if (_busy || link == null) return;
+    if (_busy || link == null || _sessionChanged) return;
+    final actor = ref.read(albumCollaborationActorProvider);
+    final revision = ++_revision;
     setState(() => _isCopying = true);
     try {
       await Clipboard.setData(ClipboardData(text: link));
-      if (!mounted) return;
+      if (!_current(actor, revision)) return;
       setState(() => _copied = true);
       _showMessage('초대 링크를 복사했어요.');
     } catch (_) {
-      if (!mounted) return;
+      if (!_current(actor, revision)) return;
       _showMessage('링크를 복사하지 못했어요. 다시 시도해주세요.');
     } finally {
-      if (mounted) setState(() => _isCopying = false);
+      if (_current(actor, revision)) setState(() => _isCopying = false);
     }
   }
+
+  bool _current(String? actor, int revision) =>
+      mounted &&
+      !_sessionChanged &&
+      revision == _revision &&
+      ref.read(albumCollaborationActorProvider) == actor;
 
   void _showMessage(String message) {
     ScaffoldMessenger.of(context)

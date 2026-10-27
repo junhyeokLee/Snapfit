@@ -31,25 +31,35 @@ class CustomerWebPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SnapFitWebShell(
-    title: title,
     section: section,
     showNavigation: showNavigation,
-    actions: [
-      OutlinedButton.icon(
-        onPressed: allowBack
-            ? onBack ?? () => Navigator.maybePop(context)
-            : null,
-        icon: const Icon(Icons.arrow_back, size: 18),
-        label: const Text('이전'),
-      ),
-      ...actions,
-    ],
     child: LayoutBuilder(
       builder: (context, bounds) {
+        final canGoBack =
+            allowBack && (onBack != null || Navigator.of(context).canPop());
+        final localActions = <Widget>[
+          if (canGoBack)
+            OutlinedButton.icon(
+              key: const ValueKey('customer-web-back'),
+              onPressed: onBack ?? () => Navigator.maybePop(context),
+              icon: const Icon(Icons.arrow_back, size: 18),
+              label: const Text('이전'),
+            ),
+          ...actions,
+        ];
         final heading = WebPageHeading(
+          key: const ValueKey('customer-web-page-heading'),
           title: title,
           eyebrow: eyebrow,
           description: description,
+          trailing: localActions.isEmpty
+              ? null
+              : Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: localActions,
+                ),
         );
         final content = WebSurface(child: child);
         if (scrollBody) {

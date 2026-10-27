@@ -196,7 +196,7 @@ class _TriangleSliderPainter extends CustomPainter {
 
     // 기본 트랙
     final trackPaint = Paint()
-      ..color = triangleColor.withOpacity(0.5)
+      ..color = triangleColor.withValues(alpha: 0.5)
       ..strokeWidth = 1
       ..strokeCap = StrokeCap.round;
     canvas.drawLine(Offset(centerX, 0), Offset(centerX, height), trackPaint);
@@ -209,8 +209,8 @@ class _TriangleSliderPainter extends CustomPainter {
         begin: Alignment.bottomCenter,
         end: Alignment.topCenter,
         colors: [
-          triangleColor.withOpacity(0.5),
-          triangleColor.withOpacity(0.5),
+          triangleColor.withValues(alpha: 0.5),
+          triangleColor.withValues(alpha: 0.5),
         ],
       ).createShader(triRect);
       final trianglePaint = Paint()..shader = gradient;

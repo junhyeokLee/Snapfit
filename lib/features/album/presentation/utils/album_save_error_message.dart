@@ -1,6 +1,8 @@
 import '../../data/api/storage_service.dart';
+import '../../domain/entities/album_edit_failure.dart';
 
 String albumSaveErrorMessage(Object error) {
+  if (error is AlbumEditFailure) return error.message;
   if (error is StorageQuotaExceededException) {
     return '저장 공간이 부족해요. 마이페이지에서 사용량을 확인하거나 저장할 사진을 줄여주세요.';
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/widgets/experience_icon.dart';
 import '../../domain/entities/order_history_item.dart';
@@ -23,9 +24,8 @@ class OrderJourneyProgress extends StatelessWidget {
     const labels = ['결제', '제작', '배송', '완료'];
     final ink = ExperienceFormStyle.selectionInk(context);
     final line = ExperienceFormStyle.line(context);
-    final onInk = Theme.of(context).brightness == Brightness.dark
-        ? const Color(0xFF063740)
-        : Colors.white;
+    const fill = SnapFitColors.actionAccent;
+    const onInk = SnapFitColors.onAccent;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
@@ -82,10 +82,10 @@ class OrderJourneyProgress extends StatelessWidget {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: i <= active
-                                  ? ink
+                                  ? fill
                                   : ExperienceFormStyle.surface(context),
                               border: Border.all(
-                                color: i <= active ? ink : line,
+                                color: i <= active ? fill : line,
                               ),
                             ),
                             child: i < active || order.status == 'DELIVERED'

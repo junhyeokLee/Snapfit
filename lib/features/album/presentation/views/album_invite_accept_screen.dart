@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/widgets/experience_icon.dart';
-import '../../../../shared/widgets/experience_style.dart';
+import '../../../../shared/widgets/experience_style.dart' show ExperienceHeader;
 import '../../../../shared/web/web_design.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../../../auth/data/dto/auth_response.dart';
@@ -20,6 +20,7 @@ import '../widgets/home/home_album_actions.dart';
 
 final albumInviteInfoProvider = FutureProvider.autoDispose
     .family<InviteInfoResponse, String>((ref, token) async {
+      ref.watch(authViewModelProvider.select((auth) => auth.asData?.value?.id));
       final info = await ref
           .read(albumMemberRepositoryProvider)
           .getInviteInfo(token);
@@ -54,6 +55,12 @@ class _AlbumInviteAcceptScreenState
   AlbumInviteFailure? _failure;
   String? _openError;
   final _failureKey = GlobalKey();
+  int _requestRevision = 0;
+
+  bool _current(String actor, int revision) =>
+      mounted &&
+      revision == _requestRevision &&
+      ref.read(authViewModelProvider).asData?.value?.id == actor;
 
   Future<void> _accept(InviteInfoResponse info) async {
     if (_busy) return;
@@ -62,6 +69,7 @@ class _AlbumInviteAcceptScreenState
       setState(() => _loginRequested = true);
       return;
     }
+    final revision = ++_requestRevision;
     setState(() {
       _busy = true;
       _failure = null;
@@ -70,16 +78,7 @@ class _AlbumInviteAcceptScreenState
       final accepted = await ref
           .read(albumMemberRepositoryProvider)
           .acceptInvite(widget.invite.token);
-      if (!mounted) return;
-      if (ref.read(authViewModelProvider).asData?.value?.id != user.id) {
-        setState(
-          () => _failure = const AlbumInviteFailure(
-            '계정이 변경되었어요',
-            '현재 계정으로 초대를 다시 확인해 주세요.',
-          ),
-        );
-        return;
-      }
+      if (!_current(user.id, revision)) return;
       if (!accepted.success ||
           accepted.albumId != info.albumId ||
           !['OWNER', 'EDITOR', 'VIEWER'].contains(accepted.role)) {
@@ -95,13 +94,13 @@ class _AlbumInviteAcceptScreenState
           .clearIfCurrent(widget.invite);
       ref.invalidate(homeViewModelProvider);
     } catch (error) {
-      if (mounted)
+      if (_current(user.id, revision))
         setState(() {
           _failure = AlbumInviteFailure.from(error);
           if (_failure!.needsLogin) _loginRequested = true;
         });
     } finally {
-      if (mounted) {
+      if (_current(user.id, revision)) {
         setState(() => _busy = false);
         if (!kIsWeb && _failure != null && !_loginRequested) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -128,6 +127,7 @@ class _AlbumInviteAcceptScreenState
     if (_busy || _acceptedId == null) return;
     final userId = ref.read(authViewModelProvider).asData?.value?.id;
     if (userId == null || userId != _acceptedUserId) return;
+    final revision = ++_requestRevision;
     setState(() {
       _busy = true;
       _openError = null;
@@ -136,24 +136,41 @@ class _AlbumInviteAcceptScreenState
       final album = await ref
           .read(albumRepositoryProvider)
           .fetchAlbum('$_acceptedId');
-      if (!mounted ||
-          ref.read(authViewModelProvider).asData?.value?.id != userId)
-        return;
+      if (!_current(userId, revision)) return;
       if (album.id != _acceptedId) throw const FormatException('Invalid album');
       await ref.read(invitedAlbumOpenProvider)(context, ref, album);
     } catch (_) {
-      if (mounted)
+      if (_current(userId, revision))
         setState(
           () => _openError = '참여는 완료되었어요. 앨범을 불러오지 못했으니 다시 열거나 홈에서 확인해 주세요.',
         );
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (_current(userId, revision)) setState(() => _busy = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(authViewModelProvider, (_, next) {
+    ref.listen(authViewModelProvider, (previous, next) {
+      final oldUser = previous?.asData?.value?.id;
+      final newUser = next.asData?.value?.id;
+      if (oldUser != newUser) {
+        setState(() {
+          _requestRevision++;
+          _busy = false;
+          _acceptedId = null;
+          _acceptedUserId = null;
+          _acceptedRole = null;
+          _openError = null;
+          if (oldUser != null) {
+            _failure = const AlbumInviteFailure(
+              '계정이 변경되었어요',
+              '현재 계정으로 초대를 다시 확인해 주세요.',
+            );
+          }
+          if (newUser != null) _loginRequested = false;
+        });
+      }
       if (_loginRequested &&
           next.hasValue &&
           next.asData?.value != null &&
@@ -385,7 +402,8 @@ class _AlbumInviteAcceptScreenState
                                   ),
                                   child: Text(
                                     joined ? '돌아가기' : '초대 닫기',
-                                    style: ExperienceStyle.text(
+                                    style: ExperienceFormStyle.text(
+                                      context,
                                       13,
                                       color: SnapFitColors.textSecondaryOf(
                                         context,
@@ -743,7 +761,8 @@ class _AlbumInviteAcceptScreenState
             Expanded(
               child: Text(
                 joined ? '함께 간직할 앨범' : '${info.inviterName}님의 초대',
-                style: ExperienceStyle.text(
+                style: ExperienceFormStyle.text(
+                  context,
                   13,
                   color: SnapFitColors.textSecondaryOf(context),
                 ),
@@ -755,7 +774,8 @@ class _AlbumInviteAcceptScreenState
         Text(
           info.albumTitle,
           key: const ValueKey('inviteAcceptTitle'),
-          style: ExperienceStyle.text(
+          style: ExperienceFormStyle.text(
+            context,
             landscape ? 18 : 30,
             weight: FontWeight.w700,
             color: SnapFitColors.textPrimaryOf(context),
@@ -766,7 +786,8 @@ class _AlbumInviteAcceptScreenState
           joined
               ? '앨범에 참여했어요. 이제 함께한 장면들을 만나보세요.'
               : '소중한 장면을 함께 모으는 공간에 초대받았어요.',
-          style: ExperienceStyle.text(
+          style: ExperienceFormStyle.text(
+            context,
             14,
             color: SnapFitColors.textSecondaryOf(context),
           ),
@@ -800,7 +821,8 @@ class _AlbumInviteAcceptScreenState
           const SizedBox(height: 20),
           Text(
             _openError!,
-            style: ExperienceStyle.text(
+            style: ExperienceFormStyle.text(
+              context,
               13,
               color: SnapFitColors.textSecondaryOf(context),
             ),
@@ -831,7 +853,8 @@ class _AlbumInviteAcceptScreenState
           children: [
             Text(
               title,
-              style: ExperienceStyle.text(
+              style: ExperienceFormStyle.text(
+                context,
                 14,
                 weight: FontWeight.w600,
                 color: SnapFitColors.textPrimaryOf(context),
@@ -842,7 +865,8 @@ class _AlbumInviteAcceptScreenState
               SelectableText(
                 accountEmail!.trim(),
                 key: const ValueKey('inviteAcceptAccountEmail'),
-                style: ExperienceStyle.text(
+                style: ExperienceFormStyle.text(
+                  context,
                   13,
                   color: SnapFitColors.textSecondaryOf(context),
                 ),
@@ -851,7 +875,8 @@ class _AlbumInviteAcceptScreenState
             ],
             Text(
               message,
-              style: ExperienceStyle.text(
+              style: ExperienceFormStyle.text(
+                context,
                 13,
                 color: SnapFitColors.textSecondaryOf(context),
               ),
@@ -868,7 +893,8 @@ class _AlbumInviteAcceptScreenState
       children: [
         Text(
           failure.title,
-          style: ExperienceStyle.text(
+          style: ExperienceFormStyle.text(
+            context,
             17,
             weight: FontWeight.w600,
             color: SnapFitColors.textPrimaryOf(context),
@@ -877,7 +903,8 @@ class _AlbumInviteAcceptScreenState
         const SizedBox(height: 8),
         Text(
           failure.message,
-          style: ExperienceStyle.text(
+          style: ExperienceFormStyle.text(
+            context,
             13,
             color: SnapFitColors.textSecondaryOf(context),
           ),

@@ -144,7 +144,7 @@ class GalleryThumbTileState extends State<GalleryThumbTile>
                     ),
               if (widget.isSelected)
                 Container(
-                  color: Colors.black.withOpacity(0.35),
+                  color: Colors.black.withValues(alpha: 0.35),
                   alignment: Alignment.center,
                   child: Icon(
                     Icons.check_circle,
@@ -194,7 +194,7 @@ class GalleryThumbTileState extends State<GalleryThumbTile>
               ),
               if (widget.isSelected)
                 Container(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   alignment: Alignment.center,
                   child: Icon(
                     Icons.check_circle,

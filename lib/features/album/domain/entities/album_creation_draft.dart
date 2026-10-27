@@ -5,6 +5,7 @@ import '../../../../core/constants/cover_theme.dart';
 import 'album_page.dart';
 import 'layer.dart';
 import 'layer_export_mapper.dart';
+import 'album_source_template.dart';
 
 class AlbumCreationEditorCheckpoint {
   AlbumCreationEditorCheckpoint({
@@ -13,6 +14,10 @@ class AlbumCreationEditorCheckpoint {
     required this.coverCanvas,
     required this.innerCanvas,
     required this.theme,
+    this.sourceUpdatedAt,
+    this.sourceOwnerId,
+    this.sourceMemberRole,
+    this.sourceTemplateProductKey,
   }) : pages = List.unmodifiable(
          pages.map(
            (page) => page.copyWith(
@@ -28,12 +33,20 @@ class AlbumCreationEditorCheckpoint {
   final Size coverCanvas;
   final Size innerCanvas;
   final CoverTheme theme;
+  final String? sourceUpdatedAt;
+  final String? sourceOwnerId;
+  final String? sourceMemberRole;
+  final String? sourceTemplateProductKey;
 
   Map<String, dynamic> toJson() => {
     'pageIndex': pageIndex,
     'coverCanvas': AlbumCreationDraft._size(coverCanvas),
     'innerCanvas': AlbumCreationDraft._size(innerCanvas),
     'theme': theme.name,
+    'sourceUpdatedAt': sourceUpdatedAt,
+    'sourceOwnerId': sourceOwnerId,
+    'sourceMemberRole': sourceMemberRole,
+    ...albumSourceTemplateMetadata(sourceTemplateProductKey),
     'layers': AlbumCreationDraft._encodePages(
       pages.map((page) => page.layers).toList(),
     ),
@@ -82,6 +95,10 @@ class AlbumCreationEditorCheckpoint {
       coverCanvas: coverCanvas,
       innerCanvas: innerCanvas,
       theme: CoverTheme.values.byName(json['theme'] as String),
+      sourceUpdatedAt: json['sourceUpdatedAt'] as String?,
+      sourceOwnerId: json['sourceOwnerId'] as String?,
+      sourceMemberRole: json['sourceMemberRole'] as String?,
+      sourceTemplateProductKey: readAlbumSourceTemplateProductKey(json),
     );
   }
 }
@@ -114,6 +131,7 @@ class AlbumCreationDraft {
     this.editedCoverCanvasSize,
     this.createdAlbumId,
     this.editorCheckpoint,
+    this.sourceTemplateProductKey,
   });
 
   final String id;
@@ -142,6 +160,7 @@ class AlbumCreationDraft {
   final Size? editedCoverCanvasSize;
   final int? createdAlbumId;
   final AlbumCreationEditorCheckpoint? editorCheckpoint;
+  final String? sourceTemplateProductKey;
 
   AlbumCreationDraft withEditorCheckpoint(
     AlbumCreationEditorCheckpoint checkpoint, {
@@ -173,12 +192,14 @@ class AlbumCreationDraft {
     editedCoverCanvasSize: editedCoverCanvasSize,
     createdAlbumId: createdAlbumId,
     editorCheckpoint: checkpoint,
+    sourceTemplateProductKey: sourceTemplateProductKey,
   );
 
   Map<String, dynamic> toJson() => {
     'version': 1,
     'createdAlbumId': createdAlbumId,
     'editorCheckpoint': editorCheckpoint?.toJson(),
+    ...albumSourceTemplateMetadata(sourceTemplateProductKey),
     'id': id,
     'updatedAt': updatedAt.toIso8601String(),
     'title': title,
@@ -241,6 +262,7 @@ class AlbumCreationDraft {
     return AlbumCreationDraft(
       id: json['id'] as String,
       createdAlbumId: createdAlbumId,
+      sourceTemplateProductKey: readAlbumSourceTemplateProductKey(json),
       editorCheckpoint: json['editorCheckpoint'] == null
           ? null
           : AlbumCreationEditorCheckpoint.fromJson(

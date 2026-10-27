@@ -76,6 +76,8 @@ class PersonalAlbumShelf extends StatelessWidget {
       ),
       const SizedBox(height: 8),
       albums.when(
+        skipLoadingOnRefresh: false,
+        skipLoadingOnReload: false,
         loading: () => const _CollectionState(title: '앨범을 불러오고 있어요'),
         error: (_, __) =>
             _CollectionState(title: '앨범을 불러오지 못했어요', onRetry: onRetry),
@@ -232,6 +234,8 @@ class OwnedDesignShelf extends ConsumerWidget {
         ),
         const SizedBox(height: 8),
         owned.when(
+          skipLoadingOnRefresh: false,
+          skipLoadingOnReload: false,
           loading: () => const _CollectionState(title: '구매한 디자인을 확인하고 있어요'),
           error: (_, __) => _CollectionState(
             title: '구매한 디자인을 확인하지 못했어요',

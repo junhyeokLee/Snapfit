@@ -697,6 +697,8 @@ class BookFlip extends StatefulWidget {
   /// themed widgets render exactly as they would anywhere else. The captured
   /// images are owned and disposed for you — there is no `ui.Image` lifecycle to
   /// manage, unlike the default [BookFlip] constructor.
+  /// [preparePage] can await image decoding for each mounted page. Capture then
+  /// waits for another painted frame; failures use [errorBuilder].
   ///
   /// Everything else (controller, physics, material, curl, effects, fit, callbacks,
   /// loading and error builders) behaves exactly as on the default constructor. Pass
@@ -716,6 +718,7 @@ class BookFlip extends StatefulWidget {
     required Size pageSize,
     Key? key,
     double? pixelRatio,
+    Future<void> Function(BuildContext context, int pageIndex)? preparePage,
     BookFlipController? controller,
     BookFlipPhysics physics = const BookFlipPhysics(),
     BookFlipMaterial material = BookFlipMaterial.paper,
@@ -756,6 +759,7 @@ class BookFlip extends StatefulWidget {
       pageBuilder: pageBuilder,
       pageSize: pageSize,
       pixelRatio: pixelRatio,
+      preparePage: preparePage,
       controller: controller,
       physics: physics,
       material: material,

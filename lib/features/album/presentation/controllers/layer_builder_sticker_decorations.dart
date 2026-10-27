@@ -66,7 +66,7 @@ Widget? _buildStickerDecoration(LayerModel layer) {
           width: layer.width,
           height: layer.height,
           decoration: BoxDecoration(
-            color: const Color(0xFFE2CDA6).withOpacity(0.94),
+            color: const Color(0xFFE2CDA6).withValues(alpha: 0.94),
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -83,8 +83,8 @@ Widget? _buildStickerDecoration(LayerModel layer) {
           height: layer.height,
           child: CustomPaint(
             painter: _TapeDotsPainter(
-              baseColor: const Color(0xFFCFE3FF).withOpacity(0.96),
-              dotColor: const Color(0xFF2F5FBF).withOpacity(0.32),
+              baseColor: const Color(0xFFCFE3FF).withValues(alpha: 0.96),
+              dotColor: const Color(0xFF2F5FBF).withValues(alpha: 0.32),
             ),
           ),
         ),
@@ -101,8 +101,8 @@ Widget? _buildStickerDecoration(LayerModel layer) {
           height: layer.height,
           child: CustomPaint(
             painter: _TapeStripePainter(
-              baseColor: const Color(0xFFFFD3E6).withOpacity(0.96),
-              stripeColor: const Color(0xFFE85AA9).withOpacity(0.28),
+              baseColor: const Color(0xFFFFD3E6).withValues(alpha: 0.96),
+              stripeColor: const Color(0xFFE85AA9).withValues(alpha: 0.28),
             ),
           ),
         ),
@@ -121,7 +121,7 @@ Widget? _buildStickerDecoration(LayerModel layer) {
           border: Border.all(color: const Color(0xFFBDAF99), width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -307,7 +307,7 @@ Widget? _buildStickerDecoration(LayerModel layer) {
         border: Border.all(color: const Color(0xFFE2E2DE), width: 1.1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
+            color: Colors.black.withValues(alpha: 0.12),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),

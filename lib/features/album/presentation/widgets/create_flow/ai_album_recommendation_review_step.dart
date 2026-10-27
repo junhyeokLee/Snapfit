@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../../shared/web/web_design.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/constants/cover_size.dart';
@@ -120,53 +119,53 @@ class _AiAlbumRecommendationReviewStepState
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 26.h),
+                padding: EdgeInsets.fromLTRB(20, 12, 20, 26),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _BackTextButton(
                       onPressed: _isAcceptingDraft ? null : widget.onBack,
                     ),
-                    SizedBox(height: 14.h),
+                    SizedBox(height: 14),
                     Text(
                       'AI 템플릿',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: SnapFitColors.textPrimaryOf(context),
-                        fontSize: 23.sp,
+                        fontSize: 23,
                         height: 1.18,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -0.45,
                       ),
                     ),
-                    SizedBox(height: 8.h),
+                    SizedBox(height: 8),
                     Text(
                       _draft.templateSlots.isNotEmpty
                           ? '템플릿 · 사진 슬롯 · 문구'
                           : '사진 · 흐름 · 제외',
                       style: TextStyle(
                         color: SnapFitColors.textSecondaryOf(context),
-                        fontSize: 14.sp,
+                        fontSize: 14,
                         height: 1.42,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    SizedBox(height: 16.h),
+                    SizedBox(height: 16),
                     _DraftSummaryCard(draft: _draft),
-                    SizedBox(height: 14.h),
+                    SizedBox(height: 14),
                     _StorySectionList(draft: _draft),
                     if (_draft.templateSlots.isNotEmpty) ...[
-                      SizedBox(height: 14.h),
+                      SizedBox(height: 14),
                       _TemplateSlotList(draft: _draft),
                     ] else ...[
-                      SizedBox(height: 14.h),
+                      SizedBox(height: 14),
                       _RecommendationDetails(
                         draft: _draft,
                         onAddExcludedPhoto: _addExcludedPhoto,
                       ),
                     ],
-                    SizedBox(height: 16.h),
+                    SizedBox(height: 16),
                   ],
                 ),
               ),
@@ -251,31 +250,31 @@ class _DraftSummaryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _MemoLabel(text: '추천 구성'),
-          SizedBox(height: 10.h),
+          SizedBox(height: 10),
           Text(
             draft.title,
             style: TextStyle(
               color: SnapFitColors.textPrimaryOf(context),
-              fontSize: 20.sp,
+              fontSize: 20,
               height: 1.22,
               fontWeight: FontWeight.w900,
               letterSpacing: -0.35,
             ),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 8),
           Text(
             draft.summary,
             style: TextStyle(
               color: SnapFitColors.textSecondaryOf(context),
-              fontSize: 13.sp,
+              fontSize: 13,
               height: 1.45,
               fontWeight: FontWeight.w600,
             ),
           ),
-          SizedBox(height: 14.h),
+          SizedBox(height: 14),
           Wrap(
-            spacing: 8.w,
-            runSpacing: 8.h,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               if (draft.templateSlots.isNotEmpty)
                 _InfoChip(text: '사진 슬롯 ${draft.templateSlots.length}개')
@@ -309,40 +308,40 @@ class _TemplateSlotList extends StatelessWidget {
             title: '템플릿 슬롯',
             caption: 'AI가 앨범 칸만 잡았어요. 사진은 다음 편집 화면에서 직접 넣고 바꿔요.',
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 12),
           ...slots.map((slot) {
             final pageLabel = slot.pageIndex == 0 ? '표지' : '${slot.pageIndex}쪽';
             return Padding(
-              padding: EdgeInsets.only(bottom: 10.h),
+              padding: EdgeInsets.only(bottom: 10),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 38.w,
-                    height: 38.w,
+                    width: 38,
+                    height: 38,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: kIsWeb
                           ? WebPalette.of(context).canvas
                           : SnapFitColors.isDark(context)
-                          ? Colors.white.withOpacity(0.08)
+                          ? Colors.white.withValues(alpha: 0.08)
                           : const Color(0xFFF3EEE5),
-                      borderRadius: BorderRadius.circular(12.r),
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: kIsWeb
                             ? WebPalette.of(context).line
                             : SnapFitColors.isDark(context)
-                            ? Colors.white.withOpacity(0.10)
+                            ? Colors.white.withValues(alpha: 0.10)
                             : const Color(0xFFE4D8C9),
                       ),
                     ),
                     child: Icon(
                       Icons.add_photo_alternate_outlined,
-                      size: 18.sp,
+                      size: 18,
                       color: SnapFitColors.textSecondaryOf(context),
                     ),
                   ),
-                  SizedBox(width: 11.w),
+                  SizedBox(width: 11),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -351,17 +350,17 @@ class _TemplateSlotList extends StatelessWidget {
                           '$pageLabel · ${_roleLabel(slot.role)}',
                           style: TextStyle(
                             color: SnapFitColors.textPrimaryOf(context),
-                            fontSize: 13.3.sp,
+                            fontSize: 13.3,
                             height: 1.25,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
-                        SizedBox(height: 3.h),
+                        SizedBox(height: 3),
                         Text(
                           slot.hint,
                           style: TextStyle(
                             color: SnapFitColors.textSecondaryOf(context),
-                            fontSize: 12.4.sp,
+                            fontSize: 12.4,
                             height: 1.35,
                             fontWeight: FontWeight.w600,
                           ),
@@ -374,12 +373,12 @@ class _TemplateSlotList extends StatelessWidget {
             );
           }),
           if (draft.templateSlots.length > slots.length) ...[
-            SizedBox(height: 2.h),
+            SizedBox(height: 2),
             Text(
               '나머지 ${draft.templateSlots.length - slots.length}개 슬롯은 편집 화면에서 이어서 채울 수 있어요.',
               style: TextStyle(
                 color: SnapFitColors.textSecondaryOf(context),
-                fontSize: 12.sp,
+                fontSize: 12,
                 height: 1.35,
                 fontWeight: FontWeight.w700,
               ),
@@ -421,17 +420,17 @@ class _StorySectionList extends StatelessWidget {
                 ? '사진을 직접 넣으면 자연스럽게 이어질 흐름이에요.'
                 : '날짜별 흐름이 자연스럽도록 먼저 나눴어요.',
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 12),
           ...draft.storySections.map((section) {
             return Padding(
-              padding: EdgeInsets.only(bottom: 11.h),
+              padding: EdgeInsets.only(bottom: 11),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 7.w,
-                    height: 7.w,
-                    margin: EdgeInsets.only(top: 7.h, right: 10.w),
+                    width: 7,
+                    height: 7,
+                    margin: EdgeInsets.only(top: 7, right: 10),
                     decoration: BoxDecoration(
                       color: kIsWeb
                           ? WebPalette.of(context).brandInk
@@ -447,16 +446,16 @@ class _StorySectionList extends StatelessWidget {
                           section.title,
                           style: TextStyle(
                             color: SnapFitColors.textPrimaryOf(context),
-                            fontSize: 14.sp,
+                            fontSize: 14,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
-                        SizedBox(height: 3.h),
+                        SizedBox(height: 3),
                         Text(
                           section.description,
                           style: TextStyle(
                             color: SnapFitColors.textSecondaryOf(context),
-                            fontSize: 12.5.sp,
+                            fontSize: 12.5,
                             height: 1.35,
                             fontWeight: FontWeight.w600,
                           ),
@@ -501,10 +500,10 @@ class _RecommendationDetails extends StatelessWidget {
             caption: '대표 컷은 먼저 넣고, 비슷한 사진은 잠시 빼뒀어요.',
           ),
           if (recommendedReasons.isNotEmpty) ...[
-            SizedBox(height: 12.h),
+            SizedBox(height: 12),
             Wrap(
-              spacing: 7.w,
-              runSpacing: 7.h,
+              spacing: 7,
+              runSpacing: 7,
               children: recommendedReasons
                   .map(
                     (reason) => _ReasonChip(text: _chipLabelFor(reason.type)),
@@ -513,13 +512,13 @@ class _RecommendationDetails extends StatelessWidget {
             ),
           ],
           if (selected.isNotEmpty) ...[
-            SizedBox(height: 13.h),
+            SizedBox(height: 13),
             _ReasonGroupLabel(text: '추천한 사진'),
-            SizedBox(height: 7.h),
+            SizedBox(height: 7),
             _ReasonBulletList(messages: _selectedReasonMessages(selected)),
           ],
           if (draft.excludedPhotos.isNotEmpty) ...[
-            SizedBox(height: 12.h),
+            SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
@@ -531,10 +530,7 @@ class _RecommendationDetails extends StatelessWidget {
                   onPressed: () =>
                       onAddExcludedPhoto(draft.excludedPhotos.first),
                   style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 10.w,
-                      vertical: 5.h,
-                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     foregroundColor: SnapFitColors.textPrimaryOf(context),
@@ -542,32 +538,32 @@ class _RecommendationDetails extends StatelessWidget {
                   child: Text(
                     '템플릿에 넣기',
                     style: TextStyle(
-                      fontSize: 12.2.sp,
+                      fontSize: 12.2,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 6.h),
+            SizedBox(height: 6),
             Text(
               '${excludedReasonLabels.join(', ')} 사진은 잠시 제외했어요. 원하면 다시 넣을 수 있어요.',
               style: TextStyle(
                 color: SnapFitColors.textSecondaryOf(context),
-                fontSize: 12.3.sp,
+                fontSize: 12.3,
                 height: 1.36,
                 fontWeight: FontWeight.w700,
               ),
             ),
-            SizedBox(height: 7.h),
+            SizedBox(height: 7),
             _ReasonBulletList(messages: _excludedReasonMessages(excluded)),
           ] else ...[
-            SizedBox(height: 12.h),
+            SizedBox(height: 12),
             Text(
               '원하면 잠시 빼둔 사진도 템플릿 슬롯에 넣을 수 있어요. 지금은 모두 들어갔어요.',
               style: TextStyle(
                 color: SnapFitColors.textSecondaryOf(context),
-                fontSize: 12.3.sp,
+                fontSize: 12.3,
                 height: 1.36,
                 fontWeight: FontWeight.w700,
               ),
@@ -667,14 +663,14 @@ class _ReasonChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 5.h),
+      padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
         color: kIsWeb
             ? WebPalette.of(context).softBrand
             : SnapFitColors.isDark(context)
-            ? Colors.white.withOpacity(0.08)
+            ? Colors.white.withValues(alpha: 0.08)
             : const Color(0xFFE9F4EC),
-        borderRadius: BorderRadius.circular(999.r),
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         text,
@@ -684,7 +680,7 @@ class _ReasonChip extends StatelessWidget {
               : SnapFitColors.isDark(context)
               ? const Color(0xFFE9F4EC)
               : const Color(0xFF4C6A55),
-          fontSize: 11.3.sp,
+          fontSize: 11.3,
           height: 1.15,
           fontWeight: FontWeight.w900,
         ),
@@ -704,7 +700,7 @@ class _ReasonGroupLabel extends StatelessWidget {
       text,
       style: TextStyle(
         color: SnapFitColors.textPrimaryOf(context),
-        fontSize: 13.sp,
+        fontSize: 13,
         height: 1.25,
         fontWeight: FontWeight.w900,
         letterSpacing: -0.15,
@@ -725,15 +721,15 @@ class _ReasonBulletList extends StatelessWidget {
       children: messages
           .map(
             (message) => Padding(
-              padding: EdgeInsets.only(bottom: 5.h),
+              padding: EdgeInsets.only(bottom: 5),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: EdgeInsets.only(top: 6.h, right: 7.w),
+                    padding: EdgeInsets.only(top: 6, right: 7),
                     child: Container(
-                      width: 4.5.w,
-                      height: 4.5.w,
+                      width: 4.5,
+                      height: 4.5,
                       decoration: BoxDecoration(
                         color: kIsWeb
                             ? WebPalette.of(context).brandInk
@@ -747,7 +743,7 @@ class _ReasonBulletList extends StatelessWidget {
                       message,
                       style: TextStyle(
                         color: SnapFitColors.textSecondaryOf(context),
-                        fontSize: 12.2.sp,
+                        fontSize: 12.2,
                         height: 1.34,
                         fontWeight: FontWeight.w700,
                       ),
@@ -776,7 +772,7 @@ class _BottomCta extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 12.h),
+      padding: EdgeInsets.fromLTRB(20, 10, 20, 12),
       decoration: BoxDecoration(
         color: SnapFitColors.isDark(context)
             ? const Color(0xFF111111)
@@ -784,24 +780,20 @@ class _BottomCta extends StatelessWidget {
         border: Border(
           top: BorderSide(
             color: SnapFitColors.isDark(context)
-                ? Colors.white.withOpacity(0.08)
+                ? Colors.white.withValues(alpha: 0.08)
                 : const Color(0xFFE7E1D8),
           ),
         ),
       ),
       child: SizedBox(
         width: double.infinity,
-        height: 52.h,
+        height: 52,
         child: ElevatedButton(
           onPressed: isAcceptingDraft ? null : onAcceptDraft,
           style: ElevatedButton.styleFrom(
             elevation: 0,
-            backgroundColor: SnapFitColors.isDark(context)
-                ? const Color(0xFFF4F1EA)
-                : const Color(0xFF1F1F1D),
-            foregroundColor: SnapFitColors.isDark(context)
-                ? const Color(0xFF111111)
-                : Colors.white,
+            backgroundColor: SnapFitColors.actionAccent,
+            foregroundColor: SnapFitColors.onAccent,
             shape: const StadiumBorder(),
           ),
           child: Text(
@@ -811,7 +803,7 @@ class _BottomCta extends StatelessWidget {
                 ? '편집 시작'
                 : label,
             style: TextStyle(
-              fontSize: 15.sp,
+              fontSize: 15,
               fontWeight: FontWeight.w900,
               letterSpacing: -0.2,
             ),
@@ -837,17 +829,17 @@ class _SectionTitle extends StatelessWidget {
           title,
           style: TextStyle(
             color: SnapFitColors.textPrimaryOf(context),
-            fontSize: 16.sp,
+            fontSize: 16,
             fontWeight: FontWeight.w900,
             letterSpacing: -0.2,
           ),
         ),
-        SizedBox(height: 5.h),
+        SizedBox(height: 5),
         Text(
           caption,
           style: TextStyle(
             color: SnapFitColors.textSecondaryOf(context),
-            fontSize: 12.5.sp,
+            fontSize: 12.5,
             height: 1.35,
             fontWeight: FontWeight.w600,
           ),
@@ -866,19 +858,19 @@ class _PaperCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(17.w),
+      padding: EdgeInsets.all(17),
       decoration: BoxDecoration(
         color: kIsWeb
             ? WebPalette.of(context).surface
             : SnapFitColors.isDark(context)
             ? const Color(0xFF1D1C1A)
             : Colors.white,
-        borderRadius: BorderRadius.circular(kIsWeb ? 12 : 22.r),
+        borderRadius: BorderRadius.circular(kIsWeb ? 12 : 22),
         border: Border.all(
           color: kIsWeb
               ? WebPalette.of(context).line
               : SnapFitColors.isDark(context)
-              ? Colors.white.withOpacity(0.10)
+              ? Colors.white.withValues(alpha: 0.10)
               : const Color(0xFFE7E1D8),
         ),
       ),
@@ -895,10 +887,10 @@ class _InfoChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: kIsWeb ? WebPalette.of(context).canvas : const Color(0xFFF3EEE5),
-        borderRadius: BorderRadius.circular(999.r),
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         text,
@@ -906,7 +898,7 @@ class _InfoChip extends StatelessWidget {
           color: kIsWeb
               ? WebPalette.of(context).muted
               : const Color(0xFF6C5E4B),
-          fontSize: 11.5.sp,
+          fontSize: 11.5,
           fontWeight: FontWeight.w900,
         ),
       ),
@@ -922,12 +914,12 @@ class _MemoLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
         color: kIsWeb
             ? WebPalette.of(context).softBrand
             : const Color(0xFFE9F4EC),
-        borderRadius: BorderRadius.circular(999.r),
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         text,
@@ -935,7 +927,7 @@ class _MemoLabel extends StatelessWidget {
           color: kIsWeb
               ? WebPalette.of(context).brandInk
               : const Color(0xFF4C6A55),
-          fontSize: 11.sp,
+          fontSize: 11,
           fontWeight: FontWeight.w900,
         ),
       ),
@@ -954,19 +946,19 @@ class _BackTextButton extends StatelessWidget {
       onPressed: onPressed,
       style: TextButton.styleFrom(
         padding: EdgeInsets.zero,
-        minimumSize: Size(0, 34.h),
+        minimumSize: Size(0, 34),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
       icon: Icon(
         Icons.arrow_back_ios_new_rounded,
-        size: 14.sp,
+        size: 14,
         color: SnapFitColors.textSecondaryOf(context),
       ),
       label: Text(
         '이전',
         style: TextStyle(
           color: SnapFitColors.textSecondaryOf(context),
-          fontSize: 12.5.sp,
+          fontSize: 12.5,
           fontWeight: FontWeight.w800,
         ),
       ),

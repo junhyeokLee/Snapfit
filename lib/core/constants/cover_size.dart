@@ -100,6 +100,19 @@ const List<CoverSize> coverSizes = [
   ),
 ];
 
+/// Layout identity for the actual trim ratio. Legacy portrait documents remain
+/// readable, but new catalog books and size pickers use only [coverSizes].
+String templateVariantForCover(CoverSize cover) =>
+    templateVariantForRatio(cover.ratio);
+
+String templateVariantForRatio(double ratio) {
+  if ((ratio - 4 / 3).abs() < .0001) return 'landscape4x3';
+  if ((ratio - 5 / 4).abs() < .0001) return 'landscape5x4';
+  if (ratio > 1.05) return 'landscape';
+  if (ratio < .95) return 'portrait';
+  return 'square';
+}
+
 /// 저장된 앨범을 복원할 때만 사용하는 기존 캔버스 크기.
 const List<CoverSize> legacyCoverSizes = [
   CoverSize(name: '세로형', ratio: 3 / 4, realSize: Size(14.5, 19.4)),
@@ -161,7 +174,7 @@ CoverSize newAlbumCoverSize(CoverSize? source) {
 }
 
 /// 출력 기준(실제 크기)을 화면 캔버스에 매핑하는 스케일
-/// - 세로형 14.5x19.4cm 기준이 300x400px 정도가 되도록 설정
+/// 기존 저장 문서의 표시 배율을 유지하며, 새 책의 비율은 실물 규격을 따른다.
 const double kCanvasPxPerCm = 20.64;
 
 /// 페이지 화면 표시 최대 높이 비율 (화면 기준)

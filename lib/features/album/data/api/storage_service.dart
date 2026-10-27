@@ -71,19 +71,43 @@ class StorageService {
   static String userScopedAlbumAssetPath({
     required String userId,
     required String relativePath,
+    int? albumId,
   }) {
     final cleanUserId = userId.trim();
-    if (cleanUserId.isEmpty) {
+    if (!RegExp(r'^[A-Za-z0-9_-]+$').hasMatch(cleanUserId)) {
       throw StateError('Authenticated user is required for album uploads.');
     }
-    final cleanPath = relativePath.startsWith('/')
+    var cleanPath = relativePath.startsWith('/')
         ? relativePath.substring(1)
         : relativePath;
-    if (cleanPath == cleanUserId || cleanPath.startsWith('$cleanUserId/')) {
-      return cleanPath;
+    if (cleanPath.startsWith('$cleanUserId/')) {
+      cleanPath = cleanPath.substring(cleanUserId.length + 1);
+    }
+    if (cleanPath.contains('\\') ||
+        cleanPath
+            .split('/')
+            .any((part) => part.isEmpty || part == '.' || part == '..')) {
+      throw ArgumentError.value(
+        relativePath,
+        'relativePath',
+        'Invalid storage path.',
+      );
+    }
+    if (albumId != null) {
+      if (albumId <= 0 || !cleanPath.startsWith('albums/')) {
+        throw ArgumentError.value(
+          albumId,
+          'albumId',
+          'A saved album is required.',
+        );
+      }
+      cleanPath = 'albums/$albumId/${cleanPath.substring('albums/'.length)}';
     }
     return '$cleanUserId/$cleanPath';
   }
+
+  static String albumAssetStorageUri(String path) =>
+      'supabase://album-assets/$path';
 
   static String userScopedAiAlbumPreviewPath({
     required String userId,
@@ -129,19 +153,22 @@ class StorageService {
 
   /// Generic file upload method
   Future<String?> uploadFile(File file, String path) async {
+    final client = _requireSupabase();
+    final owner = _uploadOwner(client);
     try {
       final bytes = await file.readAsBytes();
+      _checkUploadOwner(client, owner);
       final resized = await _resizeImageBytesToJpeg(
         bytes,
         maxDimension: 1600,
         quality: 85,
       );
-      final supabase = _requireSupabase();
-      final normalizedPath = _albumAssetPath(supabase, path);
+      _checkUploadOwner(client, owner);
+      final normalizedPath = _albumAssetPath(client, path, owner: owner);
       AppLogger.debug(
         '[StorageUpload] bucket=album-assets path=$normalizedPath',
       );
-      await supabase.storage
+      await client.storage
           .from('album-assets')
           .uploadBinary(
             normalizedPath,
@@ -151,7 +178,8 @@ class StorageService {
               upsert: false,
             ),
           );
-      return supabase.storage.from('album-assets').getPublicUrl(normalizedPath);
+      _checkUploadOwner(client, owner);
+      return albumAssetStorageUri(normalizedPath);
     } catch (e) {
       AppLogger.warn('Upload error ($path): $e');
       return null;
@@ -163,79 +191,76 @@ class StorageService {
   Future<UploadedUrls> uploadImageVariants(
     AssetEntity asset, {
     int previewMaxDimension = 1600,
+    int? albumId,
   }) async {
-    if (asset is BrowserPhotoAsset) return _uploadBrowserPhotoVariants(asset);
-    String? originalUrl;
-    String? previewUrl;
-    String? originalGsPath;
-    String? previewGsPath;
-
+    if (asset is BrowserPhotoAsset) {
+      return _uploadBrowserPhotoVariants(asset, albumId: albumId);
+    }
+    final client = _requireSupabase();
+    final owner = _uploadOwner(client);
+    final stamp = const Uuid().v4();
+    final originalPath = _albumAssetPath(
+      client,
+      'albums/images/${stamp}_orig.jpg',
+      owner: owner,
+      albumId: albumId,
+    );
+    final previewPath = _albumAssetPath(
+      client,
+      'albums/images/${stamp}_preview.jpg',
+      owner: owner,
+      albumId: albumId,
+    );
+    final uploaded = <String>[];
     try {
       final File? file = await asset.file;
-      if (file == null) return const UploadedUrls();
-      final originalBytesSize = await file.length();
+      _checkUploadOwner(client, owner);
+      if (file == null) throw StateError('album_photo_unavailable');
       final bytes = await file.readAsBytes();
+      _checkUploadOwner(client, owner);
       final resizedPreviewBytes = await _resizeImageBytesToJpeg(
         bytes,
         maxDimension: previewMaxDimension,
       );
-      final incomingBytes = originalBytesSize + resizedPreviewBytes.length;
+      _checkUploadOwner(client, owner);
+      final incomingBytes = bytes.length + resizedPreviewBytes.length;
       await _ensureStorageQuota(incomingBytes);
-
-      // 파일명 중복 방지 (고유 ID 생성)
-      final ts = DateTime.now().microsecondsSinceEpoch;
-      final originalName = '${ts}_orig.jpg';
-      final previewName = '${ts}_preview.jpg';
-
-      // 병렬 처리를 위한 Future 정의
-      Future<void> uploadOriginal() async {
-        final supabase = _requireSupabase();
-        final path = _albumAssetPath(supabase, 'albums/images/$originalName');
-        AppLogger.debug('[StorageUpload] bucket=album-assets path=$path');
-        await supabase.storage.from('album-assets').upload(path, file);
-        originalUrl = supabase.storage.from('album-assets').getPublicUrl(path);
-        originalGsPath = 'supabase://album-assets/$path';
-      }
-
-      Future<void> uploadPreview() async {
-        final supabase = _requireSupabase();
-        final path = _albumAssetPath(supabase, 'albums/images/$previewName');
-        AppLogger.debug('[StorageUpload] bucket=album-assets path=$path');
-        await supabase.storage
-            .from('album-assets')
-            .uploadBinary(
-              path,
-              resizedPreviewBytes,
-              fileOptions: const FileOptions(
-                contentType: 'image/jpeg',
-                upsert: false,
-              ),
-            );
-        previewUrl = supabase.storage.from('album-assets').getPublicUrl(path);
-        previewGsPath = 'supabase://album-assets/$path';
-      }
-
-      // 두 업로드를 동시에 시작하고 기다림
-      await Future.wait([uploadOriginal(), uploadPreview()]);
-    } on StorageQuotaExceededException {
+      _checkUploadOwner(client, owner);
+      await client.storage
+          .from('album-assets')
+          .uploadBinary(
+            originalPath,
+            bytes,
+            fileOptions: const FileOptions(
+              contentType: 'image/jpeg',
+              upsert: false,
+            ),
+          );
+      uploaded.add(originalPath);
+      _checkUploadOwner(client, owner);
+      await client.storage
+          .from('album-assets')
+          .uploadBinary(
+            previewPath,
+            resizedPreviewBytes,
+            fileOptions: const FileOptions(
+              contentType: 'image/jpeg',
+              upsert: false,
+            ),
+          );
+      uploaded.add(previewPath);
+      _checkUploadOwner(client, owner);
+      return _uploadedPair(originalPath, previewPath);
+    } catch (_) {
+      await _removePartialUpload(client, owner, uploaded);
       rethrow;
-    } catch (e) {
-      AppLogger.warn('Upload error: $e');
-      // 에러 발생 시 부분 성공한 URL이라도 반환할지, 아니면 실패 처리할지는 정책에 따라 결정
-      // 여기서는 일단 있는 정보라도 반환
     }
-
-    return UploadedUrls(
-      originalUrl: originalUrl,
-      previewUrl: previewUrl,
-      originalGsPath: originalGsPath,
-      previewGsPath: previewGsPath,
-    );
   }
 
   Future<UploadedUrls> _uploadBrowserPhotoVariants(
-    BrowserPhotoAsset asset,
-  ) async {
+    BrowserPhotoAsset asset, {
+    int? albumId,
+  }) async {
     final client = _requireSupabase();
     final owner = client.auth.currentUser?.id;
     void sameOwner() {
@@ -256,10 +281,12 @@ class StorageService {
       userId: owner!,
       relativePath:
           'albums/images/${stamp}_${asset.id}_orig.${asset.extension}',
+      albumId: albumId,
     );
     final previewPath = userScopedAlbumAssetPath(
       userId: owner,
       relativePath: 'albums/images/${stamp}_${asset.id}_preview.jpg',
+      albumId: albumId,
     );
     final uploaded = <String>[];
     try {
@@ -287,23 +314,10 @@ class StorageService {
           );
       uploaded.add(previewPath);
       sameOwner();
-      return UploadedUrls(
-        originalUrl: client.storage
-            .from('album-assets')
-            .getPublicUrl(originalPath),
-        previewUrl: client.storage
-            .from('album-assets')
-            .getPublicUrl(previewPath),
-        originalGsPath: 'supabase://album-assets/$originalPath',
-        previewGsPath: 'supabase://album-assets/$previewPath',
-      );
+      return _uploadedPair(originalPath, previewPath);
     } catch (_) {
       // A partial pair must not be attached to an album as a successful save.
-      if (client.auth.currentUser?.id == owner && uploaded.isNotEmpty) {
-        try {
-          await client.storage.from('album-assets').remove(uploaded);
-        } catch (_) {}
-      }
+      await _removePartialUpload(client, owner, uploaded);
       rethrow;
     }
   }
@@ -379,18 +393,25 @@ class StorageService {
     Uint8List pngBytes, {
     int originalMaxDimension = 4096,
     int previewMaxDimension = 1024,
+    int? albumId,
   }) async {
-    String? originalUrl;
-    String? previewUrl;
-    String? originalGsPath;
-    String? previewGsPath;
-
+    final client = _requireSupabase();
+    final owner = _uploadOwner(client);
+    final stamp = const Uuid().v4();
+    final originalPath = _albumAssetPath(
+      client,
+      'albums/covers/${stamp}_orig.jpg',
+      owner: owner,
+      albumId: albumId,
+    );
+    final previewPath = _albumAssetPath(
+      client,
+      'albums/covers/${stamp}_preview.jpg',
+      owner: owner,
+      albumId: albumId,
+    );
+    final uploaded = <String>[];
     try {
-      final ts = DateTime.now().microsecondsSinceEpoch;
-      // [OPTIMIZATION] PNG(10MB+) 대신 고화질 JPEG(2MB) 사용
-      // 인쇄 품질(95%)을 유지하면서 업로드 속도를 획기적으로 개선
-      final originalName = '${ts}_orig.jpg';
-      final previewName = '${ts}_preview.jpg';
       final originalBytes = kIsWeb
           ? await browserPhotoJpegPreview(
               pngBytes,
@@ -402,6 +423,7 @@ class StorageService {
               quality: 85,
               format: CompressFormat.jpeg,
             );
+      _checkUploadOwner(client, owner);
       final previewBytes = kIsWeb
           ? await browserPhotoJpegPreview(
               pngBytes,
@@ -415,71 +437,101 @@ class StorageService {
               quality: 80,
               format: CompressFormat.jpeg,
             );
+      _checkUploadOwner(client, owner);
       await _ensureStorageQuota(originalBytes.length + previewBytes.length);
-
-      Future<void> uploadOriginal() async {
-        final sw = Stopwatch()..start();
-        AppLogger.perf(
-          '[PERF] Original Input Size: ${(pngBytes.length / 1024).toStringAsFixed(2)} KB',
-        );
-        AppLogger.perf(
-          '[PERF] Native Compress(Original): ${sw.elapsedMilliseconds}ms, Size: ${(originalBytes.length / 1024).toStringAsFixed(2)} KB',
-        );
-
-        final supabase = _requireSupabase();
-        final path = _albumAssetPath(supabase, 'albums/covers/$originalName');
-        AppLogger.debug('[StorageUpload] bucket=album-assets path=$path');
-        await supabase.storage
-            .from('album-assets')
-            .uploadBinary(
-              path,
-              originalBytes,
-              fileOptions: const FileOptions(
-                contentType: 'image/jpeg',
-                upsert: false,
-              ),
-            );
-        AppLogger.perf('[PERF] Upload(Original): ${sw.elapsedMilliseconds}ms');
-        originalUrl = supabase.storage.from('album-assets').getPublicUrl(path);
-        originalGsPath = 'supabase://album-assets/$path';
-      }
-
-      Future<void> uploadPreview() async {
-        final sw = Stopwatch()..start();
-        AppLogger.perf(
-          '[PERF] Native Compress(Preview): ${sw.elapsedMilliseconds}ms, Size: ${(previewBytes.length / 1024).toStringAsFixed(2)} KB',
-        );
-
-        final supabase = _requireSupabase();
-        final path = _albumAssetPath(supabase, 'albums/covers/$previewName');
-        AppLogger.debug('[StorageUpload] bucket=album-assets path=$path');
-        await supabase.storage
-            .from('album-assets')
-            .uploadBinary(
-              path,
-              previewBytes,
-              fileOptions: const FileOptions(
-                contentType: 'image/jpeg',
-                upsert: false,
-              ),
-            );
-        AppLogger.perf('[PERF] Upload(Preview): ${sw.elapsedMilliseconds}ms');
-        previewUrl = supabase.storage.from('album-assets').getPublicUrl(path);
-        previewGsPath = 'supabase://album-assets/$path';
-      }
-
-      await Future.wait([uploadOriginal(), uploadPreview()]);
-    } on StorageQuotaExceededException {
+      _checkUploadOwner(client, owner);
+      await client.storage
+          .from('album-assets')
+          .uploadBinary(
+            originalPath,
+            originalBytes,
+            fileOptions: const FileOptions(
+              contentType: 'image/jpeg',
+              upsert: false,
+            ),
+          );
+      uploaded.add(originalPath);
+      _checkUploadOwner(client, owner);
+      await client.storage
+          .from('album-assets')
+          .uploadBinary(
+            previewPath,
+            previewBytes,
+            fileOptions: const FileOptions(
+              contentType: 'image/jpeg',
+              upsert: false,
+            ),
+          );
+      uploaded.add(previewPath);
+      _checkUploadOwner(client, owner);
+      return _uploadedPair(originalPath, previewPath);
+    } catch (_) {
+      await _removePartialUpload(client, owner, uploaded);
       rethrow;
-    } catch (e) {
-      AppLogger.warn('Upload cover error: $e');
     }
-    return UploadedUrls(
-      originalUrl: originalUrl,
-      previewUrl: previewUrl,
-      originalGsPath: originalGsPath,
-      previewGsPath: previewGsPath,
-    );
+  }
+
+  UploadedUrls _uploadedPair(String originalPath, String previewPath) =>
+      UploadedUrls(
+        originalUrl: albumAssetStorageUri(originalPath),
+        previewUrl: albumAssetStorageUri(previewPath),
+        originalGsPath: albumAssetStorageUri(originalPath),
+        previewGsPath: albumAssetStorageUri(previewPath),
+      );
+
+  String _uploadOwner(SupabaseClient client) {
+    final owner = client.auth.currentUser?.id;
+    if (owner == null || owner.trim().isEmpty) {
+      throw StateError('Authenticated user is required for album uploads.');
+    }
+    return owner;
+  }
+
+  void _checkUploadOwner(SupabaseClient client, String owner) {
+    if (client.auth.currentUser?.id != owner) {
+      throw StateError('album_photo_owner_changed');
+    }
+  }
+
+  Future<void> _removePartialUpload(
+    SupabaseClient client,
+    String? owner,
+    List<String> paths,
+  ) async {
+    // Never perform cleanup using another account's credentials. A late orphan
+    // is private and can be cleaned by its uploader's later retry/retention.
+    if (owner == null || client.auth.currentUser?.id != owner || paths.isEmpty)
+      return;
+    try {
+      await client.storage.from('album-assets').remove(paths);
+    } catch (_) {
+      // Cleanup cannot turn a failed pair into a successful album save.
+    }
+  }
+
+  /// Server policies keep any object already referenced by a committed album.
+  /// A lost save response must never turn this cleanup into photo deletion.
+  Future<void> removeUnreferencedAlbumUploads(
+    Iterable<String> references, {
+    required String expectedOwner,
+  }) async {
+    final client = _requireSupabase();
+    if (client.auth.currentUser?.id != expectedOwner) return;
+    final paths = <String>{};
+    for (final reference in references) {
+      final prefix = 'supabase://album-assets/$expectedOwner/';
+      if (reference.startsWith(prefix)) {
+        paths.add(reference.substring('supabase://album-assets/'.length));
+      }
+    }
+    for (final path in paths) {
+      if (client.auth.currentUser?.id != expectedOwner) return;
+      try {
+        await client.storage.from('album-assets').remove([path]);
+      } catch (_) {
+        // Referenced objects and uncertain cleanup stay private and intact.
+      }
+    }
   }
 
   /// 바이트를 다운스케일하여 JPEG로 반환 (native compressor 사용)
@@ -519,12 +571,22 @@ class StorageService {
     return supabase;
   }
 
-  String _albumAssetPath(SupabaseClient supabase, String relativePath) {
+  String _albumAssetPath(
+    SupabaseClient supabase,
+    String relativePath, {
+    String? owner,
+    int? albumId,
+  }) {
     final userId = supabase.auth.currentUser?.id;
+    if (owner != null) _checkUploadOwner(supabase, owner);
     if (userId == null || userId.trim().isEmpty) {
       throw StateError('Authenticated user is required for album uploads.');
     }
-    return userScopedAlbumAssetPath(userId: userId, relativePath: relativePath);
+    return userScopedAlbumAssetPath(
+      userId: userId,
+      relativePath: relativePath,
+      albumId: albumId,
+    );
   }
 
   Future<void> _ensureStorageQuota(int incomingBytes) async {

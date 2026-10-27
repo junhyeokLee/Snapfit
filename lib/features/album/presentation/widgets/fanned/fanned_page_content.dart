@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import '../../../../../core/cache/snapfit_cache_manager.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../../../core/constants/cover_theme.dart';
@@ -89,7 +87,7 @@ class FannedPageContent extends StatelessWidget {
           children: [
             Container(decoration: selectedTheme.backgroundDecoration),
             ClipRRect(
-              borderRadius: BorderRadius.circular(4.r),
+              borderRadius: BorderRadius.circular(4),
               child: SnapfitImage(
                 urlOrGs: url,
                 fit: BoxFit.cover,
@@ -106,7 +104,7 @@ class FannedPageContent extends StatelessWidget {
       child: Center(
         child: Text(
           page?.isCover == true ? '표지' : '${page?.pageIndex ?? 0}',
-          style: TextStyle(color: Colors.grey[600], fontSize: 14.sp),
+          style: const TextStyle(color: Color(0xFF757575), fontSize: 14),
         ),
       ),
     );
@@ -127,6 +125,6 @@ class FannedPageContent extends StatelessWidget {
         fit: BoxFit.cover,
       );
     }
-    return Icon(Icons.image, size: 28.sp, color: Colors.grey[400]);
+    return const Icon(Icons.image, size: 28, color: Color(0xFFBDBDBD));
   }
 }

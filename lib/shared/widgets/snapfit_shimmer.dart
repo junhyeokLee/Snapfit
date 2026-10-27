@@ -17,22 +17,66 @@ class SnapFitShimmer extends StatefulWidget {
 }
 
 class _SnapFitShimmerState extends State<SnapFitShimmer>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final AnimationController _ctrl;
-  late final Animation<double> _anim;
+  late final CurvedAnimation _anim;
+  bool _foreground = true;
+  Set<ScrollPosition> _positions = {};
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    final lifecycle = WidgetsBinding.instance.lifecycleState;
+    _foreground = lifecycle == null || lifecycle == AppLifecycleState.resumed;
     _ctrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1300),
-    )..repeat();
+    );
     _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut);
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final positions = <ScrollPosition>{
+      for (final axis in Axis.values)
+        if (Scrollable.maybeOf(context, axis: axis) case final scrollable?)
+          scrollable.position,
+    };
+    for (final position in _positions.difference(positions)) {
+      position.isScrollingNotifier.removeListener(_syncMotion);
+    }
+    for (final position in positions.difference(_positions)) {
+      position.isScrollingNotifier.addListener(_syncMotion);
+    }
+    _positions = positions;
+    _syncMotion();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _foreground = state == AppLifecycleState.resumed;
+    _syncMotion();
+  }
+
+  void _syncMotion() {
+    final animate =
+        _foreground &&
+        TickerMode.of(context) &&
+        !_positions.any((p) => p.isScrollingNotifier.value) &&
+        !SnapFitMotion.reduced(context);
+    if (animate && !_ctrl.isAnimating) _ctrl.repeat();
+    if (!animate) _ctrl.stop();
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    for (final position in _positions) {
+      position.isScrollingNotifier.removeListener(_syncMotion);
+    }
+    _anim.dispose();
     _ctrl.dispose();
     super.dispose();
   }
@@ -63,7 +107,7 @@ class _SnapFitShimmerState extends State<SnapFitShimmer>
           child: child,
         );
       },
-      child: ColoredBox(color: base, child: widget.child),
+      child: RepaintBoundary(child: widget.child),
     );
   }
 }
@@ -337,7 +381,8 @@ class SnapFitShimmerOrderList extends StatelessWidget {
 
 /// Skeleton placeholder for the home album slider screen.
 class SnapFitShimmerHomeSlider extends StatelessWidget {
-  const SnapFitShimmerHomeSlider({super.key});
+  const SnapFitShimmerHomeSlider({super.key, this.scrollController});
+  final ScrollController? scrollController;
 
   @override
   Widget build(BuildContext context) => SnapFitShimmer(
@@ -345,6 +390,8 @@ class SnapFitShimmerHomeSlider extends StatelessWidget {
       builder: (context, constraints) {
         final coverSize = constraints.maxWidth.clamp(0.0, 440.0);
         return SingleChildScrollView(
+          controller: scrollController,
+          primary: false,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

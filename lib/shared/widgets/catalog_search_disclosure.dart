@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'experience_icon.dart';
-import 'experience_style.dart';
 import 'experience_form_style.dart';
 
 /// Keeps the query mounted when collapsed, preserving each catalog's search.
@@ -50,7 +49,7 @@ class _CatalogSearchDisclosureState extends State<CatalogSearchDisclosure> {
     ),
     style: TextButton.styleFrom(
       foregroundColor: ExperienceFormStyle.ink(context),
-      textStyle: ExperienceStyle.text(13),
+      textStyle: ExperienceFormStyle.text(context, 13),
       minimumSize: const Size(48, 44),
     ),
   );
@@ -70,16 +69,24 @@ class _CatalogSearchDisclosureState extends State<CatalogSearchDisclosure> {
       : Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                if (widget.leading != null) widget.leading! else const Spacer(),
-                const SizedBox(width: 8),
-                if (widget.compactAction)
-                  Flexible(child: _toggle(context))
-                else
-                  _toggle(context),
-              ],
-            ),
+            if (widget.leading != null)
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [widget.leading!, _toggle(context)],
+              )
+            else
+              Row(
+                children: [
+                  const Spacer(),
+                  if (widget.compactAction)
+                    Flexible(child: _toggle(context))
+                  else
+                    _toggle(context),
+                ],
+              ),
             Offstage(
               offstage: !_expanded,
               child: Padding(
@@ -100,9 +107,10 @@ class _CatalogSearchDisclosureState extends State<CatalogSearchDisclosure> {
                               '검색: ${value.text.trim()}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: ExperienceStyle.text(
+                              style: ExperienceFormStyle.text(
+                                context,
                                 12,
-                                color: ExperienceFormStyle.muted(context),
+                                secondary: true,
                               ),
                             ),
                           ),

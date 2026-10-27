@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../shared/widgets/snapfit_motion.dart';
 
@@ -41,7 +41,7 @@ class PageEditorPreparingOverlay extends StatelessWidget {
     return SnapFitFadeIn(
       duration: const Duration(milliseconds: 220),
       child: Container(
-        color: SnapFitColors.backgroundOf(context).withOpacity(0.96),
+        color: SnapFitColors.backgroundOf(context).withValues(alpha: 0.96),
         child: const Center(
           child: _EditorProgressCard(
             title: '앨범을 펼치는 중이에요',
@@ -72,16 +72,16 @@ class _EditorProgressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final percent = ((progress ?? 0) * 100).round().clamp(0, 100);
     return Container(
-      width: 246.w,
-      padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 22.h),
+      width: 246,
+      padding: EdgeInsets.fromLTRB(24, 24, 24, 22),
       decoration: BoxDecoration(
         color: SnapFitColors.surfaceOf(context),
-        borderRadius: BorderRadius.circular(24.r),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: SnapFitColors.overlayLightOf(context)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(
-              SnapFitColors.isDark(context) ? 0.34 : 0.16,
+            color: Colors.black.withValues(
+              alpha: SnapFitColors.isDark(context) ? 0.34 : 0.16,
             ),
             blurRadius: 32,
             offset: const Offset(0, 18),
@@ -92,46 +92,46 @@ class _EditorProgressCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            width: 48.w,
-            height: 48.w,
+            width: 48,
+            height: 48,
             child: CircularProgressIndicator(
               value: progress,
               strokeWidth: 3,
               color: SnapFitColors.accent,
-              backgroundColor: SnapFitColors.accent.withOpacity(0.14),
+              backgroundColor: SnapFitColors.accent.withValues(alpha: 0.14),
             ),
           ),
-          SizedBox(height: 18.h),
+          SizedBox(height: 18),
           Text(
             title,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: SnapFitColors.textPrimaryOf(context),
-              fontSize: 16.sp,
+              fontSize: 16,
               fontWeight: FontWeight.w900,
               letterSpacing: 0,
               decoration: TextDecoration.none,
             ),
           ),
           if (showPercent) ...[
-            SizedBox(height: 8.h),
+            SizedBox(height: 8),
             Text(
               '$percent%',
               style: TextStyle(
                 color: SnapFitColors.accent,
-                fontSize: 18.sp,
+                fontSize: 18,
                 fontWeight: FontWeight.w900,
                 decoration: TextDecoration.none,
               ),
             ),
           ],
-          SizedBox(height: 8.h),
+          SizedBox(height: 8),
           Text(
             subcopy,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: SnapFitColors.textSecondaryOf(context),
-              fontSize: 12.5.sp,
+              fontSize: 12.5,
               fontWeight: FontWeight.w600,
               height: 1.45,
               decoration: TextDecoration.none,

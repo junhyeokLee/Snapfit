@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../../shared/web/web_design.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../ai_album/domain/ai_album_models.dart';
@@ -38,34 +37,34 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: Padding(
-                padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 28.h),
+                padding: EdgeInsets.fromLTRB(20, 12, 20, 28),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _BackTextButton(onPressed: onBack),
-                    SizedBox(height: 14.h),
+                    SizedBox(height: 14),
                     _RangePreview(theme: theme),
-                    SizedBox(height: 18.h),
+                    SizedBox(height: 18),
                     Text(
                       'AI 템플릿',
                       style: TextStyle(
                         color: SnapFitColors.textMutedOf(context),
-                        fontSize: 12.sp,
+                        fontSize: 12,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
-                    SizedBox(height: 8.h),
+                    SizedBox(height: 8),
                     Text(
                       '참고할 사진 범위',
                       style: TextStyle(
                         color: SnapFitColors.textPrimaryOf(context),
-                        fontSize: 24.sp,
+                        fontSize: 24,
                         height: 1.16,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -0.5,
                       ),
                     ),
-                    SizedBox(height: 18.h),
+                    SizedBox(height: 18),
                     _RangeCard(
                       title: '최근 30일',
                       subtitle: '최근 분위기와 촬영 흐름만 참고해 템플릿을 잡아요',
@@ -79,7 +78,7 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
                       icon: Icons.photo_library_rounded,
                       onTap: () => onRangeSelected(AiPhotoRange.limitedLibrary),
                     ),
-                    SizedBox(height: 14.h),
+                    SizedBox(height: 14),
                     Text(
                       usesAdvancedServerAnalysis
                           ? '고급 AI를 켜면 선택한 사진의 작은 미리보기 이미지를 서버에서 살펴봐요.'
@@ -88,7 +87,7 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
                           : '날짜 선택·앨범 선택·직접 고르기는 실제 선택 화면을 붙인 뒤 열게요. 지금은 최근 30일 또는 허용한 사진을 참고해 슬롯만 잡아요.',
                       style: TextStyle(
                         color: SnapFitColors.textSecondaryOf(context),
-                        fontSize: 12.5.sp,
+                        fontSize: 12.5,
                         height: 1.35,
                         fontWeight: FontWeight.w700,
                       ),
@@ -226,16 +225,16 @@ class _RangePreview extends StatelessWidget {
     final isDark = SnapFitColors.isDark(context);
     return Container(
       width: double.infinity,
-      height: 154.h,
-      padding: EdgeInsets.all(16.w),
+      height: 154,
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1A1B20) : Colors.white,
-        borderRadius: BorderRadius.circular(28.r),
+        borderRadius: BorderRadius.circular(28),
         boxShadow: isDark
             ? null
             : [
                 BoxShadow(
-                  color: const Color(0xFF5B4A34).withOpacity(0.08),
+                  color: const Color(0xFF5B4A34).withValues(alpha: 0.08),
                   blurRadius: 22,
                   offset: const Offset(0, 10),
                 ),
@@ -248,46 +247,46 @@ class _RangePreview extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Expanded(
-                  child: _TravelFrame(color: _accent(theme), height: 96.h),
+                  child: _TravelFrame(color: _accent(theme), height: 96),
                 ),
-                SizedBox(width: 8.w),
+                SizedBox(width: 8),
                 Expanded(
                   child: _TravelFrame(
                     color: const Color(0xFFECC7A1),
-                    height: 78.h,
+                    height: 78,
                   ),
                 ),
-                SizedBox(width: 8.w),
+                SizedBox(width: 8),
                 Expanded(
                   child: _TravelFrame(
                     color: const Color(0xFFB9C8A9),
-                    height: 88.h,
+                    height: 88,
                   ),
                 ),
-                SizedBox(width: 8.w),
+                SizedBox(width: 8),
                 Expanded(
                   child: _TravelFrame(
                     color: const Color(0xFFD8CAE8),
-                    height: 70.h,
+                    height: 70,
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 12),
           Row(
             children: [
               _TimelineDot(color: _accent(theme)),
               Expanded(
-                child: Container(height: 2.h, color: const Color(0xFFE6DED3)),
+                child: Container(height: 2, color: const Color(0xFFE6DED3)),
               ),
               _TimelineDot(color: const Color(0xFFECC7A1)),
               Expanded(
-                child: Container(height: 2.h, color: const Color(0xFFE6DED3)),
+                child: Container(height: 2, color: const Color(0xFFE6DED3)),
               ),
               _TimelineDot(color: const Color(0xFFB9C8A9)),
               Expanded(
-                child: Container(height: 2.h, color: const Color(0xFFE6DED3)),
+                child: Container(height: 2, color: const Color(0xFFE6DED3)),
               ),
               _TimelineDot(color: const Color(0xFFD8CAE8)),
             ],
@@ -321,16 +320,16 @@ class _TravelFrame extends StatelessWidget {
         height: height,
         decoration: BoxDecoration(
           color: color,
-          borderRadius: BorderRadius.circular(18.r),
+          borderRadius: BorderRadius.circular(18),
         ),
         child: Align(
           alignment: Alignment.bottomRight,
           child: Container(
-            width: 22.w,
-            height: 22.w,
-            margin: EdgeInsets.all(7.w),
+            width: 22,
+            height: 22,
+            margin: EdgeInsets.all(7),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.34),
+              color: Colors.white.withValues(alpha: 0.34),
               shape: BoxShape.circle,
             ),
           ),
@@ -346,8 +345,8 @@ class _TimelineDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 10.w,
-      height: 10.w,
+      width: 10,
+      height: 10,
       decoration: BoxDecoration(color: color, shape: BoxShape.circle),
     );
   }
@@ -372,23 +371,23 @@ class _RangeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = SnapFitColors.isDark(context);
     return Padding(
-      padding: EdgeInsets.only(bottom: 10.h),
+      padding: EdgeInsets.only(bottom: 10),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(20.r),
+          borderRadius: BorderRadius.circular(20),
           onTap: onTap,
           child: Ink(
             width: double.infinity,
-            padding: EdgeInsets.fromLTRB(14.w, 13.h, 14.w, 13.h),
+            padding: EdgeInsets.fromLTRB(14, 13, 14, 13),
             decoration: BoxDecoration(
               color: isDark
                   ? const Color(0xFF1A1B20)
                   : (emphasized ? const Color(0xFFF7F7FF) : Colors.white),
-              borderRadius: BorderRadius.circular(20.r),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: isDark
-                    ? Colors.white.withOpacity(0.10)
+                    ? Colors.white.withValues(alpha: 0.10)
                     : (emphasized
                           ? const Color(0xFFBFC7DC)
                           : const Color(0xFFE7E1D8)),
@@ -398,18 +397,18 @@ class _RangeCard extends StatelessWidget {
             child: Row(
               children: [
                 Container(
-                  width: 44.w,
-                  height: 44.w,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     color: emphasized
                         ? const Color(0xFF9DB6C8)
                         : const Color(0xFFEDE7DD),
-                    borderRadius: BorderRadius.circular(14.r),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: Center(
                     child: Container(
-                      width: 14.w,
-                      height: 14.w,
+                      width: 14,
+                      height: 14,
                       decoration: BoxDecoration(
                         border: Border.all(
                           color: emphasized
@@ -417,12 +416,12 @@ class _RangeCard extends StatelessWidget {
                               : const Color(0xFF6E6558),
                           width: 2,
                         ),
-                        borderRadius: BorderRadius.circular(3.r),
+                        borderRadius: BorderRadius.circular(3),
                       ),
                     ),
                   ),
                 ),
-                SizedBox(width: 14.w),
+                SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -431,18 +430,18 @@ class _RangeCard extends StatelessWidget {
                         title,
                         style: TextStyle(
                           color: SnapFitColors.textPrimaryOf(context),
-                          fontSize: 15.5.sp,
+                          fontSize: 15.5,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
-                      SizedBox(height: 3.h),
+                      SizedBox(height: 3),
                       Text(
                         subtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: SnapFitColors.textMutedOf(context),
-                          fontSize: 11.5.sp,
+                          fontSize: 11.5,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -453,7 +452,7 @@ class _RangeCard extends StatelessWidget {
                   '›',
                   style: TextStyle(
                     color: SnapFitColors.textMutedOf(context),
-                    fontSize: 27.sp,
+                    fontSize: 27,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -475,14 +474,14 @@ class _BackTextButton extends StatelessWidget {
       onPressed: onPressed,
       style: TextButton.styleFrom(
         padding: EdgeInsets.zero,
-        minimumSize: Size(0, 34.h),
+        minimumSize: Size(0, 34),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
       child: Text(
         '이전',
         style: TextStyle(
           color: SnapFitColors.textSecondaryOf(context),
-          fontSize: 12.5.sp,
+          fontSize: 12.5,
           fontWeight: FontWeight.w800,
         ),
       ),

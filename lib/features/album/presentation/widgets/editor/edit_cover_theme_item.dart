@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import '../../../../../shared/widgets/spine_painter.dart';
 import '../../../../../core/constants/cover_theme.dart';
 
@@ -36,33 +36,33 @@ class EditCoverThemeItem extends StatelessWidget {
             duration: const Duration(milliseconds: 400),
             curve: Curves.easeOutCubic,
             transform: isSelected
-                ? (Matrix4.identity()..translate(0.0, -6.h))
+                ? (Matrix4.identity()..translate(0.0, -6))
                 : Matrix4.identity(),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.only(
-                topRight: Radius.circular(12.r),
-                bottomRight: Radius.circular(12.r),
+                topRight: Radius.circular(12),
+                bottomRight: Radius.circular(12),
               ),
               boxShadow: isSelected
                   ? [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.25),
-                        blurRadius: 4.r,
-                        offset: Offset(5.w, 20.h),
+                        blurRadius: 4,
+                        offset: Offset(5, 20),
                       ),
                     ]
                   : [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.12),
-                        blurRadius: 4.r,
-                        offset: Offset(4.w, 8.h),
+                        blurRadius: 4,
+                        offset: Offset(4, 8),
                       ),
                     ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.only(
-                topRight: Radius.circular(miniRightRadius.r),
-                bottomRight: Radius.circular(miniBottomRadius.r),
+              borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(miniRightRadius),
+                bottomRight: Radius.circular(miniBottomRadius),
               ),
               child: SizedBox(
                 width: width,
@@ -92,27 +92,27 @@ class EditCoverThemeItem extends StatelessWidget {
                           baseStart: Colors.white.withValues(alpha: 0.05),
                           baseEnd: Colors.white.withValues(alpha: 0.05),
                         ),
-                        size: Size(miniLeftSpine.w, double.infinity),
+                        size: const Size(miniLeftSpine, double.infinity),
                       ),
                     ),
                     // 라벨
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: Container(
-                        margin: EdgeInsets.only(bottom: 6.h),
+                        margin: EdgeInsets.only(bottom: 6),
                         padding: EdgeInsets.symmetric(
-                          horizontal: 8.w,
-                          vertical: 2.h,
+                          horizontal: 8,
+                          vertical: 2,
                         ),
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(10.r),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
                           theme.label,
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 10.sp,
+                            fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

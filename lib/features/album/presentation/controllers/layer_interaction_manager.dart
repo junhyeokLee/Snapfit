@@ -40,6 +40,26 @@ class LayerInteractionManager {
   /// their existing gesture/render path unless explicitly enabled by the host.
   final bool enableWebTransforms;
 
+  /// Touch editor only: selection controls sit above artwork without changing
+  /// its paint order. Preview managers retain their existing lightweight path.
+  final bool enableOverlapSelection;
+  List<String> _overlapLayerIds = const [];
+  List<String> get overlapLayerIds => _overlapLayerIds;
+  int _overlapRevision = 0;
+  int get overlapRevision => _overlapRevision;
+  bool _selectionFromChooser = false;
+  (int?, String?, int)? _overlapContext;
+
+  bool isOverlapSnapshotCurrent(int revision) {
+    if (_disposed ||
+        revision != _overlapRevision ||
+        _overlapLayerIds.length < 2)
+      return false;
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
+    return _overlapContext ==
+        (vm.editingAlbumId, vm.currentPage?.id, vm.currentPageIndex);
+  }
+
   // ==================== 레이어 상태 저장소 ====================
   final Map<String, Offset> _pos = {}; // 레이어 위치 (좌상단 기준)
   final Map<String, double> _scale = {}; // 레이어 배율 (1.0 = 원본 크기)
@@ -70,6 +90,8 @@ class LayerInteractionManager {
     _gestureStates.clear();
     _resizeState = null;
     _rotationState = null;
+    _overlapLayerIds = const [];
+    _overlapRevision++;
   }
 
   // ==================== 제스처 추적 ====================
@@ -145,6 +167,7 @@ class LayerInteractionManager {
     this.showSelectionControls = true,
     this.showHandles = true,
     this.enableWebTransforms = false,
+    this.enableOverlapSelection = false,
   }) : _ref = ref,
        _isPreviewMode = isPreviewMode;
 
@@ -160,7 +183,8 @@ class LayerInteractionManager {
       _isPreviewMode = true,
       showSelectionControls = false,
       showHandles = false,
-      enableWebTransforms = false;
+      enableWebTransforms = false,
+      enableOverlapSelection = false;
 
   static void _noPrintState(void Function() callback) {}
   static void _noPrintEdit(LayerModel layer) {}
@@ -227,6 +251,105 @@ class LayerInteractionManager {
       maxY = math.max(maxY, p.dy);
     }
     return Rect.fromLTRB(minX, minY, maxX, maxY);
+  }
+
+  /// Resolve only on pointer-down, using existing transform boxes rather than
+  /// decoding artwork or retaining thumbnail/image data. Inverse transforms
+  /// avoid the false hits produced by a rotated layer's axis-aligned bounds.
+  List<LayerModel> layersAt(Offset globalPoint) {
+    if (_disposed || _isPreviewMode || !isInCover(globalPoint)) return const [];
+    final layers = ref.read(albumEditorViewModelProvider).value?.layers;
+    if (layers == null) return const [];
+    final hits = <LayerModel>[];
+    for (final layer in sortByZ(layers).reversed) {
+      final box = _layerKeys[layer.id]?.currentContext?.findRenderObject();
+      if (box is! RenderBox || !box.attached || !box.hasSize) continue;
+      final point = box.globalToLocal(globalPoint);
+      if (point.dx.isFinite &&
+          point.dy.isFinite &&
+          (Offset.zero & box.size).contains(point))
+        hits.add(layer);
+    }
+    final foreground = hits
+        .where((layer) => !_isBackgroundLayer(layer))
+        .toList();
+    return foreground.isEmpty ? hits : foreground;
+  }
+
+  void _rememberOverlap(List<LayerModel> hits) {
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
+    final context = (
+      vm.editingAlbumId,
+      vm.currentPage?.id,
+      vm.currentPageIndex,
+    );
+    final ids = hits.length > 1
+        ? hits.map((layer) => layer.id).toList()
+        : <String>[];
+    if (_overlapContext == context &&
+        ids.length == _overlapLayerIds.length &&
+        Iterable<int>.generate(
+          ids.length,
+        ).every((i) => ids[i] == _overlapLayerIds[i]))
+      return;
+    setState(() {
+      _overlapLayerIds = List.unmodifiable(ids);
+      _overlapContext = ids.isEmpty ? null : context;
+      _overlapRevision++;
+    });
+  }
+
+  void selectOverlappingLayer(String id) {
+    if (_disposed ||
+        !isOverlapSnapshotCurrent(_overlapRevision) ||
+        !_overlapLayerIds.contains(id) ||
+        _currentLayer(id) == null)
+      return;
+    setState(() {
+      _cancelActiveTransforms();
+      _selectedLayerId = id;
+      _editingLayerId = null;
+      _imagePanMode = false;
+      _selectionFromChooser = true;
+    });
+  }
+
+  /// An explicit command, unlike selecting an element. Persist z-indices too,
+  /// so reopening/redoing the page agrees with the visible ordering.
+  bool canMoveSelectedLayer(int direction, {List<LayerModel>? paintOrder}) {
+    if (_disposed || _isPreviewMode || (direction != 1 && direction != -1))
+      return false;
+    final ordered =
+        paintOrder ??
+        sortByZ(ref.read(albumEditorViewModelProvider.notifier).layers);
+    final index = ordered.indexWhere((l) => l.id == _selectedLayerId);
+    final target = index + direction;
+    return index >= 0 &&
+        target >= 0 &&
+        target < ordered.length &&
+        _isBackgroundLayer(ordered[index]) ==
+            _isBackgroundLayer(ordered[target]);
+  }
+
+  void moveSelectedLayer(int direction) {
+    if (_disposed || _isPreviewMode || (direction != 1 && direction != -1))
+      return;
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
+    final ordered = sortByZ(vm.layers);
+    if (!canMoveSelectedLayer(direction, paintOrder: ordered)) return;
+    final index = ordered.indexWhere((l) => l.id == _selectedLayerId);
+    final target = index + direction;
+    if (index < 0 || target < 0 || target >= ordered.length) return;
+    if (_isBackgroundLayer(ordered[index]) !=
+        _isBackgroundLayer(ordered[target]))
+      return;
+    final layer = ordered.removeAt(index);
+    ordered.insert(target, layer);
+    final updated = ordered.indexed
+        .map((e) => e.$2.zIndex == e.$1 ? e.$2 : e.$2.copyWith(zIndex: e.$1))
+        .toList();
+    vm.updatePageLayers(updated);
+    syncZOrder(updated);
   }
 
   LayerModel _resolveTopTouchTarget({
@@ -459,9 +582,13 @@ class LayerInteractionManager {
       (a.rotation - b.rotation).abs() < .000001;
 
   /// Insert last in the logical canvas Stack, outside the clipped layer artwork.
-  /// Only the individual handle boxes hit-test; empty canvas remains available.
-  Widget buildSelectionOverlay(List<LayerModel> layers) {
-    if (!enableWebTransforms ||
+  /// Touch controls also capture dragging the selected element when covered;
+  /// the controls never duplicate its artwork or alter the document order.
+  Widget buildSelectionOverlay(
+    List<LayerModel> layers, {
+    bool isCover = false,
+  }) {
+    if ((!enableWebTransforms && !enableOverlapSelection) ||
         _isPreviewMode ||
         !showSelectionControls ||
         _selectedLayerId == null ||
@@ -474,6 +601,56 @@ class LayerInteractionManager {
     if (selected == null) return const SizedBox.shrink();
     final layer = selected;
     final base = baseSizeFor(layer);
+    if (!enableWebTransforms) {
+      final geometry = _geometryFor(layer);
+      return Positioned(
+        key: ValueKey('touch-selection-${layer.id}'),
+        left: geometry.position.dx,
+        top: geometry.position.dy,
+        child: Transform.rotate(
+          angle: geometry.rotation,
+          child: Transform.scale(
+            scale: geometry.scale,
+            child: SelectionFrame(
+              isSelected: true,
+              hitTestContent: _selectionFromChooser,
+              showHandles: showHandles,
+              onResizeStart: (corner, d) =>
+                  _handleResizeStart(layer, corner, d),
+              onResizeUpdate: (corner, d) => _handleResizeUpdate(
+                layer,
+                corner,
+                d,
+                base.width,
+                base.height,
+                isCover: isCover,
+              ),
+              onResizeEnd: (corner, d) => _handleResizeEnd(layer, corner, d),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapDown: (d) {
+                  _rememberOverlap(layersAt(d.globalPosition));
+                  _handleTap(layer);
+                },
+                onDoubleTap: layer.type == LayerType.text
+                    ? () => onEditText(layer)
+                    : null,
+                onScaleStart: (d) => _handleScaleStart(layer, d),
+                onScaleUpdate: (d) => _handleScaleUpdate(
+                  layer,
+                  d,
+                  base.width,
+                  base.height,
+                  isCover: isCover,
+                ),
+                onScaleEnd: (d) => _handleScaleEnd(layer, d),
+                child: SizedBox(width: base.width, height: base.height),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     return Positioned.fill(
       child: WebSelectionFrame(
         key: ValueKey('web-selection-${layer.id}'),
@@ -609,6 +786,8 @@ class LayerInteractionManager {
 
   /// 레이어 목록의 순서를 그대로 Z-index에 반영 (레이어 패널에서 드래그한 순서 동기화용)
   void syncZOrder(List<LayerModel> orderedLayers) {
+    _overlapLayerIds = const [];
+    _overlapRevision++;
     _z.clear();
     _zCounter = 0;
     final backgrounds = orderedLayers.where(_isBackgroundLayer);
@@ -622,8 +801,12 @@ class LayerInteractionManager {
   /// 레이어 선택
   void setSelectedLayer(String layerId) {
     setState(() {
+      _overlapLayerIds = const [];
+      _overlapRevision++;
       if (_selectedLayerId != layerId) _cancelActiveTransforms();
       _selectedLayerId = layerId;
+      _editingLayerId = null;
+      _selectionFromChooser = true;
       // 새 레이어를 선택할 때는 항상 사진 위치 조정 모드를 초기화
       _imagePanMode = false;
     });
@@ -632,9 +815,12 @@ class LayerInteractionManager {
   /// 선택 해제 및 가이드라인 숨김
   void clearSelection() {
     setState(() {
+      _overlapLayerIds = const [];
+      _overlapRevision++;
       _cancelActiveTransforms();
       _selectedLayerId = null;
       _editingLayerId = null;
+      _selectionFromChooser = false;
       // 선택이 해제되면 사진 위치 조정 모드도 항상 OFF
       _imagePanMode = false;
       _showVerticalGuide = false;
@@ -650,6 +836,8 @@ class LayerInteractionManager {
   void resetForPageChange() {
     _stopAnimation();
     setState(() {
+      _overlapLayerIds = const [];
+      _overlapRevision++;
       _cancelActiveTransforms();
       _selectedLayerId = null;
       _editingLayerId = null;
@@ -682,12 +870,15 @@ class LayerInteractionManager {
 
     // 로컬 상태 정리
     setState(() {
+      _overlapLayerIds = const [];
+      _overlapRevision++;
       _pos.remove(id);
       _scale.remove(id);
       _rot.remove(id);
       _refBaseSize.remove(id);
       _transformSources.remove(id);
       _z.remove(id);
+      _layerKeys.remove(id);
       _gestureStates.remove(id);
       _selectedLayerId = null;
       _imagePanMode = false;
@@ -705,6 +896,8 @@ class LayerInteractionManager {
 
     if (inactiveIds.isNotEmpty) {
       setState(() {
+        _overlapLayerIds = const [];
+        _overlapRevision++;
         if (inactiveIds.contains(_resizeState?.layerId) ||
             inactiveIds.contains(_rotationState?.layerId)) {
           _cancelActiveTransforms();
@@ -714,6 +907,7 @@ class LayerInteractionManager {
           _scale.remove(id);
           _rot.remove(id);
           _z.remove(id);
+          _layerKeys.remove(id);
           _refBaseSize.remove(id);
           _transformSources.remove(id);
           _gestureStates.remove(id);
@@ -826,6 +1020,12 @@ class LayerInteractionManager {
                           AppLogger.debug(
                             '[LayerInteraction] Tap on ${layer.id} (type=${layer.type.name})',
                           );
+                          if (enableOverlapSelection) {
+                            final hits = layersAt(details.globalPosition);
+                            _rememberOverlap(hits);
+                            _handleTap(hits.isEmpty ? layer : hits.first);
+                            return;
+                          }
                           _handleTap(
                             _resolveTopTouchTarget(
                               fallback: layer,
@@ -870,7 +1070,8 @@ class LayerInteractionManager {
                               isSelected &&
                               !isEditing &&
                               showSelectionControls &&
-                              !enableWebTransforms,
+                              !enableWebTransforms &&
+                              !enableOverlapSelection,
                           showHandles: showHandles,
                           onDelete: deleteSelected,
                           onResizeStart: (pos, d) =>
@@ -924,6 +1125,7 @@ class LayerInteractionManager {
     if (_selectedLayerId != layer.id) {
       setState(() {
         _selectedLayerId = layer.id;
+        _selectionFromChooser = false;
         _editingLayerId = null;
         _imagePanMode = false;
       });
@@ -951,6 +1153,8 @@ class LayerInteractionManager {
     );
 
     setState(() {
+      _overlapLayerIds = const [];
+      _overlapRevision++;
       if (_selectedLayerId != layer.id) _imagePanMode = false;
       _selectedLayerId = layer.id;
       _editingLayerId = null;

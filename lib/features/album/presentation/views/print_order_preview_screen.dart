@@ -25,6 +25,7 @@ import '../utils/open_print_photo_editor.dart';
 import '../widgets/print_fulfillment_notice.dart';
 import 'print_order_checkout_screen.dart';
 import 'print_dev_checkout_screen.dart';
+import '../../../../core/utils/context_extensions.dart';
 
 final printPreviewExporterProvider = Provider<AlbumPrintExporter>(
   (ref) => AlbumPrintExporter(loadOnlyUsedFonts: true),
@@ -338,9 +339,7 @@ class _PrintOrderPreviewScreenState
             ));
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('사진 편집을 열지 못했어요. 앨범에서 다시 시도해 주세요.')),
-        );
+        context.showErrorSnack('사진 편집을 열지 못했어요. 앨범에서 다시 시도해 주세요.');
       }
     } finally {
       if (mounted &&

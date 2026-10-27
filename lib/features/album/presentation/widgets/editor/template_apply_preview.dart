@@ -24,12 +24,16 @@ Future<bool> showTemplateApplyPreview(
                 contentPadding: const EdgeInsets.fromLTRB(24, 12, 12, 12),
                 title: Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 21,
-                    fontWeight: FontWeight.w700,
+                  style: ExperienceFormStyle.text(
+                    context,
+                    21,
+                    weight: FontWeight.w700,
                   ),
                 ),
-                subtitle: const Text('현재 쪽에 적용하기 전에 구성을 확인하세요.'),
+                subtitle: Text(
+                  '현재 쪽에 적용하기 전에 구성을 확인하세요.',
+                  style: ExperienceFormStyle.text(context, 13, secondary: true),
+                ),
                 trailing: IconButton(
                   onPressed: () => Navigator.pop(dialogContext, false),
                   tooltip: '미리보기 닫기',

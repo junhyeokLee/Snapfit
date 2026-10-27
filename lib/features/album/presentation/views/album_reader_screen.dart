@@ -3,10 +3,11 @@ import 'package:flutter/foundation.dart' show ValueListenable, kIsWeb;
 import '../../../../shared/widgets/album_stage_style.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import 'package:dio/dio.dart';
 import 'dart:async';
 import '../../../../core/constants/cover_theme.dart';
+import '../../../../core/theme/snapfit_design_tokens.dart' show SnapFitMotion;
 import 'dart:math' as math;
 
 import '../../../../core/constants/snapfit_colors.dart';
@@ -16,12 +17,14 @@ import '../../../../core/utils/platform_ui.dart';
 import '../../../../shared/web/web_design.dart';
 import '../controllers/layer_builder.dart';
 import '../controllers/layer_interaction_manager.dart';
+import '../utils/reader_image_quality.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import '../../domain/entities/album_page.dart';
 import '../widgets/reader/album_reader_single_page_view.dart';
 import '../widgets/reader/album_reader_thumbnail_strip.dart';
 import '../widgets/reader/album_reader_page_content.dart';
 import '../widgets/reader/album_reader_more_options_sheet.dart';
+import '../widgets/home/home_album_actions.dart';
 import '../widgets/reader/album_completion_confirmation.dart';
 import '../widgets/web/web_album_workspace.dart';
 import '../viewmodels/home_view_model.dart';
@@ -31,6 +34,8 @@ import 'page_editor_screen.dart';
 import 'album_reader_inner_detail_screen.dart';
 import '../../domain/entities/album.dart';
 import 'album_invite_screen.dart';
+import 'album_members_screen.dart';
+import '../../service/album_collaboration_session.dart';
 import 'print_order_preview_screen.dart';
 
 class AlbumReaderScreen extends ConsumerStatefulWidget {
@@ -61,6 +66,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
   ); // 초기값, initState에서 갱신됨
   Size _coverSize = Size.zero;
   bool _isDeleting = false; // 삭제 진행 중 UI 잠금
+  bool _sessionChanged = false;
   late int _focusPageIndex;
   int? _requestedSpreadFocus;
 
@@ -156,6 +162,15 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     }
     Widget buildOptions(BuildContext ctx, {required bool compact}) {
       return AlbumReaderMoreOptionsSheet(
+        onPublish:
+            vm.album == null || vm.album!.id <= 0 || !vm.album!.allowsManagement
+            ? null
+            : () {
+                Navigator.pop(ctx);
+                unawaited(
+                  HomeAlbumActions.onPublishSelected(context, ref, vm.album!),
+                );
+              },
         onEdit: () async {
           final albumId = vm.album?.id;
           Navigator.pop(ctx);
@@ -237,7 +252,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         context: context,
         barrierDismissible: true,
         barrierLabel: '메뉴 닫기',
-        barrierColor: Colors.black.withOpacity(0.18),
+        barrierColor: Colors.black.withValues(alpha: 0.18),
         transitionDuration: const Duration(milliseconds: 180),
         pageBuilder: (ctx, animation, secondaryAnimation) {
           return Center(
@@ -285,20 +300,20 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
             ? WebPalette.of(context).surface
             : SnapFitColors.surfaceOf(context),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(kIsWeb ? 12 : 20.r),
+          borderRadius: BorderRadius.circular(kIsWeb ? 12 : 20),
         ),
         title: Row(
           children: [
             Icon(
               Icons.delete_outline_rounded,
               color: Colors.redAccent,
-              size: 22.sp,
+              size: 22,
             ),
-            SizedBox(width: 8.w),
+            SizedBox(width: 8),
             Text(
               '앨범 삭제',
               style: TextStyle(
-                fontSize: 18.sp,
+                fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: SnapFitColors.textPrimaryOf(context),
               ),
@@ -306,9 +321,9 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
           ],
         ),
         content: Text(
-          '삭제하면 앨범 데이터와 연결된 이미지가\n스토리지/DB에서 함께 정리됩니다.\n\n이 작업은 되돌릴 수 없습니다.',
+          '앨범을 삭제하면 함께 작업한 친구도\n더 이상 이 앨범에 접근할 수 없어요.\n\n삭제한 앨범은 복구할 수 없습니다.',
           style: TextStyle(
-            fontSize: 14.sp,
+            fontSize: 14,
             color: SnapFitColors.textSecondaryOf(context),
             height: 1.55,
           ),
@@ -321,7 +336,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
               style: TextStyle(
                 color: SnapFitColors.textMutedOf(context),
                 fontWeight: FontWeight.w600,
-                fontSize: 14.sp,
+                fontSize: 14,
               ),
             ),
           ),
@@ -332,7 +347,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
               style: TextStyle(
                 color: Colors.redAccent,
                 fontWeight: FontWeight.w800,
-                fontSize: 14.sp,
+                fontSize: 14,
               ),
             ),
           ),
@@ -459,6 +474,22 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         ),
       ),
     );
+  }
+
+  Future<void> _openMembers() async {
+    if (_isDeleting || _sessionChanged) return;
+    final album = ref.read(albumEditorViewModelProvider.notifier).album;
+    if (album == null || album.id <= 0) return;
+    final actor = ref.read(albumCollaborationActorProvider);
+    final left = await _pushAdaptiveRoute<bool>(
+      MaterialPageRoute(builder: (_) => AlbumMembersScreen(album: album)),
+    );
+    if (mounted &&
+        !_sessionChanged &&
+        ref.read(albumCollaborationActorProvider) == actor &&
+        left == true) {
+      Navigator.pop(context, {'leftAlbumId': album.id, 'updated': true});
+    }
   }
 
   Future<void> _openWebPageDetail() async {
@@ -589,23 +620,47 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
               onDetail: focus > 0
                   ? () => unawaited(_openWebPageDetail())
                   : null,
-              managementMenu: album?.allowsManagement == false
+              managementMenu: album == null || album.id <= 0
                   ? null
                   : PopupMenuButton<String>(
                       tooltip: '앨범 관리',
                       icon: const Icon(Icons.more_horiz),
                       onSelected: (action) {
+                        if (action == 'publish' && album != null) {
+                          unawaited(
+                            HomeAlbumActions.onPublishSelected(
+                              context,
+                              ref,
+                              album,
+                            ),
+                          );
+                        }
                         if (action == 'invite') unawaited(_inviteFromWeb());
+                        if (action == 'members') unawaited(_openMembers());
                         if (action == 'delete') {
                           unawaited(_showDeleteConfirmDialog());
                         }
                       },
-                      itemBuilder: (_) => const [
-                        PopupMenuItem(
-                          value: 'invite',
-                          child: Text('함께 편집할 사람 초대'),
+                      itemBuilder: (_) => [
+                        const PopupMenuItem(
+                          value: 'members',
+                          child: Text('함께하는 멤버'),
                         ),
-                        PopupMenuItem(value: 'delete', child: Text('앨범 삭제')),
+                        if (album.allowsManagement)
+                          const PopupMenuItem(
+                            value: 'publish',
+                            child: Text('피드에 작품 공개'),
+                          ),
+                        if (album.allowsManagement)
+                          const PopupMenuItem(
+                            value: 'invite',
+                            child: Text('함께 편집할 사람 초대'),
+                          ),
+                        if (album.allowsManagement)
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: Text('앨범 삭제'),
+                          ),
                       ],
                     ),
             ),
@@ -624,6 +679,22 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(albumCollaborationActorProvider, (previous, next) {
+      if (previous != next) setState(() => _sessionChanged = true);
+    });
+    if (_sessionChanged)
+      return Scaffold(
+        appBar: AppBar(title: const Text('앨범')),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(28),
+            child: Text(
+              '계정이 변경되었어요. 현재 계정의 앨범 목록에서 다시 열어 주세요.',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
     final asyncState = ref.watch(albumEditorViewModelProvider);
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     final state = asyncState.value;
@@ -673,11 +744,11 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircularProgressIndicator(color: SnapFitColors.accent),
-              SizedBox(height: 24.h),
+              SizedBox(height: 24),
               Text(
                 '앨범을 생성하고 있습니다...',
                 style: TextStyle(
-                  fontSize: 16.sp,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: SnapFitColors.textPrimaryOf(context),
                 ),
@@ -737,19 +808,34 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
       final right = math.min(left + 1, totalInner);
       final label = isCover
           ? '표지'
-          : '${left == right ? left : '$left-$right'} / $totalInner';
+          : '${left == right ? left : '$left–$right'}쪽 / $totalInner쪽';
       return Semantics(
         liveRegion: true,
-        child: Text(
-          label,
-          key: const ValueKey('reader-page-position'),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: AlbumStageStyle.ink(context),
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0,
+        label: isCover
+            ? '표지'
+            : '내지 ${left == right ? '$left쪽' : '$left쪽부터 $right쪽'}, 전체 $totalInner쪽',
+        excludeSemantics: true,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: AlbumStageStyle.glass(context),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AlbumStageStyle.line(context)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            child: Text(
+              label,
+              key: const ValueKey('reader-page-position'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: AlbumStageStyle.ink(context),
+                fontSize: 13,
+                height: 1.2,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0,
+              ),
+            ),
           ),
         ),
       );
@@ -761,7 +847,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
           child: Text(
             '아직 페이지가 없어요.',
             style: TextStyle(
-              fontSize: 14.sp,
+              fontSize: 14,
               color: SnapFitColors.textMutedOf(context),
               fontWeight: FontWeight.w700,
             ),
@@ -788,7 +874,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         focusMode: true,
         focusBottomInset: isLandscape
             ? bottomSystemInset
-            : 120.h + bottomSystemInset,
+            : 120 + bottomSystemInset,
         requestedFocusPageIndex: _focusPageIndex,
         onCanvasSizeChanged: (size) {
           if (_coverSize == size) return;
@@ -846,6 +932,12 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                           ? Stack(
                               children: [
                                 Positioned.fill(child: readerView()),
+                                Positioned(
+                                  left: 72 + leftSystemInset,
+                                  right: 72 + rightSystemInset,
+                                  top: 14,
+                                  child: Center(child: buildReaderPosition()),
+                                ),
                                 if (allPages.isNotEmpty)
                                   Positioned(
                                     right: 8 + rightSystemInset,
@@ -871,6 +963,16 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                                         : () => Navigator.pop(context),
                                   ),
                                 ),
+                                if ((vm.album?.id ?? 0) > 0)
+                                  Positioned(
+                                    right: 68 + rightSystemInset,
+                                    top: 10,
+                                    child: _ReaderHeaderButton(
+                                      icon: Icons.group_outlined,
+                                      tooltip: '함께하는 멤버',
+                                      onTap: () => unawaited(_openMembers()),
+                                    ),
+                                  ),
                                 Positioned(
                                   right: 14 + rightSystemInset,
                                   top: 10,
@@ -892,8 +994,8 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                                   top: 0,
                                   child: Padding(
                                     padding: EdgeInsets.symmetric(
-                                      horizontal: 16.w,
-                                      vertical: 12.h,
+                                      horizontal: 16,
+                                      vertical: 12,
                                     ),
                                     child: Row(
                                       children: [
@@ -911,6 +1013,13 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                                           ),
                                         ),
                                         // ... 메뉴
+                                        if ((vm.album?.id ?? 0) > 0)
+                                          _ReaderHeaderButton(
+                                            icon: Icons.group_outlined,
+                                            tooltip: '함께하는 멤버',
+                                            onTap: () =>
+                                                unawaited(_openMembers()),
+                                          ),
                                         _ReaderHeaderButton(
                                           icon: Icons.more_horiz_rounded,
                                           tooltip: '앨범 메뉴',
@@ -925,7 +1034,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                                 Positioned(
                                   left: 0,
                                   right: 0,
-                                  bottom: 18.h + bottomSystemInset,
+                                  bottom: 18 + bottomSystemInset,
                                   child: AlbumReaderThumbnailStrip(
                                     pages: allPages,
                                     pageController: allPages.isNotEmpty
@@ -933,7 +1042,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                                         : null,
                                     previewBuilder: _layerBuilder,
                                     baseCanvasSize: _baseCanvasSize,
-                                    height: 46.h,
+                                    height: 46,
                                     currentSpreadIndex: spreadForFocusPage(
                                       _focusPageIndex,
                                     ),
@@ -949,14 +1058,16 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
               if (_isDeleting) ...[
                 Positioned.fill(
                   child: AbsorbPointer(
-                    child: Container(color: Colors.black.withOpacity(0.34)),
+                    child: Container(
+                      color: Colors.black.withValues(alpha: 0.34),
+                    ),
                   ),
                 ),
                 Positioned.fill(
                   child: Center(
                     child: SizedBox(
-                      width: 34.w,
-                      height: 34.w,
+                      width: 34,
+                      height: 34,
                       child: CircularProgressIndicator(
                         strokeWidth: 2.8,
                         color: SnapFitColors.accent,
@@ -995,10 +1106,10 @@ class _LandscapePageRail extends StatefulWidget {
 class _LandscapePageRailState extends State<_LandscapePageRail> {
   final _scroll = ScrollController();
   String? _alignment;
+  int? _alignedSpread;
   List<AlbumPage> get pages => widget.pages;
   int get focusPageIndex => widget.focusPageIndex;
   Size get baseCanvasSize => widget.baseCanvasSize;
-  LayerBuilder get previewBuilder => widget.previewBuilder;
   ValueChanged<int> get onSpreadSelected => widget.onSpreadSelected;
 
   @override
@@ -1011,10 +1122,11 @@ class _LandscapePageRailState extends State<_LandscapePageRail> {
     final aspect = baseCanvasSize.width / baseCanvasSize.height;
     final caption = MediaQuery.textScalerOf(context).scale(10) * 1.4;
     final signature =
-        '$_selectedSpread:$aspect:$caption:${MediaQuery.sizeOf(context)}:${MediaQuery.viewPaddingOf(context)}:${MediaQuery.viewInsetsOf(context)}:${pages.length}';
-    if (_alignment == signature) return;
-    final animate = _alignment != null;
+        '$aspect:$caption:${MediaQuery.sizeOf(context)}:${MediaQuery.viewPaddingOf(context)}:${MediaQuery.viewInsetsOf(context)}:${pages.length}';
+    if (_alignment == signature && _alignedSpread == _selectedSpread) return;
+    final animate = _alignment == signature && _alignedSpread != null;
     _alignment = signature;
+    _alignedSpread = _selectedSpread;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_scroll.hasClients) return;
       final coverExtent = math.max(44.0, 30 / aspect) + caption + 16;
@@ -1025,8 +1137,14 @@ class _LandscapePageRailState extends State<_LandscapePageRail> {
       final extent = _selectedSpread == 0 ? coverExtent : spreadExtent;
       final target = (top + extent / 2 - _scroll.position.viewportDimension / 2)
           .clamp(0.0, _scroll.position.maxScrollExtent);
-      if ((target - _scroll.offset).abs() < 1) return;
-      if (animate && !MediaQuery.disableAnimationsOf(context)) {
+      final distance = (target - _scroll.offset).abs();
+      if (distance < 1) {
+        if (_scroll.position.isScrollingNotifier.value) _scroll.jumpTo(target);
+        return;
+      }
+      if (animate &&
+          distance <= _scroll.position.viewportDimension * 1.5 &&
+          !SnapFitMotion.reduced(context)) {
         _scroll.animateTo(
           target,
           duration: const Duration(milliseconds: 240),
@@ -1047,12 +1165,23 @@ class _LandscapePageRailState extends State<_LandscapePageRail> {
     return 1 + ((focusPageIndex - 1) ~/ 2);
   }
 
-  List<List<int>> get _spreadItems =>
-      AlbumReaderThumbnailStrip.spreads(pages.length);
-
   @override
   Widget build(BuildContext context) {
     _alignSelection(context);
+    final aspect = baseCanvasSize.width / baseCanvasSize.height;
+    final caption = MediaQuery.textScalerOf(context).scale(10) * 1.4;
+    final coverExtent = math.max(44.0, 30 / aspect) + caption + 16;
+    final spreadExtent = math.max(44.0, 22 / aspect) + caption + 16;
+    final previewBuilder = LayerBuilder(
+      widget.previewBuilder.interaction,
+      () => baseCanvasSize,
+      printImages: widget.previewBuilder.printImages,
+      previewImageDecodeWidth: readerThumbnailDecodeWidth(
+        Size(30, 30 / aspect),
+        MediaQuery.devicePixelRatioOf(context),
+        maximumWidth: widget.previewBuilder.previewImageDecodeWidth,
+      ),
+    );
     return DecoratedBox(
       decoration: BoxDecoration(
         border: Border(left: BorderSide(color: AlbumStageStyle.line(context))),
@@ -1087,9 +1216,16 @@ class _LandscapePageRailState extends State<_LandscapePageRail> {
                   controller: _scroll,
                   scrollDirection: Axis.vertical,
                   padding: const EdgeInsets.symmetric(vertical: 3),
-                  itemCount: _spreadItems.length,
+                  itemExtentBuilder: (index, _) =>
+                      index == 0 ? coverExtent : spreadExtent,
+                  itemCount: AlbumReaderThumbnailStrip.spreadCount(
+                    pages.length,
+                  ),
                   itemBuilder: (context, index) {
-                    final pageIndices = _spreadItems[index];
+                    final pageIndices = AlbumReaderThumbnailStrip.spreadPages(
+                      index,
+                      pages.length,
+                    );
                     final isSelected = index == _selectedSpread;
                     final aspect = baseCanvasSize.width / baseCanvasSize.height;
                     final slotCount = index == 0 ? 1 : 2;

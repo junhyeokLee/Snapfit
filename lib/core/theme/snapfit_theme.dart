@@ -41,10 +41,12 @@ class SnapFitTheme {
     final muted = dark ? const Color(0xFFB0BAB8) : const Color(0xFF63706E);
     final surface = dark ? const Color(0xFF202726) : const Color(0xFFF3F6F5);
     final line = dark ? const Color(0xFF3B4543) : const Color(0xFFE6EBEA);
-    final selection = dark ? const Color(0xFF163838) : const Color(0xFFE3F4F3);
+    final selection = dark
+        ? SnapFitColors.accentSurfaceDark
+        : SnapFitColors.accentLight;
     final selectionInk = dark
-        ? const Color(0xFF7DD4D2)
-        : const Color(0xFF0D8A88);
+        ? SnapFitColors.accentInkDark
+        : SnapFitColors.accentInk;
     const onAccent = SnapFitColors.onAccent;
     final scheme =
         ColorScheme.fromSeed(
@@ -52,7 +54,7 @@ class SnapFitTheme {
           brightness: brightness,
           surface: background,
         ).copyWith(
-          primary: SnapFitColors.accent,
+          primary: SnapFitColors.actionAccent,
           onPrimary: onAccent,
           primaryContainer: selection,
           onPrimaryContainer: selectionInk,
@@ -242,7 +244,7 @@ class SnapFitTheme {
         backgroundColor: background,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        indicatorColor: selection,
+        indicatorColor: SnapFitColors.actionAccent,
         indicatorShape: control,
         labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => text.labelMedium!.copyWith(
@@ -251,17 +253,17 @@ class SnapFitTheme {
         ),
         iconTheme: WidgetStateProperty.resolveWith(
           (states) => IconThemeData(
-            color: states.contains(WidgetState.selected) ? selectionInk : muted,
+            color: states.contains(WidgetState.selected) ? onAccent : muted,
           ),
         ),
       ),
       navigationRailTheme: NavigationRailThemeData(
         backgroundColor: background,
-        indicatorColor: selection,
+        indicatorColor: SnapFitColors.actionAccent,
         indicatorShape: control,
         selectedLabelTextStyle: text.labelMedium?.copyWith(color: selectionInk),
         unselectedLabelTextStyle: text.bodySmall,
-        selectedIconTheme: IconThemeData(color: selectionInk),
+        selectedIconTheme: const IconThemeData(color: onAccent),
         unselectedIconTheme: IconThemeData(color: muted),
       ),
       snackBarTheme: SnackBarThemeData(
@@ -290,6 +292,11 @@ class SnapFitTheme {
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected) ? onAccent : null,
+        ),
+        trackColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? SnapFitColors.actionAccent
+              : null,
         ),
       ),
       pageTransitionsTheme: const PageTransitionsTheme(

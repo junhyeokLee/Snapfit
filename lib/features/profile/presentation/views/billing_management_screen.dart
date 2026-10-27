@@ -8,7 +8,7 @@ import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/theme/snapfit_design_tokens.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/widgets/experience_icon.dart';
-import '../../../../shared/widgets/experience_style.dart';
+import '../../../../shared/widgets/experience_style.dart' show ExperienceHeader;
 import '../../../billing/data/billing_provider.dart';
 import '../../../billing/data/billing_repository.dart';
 import '../../../billing/data/point_purchase_service.dart';
@@ -37,8 +37,13 @@ int _pointAmountFromProductId(String productId) {
 }
 
 class BillingManagementScreen extends ConsumerStatefulWidget {
-  const BillingManagementScreen({super.key, this.returnToAiDraftFlow = false});
+  const BillingManagementScreen({
+    super.key,
+    this.returnToAiDraftFlow = false,
+    this.initialPointsTabIndex = 0,
+  }) : assert(initialPointsTabIndex == 0 || initialPointsTabIndex == 1);
   final bool returnToAiDraftFlow;
+  final int initialPointsTabIndex;
   @override
   ConsumerState<BillingManagementScreen> createState() =>
       _BillingManagementScreenState();
@@ -59,6 +64,8 @@ class _BillingManagementScreenState
   @override
   void initState() {
     super.initState();
+    _history = widget.initialPointsTabIndex == 1;
+    _webTopup = !_history;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && !kIsWeb) ref.read(pointPurchaseServiceProvider).start();
     });
@@ -365,6 +372,7 @@ class _BillingManagementScreenState
                     ? const Center(child: Text('선택한 조건의 포인트 내역이 없습니다.'))
                     : ListView.builder(
                         controller: _historyScroll,
+                        cacheExtent: 800,
                         itemCount: entries.length,
                         itemBuilder: (_, index) =>
                             _ledgerRow(entries[index], compact: false),
@@ -868,7 +876,8 @@ class _AiDraftReturnCard extends StatelessWidget {
       children: [
         Text(
           'AI 템플릿 준비 중',
-          style: ExperienceStyle.text(
+          style: ExperienceFormStyle.text(
+            context,
             14,
             weight: FontWeight.w600,
             color: SnapFitColors.textPrimaryOf(context),
@@ -877,7 +886,8 @@ class _AiDraftReturnCard extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           '포인트를 채운 뒤 바로 AI 템플릿 만들기로 돌아갈 수 있어요.',
-          style: ExperienceStyle.text(
+          style: ExperienceFormStyle.text(
+            context,
             14,
             color: SnapFitColors.textSecondaryOf(context),
           ),
@@ -893,7 +903,11 @@ class _AiDraftReturnCard extends StatelessWidget {
             side: BorderSide(color: ExperienceFormStyle.line(context)),
             minimumSize: const Size(0, 48),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            textStyle: ExperienceStyle.text(14, weight: FontWeight.w600),
+            textStyle: ExperienceFormStyle.text(
+              context,
+              14,
+              weight: FontWeight.w600,
+            ),
             shape: const StadiumBorder(),
           ),
           icon: ExperienceIcon(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../ai_album/domain/ai_album_models.dart';
@@ -98,10 +97,10 @@ class AiAlbumThemeStep extends StatelessWidget {
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(
-                    isLandscape ? 28 : 20.w,
-                    isLandscape ? 10 : 12.h,
-                    isLandscape ? 28 : 20.w,
-                    isLandscape ? 22 : 28.h,
+                    isLandscape ? 28 : 20,
+                    isLandscape ? 10 : 12,
+                    isLandscape ? 28 : 20,
+                    isLandscape ? 22 : 28,
                   ),
                   child: isLandscape
                       ? Row(
@@ -125,7 +124,7 @@ class AiAlbumThemeStep extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _HeaderColumn(onBack: onBack),
-                            SizedBox(height: 18.h),
+                            SizedBox(height: 18),
                             _StyleGrid(
                               styles: _styles,
                               onThemeSelected: onThemeSelected,
@@ -154,35 +153,35 @@ class _HeaderColumn extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _BackTextButton(onPressed: onBack),
-        SizedBox(height: 14.h),
+        SizedBox(height: 14),
         const _MoodPreviewBoard(),
-        SizedBox(height: 18.h),
+        SizedBox(height: 18),
         Text(
           'AI 템플릿',
           style: TextStyle(
             color: SnapFitColors.textMutedOf(context),
-            fontSize: 12.sp,
+            fontSize: 12,
             fontWeight: FontWeight.w900,
             letterSpacing: 0.1,
           ),
         ),
-        SizedBox(height: 8.h),
+        SizedBox(height: 8),
         Text(
           '원하는 앨범 무드를 골라주세요',
           style: TextStyle(
             color: SnapFitColors.textPrimaryOf(context),
-            fontSize: 24.sp,
+            fontSize: 24,
             height: 1.16,
             fontWeight: FontWeight.w900,
             letterSpacing: -0.5,
           ),
         ),
-        SizedBox(height: 8.h),
+        SizedBox(height: 8),
         Text(
           '사진을 자동으로 끼워 넣기보다, 먼저 편집 가능한 템플릿의 구조와 분위기를 잡아요.',
           style: TextStyle(
             color: SnapFitColors.textSecondaryOf(context),
-            fontSize: 13.2.sp,
+            fontSize: 13.2,
             height: 1.45,
             fontWeight: FontWeight.w700,
             letterSpacing: -0.12,
@@ -229,7 +228,7 @@ class _StyleGrid extends StatelessWidget {
       children: styles
           .map(
             (style) => Padding(
-              padding: EdgeInsets.only(bottom: 12.h),
+              padding: EdgeInsets.only(bottom: 12),
               child: _TemplateStyleCard(style: style, onTap: onThemeSelected),
             ),
           )
@@ -256,23 +255,23 @@ class _TemplateStyleCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         key: Key('ai_theme_${style.theme.name}'),
-        borderRadius: BorderRadius.circular(24.r),
+        borderRadius: BorderRadius.circular(24),
         onTap: () => onTap(style.theme),
         child: Ink(
-          padding: EdgeInsets.all(compact ? 10 : 12.w),
+          padding: EdgeInsets.all(compact ? 10 : 12),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1A1B20) : Colors.white,
-            borderRadius: BorderRadius.circular(24.r),
+            borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: isDark
-                  ? Colors.white.withOpacity(0.10)
+                  ? Colors.white.withValues(alpha: 0.10)
                   : const Color(0xFFE2D7C9),
             ),
             boxShadow: isDark
                 ? null
                 : [
                     BoxShadow(
-                      color: const Color(0xFF5B4A34).withOpacity(0.08),
+                      color: const Color(0xFF5B4A34).withValues(alpha: 0.08),
                       blurRadius: 22,
                       offset: const Offset(0, 10),
                     ),
@@ -282,11 +281,11 @@ class _TemplateStyleCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(
-                width: compact ? 70 : 88.w,
-                height: compact ? 88 : 102.h,
+                width: compact ? 70 : 88,
+                height: compact ? 88 : 102,
                 child: _TemplateThumbnail(colors: style.colors),
               ),
-              SizedBox(width: compact ? 11 : 12.w),
+              SizedBox(width: compact ? 11 : 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,44 +293,44 @@ class _TemplateStyleCard extends StatelessWidget {
                     Row(
                       children: [
                         Flexible(child: _ThemePill(text: style.themeLabel)),
-                        SizedBox(width: 6.w),
+                        SizedBox(width: 6),
                         Icon(
                           Icons.arrow_forward_rounded,
-                          size: compact ? 16 : 17.sp,
+                          size: compact ? 16 : 17,
                           color: SnapFitColors.textMutedOf(context),
                         ),
                       ],
                     ),
-                    SizedBox(height: compact ? 8 : 9.h),
+                    SizedBox(height: compact ? 8 : 9),
                     Text(
                       style.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: SnapFitColors.textPrimaryOf(context),
-                        fontSize: compact ? 15 : 16.sp,
+                        fontSize: compact ? 15 : 16,
                         height: 1.12,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -0.35,
                       ),
                     ),
-                    SizedBox(height: compact ? 5 : 6.h),
+                    SizedBox(height: compact ? 5 : 6),
                     Text(
                       style.subtitle,
                       maxLines: compact ? 2 : 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: SnapFitColors.textSecondaryOf(context),
-                        fontSize: compact ? 11.5 : 12.3.sp,
+                        fontSize: compact ? 11.5 : 12.3,
                         height: 1.36,
                         fontWeight: FontWeight.w600,
                         letterSpacing: -0.1,
                       ),
                     ),
-                    SizedBox(height: compact ? 9 : 10.h),
+                    SizedBox(height: compact ? 9 : 10),
                     Wrap(
-                      spacing: 6.w,
-                      runSpacing: 6.h,
+                      spacing: 6,
+                      runSpacing: 6,
                       children: [
                         _SpecChip(text: style.density),
                         _SpecChip(text: style.rhythm),
@@ -356,21 +355,21 @@ class _MoodPreviewBoard extends StatelessWidget {
     final isDark = SnapFitColors.isDark(context);
     return Container(
       width: double.infinity,
-      height: 148.h,
-      padding: EdgeInsets.all(14.w),
+      height: 148,
+      padding: EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1A1B20) : Colors.white,
-        borderRadius: BorderRadius.circular(28.r),
+        borderRadius: BorderRadius.circular(28),
         border: Border.all(
           color: isDark
-              ? Colors.white.withOpacity(0.10)
+              ? Colors.white.withValues(alpha: 0.10)
               : const Color(0xFFE6DED3),
         ),
         boxShadow: isDark
             ? null
             : [
                 BoxShadow(
-                  color: const Color(0xFFB8A889).withOpacity(0.12),
+                  color: const Color(0xFFB8A889).withValues(alpha: 0.12),
                   blurRadius: 24,
                   offset: const Offset(0, 12),
                 ),
@@ -385,7 +384,7 @@ class _MoodPreviewBoard extends StatelessWidget {
               label: 'cover',
             ),
           ),
-          SizedBox(width: 10.w),
+          SizedBox(width: 10),
           Expanded(
             child: _PreviewSpread(
               colors: const [Color(0xFFE99A8F), Color(0xFFF0D58C)],
@@ -415,36 +414,36 @@ class _PreviewSpread extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: const Color(0xFFF7F1E8),
-        borderRadius: BorderRadius.circular(18.r),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Padding(
-        padding: EdgeInsets.all(8.w),
+        padding: EdgeInsets.all(8),
         child: Stack(
           children: [
             Positioned(
               left: reversed ? null : 0,
               right: reversed ? 0 : null,
               top: 0,
-              bottom: 22.h,
-              width: 48.w,
-              child: _PreviewPhoto(colors: colors, radius: 13.r),
+              bottom: 22,
+              width: 48,
+              child: _PreviewPhoto(colors: colors, radius: 13),
             ),
             Positioned(
-              left: reversed ? 0 : 56.w,
-              right: reversed ? 56.w : 0,
-              top: 8.h,
+              left: reversed ? 0 : 56,
+              right: reversed ? 56 : 0,
+              top: 8,
               child: _MiniTextBar(
-                width: 42.w,
-                color: const Color(0xFF2B2520).withOpacity(0.38),
+                width: 42,
+                color: const Color(0xFF2B2520).withValues(alpha: 0.38),
               ),
             ),
             Positioned(
-              left: reversed ? 0 : 56.w,
-              right: reversed ? 56.w : 0,
-              top: 22.h,
+              left: reversed ? 0 : 56,
+              right: reversed ? 56 : 0,
+              top: 22,
               child: _MiniTextBar(
-                width: 30.w,
-                color: const Color(0xFF2B2520).withOpacity(0.18),
+                width: 30,
+                color: const Color(0xFF2B2520).withValues(alpha: 0.18),
               ),
             ),
             Positioned(
@@ -467,10 +466,10 @@ class _TemplateThumbnail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(7.w),
+      padding: EdgeInsets.all(7),
       decoration: BoxDecoration(
-        color: colors.last.withOpacity(0.74),
-        borderRadius: BorderRadius.circular(17.r),
+        color: colors.last.withValues(alpha: 0.74),
+        borderRadius: BorderRadius.circular(17),
       ),
       child: Stack(
         children: [
@@ -478,34 +477,31 @@ class _TemplateThumbnail extends StatelessWidget {
             left: 0,
             top: 0,
             right: 0,
-            height: 30.h,
-            child: _PreviewPhoto(
-              colors: [colors.first, colors[1]],
-              radius: 12.r,
-            ),
+            height: 30,
+            child: _PreviewPhoto(colors: [colors.first, colors[1]], radius: 12),
           ),
           Positioned(
             left: 0,
             bottom: 0,
-            width: 34.w,
-            height: 42.h,
+            width: 34,
+            height: 42,
             child: _PreviewPhoto(
-              colors: [colors[1], colors.first.withOpacity(0.72)],
-              radius: 12.r,
+              colors: [colors[1], colors.first.withValues(alpha: 0.72)],
+              radius: 12,
             ),
           ),
           Positioned(
             right: 0,
-            bottom: 6.h,
-            width: 30.w,
+            bottom: 6,
+            width: 30,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _MiniTextBar(width: 30.w, color: const Color(0xFF2B2520)),
-                SizedBox(height: 5.h),
+                _MiniTextBar(width: 30, color: const Color(0xFF2B2520)),
+                SizedBox(height: 5),
                 _MiniTextBar(
-                  width: 20.w,
-                  color: const Color(0xFF2B2520).withOpacity(0.32),
+                  width: 20,
+                  color: const Color(0xFF2B2520).withValues(alpha: 0.32),
                 ),
               ],
             ),
@@ -524,10 +520,10 @@ class _ThemePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: SnapFitColors.isDark(context)
-            ? Colors.white.withOpacity(0.08)
+            ? Colors.white.withValues(alpha: 0.08)
             : const Color(0xFFF2E8DA),
         borderRadius: BorderRadius.circular(999),
       ),
@@ -537,7 +533,7 @@ class _ThemePill extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           color: SnapFitColors.textSecondaryOf(context),
-          fontSize: 10.8.sp,
+          fontSize: 10.8,
           height: 1.0,
           fontWeight: FontWeight.w900,
           letterSpacing: -0.05,
@@ -558,7 +554,7 @@ class _SpecChip extends StatelessWidget {
       text,
       style: TextStyle(
         color: SnapFitColors.textMutedOf(context),
-        fontSize: 11.2.sp,
+        fontSize: 11.2,
         height: 1.0,
         fontWeight: FontWeight.w800,
         letterSpacing: -0.05,
@@ -575,7 +571,7 @@ class _MiniTextBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: width,
-      height: 5.h,
+      height: 5,
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(999),
@@ -599,7 +595,7 @@ class _PreviewPhoto extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: colors,
         ),
-        borderRadius: BorderRadius.circular(radius ?? 16.r),
+        borderRadius: BorderRadius.circular(radius ?? 16),
       ),
     );
   }
@@ -612,16 +608,16 @@ class _PreviewChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       alignment: Alignment.center,
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.44),
+        color: Colors.black.withValues(alpha: 0.44),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         text,
         style: TextStyle(
           color: Colors.white,
-          fontSize: 9.5.sp,
+          fontSize: 9.5,
           fontWeight: FontWeight.w900,
           letterSpacing: 0.4,
         ),
@@ -641,14 +637,14 @@ class _BackTextButton extends StatelessWidget {
       onPressed: onPressed,
       style: TextButton.styleFrom(
         padding: EdgeInsets.zero,
-        minimumSize: Size(0, 34.h),
+        minimumSize: Size(0, 34),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
       child: Text(
         '이전',
         style: TextStyle(
           color: SnapFitColors.textSecondaryOf(context),
-          fontSize: 12.5.sp,
+          fontSize: 12.5,
           fontWeight: FontWeight.w800,
         ),
       ),

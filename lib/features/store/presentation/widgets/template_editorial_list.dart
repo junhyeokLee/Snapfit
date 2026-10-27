@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/snapfit_design_tokens.dart' show SnapFitRadius;
 import '../../../../shared/widgets/catalog_favorite_widgets.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
+import '../../../../shared/widgets/viewport_sliver_layout_builder.dart';
 import '../../../album/presentation/widgets/create_flow/creation_catalog_cover.dart';
 import '../../../point_shop/domain/point_shop_template_key.dart';
 import '../../../point_shop/presentation/point_shop_access.dart';
@@ -46,7 +47,7 @@ class TemplateEditorialList extends StatelessWidget {
   final ValueChanged<PremiumTemplate>? onCompare;
   final List<int> comparisonIds;
   @override
-  Widget build(BuildContext context) => SliverLayoutBuilder(
+  Widget build(BuildContext context) => ViewportSliverLayoutBuilder(
     builder: (context, bounds) {
       final columns = bounds.crossAxisExtent >= 1000 ? 4 : 2;
       final rows = storeEditorialRows(
@@ -74,34 +75,36 @@ class TemplateEditorialList extends StatelessWidget {
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             final row = rows[index];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 24),
-              child: row.first % 5 == 0
-                  ? _EditorialEdition(
-                      template: templates[row.first],
-                      onOpen: () => onOpen(templates[row.first]),
-                      onCompare: onCompare == null
-                          ? null
-                          : () => onCompare!(templates[row.first]),
-                      comparisonSelected: comparisonIds.contains(
-                        templates[row.first].id,
-                      ),
-                    )
-                  : SizedBox(
-                      height: height,
-                      child: Row(
-                        children: [
-                          for (var slot = 0; slot < columns; slot++) ...[
-                            if (slot > 0) const SizedBox(width: 16),
-                            Expanded(
-                              child: slot < row.length
-                                  ? tile(row[slot])
-                                  : const SizedBox.shrink(),
-                            ),
+            return RepaintBoundary(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 24),
+                child: row.first % 5 == 0
+                    ? _EditorialEdition(
+                        template: templates[row.first],
+                        onOpen: () => onOpen(templates[row.first]),
+                        onCompare: onCompare == null
+                            ? null
+                            : () => onCompare!(templates[row.first]),
+                        comparisonSelected: comparisonIds.contains(
+                          templates[row.first].id,
+                        ),
+                      )
+                    : SizedBox(
+                        height: height,
+                        child: Row(
+                          children: [
+                            for (var slot = 0; slot < columns; slot++) ...[
+                              if (slot > 0) const SizedBox(width: 16),
+                              Expanded(
+                                child: slot < row.length
+                                    ? tile(row[slot])
+                                    : const SizedBox.shrink(),
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
-                    ),
+              ),
             );
           },
           childCount: rows.length,

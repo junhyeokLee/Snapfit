@@ -5,8 +5,14 @@ import 'package:web/web.dart' as web;
 
 /// Browser-only storage transport. Payload validation belongs to the draft store.
 class BrowserDraftDatabase {
-  static const _databaseName = 'snapfit_album_creation_drafts';
-  static const _storeName = 'drafts';
+  BrowserDraftDatabase({
+    String databaseName = 'snapfit_album_creation_drafts',
+    String storeName = 'drafts',
+  }) : _databaseName = databaseName,
+       _storeName = storeName;
+
+  final String _databaseName;
+  final String _storeName;
   static const _version = 1;
 
   /// Reads and optionally replaces one owner's record in one transaction.
@@ -18,6 +24,8 @@ class BrowserDraftDatabase {
   Future<T> transaction<T>({
     required String owner,
     required bool write,
+    Map<String, JSObject> additionalPuts = const {},
+    List<String> additionalRemovals = const [],
     required T Function(
       JSObject? current,
       void Function(JSObject value) put,
@@ -123,6 +131,16 @@ class BrowserDraftDatabase {
           );
           if (actionValue is Future) {
             throw const BrowserDraftDatabaseException('async_action');
+          }
+          // Optional related records commit in this same active transaction.
+          // Callers may populate these collections synchronously in action.
+          for (final entry in additionalPuts.entries) {
+            requireWrite();
+            watchWrite(store.put(entry.value, entry.key.toJS));
+          }
+          for (final key in additionalRemovals) {
+            requireWrite();
+            watchWrite(store.delete(key.toJS));
           }
           actionRan = true;
         } catch (error, stack) {

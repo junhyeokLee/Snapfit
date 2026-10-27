@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/cover_size.dart';
 import '../../../../core/utils/text_shadow_codec.dart';
 import 'layer.dart';
+import 'layer_content_provenance.dart';
 
 class LayerExportMapper {
   /// 1. 서버 저장용 JSON으로 변환 (상대 좌표 계산)
@@ -39,6 +40,8 @@ class LayerExportMapper {
       'scale': layer.scale, // scale 별도 저장
       'rotation': layer.rotation,
       'opacity': layer.opacity,
+      if (layer.isTemplateContent != null)
+        'templateContent': layer.isTemplateContent,
       'payload': switch (layer.type) {
         LayerType.image => {
           'imageBackground': layer.imageBackground,
@@ -136,8 +139,13 @@ class LayerExportMapper {
           (json['scale'] as num?)?.toDouble() ??
           1.0, // scale 복원 (하위 호환: 없으면 1.0)
       rotation: (json['rotation'] as num).toDouble(),
-      opacity: (json['opacity'] as num?)?.toDouble() ?? 1.0,
+      // Older documents hid layers with a separate flag. Keep them invisible
+      // after restoring and re-saving into the current opacity-based model.
+      opacity: json['hidden'] == true
+          ? 0.0
+          : (json['opacity'] as num?)?.toDouble() ?? 1.0,
       text: payload['text'] as String?,
+      isTemplateContent: layerTemplateContentFromJson(json, payload),
       textAlign: _parseTextAlign(payload['textAlign'] as String?),
       textStyleType: _parseTextStyleType(payload['textStyleType'] as String?),
       textBackground: payload['textBackground'] as String?,

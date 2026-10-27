@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../../shared/web/web_design.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
@@ -50,7 +49,7 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: Padding(
-                padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 18.h),
+                padding: EdgeInsets.fromLTRB(20, 12, 20, 18),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -64,28 +63,28 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
                         '이전',
                         style: TextStyle(
                           color: SnapFitColors.textSecondaryOf(context),
-                          fontSize: 12.5.sp,
+                          fontSize: 12.5,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                     ),
-                    SizedBox(height: 14.h),
+                    SizedBox(height: 14),
                     _DraftTicket(
                       pointCost: pointCost,
                       isFirstAiDraftFree: isFirstAiDraftFree,
                     ),
-                    SizedBox(height: 18.h),
+                    SizedBox(height: 18),
                     Text(
                       'AI 템플릿 생성',
                       style: TextStyle(
                         color: SnapFitColors.textPrimaryOf(context),
-                        fontSize: 23.sp,
+                        fontSize: 23,
                         height: 1.18,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -0.45,
                       ),
                     ),
-                    SizedBox(height: 18.h),
+                    SizedBox(height: 18),
                     _PaperCard(
                       children: [
                         if (designBrief != null) ...[
@@ -129,15 +128,15 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
                         ),
                       ),
                     ] else if (usesServerDraftProvider) ...[
-                      SizedBox(height: 12.h),
+                      SizedBox(height: 12),
                       _ServerAnalysisConsentCard(
                         usesAdvancedServerAnalysis: usesAdvancedServerAnalysis,
                       ),
                     ],
-                    SizedBox(height: 22.h),
+                    SizedBox(height: 22),
                     SizedBox(
                       width: double.infinity,
-                      height: 52.h,
+                      height: 52,
                       child: ElevatedButton(
                         onPressed: onConfirm,
                         style: ElevatedButton.styleFrom(
@@ -153,7 +152,7 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
                         child: Text(
                           isFirstAiDraftFree ? '무료로 템플릿 만들기' : '템플릿 만들기',
                           style: TextStyle(
-                            fontSize: 15.sp,
+                            fontSize: 15,
                             fontWeight: FontWeight.w900,
                             letterSpacing: -0.2,
                           ),
@@ -373,19 +372,19 @@ class _ServerAnalysisConsentCard extends StatelessWidget {
     final isDark = SnapFitColors.isDark(context);
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(15.w, 14.h, 15.w, 14.h),
+      padding: EdgeInsets.fromLTRB(15, 14, 15, 14),
       decoration: BoxDecoration(
         color: kIsWeb
             ? WebPalette.of(context).surface
             : isDark
             ? const Color(0xFF1A1B20)
             : Colors.white,
-        borderRadius: BorderRadius.circular(kIsWeb ? 12 : 22.r),
+        borderRadius: BorderRadius.circular(kIsWeb ? 12 : 22),
         border: Border.all(
           color: kIsWeb
               ? WebPalette.of(context).line
               : isDark
-              ? Colors.white.withOpacity(0.10)
+              ? Colors.white.withValues(alpha: 0.10)
               : const Color(0xFFE7E1D8),
         ),
       ),
@@ -396,30 +395,30 @@ class _ServerAnalysisConsentCard extends StatelessWidget {
             usesAdvancedServerAnalysis ? '고급 AI 템플릿 확인' : 'AI 템플릿 확인',
             style: TextStyle(
               color: SnapFitColors.textPrimaryOf(context),
-              fontSize: 14.sp,
+              fontSize: 14,
               height: 1.2,
               fontWeight: FontWeight.w900,
               letterSpacing: -0.2,
             ),
           ),
-          SizedBox(height: 7.h),
+          SizedBox(height: 7),
           Text(
             usesAdvancedServerAnalysis
                 ? '선택한 사진의 작은 미리보기 이미지를 서버에서 참고해 앨범 흐름과 슬롯 구조를 잡아요.'
                 : '선택한 사진의 날짜·크기 같은 정보로 서버에서 템플릿 슬롯과 흐름을 잡아요.',
             style: TextStyle(
               color: SnapFitColors.textSecondaryOf(context),
-              fontSize: 12.5.sp,
+              fontSize: 12.5,
               height: 1.38,
               fontWeight: FontWeight.w700,
             ),
           ),
-          SizedBox(height: 6.h),
+          SizedBox(height: 6),
           Text(
             '사진은 자동으로 확정되지 않아요. 템플릿을 만든 뒤 편집 화면에서 직접 넣고 바꿔요.',
             style: TextStyle(
               color: const Color(0xFF4C6A55),
-              fontSize: 12.5.sp,
+              fontSize: 12.5,
               height: 1.34,
               fontWeight: FontWeight.w900,
             ),
@@ -443,16 +442,16 @@ class _DraftTicket extends StatelessWidget {
     final isDark = SnapFitColors.isDark(context);
     return Container(
       width: double.infinity,
-      height: 178.h,
-      padding: EdgeInsets.all(16.w),
+      height: 178,
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1A1B20) : Colors.white,
-        borderRadius: BorderRadius.circular(30.r),
+        borderRadius: BorderRadius.circular(30),
         boxShadow: isDark
             ? null
             : [
                 BoxShadow(
-                  color: const Color(0xFF5B4A34).withOpacity(0.09),
+                  color: const Color(0xFF5B4A34).withValues(alpha: 0.09),
                   blurRadius: 24,
                   offset: const Offset(0, 12),
                 ),
@@ -466,41 +465,41 @@ class _DraftTicket extends StatelessWidget {
             child: _TicketPage(color: const Color(0xFFEFE1CD), tall: true),
           ),
           Positioned(
-            left: 70.w,
-            top: 18.h,
+            left: 70,
+            top: 18,
             child: _TicketPage(color: const Color(0xFFE4F3F5)),
           ),
           Positioned(
             right: 0,
-            top: 6.h,
+            top: 6,
             child: Container(
-              width: 108.w,
-              padding: EdgeInsets.symmetric(horizontal: 13.w, vertical: 12.h),
+              width: 108,
+              padding: EdgeInsets.symmetric(horizontal: 13, vertical: 12),
               decoration: BoxDecoration(
                 color: isDark
                     ? const Color(0xFF24252B)
                     : const Color(0xFFF7F1E7),
-                borderRadius: BorderRadius.circular(22.r),
+                borderRadius: BorderRadius.circular(22),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _ReceiptLine(width: 48.w, color: const Color(0xFF8FAF9A)),
-                  SizedBox(height: 10.h),
-                  _ReceiptLine(width: 74.w, color: const Color(0xFFCDAA82)),
-                  SizedBox(height: 10.h),
-                  _ReceiptLine(width: 54.w, color: const Color(0xFFD7C5EF)),
+                  _ReceiptLine(width: 48, color: const Color(0xFF8FAF9A)),
+                  SizedBox(height: 10),
+                  _ReceiptLine(width: 74, color: const Color(0xFFCDAA82)),
+                  SizedBox(height: 10),
+                  _ReceiptLine(width: 54, color: const Color(0xFFD7C5EF)),
                 ],
               ),
             ),
           ),
           Positioned(
-            right: 6.w,
+            right: 6,
             bottom: 0,
             child: Container(
-              width: 52.w,
-              height: 52.w,
+              width: 52,
+              height: 52,
               decoration: BoxDecoration(
                 color: isDark
                     ? const Color(0xFFF4F1EA)
@@ -512,7 +511,7 @@ class _DraftTicket extends StatelessWidget {
                   isFirstAiDraftFree ? 'FREE' : '✓',
                   style: TextStyle(
                     color: isDark ? const Color(0xFF111111) : Colors.white,
-                    fontSize: isFirstAiDraftFree ? 13.sp : 24.sp,
+                    fontSize: isFirstAiDraftFree ? 13 : 24,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -533,7 +532,7 @@ class _ReceiptLine extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: width,
-      height: 7.h,
+      height: 7,
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(999),
@@ -550,13 +549,16 @@ class _TicketPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 72.w,
-      height: tall ? 104.h : 90.h,
-      padding: EdgeInsets.all(8.w),
+      width: 72,
+      height: tall ? 104 : 90,
+      padding: EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.75), width: 2),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.75),
+          width: 2,
+        ),
       ),
       child: Stack(
         children: [
@@ -564,30 +566,30 @@ class _TicketPage extends StatelessWidget {
             left: 0,
             right: 0,
             top: 0,
-            bottom: 20.h,
+            bottom: 20,
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.45),
-                borderRadius: BorderRadius.circular(12.r),
+                color: Colors.white.withValues(alpha: 0.45),
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
           ),
           Positioned(
             left: 0,
-            bottom: 8.h,
+            bottom: 8,
             child: Container(
-              width: 34.w,
-              height: 6.h,
-              color: Colors.black.withOpacity(0.12),
+              width: 34,
+              height: 6,
+              color: Colors.black.withValues(alpha: 0.12),
             ),
           ),
           Positioned(
             left: 0,
             bottom: 0,
             child: Container(
-              width: 24.w,
-              height: 6.h,
-              color: Colors.black.withOpacity(0.08),
+              width: 24,
+              height: 6,
+              color: Colors.black.withValues(alpha: 0.08),
             ),
           ),
         ],
@@ -603,15 +605,15 @@ class _PaperCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(18.w),
+      padding: EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: SnapFitColors.isDark(context)
             ? const Color(0xFF1D1C1A)
             : Colors.white,
-        borderRadius: BorderRadius.circular(22.r),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: SnapFitColors.isDark(context)
-              ? Colors.white.withOpacity(0.10)
+              ? Colors.white.withValues(alpha: 0.10)
               : const Color(0xFFE7E1D8),
         ),
       ),
@@ -627,7 +629,7 @@ class _InfoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
           Expanded(
@@ -635,7 +637,7 @@ class _InfoRow extends StatelessWidget {
               label,
               style: TextStyle(
                 color: SnapFitColors.textMutedOf(context),
-                fontSize: 13.sp,
+                fontSize: 13,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -648,7 +650,7 @@ class _InfoRow extends StatelessWidget {
               textAlign: TextAlign.right,
               style: TextStyle(
                 color: SnapFitColors.textPrimaryOf(context),
-                fontSize: 14.sp,
+                fontSize: 14,
                 fontWeight: FontWeight.w900,
               ),
             ),

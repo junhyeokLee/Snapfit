@@ -8,4 +8,8 @@ abstract class AlbumMemberRepository {
   Future<InviteInfoResponse> getInviteInfo(String token);
   Future<InviteAcceptResponse> acceptInvite(String token);
   Future<List<AlbumMemberResponse>> fetchMembers(int albumId);
+  Future<void> setMemberRole(int albumId, String userUuid, String role);
+  Future<void> removeMember(int albumId, String userUuid);
+  Future<void> leave(int albumId);
+  Future<int> revokeInvites(int albumId);
 }

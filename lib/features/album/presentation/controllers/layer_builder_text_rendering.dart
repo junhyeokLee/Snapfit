@@ -541,6 +541,9 @@ Widget _buildPlainTextWithFill({
       style: renderStyle,
       align: align,
       imageUrl: imageUrl,
+      decodeWidth: builder.interaction.isPreviewMode
+          ? builder.previewImageDecodeWidth
+          : null,
     );
   }
   return Text(layer.text ?? "", style: renderStyle, textAlign: align);
@@ -580,12 +583,14 @@ class _ImageClipText extends StatefulWidget {
   final TextStyle style;
   final TextAlign align;
   final String imageUrl;
+  final int? decodeWidth;
 
   const _ImageClipText({
     required this.text,
     required this.style,
     required this.align,
     required this.imageUrl,
+    this.decodeWidth,
   });
 
   @override
@@ -593,7 +598,8 @@ class _ImageClipText extends StatefulWidget {
 }
 
 class _ImageClipTextState extends State<_ImageClipText> {
-  ui.Image? _image;
+  ImageInfo? _imageInfo;
+  ui.Image? get _image => _imageInfo?.image;
   ImageStream? _stream;
   ImageStreamListener? _listener;
   int _request = 0;
@@ -607,9 +613,9 @@ class _ImageClipTextState extends State<_ImageClipText> {
   @override
   void didUpdateWidget(covariant _ImageClipText oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.imageUrl != widget.imageUrl) {
+    if (oldWidget.imageUrl != widget.imageUrl ||
+        oldWidget.decodeWidth != widget.decodeWidth) {
       _removeListener();
-      _image = null;
       _resolveImage();
     }
   }
@@ -627,6 +633,15 @@ class _ImageClipTextState extends State<_ImageClipText> {
     }
     _stream = null;
     _listener = null;
+    _replaceImage(null);
+  }
+
+  void _replaceImage(ImageInfo? info) {
+    final previous = _imageInfo;
+    _imageInfo = info;
+    if (previous != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => previous.dispose());
+    }
   }
 
   Future<void> _resolveImage() async {
@@ -636,15 +651,22 @@ class _ImageClipTextState extends State<_ImageClipText> {
       // ordinary photo layers do, rather than requesting a supabase:// URL.
       final provider = await resolveStorageImageProvider(widget.imageUrl);
       if (!mounted || request != _request) return;
-      final stream = provider.resolve(const ImageConfiguration());
+      final stream = ResizeImage.resizeIfNeeded(
+        widget.decodeWidth,
+        null,
+        provider,
+      ).resolve(const ImageConfiguration());
       final listener = ImageStreamListener(
         (info, _) {
-          if (!mounted || request != _request) return;
-          setState(() => _image = info.image);
+          if (!mounted || request != _request) {
+            info.dispose();
+            return;
+          }
+          setState(() => _replaceImage(info));
         },
         onError: (_, __) {
           if (!mounted || request != _request) return;
-          setState(() => _image = null);
+          setState(() => _replaceImage(null));
         },
       );
       _stream = stream;
@@ -652,24 +674,25 @@ class _ImageClipTextState extends State<_ImageClipText> {
       stream.addListener(listener);
     } catch (_) {
       if (!mounted || request != _request) return;
-      setState(() => _image = null);
+      setState(() => _replaceImage(null));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_image == null) {
+    final image = _image;
+    if (image == null) {
       return Text(
         widget.text,
         style: widget.style.copyWith(
-          color: widget.style.color?.withOpacity(0.92) ?? Colors.black87,
+          color: widget.style.color?.withValues(alpha: 0.92) ?? Colors.black87,
         ),
         textAlign: widget.align,
       );
     }
     return ShaderMask(
       blendMode: BlendMode.srcIn,
-      shaderCallback: (bounds) => textImageCoverShader(_image!, bounds),
+      shaderCallback: (bounds) => textImageCoverShader(image, bounds),
       child: Text(
         widget.text,
         style: widget.style.copyWith(color: Colors.white),

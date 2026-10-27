@@ -19,6 +19,7 @@ class _BookFlipWidgetPages extends StatefulWidget {
     required this.pageBuilder,
     required this.pageSize,
     required this.pixelRatio,
+    required this.preparePage,
     required this.controller,
     required this.physics,
     required this.material,
@@ -41,6 +42,7 @@ class _BookFlipWidgetPages extends StatefulWidget {
   final Widget Function(BuildContext context, int pageIndex) pageBuilder;
   final Size pageSize;
   final double? pixelRatio;
+  final Future<void> Function(BuildContext context, int pageIndex)? preparePage;
   final BookFlipController? controller;
   final BookFlipPhysics physics;
   final BookFlipMaterial material;
@@ -169,6 +171,7 @@ class _BookFlipWidgetPagesState extends State<_BookFlipWidgetPages> {
     return BookFlipPageRasterizer(
       key: ValueKey<int>(_epoch),
       pixelRatio: ratio,
+      preparePage: widget.preparePage,
       logicalSize: widget.pageSize,
       cover: widget.loadingBuilder?.call(context) ?? const _BookLoadingView(),
       onCaptured: _onCaptured,

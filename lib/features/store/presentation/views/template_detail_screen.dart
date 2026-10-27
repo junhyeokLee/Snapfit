@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -23,22 +22,20 @@ import '../../../../core/templates/studio_decoration_catalog.dart';
 import '../../../../core/templates/catalog_preview_assets.g.dart';
 import '../../../../core/templates/studio_phrase_catalog.dart';
 import '../../../../core/templates/studio_word_art_catalog.dart';
-import '../../../../core/templates/template_visual_material_inventory.dart';
 import '../../../../shared/widgets/catalog_favorite_widgets.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../../../core/utils/app_logger.dart';
 import '../../../../core/utils/image_url_policy.dart';
 import '../../../../shared/widgets/snapfit_motion.dart';
-import '../../../../core/templates/data_template_engine.dart';
-import '../../../../core/templates/template_document_pages.dart';
+import '../../../../core/templates/retired_store_templates.dart';
 import '../../../../core/templates/published_premium_templates.dart';
 import '../../../../core/constants/cover_size.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../../../auth/presentation/providers/public_template_return_intent.dart';
 import '../../domain/entities/premium_template.dart';
+import '../../domain/repositories/template_repository.dart';
 import '../../domain/template_design_profile.dart';
 import '../../../point_shop/data/point_shop_provider.dart';
 import '../../../point_shop/domain/point_shop_template_key.dart';
@@ -61,7 +58,12 @@ import '../../../album/presentation/views/album_create_flow_screen.dart';
 import '../../../album/presentation/utils/album_creation_entry.dart';
 import '../../../album/presentation/widgets/create_flow/creation_template_preview.dart';
 import '../widgets/store_detail_workspace.dart';
+import '../widgets/store_detail_gallery.dart';
 import '../utils/published_template_share_uri.dart';
+import '../utils/template_detail_pages.dart';
+import '../utils/template_detail_document.dart';
+import '../../../../shared/widgets/catalog_cover_skeleton.dart';
+import '../../../../shared/widgets/catalog_artwork_hero.dart';
 
 class TemplateDetailScreen extends ConsumerStatefulWidget {
   final PremiumTemplate template;
@@ -82,20 +84,46 @@ class TemplateDetailScreen extends ConsumerStatefulWidget {
       _TemplateDetailScreenState();
 }
 
-class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
+class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen>
+    with WidgetsBindingObserver {
   late PremiumTemplate _template;
   bool _isUsing = false;
   bool _isLikeSubmitting = false;
+  int _likeRevision = 0;
+  int _likeStateRevision = 0;
   bool _isTemplateHydrating = false;
   bool _isFullScreenPreviewOpen = false;
   final _spreadController = PageController();
   final _spreadListController = ScrollController();
   final _spreadPagerKey = GlobalKey();
   final _spreadListKey = GlobalKey();
+  int _lastInnerSpread = 1;
+  bool _documentPending = true;
+  bool _documentScheduled = false;
+  bool _documentFailed = false;
+  int _documentRevision = 0;
+  TemplateDetailDocumentRequest? _documentRequest;
+  PublicTemplateFacts? _publicFacts;
+  bool _retired = false;
+  ({String? variant, int page, Object? document})? _pendingPreviewRestore;
+  bool _previewRestoreScheduled = false;
+  Animation<double>? _entryAnimation;
+  final _pageCache = TemplateDetailPageCache();
+  String? _parsedSource;
+  Object? _documentIdentity;
+  TemplateDesignProfile _designProfile = TemplateDesignProfile.fromDocument({});
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (ModalRoute.isCurrentOf(context) == false || !TickerMode.of(context)) {
+      _documentRevision++;
+      _documentRequest?.cancel();
+      _documentRequest = null;
+    } else {
+      _scheduleDocumentPreparation();
+    }
+    _schedulePreviewRestore();
     // Keep the selected thumbnail visible after the list changes its axis.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _centerSpreadThumbnail(animated: false);
@@ -104,6 +132,13 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _entryAnimation?.removeStatusListener(_onEntryStatus);
+    _likeRevision++;
+    _documentRevision++;
+    _documentRequest?.cancel();
+    _documentRequest = null;
+    _pageCache.clear();
     _spreadController.dispose();
     _spreadListController.dispose();
     super.dispose();
@@ -115,73 +150,81 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   Size _designCanvasSize = const Size(500, 500);
   final Map<String, Size> _variantCanvasSizes = {};
 
-  CoverSize _initialCoverSizeForTemplate() {
-    if (_previewVariant == 'portrait') {
-      return coverSizes.firstWhere(
-        (s) => s.name == '세로형',
-        orElse: () => coverSizes.first,
-      );
-    }
-    final aspect = _previewVariant == null
-        ? _resolveTemplateAspect()
-        : _shownCanvas.width / _shownCanvas.height;
-    if ((aspect - 1.25).abs() < .0001)
-      return coverSizeForProduct('REDP_250X200_SOFT')!;
-    if (aspect >= 1.05) {
-      return coverSizes.firstWhere(
-        (s) => s.name == '가로형',
-        orElse: () => coverSizes.last,
-      );
-    }
-    return coverSizes.firstWhere(
-      (s) => s.name == '정사각형',
-      orElse: () => coverSizes.first,
-    );
-  }
+  CoverSize? _previewPrintSize;
+
+  List<CoverSize> get _availablePrintSizes => [
+    for (final size in coverSizes)
+      if ([
+        _designCanvasSize,
+        ..._variantCanvasSizes.values,
+      ].any((canvas) => (canvas.aspectRatio - size.ratio).abs() < .0001))
+        size,
+  ];
+
+  CoverSize _initialCoverSizeForTemplate() =>
+      _previewPrintSize ??
+      _availablePrintSizes
+          .where(
+            (size) => (size.ratio - _shownCanvas.aspectRatio).abs() < .0001,
+          )
+          .firstOrNull ??
+      defaultCoverSize;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _template = normalizeTemplateLikeStateForDisplay(widget.template);
-    _parseTemplateJson();
+  }
+
+  void _onEntryStatus(AnimationStatus status) {
+    if (status == AnimationStatus.completed) _scheduleDocumentPreparation();
+  }
+
+  void _scheduleDocumentPreparation() {
+    if (!_documentPending || _documentScheduled || _documentRequest != null)
+      return;
+    _documentScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _precachePreviewImages();
+      _documentScheduled = false;
+      if (!mounted || !_documentPending) return;
+      final route = ModalRoute.of(context);
+      if (route?.isCurrent == false || !TickerMode.of(context)) return;
+      final animation = route?.animation;
+      if (animation != null && animation.status != AnimationStatus.completed) {
+        if (!identical(_entryAnimation, animation)) {
+          _entryAnimation?.removeStatusListener(_onEntryStatus);
+          _entryAnimation = animation..addStatusListener(_onEntryStatus);
+        }
+        return;
+      }
+      _entryAnimation?.removeStatusListener(_onEntryStatus);
+      _entryAnimation = null;
+      _retired = RetiredStoreTemplates.matches(
+        id: _template.id,
+        title: _template.title,
+      );
+      if (_retired) {
+        setState(() => _documentPending = false);
+        return;
+      }
+      unawaited(() async {
+        await _loadDocument(_template);
+        if (mounted &&
+            !_documentPending &&
+            !_retired &&
+            ModalRoute.isCurrentOf(context) != false) {
+          await _refreshTemplate();
+        }
+      }());
     });
-    _refreshTemplate();
   }
 
-  String _normalizeTitle(String value) {
-    String normalize(String raw) =>
-        raw.toLowerCase().replaceAll(RegExp(r'[^a-z0-9가-힣]'), '');
+  @override
+  void didHaveMemoryPressure() => _pageCache.clear();
 
-    final key = normalize(value);
-    final aliases = <String, String>{
-      '제주의기록': 'jejutravel',
-      '가족의주말': 'familyweekend',
-      '우리의기념일': 'anniversarydays',
-      'savethedate': 'savethedate',
-      'scrapbook': 'scrapbook',
-      'weddingeditorial': 'weddingeditorial',
-      '화이트에디토리얼': 'whiteeditorial',
-      '필름다이어리': 'filmdiary',
-      '소프트베이비북': 'softbabybook',
-      '웨딩무드북': '시그니처웨딩',
-      '썸머무드북': '썸머커버에디션',
-      '스카이무드북': '스카이인비테이션',
-      '로즈무드북': '로즈데이',
-      '북클럽무드북': '어린이북클럽',
-      '제주여름무드북': '우리들의여름제주',
-      '오션브리즈무드북': '오션브리즈',
-      '시티나이트무드북': '도시의밤',
-      '졸업무드북': '빛나는졸업장',
-      '패밀리트립무드북': '가족여행일기',
-      '이터널러브무드북': '이터널러브',
-      '빈티지무드북': '빈티지포커스',
-      '링트립무드북': '링트립스토리',
-    };
-
-    return aliases[key] ?? key;
-  }
+  String _normalizeTitle(String value) =>
+      value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9가-힣]'), '');
 
   String _coverPreviewUrl(PremiumTemplate template) {
     final cover = template.coverImageUrl.trim();
@@ -194,7 +237,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     return '';
   }
 
-  PremiumTemplate _mergeWithLocalPriorityForSaveTheDate(
+  PremiumTemplate _mergeWithLocalArtwork(
     PremiumTemplate local,
     PremiumTemplate remote,
   ) {
@@ -218,30 +261,49 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       tags: (local.tags != null && local.tags!.isNotEmpty)
           ? local.tags
           : remote.tags,
-      templateJson: local.templateJson,
+      templateJson: local.documentBuilder == null
+          ? local.templateJson
+          : remote.documentBuilder == null
+          ? remote.templateJson
+          : null,
     );
   }
 
-  Future<PremiumTemplate?> _findRemoteMatchByTitle() async {
+  Future<PremiumTemplate?> _findRemoteMatchByTitle({
+    TemplateRepository? repository,
+  }) async {
     try {
-      final repository = ref.read(templateRepositoryProvider);
-      final remoteList = await repository.getTemplates();
-      if (remoteList.isEmpty) return null;
+      final TemplateRepository source =
+          repository ?? ref.read(templateRepositoryProvider);
+      final session = source is TemplateSessionSource
+          ? source as TemplateSessionSource
+          : null;
+      final owner = session?.currentTemplateUserId;
+      final local = _template;
+      final parsedSource = _parsedSource;
+      final remoteList = await source.getTemplates();
+      if (!mounted ||
+          !identical(ref.read(templateRepositoryProvider), source) ||
+          (session != null && session.currentTemplateUserId != owner) ||
+          remoteList.isEmpty)
+        return null;
 
-      final key = _normalizeTitle(_template.title);
+      final key = _normalizeTitle(local.title);
       for (final t in remoteList) {
-        if (t.id == _template.id || _normalizeTitle(t.title) == key) {
+        if (isRetiredStoreTemplate(t)) continue;
+        if (t.id == local.id || _normalizeTitle(t.title) == key) {
           final merged = t.copyWith(
-            previewImages: _template.previewImages.isNotEmpty
-                ? _template.previewImages
+            previewImages: local.previewImages.isNotEmpty
+                ? local.previewImages
                 : t.previewImages,
             templateJson:
-                (t.templateJson != null && t.templateJson!.trim().isNotEmpty)
+                t.documentBuilder == null &&
+                    (t.templateJson?.isNotEmpty ?? false)
                 ? t.templateJson
-                : _template.templateJson,
+                : parsedSource,
           );
           return normalizeTemplateLikeStateForDisplay(
-            _mergeWithLocalPriorityForSaveTheDate(_template, merged),
+            _mergeWithLocalArtwork(local, merged),
           );
         }
       }
@@ -251,7 +313,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     return null;
   }
 
-  Future<PremiumTemplate?> _findLocalGeneratedMatchByTitle() async {
+  Future<PremiumTemplate?> _findPublishedMatchByTitle() async {
     try {
       final key = _normalizeTitle(_template.title);
       final templates = await loadCanonicalStoreTemplatesForRuntime();
@@ -266,210 +328,83 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     return null;
   }
 
-  PremiumTemplate _mergeRemoteWithLocalGenerated(
-    PremiumTemplate remote,
-    PremiumTemplate local,
-  ) {
-    final localSub = (local.subTitle ?? '').trim();
-    final localDesc = (local.description ?? '').trim();
-    final localCover = local.coverImageUrl.trim();
-    final localJson = (local.templateJson ?? '').trim();
-    final localPreview = local.previewImages
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toList(growable: false);
-
-    return remote.copyWith(
-      subTitle: localSub.isNotEmpty ? local.subTitle : remote.subTitle,
-      description: localDesc.isNotEmpty
-          ? local.description
-          : remote.description,
-      coverImageUrl: localCover.isNotEmpty ? localCover : remote.coverImageUrl,
-      previewImages: localPreview.isNotEmpty
-          ? localPreview
-          : remote.previewImages,
-      pageCount: local.pageCount > 0 ? local.pageCount : remote.pageCount,
-      category: (local.category ?? '').trim().isNotEmpty
-          ? local.category
-          : remote.category,
-      tags: (local.tags != null && local.tags!.isNotEmpty)
-          ? local.tags
-          : remote.tags,
-      templateJson: localJson.isNotEmpty
-          ? local.templateJson
-          : remote.templateJson,
+  Future<bool> _loadDocument(
+    PremiumTemplate source, {
+    int? innerPages,
+    PremiumTemplate? displayTemplate,
+  }) async {
+    if (!mounted ||
+        ModalRoute.isCurrentOf(context) == false ||
+        !TickerMode.of(context))
+      return false;
+    if (!_documentPending &&
+        innerPages == null &&
+        source.documentBuilder == null &&
+        _parsedSource != null &&
+        source.templateJson == _parsedSource) {
+      setState(() => _template = displayTemplate ?? source);
+      return true;
+    }
+    final likeRevision = _likeStateRevision;
+    final revision = ++_documentRevision;
+    _documentRequest?.cancel();
+    final request = TemplateDetailDocuments.acquire(
+      source,
+      innerPages: innerPages,
     );
-  }
-
-  void _parseTemplateJson({int? maxPages}) {
-    if (_template.templateJson == null || _template.templateJson!.isEmpty) {
-      // 이미 파싱된 템플릿이 있으면 유지 (리프레시 시 빈 JSON으로 덮이지 않게)
-      if (_parsedPages.isEmpty) {
-        _parsedPages = [];
-      }
-      return;
+    _documentRequest = request;
+    final document = await request.future;
+    if (!mounted || revision != _documentRevision) return false;
+    _documentRequest = null;
+    if (ModalRoute.isCurrentOf(context) == false || !TickerMode.of(context))
+      return false;
+    if (document == null) {
+      setState(() {
+        _documentPending = false;
+        _documentFailed = _parsedPages.isEmpty;
+      });
+      return false;
     }
-
-    try {
-      final Map<String, dynamic> data = jsonDecode(_template.templateJson!);
-      final metadata = (data['metadata'] is Map<String, dynamic>)
-          ? (data['metadata'] as Map<String, dynamic>)
-          : const <String, dynamic>{};
-      final rootDesignWidth =
-          (data['designWidth'] as num?)?.toDouble() ??
-          (metadata['designWidth'] as num?)?.toDouble() ??
-          500.0;
-      final rootDesignHeight =
-          (data['designHeight'] as num?)?.toDouble() ??
-          (metadata['designHeight'] as num?)?.toDouble() ??
-          500.0;
-      _designCanvasSize = Size(rootDesignWidth, rootDesignHeight);
-      final pagesList = templateDocumentPages(data);
-
-      if (pagesList.isNotEmpty) {
-        final takeCount = maxPages == null
-            ? pagesList.length
-            : pagesList.take(maxPages).length;
-        final canvasSize = _designCanvasSize;
-
-        _parsedPages = pagesList.take(takeCount).map((p) {
-          final map = p;
-          final pageSpec = <String, dynamic>{
-            'strictLayout': true,
-            'designWidth': canvasSize.width,
-            'designHeight': canvasSize.height,
-            'layers': (map['layers'] as List<dynamic>?) ?? const [],
-          };
-          return DataTemplateEngine.buildLayersFromJson(pageSpec, canvasSize);
-        }).toList();
-
-        // Sort by pageNumber if needed, but array order usually matches
-      }
-
-      final variants = data['variants'];
-      final parsed = <String, List<List<LayerModel>>>{};
-      if (variants is Map) {
-        for (final entry in variants.entries) {
-          final key = entry.key.toString().toLowerCase();
-          final node = entry.value;
-          if (node is! Map) continue;
-          final variantMap = Map<String, dynamic>.from(node);
-          final variantPages = templateDocumentPages(variantMap);
-          if (variantPages.isEmpty) continue;
-
-          final variantCanvas = Size(
-            (variantMap['designWidth'] as num?)?.toDouble() ??
-                (metadata['designWidth'] as num?)?.toDouble() ??
-                500.0,
-            (variantMap['designHeight'] as num?)?.toDouble() ??
-                (metadata['designHeight'] as num?)?.toDouble() ??
-                500.0,
-          );
-          final list = variantPages
-              .map((p) {
-                final page = p;
-                final pageSpec = <String, dynamic>{
-                  'strictLayout': true,
-                  'designWidth': variantCanvas.width,
-                  'designHeight': variantCanvas.height,
-                  'layers': (page['layers'] as List<dynamic>?) ?? const [],
-                };
-                return DataTemplateEngine.buildLayersFromJson(
-                  pageSpec,
-                  variantCanvas,
-                );
-              })
-              .toList(growable: false);
-          if (list.isNotEmpty) {
-            parsed[key] = list;
-            _variantCanvasSizes[key] = variantCanvas;
-          }
-        }
-      } else if (variants is List) {
-        for (final node in variants) {
-          if (node is! Map) continue;
-          final variantMap = Map<String, dynamic>.from(node);
-          final key = (variantMap['aspect'] ?? variantMap['variantId'] ?? '')
-              .toString()
-              .toLowerCase();
-          final variantPages = templateDocumentPages(variantMap);
-          if (key.isEmpty || variantPages.isEmpty) {
-            continue;
-          }
-
-          final normalizedKey = key.endsWith('_portrait')
-              ? 'portrait'
-              : key.endsWith('_square')
-              ? 'square'
-              : key.endsWith('_landscape')
-              ? 'landscape'
-              : key;
-          final variantCanvas = Size(
-            (variantMap['designWidth'] as num?)?.toDouble() ??
-                (metadata['designWidth'] as num?)?.toDouble() ??
-                500.0,
-            (variantMap['designHeight'] as num?)?.toDouble() ??
-                (metadata['designHeight'] as num?)?.toDouble() ??
-                500.0,
-          );
-          final list = variantPages
-              .map((p) {
-                final page = p;
-                final pageSpec = <String, dynamic>{
-                  'strictLayout': true,
-                  'designWidth': variantCanvas.width,
-                  'designHeight': variantCanvas.height,
-                  'layers': (page['layers'] as List<dynamic>?) ?? const [],
-                };
-                return DataTemplateEngine.buildLayersFromJson(
-                  pageSpec,
-                  variantCanvas,
-                );
-              })
-              .toList(growable: false);
-          if (list.isNotEmpty) {
-            parsed[normalizedKey] = list;
-            _variantCanvasSizes[normalizedKey] = variantCanvas;
-          }
-        }
-      }
-      _parsedPagesByAspect = parsed;
-    } catch (e) {
-      AppLogger.warn('Failed to parse templateJson: $e');
-      if (_parsedPages.isEmpty) {
-        _parsedPages = [];
-      }
-      _parsedPagesByAspect = const {};
-    }
-  }
-
-  Future<void> _precachePreviewImages({int maxCount = 4}) async {
-    // Layer-based books load their actual photographs, not redundant montage previews.
-    if (!mounted || _parsedPages.isNotEmpty) return;
-    final candidates = _template.previewImages
-        .where((url) => url.trim().isNotEmpty)
-        .take(maxCount)
-        .toList(growable: false);
-    for (final url in candidates) {
-      try {
-        final bundledAsset = bundledTemplateAssetPath(url);
-        if (bundledAsset != null) {
-          await precacheImage(AssetImage(bundledAsset), context);
-        } else if (url.startsWith('asset:')) {
-          await precacheImage(
-            AssetImage(url.substring('asset:'.length)),
-            context,
-          );
-        } else {
-          await precacheImage(
-            NetworkImage(imageUrlByVariant(url, variant: ImageVariant.detail)),
-            context,
-          );
-        }
-      } catch (_) {
-        // ignore failed cache warmup
-      }
-    }
+    if (document.book.pages.isEmpty && _parsedPages.isNotEmpty) return false;
+    setState(() {
+      _retired = document.retired;
+      _documentPending = false;
+      _documentFailed = false;
+      _pageCache.clear();
+      _parsedPages = TemplateDetailPages(
+        pages: document.book.pages,
+        canvas: document.book.canvas,
+        cache: _pageCache,
+      );
+      _designCanvasSize = document.book.canvas;
+      _parsedPagesByAspect = {
+        for (final entry in document.variants.entries)
+          entry.key: TemplateDetailPages(
+            pages: entry.value.pages,
+            canvas: entry.value.canvas,
+            cache: _pageCache,
+          ),
+      };
+      _variantCanvasSizes
+        ..clear()
+        ..addAll({
+          for (final entry in document.variants.entries)
+            entry.key: entry.value.canvas,
+        });
+      _designProfile = document.profile;
+      _publicFacts = document.facts;
+      _cachedMaterialKeys = document.materials;
+      _parsedSource = document.source;
+      _documentIdentity = revision;
+      _template = _preserveNewerLikeState(
+        (displayTemplate ?? source).copyWith(
+          templateJson: document.source,
+          pageCount: innerPages,
+        ),
+        likeRevision,
+      );
+    });
+    return !document.retired;
   }
 
   Future<void> _refreshTemplate() async {
@@ -477,29 +412,31 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       _isTemplateHydrating = false;
       return;
     }
+    final likeRevision = _likeStateRevision;
     try {
-      final localGenerated = await _findLocalGeneratedMatchByTitle();
+      final localGenerated = await _findPublishedMatchByTitle();
       PremiumTemplate? updated = await _findRemoteMatchByTitle();
 
       if (updated == null && localGenerated == null) return;
       if (updated == null && localGenerated != null) {
         updated = localGenerated;
       } else if (updated != null && localGenerated != null) {
-        updated = _mergeRemoteWithLocalGenerated(updated, localGenerated);
+        updated = _mergeWithLocalArtwork(localGenerated, updated);
       }
       if (updated == null) return;
 
-      final updatedTemplate = normalizeTemplateLikeStateForDisplay(
-        _mergeWithLocalPriorityForSaveTheDate(_template, updated),
+      final updatedTemplate = _preserveNewerLikeState(
+        normalizeTemplateLikeStateForDisplay(
+          _mergeWithLocalArtwork(localGenerated ?? _template, updated),
+        ),
+        likeRevision,
       );
       if (mounted) {
-        setState(() {
-          _template = updatedTemplate;
-          _parseTemplateJson();
-          _isTemplateHydrating = false;
-        });
+        await _loadDocument(
+          localGenerated ?? updatedTemplate,
+          displayTemplate: updatedTemplate,
+        );
       }
-      await _precachePreviewImages();
     } catch (e) {
       // Ignore initial fetch error if offline or just rely on passed data
     } finally {
@@ -515,118 +452,160 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     if (_isUsing || _isTemplateHydrating) return;
     setState(() => _isTemplateHydrating = true);
     try {
-      _parseTemplateJson();
+      await _loadDocument(_template);
       await _refreshTemplate();
     } finally {
       if (mounted) setState(() => _isTemplateHydrating = false);
     }
   }
 
-  Future<void> _onLike() async {
-    if (_isLikeSubmitting) return;
-    if (isPublishedCreationTemplate(_template)) {
-      setState(() {
-        _isLikeSubmitting = true;
-        _template = _template.copyWith(
-          isLiked: !_template.isLiked,
-          likeCount: _template.isLiked ? 0 : 1,
-        );
-      });
-      try {
-        String? userId;
-        try {
-          userId = await ref.read(tokenStorageProvider).getResolvedUserId();
-        } catch (_) {
-          // Bundled favorites also work offline as a guest.
-        }
-        await persistTemplateLikeState(_template, userId: userId);
-        if (!mounted) return;
-        ref.invalidate(templateListProvider);
-      } finally {
-        if (mounted) setState(() => _isLikeSubmitting = false);
-      }
-      return;
-    }
-    var target = _template;
-    // Always validate the server ID when the template hasn't been hydrated yet
-    // (e.g. user taps like before _refreshTemplate() completes) OR when the
-    // local handoff JSON carries a hardcoded ID that might not exist in the DB.
-    if (_isTemplateHydrating || target.id < 0) {
-      final matched = await _findRemoteMatchByTitle();
-      if (matched != null && mounted) {
-        setState(() {
-          _template = _mergeWithLocalPriorityForSaveTheDate(_template, matched);
-          target = _template;
-        });
-      }
-    }
+  PremiumTemplate _preserveNewerLikeState(
+    PremiumTemplate incoming,
+    int revision,
+  ) => _isLikeSubmitting || revision != _likeStateRevision
+      ? incoming.copyWith(
+          isLiked: _template.isLiked,
+          likeCount: _template.likeCount,
+        )
+      : incoming;
 
-    if (target.id < 0) {
-      if (mounted) {
+  Future<void> _onLike() async {
+    if (!mounted || _isLikeSubmitting) return;
+    // Lock before account resolution or hydration yields to a second tap.
+    final revision = ++_likeRevision;
+    setState(() => _isLikeSubmitting = true);
+    TemplateRepository? repository;
+    TemplateSessionSource? session;
+    String? owner;
+    String? userId;
+    PremiumTemplate? previous;
+    bool isCurrent() =>
+        mounted &&
+        revision == _likeRevision &&
+        (repository == null ||
+            identical(ref.read(templateRepositoryProvider), repository)) &&
+        (session == null || session!.currentTemplateUserId == owner);
+
+    try {
+      final published = isPublishedCreationTemplate(_template);
+      if (!published) {
+        repository = ref.read(templateRepositoryProvider);
+        if (repository is TemplateSessionSource) {
+          session = repository as TemplateSessionSource;
+          owner = session!.currentTemplateUserId;
+        }
+      }
+      var target = _template;
+      if (!published && (_isTemplateHydrating || target.id < 0)) {
+        final matched = await _findRemoteMatchByTitle(repository: repository);
+        if (!isCurrent()) return;
+        if (matched != null) {
+          target = _mergeWithLocalArtwork(_template, matched);
+        }
+      }
+      if (!published && target.id < 0) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('이 템플릿은 아직 좋아요 서버 연동 전입니다.')),
         );
+        return;
       }
-      return;
-    }
-
-    final oldStatus = target.isLiked;
-    final oldCount = target.likeCount;
-    final userId = await ref.read(tokenStorageProvider).getResolvedUserId();
-    final optimisticCount = oldStatus
-        ? (oldCount > 0 ? oldCount - 1 : 0)
-        : oldCount + 1;
-
-    // 1. Optimistic Update
-    setState(() {
-      _isLikeSubmitting = true;
-      _template = normalizeTemplateLikeStateForDisplay(
-        target.copyWith(isLiked: !oldStatus, likeCount: optimisticCount),
+      if (session != null) {
+        // Use the same live owner as the repository, including signed-out state.
+        userId = owner;
+      } else {
+        try {
+          userId = await ref.read(tokenStorageProvider).getResolvedUserId();
+        } catch (_) {
+          if (!published) rethrow;
+          // Published favorites also work offline as a guest.
+        }
+      }
+      if (!isCurrent()) return;
+      previous = target;
+      final optimistic = normalizeTemplateLikeStateForDisplay(
+        target.copyWith(
+          isLiked: !target.isLiked,
+          likeCount: published
+              ? (target.isLiked ? 0 : 1)
+              : target.isLiked
+              ? (target.likeCount > 0 ? target.likeCount - 1 : 0)
+              : target.likeCount + 1,
+        ),
       );
-    });
-    await persistTemplateLikeState(_template, userId: userId);
-
-    try {
-      // 2. API Call
-      await ref.read(templateRepositoryProvider).likeTemplate(target.id);
-
-      // 3. POST 성공 즉시 버튼 잠금을 풀고, 서버 truth 재동기화는 뒤에서 진행
-      if (mounted) {
-        setState(() => _isLikeSubmitting = false);
+      setState(() {
+        _likeStateRevision++;
+        _template = optimistic;
+      });
+      if (!published) {
+        await repository!.likeTemplate(target.id);
       }
-      await persistTemplateLikeState(_template, userId: userId);
-
-      // Invalidate list provider so the previous screen updates
+      // A slow preferences write must not delay or cancel the server action.
+      // Once confirmed, finish saving its captured account/intent even if the
+      // route closed; only UI updates and follow-up reads require a live view.
+      await persistTemplateLikeState(optimistic, userId: userId);
+      if (!isCurrent()) return;
+      // Reads started during the pending write must not restore pre-write likes.
+      _likeStateRevision++;
       ref.invalidate(templateListProvider);
-      ref.invalidate(storeTemplateFeedProvider);
-      unawaited(_syncLikeStateAfterToggle(userId));
-    } catch (e) {
-      // 3. Rollback on failure
-      if (mounted) {
+      if (!published) {
+        ref.invalidate(storeTemplateFeedProvider);
+        unawaited(
+          _syncLikeStateAfterToggle(
+            userId,
+            templateId: target.id,
+            repository: repository!,
+            isCurrent: isCurrent,
+          ),
+        );
+      }
+    } catch (error) {
+      if (!isCurrent()) return;
+      if (previous != null) {
+        final rollback = _template.copyWith(
+          isLiked: previous.isLiked,
+          likeCount: previous.likeCount,
+        );
         setState(() {
-          _isLikeSubmitting = false;
-          _template = normalizeTemplateLikeStateForDisplay(
-            target.copyWith(isLiked: oldStatus, likeCount: oldCount),
-          );
+          _likeStateRevision++;
+          _template = normalizeTemplateLikeStateForDisplay(rollback);
         });
-        await persistTemplateLikeState(_template, userId: userId);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('좋아요 처리에 실패했습니다: $e')));
+        await persistTemplateLikeState(rollback, userId: userId);
+        if (!isCurrent()) return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('좋아요 처리에 실패했습니다: $error')));
+    } finally {
+      if (mounted && revision == _likeRevision) {
+        setState(() => _isLikeSubmitting = false);
       }
     }
   }
 
-  Future<void> _syncLikeStateAfterToggle(String? userId) async {
+  Future<void> _syncLikeStateAfterToggle(
+    String? userId, {
+    required int templateId,
+    required TemplateRepository repository,
+    required bool Function() isCurrent,
+  }) async {
     try {
-      final refreshed = await _findRemoteMatchByTitle();
-      if (refreshed == null || !mounted) return;
+      if (!isCurrent()) return;
+      // A successful toggle has already confirmed this exact server ID. Fetch
+      // one record rather than every template document just to refresh a like.
+      final refreshed = await repository.getTemplate(templateId);
+      if (!isCurrent() ||
+          refreshed.id != templateId ||
+          isRetiredStoreTemplate(refreshed))
+        return;
+      final updated = normalizeTemplateLikeStateForDisplay(
+        _mergeWithLocalArtwork(_template, refreshed),
+      );
       setState(() {
-        _template = normalizeTemplateLikeStateForDisplay(
-          _mergeWithLocalPriorityForSaveTheDate(_template, refreshed),
-        );
+        _likeStateRevision++;
+        _template = updated;
       });
-      await persistTemplateLikeState(_template, userId: userId);
+      await persistTemplateLikeState(updated, userId: userId);
+      if (!isCurrent()) return;
       ref.invalidate(templateListProvider);
       ref.invalidate(storeTemplateFeedProvider);
     } catch (_) {
@@ -635,6 +614,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   }
 
   Future<void> _onUse() async {
+    if (_retired || _documentPending) return;
     if (_isUsing || ModalRoute.of(context)?.isCurrent == false) return;
     if (widget.guestPreview) {
       final navigate = WebNavigationScope.maybeOf(context)?.onPublicNavigate;
@@ -693,22 +673,19 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
             count == null)
           return;
         if (count != _template.pageCount) {
-          setState(() {
-            _template = _template.copyWith(
-              pageCount: count,
-              templateJson: jsonEncode(
-                premiumCatalogDocument(volume, innerPages: count),
-              ),
-            );
-            _parseTemplateJson();
-          });
+          final loaded = await _loadDocument(
+            publishedCreationTemplates.firstWhere(
+              (item) => item.id == _template.id,
+            ),
+            innerPages: count,
+            displayTemplate: _template.copyWith(pageCount: count),
+          );
+          if (!loaded || !mounted || ModalRoute.isCurrentOf(context) == false)
+            return;
           _boundDetailSpread();
         }
       }
 
-      if (_parsedPages.length < _template.pageCount) {
-        _parseTemplateJson();
-      }
       final pages = _parsedPages;
       if (pages.isEmpty) {
         ScaffoldMessenger.of(
@@ -720,33 +697,41 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       // Capture the confirmed artwork before asynchronous price/ownership checks.
       final template = _template;
       final cover = _initialCoverSizeForTemplate();
-      final normalized = AlbumCreationTemplate.preparePages(
-        pages,
-        sourceCanvas: _designCanvasSize,
-        cover: cover,
-      );
+      final canvas = _designCanvasSize;
+      final aspectPages = Map.of(_parsedPagesByAspect);
+      final aspectCanvases = Map.of(_variantCanvasSizes);
+
+      // Validate and prepare artwork before checkout, so a malformed unseen page
+      // cannot be charged. The selected size reuses its prepared variant.
       final variants = <String, List<List<LayerModel>>>{};
       final variantCanvases = <String, Size>{};
       for (final size in coverSizes) {
         final key = AlbumCreationTemplate.aspectKey(size);
-        final source = _parsedPagesByAspect[key];
+        final source = aspectPages[key];
         final productKey = AlbumCreationTemplate.variantKey(size);
         variants[productKey] = AlbumCreationTemplate.preparePages(
           source != null && source.isNotEmpty ? source : pages,
           sourceCanvas: source != null && source.isNotEmpty
-              ? _variantCanvasSizes[key] ?? _designCanvasSize
-              : _designCanvasSize,
+              ? aspectCanvases[key] ?? canvas
+              : canvas,
           cover: size,
         );
         variantCanvases[productKey] = coverCanvasBaseSize(size);
       }
       final selection = AlbumCreationTemplate(
         title: template.title,
+        sourceTemplateProductKey: pointShopTemplateKey(template),
         previewUrl: _coverPreviewUrl(template),
         isPremium: template.isPremium,
         preserveTypography: isBundledCreationTemplate(template),
         cover: cover,
-        pages: variants[AlbumCreationTemplate.variantKey(cover)] ?? normalized,
+        pages:
+            variants[AlbumCreationTemplate.variantKey(cover)] ??
+            AlbumCreationTemplate.preparePages(
+              pages,
+              sourceCanvas: canvas,
+              cover: cover,
+            ),
         variants: variants,
         variantCanvasSizes: variantCanvases,
         pagesCanvasSize: coverCanvasBaseSize(cover),
@@ -764,14 +749,15 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       );
       if (!mounted || ModalRoute.of(context)?.isCurrent == false || !granted)
         return;
+      if (entry != null &&
+          !await validateAlbumCreationEntry(context, ref, entry)) {
+        return;
+      }
       if (widget.selectForCreation) {
         Navigator.pop(context, selection);
         return;
       }
-      if (entry == null ||
-          !await validateAlbumCreationEntry(context, ref, entry)) {
-        return;
-      }
+      if (entry == null) return;
       await Navigator.push(
         context,
         snapFitRoute(
@@ -835,8 +821,8 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
         ModalRoute.of(context)?.isCurrent != true) {
       return;
     }
-    final owner = ModalRoute.of(context);
     final variant = _previewVariant;
+    final document = _documentIdentity;
     final pages = _shownPages;
     final previews = _template.previewImages;
     final canvas = _shownCanvas;
@@ -870,47 +856,61 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     viewerActive = false;
     await viewerRoute.completed;
 
-    bool canRestore() {
-      if (!mounted || owner?.isCurrent != true || _previewVariant != variant) {
-        return false;
+    if (!mounted) return;
+    _pendingPreviewRestore = (
+      variant: variant,
+      page: lastViewedPage,
+      document: document,
+    );
+    _schedulePreviewRestore();
+  }
+
+  void _schedulePreviewRestore({int remainingFrames = 2}) {
+    if (_pendingPreviewRestore == null || _previewRestoreScheduled || !mounted)
+      return;
+    _previewRestoreScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _previewRestoreScheduled = false;
+      if (!mounted || _pendingPreviewRestore == null) return;
+      // Route dependencies call us again when uncovered. Never poll a covered
+      // route on every frame or keep its viewer/pages alive in a closure.
+      if (ModalRoute.isCurrentOf(context) != true) return;
+      if (_isFullScreenPreviewOpen) {
+        setState(() => _isFullScreenPreviewOpen = false);
+        _schedulePreviewRestore(remainingFrames: remainingFrames);
+        return;
       }
-      final currentPageCount = _shownPages.isNotEmpty
+      final pending = _pendingPreviewRestore!;
+      final count = _shownPages.isNotEmpty
           ? _shownPages.length
           : _template.previewImages.length;
-      return lastViewedPage >= 0 && lastViewedPage < currentPageCount;
-    }
-
-    final spread = (lastViewedPage + 1) ~/ 2;
-    void restoreSpread() {
-      if (!canRestore()) return;
-      final pagerPositions = _spreadController.positions;
-      final thumbnailPositions = _spreadListController.positions;
-      if (pagerPositions.length != 1 ||
-          thumbnailPositions.length != 1 ||
-          !pagerPositions.single.hasContentDimensions ||
-          !thumbnailPositions.single.hasContentDimensions) {
-        WidgetsBinding.instance.addPostFrameCallback((_) => restoreSpread());
-        WidgetsBinding.instance.ensureVisualUpdate();
+      if (pending.variant != _previewVariant ||
+          pending.document != _documentIdentity ||
+          pending.page < 0 ||
+          pending.page >= count) {
+        _pendingPreviewRestore = null;
         return;
       }
-      setState(() => _detailSpread = spread);
+      final positions = _spreadController.positions;
+      final thumbnails = _spreadListController.positions;
+      if (positions.length != 1 ||
+          thumbnails.length != 1 ||
+          !positions.single.hasContentDimensions ||
+          !thumbnails.single.hasContentDimensions) {
+        if (remainingFrames > 0) {
+          _schedulePreviewRestore(remainingFrames: remainingFrames - 1);
+        }
+        return;
+      }
+      _pendingPreviewRestore = null;
+      final spread = (pending.page + 1) ~/ 2;
+      setState(() {
+        _detailSpread = spread;
+        if (spread > 0) _lastInnerSpread = spread;
+      });
       _spreadController.jumpToPage(spread);
       _centerSpreadThumbnail(animated: false);
-    }
-
-    void resumeDetail() {
-      if (!mounted) return;
-      if (owner?.isCurrent != true) {
-        WidgetsBinding.instance.addPostFrameCallback((_) => resumeDetail());
-        return;
-      }
-      // Reparent only after the uncovered detail has rebuilt its semantics.
-      setState(() => _isFullScreenPreviewOpen = false);
-      if (!canRestore()) return;
-      WidgetsBinding.instance.addPostFrameCallback((_) => restoreSpread());
-    }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) => resumeDetail());
+    });
     WidgetsBinding.instance.ensureVisualUpdate();
   }
 
@@ -924,18 +924,26 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   void _boundDetailSpread() {
     final last = ((_shownPages.length.clamp(1, 1000) - 1) / 2).ceil();
     if (_detailSpread <= last) return;
-    setState(() => _detailSpread = last);
+    _updateDetailSpread(last);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _spreadController.hasClients) {
         _spreadController.jumpToPage(_detailSpread);
+        _centerSpreadThumbnail(animated: false);
       }
     });
   }
 
-  void _goToSpread(int index) {
+  void _goToSpread(int index, {bool animated = true}) {
     if (!_spreadController.hasClients) return;
-    if (MediaQuery.disableAnimationsOf(context)) {
+    final current = _spreadController.page ?? _detailSpread.toDouble();
+    if (!animated ||
+        SnapFitMotion.reduced(context) ||
+        (current - index).abs() > 1) {
+      // Record the selection before the pager notification. A nearby view-tab
+      // switch must also bypass the thumbnail animation, without a pending flag.
+      _updateDetailSpread(index);
       _spreadController.jumpToPage(index);
+      _centerSpreadThumbnail(animated: false);
     } else {
       _spreadController.animateToPage(
         index,
@@ -946,8 +954,18 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   }
 
   void _spreadChanged(int index) {
-    setState(() => _detailSpread = index);
-    _centerSpreadThumbnail();
+    if (index == _detailSpread) return;
+    final nearby = (index - _detailSpread).abs() == 1;
+    _updateDetailSpread(index);
+    _centerSpreadThumbnail(animated: nearby);
+  }
+
+  void _updateDetailSpread(int index) {
+    if (index == _detailSpread) return;
+    setState(() {
+      _detailSpread = index;
+      if (index > 0) _lastInnerSpread = index;
+    });
   }
 
   void _centerSpreadThumbnail({bool animated = true}) {
@@ -962,7 +980,11 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                   position.viewportDimension / 2 +
                   itemExtent / 2)
               .clamp(0.0, position.maxScrollExtent);
-      if (!animated || MediaQuery.disableAnimationsOf(context)) {
+      // A manually scrolled strip can be far away even after one page turn.
+      // Never build a screenful of intermediate thumbnails to catch up.
+      if (!animated ||
+          SnapFitMotion.reduced(context) ||
+          (offset - position.pixels).abs() > position.viewportDimension) {
         _spreadListController.jumpTo(offset);
       } else {
         _spreadListController.animateTo(
@@ -995,6 +1017,29 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   }
 
   Widget _buildDetailStage({bool compact = false}) {
+    if (_documentFailed && _parsedPages.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.collections_bookmark_outlined, size: 32),
+            const SizedBox(height: 12),
+            const Text('디자인을 불러오지 못했어요.'),
+            TextButton(
+              key: const ValueKey('template-document-retry'),
+              onPressed: () {
+                setState(() {
+                  _documentPending = true;
+                  _documentFailed = false;
+                });
+                _scheduleDocumentPreparation();
+              },
+              child: const Text('다시 불러오기'),
+            ),
+          ],
+        ),
+      );
+    }
     final sidebar =
         compact &&
         MediaQuery.orientationOf(context) == Orientation.landscape &&
@@ -1010,6 +1055,23 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     final spread = _detailSpread.clamp(0, spreadCount - 1);
     final left = spread == 0 ? 0 : spread * 2 - 1;
     final paired = spread > 0 && left + 1 < pageCount;
+    final pages = Semantics(
+      key: _spreadPagerKey,
+      container: true,
+      child: KeyedSubtree(
+        key: PageStorageKey('template-detail-spreads-${_template.id}'),
+        child: PageView.builder(
+          key: const ValueKey('template-spread-pager'),
+          controller: _spreadController,
+          itemCount: spreadCount,
+          onPageChanged: _spreadChanged,
+          itemBuilder: (context, index) => Padding(
+            padding: EdgeInsets.all(compact ? (kIsWeb ? 0 : 24) : 22),
+            child: _spreadArtwork(index, pageCount, hero: true),
+          ),
+        ),
+      ),
+    );
     final artwork = Container(
       key: const ValueKey('template-detail-stage'),
       height: compact
@@ -1017,30 +1079,20 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
           : (MediaQuery.sizeOf(context).height * .42).clamp(210, 340),
       decoration: BoxDecoration(
         color: kIsWeb ? WebPalette.of(context).canvas : null,
-        gradient: kIsWeb ? null : AlbumStageStyle.gradient(context),
+        gradient: kIsWeb || compact ? null : AlbumStageStyle.gradient(context),
       ),
-      child: Semantics(
-        key: _spreadPagerKey,
-        container: true,
-        child: KeyedSubtree(
-          key: PageStorageKey('template-detail-spreads-${_template.id}'),
-          child: PageView.builder(
-            key: const ValueKey('template-spread-pager'),
-            controller: _spreadController,
-            itemCount: spreadCount,
-            onPageChanged: _spreadChanged,
-            itemBuilder: (context, index) => Padding(
-              padding: EdgeInsets.all(compact ? (kIsWeb ? 0 : 8) : 22),
-              child: _spreadArtwork(index, pageCount, hero: true),
-            ),
-          ),
-        ),
-      ),
+      child: compact && !kIsWeb
+          ? StoreGallerySurface(
+              onExpand: () => _openFullScreenView(left),
+              expandTooltip: '전체 미리보기',
+              child: pages,
+            )
+          : pages,
     );
     final navigation = Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const SizedBox(width: 44),
+        if (kIsWeb) const SizedBox(width: 44),
         IconButton(
           constraints: const BoxConstraints.tightFor(width: 44, height: 44),
           padding: EdgeInsets.zero,
@@ -1077,13 +1129,14 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
               : null,
           icon: const ExperienceIcon('ChevronRight', size: 22),
         ),
-        IconButton(
-          constraints: const BoxConstraints.tightFor(width: 44, height: 44),
-          padding: EdgeInsets.zero,
-          tooltip: '전체 미리보기',
-          onPressed: () => _openFullScreenView(left),
-          icon: const ExperienceIcon('Expand', size: 19),
-        ),
+        if (kIsWeb)
+          IconButton(
+            constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+            padding: EdgeInsets.zero,
+            tooltip: '전체 미리보기',
+            onPressed: () => _openFullScreenView(left),
+            icon: const ExperienceIcon('Expand', size: 19),
+          ),
       ],
     );
     final thumbnails = Semantics(
@@ -1094,53 +1147,59 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
         height: sidebar ? null : thumbnailExtent,
         child: KeyedSubtree(
           key: PageStorageKey('template-detail-thumbnails-${_template.id}'),
-          child: ListView.separated(
+          child: ListView.builder(
             key: const ValueKey('template-spread-list'),
             controller: _spreadListController,
             scrollDirection: sidebar ? Axis.vertical : Axis.horizontal,
+            // Fixed slots keep index offsets exact after rotation/text scaling
+            // and let distant jumps skip laying out intermediate thumbnails.
+            itemExtent: sidebar ? thumbnailExtent + 8 : 96,
             itemCount: spreadCount,
-            separatorBuilder: (_, __) =>
-                SizedBox(width: sidebar ? 0 : 8, height: sidebar ? 8 : 0),
-            itemBuilder: (context, index) => Semantics(
-              selected: spread == index,
-              button: true,
-              child: InkWell(
-                key: ValueKey('template-spread-thumb-$index'),
-                onTap: () => _goToSpread(index),
-                child: Container(
-                  width: sidebar ? null : 88,
-                  height: sidebar ? thumbnailExtent : null,
-                  padding: const EdgeInsets.fromLTRB(4, 4, 4, 2),
-                  decoration: BoxDecoration(
-                    color: spread == index
-                        ? ExperienceFormStyle.selection(context)
-                        : null,
-                    border: Border(
-                      bottom: BorderSide(
-                        width: 2,
+            itemBuilder: (context, index) => Padding(
+              padding: EdgeInsets.only(
+                right: sidebar ? 0 : 8,
+                bottom: sidebar ? 8 : 0,
+              ),
+              child: Semantics(
+                selected: spread == index,
+                button: true,
+                child: InkWell(
+                  key: ValueKey('template-spread-thumb-$index'),
+                  onTap: () => _goToSpread(index),
+                  child: Container(
+                    width: sidebar ? null : 88,
+                    height: sidebar ? thumbnailExtent : null,
+                    padding: const EdgeInsets.fromLTRB(4, 4, 4, 2),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: spread == index
+                          ? ExperienceFormStyle.selection(context)
+                          : null,
+                      border: Border.all(
+                        width: spread == index ? 1.5 : 1,
                         color: spread == index
                             ? ExperienceStyle.accent
                             : ExperienceFormStyle.line(context),
                       ),
                     ),
-                  ),
-                  child: Column(
-                    children: [
-                      Expanded(child: _spreadArtwork(index, pageCount)),
-                      const SizedBox(height: 4),
-                      Text(
-                        index == 0
-                            ? '표지'
-                            : index * 2 < pageCount
-                            ? '${index * 2 - 1}–${index * 2}'
-                            : '${index * 2 - 1}',
-                        style: ExperienceFormStyle.text(
-                          context,
-                          10,
-                          color: ExperienceFormStyle.muted(context),
+                    child: Column(
+                      children: [
+                        Expanded(child: _spreadArtwork(index, pageCount)),
+                        const SizedBox(height: 4),
+                        Text(
+                          index == 0
+                              ? '표지'
+                              : index * 2 < pageCount
+                              ? '${index * 2 - 1}–${index * 2}'
+                              : '${index * 2 - 1}',
+                          style: ExperienceFormStyle.text(
+                            context,
+                            10,
+                            color: ExperienceFormStyle.muted(context),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -1149,8 +1208,25 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
         ),
       ),
     );
-    return Column(
+    final gallery = Column(
       children: [
+        if (compact && !kIsWeb) ...[
+          StoreGalleryTabs(
+            key: const ValueKey('template-gallery-mode'),
+            labels: const ['표지', '내지'],
+            selected: spread == 0 ? 0 : 1,
+            secondaryEnabled: spreadCount > 1,
+            onChanged: (mode) {
+              // A view switch preserves the remembered interior and must not
+              // compile intermediate spreads or overwrite it while animating.
+              _goToSpread(
+                mode == 0 ? 0 : _lastInnerSpread.clamp(1, spreadCount - 1),
+                animated: false,
+              );
+            },
+          ),
+          const SizedBox(height: 8),
+        ],
         if (sidebar)
           Expanded(
             child: Row(
@@ -1178,119 +1254,57 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
         ],
       ],
     );
+    return compact && !kIsWeb
+        ? Padding(
+            padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
+            child: gallery,
+          )
+        : gallery;
   }
 
   Widget _buildSizeSelector() {
-    final variants = _parsedPagesByAspect.keys
-        .where((key) => const ['portrait', 'square', 'landscape'].contains(key))
-        .toList();
-    if (variants.length < 2) {
-      if (!kIsWeb) return const SizedBox();
-      final ratio = _shownCanvas.width / _shownCanvas.height;
-      return Text(
-        ratio > 1.05
-            ? '가로형'
-            : ratio < .95
-            ? '세로형'
-            : '정사각형',
-        style: ExperienceFormStyle.text(context, 14, weight: FontWeight.w600),
-      );
-    }
-    final selectedVariant =
-        _previewVariant ??
-        variants
-            .where((key) => _variantCanvasSizes[key] == _designCanvasSize)
-            .firstOrNull ??
-        variants.first;
-    if (kIsWeb)
-      return DropdownButtonFormField<String>(
-        key: const ValueKey('web-template-size-selector'),
-        initialValue: selectedVariant,
-        isExpanded: true,
-        decoration: const InputDecoration(
-          isDense: true,
-          border: OutlineInputBorder(),
-        ),
-        items: [
-          for (final key in variants)
-            DropdownMenuItem(
-              value: key,
-              child: Text(
-                const {
-                  'portrait': '세로형',
-                  'square': '정사각형',
-                  'landscape': '가로형',
-                }[key]!,
-              ),
-            ),
-        ],
-        onChanged: _isUsing
-            ? null
-            : (value) {
-                if (value == null) return;
-                setState(() => _previewVariant = value);
-                final count =
-                    1 + ((_shownPages.length.clamp(1, 1000) - 1) / 2).ceil();
-                if (_detailSpread >= count) _goToSpread(count - 1);
-              },
-      );
-    return SizedBox(
-      width: double.infinity,
-      child: SegmentedButton<String>(
-        key: const ValueKey('template-size-selector'),
-        showSelectedIcon: false,
-        style: SegmentedButton.styleFrom(
-          side: BorderSide.none,
-          backgroundColor: ExperienceFormStyle.surface(context),
-          foregroundColor: ExperienceFormStyle.ink(context),
-          selectedBackgroundColor: ExperienceFormStyle.selection(context),
-          selectedForegroundColor: ExperienceFormStyle.selectionInk(context),
-          textStyle: ExperienceFormStyle.text(context, 12),
-          shape: const StadiumBorder(),
-        ),
-        segments: [
-          for (final key in variants)
-            ButtonSegment(
-              value: key,
-              label: Text(
-                const {
-                  'portrait': '세로형',
-                  'square': '정사각형',
-                  'landscape': '가로형',
-                }[key]!,
-              ),
-            ),
-        ],
-        selected: {selectedVariant},
-        onSelectionChanged: _isUsing
-            ? null
-            : (value) {
-                setState(() => _previewVariant = value.single);
-                final count =
-                    1 + ((_shownPages.length.clamp(1, 1000) - 1) / 2).ceil();
-                if (_detailSpread >= count) _goToSpread(count - 1);
-              },
+    final sizes = _availablePrintSizes;
+    if (sizes.isEmpty) return const SizedBox.shrink();
+    final selected = _initialCoverSizeForTemplate();
+    return DropdownButtonFormField<String>(
+      key: ValueKey(
+        kIsWeb ? 'web-template-size-selector' : 'template-size-selector',
       ),
+      initialValue: selected.sizeProductId,
+      isExpanded: true,
+      decoration: const InputDecoration(
+        labelText: '책 크기',
+        isDense: true,
+        border: OutlineInputBorder(),
+      ),
+      items: [
+        for (final size in sizes)
+          DropdownMenuItem(
+            value: size.sizeProductId,
+            child: Text(size.displayName),
+          ),
+      ],
+      onChanged: _isUsing
+          ? null
+          : (value) {
+              final cover = coverSizeForProduct(value);
+              if (cover == null) return;
+              final key = templateVariantForCover(cover);
+              setState(() {
+                _previewPrintSize = cover;
+                _previewVariant = _parsedPagesByAspect.containsKey(key)
+                    ? key
+                    : null;
+              });
+              final count =
+                  1 + ((_shownPages.length.clamp(1, 1000) - 1) / 2).ceil();
+              if (_detailSpread >= count) _goToSpread(count - 1);
+            },
     );
   }
 
-  String? _materialDocument;
   Set<String> _cachedMaterialKeys = const {};
-
-  Set<String> get _materialKeys {
-    final document = _template.templateJson;
-    // Page changes must not decode every variant just to rebuild the details.
-    if (document == _materialDocument) return _cachedMaterialKeys;
-    _materialDocument = document;
-    try {
-      _cachedMaterialKeys = templateVisualMaterialKeys(
-        Map<String, dynamic>.from(jsonDecode(document!)),
-      );
-    } catch (_) {
-      _cachedMaterialKeys = const {};
-    }
-    return _cachedMaterialKeys;
-  }
+  Set<String> get _materialKeys => _cachedMaterialKeys;
 
   Widget _experiencePage(
     int index, {
@@ -1549,12 +1563,70 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_documentPending) {
+      return Scaffold(
+        backgroundColor: SnapFitColors.backgroundOf(context),
+        appBar: const ExperienceHeader(
+          title: '템플릿 상세',
+          showNotifications: false,
+          showDivider: false,
+        ),
+        body: StoreDetailWorkspace(
+          stage: Semantics(
+            label: '디자인 불러오는 중',
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: CatalogArtworkHero(
+                tag: widget.heroTag,
+                child: const CatalogCoverSkeleton(),
+              ),
+            ),
+          ),
+          fields: Text(
+            _template.title,
+            style: ExperienceFormStyle.text(
+              context,
+              22,
+              weight: FontWeight.w600,
+            ),
+          ),
+          actions: const FilledButton(
+            key: ValueKey('template-detail-use'),
+            onPressed: null,
+            child: Text('디자인 준비 중'),
+          ),
+        ),
+      );
+    }
+    if (_retired) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('디자인 안내')),
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('이전 디자인은 더 이상 제공하지 않아요.'),
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    child: const Text('돌아가기'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     if (widget.selectForCreation && !kIsWeb) {
       return CreationTemplatePreview(
         title: _template.title,
         profileSummary: TemplateDesignProfileSummary(
           key: const ValueKey('creation-template-profile'),
-          profile: TemplateDesignProfile.of(_template),
+          profile: _designProfile,
         ),
         favoriteKey: CatalogFavoriteKeys.template(_template.id),
         accessBadge: PointShopProductBadge(
@@ -1586,9 +1658,85 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       if (!previewMaterials.contains(key)) previewMaterials.add(key);
     }
     final volume = publishedPremiumVolume(_template.id);
-    final publicFacts = widget.guestPreview
-        ? PublicTemplateFacts.fromTemplate(_template)
-        : null;
+    final publicFacts = widget.guestPreview ? _publicFacts : null;
+    final profile = TemplateDesignProfileSummary(
+      key: const ValueKey('template-detail-profile'),
+      profile: _designProfile,
+    );
+    final overview = widget.guestPreview
+        ? PublicTemplateInformation(template: _template, facts: _publicFacts)
+        : TemplatePurchaseOverview(
+            productKey: pointShopTemplateKey(_template),
+            materialKeys: materials,
+            isPublishedFree:
+                !_template.isPremium && isPublishedCreationTemplate(_template),
+            onMaterials: _showMaterials,
+          );
+    final materialDetails = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                '디자인에 사용한 꾸밈 소재',
+                style: ExperienceFormStyle.text(
+                  context,
+                  16,
+                  weight: FontWeight.w600,
+                ),
+              ),
+            ),
+            TextButton.icon(
+              onPressed: _showMaterials,
+              icon: const ExperienceIcon('ArrowRight', size: 16),
+              label: Text(
+                '전체 보기',
+                style: ExperienceFormStyle.text(
+                  context,
+                  12,
+                  color: kIsWeb
+                      ? WebPalette.of(context).brandInk
+                      : ExperienceFormStyle.selectionInk(context),
+                ),
+              ),
+            ),
+          ],
+        ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final key in previewMaterials)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: InkWell(
+                    key: ValueKey('template-material-preview-$key'),
+                    onTap: _showMaterials,
+                    borderRadius: BorderRadius.circular(SnapFitRadius.md),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AspectRatio(
+                          aspectRatio: 1,
+                          child: _materialArtwork(key),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _materialName(key),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: ExperienceFormStyle.text(context, 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
     final info = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1605,7 +1753,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                 ),
               ),
             ),
-            if (!widget.guestPreview)
+            if (!widget.guestPreview && kIsWeb)
               CatalogFavoriteButton(
                 bookmark: true,
                 unframed: true,
@@ -1638,12 +1786,12 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
             color: ExperienceFormStyle.muted(context),
           ),
         ),
-        const SizedBox(height: 16),
-        TemplateDesignProfileSummary(
-          key: const ValueKey('template-detail-profile'),
-          profile: TemplateDesignProfile.of(_template),
-        ),
-        const SizedBox(height: 24),
+        if (kIsWeb) ...[
+          const SizedBox(height: 16),
+          profile,
+          const SizedBox(height: 24),
+        ] else
+          const SizedBox(height: 18),
         if (kIsWeb)
           Wrap(
             spacing: 16,
@@ -1656,10 +1804,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                         : '24 / ${volume.extendedPages}쪽'),
                 '페이지 분량',
               ),
-              _webMetric(
-                '${_parsedPagesByAspect.isEmpty ? 1 : _parsedPagesByAspect.length}가지',
-                '앨범 규격',
-              ),
+              _webMetric('${_availablePrintSizes.length}가지', '앨범 규격'),
               _webMetric('${materials.length}종', '사용한 소재'),
             ],
           )
@@ -1673,87 +1818,36 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                         : '24 / ${volume.extendedPages}쪽'),
                 '페이지 분량',
               ),
-              _experienceMetric(
-                '${_parsedPagesByAspect.isEmpty ? 1 : _parsedPagesByAspect.length}가지',
-                '앨범 규격',
-              ),
+              _experienceMetric('${_availablePrintSizes.length}가지', '앨범 규격'),
               _experienceMetric('${materials.length}종', '사용한 소재'),
             ],
           ),
         const SizedBox(height: 24),
         if (!kIsWeb) ...[_buildSizeSelector(), const SizedBox(height: 20)],
-        if (widget.guestPreview)
-          PublicTemplateInformation(template: _template)
+        if (kIsWeb)
+          overview
         else
-          TemplatePurchaseOverview(
-            productKey: pointShopTemplateKey(_template),
-            materialKeys: materials,
-            isPublishedFree:
-                !_template.isPremium && isPublishedCreationTemplate(_template),
-            onMaterials: _showMaterials,
+          StoreDetailSection(
+            key: const ValueKey('template-gallery-information'),
+            title: '디자인 구성 · 사진과 글',
+            summary:
+                '${_designProfile.pageLabel} · ${_designProfile.compositionLabel}',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [profile, const SizedBox(height: 16), overview],
+            ),
           ),
         if (materials.isNotEmpty) ...[
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '디자인에 사용한 꾸밈 소재',
-                  style: ExperienceFormStyle.text(
-                    context,
-                    16,
-                    weight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              TextButton.icon(
-                onPressed: _showMaterials,
-                icon: const ExperienceIcon('ArrowRight', size: 16),
-                label: Text(
-                  '전체 보기',
-                  style: ExperienceFormStyle.text(
-                    context,
-                    12,
-                    color: kIsWeb
-                        ? WebPalette.of(context).brandInk
-                        : ExperienceFormStyle.selectionInk(context),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (final key in previewMaterials)
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: InkWell(
-                      key: ValueKey('template-material-preview-$key'),
-                      onTap: _showMaterials,
-                      borderRadius: BorderRadius.circular(SnapFitRadius.md),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          AspectRatio(
-                            aspectRatio: 1,
-                            child: _materialArtwork(key),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _materialName(key),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: ExperienceFormStyle.text(context, 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
+          const SizedBox(height: 16),
+          if (kIsWeb)
+            materialDetails
+          else
+            StoreDetailSection(
+              key: const ValueKey('template-gallery-materials'),
+              title: '함께 사용한 꾸밈 소재',
+              summary: '${materials.length}종 · 개별 이용 범위와 가격',
+              child: materialDetails,
+            ),
         ],
         const SizedBox(height: 28),
         Text(
@@ -1764,25 +1858,42 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
             color: ExperienceFormStyle.muted(context),
           ),
         ),
-        TextButton.icon(
-          onPressed: _onShareTemplate,
-          icon: const ExperienceIcon('Link2', size: 18),
-          label: const Text('템플릿 공유'),
-        ),
+        if (kIsWeb)
+          TextButton.icon(
+            onPressed: _onShareTemplate,
+            icon: const ExperienceIcon('Link2', size: 18),
+            label: const Text('템플릿 공유'),
+          ),
       ],
     );
     if (kIsWeb) return _webDetail(info);
     return Scaffold(
       backgroundColor: SnapFitColors.backgroundOf(context),
-      appBar: const ExperienceHeader(title: '템플릿 상세'),
-      body: _isTemplateHydrating
-          ? const Center(child: CircularProgressIndicator())
-          : StoreDetailWorkspace(
-              freezeLayout: _isFullScreenPreviewOpen,
-              stage: _buildDetailStage(compact: true),
-              fields: info,
-              actions: _buildNativeActions(),
+      appBar: ExperienceHeader(
+        title: '템플릿 상세',
+        showNotifications: false,
+        showDivider: false,
+        actions: [
+          IconButton(
+            tooltip: '템플릿 공유',
+            onPressed: _onShareTemplate,
+            icon: const Icon(Icons.ios_share_outlined, size: 20),
+          ),
+          if (!widget.guestPreview)
+            CatalogFavoriteButton(
+              bookmark: true,
+              unframed: true,
+              itemKey: CatalogFavoriteKeys.template(_template.id),
+              label: _template.title,
             ),
+        ],
+      ),
+      body: StoreDetailWorkspace(
+        freezeLayout: _isFullScreenPreviewOpen,
+        stage: _buildDetailStage(compact: true),
+        fields: info,
+        actions: _buildNativeActions(),
+      ),
     );
   }
 
@@ -1814,9 +1925,8 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       final priced =
           ref
               .watch(pointShopCatalogProvider)
-              .asData
-              ?.value
-              .any(
+              .value
+              ?.any(
                 (product) =>
                     product.productKey == productKey &&
                     product.isActive &&
@@ -1884,14 +1994,14 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
           );
     return FilledButton(
       key: const ValueKey('template-detail-use'),
-      onPressed: _isUsing
+      onPressed: _isUsing || _parsedPages.isEmpty
           ? null
           : action.retry
           ? () => ref.invalidate(pointShopCatalogProvider)
           : action.ready
           ? _onUse
           : null,
-      style: ExperienceFormStyle.primary(context),
+      style: StoreGalleryStyle.primary(context),
       child: _isUsing
           ? const SizedBox.square(
               dimension: 20,
@@ -2175,33 +2285,4 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       ],
     ),
   );
-
-  double _resolveTemplateAspect() {
-    if (_parsedPages.isNotEmpty) {
-      return (_designCanvasSize.width / _designCanvasSize.height).clamp(
-        0.6,
-        1.8,
-      );
-    }
-    try {
-      final raw = _template.templateJson;
-      if (raw != null && raw.isNotEmpty) {
-        final data = jsonDecode(raw) as Map<String, dynamic>;
-        final topW = (data['designWidth'] as num?)?.toDouble();
-        final topH = (data['designHeight'] as num?)?.toDouble();
-        if (topW != null && topH != null && topW > 1 && topH > 1) {
-          return (topW / topH).clamp(0.6, 1.8);
-        }
-        final metadata = data['metadata'];
-        if (metadata is Map) {
-          final w = (metadata['designWidth'] as num?)?.toDouble();
-          final h = (metadata['designHeight'] as num?)?.toDouble();
-          if (w != null && h != null && w > 1 && h > 1) {
-            return (w / h).clamp(0.6, 1.8);
-          }
-        }
-      }
-    } catch (_) {}
-    return 1.0;
-  }
 }

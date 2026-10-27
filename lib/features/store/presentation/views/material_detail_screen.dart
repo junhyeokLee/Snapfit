@@ -16,6 +16,25 @@ import '../widgets/material_application_preview.dart';
 import '../widgets/material_original_preview.dart';
 import '../widgets/material_album_picker.dart';
 import '../widgets/store_detail_workspace.dart';
+import '../widgets/store_detail_gallery.dart';
+
+typedef _MaterialPreviewInputs = ({
+  ThemeData theme,
+  MediaQueryData? media,
+  TextDirection? direction,
+  Locale? locale,
+  TextStyle textStyle,
+  IconThemeData iconTheme,
+});
+
+_MaterialPreviewInputs _previewInputs(BuildContext context) => (
+  theme: Theme.of(context),
+  media: MediaQuery.maybeOf(context),
+  direction: Directionality.maybeOf(context),
+  locale: Localizations.maybeLocaleOf(context),
+  textStyle: DefaultTextStyle.of(context).style,
+  iconTheme: IconTheme.of(context),
+);
 
 class MaterialDetailScreen extends ConsumerStatefulWidget {
   const MaterialDetailScreen({
@@ -40,23 +59,63 @@ class MaterialDetailScreen extends ConsumerStatefulWidget {
 class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
   bool _busy = false;
   bool _application = false;
+  bool _zoomOpen = false;
   int _examplePhoto = 0;
+  Widget? _materialPreview;
+  _MaterialPreviewInputs? _materialInputs;
   bool get _isFrame => widget.productKey.startsWith('frame:');
 
-  Widget _artwork() => _application
+  @override
+  void didUpdateWidget(MaterialDetailScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.preview != widget.preview ||
+        oldWidget.productKey != widget.productKey) {
+      _materialPreview = null;
+    }
+  }
+
+  Widget get _material {
+    final inputs = _previewInputs(context);
+    // Route visibility changes do not change the artwork. Keep one source
+    // widget until the material or its actual display inputs change.
+    if (_materialInputs != inputs) {
+      _materialInputs = inputs;
+      _materialPreview = null;
+    }
+    return _materialPreview ??= widget.preview(context);
+  }
+
+  Widget _artwork({bool? application, int? photoIndex}) =>
+      (application ?? _application)
       ? MaterialApplicationPreview(
           productKey: widget.productKey,
           type: widget.type,
-          material: widget.preview(context),
-          photoIndex: _examplePhoto,
+          material: _material,
+          photoIndex: photoIndex ?? _examplePhoto,
         )
       : MaterialOriginalPreview(
           productKey: widget.productKey,
-          child: widget.preview(context),
+          child: _material,
         );
 
-  void _zoom() => kIsWeb
-      ? showWebAwareDialog<void>(
+  Future<void> _zoom() async {
+    if (_zoomOpen || !mounted || ModalRoute.of(context)?.isCurrent == false)
+      return;
+    _zoomOpen = true;
+    final application = _application;
+    final photoIndex = _examplePhoto;
+    // Keep the selected example stable while allowing display inputs to update.
+    try {
+      final artwork = Builder(
+        builder: (zoomContext) {
+          // The dialog has its own inherited dependencies. Subscribe here so
+          // a theme change also replaces a context-derived, cached source.
+          _previewInputs(zoomContext);
+          return _artwork(application: application, photoIndex: photoIndex);
+        },
+      );
+      if (kIsWeb) {
+        await showWebAwareDialog<void>(
           context: context,
           maxWidth: 1000,
           maxHeight: 800,
@@ -69,7 +128,7 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
                   children: [
                     Expanded(
                       child: Text(
-                        _application ? '앨범 적용 예시' : widget.title,
+                        application ? '앨범 적용 예시' : widget.title,
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
@@ -94,7 +153,7 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
                       minScale: 1,
                       maxScale: 4,
                       child: Center(
-                        child: AspectRatio(aspectRatio: 1, child: _artwork()),
+                        child: AspectRatio(aspectRatio: 1, child: artwork),
                       ),
                     ),
                   ),
@@ -102,8 +161,9 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
               ),
             ],
           ),
-        )
-      : showDialog<void>(
+        );
+      } else {
+        final route = DialogRoute<void>(
           context: context,
           builder: (ctx) => Dialog.fullscreen(
             child: Scaffold(
@@ -111,7 +171,7 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
               appBar: AppBar(
                 backgroundColor: SnapFitColors.backgroundOf(context),
                 title: Text(
-                  _application ? '앨범 적용 예시' : widget.title,
+                  application ? '앨범 적용 예시' : widget.title,
                   style: ExperienceFormStyle.text(
                     context,
                     16,
@@ -137,14 +197,16 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
                       child: AspectRatio(
                         aspectRatio: 1,
                         child: ColoredBox(
-                          color: _application
+                          color: application
                               ? ExperienceFormStyle.surface(ctx)
                               : MaterialOriginalPreview.backgroundFor(
                                   widget.productKey,
                                 ),
                           child: InteractiveViewer(
                             maxScale: 4,
-                            child: SizedBox.expand(child: _artwork()),
+                            child: RepaintBoundary(
+                              child: SizedBox.expand(child: artwork),
+                            ),
                           ),
                         ),
                       ),
@@ -155,6 +217,13 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
             ),
           ),
         );
+        await Navigator.of(context, rootNavigator: true).push(route);
+        await route.completed;
+      }
+    } finally {
+      _zoomOpen = false;
+    }
+  }
 
   Future<void> _requestAccess() async {
     if (_busy || ModalRoute.of(context)?.isCurrent == false) return;
@@ -189,8 +258,8 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
             ?.value
             .contains(widget.productKey) ??
         false;
-    final product = catalog.asData?.value
-        .where((item) => item.productKey == widget.productKey)
+    final product = catalog.value
+        ?.where((item) => item.productKey == widget.productKey)
         .firstOrNull;
     final unavailable =
         !owned &&
@@ -199,7 +268,7 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
             : catalog.hasValue &&
                   !freeTemplateMaterialProductKeys.contains(widget.productKey));
     final checking = !owned && catalog.isLoading && !catalog.hasValue;
-    final retry = !owned && catalog.hasError && !catalog.hasValue;
+    final retry = !owned && catalog.hasError && !catalog.isLoading;
     final actionLabel = owned
         ? '사용할 앨범 선택'
         : checking
@@ -238,28 +307,11 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
                 ),
             ],
           )
-        : SegmentedButton<bool>(
+        : StoreGalleryTabs(
             key: const ValueKey('material-preview-mode'),
-            showSelectedIcon: false,
-            style: SegmentedButton.styleFrom(
-              side: BorderSide.none,
-              shape: const StadiumBorder(),
-              backgroundColor: ExperienceFormStyle.surface(context),
-              foregroundColor: ExperienceFormStyle.ink(context),
-              selectedBackgroundColor: ExperienceFormStyle.selection(context),
-              selectedForegroundColor: ExperienceFormStyle.selectionInk(
-                context,
-              ),
-              textStyle: ExperienceFormStyle.text(context, 12),
-              minimumSize: const Size(0, 44),
-            ),
-            segments: const [
-              ButtonSegment(value: false, label: Text('소재')),
-              ButtonSegment(value: true, label: Text('앨범 적용 예시')),
-            ],
-            selected: {_application},
-            onSelectionChanged: (value) =>
-                setState(() => _application = value.single),
+            labels: const ['소재', '앨범 적용 예시'],
+            selected: _application ? 1 : 0,
+            onChanged: (value) => setState(() => _application = value == 1),
           );
     final information = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -285,60 +337,93 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
                 ],
               ),
             ),
-            CatalogFavoriteButton(
-              bookmark: true,
-              unframed: true,
-              itemKey: widget.favoriteKey,
-              label: widget.title,
-            ),
+            if (kIsWeb)
+              CatalogFavoriteButton(
+                bookmark: true,
+                unframed: true,
+                itemKey: widget.favoriteKey,
+                label: widget.title,
+              ),
           ],
         ),
         if (!landscape && !kIsWeb) title(),
-        SizedBox(height: landscape ? 12 : 24),
-        Divider(color: ExperienceFormStyle.line(context)),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                '소재 이용 안내',
-                style: ExperienceFormStyle.text(
-                  context,
-                  16,
-                  weight: FontWeight.w600,
-                ),
-              ),
-            ),
-            Flexible(
-              child: Align(
-                alignment: Alignment.topRight,
-                child: PointShopProductBadge(
-                  productKey: widget.productKey,
-                  unlistedLabel:
-                      freeTemplateMaterialProductKeys.contains(
-                        widget.productKey,
-                      )
-                      ? '무료'
-                      : '판매 준비 중',
-                  compact: false,
-                  fontSize: 20,
-                ),
-              ),
-            ),
-          ],
-        ),
+        const SizedBox(height: 12),
+        if (!kIsWeb)
+          Text(
+            '원본 비율 유지 · 크기와 회전 조절',
+            style: ExperienceFormStyle.text(context, 12, secondary: true),
+          ),
         const SizedBox(height: 20),
-        _materialUsageLine(
-          Icons.collections_bookmark_outlined,
-          '여러 앨범에 계속 사용',
-          '구매한 소재는 이 계정에서 계속 사용할 수 있어요.',
-        ),
-        const SizedBox(height: 18),
-        _materialUsageLine(
-          Icons.layers_outlined,
-          _isFrame ? '사진과 분리된 프레임' : '독립된 꾸밈 소재',
-          _isFrame ? '미리보기 사진은 포함되지 않아요.' : '예시에 추가한 사진과 문구, 배치는 포함되지 않아요.',
-        ),
+        if (kIsWeb)
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '소재 이용 안내',
+                  style: ExperienceFormStyle.text(
+                    context,
+                    16,
+                    weight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Flexible(
+                child: Align(
+                  alignment: Alignment.topRight,
+                  child: PointShopProductBadge(
+                    productKey: widget.productKey,
+                    unlistedLabel:
+                        freeTemplateMaterialProductKeys.contains(
+                          widget.productKey,
+                        )
+                        ? '무료'
+                        : '판매 준비 중',
+                    compact: false,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        if (kIsWeb) const SizedBox(height: 20),
+        if (kIsWeb)
+          _materialUsageLine(
+            Icons.collections_bookmark_outlined,
+            '여러 앨범에 계속 사용',
+            '구매한 소재는 이 계정에서 계속 사용할 수 있어요.',
+          ),
+        if (kIsWeb) const SizedBox(height: 18),
+        if (kIsWeb)
+          _materialUsageLine(
+            Icons.layers_outlined,
+            _isFrame ? '사진과 분리된 프레임' : '독립된 꾸밈 소재',
+            _isFrame ? '미리보기 사진은 포함되지 않아요.' : '예시에 추가한 사진과 문구, 배치는 포함되지 않아요.',
+          ),
+        if (!kIsWeb)
+          StoreDetailSection(
+            key: const ValueKey('material-gallery-information'),
+            title: '소재 이용 안내',
+            summary: _isFrame
+                ? '프레임만 제공 · 미리보기 사진 제외'
+                : '꾸밈 소재만 제공 · 예시에 추가한 사진과 문구 제외',
+            child: Column(
+              children: [
+                _materialUsageLine(
+                  Icons.collections_bookmark_outlined,
+                  '여러 앨범에 계속 사용',
+                  '구매한 소재는 이 계정에서 계속 사용할 수 있어요.',
+                ),
+                const SizedBox(height: 18),
+                _materialUsageLine(
+                  Icons.layers_outlined,
+                  _isFrame ? '사진과 분리된 프레임' : '독립된 꾸밈 소재',
+                  _isFrame
+                      ? '미리보기 사진은 포함되지 않아요.'
+                      : '예시에 추가한 사진과 문구, 배치는 포함되지 않아요.',
+                ),
+              ],
+            ),
+          ),
         const SizedBox(height: 20),
         Text(
           '무료 소재는 구매 없이 이용할 수 있어요.',
@@ -346,70 +431,81 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
         ),
       ],
     );
-    final stage = Column(
+    final artwork = Stack(
+      fit: StackFit.expand,
       children: [
-        Expanded(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              ColoredBox(
-                key: const ValueKey('material-detail-stage'),
-                color: _application
-                    ? ExperienceFormStyle.surface(context)
-                    : MaterialOriginalPreview.backgroundFor(widget.productKey),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: GestureDetector(
-                    onTap: _zoom,
-                    child: CatalogArtworkHero(
-                      tag: _application ? null : widget.heroTag,
-                      child: _artwork(),
-                    ),
-                  ),
-                ),
+        ColoredBox(
+          key: const ValueKey('material-detail-stage'),
+          color: _application
+              ? ExperienceFormStyle.surface(context)
+              : MaterialOriginalPreview.backgroundFor(widget.productKey),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: GestureDetector(
+              onTap: _zoom,
+              child: CatalogArtworkHero(
+                tag: _application ? null : widget.heroTag,
+                child: _artwork(),
               ),
-              Positioned(
-                right: 8,
-                bottom: 8,
-                child: IconButton(
-                  tooltip: '소재 크게 보기',
-                  onPressed: _zoom,
-                  style: IconButton.styleFrom(
-                    backgroundColor: ExperienceFormStyle.surface(context),
-                  ),
-                  icon: Icon(
-                    Icons.open_in_full,
-                    size: 18,
-                    color: ExperienceFormStyle.ink(context),
-                  ),
-                ),
-              ),
-              if (_application && !_isFrame)
-                Positioned(
-                  left: 8,
-                  bottom: 8,
-                  child: IconButton(
-                    key: const ValueKey('material-example-next'),
-                    tooltip: '다른 사진으로 보기',
-                    onPressed: () => setState(() => _examplePhoto++),
-                    style: IconButton.styleFrom(
-                      backgroundColor: ExperienceFormStyle.surface(context),
-                    ),
-                    icon: Icon(
-                      Icons.refresh,
-                      size: 20,
-                      color: ExperienceFormStyle.ink(context),
-                    ),
-                  ),
-                ),
-            ],
+            ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          child: SizedBox(width: double.infinity, child: mode),
-        ),
+        if (_application && !_isFrame)
+          Positioned(
+            left: 8,
+            bottom: 8,
+            child: IconButton(
+              key: const ValueKey('material-example-next'),
+              tooltip: '다른 사진으로 보기',
+              onPressed: () => setState(() => _examplePhoto++),
+              style: IconButton.styleFrom(
+                backgroundColor: ExperienceFormStyle.surface(context),
+              ),
+              icon: Icon(
+                Icons.refresh,
+                size: 20,
+                color: ExperienceFormStyle.ink(context),
+              ),
+            ),
+          ),
       ],
+    );
+    final stage = Padding(
+      padding: EdgeInsets.symmetric(horizontal: kIsWeb ? 0 : 18),
+      child: Column(
+        children: [
+          mode,
+          const SizedBox(height: 8),
+          Expanded(
+            child: StoreGallerySurface(
+              onExpand: _zoom,
+              expandTooltip: '소재 크게 보기',
+              child: artwork,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _application ? '사진과 함께 배치한 모습' : '원본 소재',
+                    style: ExperienceFormStyle.text(
+                      context,
+                      11,
+                      secondary: true,
+                    ),
+                  ),
+                ),
+                Text(
+                  '원본 비율 유지',
+                  style: ExperienceFormStyle.text(context, 11, secondary: true),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
     if (kIsWeb) {
       final palette = WebPalette.of(context);
@@ -471,10 +567,12 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
           const SizedBox(height: 18),
           FilledButton(
             key: const ValueKey('material-access'),
-            onPressed: _busy || checking || unavailable
+            onPressed: _busy || checking
                 ? null
                 : retry
                 ? () => ref.invalidate(pointShopCatalogProvider)
+                : unavailable
+                ? null
                 : _requestAccess,
             child: _busy
                 ? const SizedBox.square(
@@ -517,6 +615,10 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
     }
     return _frame(
       body: StoreDetailWorkspace(
+        portraitStageHeight: (MediaQuery.sizeOf(context).height * .44).clamp(
+          260.0,
+          384.0,
+        ),
         stage: stage,
         fields: information,
         actions: Row(
@@ -536,12 +638,14 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
               flex: 3,
               child: FilledButton(
                 key: const ValueKey('material-access'),
-                onPressed: _busy || checking || unavailable
+                onPressed: _busy || checking
                     ? null
                     : retry
                     ? () => ref.invalidate(pointShopCatalogProvider)
+                    : unavailable
+                    ? null
                     : _requestAccess,
-                style: ExperienceFormStyle.primary(context),
+                style: StoreGalleryStyle.primary(context),
                 child: _busy
                     ? const SizedBox.square(
                         dimension: 20,
@@ -597,7 +701,19 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
 
   Widget _frame({required Widget body}) => Scaffold(
     backgroundColor: SnapFitColors.backgroundOf(context),
-    appBar: const ExperienceHeader(title: '소재 상세'),
+    appBar: ExperienceHeader(
+      title: '소재 상세',
+      showNotifications: false,
+      showDivider: false,
+      actions: [
+        CatalogFavoriteButton(
+          bookmark: true,
+          unframed: true,
+          itemKey: widget.favoriteKey,
+          label: widget.title,
+        ),
+      ],
+    ),
     body: body,
   );
 }

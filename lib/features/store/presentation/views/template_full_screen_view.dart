@@ -6,6 +6,7 @@ import 'dart:math' as math;
 import '../../../../shared/web/web_design.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/utils/image_url_policy.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 import '../../../album/domain/entities/layer.dart';
 import '../widgets/template_page_renderer.dart';
 
@@ -114,7 +115,7 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
         : widget.previewImages.length;
     if (index < 0 || index >= count || !_pageController.hasClients) return;
     _resetNativeZoom();
-    if (MediaQuery.disableAnimationsOf(context)) {
+    if (SnapFitMotion.reduced(context)) {
       _pageController.jumpToPage(index);
     } else {
       _pageController.animateToPage(
@@ -142,25 +143,25 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
     });
   }
 
-  Widget _imageWidget(String rawUrl) {
+  Widget _imageWidget(String rawUrl, {required int decodeWidth}) {
     final trimmed = rawUrl.trim();
-    final bundledAsset = bundledTemplateAssetPath(trimmed);
-    if (bundledAsset != null) {
-      return Image.asset(
-        bundledAsset,
-        fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => _imageError(),
-      );
-    }
-    if (trimmed.startsWith('asset:')) {
-      return Image.asset(
-        trimmed.substring('asset:'.length),
-        fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => _imageError(),
-      );
-    }
-    return Image.network(
-      imageUrlByVariant(trimmed, variant: ImageVariant.detail),
+    final asset =
+        bundledTemplateAssetPath(trimmed) ??
+        (trimmed.startsWith('asset:')
+            ? trimmed.substring('asset:'.length)
+            : null);
+    final ImageProvider provider = asset != null
+        ? AssetImage(asset)
+        : NetworkImage(
+            imageUrlByVariant(trimmed, variant: ImageVariant.detail),
+          );
+    return Image(
+      image: ResizeImage(
+        provider,
+        width: decodeWidth,
+        height: decodeWidth,
+        policy: ResizeImagePolicy.fit,
+      ),
       fit: BoxFit.contain,
       loadingBuilder: (context, child, progress) {
         if (progress == null) return child;
@@ -421,7 +422,11 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
             child: ValueListenableBuilder<Matrix4>(
               valueListenable: _nativeTransform,
               child: SizedBox.expand(
-                child: Center(child: _webPage(index, aspect)),
+                child: Center(
+                  // Only the page is isolated, keeping the letterboxed margins
+                  // out of its layer. Pan/pinch can reuse the painted artwork.
+                  child: RepaintBoundary(child: _webPage(index, aspect)),
+                ),
               ),
               builder: (context, transform, child) => Transform(
                 key: ValueKey('template-native-page-transform-$index'),
@@ -493,6 +498,16 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
     aspectRatio: aspect,
     child: LayoutBuilder(
       builder: (context, bounds) {
+        // Allow zoom detail without decoding unbounded camera originals.
+        // Bucket sizes so minor rotations/layout changes reuse image entries.
+        final decodeWidth =
+            ((bounds.maxWidth *
+                            MediaQuery.devicePixelRatioOf(context) *
+                            2 /
+                            128)
+                        .ceil() *
+                    128)
+                .clamp(128, 2048);
         if (index < widget.parsedPages.length)
           return ColoredBox(
             color: _inferredTemplateSurfaceColor(widget.parsedPages[index]),
@@ -503,10 +518,14 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
               designCanvasSize: widget.designCanvasSize,
               preserveTypography: widget.preserveTypography,
               showCanvasChrome: false,
+              imageDecodeWidth: decodeWidth,
             ),
           );
         if (index < widget.previewImages.length)
-          return _imageWidget(widget.previewImages[index]);
+          return _imageWidget(
+            widget.previewImages[index],
+            decodeWidth: decodeWidth,
+          );
         return const Center(child: Text('표시할 페이지가 없습니다.'));
       },
     ),

@@ -77,7 +77,7 @@ class _GridLinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color.withOpacity(0.6)
+      ..color = color.withValues(alpha: 0.6)
       ..strokeWidth = 0.8
       ..style = PaintingStyle.stroke;
     for (var x = 0.0; x <= size.width; x += step) {
@@ -507,7 +507,7 @@ class _RoughEdgePaperClipper extends CustomClipper<Path> {
 class _VhsScanLinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white.withOpacity(0.03);
+    final paint = Paint()..color = Colors.white.withValues(alpha: 0.03);
     for (var y = 0.0; y < size.height; y += 3) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
@@ -604,7 +604,7 @@ class _PaperNoisePainter extends CustomPainter {
           .toDouble();
       paint.color =
           (i.isEven ? const Color(0xFFB79D80) : const Color(0xFFE7D7C0))
-              .withOpacity(alpha);
+              .withValues(alpha: alpha);
       canvas.drawCircle(Offset(dx, dy), r, paint);
     }
   }
@@ -625,7 +625,7 @@ class _TornBottomEdgeShadowPainter extends CustomPainter {
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0
-      ..color = color.withOpacity(0.26);
+      ..color = color.withValues(alpha: 0.26);
     final path = Path();
     final y = size.height - 6;
     path.moveTo(0, y);
@@ -654,7 +654,7 @@ class _TinyHandwritingPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color.withOpacity(0.75)
+      ..color = color.withValues(alpha: 0.75)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.9;
     final gap = (size.height / 5).clamp(7.0, 10.0);
@@ -730,7 +730,7 @@ class _PaperClipPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.1;
     final inner = Paint()
-      ..color = color.withOpacity(0.9)
+      ..color = color.withValues(alpha: 0.9)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 
@@ -899,7 +899,7 @@ class _FlowerStickerPainter extends CustomPainter {
       center,
       size.shortestSide * 0.17,
       Paint()
-        ..color = Colors.black.withOpacity(0.08)
+        ..color = Colors.black.withValues(alpha: 0.08)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 0.8,
     );
@@ -925,7 +925,7 @@ class _CatDoodlePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
     final fill = Paint()
-      ..color = Colors.white.withOpacity(0.9)
+      ..color = Colors.white.withValues(alpha: 0.9)
       ..style = PaintingStyle.fill;
 
     final body = RRect.fromRectAndRadius(
@@ -1031,7 +1031,7 @@ class _BrushStrokeStickerPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final fill = Paint()..color = color.withOpacity(0.9);
+    final fill = Paint()..color = color.withValues(alpha: 0.9);
     final path = Path()
       ..moveTo(size.width * 0.02, size.height * 0.42)
       ..quadraticBezierTo(
@@ -1076,7 +1076,7 @@ class _BlobStickerPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final fill = Paint()..color = color.withOpacity(0.95);
+    final fill = Paint()..color = color.withValues(alpha: 0.95);
     final path = Path()
       ..moveTo(size.width * 0.18, size.height * 0.22)
       ..quadraticBezierTo(
@@ -1162,12 +1162,12 @@ class _LeafCornerPainter extends CustomPainter {
     }
 
     final branch = Paint()
-      ..color = color.withOpacity(0.85)
+      ..color = color.withValues(alpha: 0.85)
       ..style = PaintingStyle.stroke
       ..strokeWidth = size.shortestSide * 0.04
       ..strokeCap = StrokeCap.round;
     final leafPaint = Paint()
-      ..color = color.withOpacity(0.9)
+      ..color = color.withValues(alpha: 0.9)
       ..style = PaintingStyle.fill;
 
     final branchPath = Path()

@@ -5,6 +5,7 @@ import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/theme/snapfit_design_tokens.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/widgets/experience_style.dart';
+import '../../../../core/utils/context_extensions.dart';
 import '../../../../core/notifications/fcm_notification_service.dart';
 import '../../../../core/notifications/browser_push_state.dart';
 import '../../../../shared/web/web_design.dart';
@@ -150,11 +151,7 @@ class _NotificationSettingsScreenState
         setState(() => _loadFailed = true);
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('설정은 저장했지만 서버 연결이 지연되고 있어요. 연결되면 다시 적용합니다.'),
-        ),
-      );
+      context.showSnack('설정은 저장했지만 서버 연결이 지연되고 있어요. 연결되면 다시 적용합니다.');
     }
   }
 
@@ -166,9 +163,7 @@ class _NotificationSettingsScreenState
       if (mounted) setState(() => permissionGranted = granted);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('기기 알림 설정을 열지 못했어요. 다시 시도해 주세요.')),
-      );
+      context.showErrorSnack('기기 알림 설정을 열지 못했어요. 다시 시도해 주세요.');
     } finally {
       if (mounted) setState(() => _requestingPermission = false);
     }
@@ -189,17 +184,11 @@ class _NotificationSettingsScreenState
         permissionGranted = result.environment.permission == 'granted';
       });
       if (enable && !result.active) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('브라우저 알림 연결을 완료하지 못했어요. 권한과 연결 상태를 확인해주세요.'),
-          ),
-        );
+        context.showErrorSnack('브라우저 알림 연결을 완료하지 못했어요. 권한과 연결 상태를 확인해주세요.');
       }
     } catch (_) {
       if (!mounted || !_webOwnerCurrent) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('브라우저 알림 연결 상태를 변경하지 못했어요. 다시 확인해주세요.')),
-      );
+      context.showErrorSnack('브라우저 알림 연결 상태를 변경하지 못했어요. 다시 확인해주세요.');
       // Reload real state; never turn a failed registration into a success.
       try {
         final result = await FcmNotificationService.loadBrowserPushState();
@@ -219,11 +208,7 @@ class _NotificationSettingsScreenState
       if (mounted && _webOwnerCurrent) setState(() => _browserPush = result);
     } catch (_) {
       if (mounted && _webOwnerCurrent) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('브라우저 연결 상태를 확인하지 못했어요. 잠시 후 다시 시도해주세요.'),
-          ),
-        );
+        context.showErrorSnack('브라우저 연결 상태를 확인하지 못했어요. 잠시 후 다시 시도해주세요.');
       }
     } finally {
       if (mounted) setState(() => _browserBusy = false);

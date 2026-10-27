@@ -26,7 +26,7 @@ class WebEditorToolDialog extends StatefulWidget {
 class _WebEditorToolDialogState extends State<WebEditorToolDialog>
     with SingleTickerProviderStateMixin {
   static const _tools = <({EditorMode mode, String label, IconData icon})>[
-    (mode: EditorMode.layer, label: '레이어', icon: Icons.layers_outlined),
+    (mode: EditorMode.layer, label: '재배치', icon: Icons.layers_outlined),
     (mode: EditorMode.layout, label: '레이아웃', icon: Icons.dashboard_outlined),
     (mode: EditorMode.template, label: '템플릿', icon: Icons.grid_view_outlined),
     (mode: EditorMode.sticker, label: '꾸미기', icon: Icons.interests_outlined),

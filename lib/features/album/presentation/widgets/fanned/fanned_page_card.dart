@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Paper처럼 부채꼴 펼침에서 각 페이지 카드 (그림자 + 클립)
 class FannedPageCard extends StatelessWidget {
@@ -22,19 +21,16 @@ class FannedPageCard extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(6.r),
+        borderRadius: BorderRadius.circular(6),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12 + depth * 0.05),
+            color: Colors.black.withValues(alpha: 0.12 + depth * 0.05),
             blurRadius: 6 + depth * 6,
             offset: Offset(2 + depth * 1.5, 4 + depth * 3),
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(6.r),
-        child: content,
-      ),
+      child: ClipRRect(borderRadius: BorderRadius.circular(6), child: content),
     );
   }
 }

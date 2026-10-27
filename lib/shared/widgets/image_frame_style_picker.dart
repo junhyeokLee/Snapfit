@@ -6,7 +6,6 @@ import '../../features/point_shop/data/point_shop_provider.dart';
 import '../../features/point_shop/domain/point_shop_product.dart';
 import 'editor_material_filter_bar.dart';
 import '../../features/point_shop/presentation/point_shop_access.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/constants/snapfit_colors.dart';
 import '../../core/templates/frame_preview_photos.dart';
@@ -1157,9 +1156,9 @@ class _FrameStyleItem extends StatelessWidget {
         content = ClipPath(clipper: _ArchPreviewClipper(), child: placeholder);
         break;
       case 'round':
-        // 소프트 라운드: 카드 없이 사진만 둥글게 (바텀시트와 동일 18.r)
+        // 소프트 라운드: 카드 없이 사진만 둥글게 (바텀시트와 동일 18)
         content = ClipRRect(
-          borderRadius: BorderRadius.circular(18.r),
+          borderRadius: BorderRadius.circular(18),
           child: placeholder,
         );
         break;
@@ -1177,14 +1176,14 @@ class _FrameStyleItem extends StatelessWidget {
         break;
       case 'sticker':
         content = Container(
-          padding: EdgeInsets.all(4.w),
+          padding: EdgeInsets.all(4),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(10.r),
+            borderRadius: BorderRadius.circular(10),
             border: Border.all(color: Colors.black, width: 2),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(6.r),
+            borderRadius: BorderRadius.circular(6),
             child: placeholder,
           ),
         );
@@ -1194,18 +1193,18 @@ class _FrameStyleItem extends StatelessWidget {
         content = Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(24.r),
+            borderRadius: BorderRadius.circular(24),
             border: Border.all(color: const Color(0xFFE0E4F2), width: 2),
           ),
-          padding: EdgeInsets.all(10.w),
+          padding: EdgeInsets.all(10),
           child: Container(
             decoration: BoxDecoration(
               color: const Color(0xFFF7F8FF),
-              borderRadius: BorderRadius.circular(20.r),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(color: const Color(0xFFD0D7F0), width: 1.4),
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(18.r),
+              borderRadius: BorderRadius.circular(18),
               child: placeholder,
             ),
           ),
@@ -1222,25 +1221,25 @@ class _FrameStyleItem extends StatelessWidget {
               end: Alignment.bottomRight,
               colors: [Color(0xFFFFF5FB), Color(0xFFE9F4FF)],
             ),
-            borderRadius: BorderRadius.circular(24.r),
+            borderRadius: BorderRadius.circular(24),
           ),
-          padding: EdgeInsets.all(10.w),
+          padding: EdgeInsets.all(10),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(20.r),
+            borderRadius: BorderRadius.circular(20),
             child: placeholder,
           ),
         );
         break;
       case 'sketch':
         content = Container(
-          padding: EdgeInsets.all(4.w),
+          padding: EdgeInsets.all(4),
           decoration: BoxDecoration(
             color: Colors.transparent,
-            borderRadius: BorderRadius.circular(4.r),
+            borderRadius: BorderRadius.circular(4),
             border: Border.all(color: Colors.black87, width: 1.5),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(2.r),
+            borderRadius: BorderRadius.circular(2),
             child: placeholder,
           ),
         );
@@ -1301,26 +1300,26 @@ class _FrameStyleItem extends StatelessWidget {
           clipBehavior: Clip.none,
           children: [
             Container(
-              padding: EdgeInsets.all(10.w),
+              padding: EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: const Color(0xFF243B53),
-                borderRadius: BorderRadius.circular(18.r),
+                borderRadius: BorderRadius.circular(18),
               ),
               child: Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFFF7F0E6),
-                  borderRadius: BorderRadius.circular(14.r),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(12),
                   child: placeholder,
                 ),
               ),
             ),
-            Positioned(left: -6.w, top: 38.h, child: _ticketNotch()),
-            Positioned(right: -6.w, top: 38.h, child: _ticketNotch()),
-            Positioned(left: -6.w, bottom: 24.h, child: _ticketNotch()),
-            Positioned(right: -6.w, bottom: 24.h, child: _ticketNotch()),
+            Positioned(left: -6, top: 38, child: _ticketNotch()),
+            Positioned(right: -6, top: 38, child: _ticketNotch()),
+            Positioned(left: -6, bottom: 24, child: _ticketNotch()),
+            Positioned(right: -6, bottom: 24, child: _ticketNotch()),
           ],
         );
         break;
@@ -1358,12 +1357,12 @@ class _FrameStyleItem extends StatelessWidget {
   }
 
   Widget _ticketNotch() => Container(
-    width: 12.w,
-    height: 12.w,
+    width: 12,
+    height: 12,
     decoration: BoxDecoration(
       color: const Color(0xFFF7F0E6),
       shape: BoxShape.circle,
-      border: Border.all(color: const Color(0xFF243B53), width: 1.w),
+      border: Border.all(color: const Color(0xFF243B53), width: 1),
     ),
   );
 
@@ -1377,7 +1376,7 @@ class _FrameStyleItem extends StatelessWidget {
           children: [
             Positioned.fill(
               child: Transform.translate(
-                offset: Offset(0, 3.h),
+                offset: Offset(0, 3),
                 child: Opacity(
                   opacity: 0.12,
                   child: ClipPath(
@@ -1404,20 +1403,20 @@ class _FrameStyleItem extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(10.r),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(color: const Color(0xFFE0E3EC), width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 6,
               offset: const Offset(0, 3),
             ),
           ],
         ),
         // 작은 미리보기에서도 사진과 하단 여백이 함께 보이도록 축소한다.
-        padding: EdgeInsets.fromLTRB(6.w, 6.w, 6.w, 26.w),
+        padding: EdgeInsets.fromLTRB(6, 6, 6, 26),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(6.r),
+          borderRadius: BorderRadius.circular(6),
           child: SizedBox.expand(child: child),
         ),
       ),
@@ -1431,20 +1430,20 @@ class _FrameStyleItem extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFFFFFEF5),
-          borderRadius: BorderRadius.circular(12.r),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0xFFE8E4D8), width: 1.1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 7,
               offset: const Offset(0, 3),
             ),
           ],
         ),
         // 작은 미리보기에서도 사진과 하단 여백이 함께 보이도록 축소한다.
-        padding: EdgeInsets.fromLTRB(6.w, 6.w, 6.w, 26.w),
+        padding: EdgeInsets.fromLTRB(6, 6, 6, 26),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(6.r),
+          borderRadius: BorderRadius.circular(6),
           child: SizedBox.expand(child: child),
         ),
       ),
@@ -1453,20 +1452,23 @@ class _FrameStyleItem extends StatelessWidget {
 
   Widget _previewPolaroidWide(Widget child) {
     return Container(
-      padding: EdgeInsets.fromLTRB(2.w, 6.w, 2.w, 14.w),
+      padding: EdgeInsets.fromLTRB(2, 6, 2, 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(6.r),
+        borderRadius: BorderRadius.circular(6),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.18),
+            color: Colors.black.withValues(alpha: 0.18),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
-        border: Border.all(color: Colors.grey.withOpacity(0.35), width: 0.8),
+        border: Border.all(
+          color: Colors.grey.withValues(alpha: 0.35),
+          width: 0.8,
+        ),
       ),
-      child: ClipRRect(borderRadius: BorderRadius.circular(3.r), child: child),
+      child: ClipRRect(borderRadius: BorderRadius.circular(3), child: child),
     );
   }
 
@@ -1477,21 +1479,21 @@ class _FrameStyleItem extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.black,
-          borderRadius: BorderRadius.circular(10.r),
-          border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.3),
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.4),
+              color: Colors.black.withValues(alpha: 0.4),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
           ],
         ),
-        padding: EdgeInsets.fromLTRB(6.w, 6.w, 6.w, 26.w),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(6.r),
-          child: child,
-        ),
+        padding: EdgeInsets.fromLTRB(6, 6, 6, 26),
+        child: ClipRRect(borderRadius: BorderRadius.circular(6), child: child),
       ),
     );
   }
@@ -1503,53 +1505,53 @@ class _FrameStyleItem extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFF151B2C),
-          borderRadius: BorderRadius.circular(10.r),
+          borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.25),
+              color: Colors.black.withValues(alpha: 0.25),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
           ],
         ),
-        padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 8.h),
+        padding: EdgeInsets.symmetric(horizontal: 5, vertical: 8),
         child: Row(
           children: [
             Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: List.generate(4, (_) {
                 return Container(
-                  width: 5.w,
-                  height: 5.w,
-                  margin: EdgeInsets.symmetric(vertical: 2.h),
+                  width: 5,
+                  height: 5,
+                  margin: EdgeInsets.symmetric(vertical: 2),
                   decoration: BoxDecoration(
                     color: const Color(0xFF3D4556),
-                    borderRadius: BorderRadius.circular(1.r),
+                    borderRadius: BorderRadius.circular(1),
                   ),
                 );
               }),
             ),
-            SizedBox(width: 4.w),
+            SizedBox(width: 4),
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E2433),
-                  borderRadius: BorderRadius.circular(6.r),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: photo,
               ),
             ),
-            SizedBox(width: 4.w),
+            SizedBox(width: 4),
             Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: List.generate(4, (_) {
                 return Container(
-                  width: 5.w,
-                  height: 5.w,
-                  margin: EdgeInsets.symmetric(vertical: 2.h),
+                  width: 5,
+                  height: 5,
+                  margin: EdgeInsets.symmetric(vertical: 2),
                   decoration: BoxDecoration(
                     color: const Color(0xFF3D4556),
-                    borderRadius: BorderRadius.circular(1.r),
+                    borderRadius: BorderRadius.circular(1),
                   ),
                 );
               }),
@@ -1571,8 +1573,8 @@ class _FrameStyleItem extends StatelessWidget {
         mainAxisSize: MainAxisSize.max,
         children: [
           Container(
-            height: 22.h,
-            padding: EdgeInsets.symmetric(horizontal: 4.w),
+            height: 22,
+            padding: EdgeInsets.symmetric(horizontal: 4),
             color: const Color(0xFF000080),
             child: Row(
               children: [
@@ -1581,13 +1583,13 @@ class _FrameStyleItem extends StatelessWidget {
                     'image.exe',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.white, fontSize: 11.sp),
+                    style: TextStyle(color: Colors.white, fontSize: 11),
                   ),
                 ),
                 _win95Button(const Color(0xFFC0C0C0)),
-                SizedBox(width: 2.w),
+                SizedBox(width: 2),
                 _win95Button(const Color(0xFFC0C0C0)),
-                SizedBox(width: 2.w),
+                SizedBox(width: 2),
                 _win95Button(const Color(0xFFC0C0C0)),
               ],
             ),
@@ -1606,13 +1608,13 @@ class _FrameStyleItem extends StatelessWidget {
 
   Widget _win95Button(Color bg) {
     return Container(
-      width: 14.w,
-      height: 12.h,
+      width: 14,
+      height: 12,
       decoration: BoxDecoration(
         color: bg,
         border: Border.all(color: const Color(0xFF808080)),
       ),
-      child: Icon(Icons.close, size: 8.r, color: Colors.black87),
+      child: Icon(Icons.close, size: 8, color: Colors.black87),
     );
   }
 
@@ -1625,7 +1627,7 @@ class _FrameStyleItem extends StatelessWidget {
       Color(0xFF00FF00),
     ];
     return Container(
-      padding: EdgeInsets.all(2.w),
+      padding: EdgeInsets.all(2),
       decoration: BoxDecoration(
         color: Colors.black,
         border: Border.all(color: Colors.black, width: 2),
@@ -1640,7 +1642,7 @@ class _FrameStyleItem extends StatelessWidget {
             ),
             child: Center(
               child: Container(
-                margin: EdgeInsets.all(4.w),
+                margin: EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.black54, width: 1),
                 ),
@@ -1651,22 +1653,22 @@ class _FrameStyleItem extends StatelessWidget {
           Positioned(
             top: -2,
             left: -2,
-            child: Container(width: 6.w, height: 6.w, color: cornerColors[0]),
+            child: Container(width: 6, height: 6, color: cornerColors[0]),
           ),
           Positioned(
             top: -2,
             right: -2,
-            child: Container(width: 6.w, height: 6.w, color: cornerColors[1]),
+            child: Container(width: 6, height: 6, color: cornerColors[1]),
           ),
           Positioned(
             bottom: -2,
             left: -2,
-            child: Container(width: 6.w, height: 6.w, color: cornerColors[2]),
+            child: Container(width: 6, height: 6, color: cornerColors[2]),
           ),
           Positioned(
             bottom: -2,
             right: -2,
-            child: Container(width: 6.w, height: 6.w, color: cornerColors[3]),
+            child: Container(width: 6, height: 6, color: cornerColors[3]),
           ),
         ],
       ),
@@ -1686,7 +1688,7 @@ class _FrameStyleItem extends StatelessWidget {
           // 스캔라인 느낌
           Positioned.fill(child: CustomPaint(painter: _ScanLinePainter())),
           Padding(
-            padding: EdgeInsets.all(6.w),
+            padding: EdgeInsets.all(6),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1696,15 +1698,15 @@ class _FrameStyleItem extends StatelessWidget {
                       'PLAY',
                       style: TextStyle(
                         color: const Color(0xFF00FF00),
-                        fontSize: 10.sp,
+                        fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(width: 2.w),
+                    SizedBox(width: 2),
                     Icon(
                       Icons.play_arrow,
                       color: const Color(0xFF00FF00),
-                      size: 12.r,
+                      size: 12,
                     ),
                   ],
                 ),
@@ -1712,7 +1714,7 @@ class _FrameStyleItem extends StatelessWidget {
                 Center(
                   child: Text(
                     'SP 00:12:44',
-                    style: TextStyle(color: Colors.white70, fontSize: 9.sp),
+                    style: TextStyle(color: Colors.white70, fontSize: 9),
                   ),
                 ),
               ],
@@ -1728,23 +1730,23 @@ class _FrameStyleItem extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.black,
-        borderRadius: BorderRadius.circular(4.r),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(color: const Color(0xFF00FFFF), width: 2),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF00FFFF).withOpacity(0.6),
+            color: const Color(0xFF00FFFF).withValues(alpha: 0.6),
             blurRadius: 8,
             spreadRadius: 0,
           ),
         ],
       ),
-      padding: EdgeInsets.all(3.w),
+      padding: EdgeInsets.all(3),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           Positioned.fill(
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(2.r),
+              borderRadius: BorderRadius.circular(2),
               child: placeholder,
             ),
           ),
@@ -1752,7 +1754,7 @@ class _FrameStyleItem extends StatelessWidget {
             top: 2,
             left: 2,
             child: CustomPaint(
-              size: Size(12.w, 12.w),
+              size: Size(12, 12),
               painter: _NeonCornerPainter(),
             ),
           ),
@@ -1766,11 +1768,11 @@ class _FrameStyleItem extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFFFE4CC),
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE8B88A), width: 2),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(10.r),
+        borderRadius: BorderRadius.circular(10),
         child: placeholder,
       ),
     );
@@ -1781,7 +1783,7 @@ class _FrameStyleItem extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color(0xFFE0E0E0)),
       ),
       child: Row(
@@ -1805,14 +1807,14 @@ class _FrameStyleItem extends StatelessWidget {
 
   Widget _notebookMarginDots() {
     return SizedBox(
-      width: 8.w,
+      width: 8,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: List.generate(
           6,
           (_) => Container(
-            width: 3.w,
-            height: 3.w,
+            width: 3,
+            height: 3,
             decoration: BoxDecoration(
               color: const Color(0xFFB0B0B0),
               shape: BoxShape.circle,
@@ -1828,11 +1830,11 @@ class _FrameStyleItem extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF8F6F0),
-        borderRadius: BorderRadius.circular(10.r),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: const Color(0xFFE8E4DC)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -1842,14 +1844,9 @@ class _FrameStyleItem extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Padding(
-            padding: EdgeInsets.only(
-              top: 12.h,
-              left: 6.w,
-              right: 6.w,
-              bottom: 6.h,
-            ),
+            padding: EdgeInsets.only(top: 12, left: 6, right: 6, bottom: 6),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(6.r),
+              borderRadius: BorderRadius.circular(6),
               child: placeholder,
             ),
           ),
@@ -1860,7 +1857,7 @@ class _FrameStyleItem extends StatelessWidget {
             child: Center(
               child: Icon(
                 Icons.attach_file,
-                size: 20.r,
+                size: 20,
                 color: const Color(0xFF505050),
               ),
             ),
@@ -1871,11 +1868,11 @@ class _FrameStyleItem extends StatelessWidget {
             child: Transform.rotate(
               angle: 0.3,
               child: Container(
-                width: 28.w,
-                height: 14.h,
+                width: 28,
+                height: 14,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFEB3B).withOpacity(0.85),
-                  borderRadius: BorderRadius.circular(2.r),
+                  color: const Color(0xFFFFEB3B).withValues(alpha: 0.85),
+                  borderRadius: BorderRadius.circular(2),
                   boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 2)],
                 ),
               ),
@@ -1891,11 +1888,11 @@ class _FrameStyleItem extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.black, width: 3),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(5.r),
+        borderRadius: BorderRadius.circular(5),
         child: placeholder,
       ),
     );
@@ -1906,29 +1903,29 @@ class _FrameStyleItem extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      padding: EdgeInsets.all(8.w),
+      padding: EdgeInsets.all(8),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(4.r),
+          borderRadius: BorderRadius.circular(4),
           border: Border.all(color: const Color(0xFFE0E4EC), width: 1),
         ),
-        padding: EdgeInsets.all(4.w),
+        padding: EdgeInsets.all(4),
         child: Container(
           decoration: BoxDecoration(
             border: Border.all(color: const Color(0xFFE8ECF0), width: 1),
-            borderRadius: BorderRadius.circular(2.r),
+            borderRadius: BorderRadius.circular(2),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(2.r),
+            borderRadius: BorderRadius.circular(2),
             child: placeholder,
           ),
         ),
@@ -1948,9 +1945,9 @@ class _FrameStyleItem extends StatelessWidget {
           bottom: BorderSide(color: const Color(0xFFB0D0E8), width: 1),
         ),
       ),
-      margin: EdgeInsets.only(right: 4.w, bottom: 4.h),
+      margin: EdgeInsets.only(right: 4, bottom: 4),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(2.r),
+        borderRadius: BorderRadius.circular(2),
         child: placeholder,
       ),
     );
@@ -1960,29 +1957,29 @@ class _FrameStyleItem extends StatelessWidget {
   Widget _previewFloatingGlass(Widget placeholder) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFA0B0E0).withOpacity(0.25),
+            color: const Color(0xFFA0B0E0).withValues(alpha: 0.25),
             blurRadius: 16,
             spreadRadius: 0,
           ),
         ],
       ),
       child: Container(
-        padding: EdgeInsets.all(6.w),
+        padding: EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.7),
-          borderRadius: BorderRadius.circular(14.r),
+          color: Colors.white.withValues(alpha: 0.7),
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Container(
-          padding: EdgeInsets.all(4.w),
+          padding: EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.9),
-            borderRadius: BorderRadius.circular(10.r),
+            color: Colors.white.withValues(alpha: 0.9),
+            borderRadius: BorderRadius.circular(10),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(8.r),
+            borderRadius: BorderRadius.circular(8),
             child: placeholder,
           ),
         ),
@@ -1993,9 +1990,9 @@ class _FrameStyleItem extends StatelessWidget {
   /// 그라데이션 엣지 – 파랑→보라·핑크 테두리
   Widget _previewGradientEdge(Widget placeholder) {
     return Container(
-      padding: EdgeInsets.all(4.w),
+      padding: EdgeInsets.all(4),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10.r),
+        borderRadius: BorderRadius.circular(10),
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -2003,13 +2000,13 @@ class _FrameStyleItem extends StatelessWidget {
         ),
       ),
       child: Container(
-        padding: EdgeInsets.all(2.w),
+        padding: EdgeInsets.all(2),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(8.r),
+          borderRadius: BorderRadius.circular(8),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(6.r),
+          borderRadius: BorderRadius.circular(6),
           child: placeholder,
         ),
       ),
@@ -2025,23 +2022,23 @@ class _FrameStyleItem extends StatelessWidget {
           color: const Color(0xFFFFFBF0),
           boxShadow: [
             BoxShadow(
-              color: Colors.brown.withOpacity(0.1),
+              color: Colors.brown.withValues(alpha: 0.1),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
           ],
         ),
-        padding: EdgeInsets.fromLTRB(10.w, 10.w, 8.w, 12.h),
+        padding: EdgeInsets.fromLTRB(10, 10, 8, 12),
         child: Stack(
           children: [
             Positioned.fill(
               child: Padding(
-                padding: EdgeInsets.all(10.w),
+                padding: EdgeInsets.all(10),
                 child: CustomPaint(
                   painter: _DashedRectPainter(
                     color: const Color(0xFFE8E0D0),
                     strokeWidth: 1,
-                    borderRadius: 4.r,
+                    borderRadius: 4,
                     dashWidth: 3,
                     dashSpace: 4,
                   ),
@@ -2049,18 +2046,18 @@ class _FrameStyleItem extends StatelessWidget {
               ),
             ),
             Positioned(
-              top: 12.h,
-              left: 12.w,
+              top: 12,
+              left: 12,
               child: Container(
-                width: 6.w,
-                height: 6.w,
+                width: 6,
+                height: 6,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD0C8B8).withOpacity(0.6),
+                  color: const Color(0xFFD0C8B8).withValues(alpha: 0.6),
                   shape: BoxShape.circle,
                 ),
               ),
             ),
-            Padding(padding: EdgeInsets.all(12.w), child: placeholder),
+            Padding(padding: EdgeInsets.all(12), child: placeholder),
           ],
         ),
       ),
@@ -2072,31 +2069,31 @@ class _FrameStyleItem extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF5F0E6),
-        borderRadius: BorderRadius.circular(4.r),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(color: const Color(0xFFE0D8C8), width: 1),
       ),
       child: Column(
         children: [
-          Container(height: 12.h, color: const Color(0xFFE8E0D4)),
+          Container(height: 12, color: const Color(0xFFE8E0D4)),
           Expanded(
             child: Container(
-              margin: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+              margin: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               color: const Color(0xFFF8F4EC),
               child: placeholder,
             ),
           ),
           Container(
-            height: 3.h,
-            margin: EdgeInsets.symmetric(horizontal: 8.w),
+            height: 3,
+            margin: EdgeInsets.symmetric(horizontal: 8),
             color: const Color(0xFFD8D0C4),
           ),
-          SizedBox(height: 2.h),
+          SizedBox(height: 2),
           Container(
-            height: 3.h,
-            margin: EdgeInsets.symmetric(horizontal: 8.w),
+            height: 3,
+            margin: EdgeInsets.symmetric(horizontal: 8),
             color: const Color(0xFFD8D0C4),
           ),
-          SizedBox(height: 6.h),
+          SizedBox(height: 6),
         ],
       ),
     );
@@ -2107,11 +2104,11 @@ class _FrameStyleItem extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(2.r),
+        borderRadius: BorderRadius.circular(2),
         border: Border.all(color: const Color(0xFFC0C0C0), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -2122,27 +2119,24 @@ class _FrameStyleItem extends StatelessWidget {
         child: Stack(
           children: [
             Padding(
-              padding: EdgeInsets.all(8.w),
+              padding: EdgeInsets.all(8),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(2.r),
+                borderRadius: BorderRadius.circular(2),
                 child: placeholder,
               ),
             ),
             Positioned(
-              top: 6.h,
-              right: 6.w,
+              top: 6,
+              right: 6,
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                 decoration: BoxDecoration(
                   color: const Color(0xFFE8E8E8),
-                  borderRadius: BorderRadius.circular(999.r),
+                  borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
                   '1924',
-                  style: TextStyle(
-                    fontSize: 8.sp,
-                    color: const Color(0xFF707070),
-                  ),
+                  style: TextStyle(fontSize: 8, color: const Color(0xFF707070)),
                 ),
               ),
             ),
@@ -2157,24 +2151,24 @@ class _FrameStyleItem extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFB8956E),
-        borderRadius: BorderRadius.circular(4.r),
+        borderRadius: BorderRadius.circular(4),
         boxShadow: [
           BoxShadow(
-            color: Colors.brown.withOpacity(0.2),
+            color: Colors.brown.withValues(alpha: 0.2),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      padding: EdgeInsets.all(6.w),
+      padding: EdgeInsets.all(6),
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFFC9A86C),
-          borderRadius: BorderRadius.circular(2.r),
+          borderRadius: BorderRadius.circular(2),
           border: Border.all(color: const Color(0xFFA08050), width: 1.5),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(1.r),
+          borderRadius: BorderRadius.circular(1),
           child: placeholder,
         ),
       ),
@@ -2185,19 +2179,19 @@ class _FrameStyleItem extends StatelessWidget {
   Widget _previewGoldFrame(Widget placeholder) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(2.r),
+        borderRadius: BorderRadius.circular(2),
         border: Border.all(color: const Color(0xFFC9A227), width: 10),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF8B6914).withOpacity(0.3),
+            color: const Color(0xFF8B6914).withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      padding: EdgeInsets.all(4.w),
+      padding: EdgeInsets.all(4),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(1.r),
+        borderRadius: BorderRadius.circular(1),
         child: placeholder,
       ),
     );
@@ -2208,7 +2202,7 @@ class _FrameStyleItem extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A1A),
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Stack(
         children: [
@@ -2218,7 +2212,7 @@ class _FrameStyleItem extends StatelessWidget {
               painter: _DashedRectPainter(
                 color: const Color(0xFFFF60A0),
                 strokeWidth: 2,
-                borderRadius: 8.r,
+                borderRadius: 8,
                 dashWidth: 5,
                 dashSpace: 4,
               ),
@@ -2234,18 +2228,18 @@ class _FrameStyleItem extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF0D0D0D),
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color(0xFF39FF14), width: 3),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF39FF14).withOpacity(0.5),
+            color: const Color(0xFF39FF14).withValues(alpha: 0.5),
             blurRadius: 12,
             spreadRadius: 0,
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(5.r),
+        borderRadius: BorderRadius.circular(5),
         child: placeholder,
       ),
     );
@@ -2256,18 +2250,18 @@ class _FrameStyleItem extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF8F4EC),
-        borderRadius: BorderRadius.circular(10.r),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: const Color(0xFFD0B898), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.brown.withOpacity(0.06),
+            color: Colors.brown.withValues(alpha: 0.06),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(8),
         child: placeholder,
       ),
     );
@@ -2278,11 +2272,11 @@ class _FrameStyleItem extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF0E8DC),
-        borderRadius: BorderRadius.circular(6.r),
+        borderRadius: BorderRadius.circular(6),
         border: Border.all(color: const Color(0xFFD8D0C0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.brown.withOpacity(0.08),
+            color: Colors.brown.withValues(alpha: 0.08),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -2292,14 +2286,9 @@ class _FrameStyleItem extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Padding(
-            padding: EdgeInsets.only(
-              top: 14.h,
-              left: 6.w,
-              right: 6.w,
-              bottom: 6.h,
-            ),
+            padding: EdgeInsets.only(top: 14, left: 6, right: 6, bottom: 6),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(4.r),
+              borderRadius: BorderRadius.circular(4),
               child: placeholder,
             ),
           ),
@@ -2309,12 +2298,12 @@ class _FrameStyleItem extends StatelessWidget {
             right: 0,
             child: Center(
               child: Container(
-                width: 12.w,
-                height: 8.h,
+                width: 12,
+                height: 8,
                 decoration: BoxDecoration(
                   color: const Color(0xFFE0D8C8),
                   borderRadius: BorderRadius.vertical(
-                    bottom: Radius.circular(4.r),
+                    bottom: Radius.circular(4),
                   ),
                 ),
               ),
@@ -2328,20 +2317,20 @@ class _FrameStyleItem extends StatelessWidget {
   /// 베이퍼 스트리트 – 분홍·보라 그라데이션 느낌 테두리
   Widget _previewVaporStreet(Widget placeholder) {
     return Container(
-      padding: EdgeInsets.all(4.w),
+      padding: EdgeInsets.all(4),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10.r),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: const Color(0xFFC44DFF), width: 3),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFC44DFF).withOpacity(0.35),
+            color: const Color(0xFFC44DFF).withValues(alpha: 0.35),
             blurRadius: 10,
             spreadRadius: 0,
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(6.r),
+        borderRadius: BorderRadius.circular(6),
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -2352,8 +2341,8 @@ class _FrameStyleItem extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    const Color(0xFFFF6B9D).withOpacity(0.2),
-                    const Color(0xFFC44DFF).withOpacity(0.12),
+                    const Color(0xFFFF6B9D).withValues(alpha: 0.2),
+                    const Color(0xFFC44DFF).withValues(alpha: 0.12),
                   ],
                 ),
               ),
@@ -2369,7 +2358,7 @@ class _FrameStyleItem extends StatelessWidget {
 class _ScanLinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white.withOpacity(0.03);
+    final paint = Paint()..color = Colors.white.withValues(alpha: 0.03);
     for (var y = 0.0; y < size.height; y += 3) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }

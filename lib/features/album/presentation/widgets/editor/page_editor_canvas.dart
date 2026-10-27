@@ -224,7 +224,7 @@ class PageEditorCanvas extends StatelessWidget {
                                       begin: Alignment.centerLeft,
                                       end: Alignment.centerRight,
                                       colors: [
-                                        Colors.black.withOpacity(0.18),
+                                        Colors.black.withValues(alpha: 0.18),
                                         Colors.transparent,
                                       ],
                                       stops: const [0.0, 1.0],
@@ -236,8 +236,12 @@ class PageEditorCanvas extends StatelessWidget {
                         ],
                       ),
                     ),
-                    if (interaction.enableWebTransforms)
-                      interaction.buildSelectionOverlay(layers),
+                    if (interaction.enableWebTransforms ||
+                        interaction.enableOverlapSelection)
+                      interaction.buildSelectionOverlay(
+                        layers,
+                        isCover: isCover,
+                      ),
                   ],
                 ),
               ),
@@ -367,7 +371,7 @@ class _SnapGuidePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.blue.withOpacity(0.45)
+      ..color = Colors.blue.withValues(alpha: 0.45)
       ..strokeWidth = 1.2;
 
     for (final x in verticalGuides) {

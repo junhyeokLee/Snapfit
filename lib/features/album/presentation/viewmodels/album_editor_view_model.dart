@@ -2,14 +2,17 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart';
 import '../../data/api/album_provider.dart';
 import '../../data/api/storage_service.dart';
 import '../../domain/entities/album.dart';
+import '../../domain/entities/album_source_template.dart';
+import '../../domain/entities/album_edit_failure.dart';
+import '../../data/dto/request/create_album_request.dart';
 import '../../domain/entities/album_page.dart';
 import '../../domain/entities/album_creation_draft.dart';
 import '../../domain/entities/album_save_progress.dart';
@@ -20,17 +23,33 @@ import '../../../../core/templates/studio_word_art_catalog.dart';
 import '../../../../core/constants/design_templates.dart';
 import '../../../../core/constants/cover_theme.dart';
 import '../../../../core/constants/page_templates.dart';
-import '../../../../core/utils/app_logger.dart';
 import '../../domain/entities/layer.dart';
 import '../../domain/entities/layer_export_mapper.dart';
 import 'cover_view_model.dart';
 import 'album_view_model.dart';
+import '../providers/album_edit_session_provider.dart';
 import '../../domain/repositories/album_repository.dart';
 import '../../service/album_persistence_service.dart';
 import '../../service/album_editor_service.dart'; // Restore import
 
 part 'album_editor_view_model.freezed.dart';
 part 'album_editor_view_model.g.dart';
+
+class _AlbumSaveAttempt {
+  const _AlbumSaveAttempt({
+    required this.albumId,
+    required this.actor,
+    required this.expectedUpdatedAt,
+    required this.requestId,
+    required this.request,
+  });
+
+  final int albumId;
+  final String actor;
+  final String expectedUpdatedAt;
+  final String requestId;
+  final CreateAlbumRequest request;
+}
 
 /// 갤러리 + 편집 상태 (MVVM)
 @freezed
@@ -74,6 +93,10 @@ class AlbumEditCheckpoint {
     required this.coverCanvas,
     required this.innerCanvas,
     required this.editorState,
+    required this.sourceAlbum,
+    required this.sessionIdentity,
+    required this.actor,
+    required this.sourceTemplateProductKey,
   });
 
   final int? albumId;
@@ -87,6 +110,10 @@ class AlbumEditCheckpoint {
   final Size coverCanvas;
   final Size innerCanvas;
   final AlbumEditorState? editorState;
+  final Album? sourceAlbum;
+  final Object sessionIdentity;
+  final String? actor;
+  final String? sourceTemplateProductKey;
 }
 
 @Riverpod(keepAlive: true)
@@ -99,14 +126,29 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   late final AlbumRepository _albumRepository;
 
   final List<AlbumPage> _pages = [];
+  Object _editSessionIdentity = Object();
+
+  /// Page IDs are reused in new drafts. Transient editor tools must also match
+  /// this identity before applying a result to the current editing session.
+  Object get editSessionIdentity => _editSessionIdentity;
   int _currentPageIndex = 0;
   int? _editingAlbumId;
+  Album? _sourceAlbum;
+  String? _editingActor;
+  _AlbumSaveAttempt? _pendingSaveAttempt;
+  Object? _activeSaveIdentity;
+  bool _disposed = false;
+  bool _checkingRemote = false;
+  final Set<String> _uncommittedUploads = {};
+  late final AlbumEditorOwnerReader _readOwner;
   int _targetPagesHint = 0;
   String? _pendingCoverLayersJson;
   List<List<LayerModel>>? _pendingTemplatePagesAfterLoad;
   String? _initialCoverImageUrl;
   String? _initialCoverThumbnailUrl;
   String? _initialAlbumTitle;
+  String? _sourceTemplateProductKey;
+  String? _pendingTemplateProductKeyAfterLoad;
 
   CoverTheme _selectedTheme = CoverTheme.classic;
   CoverSize _cover = defaultCoverSize;
@@ -123,7 +165,6 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   bool _hasUnsavedChanges = false;
   Object? _lastSaveError;
   bool _isSaving = false;
-  static const int _saveNetworkRetryCount = 3;
 
   bool get hasUnsavedChanges => _hasUnsavedChanges;
   Object? get lastSaveError => _lastSaveError;
@@ -140,6 +181,10 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     coverCanvas: _lastCoverCanvasSize,
     innerCanvas: _lastInnerCanvasSize,
     editorState: state.value,
+    sourceAlbum: _sourceAlbum,
+    sessionIdentity: _editSessionIdentity,
+    actor: _editingActor,
+    sourceTemplateProductKey: _sourceTemplateProductKey,
   );
 
   AlbumCreationEditorCheckpoint captureCreationEditorCheckpoint() =>
@@ -153,6 +198,10 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
             ? _innerPageCanvasSize
             : _lastInnerCanvasSize,
         theme: _selectedTheme,
+        sourceUpdatedAt: _sourceAlbum?.updatedAt,
+        sourceOwnerId: _sourceAlbum?.userId,
+        sourceMemberRole: _sourceAlbum?.memberRole,
+        sourceTemplateProductKey: _sourceTemplateProductKey,
       );
 
   Map<int, List<AlbumPage>> _copyHistory(Map<int, List<AlbumPage>> history) => {
@@ -161,7 +210,19 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   };
 
   void restoreEditCheckpoint(AlbumEditCheckpoint checkpoint) {
-    if (_isSaving || checkpoint.albumId != _editingAlbumId) return;
+    if (_isSaving ||
+        checkpoint.albumId != _editingAlbumId ||
+        !identical(checkpoint.sessionIdentity, _editSessionIdentity) ||
+        checkpoint.actor != _editingActor ||
+        checkpoint.actor != _readOwner())
+      return;
+    final accessRevoked = editingAccessRevoked;
+    _beginSession(checkpoint.sourceAlbum);
+    _sourceTemplateProductKey = checkpoint.sourceTemplateProductKey;
+    if (accessRevoked && _editingAlbumId != null) {
+      _sourceAlbum = _sourceAlbum?.copyWith(memberRole: 'VIEWER');
+      _syncStatus(AlbumEditSyncKind.accessRevoked);
+    }
     _pages
       ..clear()
       ..addAll(checkpoint.pages.map(_clonePage));
@@ -189,15 +250,144 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   CoverTheme get selectedTheme => _selectedTheme;
 
   // Expose the album being edited (if any)
-  Album? get album => _editingAlbumId != null
-      ? Album(
-          id: _editingAlbumId!,
-          title: _initialAlbumTitle ?? '제목 없음',
-          coverImageUrl: _initialCoverImageUrl ?? '',
-          coverThumbnailUrl: _initialCoverThumbnailUrl ?? '',
-          createdAt: DateTime.now().toIso8601String(), // Dummy string
-        )
-      : null;
+  Album? get album => _sourceAlbum;
+
+  bool get editingAllowed =>
+      (_sourceAlbum?.allowsEditing ?? _editingAlbumId == null) &&
+      syncKind != AlbumEditSyncKind.accessRevoked;
+
+  AlbumEditSyncKind get syncKind {
+    final status = ref.read(albumEditSyncStatusProvider);
+    return status.albumId == _editingAlbumId
+        ? status.kind
+        : AlbumEditSyncKind.current;
+  }
+
+  bool get hasRemoteChanges => syncKind == AlbumEditSyncKind.remoteChanged;
+
+  bool get editingAccessRevoked => !editingAllowed;
+
+  /// Foreground checks detect remote saves/revocation without replacing local
+  /// layers. They are advisory; the server CAS remains the write authority.
+  Future<void> checkRemoteAlbum() async {
+    final id = _editingAlbumId;
+    if (id == null ||
+        _isSaving ||
+        _checkingRemote ||
+        _pendingSaveAttempt != null)
+      return;
+    final session = _editSessionIdentity;
+    final actor = _readOwner();
+    if (actor == null || actor != _editingActor) return;
+    bool current() =>
+        !_disposed &&
+        identical(session, _editSessionIdentity) &&
+        _editingAlbumId == id &&
+        _readOwner() == actor;
+    _checkingRemote = true;
+    try {
+      final fresh = await _albumRepository.fetchAlbum('$id');
+      if (!current()) return;
+      if (!fresh.allowsEditing) {
+        _syncStatus(AlbumEditSyncKind.accessRevoked);
+      } else if (_sourceAlbum?.updatedAt != fresh.updatedAt) {
+        _syncStatus(AlbumEditSyncKind.remoteChanged);
+      } else {
+        _syncStatus(AlbumEditSyncKind.current);
+      }
+      _sourceAlbum = _sourceAlbum?.copyWith(memberRole: fresh.memberRole);
+    } on AlbumEditAccessRevoked {
+      if (current()) _syncStatus(AlbumEditSyncKind.accessRevoked);
+    } catch (_) {
+      if (current() && syncKind != AlbumEditSyncKind.accessRevoked) {
+        _syncStatus(AlbumEditSyncKind.offline);
+      }
+    } finally {
+      _checkingRemote = false;
+    }
+  }
+
+  /// Only an explicit discard confirmation may call this; polling never does.
+  Future<bool> reloadAlbumDiscardingLocalChanges() async {
+    final id = _editingAlbumId;
+    if (id == null || _isSaving) return false;
+    final actor = _readOwner();
+    final session = _editSessionIdentity;
+    try {
+      final fresh = await _albumRepository.fetchAlbum('$id');
+      if (_disposed ||
+          !identical(session, _editSessionIdentity) ||
+          actor == null ||
+          actor != _readOwner())
+        return false;
+      if (!fresh.allowsEditing) throw const AlbumEditAccessRevoked();
+      final pageIndex = _currentPageIndex;
+      await _loadAlbumForEdit(fresh);
+      if (_disposed || actor != _readOwner() || _editingAlbumId != id)
+        return false;
+      loadPendingEditAlbumIfNeeded(_coverReferenceSize);
+      _currentPageIndex = pageIndex.clamp(0, math.max(0, _pages.length - 1));
+      _emit();
+      return true;
+    } catch (error) {
+      if (!_disposed && actor == _readOwner()) {
+        _lastSaveError = error;
+        if (error is AlbumEditAccessRevoked)
+          _syncStatus(AlbumEditSyncKind.accessRevoked);
+      }
+      return false;
+    }
+  }
+
+  void _syncStatus(AlbumEditSyncKind kind) => ref
+      .read(albumEditSyncStatusProvider.notifier)
+      .update(_editingAlbumId, kind);
+
+  void _beginSession(Album? source) {
+    // Only clean files whose payload was never submitted. An unanswered save
+    // may still commit, so its uploads must not be deleted speculatively.
+    if (_pendingSaveAttempt == null &&
+        _editingActor != null &&
+        _readOwner() == _editingActor &&
+        _uncommittedUploads.isNotEmpty) {
+      unawaited(
+        _storage.removeUnreferencedAlbumUploads(
+          Set.of(_uncommittedUploads),
+          expectedOwner: _editingActor!,
+        ),
+      );
+    }
+    _uncommittedUploads.clear();
+    _editSessionIdentity = Object();
+    _sourceAlbum = source;
+    _sourceTemplateProductKey = source?.sourceTemplateProductKey;
+    _editingActor = _readOwner();
+    _pendingSaveAttempt = null;
+    _activeSaveIdentity = null;
+    _isSaving = false;
+    _syncStatus(AlbumEditSyncKind.current);
+  }
+
+  void _trackUpload(UploadedUrls uploaded, String actor, bool current) {
+    final markers =
+        [
+              uploaded.originalGsPath,
+              uploaded.previewGsPath,
+              uploaded.originalUrl,
+              uploaded.previewUrl,
+            ]
+            .whereType<String>()
+            .where((value) => value.startsWith('supabase://album-assets/'))
+            .toSet();
+    if (markers.isEmpty || _readOwner() != actor) return;
+    if (current) {
+      _uncommittedUploads.addAll(markers);
+    } else {
+      unawaited(
+        _storage.removeUnreferencedAlbumUploads(markers, expectedOwner: actor),
+      );
+    }
+  }
 
   @override
   FutureOr<AlbumEditorState> build() async {
@@ -205,6 +395,29 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     _persistence = ref.read(albumPersistenceServiceProvider);
     _storage = ref.read(storageServiceProvider);
     _albumRepository = ref.read(albumRepositoryProvider);
+    _readOwner = ref.read(albumEditorOwnerReaderProvider);
+    ref.onDispose(() {
+      if (_pendingSaveAttempt == null &&
+          _editingActor != null &&
+          _readOwner() == _editingActor &&
+          _uncommittedUploads.isNotEmpty) {
+        unawaited(
+          _storage.removeUnreferencedAlbumUploads(
+            Set.of(_uncommittedUploads),
+            expectedOwner: _editingActor!,
+          ),
+        );
+      }
+      _disposed = true;
+      _editSessionIdentity = Object();
+    });
+    ref.listen(albumEditorOwnerChangesProvider, (_, next) {
+      if (!next.hasValue ||
+          _editingActor == null ||
+          next.value == _editingActor)
+        return;
+      resetForCreate();
+    });
 
     // 초기 표지 페이지 생성
     if (_pages.isEmpty) {
@@ -225,8 +438,10 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     CoverSize? initialCover,
     CoverTheme? initialTheme,
     int targetPages = AlbumPagePolicy.minInnerPages,
+    String? sourceTemplateProductKey,
   }) {
     _clearAllHistory();
+    _editSessionIdentity = Object();
     _pages.clear();
     _cover = newAlbumCoverSize(initialCover);
     _selectedTheme = initialTheme ?? CoverTheme.classic;
@@ -240,6 +455,11 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
     _currentPageIndex = 0;
     _editingAlbumId = null;
+    _beginSession(null);
+    _sourceTemplateProductKey = normalizeAlbumSourceTemplateProductKey(
+      sourceTemplateProductKey,
+    );
+    _pendingTemplateProductKeyAfterLoad = null;
     _pendingCoverLayersJson = null;
     _initialCoverImageUrl = null;
     _initialCoverThumbnailUrl = null;
@@ -266,11 +486,13 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     required List<List<LayerModel>> pages,
     CoverSize? initialCover,
     Size? templateCanvasSize,
+    String? sourceTemplateProductKey,
   }) {
     _checkTemplatePageLimit(pages.length - 1);
     final chosenCover = newAlbumCoverSize(initialCover);
 
     _clearAllHistory();
+    _editSessionIdentity = Object();
     _pages.clear();
     _cover = chosenCover;
     _selectedTheme = CoverTheme.classic;
@@ -305,6 +527,11 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     _padInnerPages(AlbumPagePolicy.minimumForContent(innerPageCount));
     _currentPageIndex = 0;
     _editingAlbumId = null;
+    _beginSession(null);
+    _sourceTemplateProductKey = normalizeAlbumSourceTemplateProductKey(
+      sourceTemplateProductKey,
+    );
+    _pendingTemplateProductKeyAfterLoad = null;
     _pendingCoverLayersJson = null;
     _initialCoverImageUrl = null;
     _initialCoverThumbnailUrl = null;
@@ -544,12 +771,16 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   void applyTemplatePagesToCurrentAlbum(
     List<List<LayerModel>> templatePages, {
     bool keepCurrentCover = true,
+    String? sourceTemplateProductKey,
   }) {
     if (templatePages.isEmpty || _pages.isEmpty) return;
     final requiredPages = AlbumPagePolicy.minimumForContent(
       math.max(innerPageCount, templatePages.length - 1),
     );
     _checkTemplatePageLimit(requiredPages);
+    _sourceTemplateProductKey = normalizeAlbumSourceTemplateProductKey(
+      sourceTemplateProductKey,
+    );
 
     final start = keepCurrentCover ? 1 : 0;
     final srcStart = keepCurrentCover ? 1 : 0;
@@ -626,6 +857,9 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     bool waitForCreation = false,
   }) async {
     _editingAlbumId = album.id > 0 ? album.id : null;
+    _beginSession(album);
+    final session = _editSessionIdentity;
+    final actor = _readOwner();
     final requestedRatio = album.ratio;
 
     // 앨범 생성 대기 모드 (신규 생성 후 폴링)
@@ -640,13 +874,22 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
       // 백그라운드 서비스에서 폴링 수행
       final success = await _persistence.pollAlbumCreation(album.id);
+      if (_disposed ||
+          !identical(session, _editSessionIdentity) ||
+          _readOwner() != actor)
+        throw const AlbumEditSessionChanged();
 
       if (success) {
         // 폴링 성공 시 앨범 로드
         var updatedAlbum = await ref
             .read(albumRepositoryProvider)
             .fetchAlbum(album.id.toString());
+        if (_disposed ||
+            !identical(session, _editSessionIdentity) ||
+            _readOwner() != actor)
+          throw const AlbumEditSessionChanged();
         final pendingPages = _pendingTemplatePagesAfterLoad;
+        final pendingProductKey = _pendingTemplateProductKeyAfterLoad;
         if (requestedRatio.isNotEmpty &&
             pendingPages != null &&
             pendingPages.isNotEmpty) {
@@ -657,6 +900,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
           applyTemplatePagesToCurrentAlbum(
             pendingPages,
             keepCurrentCover: false,
+            sourceTemplateProductKey: pendingProductKey,
           );
           // 템플릿 페이지를 메모리에 주입한 이후에는,
           // 생성 직후 서버의 coverLayersJson(구형/부분 데이터)로 다시 복원되면
@@ -664,6 +908,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
           _pendingCoverLayersJson = null;
         }
         _pendingTemplatePagesAfterLoad = null;
+        _pendingTemplateProductKeyAfterLoad = null;
       } else {
         state = const AsyncError('앨범 생성 확인 시간이 초과되었습니다.', StackTrace.empty);
       }
@@ -675,10 +920,15 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   }
 
   /// 생성 직후 서버 로드가 끝나면 템플릿 페이지를 자동 적용하기 위한 큐
-  void queueTemplatePagesForNextLoad(List<List<LayerModel>> pages) {
+  void queueTemplatePagesForNextLoad(
+    List<List<LayerModel>> pages, {
+    String? sourceTemplateProductKey,
+  }) {
     if (pages.isEmpty) return;
     _checkTemplatePageLimit(pages.length - 1);
     _pendingTemplatePagesAfterLoad = pages;
+    _pendingTemplateProductKeyAfterLoad =
+        normalizeAlbumSourceTemplateProductKey(sourceTemplateProductKey);
   }
 
   /// 일반 새 앨범 생성 플로우에서도 서버 업로드/대표이미지 폴링을 기다리지 않고,
@@ -689,9 +939,17 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   void beginCreatedAlbumForEdit({
     required int albumId,
     required String albumTitle,
+    String? sourceTemplateProductKey,
   }) {
     if (albumId <= 0) return;
+    final source = _sourceAlbum?.id == albumId
+        ? _sourceAlbum
+        : ref.read(albumViewModelProvider).asData?.value;
     _editingAlbumId = albumId;
+    _beginSession(source?.id == albumId ? source : null);
+    _sourceTemplateProductKey =
+        normalizeAlbumSourceTemplateProductKey(sourceTemplateProductKey) ??
+        _sourceTemplateProductKey;
     _initialAlbumTitle = albumTitle;
     if (_pages.isEmpty) {
       _pages.add(_service.createPage(index: 0, isCover: true));
@@ -718,15 +976,24 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     required List<List<LayerModel>> pages,
     CoverSize? initialCover,
     Size? templateCanvasSize,
+    String? sourceTemplateProductKey,
   }) {
     if (albumId <= 0) return;
+    final source = _sourceAlbum?.id == albumId
+        ? _sourceAlbum
+        : ref.read(albumViewModelProvider).asData?.value;
     startLocalTemplateAlbum(
       albumTitle: albumTitle,
       pages: pages,
       initialCover: initialCover,
       templateCanvasSize: templateCanvasSize,
+      sourceTemplateProductKey: sourceTemplateProductKey,
     );
     _editingAlbumId = albumId;
+    _beginSession(source?.id == albumId ? source : null);
+    _sourceTemplateProductKey =
+        normalizeAlbumSourceTemplateProductKey(sourceTemplateProductKey) ??
+        _sourceTemplateProductKey;
     final prev = state.value ?? const AlbumEditorState();
     state = AsyncData(prev.copyWith(isCreatingInBackground: false));
     _emit();
@@ -738,15 +1005,30 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     required String albumTitle,
     required CoverSize cover,
     required AlbumCreationEditorCheckpoint checkpoint,
+    String? sourceTemplateProductKey,
   }) {
     if (albumId <= 0 || checkpoint.pages.isEmpty) return;
     _checkTemplatePageLimit(checkpoint.pages.length - 1);
     _clearAllHistory();
+    _editSessionIdentity = Object();
     _pages
       ..clear()
       ..addAll(checkpoint.pages.map(_clonePage));
     _editingAlbumId = albumId;
+    _beginSession(
+      Album(
+        id: albumId,
+        title: albumTitle,
+        ratio: cover.ratio.toString(),
+        updatedAt: checkpoint.sourceUpdatedAt ?? '',
+        userId: checkpoint.sourceOwnerId ?? '',
+        memberRole: checkpoint.sourceMemberRole ?? 'EDITOR',
+      ),
+    );
     _initialAlbumTitle = albumTitle;
+    _sourceTemplateProductKey = normalizeAlbumSourceTemplateProductKey(
+      checkpoint.sourceTemplateProductKey ?? sourceTemplateProductKey,
+    );
     _initialCoverImageUrl = null;
     _initialCoverThumbnailUrl = null;
     _pendingCoverLayersJson = null;
@@ -771,15 +1053,27 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
   /// 앨범 데이터를 로드하여 편집 준비
   Future<void> _loadAlbumForEdit(Album album) async {
+    final session = _editSessionIdentity;
+    final actor = _readOwner();
     // 목록에서 coverLayersJson이 비어오는 케이스 대비: 상세로 보강
     Album effective = album;
     if (effective.coverLayersJson.isEmpty && effective.id > 0) {
       try {
         effective = await _albumRepository.fetchAlbum(effective.id.toString());
-      } catch (_) {
-        // 상세 fetch 실패 시에도 편집 화면은 열되, 빈 커버로 표시
+      } catch (error) {
+        // An unavailable document must never become an empty editable document
+        // that a later save could use to erase the existing book.
+        if (error is AlbumEditAccessRevoked) {
+          _syncStatus(AlbumEditSyncKind.accessRevoked);
+        }
+        rethrow;
       }
     }
+    if (_disposed ||
+        !identical(session, _editSessionIdentity) ||
+        _readOwner() != actor)
+      throw const AlbumEditSessionChanged();
+    _beginSession(effective);
 
     final coverSize = effective.physicalCoverSize;
     _cover = coverSize;
@@ -813,10 +1107,11 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     _editingAlbumId = album.id > 0 ? album.id : null;
     _initialCoverImageUrl = effective.coverImageUrl;
     _initialCoverThumbnailUrl = effective.coverThumbnailUrl;
-    _initialAlbumTitle = album.title; // 앨범 제목 저장
+    _initialAlbumTitle = effective.title;
 
     // 이전 편집 상태 초기화: 페이지/커버 캔버스 정보 리셋
     _clearAllHistory();
+    _editSessionIdentity = Object();
     _pages.clear();
     _pages.add(_service.createPage(index: 0, isCover: true));
 
@@ -917,9 +1212,11 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     final String raw = albumData['coverLayersJson'] as String? ?? '{}';
     final Map<String, dynamic> data =
         jsonDecode(raw) as Map<String, dynamic>? ?? {};
+    _sourceTemplateProductKey = readAlbumSourceTemplateProductKey(data);
 
     // 앨범 생성 시 _loadAlbumForEdit에서 미리 만들어둔 빈 내지들이 날아가는 것을 방지
     final existingInnerPages = _pages.where((p) => !p.isCover).toList();
+    _editSessionIdentity = Object();
     _pages.clear();
 
     // 새 형식: { "pages": [ { "index", "isCover", "layers" }, ... ] }
@@ -980,10 +1277,8 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     _emit();
   }
 
-  /// 앨범 데이터를 백엔드(Spring Boot)에 최종 저장
-  /// [coverImageBytes]가 전달되면 에디터 화면을 그대로 캡처한 합성 이미지를
-  /// 대표 커버 이미지로 사용한다.
-  /// 반환값: 생성된 Album ID (바로 다음 화면으로 이동하기 위함)
+  /// Create a new album, or save all pages when the cover belongs to an existing
+  /// album. Cover editing must never replace an existing book with legacy layers.
   Future<int?> saveAlbumToBackend(
     Size canvasSize, {
     Uint8List? coverImageBytes,
@@ -991,100 +1286,151 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     int? targetPages,
     List<LayerModel>? overrideLayers,
   }) async {
-    final List<LayerModel> currentLayers =
-        overrideLayers ?? List.of(state.value?.layers ?? []);
-    final currentInnerPageCount = math.max(
-      1,
-      _pages.where((p) => !p.isCover).length,
+    if (_isSaving) return null;
+    if (_editingAlbumId != null) {
+      final albumId = _editingAlbumId;
+      if (overrideLayers != null) updatePageLayers(overrideLayers);
+      if (title != null) _initialAlbumTitle = title;
+      if (!await saveFullAlbum(coverImageBytes: coverImageBytes)) {
+        throw _lastSaveError ?? const AlbumEditSessionChanged();
+      }
+      return albumId;
+    }
+    final actor = _readOwner();
+    if (actor == null) throw const AlbumEditSessionChanged();
+    final session = _editSessionIdentity;
+    final saveIdentity = Object();
+    _activeSaveIdentity = saveIdentity;
+    _isSaving = true;
+    bool current() =>
+        !_disposed &&
+        identical(session, _editSessionIdentity) &&
+        identical(saveIdentity, _activeSaveIdentity) &&
+        _readOwner() == actor;
+    void requireCurrent() {
+      if (!current()) throw const AlbumEditSessionChanged();
+    }
+
+    final currentLayers =
+        (overrideLayers ?? state.value?.layers ?? <LayerModel>[])
+            .map((layer) => layer.copyWith())
+            .toList();
+    final count = AlbumPagePolicy.minimumForContent(
+      math.max(
+        math.max(1, _pages.where((page) => !page.isCover).length),
+        targetPages ?? _targetPagesHint,
+      ),
     );
-    final resolvedTargetPages = (() {
-      if (_editingAlbumId != null) return currentInnerPageCount;
-      final requested = targetPages ?? _targetPagesHint;
-      final count = AlbumPagePolicy.minimumForContent(
-        math.max(currentInnerPageCount, requested),
-      );
-      _checkTemplatePageLimit(count);
-      return count;
-    })();
-    if (_editingAlbumId == null) _padInnerPages(resolvedTargetPages);
-    _targetPagesHint = resolvedTargetPages;
-    final albumVm = ref.read(albumViewModelProvider.notifier);
+    final cover = _cover;
     final themeLabel = _selectedTheme.label;
-
+    final sourceTemplateProductKey = _sourceTemplateProductKey;
+    final albumVm = ref.read(albumViewModelProvider.notifier);
     try {
-      int? createdAlbumId;
-
-      if (_editingAlbumId != null) {
-        createdAlbumId = _editingAlbumId;
-      } else {
-        // 신규 생성 모드: 메타데이터만으로 ID 먼저 발급
-        final tempJson = jsonEncode({
-          if (_cover.printProduct != null) 'printProduct': _cover.printProduct,
+      requireCurrent();
+      _checkTemplatePageLimit(count);
+      _padInnerPages(count);
+      _targetPagesHint = count;
+      await albumVm.createAlbum(
+        ratio: cover.ratio.toString(),
+        title: title ?? '',
+        targetPages: count,
+        coverLayersJson: jsonEncode({
+          ...albumSourceTemplateMetadata(sourceTemplateProductKey),
+          if (cover.printProduct != null) 'printProduct': cover.printProduct,
           'layers': currentLayers
               .map(
-                (l) => LayerExportMapper.toJson(
-                  l,
+                (layer) => LayerExportMapper.toJson(
+                  layer,
                   canvasSize: canvasSize,
                   isCover: true,
                 ),
               )
               .toList(),
-        });
-
-        await albumVm.createAlbum(
-          ratio: _cover.ratio.toString(),
-          title: title ?? '',
-          targetPages: resolvedTargetPages,
-          coverLayersJson: tempJson,
-          coverImageUrl: '',
-          coverThumbnailUrl: '',
-          coverPreviewUrl: '',
-          coverOriginalUrl: '',
-          coverTheme: themeLabel,
-        );
-
-        final albumState = ref.read(albumViewModelProvider);
-        if (albumState.hasError) {
-          throw albumState.error ?? Exception('앨범 생성에 실패했습니다.');
-        }
-        final newAlbum = albumState.value;
-        if (newAlbum == null || newAlbum.id <= 0) {
-          throw Exception('앨범 생성 응답을 확인할 수 없습니다.');
-        }
-        createdAlbumId = newAlbum.id;
+        }),
+        coverImageUrl: '',
+        coverThumbnailUrl: '',
+        coverPreviewUrl: '',
+        coverOriginalUrl: '',
+        coverTheme: themeLabel,
+      );
+      requireCurrent();
+      final created = ref.read(albumViewModelProvider).asData?.value;
+      if (created == null || created.id <= 0) {
+        throw ref.read(albumViewModelProvider).error ??
+            StateError('앨범 생성 응답을 확인할 수 없어요.');
       }
-
-      // [STEP 2] 후(後) 업로드: 서비스로 이관 (진행률 콜백 포함)
-      if (createdAlbumId != null) {
-        final uploadFuture = _persistence.performBackgroundUpload(
-          albumId: createdAlbumId,
-          canvasSize: canvasSize,
-          currentLayers: currentLayers,
-          coverImageBytes: coverImageBytes,
-          themeLabel: themeLabel,
-          title: title ?? '',
-          coverRatio: _cover.ratio,
-          printProduct: _cover.printProduct,
-          targetPages: resolvedTargetPages,
-          swallowErrors: _editingAlbumId == null,
-          onProgress: (completed, total) {
-            final prev = state.value;
-            if (prev == null || total == 0) return;
-            final progress = (completed / total).clamp(0.0, 1.0);
-            state = AsyncData(
-              prev.copyWith(backgroundUploadProgress: progress),
+      // Retain the known created ID/revision even if uploading fails, so retry
+      // saves this album instead of creating another empty album.
+      _editingAlbumId = created.id;
+      _sourceAlbum = created;
+      _editingActor = actor;
+      _initialAlbumTitle = title ?? '';
+      final requestId = const Uuid().v4();
+      final saved = await _persistence.performBackgroundUpload(
+        albumId: created.id,
+        expectedUpdatedAt: created.updatedAt,
+        expectedUserId: actor,
+        requestId: requestId,
+        canvasSize: canvasSize,
+        currentLayers: currentLayers,
+        coverImageBytes: coverImageBytes,
+        themeLabel: themeLabel,
+        title: title ?? '',
+        coverRatio: cover.ratio,
+        printProduct: cover.printProduct,
+        sourceTemplateProductKey: sourceTemplateProductKey,
+        targetPages: count,
+        swallowErrors: false,
+        canContinue: current,
+        onUploaded: (uploaded) => _trackUpload(uploaded, actor, current()),
+        onPrepared: (request) {
+          requireCurrent();
+          _pendingSaveAttempt = _AlbumSaveAttempt(
+            albumId: created.id,
+            actor: actor,
+            expectedUpdatedAt: created.updatedAt,
+            requestId: requestId,
+            request: request,
+          );
+        },
+        onLayerUploaded: (before, after) {
+          requireCurrent();
+          final page = _pages.firstOrNull;
+          if (page != null &&
+              after.previewUrl != null &&
+              after.originalUrl != null) {
+            _retainUploadedLayer(
+              page,
+              before,
+              after.previewUrl!,
+              after.originalUrl!,
             );
-          },
-        );
-        // 저장 성공을 사용자에게 보여주기 전에 업로드의 치명적 실패(예: 용량 초과)는
-        // 반드시 현재 저장 흐름에서 드러나야 한다. 신규 앨범도 여기서 대기해야
-        // 백그라운드 Future 오류가 유실되거나 빈 커버 앨범으로 넘어가지 않는다.
-        await uploadFuture;
+          }
+        },
+        onProgress: (completed, total) {
+          if (!current() || total == 0) return;
+          final previous = state.value;
+          if (previous != null)
+            state = AsyncData(
+              previous.copyWith(
+                backgroundUploadProgress: (completed / total).clamp(0.0, 1.0),
+              ),
+            );
+        },
+      );
+      requireCurrent();
+      _sourceAlbum = saved;
+      _pendingSaveAttempt = null;
+      _uncommittedUploads.clear();
+      _initialCoverImageUrl = saved.coverImageUrl;
+      _initialCoverThumbnailUrl = saved.coverThumbnailUrl;
+      albumVm.acceptSavedAlbum(saved);
+      return created.id;
+    } finally {
+      if (identical(saveIdentity, _activeSaveIdentity)) {
+        _activeSaveIdentity = null;
+        _isSaving = false;
       }
-      return createdAlbumId;
-    } catch (e) {
-      debugPrint('Save Album Error: $e');
-      rethrow;
     }
   }
 
@@ -1588,7 +1934,9 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     final extracted = _extractTemplateBackgroundForEditing(ready, canvasSize);
     final normalized = _normalizeLayersForEditing(extracted.layers, canvasSize);
     _pages[_currentPageIndex] = page.copyWith(
-      layers: normalized,
+      layers: [
+        for (final layer in normalized) layer.copyWith(isTemplateContent: true),
+      ],
       backgroundColor:
           template.backgroundColor?.toARGB32() ??
           extracted.backgroundColor ??
@@ -1810,225 +2158,265 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     return true;
   }
 
-  /// 앨범 전체(모든 페이지)를 서버에 저장
+  /// Save one immutable whole-document snapshot using the loaded server revision.
+  /// Other editors' changes are never rebased or merged implicitly.
   Future<bool> saveFullAlbum({
     Uint8List? coverImageBytes,
     ValueChanged<AlbumSaveProgress>? onProgress,
   }) async {
     if (_isSaving) return false;
+    final albumId = _editingAlbumId;
+    final actor = _readOwner();
+    final session = _editSessionIdentity;
+    final saveIdentity = Object();
+    _activeSaveIdentity = saveIdentity;
     _isSaving = true;
     _lastSaveError = null;
+    bool current() =>
+        !_disposed &&
+        identical(session, _editSessionIdentity) &&
+        identical(saveIdentity, _activeSaveIdentity) &&
+        _editingAlbumId == albumId &&
+        _readOwner() == actor;
+    void requireCurrent() {
+      if (!current() || actor == null || _editingActor != actor) {
+        throw const AlbumEditSessionChanged();
+      }
+    }
+
+    Future<Album> submit(_AlbumSaveAttempt attempt) async {
+      requireCurrent();
+      final saved = await _albumRepository.updateAlbum(
+        attempt.albumId,
+        attempt.request,
+        expectedUpdatedAt: attempt.expectedUpdatedAt,
+        requestId: attempt.requestId,
+        expectedUserId: attempt.actor,
+      );
+      requireCurrent();
+      return saved;
+    }
+
+    void accept(Album saved, _AlbumSaveAttempt attempt) {
+      requireCurrent();
+      _sourceAlbum = saved;
+      _initialCoverImageUrl = saved.coverImageUrl;
+      _initialCoverThumbnailUrl = saved.coverThumbnailUrl;
+      _pendingSaveAttempt = null;
+      _uncommittedUploads.clear();
+      _hasUnsavedChanges =
+          exportFullAlbumLayersJson(null) != attempt.request.coverLayersJson ||
+          _selectedTheme.label != attempt.request.coverTheme ||
+          _cover.ratio.toString() != attempt.request.ratio ||
+          (_initialAlbumTitle ?? '') != attempt.request.title;
+      _syncStatus(
+        saved.allowsEditing
+            ? AlbumEditSyncKind.current
+            : AlbumEditSyncKind.accessRevoked,
+      );
+      ref.read(albumViewModelProvider.notifier).acceptSavedAlbum(saved);
+    }
 
     try {
-      if (_editingAlbumId == null) {
+      requireCurrent();
+      if (albumId == null) {
         throw StateError('앨범 정보가 없어 저장할 수 없어요. 앨범을 먼저 만들어주세요.');
       }
-      final pending = [
-        for (final page in _pages)
-          for (final layer in page.layers)
-            if (layer.type == LayerType.image &&
-                layer.previewUrl == null &&
-                layer.imageUrl == null &&
-                layer.originalUrl == null &&
-                layer.asset != null)
-              (page: page, layer: layer),
+      if (!editingAllowed) throw const AlbumEditAccessRevoked();
+      // A previous response may have been lost after commit. Resolve exactly
+      // that request before preparing a different payload or uploading again.
+      final pending = _pendingSaveAttempt;
+      if (pending != null) {
+        if (pending.albumId != albumId || pending.actor != actor) {
+          throw const AlbumEditSessionChanged();
+        }
+        onProgress?.call(const AlbumSaveProgress(AlbumSavePhase.saving));
+        accept(await submit(pending), pending);
+        if (!_hasUnsavedChanges) {
+          _emit();
+          onProgress?.call(const AlbumSaveProgress(AlbumSavePhase.complete));
+          return true;
+        }
+      }
+      final source = _sourceAlbum;
+      if (source == null || source.updatedAt.isEmpty) {
+        throw const AlbumRevisionRequired();
+      }
+      final pages = _pages.map(_clonePage).toList();
+      final cover = _cover;
+      final theme = _selectedTheme;
+      final sourceTemplateProductKey = _sourceTemplateProductKey;
+      final title = _initialAlbumTitle ?? '';
+      final jobs = [
+        for (var pageIndex = 0; pageIndex < pages.length; pageIndex++)
+          for (
+            var layerIndex = 0;
+            layerIndex < pages[pageIndex].layers.length;
+            layerIndex++
+          )
+            if (_needsPhotoUpload(pages[pageIndex].layers[layerIndex]))
+              (page: pageIndex, layer: layerIndex),
       ];
-      final uploadCount = pending.length + (coverImageBytes == null ? 0 : 1);
+      final uploadCount = jobs.length + (coverImageBytes == null ? 0 : 1);
       var uploadedCount = 0;
-      void reportUpload() => onProgress?.call(
-        AlbumSaveProgress(
-          AlbumSavePhase.uploading,
-          completed: uploadedCount,
-          total: uploadCount,
-        ),
-      );
-      if (uploadCount > 0) reportUpload();
+      void progress() {
+        if (current())
+          onProgress?.call(
+            AlbumSaveProgress(
+              AlbumSavePhase.uploading,
+              completed: uploadedCount,
+              total: uploadCount,
+            ),
+          );
+      }
 
-      // Bound upload concurrency; retain successful URLs for a failed-save retry.
-      for (var start = 0; start < pending.length; start += 4) {
-        final batch = pending.skip(start).take(4);
+      if (uploadCount > 0) progress();
+      for (var index = 0; index < jobs.length; index += 4) {
+        requireCurrent();
         await Future.wait(
-          batch.map((job) async {
+          jobs.skip(index).take(4).map((job) async {
+            requireCurrent();
+            final page = pages[job.page];
+            final layer = page.layers[job.layer];
             final uploaded = await _storage.uploadImageVariants(
-              job.layer.asset!,
+              layer.asset!,
+              albumId: albumId,
             );
+            _trackUpload(uploaded, actor!, current());
+            requireCurrent();
             final preview = uploaded.previewGsPath ?? uploaded.previewUrl;
             final original = uploaded.originalGsPath ?? uploaded.originalUrl;
-            if (preview == null && original == null) {
+            if (preview?.isNotEmpty != true || original?.isNotEmpty != true) {
               throw StateError('이미지 업로드에 실패했습니다.');
             }
-            final index = job.page.layers.indexWhere(
-              (l) => l.id == job.layer.id,
+            page.layers[job.layer] = layer.copyWith(
+              previewUrl: preview,
+              originalUrl: original,
+              imageUrl: preview,
             );
-            if (index >= 0) {
-              job.page.layers[index] = job.layer.copyWith(
-                previewUrl: preview,
-                originalUrl: original,
-                imageUrl: preview,
-              );
-            }
+            // Retain successful uploads for retry without reverting a newer
+            // transform/replacement or resurrecting a deleted page/layer.
+            _retainUploadedLayer(page, layer, preview!, original!);
             uploadedCount++;
-            reportUpload();
+            progress();
           }),
         );
       }
-
-      // 1.1 커버 이미지 업로드 (전달된 경우)
-      UploadedUrls? coverUploaded;
+      requireCurrent();
+      UploadedUrls? uploadedCover;
       if (coverImageBytes != null) {
-        coverUploaded = await _storage.uploadCoverVariants(coverImageBytes);
-        if ((coverUploaded.previewGsPath ??
-                coverUploaded.previewUrl ??
-                coverUploaded.originalGsPath ??
-                coverUploaded.originalUrl) ==
-            null) {
+        uploadedCover = await _storage.uploadCoverVariants(
+          coverImageBytes,
+          albumId: albumId,
+        );
+        _trackUpload(uploadedCover, actor!, current());
+        requireCurrent();
+        if ((uploadedCover.previewGsPath ?? uploadedCover.previewUrl)
+                    ?.isNotEmpty !=
+                true ||
+            (uploadedCover.originalGsPath ?? uploadedCover.originalUrl)
+                    ?.isNotEmpty !=
+                true) {
           throw StateError('표지 이미지 업로드에 실패했습니다.');
         }
         uploadedCount++;
-        reportUpload();
+        progress();
       }
-
+      final document = _exportPages(pages, cover, sourceTemplateProductKey);
+      String? firstPhoto;
+      for (final layer in pages.firstOrNull?.layers ?? <LayerModel>[]) {
+        if (layer.type == LayerType.image) {
+          firstPhoto = layer.previewUrl ?? layer.imageUrl ?? layer.originalUrl;
+          if (firstPhoto?.isNotEmpty == true) break;
+        }
+      }
+      final coverUrl =
+          uploadedCover?.previewGsPath ??
+          uploadedCover?.previewUrl ??
+          firstPhoto ??
+          _initialCoverImageUrl ??
+          _initialCoverThumbnailUrl ??
+          '';
+      final attempt = _AlbumSaveAttempt(
+        albumId: albumId,
+        actor: actor!,
+        expectedUpdatedAt: source.updatedAt,
+        requestId: const Uuid().v4(),
+        request: CreateAlbumRequest(
+          ratio: cover.ratio.toString(),
+          title: title,
+          targetPages: math.max(1, pages.where((page) => !page.isCover).length),
+          coverLayersJson: document,
+          coverImageUrl: coverUrl,
+          coverThumbnailUrl: coverUrl,
+          coverPreviewUrl: coverUrl.isEmpty ? null : coverUrl,
+          coverOriginalUrl:
+              uploadedCover?.originalGsPath ??
+              uploadedCover?.originalUrl ??
+              source.coverOriginalUrl,
+          coverTheme: theme.label,
+        ),
+      );
+      requireCurrent();
+      _pendingSaveAttempt = attempt;
       onProgress?.call(const AlbumSaveProgress(AlbumSavePhase.saving));
-
-      // 2. 전체 앨범 JSON 생성 후 서버에 저장 (편집 중인 앨범인 경우)
-      final albumVm = ref.read(albumViewModelProvider.notifier);
-      final stateVal = state.value;
-      final canvasSize =
-          (stateVal != null &&
-              stateVal.coverCanvasSize != null &&
-              stateVal.coverCanvasSize != Size.zero)
-          ? stateVal.coverCanvasSize
-          : (_lastCoverCanvasSize != Size.zero
-                ? _lastCoverCanvasSize
-                : Size(358.0, 358.0 / _cover.ratio));
-
-      AppLogger.debug(
-        '[saveFullAlbum] Using canvas size for export: ${canvasSize!.width.toStringAsFixed(1)} x ${canvasSize.height.toStringAsFixed(1)}',
-      );
-      final fullJson = exportFullAlbumLayersJson(canvasSize);
-      final themeLabel = _selectedTheme.label;
-      final resolvedTargetPages = math.max(
-        1,
-        _pages.where((p) => !p.isCover).length,
-      );
-      _targetPagesHint = resolvedTargetPages;
-
-      if (_editingAlbumId != null) {
-        // 커버 URL 우선순위:
-        // 1) 현재 저장에서 새로 업로드한 커버 캡처
-        // 2) 현재 커버 페이지의 첫 이미지 레이어 URL (방금 편집한 결과)
-        // 3) 기존 커버 URL
-        final uploadedCoverUrl =
-            coverUploaded?.previewGsPath ?? coverUploaded?.previewUrl;
-        String? coverFromLayer;
-        if (_pages.isNotEmpty) {
-          final coverPage = _pages.first;
-          for (final layer in coverPage.layers) {
-            if (layer.type == LayerType.image) {
-              final url =
-                  layer.previewUrl ?? layer.imageUrl ?? layer.originalUrl;
-              if (url != null && url.isNotEmpty) {
-                coverFromLayer = url;
-                break;
-              }
-            }
-          }
-        }
-
-        final coverImg =
-            uploadedCoverUrl ??
-            coverFromLayer ??
-            _initialCoverImageUrl ??
-            _initialCoverThumbnailUrl ??
-            '';
-        final coverThumb =
-            uploadedCoverUrl ??
-            coverFromLayer ??
-            _initialCoverThumbnailUrl ??
-            _initialCoverImageUrl ??
-            '';
-        await _runWithRetry(() async {
-          await albumVm.updateAlbum(
-            albumId: _editingAlbumId!,
-            ratio: _cover.ratio.toString(),
-            title: _initialAlbumTitle ?? '', // 앨범 제목 유지
-            targetPages: resolvedTargetPages,
-            coverLayersJson: fullJson,
-            coverImageUrl: coverImg,
-            coverThumbnailUrl: coverThumb,
-            coverPreviewUrl: coverImg.isNotEmpty ? coverImg : null,
-            coverOriginalUrl: null,
-            coverTheme: themeLabel,
-          );
-          final error = ref.read(albumViewModelProvider).error;
-          if (error != null) throw error;
-        }, maxAttempts: _saveNetworkRetryCount);
-        if (coverImg.isNotEmpty) {
-          _initialCoverImageUrl = coverImg;
-        }
-        if (coverThumb.isNotEmpty) {
-          _initialCoverThumbnailUrl = coverThumb;
-        }
-        // 편집 세션은 유지 (연속 저장/추가 수정 대응)
-      }
-
-      // 백그라운드 업로드 진행률 초기화
-      final prev = state.value ?? const AlbumEditorState();
-      state = AsyncData(prev.copyWith(backgroundUploadProgress: 0.0));
-
-      _hasUnsavedChanges = false;
+      accept(await submit(attempt), attempt);
       _emit();
       onProgress?.call(const AlbumSaveProgress(AlbumSavePhase.complete));
       return true;
-    } catch (e) {
-      _lastSaveError = e;
-      _emit();
-      return false; // 실패 반환
-    } finally {
-      _isSaving = false;
-    }
-  }
-
-  Future<T> _runWithRetry<T>(
-    Future<T> Function() action, {
-    int maxAttempts = 3,
-  }) async {
-    Object? lastError;
-    StackTrace? lastStack;
-    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        return await action();
-      } catch (e, st) {
-        lastError = e;
-        lastStack = st;
-        final canRetry = _isRetriableError(e) && attempt < maxAttempts;
-        if (!canRetry) {
-          rethrow;
+    } catch (error) {
+      if (current()) {
+        _lastSaveError = error;
+        // These server responses definitively rejected this transaction. Keep
+        // local edits/uploads, but resume role/revision checks. Only uncertain
+        // transport failures retain the immutable request for commit recovery.
+        if (error is AlbumRevisionConflict || error is AlbumEditAccessRevoked) {
+          _pendingSaveAttempt = null;
         }
-        final delayMs = 250 * attempt;
-        await Future.delayed(Duration(milliseconds: delayMs));
+        if (error is AlbumRevisionConflict)
+          _syncStatus(AlbumEditSyncKind.remoteChanged);
+        if (error is AlbumEditAccessRevoked)
+          _syncStatus(AlbumEditSyncKind.accessRevoked);
+        _emit();
+      }
+      return false;
+    } finally {
+      if (identical(saveIdentity, _activeSaveIdentity)) {
+        _activeSaveIdentity = null;
+        _isSaving = false;
       }
     }
-    Error.throwWithStackTrace(lastError!, lastStack!);
   }
 
-  bool _isRetriableError(Object error) {
-    if (error is DioException) {
-      switch (error.type) {
-        case DioExceptionType.connectionTimeout:
-        case DioExceptionType.sendTimeout:
-        case DioExceptionType.receiveTimeout:
-        case DioExceptionType.transformTimeout:
-        case DioExceptionType.connectionError:
-          return true;
-        case DioExceptionType.badResponse:
-          final code = error.response?.statusCode ?? 0;
-          return code >= 500 && code < 600;
-        default:
-          return false;
-      }
-    }
-    return false;
+  bool _needsPhotoUpload(LayerModel layer) =>
+      layer.type == LayerType.image &&
+      layer.asset != null &&
+      layer.previewUrl == null &&
+      layer.imageUrl == null &&
+      layer.originalUrl == null;
+
+  void _retainUploadedLayer(
+    AlbumPage snapshotPage,
+    LayerModel original,
+    String preview,
+    String source,
+  ) {
+    final page = _pages.where((page) => page.id == snapshotPage.id).firstOrNull;
+    if (page == null) return;
+    final index = page.layers.indexWhere(
+      (layer) =>
+          layer.id == original.id &&
+          identical(layer.asset, original.asset) &&
+          layer.previewUrl == original.previewUrl &&
+          layer.originalUrl == original.originalUrl &&
+          layer.imageUrl == original.imageUrl,
+    );
+    if (index < 0) return;
+    page.layers[index] = page.layers[index].copyWith(
+      previewUrl: preview,
+      originalUrl: source,
+      imageUrl: preview,
+    );
   }
 
   /// 페이지 전환
@@ -2265,6 +2653,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   String exportCoverLayersJson(Size canvasSize) {
     if (_pages.isEmpty) {
       return jsonEncode({
+        ...albumSourceTemplateMetadata(_sourceTemplateProductKey),
         if (_cover.printProduct != null) 'printProduct': _cover.printProduct,
         'layers': [],
       });
@@ -2273,6 +2662,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     final coverPage = _pages.first;
 
     return jsonEncode({
+      ...albumSourceTemplateMetadata(_sourceTemplateProductKey),
       if (_cover.printProduct != null) 'printProduct': _cover.printProduct,
       'layers': coverPage.layers
           .map(
@@ -2339,12 +2729,21 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   /// 커버 + 모든 내지 페이지 레이어를 서버 저장용 JSON 문자열로 변환
   /// 형식: { "pages": [ { "index": 0, "isCover": true, "layers": [...] }, ... ] }
   /// 커버는 coverCanvasSize, 내지는 300x400 (페이지 에디터와 동일)
-  String exportFullAlbumLayersJson(Size? coverCanvasSize) {
+  String exportFullAlbumLayersJson(Size? coverCanvasSize) =>
+      _exportPages(_pages, _cover, _sourceTemplateProductKey);
+
+  String _exportPages(
+    List<AlbumPage> pages,
+    CoverSize cover,
+    String? sourceTemplateProductKey,
+  ) {
     // [10단계] 커버와 내지 모두 고정 참조 사이즈를 사용해 내보냅니다.
-    final pagesJson = _pages.map((page) {
-      final canvasSize = page.isCover
-          ? _coverReferenceSize
-          : _innerPageCanvasSize;
+    final pagesJson = pages.map((page) {
+      final ratio = cover.ratio > 0 ? cover.ratio : 1.0;
+      final canvasSize = Size(
+        kCoverReferenceWidth,
+        kCoverReferenceWidth / ratio,
+      );
       return {
         'index': page.pageIndex,
         'isCover': page.isCover,
@@ -2362,7 +2761,8 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       };
     }).toList();
     return jsonEncode({
-      if (_cover.printProduct != null) 'printProduct': _cover.printProduct,
+      ...albumSourceTemplateMetadata(sourceTemplateProductKey),
+      if (cover.printProduct != null) 'printProduct': cover.printProduct,
       'pages': pagesJson,
     });
   }

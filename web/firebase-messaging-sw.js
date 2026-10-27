@@ -91,6 +91,7 @@ function destination(data) {
   if (uuid(data.runId)) return route(`/test-orders/${data.runId}`);
   if (positiveId(data.albumId)) return route(`/albums/${data.albumId}`);
   if (positiveId(data.templateId)) return route(`/designs/templates/${data.templateId}`);
+  if (data.screen === 'moments' && !data.albumId && !data.templateId && !data.orderId && !data.runId) return route('/moments');
   return route('/notifications');
 }
 

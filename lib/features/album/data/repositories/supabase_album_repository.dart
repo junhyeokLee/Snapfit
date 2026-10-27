@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/interceptors/token_storage.dart';
 import '../../domain/entities/album.dart';
+import '../../domain/entities/album_edit_failure.dart';
 import '../../domain/repositories/album_repository.dart';
 import '../dto/request/create_album_request.dart';
 
@@ -10,6 +11,13 @@ class SupabaseAlbumRepository implements AlbumRepository {
 
   final SupabaseClient client;
   final TokenStorage tokenStorage;
+
+  void _sameUser(String userId, [String? expectedUserId]) {
+    if (client.auth.currentUser?.id != userId ||
+        (expectedUserId != null && expectedUserId != userId)) {
+      throw const AlbumEditSessionChanged();
+    }
+  }
 
   Future<String> _userId() async {
     final id = client.auth.currentUser?.id;
@@ -38,42 +46,96 @@ class SupabaseAlbumRepository implements AlbumRepository {
         })
         .select()
         .single();
+    _sameUser(userId);
     return _fromRow(Map<String, dynamic>.from(row));
   }
 
   @override
-  Future<Album> updateAlbum(int albumId, CreateAlbumRequest request) async {
+  Future<Album> updateAlbum(
+    int albumId,
+    CreateAlbumRequest request, {
+    String? expectedUpdatedAt,
+    String? requestId,
+    String? expectedUserId,
+  }) async {
     final userId = await _userId();
-    final row = await client
-        .from('albums')
-        .update({
-          'title': request.title,
-          'ratio': request.ratio,
-          'cover_layers_json': request.coverLayersJson,
-          'cover_image_url': request.coverImageUrl,
-          'cover_thumbnail_url': request.coverThumbnailUrl,
-          'cover_original_url': request.coverOriginalUrl,
-          'cover_preview_url': request.coverPreviewUrl,
-          'cover_theme': request.coverTheme,
-          'target_pages': request.targetPages,
-        })
-        .eq('id', albumId)
-        .select()
-        .single();
-    final role = row['owner_id'] == userId
-        ? 'OWNER'
-        : await _memberRole(albumId, userId);
-    return _fromRow(Map<String, dynamic>.from(row), role: role);
+    _sameUser(userId, expectedUserId);
+    if (expectedUpdatedAt == null || expectedUpdatedAt.trim().isEmpty) {
+      throw const AlbumRevisionRequired();
+    }
+    try {
+      final raw = await client.rpc(
+        'save_album_document',
+        params: {
+          'p_album_id': albumId,
+          // Keep the server's raw timestamp: Web DateTime loses microseconds.
+          'p_expected_updated_at': expectedUpdatedAt,
+          'p_request_id': requestId,
+          'p_expected_actor_id': expectedUserId ?? userId,
+          'p_changes': {
+            'title': request.title,
+            'ratio': request.ratio,
+            'cover_layers_json': request.coverLayersJson,
+            'cover_image_url': request.coverImageUrl,
+            'cover_thumbnail_url': request.coverThumbnailUrl,
+            'cover_original_url': request.coverOriginalUrl,
+            'cover_preview_url': request.coverPreviewUrl,
+            'cover_theme': request.coverTheme,
+            'target_pages': request.targetPages,
+          },
+        },
+      );
+      _sameUser(userId, expectedUserId);
+      final row = Map<String, dynamic>.from(raw as Map);
+      String role = 'OWNER';
+      if (row['owner_id'] != userId) {
+        try {
+          role = await _memberRole(albumId, userId);
+        } catch (_) {
+          // The document already committed. A failed role refresh must not
+          // disguise that success or grant write controls optimistically.
+          _sameUser(userId, expectedUserId);
+          role = 'VIEWER';
+        }
+      }
+      _sameUser(userId, expectedUserId);
+      return _fromRow(row, role: role);
+    } on PostgrestException catch (error) {
+      _sameUser(userId, expectedUserId);
+      if (error.message.contains('album_editor_session_changed')) {
+        throw const AlbumEditSessionChanged();
+      }
+      if (error.code == 'PT409' ||
+          error.message.contains('album_revision_conflict')) {
+        throw const AlbumRevisionConflict();
+      }
+      if (error.code == '42501') throw const AlbumEditAccessRevoked();
+      rethrow;
+    }
   }
 
   @override
   Future<Album> fetchAlbum(String albumId) async {
     final userId = await _userId();
-    final row = await client.from('albums').select().eq('id', albumId).single();
-    final role = row['owner_id'] == userId
-        ? 'OWNER'
-        : await _memberRole(albumId, userId);
-    return _fromRow(Map<String, dynamic>.from(row), role: role);
+    try {
+      final row = await client
+          .from('albums')
+          .select()
+          .eq('id', albumId)
+          .single();
+      _sameUser(userId);
+      final role = row['owner_id'] == userId
+          ? 'OWNER'
+          : await _memberRole(albumId, userId);
+      _sameUser(userId);
+      return _fromRow(Map<String, dynamic>.from(row), role: role);
+    } on PostgrestException catch (error) {
+      _sameUser(userId);
+      if (error.code == '42501' || error.code == 'PGRST116') {
+        throw const AlbumEditAccessRevoked();
+      }
+      rethrow;
+    }
   }
 
   @override
@@ -84,11 +146,13 @@ class SupabaseAlbumRepository implements AlbumRepository {
         .select('album_id,role')
         .eq('user_id', userId)
         .eq('status', 'ACCEPTED');
+    _sameUser(userId);
     final roles = <int, String>{
       for (final member in memberships)
         if (member['album_id'] is num)
-          (member['album_id'] as num).toInt():
-              member['role']?.toString() ?? 'VIEWER',
+          (member['album_id'] as num).toInt(): member['role'] == 'EDITOR'
+              ? 'EDITOR'
+              : 'VIEWER',
     };
     final query = client.from('albums').select();
     final visible = roles.isEmpty
@@ -97,6 +161,7 @@ class SupabaseAlbumRepository implements AlbumRepository {
     final rows = await visible
         .order('sort_order', ascending: true)
         .order('updated_at', ascending: false);
+    _sameUser(userId);
     return rows
         .map<Album>(
           (row) => _fromRow(
@@ -155,9 +220,10 @@ class SupabaseAlbumRepository implements AlbumRepository {
         .eq('album_id', albumId)
         .eq('user_id', userId)
         .maybeSingle();
-    return member?['status'] == 'ACCEPTED' &&
-            ['OWNER', 'EDITOR'].contains(member?['role'])
-        ? member!['role'] as String
+    // Ownership comes exclusively from albums.owner_id. A legacy OWNER
+    // membership must not grant a different account management or edit access.
+    return member?['status'] == 'ACCEPTED' && member?['role'] == 'EDITOR'
+        ? 'EDITOR'
         : 'VIEWER';
   }
 

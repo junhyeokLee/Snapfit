@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/utils/platform_ui.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
@@ -21,6 +21,7 @@ class LayerActionPanel extends ConsumerStatefulWidget {
 
   /// Web inspectors expose actions as labelled controls; native keeps its rail.
   final bool showLabels;
+  final EditPanelMode initialMode;
 
   /// 레이어 선택 후 "꾸미기" 탭 시 호출. 제공 시 바텀시트(프레임/텍스트 스타일)를 띄우고, 미제공 시 인라인 서브메뉴 표시.
   final void Function(LayerModel layer)? onOpenDecorateSheet;
@@ -34,6 +35,7 @@ class LayerActionPanel extends ConsumerStatefulWidget {
     this.onOpenGallery,
     this.onOpenPhotoCrop,
     this.showLabels = false,
+    this.initialMode = EditPanelMode.none,
     this.onOpenDecorateSheet,
   });
 
@@ -50,6 +52,7 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
   @override
   void initState() {
     super.initState();
+    _panelMode = widget.initialMode;
     _primaryRailController.addListener(_handlePrimaryRailScroll);
   }
 
@@ -146,7 +149,7 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
       if (layer.type == LayerType.text)
         _buildActionButton(
           Icons.font_download_outlined,
-          widget.showLabels ? '글 편집' : '폰트',
+          '글 수정',
           () => widget.textEditor.openForExisting(layer),
         ),
       if (layer.type == LayerType.image)
@@ -159,19 +162,19 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
                 ].whereType<String>().any((url) => url.trim().isNotEmpty)))
           _buildActionButton(
             Icons.crop_rounded,
-            widget.showLabels ? '사진 자르기' : '사진 구도',
+            '자르기·구도',
             () => widget.onOpenPhotoCrop!(layer),
           ),
       if (layer.type == LayerType.image)
         _buildActionButton(
           Icons.image_outlined,
-          widget.showLabels ? '사진 교체' : '사진변경',
+          '사진 바꾸기',
           () => widget.onOpenGallery?.call(layer),
         ),
       if (layer.type == LayerType.image)
         _buildActionButton(
           Icons.open_with,
-          widget.showLabels ? '사진 위치' : '사진위치',
+          '사진 위치 조정',
           () {
             widget.interaction.toggleImagePanMode();
             widget.onRefresh();
@@ -182,7 +185,7 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
         ),
       _buildActionButton(
         Icons.opacity,
-        '불투명도',
+        '진하기',
         () => setState(() => _panelMode = EditPanelMode.opacity),
       ),
       _buildActionButton(Icons.auto_awesome_outlined, '꾸미기', () {
@@ -299,7 +302,7 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
           ),
         ),
         Padding(
-          padding: EdgeInsets.only(right: 16.w),
+          padding: EdgeInsets.only(right: 16),
           child: Text(
             "${(layer.opacity * 100).toInt()}%",
             style: TextStyle(
@@ -362,17 +365,17 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
         widget.onRefresh();
       },
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-        margin: EdgeInsets.only(right: 8.w),
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        margin: EdgeInsets.only(right: 8),
         decoration: BoxDecoration(
           color: SnapFitColors.overlayLightOf(context),
-          borderRadius: BorderRadius.circular(8.r),
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
           label,
           style: TextStyle(
             color: SnapFitColors.textPrimaryOf(context),
-            fontSize: 12.sp,
+            fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
         ),

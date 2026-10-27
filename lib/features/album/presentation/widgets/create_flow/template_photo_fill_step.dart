@@ -17,6 +17,7 @@ import '../../../../store/presentation/widgets/template_book_artwork.dart';
 import 'photo_crop_sheet.dart';
 import '../../../data/gallery/browser_photo_asset.dart';
 import '../../utils/photo_crop_geometry.dart';
+import '../../../../../core/utils/context_extensions.dart';
 
 /// A creation workspace outlives the photo-fill widget, but not its album.
 class TemplatePhotoFillSession {
@@ -255,11 +256,7 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
       identical(_layerAt(page, original.id), original);
 
   void _staleTarget() {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('페이지가 변경됐어요. 사진을 다시 선택해주세요.')),
-      );
-    }
+    if (mounted) context.showSnack('페이지가 변경됐어요. 사진을 다시 선택해주세요.');
   }
 
   Future<File?> _fileFor(AssetEntity asset) => asset is BrowserPhotoAsset
@@ -525,10 +522,7 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
   }
 
   void _photoError() {
-    if (mounted)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('사진을 가져오지 못했어요. 다시 선택해주세요.')),
-      );
+    if (mounted) context.showErrorSnack('사진을 가져오지 못했어요. 다시 선택해주세요.');
   }
 
   Future<void> _pick(int page, String id) async {

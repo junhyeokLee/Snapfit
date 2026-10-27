@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../../shared/web/web_design.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/entities/layer.dart';
@@ -87,7 +86,7 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> {
               } else {
                 editorVm.addTextLayer(
                   sticker,
-                  style: TextStyle(fontSize: 60.sp),
+                  style: const TextStyle(fontSize: 60),
                   mode: TextStyleType.none,
                   canvasSize: canvasSize,
                 );
@@ -141,9 +140,9 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> {
       height: panelHeight,
       decoration: BoxDecoration(
         color: SnapFitColors.surfaceOf(context),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24.r),
-          topRight: Radius.circular(24.r),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
         ),
       ),
       child: SafeArea(
@@ -151,18 +150,18 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> {
         child: Column(
           children: [
             // Handle
-            SizedBox(height: isLandscape ? 8 : 12.h),
+            SizedBox(height: isLandscape ? 8 : 12),
             Container(
-              width: isLandscape ? 36 : 40.w,
-              height: isLandscape ? 3.5 : 4.h,
+              width: isLandscape ? 36 : 40,
+              height: isLandscape ? 3.5 : 4,
               decoration: BoxDecoration(
                 color: SnapFitColors.textPrimaryOf(
                   context,
                 ).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(2.r),
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-            SizedBox(height: isLandscape ? 8 : 10.h),
+            SizedBox(height: isLandscape ? 8 : 10),
             Expanded(child: content),
           ],
         ),

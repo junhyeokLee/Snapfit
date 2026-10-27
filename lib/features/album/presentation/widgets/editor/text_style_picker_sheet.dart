@@ -2294,12 +2294,12 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         borderRadius: BorderRadius.circular(999),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
+            color: Colors.black.withValues(alpha: 0.12),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 3,
             offset: const Offset(0, 1),
           ),
@@ -2351,12 +2351,12 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         borderRadius: BorderRadius.circular(999),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
+            color: Colors.black.withValues(alpha: 0.12),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 3,
             offset: const Offset(0, 1),
           ),
@@ -2379,12 +2379,12 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         borderRadius: BorderRadius.zero,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
+            color: Colors.black.withValues(alpha: 0.12),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 3,
             offset: const Offset(0, 1),
           ),
@@ -2507,7 +2507,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         borderRadius: BorderRadius.zero,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 2,
             offset: const Offset(0, 1),
           ),
@@ -2526,7 +2526,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         borderRadius: BorderRadius.zero,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 2,
             offset: const Offset(0, 1),
           ),
@@ -2545,7 +2545,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         borderRadius: BorderRadius.zero,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 2,
             offset: const Offset(0, 1),
           ),
@@ -2564,7 +2564,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         borderRadius: BorderRadius.zero,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 2,
             offset: const Offset(0, 1),
           ),
@@ -2583,7 +2583,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         borderRadius: BorderRadius.zero,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 2,
             offset: const Offset(0, 1),
           ),
@@ -2679,7 +2679,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       width: 56,
       height: 24,
       decoration: BoxDecoration(
-        color: const Color(0xFFFFEB3B).withOpacity(0.55),
+        color: const Color(0xFFFFEB3B).withValues(alpha: 0.55),
         borderRadius: BorderRadius.zero,
       ),
     );
@@ -2691,7 +2691,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       width: 56,
       height: 24,
       decoration: BoxDecoration(
-        color: const Color(0xFFB8E986).withOpacity(0.65),
+        color: const Color(0xFFB8E986).withValues(alpha: 0.65),
         borderRadius: BorderRadius.zero,
       ),
     );
@@ -2703,7 +2703,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       width: 56,
       height: 24,
       decoration: BoxDecoration(
-        color: const Color(0xFFFFB6C1).withOpacity(0.7),
+        color: const Color(0xFFFFB6C1).withValues(alpha: 0.7),
         borderRadius: BorderRadius.zero,
       ),
     );
@@ -2744,7 +2744,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         border: Border(left: BorderSide(color: SnapFitColors.accent, width: 4)),
         boxShadow: [
           BoxShadow(
-            color: SnapFitColors.accent.withOpacity(0.1),
+            color: SnapFitColors.accent.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(2, 0),
           ),
@@ -2858,7 +2858,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
             color: color,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 3,
                 offset: const Offset(0, 1),
               ),
@@ -2881,7 +2881,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
             color: color,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 2,
                 offset: const Offset(0, 1),
               ),
@@ -3016,7 +3016,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 라벨 – 타원형 (미리보기 통일: pill 하나, 색만 다름)
   Widget _previewLabelOval() {
     return _previewLabelOvalWithColor(
-      SnapFitColors.accent.withOpacity(0.25),
+      SnapFitColors.accent.withValues(alpha: 0.25),
       SnapFitColors.accent,
     );
   }
@@ -3036,7 +3036,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         borderRadius: BorderRadius.zero,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 2,
             offset: const Offset(0, 1),
           ),
@@ -3068,7 +3068,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         borderRadius: BorderRadius.zero,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 2,
             offset: const Offset(0, 1),
           ),
@@ -3087,7 +3087,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         borderRadius: BorderRadius.zero,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 2,
             offset: const Offset(0, 1),
           ),
@@ -3112,7 +3112,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         borderRadius: BorderRadius.circular(4),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 2,
             offset: const Offset(0, 1),
           ),
@@ -3276,7 +3276,7 @@ class _PreviewGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color.withOpacity(0.6)
+      ..color = color.withValues(alpha: 0.6)
       ..strokeWidth = 0.8
       ..style = PaintingStyle.stroke;
     const step = 10.0;
@@ -3315,7 +3315,7 @@ class _PreviewDoubleStripePainter extends CustomPainter {
     const gap = 8.0;
     final stripe = stripeColor ?? const Color(0xFF90CAF9);
     final stripePaint = Paint()
-      ..color = stripe.withOpacity(0.6)
+      ..color = stripe.withValues(alpha: 0.6)
       ..style = PaintingStyle.fill;
     final path = Path();
     for (

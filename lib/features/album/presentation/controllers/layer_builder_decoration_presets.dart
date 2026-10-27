@@ -86,7 +86,7 @@ Widget? _buildPresetDecoration(LayerModel layer) {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.06),
+                          color: Colors.black.withValues(alpha: 0.06),
                           blurRadius: 1.2,
                         ),
                       ],
@@ -173,7 +173,7 @@ Widget? _buildPresetDecoration(LayerModel layer) {
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
             colors: [
-              const Color(0xFFCB6F2B).withOpacity(0.28),
+              const Color(0xFFCB6F2B).withValues(alpha: 0.28),
               Colors.transparent,
             ],
             stops: const [0.0, 0.55],
@@ -215,7 +215,7 @@ Widget? _buildPresetDecoration(LayerModel layer) {
       width: layer.width,
       height: layer.height,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
+        color: Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(220),
       ),
     );
@@ -227,7 +227,7 @@ Widget? _buildPresetDecoration(LayerModel layer) {
       width: layer.width,
       height: layer.height,
       decoration: BoxDecoration(
-        color: const Color(0xFF111827).withOpacity(0.42),
+        color: const Color(0xFF111827).withValues(alpha: 0.42),
         borderRadius: BorderRadius.circular(999),
       ),
     );
@@ -237,7 +237,7 @@ Widget? _buildPresetDecoration(LayerModel layer) {
       width: layer.width,
       height: layer.height,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.18),
+        color: Colors.white.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(999),
       ),
     );
@@ -330,7 +330,7 @@ Widget? _buildPresetDecoration(LayerModel layer) {
               width: layer.width * 0.56,
               height: layer.height * 0.24,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.24),
+                color: Colors.white.withValues(alpha: 0.24),
                 borderRadius: BorderRadius.circular(999),
               ),
             ),
@@ -342,7 +342,7 @@ Widget? _buildPresetDecoration(LayerModel layer) {
               width: layer.width * 0.54,
               height: layer.height * 0.22,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.20),
+                color: Colors.white.withValues(alpha: 0.20),
                 borderRadius: BorderRadius.circular(999),
               ),
             ),
@@ -419,7 +419,7 @@ Widget _buildPaperTextureDecoration(LayerModel layer) {
           Positioned.fill(
             child: CustomPaint(
               painter: _HorizontalRulePainter(
-                color: const Color(0xFFB8936E).withOpacity(0.28),
+                color: const Color(0xFFB8936E).withValues(alpha: 0.28),
                 gap: 18,
                 stroke: 0.8,
               ),

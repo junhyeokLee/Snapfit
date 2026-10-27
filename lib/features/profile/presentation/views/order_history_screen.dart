@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import '../../../../shared/widgets/experience_style.dart';
+import '../../../../shared/widgets/experience_style.dart' show ExperienceHeader;
 import '../../../../shared/widgets/experience_form_style.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +10,7 @@ import 'dart:async';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/theme/snapfit_design_tokens.dart' show SnapFitRadius;
 import '../../../../core/utils/app_error_mapper.dart';
+import '../../../../core/utils/context_extensions.dart';
 import '../../domain/order_visibility_owner.dart';
 import '../../data/order_repository.dart';
 import '../../data/print_payment_service.dart';
@@ -110,14 +111,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
 
   void _showToast(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: EdgeInsets.fromLTRB(16, 0, 16, 16),
-      ),
-    );
+    context.showSnack(message);
   }
 
   Future<void> _openInitialOrderIfNeeded() async {
@@ -144,7 +138,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
     if (currentOwner == null || currentOwner != _ownerId) {
       if (kIsWeb) {
         return SnapFitWebShell(
-          showNavigation: false,
+          section: WebSection.orders,
           child: WebSurface(
             child: _orderAccessNotice(
               context,
@@ -911,9 +905,7 @@ class _LiveOrderDetailState extends ConsumerState<_LiveOrderDetail>
 
   void _showToast(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    context.showSnack(message);
   }
 
   Future<void> _copy(String value, String label) async {
@@ -1402,7 +1394,8 @@ Widget _statusChip(BuildContext context, String label) => Align(
     ),
     child: Text(
       label,
-      style: ExperienceStyle.text(
+      style: ExperienceFormStyle.text(
+        context,
         12,
         weight: FontWeight.w600,
         color: ExperienceFormStyle.selectionInk(context),

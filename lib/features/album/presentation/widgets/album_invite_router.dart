@@ -15,6 +15,8 @@ class AlbumInviteRouter extends ConsumerStatefulWidget {
 }
 
 class _AlbumInviteRouterState extends ConsumerState<AlbumInviteRouter> {
+  // Login gates can be nested on one navigator. They still present one invite.
+  static final _presented = Expando<ValueNotifier<PendingAlbumInvite>>();
   late final ProviderSubscription<PendingAlbumInvite?> _subscription;
   ValueNotifier<PendingAlbumInvite>? _active;
   bool _scheduled = false;
@@ -49,23 +51,37 @@ class _AlbumInviteRouterState extends ConsumerState<AlbumInviteRouter> {
   }
 
   Future<void> _open(PendingAlbumInvite invite) async {
+    final navigator = Navigator.of(context, rootNavigator: true);
+    final existing = _presented[navigator];
+    if (existing != null) {
+      existing.value = invite;
+      return;
+    }
     final active = ValueNotifier(invite);
     _active = active;
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute(
-        settings: const RouteSettings(name: '/album-invitation'),
-        builder: (_) => ValueListenableBuilder<PendingAlbumInvite>(
-          valueListenable: active,
-          builder: (_, current, __) =>
-              AlbumInviteAcceptScreen(key: ObjectKey(current), invite: current),
+    _presented[navigator] = active;
+    try {
+      await navigator.push<void>(
+        MaterialPageRoute(
+          settings: const RouteSettings(name: '/album-invitation'),
+          builder: (_) => ValueListenableBuilder<PendingAlbumInvite>(
+            valueListenable: active,
+            builder: (_, current, __) => AlbumInviteAcceptScreen(
+              key: ObjectKey(current),
+              invite: current,
+            ),
+          ),
         ),
-      ),
-    );
-    _active = null;
-    if (mounted && ref.read(pendingAlbumInviteProvider) != null)
-      _scheduleOpen();
-    // Route widgets can remain mounted until the reverse transition finishes.
-    WidgetsBinding.instance.addPostFrameCallback((_) => active.dispose());
+      );
+    } finally {
+      if (identical(_presented[navigator], active))
+        _presented[navigator] = null;
+      _active = null;
+      if (mounted && ref.read(pendingAlbumInviteProvider) != null)
+        _scheduleOpen();
+      // Route widgets can remain mounted until the reverse transition finishes.
+      WidgetsBinding.instance.addPostFrameCallback((_) => active.dispose());
+    }
   }
 
   @override

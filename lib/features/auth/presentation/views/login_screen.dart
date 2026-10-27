@@ -11,6 +11,7 @@ import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/theme/snapfit_design_tokens.dart' show SnapFitRadius;
 import '../../../../core/theme/snapfit_theme.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
+import '../../../../core/utils/context_extensions.dart';
 import '../../../../shared/widgets/experience_style.dart';
 import '../../../../shared/web/web_design.dart';
 import '../../../../core/navigation/web_app_location.dart';
@@ -169,14 +170,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     } catch (e) {
       if (!mounted || revision != _socialLoginRevision) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            socialAuthErrorMessage(
-              e,
-              provider: provider == _LoginProvider.kakao ? '카카오' : 'Google',
-            ),
-          ),
+      context.showErrorSnack(
+        socialAuthErrorMessage(
+          e,
+          provider: provider == _LoginProvider.kakao ? '카카오' : 'Google',
         ),
       );
     } finally {
@@ -339,9 +336,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (!mounted) return;
       setState(() => _resetEmailSent = true);
       _startEmailCooldown(confirmation: false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('비밀번호 재설정 메일을 보냈어요.')));
+      context.showSnack('비밀번호 재설정 메일을 보냈어요.');
     } catch (e) {
       if (!mounted) return;
       setState(
@@ -381,9 +376,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         if (kIsWeb) _confirmationCodeController.clear();
       });
       _startEmailCooldown(confirmation: true);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('인증 메일을 다시 보냈어요.')));
+      context.showSnack('인증 메일을 다시 보냈어요.');
     } catch (e) {
       if (!mounted) return;
       setState(
@@ -463,9 +456,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       TextInput.finishAutofillContext();
       if (!mounted) return;
       setState(() => _passwordChangeComplete = true);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('비밀번호가 변경되었어요.')));
+      context.showSnack('비밀번호가 변경되었어요.');
     } catch (e) {
       if (!mounted) return;
       setState(
@@ -1897,7 +1888,7 @@ class _AuthResponsiveShell extends StatelessWidget {
                           letterSpacing: 0.2,
                           color: ExperienceFormStyle.ink(
                             context,
-                          ).withOpacity(0.38),
+                          ).withValues(alpha: 0.38),
                         ),
                       ),
                       const SizedBox(height: 22),
@@ -1956,7 +1947,7 @@ class _AuthAlbumPreview extends StatelessWidget {
                         stops: const [0.42, 1.0],
                         colors: [
                           Colors.transparent,
-                          Colors.black.withOpacity(0.52),
+                          Colors.black.withValues(alpha: 0.52),
                         ],
                       ),
                     ),
@@ -1970,7 +1961,8 @@ class _AuthAlbumPreview extends StatelessWidget {
                     '우리의 여름',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: ExperienceStyle.text(
+                    style: ExperienceFormStyle.text(
+                      context,
                       15,
                       weight: FontWeight.w600,
                       color: Colors.white,

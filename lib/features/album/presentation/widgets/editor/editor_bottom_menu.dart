@@ -46,7 +46,8 @@ class EditorBottomMenu extends StatelessWidget {
         _EditorMenuItem('커버', 'BookOpen', null, onAction: onCover),
       const _EditorMenuItem('레이아웃', 'LayoutGrid', EditorMode.layout),
       const _EditorMenuItem('배경', 'Settings2', EditorMode.backgroundColor),
-      const _EditorMenuItem('레이어', 'Layers2', EditorMode.layer),
+      if (useCreationStyle)
+        const _EditorMenuItem('재배치', 'Layers2', EditorMode.layer),
     ];
     return LayoutBuilder(
       builder: (context, box) {
@@ -103,6 +104,11 @@ class EditorBottomMenu extends StatelessWidget {
               ? Column(
                   children: [
                     history,
+                    _tool(
+                      context,
+                      const _EditorMenuItem('재배치', 'Layers2', EditorMode.layer),
+                      labelHeight,
+                    ),
                     Divider(height: 1, color: AlbumStageStyle.line(context)),
                     Expanded(child: tools),
                   ],
@@ -116,6 +122,15 @@ class EditorBottomMenu extends StatelessWidget {
                       child: Row(
                         children: [
                           Expanded(child: tools),
+                          _tool(
+                            context,
+                            const _EditorMenuItem(
+                              '재배치',
+                              'Layers2',
+                              EditorMode.layer,
+                            ),
+                            labelHeight,
+                          ),
                           Padding(
                             padding: const EdgeInsets.only(right: 4),
                             child: history,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../referral/presentation/widgets/referral_link_router.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -98,33 +99,37 @@ class _AuthGateState extends ConsumerState<AuthGate> {
   @override
   Widget build(BuildContext context) {
     final authAsync = ref.watch(authViewModelProvider);
-    return AlbumInviteRouter(
-      child: authAsync.when(
-        data: (user) => user == null
-            ? kIsWeb && widget.allowDiscovery
-                  ? const PublicDiscoveryScreen()
-                  : const LoginScreen()
-            : const HomeScreen(),
-        loading: () => kIsWeb
-            ? SnapFitWebShell(
-                showNavigation: false,
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 20),
-                      Text(
-                        '로그인한 계정을 확인하고 있어요.',
-                        style: TextStyle(color: WebPalette.of(context).muted),
-                      ),
-                    ],
+    return ReferralLinkRouter(
+      child: AlbumInviteRouter(
+        child: authAsync.when(
+          data: (user) => user == null
+              ? kIsWeb && widget.allowDiscovery
+                    ? const PublicDiscoveryScreen()
+                    : const LoginScreen()
+              : const HomeScreen(),
+          loading: () => kIsWeb
+              ? SnapFitWebShell(
+                  showNavigation: false,
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 20),
+                        Text(
+                          '로그인한 계정을 확인하고 있어요.',
+                          style: TextStyle(color: WebPalette.of(context).muted),
+                        ),
+                      ],
+                    ),
                   ),
+                )
+              : const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
                 ),
-              )
-            : const Scaffold(body: Center(child: CircularProgressIndicator())),
-        error: (error, _) =>
-            LoginScreen(authNotice: socialAuthErrorMessage(error)),
+          error: (error, _) =>
+              LoginScreen(authNotice: socialAuthErrorMessage(error)),
+        ),
       ),
     );
   }

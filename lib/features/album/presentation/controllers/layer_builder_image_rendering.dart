@@ -8,6 +8,31 @@ BoxFit _imageFitForLayerImpl(LayerModel layer) {
 /// 사진 위치 조정용 imageOffset(픽셀)을 Image alignment(-1.0~1.0)로 변환
 Alignment _imageAlignmentForLayerImpl(LayerModel layer) => layer.imageAlignment;
 
+List<String> _photoSources(LayerModel layer) =>
+    [layer.previewUrl, layer.imageUrl, layer.originalUrl]
+        .whereType<String>()
+        .map((source) => source.trim())
+        .where((source) => source.isNotEmpty)
+        .toSet()
+        .toList(growable: false);
+
+int? _decodeWidthForLayer(LayerBuilder builder, LayerModel layer) {
+  final canvas =
+      builder.interaction.isPreviewMode &&
+          builder.previewImageDecodeWidth != null
+      ? builder.getCoverSize()
+      : const Size(1, 1);
+  return previewLayerDecodeWidth(
+    canvasDecodeWidth: builder.interaction.isPreviewMode
+        ? builder.previewImageDecodeWidth
+        : null,
+    widthFraction: layer.width / canvas.width,
+    heightFraction: layer.height / canvas.height,
+    scale: layer.scale,
+    zoom: layer.imageZoom,
+  );
+}
+
 /// 이미지 레이어 빌드
 Widget _buildImageImpl(
   LayerBuilder builder,
@@ -33,6 +58,7 @@ Widget _buildImageImpl(
 
   final fit = _imageFitForLayerImpl(layer);
   final alignment = _imageAlignmentForLayerImpl(layer);
+  final decodeWidth = _decodeWidthForLayer(builder, layer);
   final curveSpine =
       wrapSpine &&
       isCover &&
@@ -43,18 +69,23 @@ Widget _buildImageImpl(
       ? builder._isolateArtwork(_buildFramedImageImpl(builder, layer, photo))
       : builder._buildFramedImage(layer, photo);
 
-  Widget previewPhoto(ImageProvider provider) => curveSpine
-      ? AlbumSpineImage(
-          image: provider,
-          alignment: alignment,
-          zoom: layer.imageZoom,
-        )
-      : Image(
-          image: provider,
-          fit: fit,
-          alignment: alignment,
-          filterQuality: FilterQuality.medium,
-        );
+  Widget previewPhoto(ImageProvider provider, {bool decoded = false}) {
+    final image = decoded
+        ? provider
+        : ResizeImage.resizeIfNeeded(decodeWidth, null, provider);
+    return curveSpine
+        ? AlbumSpineImage(
+            image: image,
+            alignment: alignment,
+            zoom: layer.imageZoom,
+          )
+        : Image(
+            image: image,
+            fit: fit,
+            alignment: alignment,
+            filterQuality: FilterQuality.medium,
+          );
+  }
 
   if (builder.printImages != null) {
     final url = layer.originalUrl ?? layer.imageUrl ?? layer.previewUrl;
@@ -94,17 +125,18 @@ Widget _buildImageImpl(
       isCover: isCover,
       child: Opacity(
         opacity: layer.opacity,
-        child: framePhoto(previewPhoto(photoAssetImageProvider(layer.asset!))),
+        child: framePhoto(
+          ActivePhoto(
+            builder: (_) => previewPhoto(photoAssetImageProvider(layer.asset!)),
+          ),
+        ),
       ),
     );
   }
 
-  final url = [
-    layer.previewUrl,
-    layer.imageUrl,
-    layer.originalUrl,
-  ].whereType<String>().where((url) => url.isNotEmpty).firstOrNull;
-  if (url == null || url.isEmpty) {
+  final sources = _photoSources(layer);
+  final url = sources.firstOrNull;
+  if (url == null) {
     return builder.interaction.buildInteractiveLayer(
       layer: layer,
       baseWidth: layer.width,
@@ -118,7 +150,7 @@ Widget _buildImageImpl(
   }
 
   // 앱 번들 에셋 기반 스티커(예: asset:assets/sticker/scrap1.png)
-  if (url.startsWith('asset:')) {
+  if (sources.length == 1 && url.startsWith('asset:')) {
     final assetPath = url.substring('asset:'.length);
     final shouldContainAsset =
         layer.imageBackground != 'rasterCover' &&
@@ -132,14 +164,17 @@ Widget _buildImageImpl(
       child: Opacity(
         opacity: layer.opacity,
         child: framePhoto(
-          curveSpine
-              ? previewPhoto(AssetImage(assetPath))
-              : Image.asset(
-                  assetPath,
-                  fit: shouldContainAsset ? BoxFit.contain : fit,
-                  alignment: alignment,
-                  filterQuality: FilterQuality.medium,
-                ),
+          ActivePhoto(
+            builder: (_) => curveSpine
+                ? previewPhoto(AssetImage(assetPath))
+                : Image.asset(
+                    assetPath,
+                    fit: shouldContainAsset ? BoxFit.contain : fit,
+                    alignment: alignment,
+                    filterQuality: FilterQuality.medium,
+                    cacheWidth: decodeWidth,
+                  ),
+          ),
         ),
       ),
     );
@@ -156,13 +191,17 @@ Widget _buildImageImpl(
         SnapfitImage(
           key: ValueKey(layer.id), // Stable key to prevent reloading
           urlOrGs: url,
+          fallbackSources: sources.skip(1).toList(growable: false),
+          automaticStorageRefresh: true,
           fit: fit,
           alignment: alignment,
+          memCacheWidth: decodeWidth,
+          filterQuality: FilterQuality.medium,
           // Keep web photos equally smooth before and after saving. The
           // cached provider and URL stay unchanged; only sampling matches the
           // existing local preview instead of CachedNetworkImage's low default.
           imageBuilder: curveSpine || kIsWeb
-              ? (context, provider) => previewPhoto(provider)
+              ? (context, provider) => previewPhoto(provider, decoded: true)
               : null,
         ),
       ),
@@ -184,7 +223,7 @@ Widget _buildImagePlaceholderImpl(LayerBuilder builder, LayerModel layer) {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.32),
+          color: Colors.black.withValues(alpha: 0.32),
           borderRadius: BorderRadius.circular(8),
         ),
         child: const Icon(Icons.add_a_photo, size: 16, color: Colors.white),

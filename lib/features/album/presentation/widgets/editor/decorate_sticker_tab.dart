@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../point_shop/presentation/point_shop_access.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../controllers/layer_builder.dart';
 import '../../../../../core/templates/studio_decoration_catalog.dart';
@@ -486,14 +485,14 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
       return Image.asset(
         sticker.value,
         fit: BoxFit.contain,
-        width: 42.w,
-        height: 42.w,
+        width: 42,
+        height: 42,
       );
     }
     if (sticker.isDeco) {
       return _DecoStickerPreview(style: sticker.value);
     }
-    return Text(sticker.value, style: TextStyle(fontSize: 28.sp));
+    return Text(sticker.value, style: const TextStyle(fontSize: 28));
   }
 }
 
@@ -530,7 +529,7 @@ class _DecoStickerPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 실제 캔버스 적용과 동일한 렌더 결과로 미리보기 표시
-    return DecoStickerVisual(style: style, width: 40.w, height: 40.w);
+    return DecoStickerVisual(style: style, width: 40, height: 40);
   }
 }
 

@@ -9,6 +9,7 @@ import '../../domain/entities/layer.dart';
 import '../../service/album_editor_service.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import 'layer_builder.dart';
+import '../../../../core/utils/context_extensions.dart';
 
 Future<bool> editPhotoFrame(
   BuildContext context,
@@ -34,9 +35,7 @@ Future<bool> editPhotoFrame(
   if (key == null || !context.mounted) return false;
   if (vm.currentPage?.id != pageId ||
       !identical(vm.findLayerById(layer.id), original)) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('페이지가 변경됐어요. 사진을 다시 선택해주세요.')));
+    context.showSnack('페이지가 변경됐어요. 사진을 다시 선택해주세요.');
     return false;
   }
   if (key == currentKey) return false;

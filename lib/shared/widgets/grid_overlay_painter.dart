@@ -13,7 +13,7 @@ class GridOverlayPainter extends CustomPainter {
 
     // [Center Guide] 중앙 보조선 추가 (스냅 라인과 시각적 조화)
     final centerPaint = Paint()
-      ..color = Colors.black.withOpacity(0.15)
+      ..color = Colors.black.withValues(alpha: 0.15)
       ..strokeWidth = 1.3;
 
     final centerX = startX + (size.width - startX) / 2;

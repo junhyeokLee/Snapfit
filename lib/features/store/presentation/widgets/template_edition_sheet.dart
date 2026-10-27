@@ -80,7 +80,7 @@ class _TemplateEditionSheetState extends State<TemplateEditionSheet> {
 
   _EditionPreview get _preview => _previews.putIfAbsent(_count, () {
     final aspect =
-        CollectionAspect.values
+        CollectionAspect.printable
             .where((aspect) => aspect.name == widget.previewVariant)
             .firstOrNull ??
         CollectionAspect.square;

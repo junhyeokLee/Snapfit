@@ -1,7 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../shared/widgets/catalog_preview_builder.dart';
 import '../../../../core/theme/snapfit_design_tokens.dart'
     show SnapFitRadius, SnapFitShadow;
 
@@ -12,10 +13,8 @@ import '../../../album/presentation/widgets/create_flow/creation_catalog_cover.d
 import '../../../point_shop/domain/point_shop_template_key.dart';
 import '../../../point_shop/presentation/point_shop_access.dart';
 import '../../domain/entities/premium_template.dart';
-import '../../domain/template_design_profile.dart';
 import 'catalog_edition_artwork.dart';
 import 'catalog_item_title.dart';
-import 'store_floating_cover.dart';
 
 class TemplateCatalogTile extends StatefulWidget {
   const TemplateCatalogTile({
@@ -51,17 +50,44 @@ class TemplateCatalogTile extends StatefulWidget {
 class _TemplateCatalogTileState extends State<TemplateCatalogTile> {
   bool _hovered = false;
   bool _pressed = false;
+  PremiumTemplate? _artworkTemplate;
+  late Widget _cover;
+  late Widget _spread;
+  late Widget _composition;
+
+  void _prepareArtwork() {
+    if (identical(_artworkTemplate, widget.template)) return;
+    _artworkTemplate = widget.template;
+    _cover = RepaintBoundary(
+      child: CreationCatalogCover(
+        template: widget.template,
+        useThumbnail: true,
+        // Current catalog layers stay bounded; book surfaces belong in detail.
+        showBookMaterial: false,
+      ),
+    );
+    _spread = CatalogSpreadPreview(template: widget.template, decodeWidth: 192);
+    _composition = CatalogPreviewBuilder(
+      template: widget.template,
+      builder: (context, snapshot) => Text(
+        snapshot.data?.profile.compositionLabel ??
+            (snapshot.connectionState == ConnectionState.done
+                ? '내지 구성 확인 필요'
+                : '내지 구성 확인 중'),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: ExperienceFormStyle.text(context, 11, secondary: true),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Hover, press, comparison and pagination updates keep the same artwork
+    // widgets. Only a new template rebuilds the native document layers.
+    _prepareArtwork();
     final dark = Theme.of(context).brightness == Brightness.dark;
     final palette = CatalogEditionPalette.of(widget.template.category);
-    final cover = CreationCatalogCover(
-      template: widget.template,
-      useThumbnail: true,
-      // Current catalog layers stay bounded; book surfaces belong in detail.
-      showBookMaterial: false,
-    );
     final hasSpread = catalogEditorialSpread(widget.template) != null;
     final elevated = _hovered || _pressed;
     return Semantics(
@@ -115,14 +141,7 @@ class _TemplateCatalogTileState extends State<TemplateCatalogTile> {
                                 ),
                                 child: CatalogArtworkHero(
                                   tag: widget.heroTag,
-                                  child: kIsWeb
-                                      ? cover
-                                      : StoreFloatingCover(
-                                          scrollController:
-                                              widget.scrollController,
-                                          seed: widget.template.id,
-                                          child: cover,
-                                        ),
+                                  child: _cover,
                                 ),
                               ),
                             ),
@@ -149,7 +168,7 @@ class _TemplateCatalogTileState extends State<TemplateCatalogTile> {
                                   decoration: BoxDecoration(
                                     color: widget.template.isBest
                                         ? const Color(0xFFD4A853)
-                                        : const Color(0xFF14AAA8),
+                                        : SnapFitColors.actionAccent,
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(
@@ -207,18 +226,7 @@ class _TemplateCatalogTileState extends State<TemplateCatalogTile> {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              Text(
-                                TemplateDesignProfile.of(
-                                  widget.template,
-                                ).compositionLabel,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: ExperienceFormStyle.text(
-                                  context,
-                                  11,
-                                  secondary: true,
-                                ),
-                              ),
+                              _composition,
                             ],
                           ),
                         ),
@@ -281,14 +289,7 @@ class _TemplateCatalogTileState extends State<TemplateCatalogTile> {
                             ),
                             if (showSpread) ...[
                               const SizedBox(width: 8),
-                              SizedBox(
-                                width: 58,
-                                height: 32,
-                                child: CatalogSpreadPreview(
-                                  template: widget.template,
-                                  decodeWidth: 192,
-                                ),
-                              ),
+                              SizedBox(width: 58, height: 32, child: _spread),
                             ],
                           ],
                         );

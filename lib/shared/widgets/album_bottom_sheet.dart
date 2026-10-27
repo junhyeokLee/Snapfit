@@ -10,6 +10,7 @@ import 'gallery_thumb_tile.dart';
 import 'experience_form_style.dart';
 import 'browser_photo_selection_sheet.dart';
 import 'editor_modal_scope.dart';
+import '../../core/utils/context_extensions.dart';
 
 class GalleryEmptyOrErrorPanel extends StatelessWidget {
   const GalleryEmptyOrErrorPanel({
@@ -96,7 +97,7 @@ class GalleryEmptyOrErrorPanel extends StatelessWidget {
                     label: const Text('사진 권한 열기'),
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
-                      backgroundColor: SnapFitColors.accent,
+                      backgroundColor: SnapFitColors.actionAccent,
                       foregroundColor: SnapFitColors.onAccent,
                       textStyle: TextStyle(
                         fontSize: 14,
@@ -304,9 +305,7 @@ class _PhotoSelectionSheetState extends ConsumerState<_PhotoSelectionSheet> {
     } else if (_selected.length < widget.maxSelection) {
       setState(() => _selected[asset.id] = asset);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('한 번에 최대 ${widget.maxSelection}장까지 선택할 수 있어요.')),
-      );
+      context.showSnack('한 번에 최대 ${widget.maxSelection}장까지 선택할 수 있어요.');
     }
   }
 
@@ -581,7 +580,7 @@ class _PhotoSelectionSheetState extends ConsumerState<_PhotoSelectionSheet> {
                           ),
                           controller: widget.controller,
                           physics: const AlwaysScrollableScrollPhysics(),
-                          cacheExtent: 200,
+                          cacheExtent: 800,
                           slivers: [
                             if (photos.isEmpty)
                               SliverFillRemaining(

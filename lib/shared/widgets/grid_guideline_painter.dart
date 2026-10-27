@@ -5,7 +5,7 @@ class GridGuidelinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.5)
+      ..color = Colors.white.withValues(alpha: 0.5)
       ..strokeWidth = 1.2;
     final double thirdW = size.width / 3;
     final double thirdH = size.height / 3;

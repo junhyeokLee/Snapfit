@@ -13,9 +13,11 @@ import '../providers/notification_provider.dart';
 import '../../../profile/presentation/widgets/customer_web_page.dart';
 import '../../../profile/presentation/views/notification_settings_screen.dart';
 import '../../../profile/domain/order_visibility_owner.dart';
+import '../../../home_news/presentation/views/home_news_screen.dart';
 import '../../../../shared/web/web_design.dart';
 import '../../../../shared/widgets/snapfit_shimmer.dart';
 import '../../../../shared/widgets/snapfit_motion.dart';
+import '../../../../core/utils/context_extensions.dart';
 
 class NotificationScreen extends ConsumerStatefulWidget {
   const NotificationScreen({super.key});
@@ -28,6 +30,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
   bool _markingAll = false;
   bool _refreshing = false;
   bool _openingSettings = false;
+  bool _openingNews = false;
   Future<List<AppNotificationItem>>? _manualRefresh;
   List<AppNotificationItem>? _retainedItems;
   int _inboxGeneration = 0;
@@ -52,9 +55,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       await ref.read(notificationActionProvider).markAllRead();
     } catch (_) {
       if (!mounted || (kIsWeb && !_webOwnerCurrent)) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('읽음 처리를 완료하지 못했어요. 다시 시도해주세요.')),
-      );
+      context.showErrorSnack('읽음 처리를 완료하지 못했어요. 다시 시도해주세요.');
     } finally {
       if (mounted) setState(() => _markingAll = false);
     }
@@ -94,9 +95,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
           !identical(ref.read(notificationInboxProvider.future), inbox))
         return;
       if (ModalRoute.of(context)?.isCurrent != false) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('알림을 새로고침하지 못했어요. 다시 시도해주세요.')),
-        );
+        context.showErrorSnack('알림을 새로고침하지 못했어요. 다시 시도해주세요.');
       }
     } finally {
       if (mounted) setState(() => _refreshing = false);
@@ -104,15 +103,37 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
   }
 
   Future<void> _openSettings() async {
-    if (!mounted || _openingSettings || (kIsWeb && !_webOwnerCurrent)) return;
+    if (!mounted ||
+        _openingSettings ||
+        _openingNews ||
+        (kIsWeb && !_webOwnerCurrent)) {
+      return;
+    }
     setState(() => _openingSettings = true);
     try {
       await Navigator.push<void>(
         context,
-        MaterialPageRoute(builder: (_) => const NotificationSettingsScreen()),
+        snapFitRoute(page: const NotificationSettingsScreen()),
       );
     } finally {
       if (mounted) setState(() => _openingSettings = false);
+    }
+  }
+
+  Future<void> _openNews() async {
+    if (!mounted ||
+        _openingNews ||
+        _openingSettings ||
+        (kIsWeb && !_webOwnerCurrent)) {
+      return;
+    }
+    setState(() => _openingNews = true);
+    try {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(builder: (_) => const HomeNewsScreen()),
+      );
+    } finally {
+      if (mounted) setState(() => _openingNews = false);
     }
   }
 
@@ -224,7 +245,17 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                            child: _overview(inboxAsync, wide: false),
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxHeight: box.maxHeight * .55,
+                              ),
+                              child: SingleChildScrollView(
+                                key: const PageStorageKey(
+                                  'inbox-compact-summary',
+                                ),
+                                child: _overview(inboxAsync, wide: false),
+                              ),
+                            ),
                           ),
                           Expanded(child: _inbox(inboxAsync)),
                           _RetentionPolicyBar(
@@ -351,18 +382,36 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
             ),
       label: Text(_markingAll ? '읽음 처리 중' : '모두 읽음'),
     );
-    return wide
-        ? Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [title, const SizedBox(height: 12), action],
-          )
-        : Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 12,
-            runSpacing: 4,
-            children: [title, action],
-          );
+    final newsAction = TextButton.icon(
+      key: const ValueKey('home-news-inbox-entry'),
+      style: TextButton.styleFrom(
+        minimumSize: const Size(0, 48),
+        foregroundColor: ExperienceFormStyle.selectionInk(context),
+        textStyle: ExperienceFormStyle.text(
+          context,
+          14,
+          weight: FontWeight.w600,
+        ),
+      ),
+      onPressed: _openingNews || _openingSettings ? null : _openNews,
+      icon: const Icon(Icons.auto_awesome_outlined, size: 18),
+      label: const Text('혜택·새 소식'),
+    );
+    return Wrap(
+      alignment: WrapAlignment.spaceBetween,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 16,
+      runSpacing: 8,
+      children: [
+        title,
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 12,
+          runSpacing: 4,
+          children: [newsAction, action],
+        ),
+      ],
+    );
   }
 
   AsyncValue<List<AppNotificationItem>> _visibleInbox(
@@ -385,7 +434,10 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     AsyncValue<List<AppNotificationItem>> inbox,
   ) => _visibleInbox(inbox).when(
     skipLoadingOnRefresh: !_refreshing,
-    loading: () => const SnapFitShimmerNotificationList(),
+    loading: () => const SingleChildScrollView(
+      key: PageStorageKey('inbox-loading'),
+      child: SnapFitShimmerNotificationList(),
+    ),
     error: (_, __) => Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -423,9 +475,12 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     data: (items) {
       if (items.isEmpty) {
         return Center(
-          child: Text(
-            '알림이 없습니다.',
-            style: ExperienceFormStyle.text(context, 14, secondary: true),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Text(
+              '알림이 없습니다.',
+              style: ExperienceFormStyle.text(context, 14, secondary: true),
+            ),
           ),
         );
       }
@@ -440,6 +495,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         beginOffset: Offset.zero,
         child: ListView.builder(
           key: const PageStorageKey('inbox-list'),
+          cacheExtent: 800,
           padding: kIsWeb
               ? EdgeInsets.zero
               : const EdgeInsets.fromLTRB(16, 10, 16, 16),
@@ -477,9 +533,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                   });
                 } catch (_) {
                   if (!context.mounted || (kIsWeb && !_webOwnerCurrent)) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('알림을 열지 못했어요. 다시 시도해주세요.')),
-                  );
+                  context.showErrorSnack('알림을 열지 못했어요. 다시 시도해주세요.');
                 }
               },
             );
@@ -555,6 +609,12 @@ class _NotificationCard extends StatelessWidget {
   final AppNotificationItem item;
   final VoidCallback onTap;
 
+  bool get _isAlbumSharing => const {
+    'album_invite',
+    'invite_accepted',
+    'album_member_changed',
+  }.contains(item.type);
+
   @override
   Widget build(BuildContext context) => Semantics(
     value: item.isRead ? '읽음' : '읽지 않음',
@@ -582,7 +642,7 @@ class _NotificationCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(9),
             ),
             child: Icon(
-              item.type == 'album_invite'
+              _isAlbumSharing
                   ? Icons.people_outline
                   : item.type == 'order_status'
                   ? Icons.inventory_2_outlined
@@ -651,7 +711,7 @@ class _NotificationCard extends StatelessWidget {
                     alignment: Alignment.topRight,
                     child: Center(
                       child: Icon(
-                        item.type == 'album_invite'
+                        _isAlbumSharing
                             ? Icons.people_outline
                             : item.type == 'order_status'
                             ? Icons.inventory_2_outlined
@@ -741,6 +801,8 @@ class _NotificationCard extends StatelessWidget {
       case 'album_comment':
         return '댓글/반응';
       case 'album_invite':
+      case 'invite_accepted':
+      case 'album_member_changed':
         return '공유/초대';
       default:
         return '안내';
