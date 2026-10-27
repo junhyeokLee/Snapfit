@@ -26,7 +26,7 @@ void main() {
               ];
         for (final edition in editions) {
           final count = edition['innerPageCount'] as int;
-          for (final aspect in CollectionAspect.values) {
+          for (final aspect in CollectionAspect.printable) {
             final document =
                 edition['variants'][aspect.name] as Map<String, dynamic>;
             final pages = templateDocumentPages(document);
@@ -55,7 +55,7 @@ void main() {
           }
         }
       }
-      expect(keys, hasLength(26));
+      expect(keys, hasLength(86));
     },
   );
 
@@ -64,11 +64,11 @@ void main() {
     final rows = pointShopPriceApplicationRows()
         .where((row) => keys.contains(row['product_key']))
         .toList();
-    expect(rows, hasLength(26));
+    expect(rows, hasLength(86));
     expect(rows.where((row) => row['point_price'] == 2500), hasLength(7));
-    expect(rows.where((row) => row['point_price'] == 1800), hasLength(7));
+    expect(rows.where((row) => row['point_price'] == 1800), hasLength(67));
     expect(rows.where((row) => row['point_price'] == 2800), hasLength(12));
-    expect(rows.where((row) => row['is_active'] == true), hasLength(26));
+    expect(rows.where((row) => row['is_active'] == true), hasLength(86));
     expect(rows.where((row) => row['is_active'] == false), isEmpty);
     if (const bool.fromEnvironment('EXPORT_PREMIUM_SALE')) {
       final out = Directory('output/premium-registration/sale-2026-10-18')

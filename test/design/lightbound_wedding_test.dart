@@ -50,7 +50,7 @@ void main() {
     expect(bundledCreationTemplates.length, 42);
     expect(bundledCreationTemplates.every((t) => !t.isPremium), isTrue);
     expect(authoredCollections.any((c) => c.id == 'lightbound'), isTrue);
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       final data = buildLightboundWeddingDraft(aspect);
       expect(data['publicationStatus'], 'bundled');
       expect(data['accessTier'], 'free');
@@ -91,7 +91,7 @@ void main() {
     },
   );
 
-  for (final aspect in CollectionAspect.values) {
+  for (final aspect in CollectionAspect.printable) {
     test(
       '${aspect.name}: complete composition, safe text and editable photo roundtrip',
       () {

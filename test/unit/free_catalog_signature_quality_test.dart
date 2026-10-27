@@ -387,7 +387,7 @@ Map<String, dynamic> _sourceDocument(
 
 Map<String, dynamic>? _fingerprintCache;
 Map<String, dynamic> _fingerprints() => _fingerprintCache ??= {
-  for (final aspect in CollectionAspect.values)
+  for (final aspect in CollectionAspect.archived)
     aspect.name: {
       'protected': _digest({
         for (final collection in authoredCollections)
@@ -491,9 +491,9 @@ void main() {
       final catalog = jsonDecode(template.templateJson!) as Map;
       expect(
         (catalog['variants'] as Map).keys,
-        unorderedEquals(CollectionAspect.values.map((a) => a.name)),
+        unorderedEquals(CollectionAspect.printable.map((a) => a.name)),
       );
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         final document = collection.document(aspect);
         expect(document['aiGenerated'], isFalse);
         expect(document['innerPageCount'], template.pageCount);
@@ -508,7 +508,37 @@ void main() {
     }
   });
 
-  for (final aspect in CollectionAspect.values) {
+  for (final aspect in CollectionAspect.archived) {
+    test(
+      '${aspect.name}: archived interiors and source identities are untouched',
+      () {
+        expect(
+          _baseline,
+          isNotEmpty,
+          reason: 'Record the original factory before installing new covers.',
+        );
+        final actual = _fingerprints()[aspect.name] as Map;
+        final original = _baseline[aspect.name] as Map;
+        expect(
+          actual['protected'],
+          original['protected'],
+          reason:
+              'Saved-album source builders retain all 42 original interiors '
+              'and identities while the current catalog evolves.',
+        );
+        for (final collection in authoredCollections) {
+          expect(
+            (actual['covers'] as Map)[collection.id],
+            isNot((original['covers'] as Map)[collection.id]),
+            reason:
+                '${collection.id}: every current jacket uses the photographic edition',
+          );
+        }
+      },
+    );
+  }
+
+  for (final aspect in CollectionAspect.printable) {
     test(
       '${aspect.name}: photographed subjects retain readable unboxed title placement',
       () {
@@ -564,7 +594,7 @@ void main() {
           (family['x'] as num).toDouble() + (family['w'] as num).toDouble() / 2,
           closeTo(.5, .001),
         );
-        if (aspect == CollectionAspect.landscape) {
+        if (aspect.isLandscape) {
           expect(family['text'], '우리 집의\n사계절');
           expect((family['style'] as Map)['fontSize'], 28.0);
           expect(family['x'] as num, greaterThanOrEqualTo(.34));
@@ -666,34 +696,6 @@ void main() {
         }
       }
     });
-
-    test(
-      '${aspect.name}: archived interiors and source identities are untouched',
-      () {
-        expect(
-          _baseline,
-          isNotEmpty,
-          reason: 'Record the original factory before installing new covers.',
-        );
-        final actual = _fingerprints()[aspect.name] as Map;
-        final original = _baseline[aspect.name] as Map;
-        expect(
-          actual['protected'],
-          original['protected'],
-          reason:
-              'Saved-album source builders retain all 42 original interiors '
-              'and identities while the current catalog evolves.',
-        );
-        for (final collection in authoredCollections) {
-          expect(
-            (actual['covers'] as Map)[collection.id],
-            isNot((original['covers'] as Map)[collection.id]),
-            reason:
-                '${collection.id}: every current jacket uses the photographic edition',
-          );
-        }
-      },
-    );
 
     test(
       '${aspect.name}: 42 covers fit, keep photography open and remain editable',
@@ -863,9 +865,7 @@ void main() {
           }
           expect(
             largestType,
-            greaterThanOrEqualTo(
-              aspect == CollectionAspect.landscape ? 28 : 30,
-            ),
+            greaterThanOrEqualTo(aspect.isLandscape ? 28 : 30),
             reason: '$prefix: title must read at store-card size',
           );
         }

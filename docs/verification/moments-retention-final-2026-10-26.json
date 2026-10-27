@@ -1,0 +1,138 @@
+{
+  "date": "2026-10-26",
+  "status": "complete",
+  "scope": "Photo-first private moments, instant saved cover, weekly recap, additive monthly album updates, optional weekly reminders, server-time retention measurement",
+  "features": [
+    "photo_first_journal",
+    "intrinsic_photo_ratio_and_carousel",
+    "instant_local_saved_cover_without_automatic_album_creation",
+    "fresh_monthly_journal_on_explicit_preview",
+    "private_weekly_recap_across_months",
+    "owner_selected_new_photos_appended_preserving_edited_album",
+    "opt_in_weekday_and_time_KST_reminders",
+    "skip_reminder_after_actual_save_or_recap",
+    "latest_opt_in_check_before_FCM",
+    "server_time_cohort_measurement_without_photo_or_caption_metadata"
+  ],
+  "source": {
+    "sha256": "2b3d2deab0dd8e5bc75c3d4d32fdc6a216b3d5e24d2e345c781a0555c0c893ea",
+    "files": 1863,
+    "unchanged_after_builds": true,
+    "generated_hosting_cache_headers_excluded": true
+  },
+  "web": {
+    "url": "https://snapfit-c719d.web.app/moments",
+    "deployment": {
+      "status": "success",
+      "result": {
+        "hosting": "projects/360727043538/sites/snapfit-c719d/versions/aed3d8491b4568ec"
+      }
+    },
+    "build": {
+      "main_sha256": "4c214b8b1666d32f22f34d9c8e4853f482e24b63c7d61ef13b01e314ddbeed72",
+      "main_file": "main.4c214b8b1666d32f22f3.dart.js",
+      "bootstrap_sha256": "b05e126b3a6d7097c882535797680ab5ee9f245f39047c8f3273f51ee6dbfb6b",
+      "bootstrap_file": "flutter_bootstrap.b05e126b3a6d7097c882.js"
+    },
+    "remote_checks": [
+      {
+        "path": "index.html",
+        "matches_build": true
+      },
+      {
+        "path": "moments",
+        "matches_build": true
+      },
+      {
+        "path": "main.4c214b8b1666d32f22f3.dart.js",
+        "matches_build": true
+      },
+      {
+        "path": "flutter_bootstrap.b05e126b3a6d7097c882.js",
+        "matches_build": true
+      },
+      {
+        "path": "snapfit-web-build.json",
+        "matches_build": true
+      }
+    ]
+  },
+  "android": {
+    "path": "/Users/devsheep/SnapFit/SnapFit/output/native-photo-refresh/SnapFit-moments-retention-debug.apk",
+    "bytes": 902368902,
+    "sha256": "ca2dfbf965c63d8b37c04266050ee1cd15cef8f9d6ccab1d6734571e994bb0d0",
+    "zip_crc_ok": true,
+    "device_installation": "not_performed_phone_unavailable",
+    "source_unchanged": true,
+    "source_sha256": "2b3d2deab0dd8e5bc75c3d4d32fdc6a216b3d5e24d2e345c781a0555c0c893ea",
+    "signature_verified": true
+  },
+  "database": {
+    "migration": "supabase/migrations/20261026104459_moments_retention_and_safe_album_append.sql",
+    "preflight": "docs/verification/moments-retention-preflight-2026-10-26.json",
+    "postflight": "docs/verification/moments-retention-postflight-2026-10-26.json",
+    "backend_report": "docs/verification/moments-retention-backend-2026-10-26.json",
+    "live_api_report": "docs/verification/moments-retention-live-2026-10-26.json",
+    "metrics_query": "supabase/verification/moments_retention_metrics.sql"
+  },
+  "push_dispatch": {
+    "version": 22,
+    "remote_source_exact": true,
+    "scheduled_jobs_observed_succeeded": true,
+    "no_real_device_push_sent_during_QA": true
+  },
+  "tests": {
+    "combined_flutter_passed_before_final_semantic_only_fix": 176,
+    "reward_and_semantic_regression_passed_after_fix": 13,
+    "new_semantic_regression_count": 1,
+    "isolated_sql_passed": 36,
+    "node_notification_passed": 34,
+    "real_authenticated_api_assertions_passed": 31,
+    "focused_analyzer": "No issues found",
+    "reports": [
+      "output/moments-retention-final-regression.log",
+      "output/moments-retention-final-semantic-tests.log",
+      "output/moments-retention-analyze.log"
+    ]
+  },
+  "ui": {
+    "status": "passed",
+    "url": "https://snapfit-c719d.web.app/moments",
+    "checks": {
+      "photo_first_journal": true,
+      "weekly_recap": true,
+      "weekly_photo_paging": true,
+      "existing_album_append": true,
+      "existing_album_reopen_no_duplicates": true,
+      "post_save_cover_real_uploaded_photo": true,
+      "post_save_caption_saved": true,
+      "reminder_default_off": true,
+      "reminder_explicit_enable_saved": true,
+      "reminder_weekday_saved": true,
+      "reminder_disable_persisted_after_reload": true,
+      "final_release_journal_record_survives_reload": true,
+      "ui_logout": true,
+      "credentials_variable_cleared": true
+    },
+    "screenshots": [
+      "output/moments-retention-20261026/live-journal.png",
+      "output/moments-retention-20261026/live-weekly-recap.png",
+      "output/moments-retention-20261026/live-appended-page.png",
+      "output/moments-retention-20261026/live-saved-cover.png",
+      "output/moments-retention-20261026/live-journal-final.png",
+      "output/moments-retention-20261026/live-reminder-settings.png"
+    ]
+  },
+  "limitations": [
+    "Physical Android installation and real device push receipt were not performed because the phone is unavailable.",
+    "Retention improvement is a hypothesis; event measurement is implemented but no improvement percentage is claimed."
+  ],
+  "cleanup": {
+    "status": "complete",
+    "report": "docs/verification/moments-retention-cleanup-2026-10-26.json",
+    "proof": "docs/verification/moments-retention-cleanup-proof-2026-10-26.json",
+    "qa_accounts_and_storage_removed": true,
+    "private_credentials_deleted": true,
+    "real_customer_baseline_exact": true
+  }
+}

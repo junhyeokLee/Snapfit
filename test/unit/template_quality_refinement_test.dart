@@ -12,7 +12,7 @@ void main() {
   test('free editorial refinement remains free in every size', () {
     expect(FreeCollectionVolume.values, hasLength(32));
     for (final volume in FreeCollectionVolume.values) {
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         final doc = volume.document(aspect);
         expect(doc['version'], 4);
         expect(doc['qualityRevision'], 'editorial-free-2026-10-07');
@@ -42,7 +42,7 @@ void main() {
           publishedPremiumProductKey(conceptVolumeCatalogIds[volume]!),
           'template:${volume.id}',
         );
-        for (final aspect in CollectionAspect.values) {
+        for (final aspect in CollectionAspect.printable) {
           final baseline = volume.document(aspect, refineQuality: false);
           final original = jsonEncode(baseline);
           final refined = volume.document(aspect);

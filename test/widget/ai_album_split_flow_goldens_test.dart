@@ -41,16 +41,21 @@ void main() {
     await loadCreationFonts();
   });
 
-  testWidgets('AI start split flow golden', (tester) async {
+  testWidgets('manual start remains reachable without a retired AI entry', (
+    tester,
+  ) async {
     await _setPhoneSurface(tester);
+    var manual = 0;
     await tester.pumpWidget(
-      _wrap(AiAlbumStartStep(onAiStart: () {}, onManualStart: () {})),
+      _wrap(AiAlbumStartStep(onManualStart: () => manual++)),
     );
     await tester.pumpAndSettle();
-    await expectLater(
-      find.byType(AiAlbumStartStep),
-      matchesGoldenFile('goldens/ai_album_start_split_390x844.png'),
-    );
+    expect(find.text('직접 만들기').hitTestable(), findsOneWidget);
+    expect(find.text('AI 템플릿'), findsNothing);
+    expect(find.text('등록된 템플릿이 없어요'), findsOneWidget);
+    await tester.tap(find.text('직접 만들기'));
+    expect(manual, 1);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('AI theme split flow golden', (tester) async {

@@ -1,0 +1,87 @@
+{
+  "date": "2026-10-25",
+  "scope": "Fresh review of photo retry, maintained hidden readers, rapid navigation/rotation, mixed source aliases and resource release",
+  "previous_fix_report": "docs/verification/album-photo-recovery-rereview-fixes-2026-10-25.json",
+  "production_code_changed": false,
+  "test_changes": [
+    "Added test/review/photo_retry_resume_review_test.dart with five independent combined/lifecycle cases",
+    "The existing 220-test suite is unchanged"
+  ],
+  "findings": [
+    {
+      "priority": "P2",
+      "title": "Initial loading still starts for new photo widgets on a maintained hidden reader",
+      "location": {"file": "lib/shared/snapfit_image.dart", "start_line": 355, "end_line": 382},
+      "supporting_locations": [
+        "lib/shared/snapfit_image.dart:449",
+        "lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart:618",
+        "lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart:1153"
+      ],
+      "cause": "The rasterizer and preparation/recovery continuations are guarded, but a single direct URL still builds CachedNetworkImage without checking activity. A newly mounted storage recovery state also calls _resolveSource from initState before its build visibility guard. The live cover/spread is a separate path from rasterized page preparation.",
+      "trigger": "A reader is kept underneath an opaque route and updated album data introduces a new cover photo while it is hidden; rotation was included in the actual reader reproduction. A newly mounted storage photo under TickerMode(false) similarly starts signing immediately.",
+      "proof": {
+        "tests": [
+          "review: hidden reader rotation with a refreshed photo defers live-image work",
+          "review: a storage photo mounted while hidden must defer its initial signing request"
+        ],
+        "actual_reader_route": "Real AlbumReaderSinglePageView under another Navigator route, verified TickerMode false",
+        "requests_before_hiding_update": ["cover 0", "inner photo 1", "inner photo 2"],
+        "new_request_while_hidden": "updated cover photo",
+        "hidden_storage_signings_actual": 1,
+        "hidden_storage_signings_expected": 0,
+        "rotation_without_data_change": "passes without another request"
+      },
+      "recommendation": "Apply activity gating before initial provider creation and storage resolution for every source branch, including the direct URL/live-cover path. Resume unresolved work on route/foreground visibility without adding parked contexts, unbounded listeners or polling timers.",
+      "limits": "The actual reader fixture verifies cache-manager image loading and real decoding. It does not prove that a warm production disk cache issues a new HTTP transfer; the confirmed problem is unnecessary hidden loading/decoding/signing work, not a demonstrated permanent memory leak."
+    },
+    {
+      "priority": "P2",
+      "title": "A direct URL and storage URI for the same failed image can still duplicate its download",
+      "location": {"file": "lib/core/cache/photo_failure_versions.dart", "start_line": 20, "end_line": 33},
+      "supporting_locations": [
+        "lib/shared/snapfit_image.dart:190",
+        "lib/shared/snapfit_image.dart:399",
+        "lib/shared/snapfit_image.dart:416"
+      ],
+      "cause": "Failure versions are keyed by logical source plus resolved URL, while the underlying image provider key uses the resolved URL/decode options. When a shared stream was created by the direct URL alias, its early observer records only that alias. A storage consumer cannot see the same rejected stream version and may reload it before its own error-widget recovery runs.",
+      "trigger": "Visible consumers and preparation use a direct URL and a supabase URI that resolve to the same image, with the same cache manager and 128x128 decode bounds; that URL is immediately rejected.",
+      "proof": {
+        "test": "review: URL and storage aliases of one rejected photo must share recovery",
+        "requests": ["rejected URL", "rejected URL again", "fresh URL"],
+        "rejected_requests_expected": 1,
+        "rejected_requests_actual": 2,
+        "fresh_requests": 1,
+        "storage_resolutions": 2,
+        "eventual_display_and_preparation": "succeed",
+        "live_image_entries_after_unmount": 0
+      },
+      "recommendation": "Associate shared failure/recovery identity with the effective image key so aliases of the same image observe the same failed generation, while keeping unrelated resource/cache/auth scopes isolated. Preserve the existing decode bounds, explicit retry semantics and bounded metadata lifetime."
+    }
+  ],
+  "verified_without_new_findings": [
+    "All existing 220 related cases pass, including main/collection navigation, cover and reader rotation, page-turn cancel/reverse, photo recovery, hidden preparation, cache bounds, editor crop and print resolution",
+    "Eight rapid retry clicks, hiding during signing, changing decode size as on rotation, joining reader preparation and four further hide/resume cycles share one successful recovery",
+    "The combined retry/rotation case signs exactly three times (initial, automatic renewal, explicit retry) and downloads each resulting URL once",
+    "All image handles tracked in the combined case are disposed after unmount/cache clearing; live/pending image entries and transient callbacks return to zero",
+    "An actual maintained reader rotated without album data changes starts no additional photo loading in the new route test",
+    "The new findings do not reproduce a persistent missing-photo state or an unbounded/native memory leak"
+  ],
+  "verification": {
+    "existing_related_suite": {"passed": 220, "failed": 0, "log": "output/album-photo-retry-resume-review/suite.log"},
+    "fresh_cases": {
+      "passed": 2,
+      "failed": 3,
+      "distinct_confirmed_findings": 2,
+      "log": "output/album-photo-retry-resume-review/edges.log",
+      "note": "The three new failures intentionally assert the desired behavior on the two unfixed findings"
+    },
+    "total_unique_cases": 225,
+    "unique_passed": 222,
+    "unique_failed": 3,
+    "analysis": {"items": 13, "issues": 0, "log": "output/album-photo-retry-resume-review/analysis.log"},
+    "app_build_run": false,
+    "live_backend_or_user_data_changed": false,
+    "device_frame_or_process_memory_profile_run": false
+  },
+  "limits": "Review only: production fixes are not included. Controlled signing/download fixtures use actual Flutter image decoding; the five new cases do not make live service calls. Existing cache-manager transport tests are included in the related suite. Cache/handle assertions do not measure whole-device memory or frame times and cannot establish the absence of every native leak or frame drop."
+}

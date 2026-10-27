@@ -9,7 +9,7 @@ List<String> photos(Map<String, dynamic> page) => [
 ];
 
 void main() {
-  for (final aspect in CollectionAspect.values) {
+  for (final aspect in CollectionAspect.printable) {
     test('free photo direction is distinct and editable: ${aspect.name}', () {
       final coverHeroes = <String>{};
       for (final volume in FreeCollectionVolume.values) {

@@ -233,14 +233,14 @@ void main() {
       expect(find.byIcon(Icons.opacity), findsOneWidget);
       expect(find.byIcon(Icons.auto_awesome_outlined), findsOneWidget);
       expect(find.byIcon(Icons.delete_outline), findsOneWidget);
-      expect(find.byTooltip('사진변경'), findsOneWidget);
-      expect(find.byTooltip('사진위치'), findsOneWidget);
-      expect(find.byTooltip('불투명도'), findsOneWidget);
+      expect(find.byTooltip('사진 바꾸기'), findsOneWidget);
+      expect(find.byTooltip('사진 위치 조정'), findsOneWidget);
+      expect(find.byTooltip('진하기'), findsOneWidget);
       expect(find.byTooltip('꾸미기'), findsOneWidget);
       expect(find.byTooltip('삭제'), findsOneWidget);
-      expect(find.bySemanticsLabel(RegExp('사진변경')), findsOneWidget);
-      expect(find.bySemanticsLabel(RegExp('사진위치')), findsOneWidget);
-      expect(find.bySemanticsLabel(RegExp('불투명도')), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp('사진 바꾸기')), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp('사진 위치 조정')), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp('진하기')), findsOneWidget);
       expect(find.bySemanticsLabel(RegExp('꾸미기')), findsOneWidget);
       expect(find.bySemanticsLabel(RegExp('삭제')), findsOneWidget);
       final actionRail = find.descendant(
@@ -318,7 +318,7 @@ void main() {
       expect(find.text('사진'), findsOneWidget);
       expect(find.text('레이아웃'), findsOneWidget);
       expect(find.text('템플릿'), findsOneWidget);
-      expect(find.text('레이어'), findsOneWidget);
+      expect(find.text('재배치'), findsOneWidget);
       expect(find.text('꾸미기'), findsOneWidget);
       expect(find.text('배경'), findsOneWidget);
       expect(find.text('편집 시작'), findsOneWidget);

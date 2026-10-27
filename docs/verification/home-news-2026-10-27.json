@@ -1,0 +1,164 @@
+{
+  "task": "Account-aware home news sheets for monthly designs, attendance, referral and month review",
+  "date": "2026-10-27",
+  "status": "complete",
+  "updatedAt": "2026-10-27T02:03:57.614259+00:00",
+  "changes": {
+    "campaigns": [
+      "monthlyDesign",
+      "attendance",
+      "referral",
+      "monthReview"
+    ],
+    "monthlyDesigns": "Only actual published active products with a nonnegative price quote and a real cover asset",
+    "benefits": "Lifetime participation checked by the server; reward copy comes from current attendance/referral responses",
+    "monthReview": "Last seven Korean dates of the month, actual saved photos, no existing monthly album; preview re-reads current month and preserves existing-album/import safeguards",
+    "delivery": "One candidate per app session; server enforces one per Korean day, two per Monday week, one per campaign across app and web",
+    "suppression": [
+      "First-visit guide",
+      "Local creation or moment draft recovery",
+      "Navigation away",
+      "Background entry",
+      "Pointer interaction before delayed display",
+      "Previously exposed campaign",
+      "Completed benefits",
+      "Expired monthly edition"
+    ],
+    "manualReplay": "Notifications → 혜택·새 소식; does not consume automatic quota",
+    "privacy": "Profile and live session ownership must agree; account switches remove only the owned popup route and immediately hide private photos",
+    "layout": "Mobile bottom sheet; at least 760px wide centered dialog up to 480px; dark mode and large type supported",
+    "notificationCompatibility": "Scrollable shimmer, summary and empty states prevent overflow in compact viewports"
+  },
+  "verification": {
+    "nativeFunctional": {
+      "passed": 31,
+      "log": "output/home-news-functional-tests.log"
+    },
+    "nativeNavigationAndScreenshots": {
+      "passed": 13,
+      "log": "output/home-news-navigation-capture-tests.log"
+    },
+    "notificationRegression": {
+      "passed": 48,
+      "log": "output/home-news-notification-repair-tests.log"
+    },
+    "chrome": {
+      "passed": 61,
+      "log": "output/home-news-chrome-tests.log"
+    },
+    "sqlPolicy": {
+      "passed": 7,
+      "log": "output/home-news-exposure-sql-tests.log"
+    },
+    "productionDatabase": {
+      "project": "rrbhxdtriummqpztpjrk",
+      "migration": "20261027014355_home_news_exposure_policy.sql",
+      "applied": {
+        "success": true
+      },
+      "verification": [
+        {
+          "verification": {
+            "checks": [
+              "authenticated RPC",
+              "anonymous and direct-table ACL",
+              "atomic claim and retry",
+              "KST daily cap",
+              "dismiss and click",
+              "account isolation",
+              "empty-month exclusion",
+              "manual replay without automatic quota",
+              "point ledger unchanged after signup baseline"
+            ],
+            "passed": true,
+            "transactionRolledBack": true
+          }
+        }
+      ],
+      "cleanup": [
+        {
+          "result": {
+            "rlsEnabled": true,
+            "migrationApplied": true,
+            "temporaryUsersRemaining": 0,
+            "publicFunctionsAreInvokers": true
+          }
+        }
+      ],
+      "advisors": {
+        "featureWarnings": 0,
+        "privateTable": "RLS enabled with direct role access revoked; no allow policy is intentional",
+        "reference": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+      }
+    },
+    "analysis": {
+      "result": "No issues found",
+      "log": "output/home-news-analysis.log"
+    },
+    "diffWhitespaceCheck": "passed",
+    "nativeAppBuildOrDeviceInstall": false
+  },
+  "screenshots": [
+    "output/home-news-20261027/attendance-desktop-light.png",
+    "output/home-news-20261027/attendance-mobile-dark.png",
+    "output/home-news-20261027/attendance-mobile-light.png",
+    "output/home-news-20261027/attendance-small-large-type.png",
+    "output/home-news-20261027/monthReview-desktop-light.png",
+    "output/home-news-20261027/monthReview-mobile-dark.png",
+    "output/home-news-20261027/monthReview-mobile-light.png",
+    "output/home-news-20261027/monthReview-small-large-type.png",
+    "output/home-news-20261027/monthlyDesign-desktop-light.png",
+    "output/home-news-20261027/monthlyDesign-mobile-dark.png",
+    "output/home-news-20261027/monthlyDesign-mobile-light.png",
+    "output/home-news-20261027/monthlyDesign-small-large-type.png",
+    "output/home-news-20261027/referral-desktop-light.png",
+    "output/home-news-20261027/referral-mobile-dark.png",
+    "output/home-news-20261027/referral-mobile-light.png",
+    "output/home-news-20261027/referral-small-large-type.png"
+  ],
+  "deployment": {
+    "status": "complete",
+    "baseUrl": "https://snapfit-c719d.web.app",
+    "project": "snapfit-c719d",
+    "release": "f8a1611f6df149dc",
+    "build": {
+      "main_sha256": "7deb8e725d5184466438dfac0122d076a4cbaac011fc9eb37b5052f7218d3ec6",
+      "main_file": "main.7deb8e725d5184466438.dart.js",
+      "bootstrap_sha256": "16239fd2c005956a311b1ecd54258785627b0f3c5295ec745182f5006e9ba50c",
+      "bootstrap_file": "flutter_bootstrap.16239fd2c005956a311b.js"
+    },
+    "checks": [
+      {
+        "path": "/albums",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      },
+      {
+        "path": "/notifications",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      },
+      {
+        "path": "/snapfit-web-build.json",
+        "status": 200,
+        "matchesLocal": true
+      },
+      {
+        "path": "/flutter_bootstrap.16239fd2c005956a311b.js",
+        "status": 200,
+        "sha256": "16239fd2c005956a311b1ecd54258785627b0f3c5295ec745182f5006e9ba50c"
+      },
+      {
+        "path": "/main.7deb8e725d5184466438.dart.js",
+        "status": 200,
+        "sha256": "7deb8e725d5184466438dfac0122d076a4cbaac011fc9eb37b5052f7218d3ec6"
+      }
+    ],
+    "passed": true,
+    "buildLog": "output/home-news-web-build.log",
+    "deployLog": "output/home-news-web-deploy.json"
+  },
+  "completedAt": "2026-10-27T02:06:17.910602+00:00"
+}

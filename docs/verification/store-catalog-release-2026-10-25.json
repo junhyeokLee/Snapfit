@@ -1,0 +1,93 @@
+{
+  "revision": "2026-10-25-complete-catalog-release",
+  "verifiedAt": "2026-10-24 15:43:53 UTC",
+  "projectRef": "rrbhxdtriummqpztpjrk",
+  "status": "applied-and-verified",
+  "releaseScope": "Current bundled store products only. Retired legacy artwork remains excluded.",
+  "source": "publishedCreationTemplates; native preview and detail snapshots retained",
+  "beforeProductCount": 222,
+  "afterProductCount": 442,
+  "newlyRegisteredProductCount": 220,
+  "currentCounts": [
+    {
+      "free": 20,
+      "kind": "frame",
+      "paid": 29,
+      "total": 49,
+      "active": 49
+    },
+    {
+      "free": 5,
+      "kind": "phrase",
+      "paid": 66,
+      "total": 71,
+      "active": 71
+    },
+    {
+      "free": 41,
+      "kind": "sticker",
+      "paid": 158,
+      "total": 199,
+      "active": 199
+    },
+    {
+      "free": 47,
+      "kind": "template",
+      "paid": 76,
+      "total": 123,
+      "active": 123
+    }
+  ],
+  "verifiedIdentities": 442,
+  "mismatches": [],
+  "pendingOrUnpricedCount": 0,
+  "anonymousAccess": {
+    "readable": 442,
+    "available": 442,
+    "free": 113,
+    "paid": 329
+  },
+  "oldConfiguredPricesPreserved": true,
+  "templatePrices": {
+    "free": {
+      "count": 47,
+      "points": 0
+    },
+    "storyAndConcept": {
+      "count": 57,
+      "points": 1800
+    },
+    "premiumVolume": {
+      "count": 7,
+      "points": 2500
+    },
+    "atelierAndStudio": {
+      "count": 12,
+      "points": 2800
+    }
+  },
+  "storyMaterialPrices": {
+    "paper": 100,
+    "motif": 200,
+    "editableTitle": 300,
+    "freeClubKit": 0
+  },
+  "actualMutation": "Targeted point_shop_products upsert. Preserved configured prices and active listings. No wallets, ownership, saved albums, user data, RLS or function changes.",
+  "sourceChanges": [
+    "Explicit approval of 50 paid story templates and 150 paid materials",
+    "Restore paid flags for 26 existing paid editions",
+    "Retain canonical bundled free/paid tier when merging stale server metadata",
+    "Protect free/paid tiers during release SQL and verification"
+  ],
+  "verification": {
+    "flutter": "213 unique related tests passed across focused runs; stale 42-free fixture updated to 47 and rerun; new widget finder narrowed to the catalog scrollable and rerun",
+    "sql": "18 local PGlite tests passed, including activation idempotency, tier/identity conflict rollback and purchase/ownership regressions",
+    "staticAnalysis": "12 changed Dart targets: no issues",
+    "liveQueries": "442 exact identities/pricing tiers verified; 442 accessible using anon role and get_point_shop_access",
+    "newArtwork": "All 55 story books loaded exported covers and full detail assets; preview LRU stayed bounded",
+    "appBuildRun": false,
+    "physicalDeviceRun": false
+  },
+  "artifactsDirectory": "output/pricing/catalog-2026-10-25",
+  "note": "Exported application.json describes prepared SQL and deliberately remains an offline input. This separate verification record confirms the actual remote execution."
+}

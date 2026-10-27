@@ -1,0 +1,82 @@
+{
+  "task": "Inline private login ID beside My profile identity",
+  "date": "2026-10-27",
+  "status": "complete",
+  "updatedAt": "2026-10-26T16:08:36.917232+00:00",
+  "changes": {
+    "separateAccountCardRemoved": true,
+    "explanatoryLabelRemoved": true,
+    "placement": "Plain secondary email below public handle beside profile portrait",
+    "visibility": "Implicit My route only; actor, auth account and observed SDK owner must match profile user",
+    "publicProfilesAndPublicSelfPreview": "No private email supplied",
+    "emptyEmail": "No placeholder or provider-login label",
+    "responsive": "Two lines with ellipsis; existing portrait sizing and large-type stacking retained"
+  },
+  "verification": {
+    "native": {
+      "log": "output/profile-login-id-inline-native-tests.log",
+      "passed": 51
+    },
+    "capturesAndNavigation": {
+      "log": "output/profile-login-id-inline-capture-tests.log",
+      "passed": 4
+    },
+    "chrome": {
+      "log": "output/profile-login-id-inline-web-tests.log",
+      "passed": 13
+    },
+    "analysis": {
+      "log": "output/profile-login-id-inline-analysis.log",
+      "result": "No issues found"
+    },
+    "productionDatabaseChanges": false,
+    "nativeAppBuildOrDeviceInstall": false,
+    "isolatedDarkCapture": {
+      "log": "output/profile-login-id-inline-dark-capture-check.log",
+      "passed": 1
+    },
+    "diffWhitespaceCheck": "passed"
+  },
+  "screenshots": [
+    "output/profile-login-id-inline-20261027/my-phone-dark.png",
+    "output/profile-login-id-inline-20261027/my-phone-light.png"
+  ],
+  "deployment": {
+    "baseUrl": "https://snapfit-c719d.web.app",
+    "release": "2cb3c053ee5e5ef9",
+    "build": {
+      "main_sha256": "e2fefcc5e751cffa9828da0ecd481547a347da537145bc3efb82f27849264290",
+      "main_file": "main.e2fefcc5e751cffa9828.dart.js",
+      "bootstrap_sha256": "86538b0f2581a1f524db280a195dfa24d81f287645c750f355d1645eaf34a758",
+      "bootstrap_file": "flutter_bootstrap.86538b0f2581a1f524db.js"
+    },
+    "checks": [
+      {
+        "path": "/me",
+        "status": "HTTP/2 200 ",
+        "latestBootstrap": true
+      },
+      {
+        "path": "/snapfit-web-build.json",
+        "status": "HTTP/2 200 ",
+        "matchesLocal": true
+      },
+      {
+        "path": "/flutter_bootstrap.86538b0f2581a1f524db.js",
+        "status": "HTTP/2 200 ",
+        "sha256": "86538b0f2581a1f524db280a195dfa24d81f287645c750f355d1645eaf34a758"
+      },
+      {
+        "path": "/main.e2fefcc5e751cffa9828.dart.js",
+        "status": "HTTP/2 200 ",
+        "sha256": "e2fefcc5e751cffa9828da0ecd481547a347da537145bc3efb82f27849264290"
+      }
+    ],
+    "passed": true,
+    "status": "complete",
+    "project": "snapfit-c719d",
+    "buildLog": "output/profile-login-id-inline-web-build.log",
+    "deployLog": "output/profile-login-id-inline-web-deploy.json"
+  },
+  "completedAt": "2026-10-26T16:11:31.558745+00:00"
+}

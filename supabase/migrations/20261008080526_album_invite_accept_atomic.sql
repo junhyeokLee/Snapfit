@@ -1,3 +1,10 @@
+-- Preserve the original upgrade for clean installs; never downgrade the newer API.
+do $compat$
+begin
+ if to_regprocedure('album_private.save_album(bigint,timestamptz,jsonb,uuid,uuid)') is not null then
+  raise notice 'Legacy invite upgrade superseded by album collaboration API';
+ else
+  execute $legacy$
 -- Only the Edge Function's service client may supply the validated Auth user.
 create or replace function public.accept_album_invite(p_token text, p_user_id uuid)
 returns jsonb
@@ -98,3 +105,8 @@ create trigger albums_protect_owner before update on public.albums
 
 create index if not exists album_members_user_accepted_idx
   on public.album_members(user_id, album_id) where status = 'ACCEPTED';
+
+$legacy$;
+ end if;
+end;
+$compat$;

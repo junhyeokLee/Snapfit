@@ -94,6 +94,62 @@ Future<void> mountWebLibraryFixture(
 
 void main() {
   testWidgets(
+    'large cover and title open albums without a separate open button',
+    (tester) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await mountWebLibraryFixture(tester);
+        expect(find.text('앨범 열기'), findsNothing);
+        final artwork = find.byKey(const ValueKey('web-album-artwork-open-1'));
+        final details = find.byKey(const ValueKey('web-album-details-open-1'));
+        expect(tester.widget<InkWell>(artwork).onTap, isNotNull);
+        expect(tester.widget<InkWell>(details).onTap, isNotNull);
+        expect(find.bySemanticsLabel('제주의 여름 앨범 보기'), findsNWidgets(2));
+        final cover = tester.getSize(
+          find.byKey(const ValueKey('web-album-artwork-ratio-1')),
+        );
+        expect(cover.width, greaterThan(300));
+        expect(cover.height, closeTo(cover.width, .1));
+        expect(tester.getSize(artwork).height, greaterThan(300));
+        expect(
+          find.byKey(const ValueKey('web-library-moments-entry')),
+          findsNothing,
+          reason: 'The desktop sidebar already exposes the journal.',
+        );
+        expect(find.byTooltip('피드에 작품 공개'), findsNWidgets(2));
+        expect(find.byTooltip('제작 사양과 주문 준비 확인'), findsNWidgets(2));
+        await tester.tap(find.byTooltip('즐겨찾기 추가').first);
+        await tester.pumpAndSettle();
+        expect(find.byTooltip('즐겨찾기 해제'), findsOneWidget);
+        expect(find.byType(WebAlbumLibraryScreen), findsOneWidget);
+        await tester.tap(find.byTooltip('앨범 목록 보기'));
+        await tester.pumpAndSettle();
+        final row = find.byKey(const ValueKey('web-album-row-open-1'));
+        expect(tester.widget<InkWell>(row).onTap, isNotNull);
+        expect(find.bySemanticsLabel('제주의 여름 앨범 보기'), findsOneWidget);
+        expect(find.text('앨범 열기'), findsNothing);
+        expect(tester.takeException(), isNull);
+      } finally {
+        semantics.dispose();
+      }
+    },
+  );
+  for (final ratio in [1.0, 4 / 3, 5 / 4]) {
+    testWidgets('web cover keeps the actual $ratio print ratio', (
+      tester,
+    ) async {
+      await mountWebLibraryFixture(
+        tester,
+        items: [_albums.first.copyWith(ratio: '$ratio')],
+      );
+      final cover = tester.getSize(
+        find.byKey(const ValueKey('web-album-artwork-ratio-1')),
+      );
+      expect(cover.width / cover.height, closeTo(ratio, .001));
+      expect(tester.takeException(), isNull);
+    });
+  }
+  testWidgets(
     'albums appear before discovery shortcuts with a single primary creation action',
     (tester) async {
       await mountWebLibraryFixture(tester);
@@ -180,6 +236,11 @@ void main() {
         size: Size(width, 1000),
         brightness: Brightness.dark,
       );
+      expect(
+        find.byKey(const ValueKey('web-library-moments-entry')),
+        findsOneWidget,
+      );
+      expect(find.text('앨범 열기'), findsNothing);
       expect(tester.takeException(), isNull);
       await tester.tap(find.byTooltip('앨범 목록 보기'));
       await tester.pumpAndSettle();

@@ -1,3 +1,4 @@
+import '../support/store_detail_loading.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -67,13 +68,13 @@ void main() {
   };
   // Current editorial books use independent paper/sticker materials rather
   // than the old framed-photo layouts. Exercise a real, paid included item.
-  final template = publishedCreationTemplates.firstWhere(
-    (t) =>
-        t.isPremium &&
-        templateVisualMaterialKeys(
+  final template = publishedCreationTemplates
+      .firstWhere(
+        (t) => templateVisualMaterialKeys(
           jsonDecode(t.templateJson!),
         ).any(reusablePaidMaterials.contains),
-  );
+      )
+      .copyWith(isPremium: true);
   final material = templateVisualMaterialKeys(
     jsonDecode(template.templateJson!),
   ).firstWhere(reusablePaidMaterials.contains);
@@ -188,6 +189,7 @@ void main() {
   Future<void> paint(WidgetTester tester) async {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
+    await flushStoreDetailDocuments(tester);
     await tester.runAsync(() async {
       for (final element in find.byType(Image).evaluate()) {
         await precacheImage((element.widget as Image).image, element);
@@ -394,7 +396,7 @@ void main() {
     const Size(844, 390),
   ]) {
     for (final dark in [false, true]) {
-      testWidgets(
+      storeDetailTestWidgets(
         'complete shop artwork purchase and use journey $extent dark=$dark',
         (tester) async {
           reset(tester);
@@ -420,6 +422,8 @@ void main() {
           await tap(tester, find.byTooltip('다음 펼침면'));
           expect(key('template-book-spread-1'), findsWidgets);
           await capture(tester, 'shop-atelier-template-spread', extent, dark);
+          await tester.ensureVisible(key('template-gallery-information'));
+          await tap(tester, find.text('디자인 구성 · 사진과 글'));
           await tester.ensureVisible(key('template-purchase-overview'));
           await paint(tester);
           await capture(tester, 'shop-atelier-template-usage', extent, dark);
@@ -527,7 +531,7 @@ void main() {
     const Size(648, 320),
     const Size(844, 390),
   ]) {
-    testWidgets(
+    storeDetailTestWidgets(
       'large type, focused search and chosen spread survive rotation $extent',
       (tester) async {
         reset(tester);
@@ -599,7 +603,7 @@ void main() {
       },
     );
   }
-  testWidgets(
+  storeDetailTestWidgets(
     'a hidden material detail rejects late ownership and double use',
     (tester) async {
       reset(tester);
@@ -631,7 +635,7 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
-  testWidgets(
+  storeDetailTestWidgets(
     'a hidden template detail never opens creation after late access',
     (tester) async {
       reset(tester);
@@ -661,37 +665,38 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
-  testWidgets('real purchase gate rejects a late quote on another route', (
-    tester,
-  ) async {
-    reset(tester);
-    size(tester, const Size(390, 844));
-    final quote = Completer<PointShopAccess>();
-    await mount(tester, detail(), pendingQuote: quote);
-    await tap(tester, key('material-access'));
-    final navigator = tester.state<NavigatorState>(find.byType(Navigator));
-    final other = navigator.push<void>(
-      MaterialPageRoute(builder: (_) => const Scaffold(body: Text('다른 화면'))),
-    );
-    await paint(tester);
-    quote.complete(
-      PointShopAccess(
-        productKey: material,
-        title: materialTitle,
-        available: true,
-        isFree: false,
-        owned: false,
-        pointPrice: pointShopLaunchPrices[material]!.points,
-        remainingBalance: 6000,
-      ),
-    );
-    await paint(tester);
-    expect(find.byType(PointShopPurchaseSheet), findsNothing);
-    expect(find.byType(MaterialAlbumPicker), findsNothing);
-    expect(find.text('다른 화면'), findsOneWidget);
-    navigator.pop();
-    await other;
-    await paint(tester);
-    expect(tester.takeException(), isNull);
-  });
+  storeDetailTestWidgets(
+    'real purchase gate rejects a late quote on another route',
+    (tester) async {
+      reset(tester);
+      size(tester, const Size(390, 844));
+      final quote = Completer<PointShopAccess>();
+      await mount(tester, detail(), pendingQuote: quote);
+      await tap(tester, key('material-access'));
+      final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+      final other = navigator.push<void>(
+        MaterialPageRoute(builder: (_) => const Scaffold(body: Text('다른 화면'))),
+      );
+      await paint(tester);
+      quote.complete(
+        PointShopAccess(
+          productKey: material,
+          title: materialTitle,
+          available: true,
+          isFree: false,
+          owned: false,
+          pointPrice: pointShopLaunchPrices[material]!.points,
+          remainingBalance: 6000,
+        ),
+      );
+      await paint(tester);
+      expect(find.byType(PointShopPurchaseSheet), findsNothing);
+      expect(find.byType(MaterialAlbumPicker), findsNothing);
+      expect(find.text('다른 화면'), findsOneWidget);
+      navigator.pop();
+      await other;
+      await paint(tester);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

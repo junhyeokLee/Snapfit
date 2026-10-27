@@ -1,3 +1,4 @@
+import '../support/store_detail_loading.dart';
 import '../helpers/creation_draft_fixtures.dart'
     show FakeAuthViewModel, MemoryCreationDraftStore;
 import 'dart:async';
@@ -14,6 +15,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:snap_fit/core/templates/authored_collections.dart';
+import 'package:snap_fit/core/constants/cover_size.dart';
+import 'package:snap_fit/features/album/presentation/views/album_create_flow_screen.dart';
+import 'package:snap_fit/features/album/presentation/widgets/create_flow/album_create_step1.dart';
 import 'package:snap_fit/core/templates/data_template_engine.dart';
 import 'package:snap_fit/core/templates/published_premium_templates.dart';
 import 'package:snap_fit/core/templates/template_document_pages.dart';
@@ -97,6 +101,7 @@ Widget _app(
 Future<void> _paint(WidgetTester tester) async {
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 400));
+  await flushStoreDetailDocuments(tester);
   await tester.runAsync(() async {
     for (final element in find.byType(Image).evaluate()) {
       await precacheImage((element.widget as Image).image, element);
@@ -201,67 +206,71 @@ void main() {
   ]) {
     for (final dark in [false, true]) {
       final suffix = '${size.width.toInt()}-${dark ? 'dark' : 'light'}';
-      testWidgets('edition preview and CTA respect system insets $suffix', (
-        tester,
-      ) async {
-        _size(tester, size);
-        final key = GlobalKey();
-        int? selected;
-        var checks = 0;
-        await tester.pumpWidget(
-          _app(
-            _openSheet(onResult: (value) => selected = value),
-            dark: dark,
-            captureKey: key,
-            gate: (context, ref, {required productKey, required title}) async {
-              checks++;
-              return true;
-            },
-          ),
-        );
-        await tester.tap(find.text('분량 보기'));
-        await _paint(tester);
-        expect(_preview(tester).pages, hasLength(33));
-        final photos = _preview(tester).pages.fold<int>(
-          0,
-          (count, page) =>
-              count + page.where((l) => l.type == LayerType.image).length,
-        );
-        expect(find.text('사진 자리 $photos개 · 분량별 템플릿 가격 동일'), findsOneWidget);
-        final action = find.byKey(const ValueKey('template-edition-continue'));
-        expect(action.hitTestable(), findsOneWidget);
-        final rect = tester.getRect(action);
-        expect(rect.bottom, lessThanOrEqualTo(size.height - 24));
-        expect(
-          rect.left,
-          greaterThanOrEqualTo(size.width > size.height ? 44 : 0),
-        );
-        expect(
-          rect.right,
-          lessThanOrEqualTo(size.width - (size.width > size.height ? 24 : 0)),
-        );
-        expect(checks, 0);
-        await _capture(tester, key, 'edition-$suffix');
-        await tester.tap(find.byTooltip('다음 페이지'));
-        await _paint(tester);
-        expect(find.text('1 / 32쪽'), findsOneWidget);
-        await _capture(tester, key, 'edition-pages-$suffix');
-        await tester.tap(find.byTooltip('이전 페이지'));
-        await _paint(tester);
-        await _choose(tester, 24);
-        expect(_preview(tester).pages, hasLength(25));
-        expect(find.text('표지 + 내지 24쪽'), findsOneWidget);
-        expect(selected, isNull);
-        expect(checks, 0);
-        await _capture(tester, key, 'edition-basic-$suffix');
-        await tester.tap(action);
-        await tester.pumpAndSettle();
-        expect(selected, 24);
-        expect(checks, 0);
-        expect(tester.takeException(), isNull);
-      });
+      storeDetailTestWidgets(
+        'edition preview and CTA respect system insets $suffix',
+        (tester) async {
+          _size(tester, size);
+          final key = GlobalKey();
+          int? selected;
+          var checks = 0;
+          await tester.pumpWidget(
+            _app(
+              _openSheet(onResult: (value) => selected = value),
+              dark: dark,
+              captureKey: key,
+              gate:
+                  (context, ref, {required productKey, required title}) async {
+                    checks++;
+                    return true;
+                  },
+            ),
+          );
+          await tester.tap(find.text('분량 보기'));
+          await _paint(tester);
+          expect(_preview(tester).pages, hasLength(33));
+          final photos = _preview(tester).pages.fold<int>(
+            0,
+            (count, page) =>
+                count + page.where((l) => l.type == LayerType.image).length,
+          );
+          expect(find.text('사진 자리 $photos개 · 분량별 템플릿 가격 동일'), findsOneWidget);
+          final action = find.byKey(
+            const ValueKey('template-edition-continue'),
+          );
+          expect(action.hitTestable(), findsOneWidget);
+          final rect = tester.getRect(action);
+          expect(rect.bottom, lessThanOrEqualTo(size.height - 24));
+          expect(
+            rect.left,
+            greaterThanOrEqualTo(size.width > size.height ? 44 : 0),
+          );
+          expect(
+            rect.right,
+            lessThanOrEqualTo(size.width - (size.width > size.height ? 24 : 0)),
+          );
+          expect(checks, 0);
+          await _capture(tester, key, 'edition-$suffix');
+          await tester.tap(find.byTooltip('다음 페이지'));
+          await _paint(tester);
+          expect(find.text('1 / 32쪽'), findsOneWidget);
+          await _capture(tester, key, 'edition-pages-$suffix');
+          await tester.tap(find.byTooltip('이전 페이지'));
+          await _paint(tester);
+          await _choose(tester, 24);
+          expect(_preview(tester).pages, hasLength(25));
+          expect(find.text('표지 + 내지 24쪽'), findsOneWidget);
+          expect(selected, isNull);
+          expect(checks, 0);
+          await _capture(tester, key, 'edition-basic-$suffix');
+          await tester.tap(action);
+          await settleStoreDetail(tester);
+          expect(selected, 24);
+          expect(checks, 0);
+          expect(tester.takeException(), isNull);
+        },
+      );
 
-      testWidgets(
+      storeDetailTestWidgets(
         'large text keeps edition selection and close reachable $suffix',
         (tester) async {
           _size(tester, size);
@@ -284,7 +293,7 @@ void main() {
           );
           expect(find.byTooltip('분량 선택 닫기').hitTestable(), findsOneWidget);
           await tester.tap(find.byTooltip('분량 선택 닫기'));
-          await tester.pumpAndSettle();
+          await settleStoreDetail(tester);
           expect(find.byType(TemplateEditionSheet), findsNothing);
           expect(tester.takeException(), isNull);
         },
@@ -292,72 +301,124 @@ void main() {
     }
   }
 
-  for (final aspect in [null, 'square', 'landscape', 'portrait']) {
-    testWidgets('edition preview uses authored $aspect layers and canvas', (
-      tester,
-    ) async {
-      _size(tester, const Size(390, 844));
-      await tester.pumpWidget(_app(_openSheet(variant: aspect)));
-      await tester.tap(find.text('분량 보기'));
-      await _paint(tester);
-      for (final count in [32, 24]) {
-        await _choose(tester, count);
-        final document = premiumCatalogDocument(
-          PremiumVolume.wedding,
-          innerPages: count,
+  for (final cover in coverSizes) {
+    storeDetailTestWidgets(
+      '${cover.productId}: store preview selection retains the actual print SKU on creation',
+      (tester) async {
+        _size(tester, const Size(390, 844));
+        await tester.pumpWidget(
+          _app(
+            TemplateDetailScreen(template: bundledCreationTemplates.first),
+            gate: (context, ref, {required productKey, required title}) async =>
+                true,
+          ),
         );
-        final shown = aspect == null
-            ? document
-            : Map<String, dynamic>.from((document['variants'] as Map)[aspect]);
-        final canvas = Size(
-          (shown['designWidth'] as num).toDouble(),
-          (shown['designHeight'] as num).toDouble(),
-        );
-        final preview = _preview(tester);
-        expect(preview.canvas, canvas);
-        expect(preview.preserveTypography, isTrue);
-        expect(preview.pages, hasLength(count + 1));
-        final documentPages = templateDocumentPages(shown);
-        for (final index in [0, 1, count]) {
-          final authored = DataTemplateEngine.buildLayersFromJson({
-            'strictLayout': true,
-            'designWidth': canvas.width,
-            'designHeight': canvas.height,
-            'layers': documentPages[index]['layers'],
-          }, canvas);
-          expect(
-            preview.pages[index]
-                .map(
-                  (layer) => LayerExportMapper.toJson(
-                    layer,
-                    canvasSize: canvas,
-                    isCover: index == 0,
-                  ),
-                )
-                .toList(),
-            authored
-                .map(
-                  (layer) => LayerExportMapper.toJson(
-                    layer,
-                    canvasSize: canvas,
-                    isCover: index == 0,
-                  ),
-                )
-                .toList(),
-          );
-          expect(
-            preview.pages[index]
-                .where((l) => l.type == LayerType.image)
-                .every((l) => l.imageUrl != null),
-            isTrue,
-          );
+        await _paint(tester);
+        final selector = find.byKey(const ValueKey('template-size-selector'));
+        await tester.ensureVisible(selector);
+        await tester.tap(selector);
+        await tester.pumpAndSettle();
+        for (final size in coverSizes) {
+          expect(find.text(size.displayName), findsWidgets);
         }
-      }
-      expect(tester.takeException(), isNull);
-    });
+        expect(find.textContaining('세로형'), findsNothing);
+        await tester.tap(find.text(cover.displayName).last);
+        await _paint(tester);
+        final action = find.byKey(const ValueKey('template-detail-use'));
+        await tester.ensureVisible(action);
+        await tester.tap(action);
+        await _paint(tester);
+        final flow = tester.widget<AlbumCreateFlowScreen>(
+          find.byType(AlbumCreateFlowScreen),
+        );
+        final selection = flow.initialCreationTemplate!;
+        expect(selection.cover.productId, cover.productId);
+        expect(
+          selection.pagesCanvasSize!.aspectRatio,
+          closeTo(cover.ratio, 1e-10),
+        );
+        expect(
+          selection.variants.keys,
+          unorderedEquals(coverSizes.map((s) => s.productId)),
+        );
+        final settings = tester.widget<AlbumCreateStep1>(
+          find.byType(AlbumCreateStep1),
+        );
+        expect(settings.selectedCover!.productId, cover.productId);
+        expect(tester.takeException(), isNull);
+      },
+    );
   }
 
-  testWidgets(
+  for (final aspect in [null, 'square', 'landscape4x3', 'landscape5x4']) {
+    storeDetailTestWidgets(
+      'edition preview uses authored $aspect layers and canvas',
+      (tester) async {
+        _size(tester, const Size(390, 844));
+        await tester.pumpWidget(_app(_openSheet(variant: aspect)));
+        await tester.tap(find.text('분량 보기'));
+        await _paint(tester);
+        for (final count in [32, 24]) {
+          await _choose(tester, count);
+          final document = premiumCatalogDocument(
+            PremiumVolume.wedding,
+            innerPages: count,
+          );
+          final shown = aspect == null
+              ? document
+              : Map<String, dynamic>.from(
+                  (document['variants'] as Map)[aspect],
+                );
+          final canvas = Size(
+            (shown['designWidth'] as num).toDouble(),
+            (shown['designHeight'] as num).toDouble(),
+          );
+          final preview = _preview(tester);
+          expect(preview.canvas, canvas);
+          expect(preview.preserveTypography, isTrue);
+          expect(preview.pages, hasLength(count + 1));
+          final documentPages = templateDocumentPages(shown);
+          for (final index in [0, 1, count]) {
+            final authored = DataTemplateEngine.buildLayersFromJson({
+              'strictLayout': true,
+              'designWidth': canvas.width,
+              'designHeight': canvas.height,
+              'layers': documentPages[index]['layers'],
+            }, canvas);
+            expect(
+              preview.pages[index]
+                  .map(
+                    (layer) => LayerExportMapper.toJson(
+                      layer,
+                      canvasSize: canvas,
+                      isCover: index == 0,
+                    ),
+                  )
+                  .toList(),
+              authored
+                  .map(
+                    (layer) => LayerExportMapper.toJson(
+                      layer,
+                      canvasSize: canvas,
+                      isCover: index == 0,
+                    ),
+                  )
+                  .toList(),
+            );
+            expect(
+              preview.pages[index]
+                  .where((l) => l.type == LayerType.image)
+                  .every((l) => l.imageUrl != null),
+              isTrue,
+            );
+          }
+        }
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  storeDetailTestWidgets(
     'edition switch caches artwork and clamps the inspected last page',
     (tester) async {
       _size(tester, const Size(390, 844));
@@ -382,45 +443,46 @@ void main() {
     },
   );
 
-  testWidgets('cancelled edition preserves detail and never checks purchase', (
-    tester,
-  ) async {
-    _size(tester, const Size(390, 844));
-    var checks = 0;
-    await tester.pumpWidget(
-      _app(
-        TemplateDetailScreen(
-          template: publishedPremiumTemplates.first,
-          selectForCreation: true,
+  storeDetailTestWidgets(
+    'cancelled edition preserves detail and never checks purchase',
+    (tester) async {
+      _size(tester, const Size(390, 844));
+      var checks = 0;
+      await tester.pumpWidget(
+        _app(
+          TemplateDetailScreen(
+            template: publishedPremiumTemplates.first,
+            selectForCreation: true,
+          ),
+          gate: (context, ref, {required productKey, required title}) async {
+            checks++;
+            return false;
+          },
         ),
-        gate: (context, ref, {required productKey, required title}) async {
-          checks++;
-          return false;
-        },
-      ),
-    );
-    await _paint(tester);
-    final pages = tester
-        .widget<CreationTemplatePreview>(find.byType(CreationTemplatePreview))
-        .pages;
-    await tester.tap(find.text('이 디자인 선택'));
-    await _paint(tester);
-    await _choose(tester, 24);
-    await tester.tap(find.byTooltip('분량 선택 닫기'));
-    await tester.pumpAndSettle();
-    final detail = tester.widget<CreationTemplatePreview>(
-      find.byType(CreationTemplatePreview),
-    );
-    expect(detail.pages, same(pages));
-    expect(detail.isUsing, false);
-    expect(checks, 0);
-    await tester.tap(find.text('이 디자인 선택'));
-    await _paint(tester);
-    expect(find.text('표지 + 내지 32쪽'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+      );
+      await _paint(tester);
+      final pages = tester
+          .widget<CreationTemplatePreview>(find.byType(CreationTemplatePreview))
+          .pages;
+      await tester.tap(find.text('이 디자인 선택'));
+      await _paint(tester);
+      await _choose(tester, 24);
+      await tester.tap(find.byTooltip('분량 선택 닫기'));
+      await settleStoreDetail(tester);
+      final detail = tester.widget<CreationTemplatePreview>(
+        find.byType(CreationTemplatePreview),
+      );
+      expect(detail.pages, same(pages));
+      expect(detail.isUsing, false);
+      expect(checks, 0);
+      await tester.tap(find.text('이 디자인 선택'));
+      await _paint(tester);
+      expect(find.text('표지 + 내지 32쪽'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
-  testWidgets(
+  storeDetailTestWidgets(
     'gate failure unlocks retry; paid and owned selections use the same confirmed edition',
     (tester) async {
       _size(tester, const Size(390, 844));
@@ -461,7 +523,7 @@ void main() {
       await _paint(tester);
       await _choose(tester, 24);
       await tester.tap(find.byKey(const ValueKey('template-edition-continue')));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(selected, isNull);
       expect(checks, 1);
       expect(find.textContaining('private purchase failure'), findsNothing);
@@ -478,7 +540,7 @@ void main() {
       expect(find.text('표지 + 내지 24쪽'), findsOneWidget);
       final confirmed = _preview(tester);
       await tester.tap(find.byKey(const ValueKey('template-edition-continue')));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(selected!.pages, hasLength(25));
       final prepared = AlbumCreationTemplate.preparePages(
         confirmed.pages,
@@ -526,7 +588,7 @@ void main() {
   for (final volume in PremiumVolume.values.where(
     (v) => v.pageCounts.length > 1,
   )) {
-    testWidgets(
+    storeDetailTestWidgets(
       '${volume.id} exposes only authored 24-${volume.extendedPages} page editions',
       (tester) async {
         _size(tester, const Size(390, 844));
@@ -549,31 +611,32 @@ void main() {
     );
   }
 
-  testWidgets('rotating the edition sheet preserves count and inspected page', (
-    tester,
-  ) async {
-    _size(tester, const Size(390, 844));
-    await tester.pumpWidget(_app(_openSheet()));
-    await tester.tap(find.text('분량 보기'));
-    await _paint(tester);
-    await tester.tap(find.byTooltip('다음 페이지'));
-    await tester.pump(const Duration(milliseconds: 250));
-    await tester.tap(find.byTooltip('다음 페이지'));
-    await _paint(tester);
-    final pages = _preview(tester).pages;
-    _size(tester, const Size(844, 390));
-    await _paint(tester);
-    expect(find.text('2 / 32쪽'), findsOneWidget);
-    expect(_preview(tester).pages, same(pages));
-    await _choose(tester, 24);
-    _size(tester, const Size(390, 844));
-    await _paint(tester);
-    expect(find.text('2 / 24쪽'), findsOneWidget);
-    expect(find.text('표지 + 내지 24쪽'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+  storeDetailTestWidgets(
+    'rotating the edition sheet preserves count and inspected page',
+    (tester) async {
+      _size(tester, const Size(390, 844));
+      await tester.pumpWidget(_app(_openSheet()));
+      await tester.tap(find.text('분량 보기'));
+      await _paint(tester);
+      await tester.tap(find.byTooltip('다음 페이지'));
+      await tester.pump(const Duration(milliseconds: 250));
+      await tester.tap(find.byTooltip('다음 페이지'));
+      await _paint(tester);
+      final pages = _preview(tester).pages;
+      _size(tester, const Size(844, 390));
+      await _paint(tester);
+      expect(find.text('2 / 32쪽'), findsOneWidget);
+      expect(_preview(tester).pages, same(pages));
+      await _choose(tester, 24);
+      _size(tester, const Size(390, 844));
+      await _paint(tester);
+      expect(find.text('2 / 24쪽'), findsOneWidget);
+      expect(find.text('표지 + 내지 24쪽'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
-  testWidgets(
+  storeDetailTestWidgets(
     'shorter confirmed edition clamps detail spread after cancelled purchase',
     (tester) async {
       _size(tester, const Size(390, 844));
@@ -598,15 +661,15 @@ void main() {
         ),
       );
       await tester.ensureVisible(last);
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       await tester.tap(last);
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(find.text('31–32쪽'), findsOneWidget);
       await tester.tap(find.text('이 디자인으로 시작'));
       await _paint(tester);
       await _choose(tester, 24);
       await tester.tap(find.byKey(const ValueKey('template-edition-continue')));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(checks, 1);
       expect(find.byType(TemplateEditionSheet), findsNothing);
       expect(find.text('23–24쪽'), findsOneWidget);
@@ -618,7 +681,7 @@ void main() {
     },
   );
 
-  testWidgets(
+  storeDetailTestWidgets(
     'pending access is single flight and may finish after closing detail',
     (tester) async {
       _size(tester, const Size(390, 844));
@@ -663,7 +726,7 @@ void main() {
       Navigator.of(tester.element(find.byType(TemplateDetailScreen))).pop();
       await tester.pump(const Duration(milliseconds: 400));
       access.complete(true);
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(find.byType(TemplateDetailScreen), findsNothing);
       expect(tester.takeException(), isNull);
     },

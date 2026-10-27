@@ -31,7 +31,7 @@ void main() {
     }
   });
   test('candidate has original material layers and stays unpublished', () {
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       final doc = buildLuminousEdition(aspect);
       expect(doc['catalogPublishable'], false);
       expect(doc['accessTier'], 'unassigned');
@@ -62,7 +62,7 @@ void main() {
     }
   });
   test('saved 20-page edition matches the original three documents exactly', () {
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       final doc = buildTravelKeepsakeArchive(aspect);
       final saved = jsonDecode(
         File(
@@ -98,7 +98,7 @@ void main() {
     expect(studioDecorations.toSet().length, studioDecorations.length);
   });
   test('the archived travel album retains its photos and materials', () {
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       final photos = <String>{};
       final frames = <String>{};
       final compositions = <String>{};
@@ -138,7 +138,7 @@ void main() {
   test(
     'new spreads vary silhouette, photo area, framing and material density',
     () {
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         final doc = buildLuminousEdition(aspect);
         final pages = templateDocumentPages(doc);
         expect(pages.length, 9);
@@ -214,7 +214,7 @@ void main() {
     },
   );
   test('one-photo cover and personal credits replace decorative slogans', () {
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       final pages = templateDocumentPages(buildLuminousEdition(aspect));
       final cover = (pages.first['layers'] as List)
           .cast<Map<String, dynamic>>();
@@ -247,7 +247,7 @@ void main() {
   test(
     'travel layers add density without adding photos or stretching materials',
     () {
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         final pages = templateDocumentPages(buildTravelKeepsakeArchive(aspect));
         for (final page in pages.skip(1)) {
           final materials = (page['layers'] as List)

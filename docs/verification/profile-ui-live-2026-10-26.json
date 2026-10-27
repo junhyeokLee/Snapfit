@@ -1,0 +1,761 @@
+{
+  "project_ref": "rrbhxdtriummqpztpjrk",
+  "run_id": "7bec950ad6f2",
+  "status": "complete_fixture_cleanup_and_64_group_zero_residue_verified",
+  "accounts": [
+    {
+      "role": "A",
+      "user_id": "9bf06f3d-eabb-430c-a32c-30843713a6fb"
+    },
+    {
+      "role": "B",
+      "user_id": "ec42787b-b1d1-42ba-b314-f9479fcf6bc1"
+    }
+  ],
+  "works": [
+    {
+      "kind": "landscape",
+      "work_id": "cfb2396f-b515-4565-89fb-6fa1258f5b5e",
+      "source_album_id": 94,
+      "selected_page_indexes": [
+        1
+      ],
+      "width": 1440,
+      "height": 960,
+      "source_asset": "assets/templates/original_editorial/images/travel_harbor.png",
+      "snapshot_sha256": "ba1011665b264418c773103cae96dce6d7102c606bd1f96157d51ce000b12c3a"
+    },
+    {
+      "kind": "portrait",
+      "work_id": "8ef38e1a-c619-46ff-adeb-5c657da20795",
+      "source_album_id": 95,
+      "selected_page_indexes": [
+        1
+      ],
+      "width": 960,
+      "height": 1440,
+      "source_asset": "assets/templates/original_editorial/images/cover_wedding_mono.png",
+      "snapshot_sha256": "f7cf0e6847184e8b9edff3e3a42f846055b5f366a1a001396a918e1a82df70cf"
+    },
+    {
+      "kind": "square",
+      "source_album_id": 96,
+      "title": "고양이의 하루",
+      "selected_page_indexes": [
+        1
+      ],
+      "width": 1440,
+      "height": 1440,
+      "source_asset": "assets/templates/original_editorial/images/cover_cat_cobalt.png",
+      "published": true,
+      "held_for_root_web_publication": true,
+      "work_id": "2dd6613f-7911-4307-b3ea-77e5ea9040f0",
+      "actual_publication": "root_web_ui",
+      "snapshot_sha256": "0ceabf1b979b4e4301b1369bc51cadb55c10a74a9cb1bf9504d90ca987cddd16"
+    }
+  ],
+  "render_manifest": {
+    "pages": [
+      {
+        "kind": "landscape",
+        "ratio": "3:2",
+        "source_asset": "assets/templates/original_editorial/images/travel_harbor.png",
+        "snapshot_path": "/Users/devsheep/SnapFit/SnapFit/output/profile-qa-20261026/landscape.png",
+        "document_path": "/Users/devsheep/SnapFit/SnapFit/output/profile-qa-20261026/landscape-document.json",
+        "selected_page_index": 1,
+        "width": 1440,
+        "height": 960,
+        "bytes": 2249258
+      },
+      {
+        "kind": "portrait",
+        "ratio": "2:3",
+        "source_asset": "assets/templates/original_editorial/images/cover_wedding_mono.png",
+        "snapshot_path": "/Users/devsheep/SnapFit/SnapFit/output/profile-qa-20261026/portrait.png",
+        "document_path": "/Users/devsheep/SnapFit/SnapFit/output/profile-qa-20261026/portrait-document.json",
+        "selected_page_index": 1,
+        "width": 960,
+        "height": 1440,
+        "bytes": 1440176
+      },
+      {
+        "kind": "square",
+        "ratio": "1:1",
+        "source_asset": "assets/templates/original_editorial/images/cover_cat_cobalt.png",
+        "snapshot_path": "/Users/devsheep/SnapFit/SnapFit/output/profile-qa-20261026/square.png",
+        "document_path": "/Users/devsheep/SnapFit/SnapFit/output/profile-qa-20261026/square-document.json",
+        "selected_page_index": 1,
+        "width": 1440,
+        "height": 1440,
+        "bytes": 2977830
+      }
+    ],
+    "profile": {
+      "path": "/Users/devsheep/SnapFit/SnapFit/output/profile-qa-20261026/profile-portrait.png",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 1089995,
+      "source_asset": "assets/templates/original_editorial/images/cover_wedding_mono.png"
+    },
+    "real_user_images_used": false
+  },
+  "checks": [
+    {
+      "check": "landscape_selected_page_exact_png_ratio_and_private_source_boundary",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "check": "portrait_selected_page_exact_png_ratio_and_private_source_boundary",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "check": "anonymous_profile_safe_and_has_two_published_works",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "check": "explicit_public_profile_photo_signs_for_anonymous_viewer",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    }
+  ],
+  "api_passed": 4,
+  "api_failed": 0,
+  "auth_recovery_checks": {
+    "checks": [
+      {
+        "actor": "A",
+        "event": "fresh_login_first_rest",
+        "status": 200,
+        "observed_at_utc": "2026-10-26T04:09:30.243501+00:00"
+      },
+      {
+        "actor": "B",
+        "event": "fresh_login_first_rest",
+        "status": 200,
+        "observed_at_utc": "2026-10-26T04:09:31.871954+00:00"
+      },
+      {
+        "actor": "A",
+        "event": "new_login_after_client_idle",
+        "status": 200,
+        "profile_rpc_status": 200,
+        "idle_since_initial_logins_seconds": 65.21,
+        "observed_at_utc": "2026-10-26T04:10:37.084095+00:00"
+      },
+      {
+        "actor": "B",
+        "event": "new_login_after_client_idle",
+        "status": 200,
+        "profile_rpc_status": 200,
+        "idle_since_initial_logins_seconds": 66.03,
+        "observed_at_utc": "2026-10-26T04:10:37.898243+00:00"
+      }
+    ],
+    "passed": 4,
+    "scope": "two synthetic accounts; immediate and at least45seconds later fresh logins",
+    "long_term_cache_bug_not_claimed_fixed": true
+  },
+  "ordinary_user_jwt_used_for_publication_and_profile": true,
+  "no_emails_sent": true,
+  "real_user_content_used": false,
+  "financial_baseline_scope": "two synthetic QA accounts after fixture publication and before root final UI interactions",
+  "financial_baseline": {
+    "9bf06f3d-eabb-430c-a32c-30843713a6fb": {
+      "wallet_sha256": "fdd542955aea0ed8c3fe60d1744508a1fb871d4416539bf577d3c32449adcb99",
+      "ledger_sha256": "6743876e492cd945398b8b9090cd72ce8b22ba355dbf517466e80b8cd87e9223"
+    },
+    "ec42787b-b1d1-42ba-b314-f9479fcf6bc1": {
+      "wallet_sha256": "f24cea9a5be2a5dda01655e29af459bbce45f4e522f2e9ca051f9a90052f9ec0",
+      "ledger_sha256": "aff037e9ff9633e240f9dac06bd3369f404f336efbc2df52838b497b03f27e7c"
+    }
+  },
+  "cleanup": {
+    "project_ref": "rrbhxdtriummqpztpjrk",
+    "run_id": "7bec950ad6f2",
+    "accounts": [
+      {
+        "role": "A",
+        "user_id": "9bf06f3d-eabb-430c-a32c-30843713a6fb"
+      },
+      {
+        "role": "B",
+        "user_id": "ec42787b-b1d1-42ba-b314-f9479fcf6bc1"
+      }
+    ],
+    "fresh_album_ids": [
+      94,
+      95,
+      96
+    ],
+    "fresh_work_ids": [
+      "cfb2396f-b515-4565-89fb-6fa1258f5b5e",
+      "8ef38e1a-c619-46ff-adeb-5c657da20795",
+      "2dd6613f-7911-4307-b3ea-77e5ea9040f0"
+    ],
+    "storage_removed": {
+      "album-assets": 0,
+      "social-snapshots": 3,
+      "social-profile-photos": 1
+    },
+    "financial_baseline_scope": "two synthetic QA accounts only",
+    "operations": [
+      {
+        "operation": "exact_synthetic_auth_scope_verified",
+        "count": 2
+      },
+      {
+        "operation": "wallet_and_ledger_unchanged_and_fresh_owned_rows_cleared",
+        "accounts": 2,
+        "albums": 3,
+        "works": 3
+      },
+      {
+        "operation": "exact_fixture_storage_prefixes_cleared",
+        "bucket": "album-assets",
+        "removed": 0,
+        "remaining": 0
+      },
+      {
+        "operation": "exact_fixture_storage_prefixes_cleared",
+        "bucket": "social-snapshots",
+        "removed": 3,
+        "remaining": 0
+      },
+      {
+        "operation": "exact_fixture_storage_prefixes_cleared",
+        "bucket": "social-profile-photos",
+        "removed": 1,
+        "remaining": 0
+      },
+      {
+        "operation": "synthetic_sessions_globally_revoked_and_accounts_hard_deleted",
+        "count": 2
+      }
+    ],
+    "manifest_album_ids": [
+      94,
+      95,
+      96
+    ],
+    "manifest_work_ids": [
+      "cfb2396f-b515-4565-89fb-6fa1258f5b5e",
+      "8ef38e1a-c619-46ff-adeb-5c657da20795",
+      "2dd6613f-7911-4307-b3ea-77e5ea9040f0"
+    ],
+    "actual_cleanup_completed_at_utc": "2026-10-26T04:52:09.733943+00:00",
+    "credentials_file_deleted": true,
+    "completed": true,
+    "database_residue_validation": {
+      "groups": 64,
+      "total_remaining": 0,
+      "groups_remaining": [
+        {
+          "group_name": "album_private.asset_bindings",
+          "remaining": 0
+        },
+        {
+          "group_name": "album_private.save_requests",
+          "remaining": 0
+        },
+        {
+          "group_name": "album_private.shared_history",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.flow_state",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.identities",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.mfa_factors",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.mfa_recovery_code_sets",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.oauth_authorizations",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.oauth_consents",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.one_time_tokens",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.refresh_tokens",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.scim_users",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.sessions",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.users",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.webauthn_challenges",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.webauthn_credentials",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.ai_template_generation_intents",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_checkout_consents",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_checkout_intents",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_dev_checkouts",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_file_retention_audit",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_order_requests",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_payment_test_sessions",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_retail_price_audit",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_retail_price_overrides",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.ai_album_draft_usages",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.ai_album_free_draft_claims",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.ai_album_operational_events",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.album_invites",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.album_members",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.albums",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.billing_orders",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.notification_reads",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.notifications",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.orders",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.point_ledger",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.point_shop_ownership",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.point_wallets",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.profiles",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.push_devices",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.push_outbox",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.push_preferences",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.redprinting_dev_mappings",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.redprinting_dev_settings",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.redprinting_dev_tests",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.social_blocks",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.social_comments",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.social_follows",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.social_likes",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.social_profiles",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.social_saves",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.social_work_pages",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.social_works",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.storage_quotas",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.store_purchases",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.subscriptions",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.support_inquiries",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.template_likes",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.web_point_topup_test_ledger",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.web_point_topups",
+          "remaining": 0
+        },
+        {
+          "group_name": "social_private.social_publication_sources",
+          "remaining": 0
+        },
+        {
+          "group_name": "storage.album-assets",
+          "remaining": 0
+        },
+        {
+          "group_name": "storage.social-snapshots",
+          "remaining": 0
+        },
+        {
+          "group_name": "storage.social-profile-photos",
+          "remaining": 0
+        }
+      ]
+    },
+    "public_api_after_cleanup": {
+      "observed_at_utc": "2026-10-26T04:54:20.572528+00:00",
+      "anonymous_feed_status": 200,
+      "anonymous_feed_items": 0,
+      "anonymous_feed_has_more": false,
+      "deleted_synthetic_profiles_return_null": true
+    },
+    "original_album_assets_preserved": {
+      "count_before": 41,
+      "count_after": 41,
+      "metadata_hash_algorithm": "MD5 over sorted bucket/name/owner/owner_id/metadata; image bytes not read",
+      "before": "cefb34aa7d073d3613cf09aebafc27bc",
+      "after": "cefb34aa7d073d3613cf09aebafc27bc",
+      "unchanged": true
+    },
+    "fixture_financial_baseline_before_cleanup": "same wallet and ledger SHA256 for the exact two synthetic accounts; no global-customer financial baseline claim",
+    "private_helper_directory_deleted": true,
+    "customer_data_mutations_performed": false,
+    "private_helper_directory_removed_at_utc": "2026-10-26T04:54:49.737194+00:00",
+    "verification_completed_at_utc": "2026-10-26T04:54:49.737194+00:00",
+    "local_credential_or_token_files_remaining": 0
+  },
+  "credential_values_in_report": false,
+  "source_album_baseline": {
+    "94": {
+      "updated_at": "2026-10-26T04:20:21.313063+00:00",
+      "document_sha256": "567c0b4065a9b285aaa058eacd16bf7e72c1aedc88a44d769b0dd0d2764a914f"
+    },
+    "95": {
+      "updated_at": "2026-10-26T04:20:22.734593+00:00",
+      "document_sha256": "3ea908e9315554d9a960768eb1b1aa5f229a5acf3cc0eeb327a258f46b8e04a5"
+    },
+    "96": {
+      "updated_at": "2026-10-26T04:20:25.032914+00:00",
+      "document_sha256": "a56030ae0e13722263851872a933bbd4f94a8787206857a5e739fcb4676f1d31"
+    }
+  },
+  "renderer_validation": {
+    "product_renderer": "SocialSnapshotRenderer",
+    "selected_source_page_index": 1,
+    "test_passed": 1,
+    "source_assets_are_public_bundled_samples": true,
+    "real_private_images_used": false,
+    "output_directory": "/Users/devsheep/SnapFit/SnapFit/output/profile-qa-20261026",
+    "flutter_app_build_performed_by_backend_agent": false
+  },
+  "web_publication_verification": {
+    "observed_at_utc": "2026-10-26T04:24:51.884379+00:00",
+    "work_id": "2dd6613f-7911-4307-b3ea-77e5ea9040f0",
+    "source_album_id": 96,
+    "public_image_count": 1,
+    "png_width": 1440,
+    "png_height": 1440,
+    "public_response_source_private_fields_absent": true,
+    "source_albums": [
+      {
+        "source_album_id": 94,
+        "unchanged": true
+      },
+      {
+        "source_album_id": 95,
+        "unchanged": true
+      },
+      {
+        "source_album_id": 96,
+        "unchanged": true
+      }
+    ],
+    "credentials_cleanup_scope_updated": true
+  },
+  "actual_published_sample_works": 3,
+  "web_publication_server_binding": [
+    {
+      "id": "2dd6613f-7911-4307-b3ea-77e5ea9040f0",
+      "status": "published",
+      "source_album_id": 96,
+      "page_indexes": [
+        1
+      ],
+      "source_revision_unchanged": true,
+      "public_image_count": 1
+    }
+  ],
+  "reaction_isolation_verification": {
+    "observed_at_utc": "2026-10-26T04:35:55.658795+00:00",
+    "work_id": "2dd6613f-7911-4307-b3ea-77e5ea9040f0",
+    "checks": [
+      {
+        "check": "viewer_like_and_save_are_selected",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "check": "author_actor_reaction_flags_are_isolated",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "check": "anonymous_reaction_flags_are_isolated",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "check": "viewer_private_saved_list_contains_web_published_work",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "check": "author_private_saved_list_does_not_copy_viewer_activity",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "check": "anonymous_cannot_read_private_saved_list",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "check": "source_album_94_remains_unchanged",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "check": "source_album_95_remains_unchanged",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "check": "source_album_96_remains_unchanged",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      }
+    ],
+    "passed": 9,
+    "ordinary_user_jwt": true,
+    "server_mutations_performed": 0,
+    "root_ui_may_now_undo_like_and_save": true
+  },
+  "storage_quota_read_only_diagnostic": {
+    "http_checks": {
+      "observed_at_utc": "2026-10-26T04:38:37.612049+00:00",
+      "checks": [
+        {
+          "actor": "A",
+          "status": 200,
+          "row_count": 0,
+          "error_code": null,
+          "error_message": null
+        },
+        {
+          "actor": "B",
+          "status": 200,
+          "row_count": 0,
+          "error_code": null,
+          "error_message": null
+        }
+      ]
+    },
+    "server_quota_rpc_used": false,
+    "access_path": "authenticated own SELECT from public.storage_quotas",
+    "missing_row_is_supported_by_current_client_mapper": true,
+    "ui_copy_trigger": "cached quota.userId differs from current account userInfo.id",
+    "client_cache_boundary": "myStorageQuotaProvider has no auth dependency and caches userId-empty error fallback; it can retain a previous account result",
+    "diagnosis_status": "strong code-supported cache inference; root retry confirmation pending",
+    "production_schema_or_quota_policy_changes_performed": false,
+    "client_resolution": {
+      "change": "myStorageQuotaProvider now watches the authenticated user ID; server schema and quota policy unchanged",
+      "owner": "root",
+      "regression_test": "test/unit/storage_quota_session_test.dart",
+      "command": "flutter test --no-test-assets --no-pub test/unit/storage_quota_session_test.dart",
+      "exit_code": 0,
+      "passed": 1,
+      "verified": [
+        "A quota was loaded before switching accounts",
+        "B account change caused a fresh quota query",
+        "Late A refresh completion did not replace B quota"
+      ],
+      "test_author_scope": "new unit test file only; no production Flutter file edits by backend agent"
+    }
+  },
+  "cleanup_preflight": {
+    "observed_at_utc": "2026-10-26T04:51:31.350786+00:00",
+    "run_id": "7bec950ad6f2",
+    "scope": "exact two synthetic accounts only",
+    "accounts": [
+      {
+        "role": "A",
+        "user_id": "9bf06f3d-eabb-430c-a32c-30843713a6fb",
+        "auth_marker_valid": true,
+        "wallet_ledger_unchanged": true
+      },
+      {
+        "role": "B",
+        "user_id": "ec42787b-b1d1-42ba-b314-f9479fcf6bc1",
+        "auth_marker_valid": true,
+        "wallet_ledger_unchanged": true
+      }
+    ],
+    "source_albums": [
+      {
+        "album_id": 94,
+        "unchanged": true
+      },
+      {
+        "album_id": 95,
+        "unchanged": true
+      },
+      {
+        "album_id": 96,
+        "unchanged": true
+      }
+    ],
+    "work_ids": [
+      "cfb2396f-b515-4565-89fb-6fa1258f5b5e",
+      "8ef38e1a-c619-46ff-adeb-5c657da20795",
+      "2dd6613f-7911-4307-b3ea-77e5ea9040f0"
+    ],
+    "storage_counts": {
+      "album-assets": {
+        "A": 0,
+        "B": 0
+      },
+      "social-snapshots": {
+        "A": 3,
+        "B": 0
+      },
+      "social-profile-photos": {
+        "A": 1,
+        "B": 0
+      }
+    },
+    "writes_performed": false,
+    "status": "ready_for_root_cleanup_green"
+  },
+  "hold_for_root_ui": false
+}

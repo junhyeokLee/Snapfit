@@ -1,0 +1,124 @@
+{
+  "project_ref": "rrbhxdtriummqpztpjrk",
+  "run_id": "f02c1e83e76d",
+  "synthetic_accounts_deleted": 2,
+  "synthetic_albums_deleted": 2,
+  "qa_user_ids": [
+    "48fa7366-f9dc-4889-acdf-be4811fc1faa",
+    "36ca0959-862f-434c-90b4-567804ad08dd"
+  ],
+  "original_synthetic_album_ids": [
+    73,
+    74
+  ],
+  "cleanup_completed": true,
+  "api_readback_checks": [
+    {
+      "check": "anon_work_absent_a17ab598-846f-432a-9b8e-b03e80a51490",
+      "passed": true
+    },
+    {
+      "check": "anon_work_absent_6c11c9da-70f5-48db-8ea3-b6ead4b0157a",
+      "passed": true
+    },
+    {
+      "check": "anon_work_absent_b8085629-f291-48a8-a500-0be5321639f7",
+      "passed": true
+    },
+    {
+      "check": "anon_public_profile_absent_48fa7366-f9dc-4889-acdf-be4811fc1faa",
+      "passed": true
+    },
+    {
+      "check": "anon_public_profile_absent_36ca0959-862f-434c-90b4-567804ad08dd",
+      "passed": true
+    },
+    {
+      "check": "anon_feed_excludes_all_fixture_works",
+      "passed": true
+    },
+    {
+      "check": "removed_snapshots_cannot_receive_new_signed_urls",
+      "passed": true
+    },
+    {
+      "check": "local_credentials_file_removed",
+      "passed": true
+    }
+  ],
+  "api_readback_passed": 8,
+  "scope": "Only ephemeral synthetic Auth IDs and their owned fixtures; no real-user rows changed.",
+  "pre_cleanup_inventory": {
+    "album_ids": [
+      73,
+      74
+    ],
+    "auth_users": 2,
+    "public_profiles": 2,
+    "works_by_status": {
+      "deleted": 1,
+      "published": 2
+    },
+    "private_profiles": 2,
+    "storage_by_bucket": {
+      "social-snapshots": 4
+    },
+    "publication_bindings": 3,
+    "noncascade_references": 0,
+    "nonfixture_social_interactions": 0
+  },
+  "post_cleanup_residual_counts": {
+    "likes": 0,
+    "saves": 0,
+    "works": 0,
+    "albums": 0,
+    "blocks": 0,
+    "ledger": 0,
+    "orders": 0,
+    "quotas": 0,
+    "follows": 0,
+    "wallets": 0,
+    "comments": 0,
+    "auth_users": 0,
+    "work_pages": 0,
+    "push_outbox": 0,
+    "push_devices": 0,
+    "album_members": 0,
+    "auth_sessions": 0,
+    "notifications": 0,
+    "subscriptions": 0,
+    "billing_orders": 0,
+    "auth_identities": 0,
+    "public_profiles": 0,
+    "storage_objects": 0,
+    "store_purchases": 0,
+    "private_profiles": 0,
+    "push_preferences": 0,
+    "notification_reads": 0,
+    "auth_refresh_tokens": 0,
+    "publication_sources": 0,
+    "point_shop_ownership": 0
+  },
+  "verified_residual_categories": 30,
+  "cleanup_methods": [
+    "Ordinary owner JWT social deleteWork RPC before removing immutable snapshot objects.",
+    "Admin Storage API deleted only exact fixture owner prefixes and the four synthetic PNG binaries.",
+    "Ordinary owner JWT deleted own fixture albums 73 and 74; temporary legacy album 75 was already removed.",
+    "Admin Auth API deleted only the two confirmed ephemeral QA users; foreign-key cascades removed associated rows.",
+    "Read-only SQL metadata counts and anon API readback verified cleanup."
+  ],
+  "historical_api_report": "social-live-api-2026-10-25.json",
+  "historical_note": "The API report records fixtures retained during browser QA. This cleanup receipt supersedes that historical retention flag.",
+  "verified_at_utc": "2026-10-25T06:58:05.561955+00:00",
+  "verified_fixture_album_ids": [
+    73,
+    74,
+    75
+  ],
+  "verified_fixture_work_ids": [
+    "a17ab598-846f-432a-9b8e-b03e80a51490",
+    "6c11c9da-70f5-48db-8ea3-b6ead4b0157a",
+    "b8085629-f291-48a8-a500-0be5321639f7"
+  ],
+  "local_credential_file_removed": true
+}

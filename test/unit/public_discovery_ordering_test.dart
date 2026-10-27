@@ -20,7 +20,7 @@ PremiumTemplate _design(int id, String? topic, {bool premium = false}) =>
 
 void main() {
   test(
-    'the first twelve published designs include all seven subjects and both tiers',
+    'the first twelve published designs include all published subjects and both tiers',
     () {
       final first = orderPublicDiscoveryTemplates(
         publishedCreationTemplates,
@@ -29,20 +29,26 @@ void main() {
         first.map((item) => item.category).toSet(),
         templateTopicOrder.toSet(),
       );
-      expect(first.where((item) => item.isPremium), hasLength(4));
-      expect(first.where((item) => !item.isPremium), hasLength(8));
-      expect(first.take(7).map((item) => item.category), templateTopicOrder);
+      expect(first.where((item) => item.isPremium), hasLength(5));
+      expect(first.where((item) => !item.isPremium), hasLength(7));
+      expect(
+        first.take(templateTopicOrder.length).map((item) => item.category),
+        templateTopicOrder,
+      );
     },
   );
 
   test(
-    'all sixty-eight identities and original objects survive in stable order',
+    'all catalog identities and original objects survive in stable order',
     () {
       final before = publishedCreationTemplates.map((item) => item.id).toList();
       final ordered = orderPublicDiscoveryTemplates(publishedCreationTemplates);
-      expect(ordered, hasLength(68));
+      expect(ordered, hasLength(publishedCreationTemplates.length));
       expect(ordered.map((item) => item.id).toSet(), before.toSet());
-      expect(ordered.map((item) => item.id).toSet(), hasLength(68));
+      expect(
+        ordered.map((item) => item.id).toSet(),
+        hasLength(publishedCreationTemplates.length),
+      );
       for (final item in ordered) {
         expect(
           item,

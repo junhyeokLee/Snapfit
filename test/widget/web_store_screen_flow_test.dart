@@ -1,3 +1,4 @@
+import '../support/store_detail_loading.dart';
 // Chrome's test reporter drops framework details; retain explicit diagnostics.
 // ignore_for_file: avoid_print
 
@@ -182,7 +183,7 @@ Future<void> _mount(
   await tester.pumpWidget(
     _app(screen, dark: dark, scale: scale, curated: curated),
   );
-  await tester.pumpAndSettle();
+  await settleStoreDetail(tester);
 }
 
 String _diagnosticStage = '';
@@ -216,7 +217,7 @@ void main() {
   });
   tearDown(() => CatalogFavorites.instance.dispose());
 
-  testWidgets(
+  storeDetailTestWidgets(
     'real curated artwork remains usable across browser sizes and themes',
     (tester) async {
       addTearDown(tester.view.resetPhysicalSize);
@@ -243,15 +244,15 @@ void main() {
           final position = find.byKey(const ValueKey('curation-position'));
           expect(tester.widget<Text>(position).data, '01 / 04');
           await tester.ensureVisible(find.byTooltip('다음 컬렉션'));
-          await tester.pumpAndSettle();
+          await settleStoreDetail(tester);
           await Scrollable.ensureVisible(
             tester.element(find.byTooltip('다음 컬렉션')),
             alignment: .5,
           );
-          await tester.pumpAndSettle();
+          await settleStoreDetail(tester);
           expect(find.byTooltip('다음 컬렉션').hitTestable(), findsOneWidget);
           await tester.tap(find.byTooltip('다음 컬렉션'));
-          await tester.pumpAndSettle();
+          await settleStoreDetail(tester);
           expect(tester.widget<Text>(position).data, '02 / 04');
           _expectNoLayoutError(tester, 'curation $size dark=$dark');
           await tester.pumpWidget(const SizedBox());
@@ -261,7 +262,9 @@ void main() {
     skip: !kIsWeb,
   );
 
-  testWidgets('web root opens the personal album workspace', (tester) async {
+  storeDetailTestWidgets('web root opens the personal album workspace', (
+    tester,
+  ) async {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await _mount(tester, const HomeScreen(), const Size(1440, 1000));
@@ -274,7 +277,7 @@ void main() {
     expect(tester.takeException(), isNull);
   }, skip: !kIsWeb);
 
-  testWidgets(
+  storeDetailTestWidgets(
     'production store hub searches, resets and switches catalogs without losing query',
     (tester) async {
       addTearDown(tester.view.resetPhysicalSize);
@@ -301,10 +304,10 @@ void main() {
           .byKey(const ValueKey('web-catalog-search'))
           .hitTestable();
       await tester.enterText(templateSearch, '존재하지않는디자인999');
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(find.text('조건에 맞는 디자인이 없어요'), findsOneWidget);
       await tester.tap(find.text('검색·필터 초기화'));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(
         tester.widget<TextField>(templateSearch).controller!.text,
         isEmpty,
@@ -312,29 +315,29 @@ void main() {
       await tester.tap(
         find.byKey(const ValueKey('web-catalog-price-filter')).hitTestable(),
       );
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       await tester.tap(find.text('보유').last);
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(find.text('1개의 템플릿'), findsOneWidget);
       await tester.tap(
         find.byKey(const ValueKey('web-catalog-reset')).hitTestable(),
       );
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       await tester.enterText(templateSearch, _templates.first.title);
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       await selectStoreCatalog(tester, 1);
       expect(catalogLocation.value, WebAppLocation.materials);
       await tester.enterText(
         find.byKey(const ValueKey('web-catalog-search')).hitTestable(),
         '소재없음999',
       );
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(find.text('조건에 맞는 소재가 없어요.'), findsOneWidget);
       await tester.tap(find.text('필터 초기화'));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       // A browser Back request updates the mounted hub rather than remounting it.
       catalogLocation.update(WebAppLocation.designs);
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(
         tester
             .widget<TextField>(
@@ -345,7 +348,7 @@ void main() {
         _templates.first.title,
       );
       catalogLocation.update(WebAppLocation.materials);
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(
         tester
             .widget<TextField>(
@@ -360,7 +363,7 @@ void main() {
     skip: !kIsWeb,
   );
 
-  testWidgets(
+  storeDetailTestWidgets(
     'production template and material details retain accessible use controls at all viewport sizes',
     (tester) async {
       addTearDown(tester.view.resetPhysicalSize);
@@ -414,7 +417,7 @@ void main() {
               );
             }
             await tester.ensureVisible(action);
-            await tester.pumpAndSettle();
+            await settleStoreDetail(tester);
             print(
               '[web store action] $size material=$material found=${action.evaluate().length} hit=${action.hitTestable().evaluate().length} rect=${tester.getRect(action)}',
             );
@@ -440,7 +443,7 @@ void main() {
     skip: !kIsWeb,
   );
 
-  testWidgets(
+  storeDetailTestWidgets(
     'production catalog remains scrollable on narrow and short windows',
     (tester) async {
       addTearDown(tester.view.resetPhysicalSize);
@@ -468,7 +471,7 @@ void main() {
             )
             .controller!;
         scroll.jumpTo(scroll.position.maxScrollExtent);
-        await tester.pumpAndSettle();
+        await settleStoreDetail(tester);
         _expectNoLayoutError(tester, '$size materials scrolled');
       }
     },

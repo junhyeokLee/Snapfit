@@ -21,6 +21,7 @@ void main() {
       "layers": [
         {
           "type": "IMAGE",
+          "templateContent": false,
           "payload": {
             "previewUrl": "https://example.com/1.jpg"
           }
@@ -33,6 +34,7 @@ void main() {
       "layers": [
         {
           "type": "IMAGE",
+          "templateContent": false,
           "payload": {
             "previewUrl": ""
           }
@@ -59,36 +61,33 @@ void main() {
       },
     );
 
-    test(
-      'calculateAlbumProgress prefers larger value between server totalPages and fallback',
-      () {
-        const coverLayersJson = '''
+    test('allocated server pages never override authored content', () {
+      const coverLayersJson = '''
 {
   "pages": [
     {"index": 0, "isCover": true, "layers": []},
-    {"index": 1, "isCover": false, "layers": [{"type": "TEXT", "payload": {"text": "hello"}}]}
+    {"index": 1, "isCover": false, "layers": [{"type": "TEXT", "templateContent": false, "payload": {"text": "hello"}}]}
   ]
 }
 ''';
-        final album = Album(
-          id: 1,
-          coverLayersJson: coverLayersJson,
-          totalPages: 3,
-          targetPages: 6,
-        );
+      final album = Album(
+        id: 1,
+        coverLayersJson: coverLayersJson,
+        totalPages: 3,
+        targetPages: 6,
+      );
 
-        final progress = calculateAlbumProgress(album);
-        expect(progress.completedPages, 3);
-        expect(progress.percentLabel, '50%');
-      },
-    );
+      final progress = calculateAlbumProgress(album);
+      expect(progress.completedPages, 1);
+      expect(progress.percentLabel, '17%');
+    });
 
     test('isCompletedAlbum uses progress fallback parsing', () {
       const coverLayersJson = '''
 {
   "pages": [
     {"index": 0, "isCover": true, "layers": []},
-    {"index": 1, "isCover": false, "layers": [{"type": "TEXT", "payload": {"text": "a"}}]}
+    {"index": 1, "isCover": false, "layers": [{"type": "TEXT", "templateContent": false, "payload": {"text": "a"}}]}
   ]
 }
 ''';

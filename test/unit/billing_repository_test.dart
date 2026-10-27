@@ -8,6 +8,28 @@ class MockTokenStorage extends Mock implements TokenStorage {}
 
 void main() {
   test(
+    'earned attendance and signup points have distinct ledger descriptions',
+    () {
+      const entry = PointLedgerEntry(
+        id: 1,
+        createdAt: null,
+        amountDelta: 10,
+        reason: 'DAILY_ATTENDANCE',
+      );
+      expect(entry.title, '출석체크 적립');
+      expect(entry.subtitle, '오늘의 출석으로 받은 무료 포인트');
+      expect(entry.amountLabel, '+10P');
+      const signup = PointLedgerEntry(
+        id: 2,
+        createdAt: null,
+        amountDelta: 500,
+        reason: 'SIGNUP_BONUS',
+      );
+      expect(signup.title, '가입 축하 포인트');
+    },
+  );
+
+  test(
     'server protection errors are not incorrectly reported as insufficient points',
     () async {
       final repository = BillingRepository(
@@ -188,6 +210,25 @@ void main() {
     expect(ledger.first.amountLabel, '+2500P');
     expect(ledger.last.title, 'AI 템플릿 사용');
     expect(ledger.last.amountLabel, '-700P');
+  });
+
+  test('referral rewards have distinct inviter and invitee ledger labels', () {
+    final inviter = PointLedgerEntry.fromJson({
+      'id': 31,
+      'amount_delta': 100,
+      'reason': 'REFERRAL_INVITER',
+    });
+    final invitee = PointLedgerEntry.fromJson({
+      'id': 32,
+      'amount_delta': 100,
+      'reason': 'REFERRAL_INVITEE',
+    });
+    expect(inviter.title, '친구 초대 적립');
+    expect(invitee.title, '초대 코드 등록 적립');
+    expect(inviter.amountLabel, '+100P');
+    expect(invitee.amountLabel, '+100P');
+    expect(inviter.subtitle, contains('친구가 코드를 등록'));
+    expect(invitee.subtitle, contains('친구의 초대 코드를 등록'));
   });
 
   test('preflightStorage requires a Supabase client', () async {

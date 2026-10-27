@@ -1,0 +1,1057 @@
+{
+  "created_at_utc": "2026-10-26T05:00:58.670266+00:00",
+  "project_ref": "rrbhxdtriummqpztpjrk",
+  "run_id": "5394e17b7fb1",
+  "status": "cleanup_complete",
+  "readiness": {
+    "ready": true,
+    "requests": [
+      {
+        "role": "A",
+        "auth_status": 200,
+        "rest_status": 200,
+        "error_code": null
+      },
+      {
+        "role": "B",
+        "auth_status": 200,
+        "rest_status": 200,
+        "error_code": null
+      }
+    ]
+  },
+  "scope": "two synthetic accounts only; no customer data mutation",
+  "accounts": [
+    {
+      "role": "A",
+      "user_id": "b1d55d4d-f22d-4ec5-8b0f-02790e7b4d27"
+    },
+    {
+      "role": "B",
+      "user_id": "06856deb-3346-4c65-be3c-2ee0c950645a"
+    }
+  ],
+  "original_album_assets_baseline": {
+    "count": 41,
+    "metadata_md5": "cefb34aa7d073d3613cf09aebafc27bc"
+  },
+  "financial_baseline": {
+    "b1d55d4d-f22d-4ec5-8b0f-02790e7b4d27": {
+      "wallet_sha256": "bc415ecca17eecbcf881ac511d31d06665b2f0029167972d6056533e22b027d5",
+      "ledger_sha256": "0c73a7d8d7ae03d517ab5c763c6096ef593bc60961736793234728d8103179b1"
+    },
+    "06856deb-3346-4c65-be3c-2ee0c950645a": {
+      "wallet_sha256": "cd17c31e344d24e23ef4ddfc8c6d519ac1e45dc310daa28e4aa0b8757cc56f1c",
+      "ledger_sha256": "f587672134de631b30fdfcbfd891d857467a089211a201a7c3e38b6d0915ff3e"
+    }
+  },
+  "docs_checked": [
+    "https://supabase.com/changelog.md",
+    "https://supabase.com/docs/guides/storage/buckets/fundamentals",
+    "https://supabase.com/docs/reference/javascript/auth-admin-createuser"
+  ],
+  "schema_or_security_setting_changes": false,
+  "fixtures": [
+    {
+      "kind": "landscape",
+      "source_album_id": 97,
+      "work_id": "9e1dcb1b-1334-4765-845c-b68182f2c959",
+      "aspect_ratio": 1.5,
+      "page_count": 3,
+      "selected_page_indexes": [
+        1,
+        2,
+        3
+      ],
+      "pages": [
+        {
+          "position": 0,
+          "saved_page_index": 1,
+          "width": 1440,
+          "height": 960,
+          "sha256": "ba1011665b264418c773103cae96dce6d7102c606bd1f96157d51ce000b12c3a",
+          "public_sample_source": "output/profile-qa-20261026/landscape.png"
+        },
+        {
+          "position": 1,
+          "saved_page_index": 2,
+          "width": 1536,
+          "height": 1024,
+          "sha256": "3cf086e5f4447a3f5c963226f92c690990e5d5a4498072e44499f91aa2684a09",
+          "public_sample_source": "assets/templates/original_editorial/images/travel_coast.png"
+        },
+        {
+          "position": 2,
+          "saved_page_index": 3,
+          "width": 1536,
+          "height": 1024,
+          "sha256": "1a2ad0864a5fc9589d5f782b0b076fe49610c76c5ded9ba27e3b9bcb4c4967eb",
+          "public_sample_source": "assets/templates/original_editorial/images/family_table.png"
+        }
+      ],
+      "published_via": "ordinary JWT beginPublication/upload/finalize",
+      "viewer_read_bytes_match": true,
+      "public_source_fields_absent": true
+    },
+    {
+      "kind": "portrait",
+      "source_album_id": 98,
+      "work_id": "20fe027f-0e2f-4f52-9475-f17152b52dbe",
+      "aspect_ratio": 0.6666666666666666,
+      "page_count": 1,
+      "selected_page_indexes": [
+        1
+      ],
+      "pages": [
+        {
+          "position": 0,
+          "saved_page_index": 1,
+          "width": 960,
+          "height": 1440,
+          "sha256": "f7cf0e6847184e8b9edff3e3a42f846055b5f366a1a001396a918e1a82df70cf",
+          "public_sample_source": "output/profile-qa-20261026/portrait.png"
+        }
+      ],
+      "published_via": "ordinary JWT beginPublication/upload/finalize",
+      "viewer_read_bytes_match": true,
+      "public_source_fields_absent": true
+    },
+    {
+      "kind": "square",
+      "source_album_id": 99,
+      "work_id": "def3a3b0-09ff-472d-b765-75008638efe2",
+      "aspect_ratio": 1,
+      "page_count": 1,
+      "selected_page_indexes": [
+        1
+      ],
+      "pages": [
+        {
+          "position": 0,
+          "saved_page_index": 1,
+          "width": 1440,
+          "height": 1440,
+          "sha256": "be6d0e5bcf17e63c2adeec296ba030714ab972024fc8b4b5dc1cb793f4843558",
+          "public_sample_source": "output/profile-qa-20261026/square.png"
+        }
+      ],
+      "published_via": "ordinary JWT beginPublication/upload/finalize",
+      "viewer_read_bytes_match": true,
+      "public_source_fields_absent": true
+    }
+  ],
+  "source_documents_unchanged_after_publication": true,
+  "hold_for_root_ui": false,
+  "fixture_ready_at_utc": "2026-10-26T05:02:34.825631+00:00",
+  "profile_photo": {
+    "width": 1024,
+    "height": 1024,
+    "private_bucket": true,
+    "source": "output/profile-qa-20261026/profile-portrait.png",
+    "uploaded_with_ordinary_jwt": true
+  },
+  "core_behavior_verification": {
+    "completed_at_utc": "2026-10-26T05:03:53.017819+00:00",
+    "authentication": "ordinary user JWT and anon; administrative key not used for behavioral checks",
+    "passed": 29,
+    "failed": 0,
+    "cases": [
+      {
+        "case": "recommend_feed_three_fixture_works",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "pagination_no_duplicates",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "topic_filter",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "anonymous_three_page_public_work",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "guest_like_write_denied",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "guest_follow_write_denied",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "like_desired_true",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "concurrent_like_retry_keeps_one",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "like_actor_isolation",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "feed_like_matches_detail",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "save_retry_and_actor_isolation",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "following_feed_initially_empty",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "follow_desired_true",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "concurrent_follow_retry_keeps_one",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "both_relation_lists_match",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "following_feed_contains_author_three",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "unfollow_retry_restores_zero",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "comment_retry_one_row",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "comment_author_delete",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "reactions_restored_neutral",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "blocked_work_hidden",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "blocked_like_denied",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "blocked_follow_denied",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "unblocked_public_visibility_restored",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "qa_A_wallet_ledger_unchanged",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "qa_B_wallet_ledger_unchanged",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "source_97_unchanged",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "source_98_unchanged",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      },
+      {
+        "case": "source_99_unchanged",
+        "expected": true,
+        "actual": true,
+        "passed": true
+      }
+    ],
+    "neutral_state": {
+      "likes": 0,
+      "saves": 0,
+      "comments": 0,
+      "follows": 0,
+      "blocks": 0
+    },
+    "hold_for_root_ui": false
+  },
+  "private_source_binding_verification": {
+    "fixture_only": true,
+    "rows": [
+      {
+        "source_album_id": 97,
+        "work_id": "9e1dcb1b-1334-4765-845c-b68182f2c959",
+        "page_indexes": [
+          1,
+          2,
+          3
+        ],
+        "source_revision_matches": true,
+        "status": "published",
+        "aspect_ratio": "1.5",
+        "page_asset_count": 3,
+        "positions": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "source_album_id": 98,
+        "work_id": "20fe027f-0e2f-4f52-9475-f17152b52dbe",
+        "page_indexes": [
+          1
+        ],
+        "source_revision_matches": true,
+        "status": "published",
+        "aspect_ratio": "0.6666666666666666",
+        "page_asset_count": 1,
+        "positions": [
+          0
+        ]
+      },
+      {
+        "source_album_id": 99,
+        "work_id": "def3a3b0-09ff-472d-b765-75008638efe2",
+        "page_indexes": [
+          1
+        ],
+        "source_revision_matches": true,
+        "status": "published",
+        "aspect_ratio": "1",
+        "page_asset_count": 1,
+        "positions": [
+          0
+        ]
+      }
+    ],
+    "all_match": true
+  },
+  "snapshot_ui_failure_evidence": {
+    "scope": "current synthetic landscape work only",
+    "window_utc": [
+      "2026-10-26T05:15:00Z",
+      "2026-10-26T05:29:00Z"
+    ],
+    "storage_logs": [
+      {
+        "error_code": "",
+        "error_message": "",
+        "first_seen": "2026-10-26T05:23:52.850000",
+        "last_seen": "2026-10-26T05:27:42.876000",
+        "requests": 6,
+        "status": "200"
+      },
+      {
+        "error_code": "InvalidJWT",
+        "error_message": "\"exp\" claim timestamp check failed",
+        "first_seen": "2026-10-26T05:26:59.533000",
+        "last_seen": "2026-10-26T05:27:41.196000",
+        "requests": 2,
+        "status": "400"
+      }
+    ],
+    "confirmed_cause": "expired snapshot signed URL reused when revisiting a PageView page; Storage validates exp and rejects it",
+    "client_path": [
+      "SocialRepository.snapshotUrlLifetimeSeconds=60",
+      "socialWorkProvider has no TTL invalidation while detail remains mounted",
+      "SocialWork.imageUrls holds originally issued URLs",
+      "SocialWorkImage errorBuilder currently exposes only manual onRetry",
+      "detail onRetry invalidates socialWorkProvider so URLs are signed again"
+    ],
+    "security_contract_change_required": false,
+    "fixture_mutations_performed": false
+  },
+  "snapshot_signed_url_expiry_diagnostic": {
+    "observed_at_utc": "2026-10-26T05:31:00.520236+00:00",
+    "work_id": "9e1dcb1b-1334-4765-845c-b68182f2c959",
+    "snapshot_position": 0,
+    "signing_actor": "anon",
+    "sign_response_status": 200,
+    "ttl_requested_seconds": 60,
+    "jwt_exp_minus_iat_seconds": 60,
+    "initial_signed_get_status": 200,
+    "initial_is_png": true,
+    "fixture_mutations_performed": false,
+    "expired_signed_get_status": 400,
+    "expired_response": {
+      "statusCode": "400",
+      "error": "InvalidJWT",
+      "message": "\"exp\" claim timestamp check failed"
+    },
+    "completed_at_utc": "2026-10-26T05:32:04.229395+00:00"
+  },
+  "snapshot_auto_recovery_final_release": {
+    "release": "c4e3220a0df86c52",
+    "source": "production edge_logs through Supabase read-only connector",
+    "work_id": "9e1dcb1b-1334-4765-845c-b68182f2c959",
+    "snapshot_position": 2,
+    "window_utc": [
+      "2026-10-26T05:52:20Z",
+      "2026-10-26T05:58:00Z"
+    ],
+    "root_ui_observation": {
+      "click_at_utc": "2026-10-26T05:54:35.560Z",
+      "unvisited_page": 3,
+      "manual_retry_pressed": false,
+      "displayed_photo_after_recovery": true
+    },
+    "last_preceding_signature_post_at_utc": "2026-10-26T05:53:03.640Z",
+    "snapshot_url_lifetime_seconds": 60,
+    "requests": [
+      {
+        "timestamp_utc": "2026-10-26T05:54:35.531000Z",
+        "method": "GET",
+        "path": "/storage/v1/object/sign/social-snapshots/b1d55d4d-f22d-4ec5-8b0f-02790e7b4d27/9e1dcb1b-1334-4765-845c-b68182f2c959/2.png",
+        "status": 400,
+        "cache_status": "DYNAMIC"
+      },
+      {
+        "timestamp_utc": "2026-10-26T05:54:35.788000Z",
+        "method": "GET",
+        "path": "/storage/v1/object/sign/social-snapshots/b1d55d4d-f22d-4ec5-8b0f-02790e7b4d27/9e1dcb1b-1334-4765-845c-b68182f2c959/2.png",
+        "status": 400,
+        "cache_status": "DYNAMIC"
+      },
+      {
+        "timestamp_utc": "2026-10-26T05:54:36.357000Z",
+        "method": "POST",
+        "path": "/storage/v1/object/sign/social-snapshots",
+        "status": 200,
+        "cache_status": "DYNAMIC"
+      },
+      {
+        "timestamp_utc": "2026-10-26T05:54:36.505000Z",
+        "method": "GET",
+        "path": "/storage/v1/object/sign/social-snapshots/b1d55d4d-f22d-4ec5-8b0f-02790e7b4d27/9e1dcb1b-1334-4765-845c-b68182f2c959/2.png",
+        "status": 200,
+        "cache_status": "MISS"
+      }
+    ],
+    "automatic_recovery_server_sequence_confirmed": true,
+    "expired_get_to_success_ms": 974,
+    "cause_attribution": "Expiry inferred from failed GET occurring >60 seconds after last signing, identical path returning 200 after fresh signing, and earlier controlled InvalidJWT exp proof. This exact reproduction's edge logs expose status but not error response body; storage logs omitted those snapshot requests.",
+    "fixture_mutations_performed": false,
+    "cleanup_started": false,
+    "fullscreen": {
+      "source": "production edge_logs through Supabase read-only connector",
+      "snapshot_position": 1,
+      "window_utc": [
+        "2026-10-26T06:03:15Z",
+        "2026-10-26T06:03:45Z"
+      ],
+      "root_ui_observation": {
+        "fullscreen_opened_at_utc": "2026-10-26T06:01:26.011Z",
+        "next_page_clicked_at_utc": "2026-10-26T06:03:22.002Z",
+        "zoom_clicked_at_utc": "2026-10-26T06:03:26.752Z",
+        "manual_retry_pressed": false,
+        "current_page": "2/3",
+        "zoom_percent": 150,
+        "same_route_remained_open": true,
+        "actual_coast_photo_displayed": true
+      },
+      "requests": [
+        {
+          "timestamp_utc": "2026-10-26T06:03:26.518000Z",
+          "method": "GET",
+          "path": "/storage/v1/object/sign/social-snapshots/b1d55d4d-f22d-4ec5-8b0f-02790e7b4d27/9e1dcb1b-1334-4765-845c-b68182f2c959/1.png",
+          "status": 400,
+          "cache_status": "DYNAMIC"
+        },
+        {
+          "timestamp_utc": "2026-10-26T06:03:27.091000Z",
+          "method": "GET",
+          "path": "/storage/v1/object/sign/social-snapshots/b1d55d4d-f22d-4ec5-8b0f-02790e7b4d27/9e1dcb1b-1334-4765-845c-b68182f2c959/1.png",
+          "status": 400,
+          "cache_status": "DYNAMIC"
+        },
+        {
+          "timestamp_utc": "2026-10-26T06:03:28.290000Z",
+          "method": "POST",
+          "path": "/storage/v1/object/sign/social-snapshots",
+          "status": 200,
+          "cache_status": "DYNAMIC"
+        },
+        {
+          "timestamp_utc": "2026-10-26T06:03:28.468000Z",
+          "method": "GET",
+          "path": "/storage/v1/object/sign/social-snapshots/b1d55d4d-f22d-4ec5-8b0f-02790e7b4d27/9e1dcb1b-1334-4765-845c-b68182f2c959/1.png",
+          "status": 200,
+          "cache_status": "MISS"
+        }
+      ],
+      "automatic_recovery_server_sequence_confirmed": true,
+      "expired_get_to_success_ms": 1950,
+      "route_page_zoom_preserved": true,
+      "fixture_mutations_performed": false,
+      "cleanup_started": false
+    }
+  },
+  "cleanup": {
+    "run_id": "5394e17b7fb1",
+    "project_ref": "rrbhxdtriummqpztpjrk",
+    "accounts": [
+      {
+        "role": "A",
+        "user_id": "b1d55d4d-f22d-4ec5-8b0f-02790e7b4d27"
+      },
+      {
+        "role": "B",
+        "user_id": "06856deb-3346-4c65-be3c-2ee0c950645a"
+      }
+    ],
+    "fresh_album_ids": [
+      97,
+      99,
+      98
+    ],
+    "fresh_work_ids": [
+      "9e1dcb1b-1334-4765-845c-b68182f2c959",
+      "20fe027f-0e2f-4f52-9475-f17152b52dbe",
+      "def3a3b0-09ff-472d-b765-75008638efe2"
+    ],
+    "storage_removed": {
+      "album-assets": 0,
+      "social-snapshots": 5,
+      "social-profile-photos": 1
+    },
+    "financial_baseline_scope": "exact two synthetic accounts only",
+    "operations": [
+      {
+        "operation": "exact_synthetic_auth_scope_verified",
+        "count": 2
+      },
+      {
+        "operation": "fixture_financial_baseline_unchanged_and_owned_rows_cleared",
+        "albums": 3,
+        "works": 3
+      },
+      {
+        "operation": "exact_storage_prefixes_cleared",
+        "bucket": "album-assets",
+        "removed": 0,
+        "remaining": 0
+      },
+      {
+        "operation": "exact_storage_prefixes_cleared",
+        "bucket": "social-snapshots",
+        "removed": 5,
+        "remaining": 0
+      },
+      {
+        "operation": "exact_storage_prefixes_cleared",
+        "bucket": "social-profile-photos",
+        "removed": 1,
+        "remaining": 0
+      },
+      {
+        "operation": "synthetic_sessions_revoked_and_accounts_hard_deleted",
+        "count": 2
+      }
+    ],
+    "actual_cleanup_completed_at_utc": "2026-10-26T06:10:19.182423+00:00",
+    "manifest_album_ids": [
+      97,
+      98,
+      99
+    ],
+    "manifest_work_ids": [
+      "9e1dcb1b-1334-4765-845c-b68182f2c959",
+      "20fe027f-0e2f-4f52-9475-f17152b52dbe",
+      "def3a3b0-09ff-472d-b765-75008638efe2"
+    ],
+    "credentials_file_deleted": true,
+    "completed": true,
+    "database_residue_validation": {
+      "groups": 92,
+      "total_remaining": 0,
+      "groups_remaining": [
+        {
+          "group_name": "album_private.asset_bindings",
+          "remaining": 0
+        },
+        {
+          "group_name": "album_private.save_requests",
+          "remaining": 0
+        },
+        {
+          "group_name": "album_private.shared_history",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.audit_log_entries",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.custom_oauth_providers",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.flow_state",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.identities",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.instances",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.mfa_amr_claims",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.mfa_challenges",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.mfa_factors",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.mfa_recovery_code_sets",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.mfa_recovery_codes",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.oauth_authorizations",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.oauth_client_states",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.oauth_clients",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.oauth_consents",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.one_time_tokens",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.refresh_tokens",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.saml_providers",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.saml_relay_states",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.scim_tokens",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.scim_users",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.sessions",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.sso_domains",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.sso_providers",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.users",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.webauthn_challenges",
+          "remaining": 0
+        },
+        {
+          "group_name": "auth.webauthn_credentials",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.ai_template_free_jobs",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.ai_template_free_runtime",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.ai_template_free_worker_nonces",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.ai_template_generation_intents",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_checkout_consents",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_checkout_intents",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_dev_checkouts",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_dev_fulfillment_outbox",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_dev_packages",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_file_retention",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_file_retention_audit",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_fulfillment_outbox",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_order_requests",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_order_scheduler_nonces",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_payment_reversals",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_payment_test_sessions",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_pre_sdk_aborts",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_prepayment_packages",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_retail_price_audit",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_retail_price_overrides",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_retail_price_revisions",
+          "remaining": 0
+        },
+        {
+          "group_name": "private.print_sales_combinations",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.ai_album_draft_usages",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.ai_album_free_draft_claims",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.ai_album_operational_events",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.album_invites",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.album_members",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.album_pages",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.albums",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.billing_orders",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.notification_reads",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.notifications",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.orders",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.point_ledger",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.point_shop_ownership",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.point_wallets",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.profiles",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.push_devices",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.push_outbox",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.push_preferences",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.redprinting_dev_api_gate",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.redprinting_dev_mappings",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.redprinting_dev_settings",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.redprinting_dev_tests",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.social_blocks",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.social_comments",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.social_follows",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.social_likes",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.social_profiles",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.social_saves",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.social_work_pages",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.social_works",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.storage_quotas",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.store_purchases",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.subscriptions",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.support_inquiries",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.template_likes",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.web_point_topup_test_ledger",
+          "remaining": 0
+        },
+        {
+          "group_name": "public.web_point_topups",
+          "remaining": 0
+        },
+        {
+          "group_name": "social_private.social_publication_sources",
+          "remaining": 0
+        },
+        {
+          "group_name": "storage.album-assets",
+          "remaining": 0
+        },
+        {
+          "group_name": "storage.social-profile-photos",
+          "remaining": 0
+        },
+        {
+          "group_name": "storage.social-snapshots",
+          "remaining": 0
+        }
+      ]
+    },
+    "public_api_after_cleanup": {
+      "observed_at_utc": "2026-10-26T06:11:24.646412+00:00",
+      "anonymous_feed_status": 200,
+      "anonymous_feed_items": 0,
+      "anonymous_feed_has_more": false,
+      "deleted_synthetic_profiles_return_null": true,
+      "deleted_synthetic_works_return_null": true
+    },
+    "original_album_assets_preserved": {
+      "count_before": 41,
+      "count_after": 41,
+      "metadata_hash_algorithm": "SHA256 of UTF-8 JSON list sorted by bucket_id/name, fields bucket_id/name/owner/owner_id/metadata, sort_keys=True, separators=(comma,colon), ensure_ascii=False; image bytes not read",
+      "before_sha256": "ae9a18b839c583c5a1480d5b80088f414b20fe065c9fd85dc4c2db78f18cfe6e",
+      "after_sha256": "ae9a18b839c583c5a1480d5b80088f414b20fe065c9fd85dc4c2db78f18cfe6e",
+      "canonical_rows_exactly_equal": true,
+      "unchanged": true,
+      "historical_md5_baseline": "cefb34aa7d073d3613cf09aebafc27bc",
+      "historical_md5_recomputed_this_cleanup": false,
+      "historical_md5_note": "Original SQL serialization was not retained. Preservation was independently verified using exact canonical metadata rows and SHA256 captured immediately before and after cleanup."
+    },
+    "fixture_financial_baseline_before_cleanup": {
+      "A": true,
+      "B": true
+    },
+    "fixture_financial_baseline_scope": "exact two synthetic accounts only; no global customer financial baseline claim",
+    "source_documents_unchanged_before_cleanup": {
+      "97": {
+        "updated_at": "2026-10-26T05:02:17.710967+00:00",
+        "document_sha256": "82144193d1efaaa9f58588a6205453d7a36c5b102d02ba2025d5851335a003dc"
+      },
+      "98": {
+        "updated_at": "2026-10-26T05:02:27.252339+00:00",
+        "document_sha256": "611f0afc77590873468852ea677077f930f30a2606d9eee354a9f0c8904ce82b"
+      },
+      "99": {
+        "updated_at": "2026-10-26T05:02:30.816233+00:00",
+        "document_sha256": "6897d36fb82a53d3c386b5595ab189c6e246bca864ee96d8a6d4ad1ccea77259"
+      }
+    },
+    "neutral_relationship_state_before_cleanup": {
+      "likes": 0,
+      "saves": 0,
+      "comments": 0,
+      "follows": 0,
+      "blocks": 0
+    },
+    "customer_data_mutations_performed": false,
+    "schema_security_or_signed_url_lifetime_changes_performed": false,
+    "local_credential_or_token_files_remaining": 0,
+    "verification_completed_at_utc": "2026-10-26T06:11:54.255323+00:00",
+    "private_helper_directory_deleted": true,
+    "private_helper_directory_removed_at_utc": "2026-10-26T06:11:54.267170+00:00"
+  }
+}

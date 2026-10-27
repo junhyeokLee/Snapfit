@@ -1,0 +1,11 @@
+{
+  "name": "snapfit-social-server-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test social_publication_sql.test.mjs social_followup_sql.test.mjs daily_attendance_sql.test.mjs referral_rewards_sql.test.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.3.14"
+  }
+}

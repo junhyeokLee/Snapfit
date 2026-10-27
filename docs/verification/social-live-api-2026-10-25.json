@@ -1,0 +1,233 @@
+{
+  "project_ref": "rrbhxdtriummqpztpjrk",
+  "run_id": "f02c1e83e76d",
+  "checks": [
+    {
+      "check": "foreign_album_owner_enforced",
+      "passed": true
+    },
+    {
+      "check": "foreign_private_album_invisible",
+      "passed": true
+    },
+    {
+      "check": "selected_positions_preserved",
+      "passed": true
+    },
+    {
+      "check": "begin_idempotent",
+      "passed": true
+    },
+    {
+      "check": "draft_hidden_anon",
+      "passed": true
+    },
+    {
+      "check": "incomplete_not_publishable",
+      "passed": true
+    },
+    {
+      "check": "snapshot_path_has_no_album_id_0",
+      "passed": true
+    },
+    {
+      "check": "slot_retry_detects_upload_0",
+      "passed": true
+    },
+    {
+      "check": "snapshot_path_has_no_album_id_1",
+      "passed": true
+    },
+    {
+      "check": "slot_retry_detects_upload_1",
+      "passed": true
+    },
+    {
+      "check": "finalize_published_two_images",
+      "passed": true
+    },
+    {
+      "check": "finalize_idempotent",
+      "passed": true
+    },
+    {
+      "check": "public_profile_no_private_email",
+      "passed": true
+    },
+    {
+      "check": "public_projection_no_source_document_urls_or_private_email",
+      "passed": true
+    },
+    {
+      "check": "public_feed_includes_qa_work",
+      "passed": true
+    },
+    {
+      "check": "published_snapshot_overwrite_denied",
+      "passed": true
+    },
+    {
+      "check": "anon_signs_both_snapshots",
+      "passed": true
+    },
+    {
+      "check": "signed_png_download_0",
+      "passed": true
+    },
+    {
+      "check": "signed_png_download_1",
+      "passed": true
+    },
+    {
+      "check": "ordinary_jwt_follow",
+      "passed": true
+    },
+    {
+      "check": "following_feed",
+      "passed": true
+    },
+    {
+      "check": "ordinary_jwt_like",
+      "passed": true
+    },
+    {
+      "check": "ordinary_jwt_save",
+      "passed": true
+    },
+    {
+      "check": "saved_list",
+      "passed": true
+    },
+    {
+      "check": "ordinary_jwt_comment",
+      "passed": true
+    },
+    {
+      "check": "block_hides_work_from_signed_user",
+      "passed": true
+    },
+    {
+      "check": "block_hides_saved",
+      "passed": true
+    },
+    {
+      "check": "block_removes_follow",
+      "passed": true
+    },
+    {
+      "check": "withdrawn_work_hidden_anon",
+      "passed": true
+    },
+    {
+      "check": "withdrawn_snapshots_new_sign_denied",
+      "passed": true
+    },
+    {
+      "check": "withdrawn_feed_hidden",
+      "passed": true
+    },
+    {
+      "check": "own_private_management_preserved",
+      "passed": true
+    },
+    {
+      "check": "public_fixture_restored_for_ui_qa",
+      "passed": true
+    },
+    {
+      "check": "live_private_account_profile_rls",
+      "passed": true
+    },
+    {
+      "check": "live_legacy_empty_pages_cover_fallback",
+      "passed": true
+    },
+    {
+      "check": "live_legacy_rejects_nonexistent_inner_page",
+      "passed": true
+    },
+    {
+      "check": "live_legacy_draft_cleanup",
+      "passed": true
+    },
+    {
+      "check": "live_signed_url_60_second_expiry",
+      "passed": true
+    },
+    {
+      "check": "web_ui_original_three_pages_preserved",
+      "passed": true
+    },
+    {
+      "check": "web_ui_original_revision_matches_before_publication",
+      "passed": true
+    },
+    {
+      "check": "web_ui_publication_two_rasters",
+      "passed": true
+    },
+    {
+      "check": "web_ui_png_0",
+      "passed": true
+    },
+    {
+      "check": "web_ui_png_1",
+      "passed": true
+    },
+    {
+      "check": "web_ui_raster_portrait_aspect_ratio",
+      "passed": true
+    },
+    {
+      "check": "web_ui_published_overwrite_denied",
+      "passed": true
+    },
+    {
+      "check": "web_ui_published_png_unchanged",
+      "passed": true
+    },
+    {
+      "check": "web_ui_private_binding_selected_order_2_0",
+      "passed": true,
+      "method": "read_only_sql"
+    },
+    {
+      "check": "web_ui_private_binding_original_revision_and_three_pages_intact",
+      "passed": true,
+      "method": "read_only_sql"
+    },
+    {
+      "check": "web_ui_private_binding_exactly_two_snapshot_rows",
+      "passed": true,
+      "method": "read_only_sql"
+    },
+    {
+      "check": "web_ui_first_png_visually_contains_QA_PAGE_TWO",
+      "passed": true,
+      "method": "visual_inspection"
+    },
+    {
+      "check": "web_ui_second_png_visually_contains_SYNTHETIC_ALBUM",
+      "passed": true,
+      "method": "visual_inspection"
+    }
+  ],
+  "passed": 51,
+  "failed": 0,
+  "jwt_role": "authenticated",
+  "fixtures_retained_for_browser_qa": true,
+  "public_test_work_withdrawn_then_restored": true,
+  "web_ui_publication": {
+    "id": "b8085629-f291-48a8-a500-0be5321639f7",
+    "selected_page_indexes": [
+      2,
+      0
+    ],
+    "original_page_count": 3,
+    "source_revision_unchanged": true,
+    "snapshot_dimensions": [
+      1080,
+      1440
+    ]
+  }
+}

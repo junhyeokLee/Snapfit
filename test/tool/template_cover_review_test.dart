@@ -86,7 +86,7 @@ void main() {
         )..addFont(rootBundle.load('assets/fonts/${f.$2}'))).load();
       }
       final covers = {
-        for (final aspect in CollectionAspect.values)
+        for (final aspect in CollectionAspect.printable)
           aspect: <(String, ui.Image)>[],
       };
       final audit = <Map<String, dynamic>>[];
@@ -104,7 +104,7 @@ void main() {
           'paid': template.isPremium,
           'photos': photos,
         });
-        for (final aspect in CollectionAspect.values) {
+        for (final aspect in CollectionAspect.printable) {
           final variant = doc['variants'][aspect.name] as Map<String, dynamic>;
           final image = await capture(
             tester,
@@ -141,7 +141,7 @@ void main() {
       expect(audit, hasLength(51));
       if (_export) {
         await tester.runAsync(() async {
-          for (final aspect in CollectionAspect.values) {
+          for (final aspect in CollectionAspect.printable) {
             await _sheet(
               'output/settings-template-qa/cover-diversity-${aspect.name}.png',
               covers[aspect]!,

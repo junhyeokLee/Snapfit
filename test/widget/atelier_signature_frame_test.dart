@@ -50,7 +50,7 @@ void main() {
         expect(isPendingAtelierMaterialProduct('frame:$key'), false);
         expect(freeTemplateMaterialProductKeys, isNot(contains('frame:$key')));
       }
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         for (final free in authoredCollections) {
           expect(freeTemplateMaterialIssues(free.document(aspect)), isEmpty);
         }

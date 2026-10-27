@@ -1,0 +1,116 @@
+{
+  "date": "2026-10-25",
+  "scope": "Autonomous follow-up: repair recreated store category mismatch and reduce repeated catalog merge work",
+  "previous_report": "docs/verification/store-account-refresh-fix-2026-10-25.json",
+  "fixes": [
+    {
+      "id": "store-recreated-category-mismatch",
+      "status": "fixed",
+      "source": "lib/features/store/presentation/views/store_screen.dart",
+      "before": "After disposing/recreating StoreScreen under the same provider container, controls selected All while the feed still contained only the previous travel/club/daily category. Reproduced with a failing widget test.",
+      "change": "Adopt the retained valid feed category once from the already-watched feed during first build. Do not send a new query, clear rows, reinitialize controllers in maintained routes, or repeatedly override local Recommended selection.",
+      "evidence": "The widget test recreates the screen for travel, club and daily, verifies exact list snapshot reuse, matching chip state, one local metadata load and detached old controllers."
+    },
+    {
+      "id": "store-merge-quadratic-membership",
+      "status": "fixed",
+      "source": "lib/features/store/data/api/template_provider.dart",
+      "before": "Appending each bundled row rescanned every previously appended result. Instrumented local-only merges read IDs 4,160 times for 64 templates and 65,792 times for 256 templates.",
+      "change": "Track already present integer identities in a call-local set. Preserve server ordering/duplicates, local artwork/price tier and existing local duplicate behavior.",
+      "evidence": {
+        "64_templates": {
+          "before_id_reads": 4160,
+          "after_id_reads": 192
+        },
+        "256_templates": {
+          "before_id_reads": 65792,
+          "after_id_reads": 768
+        },
+        "document_builds": 0
+      },
+      "memory": "Only a transient O(n) set of integer IDs is added to the existing merge. It is not retained after the call; no persistent document/image cache or larger bitmap target is introduced."
+    }
+  ],
+  "production_files_changed": [
+    "lib/features/store/presentation/views/store_screen.dart",
+    "lib/features/store/data/api/template_provider.dart"
+  ],
+  "new_test_files": [
+    "test/widget/store_filter_lifecycle_test.dart",
+    "test/unit/store_merge_work_test.dart"
+  ],
+  "new_cases": 4,
+  "previous_account_fix_sources_unchanged_except_isolated_merge": {
+    "lib/features/store/domain/repositories/template_repository.dart": true,
+    "lib/features/store/data/repositories/supabase_template_repository.dart": true,
+    "test/review/store_request_resume_review_test.dart": true
+  },
+  "account_session_generation_and_request_methods_unchanged": true,
+  "review": {
+    "remaining_blocking_findings_in_changed_scope": [],
+    "checked": [
+      "Category initialization runs once per recreated widget and uses an already available feed snapshot; initial entry adds no transport or document generation.",
+      "Recommended mode is not overwritten when local selection changes after first build.",
+      "List merge membership checks are linear, with call-local identity bookkeeping only. Server rows remain in input order, repeated server rows remain present and bundled duplicates are appended once as before.",
+      "Catalog artwork builders, titles, free/paid flags, prices, saved album data and account-specific guards are preserved.",
+      "Actual account/session transitions, concurrent shared requests, rapid search navigation, hidden catalog preparation, scrolling/paging and category-strip visibility cases remain green.",
+      "New screen controllers detach on disposal; no additional animation, timer or recurring UI callback is added."
+    ]
+  },
+  "verification": {
+    "final_related_suite": {
+      "files": 13,
+      "passed": 91,
+      "failed": 0,
+      "log": "output/store-followup-lifecycle/final-tests-corrected.log"
+    },
+    "pre_merge_related_suite": {
+      "files": 8,
+      "passed": 35,
+      "failed": 0,
+      "log": "output/store-followup-lifecycle/related-tests.log",
+      "overlaps_final_suite": true
+    },
+    "before_fix_reproductions": {
+      "widget_failures": 1,
+      "merge_performance_failures": 2,
+      "logs": [
+        "output/store-followup-lifecycle/before-fix-test.log",
+        "output/store-followup-lifecycle/merge-before-test.log"
+      ]
+    },
+    "analysis": {
+      "items": 4,
+      "issues": 0,
+      "log": "output/store-followup-lifecycle/analysis.log"
+    },
+    "scoped_patch": "output/store-followup-lifecycle/scoped.patch",
+    "final_sha256": {
+      "lib/features/store/presentation/views/store_screen.dart": "d88e8ca52242ca99dbc781630ab9acce8604bdad024e99e3831d25302079d734",
+      "lib/features/store/data/api/template_provider.dart": "38be0792469bc3d0cfe15b02ee48b72c2ded1387e4754fb97f861ca61d423156",
+      "test/widget/store_filter_lifecycle_test.dart": "495df4f9e7ffb93578dc0ae1993ca068285056a4ceb6549bb4bce2017dd052f1",
+      "test/unit/store_merge_work_test.dart": "f27561c302c4d39182535e9470c049d53d6333b1fb02ed0ef3b2f652b5db7370"
+    },
+    "test_harness_repair": "Moved a diagnostic test import to the directive section and restarted the interrupted suite; final suite completed cleanly.",
+    "app_build_run": false,
+    "live_backend_or_user_data_changed": false,
+    "device_frame_or_process_memory_profile_run": false
+  },
+  "ongoing_followup": {
+    "automation_id": "snapfit",
+    "name": "SnapFit 지속 점검·개선",
+    "status": "ACTIVE",
+    "kind": "thread heartbeat",
+    "schedule": "Every hour in the current thread",
+    "scope": "Find grounded issues, fix, run focused tests serially and review; no app builds/device runs/deployments or production data changes.",
+    "next_review_candidates": [
+      "Re-entry consistency of server query state versus client search controls, if a real app path persists a nonempty server query.",
+      "Main album/reader hidden-resume image preparation, failed URL retries and cleanup under rapid navigation.",
+      "Large source lists, memory-pressure cache cleanup and background work while screens are hidden."
+    ]
+  },
+  "limits": [
+    "ID read counts measure metadata algorithm work, not device FPS. Native peak memory and rendered frame timing were not measured.",
+    "The hourly automation has been created and confirmed active; future executions have not yet been verified."
+  ]
+}

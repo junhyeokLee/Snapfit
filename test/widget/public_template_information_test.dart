@@ -38,6 +38,17 @@ final _template = PremiumTemplate(
       },
     ],
     'variants': {
+      'landscape5x4': {
+        'designWidth': 500,
+        'designHeight': 400,
+        'pages': [
+          {
+            'layers': [
+              {'id': 'landscape5x4'},
+            ],
+          },
+        ],
+      },
       'portrait': {
         'designWidth': 375,
         'designHeight': 500,
@@ -124,10 +135,11 @@ void main() {
     final facts = PublicTemplateFacts.fromTemplate(_template);
     expect(facts.innerPageCount, 2);
     expect(facts.pageLabel, '내지 2쪽');
-    expect(facts.designShapes, ['정사각형', '세로형', '가로형']);
+    expect(facts.designShapes, ['정사각형', '가로형']);
     expect(facts.printSizes.map((size) => size.productId), [
       'REDP_200_SOFT',
       'REDP_200X150_SOFT',
+      'REDP_250X200_SOFT',
       'REDP_250_SOFT',
       'REDP_300_SOFT',
     ]);
@@ -188,7 +200,7 @@ void main() {
       expect(find.text('내지 2쪽 · 표지 별도'), findsOneWidget);
       expect(find.textContaining('다른 앨범에 개별 추가할 권한'), findsOneWidget);
       expect(find.textContaining('인쇄·배송 비용은 별도'), findsOneWidget);
-      expect(find.textContaining('세로형은 화면용'), findsOneWidget);
+      expect(find.textContaining('세로형'), findsNothing);
       expect(find.text('구매 완료'), findsNothing);
       expect(tester.takeException(), isNull);
     },

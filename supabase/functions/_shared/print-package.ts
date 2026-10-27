@@ -11,7 +11,7 @@ export async function buildPrintPackage(_supabase: SupabaseAdmin, order: OrderRo
   return { patch: { print_fulfillment_status: 'AWAITING_RENDER' } }
 }
 
-export function resolvePrintAssetPath(source: string, supabaseUrl: string, allowedOwners: Set<string>): string | null {
+export function resolvePrintAssetPath(source: string, supabaseUrl: string, allowedOwners: Set<string>, allowedPaths?: Set<string>): string | null {
   let url: URL
   try { url = new URL(source) } catch { return null }
   let bucket: string, path: string
@@ -25,7 +25,7 @@ export function resolvePrintAssetPath(source: string, supabaseUrl: string, allow
     bucket = decodeURIComponent(match[1]); path = decodeURIComponent(match[2])
   }
   const parts = path.split('/')
-  if (bucket !== 'album-assets' || !allowedOwners.has(parts[0]) || parts.some(part => !part || part === '.' || part === '..') || path.includes('\\') || /%[0-9a-f]{2}/i.test(path)) {
+  if (bucket !== 'album-assets' || (!allowedOwners.has(parts[0]) && !allowedPaths?.has(path)) || parts.some(part => !part || part === '.' || part === '..') || path.includes('\\') || /%[0-9a-f]{2}/i.test(path)) {
     throw new OrderPaymentError('print_asset_access_requires_review', 409)
   }
   return path
@@ -56,11 +56,6 @@ async function signPrintSnapshot(supabase: SupabaseAdmin, order: OrderRow, supab
   const spec = getPrintSpec(order)
   const snapshot = printSnapshot(order)
   const allowedOwners = new Set(options.allowedAssetOwners ?? [String(snapshot.album.owner_id ?? ''), String(order.user_id ?? '')].filter(Boolean))
-  if (!options.allowedAssetOwners && order.album_id != null) {
-    const { data, error } = await supabase.from('album_members').select('user_id').eq('album_id', order.album_id).in('role', ['OWNER','EDITOR'])
-    if (error) throw error
-    for (const member of data ?? []) allowedOwners.add(member.user_id)
-  }
   const sources = new Set<string>()
   const visit = (value: any, key = '') => {
     if (typeof value === 'string') {
@@ -71,8 +66,27 @@ async function signPrintSnapshot(supabase: SupabaseAdmin, order: OrderRow, supab
   }
   visit(snapshot)
   const sourceUrls: Record<string,string> = {}
+  let savedPaths: Set<string> | undefined
   for (const source of sources) {
-    const path = resolvePrintAssetPath(source, supabaseUrl, allowedOwners)
+    let path: string | null
+    try { path = resolvePrintAssetPath(source, supabaseUrl, allowedOwners) }
+    catch (error) {
+      // A historical paid snapshot is immutable. Keep its original owner scope,
+      // and recover former collaborators only for exact server-saved paths.
+      // Never add a current/past member's whole private storage namespace.
+      if (options.allowedAssetOwners || order.album_id == null || !(error instanceof OrderPaymentError)) throw error
+      if (!savedPaths) {
+        const { data, error: readError } = await supabase.rpc('read_album_print_asset_authorization', {
+          p_album_id: order.album_id, p_actor: order.user_id,
+        })
+        if (readError || !Array.isArray(data?.allowedAssetPaths) ||
+            data.allowedAssetPaths.some((value: unknown) => typeof value !== 'string')) {
+          throw new OrderPaymentError('print_asset_access_requires_review', 409)
+        }
+        savedPaths = new Set(data.allowedAssetPaths)
+      }
+      path = resolvePrintAssetPath(source, supabaseUrl, allowedOwners, savedPaths)
+    }
     if (!path) continue // Bundled assets/external public URLs are left to the renderer; never fetched by the server.
     const { data, error } = await supabase.storage.from('album-assets').createSignedUrl(path, 3600)
     if (error) throw new OrderPaymentError('print_asset_signing_failed', 409)

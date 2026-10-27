@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-25",
+  "scope": "Editor rearrange highlight, secondary tool routing and refreshed arrangement sheet",
+  "changes": [
+    "Dock rearrange highlight follows currentMode instead of being always selected.",
+    "Additional tools use one bounded scrollable sheet; crop, replacement and photo styling stay in their existing primary buttons.",
+    "Wait for the additional-tool route to finish its exit transition before dispatching a canvas or page-tool action; reject double actions and stale page/session results.",
+    "Arrangement rows stay open when selected and do not mutate z-order. Explicit edit button returns to canvas; arrows and drag handles commit order and preserve undo.",
+    "Ignore no-op drags and stale drag snapshots. Modal targets cannot rebind to a new draft that reuses the same page ID.",
+    "Existing 120px thumbnail requests use a 32-entry local LRU, cleared on disposal. Photo numbering is computed once per changed order instead of slicing the layer list for each visible row.",
+    "Keep lazy list construction, bound sheet height and adapt controls to large type, compact screens and dark mode."
+  ],
+  "verification": {
+    "regression_tests": 131,
+    "native_visual_tests": 1,
+    "native_images": [
+      "dock.png",
+      "more.png",
+      "rearrange.png",
+      "dock-dark.png",
+      "more-dark.png",
+      "rearrange-dark.png"
+    ],
+    "test_files": [
+      "test/widget/editor_context_dock_test.dart",
+      "test/widget/editor_selection_integrity_test.dart",
+      "test/widget/editor_navigation_panels_test.dart",
+      "test/widget/editor_atelier_responsive_test.dart",
+      "test/widget/editor_photo_crop_context_test.dart",
+      "test/widget/editor_bottom_menu_test.dart",
+      "test/unit/album_editor_view_model_test.dart"
+    ],
+    "regression_log": "/tmp/editor-tools-verified-tests.log",
+    "native_log": "/tmp/editor-tools-native-proof.log",
+    "analysis_log": "/tmp/editor-tools-final-analysis.log",
+    "lazy_thumbnail_case": {
+      "layers": 72,
+      "visible_drag_handles_less_than": 30,
+      "nearby_thumbnail_reused": true,
+      "distant_thumbnail_evicted": true,
+      "scroll_controller_detached_after_close": true
+    },
+    "device_performance_profile_run": false,
+    "app_build_run": false,
+    "final_focused_log": "/tmp/editor-tools-final-focused.log"
+  },
+  "review": {
+    "blocking_findings": [],
+    "checked": [
+      "Correct selected-mode feedback",
+      "Single modal ownership and full dismissal before tool handoff",
+      "Fresh-layer opacity writes and stale callbacks",
+      "Stable selection order, explicit reorder and undo",
+      "Draft reset with reused page IDs",
+      "Rotation, large text and dark colors",
+      "Bounded thumbnails, lazy rows and disposed scroll listeners",
+      "After-close opacity callbacks are inert and reject a replaced editor notifier"
+    ],
+    "limits": "Native widget tests and source review cover behavior and bounded resource ownership. Device frame timing and live system memory were not profiled."
+  },
+  "preview": "output/editor-tools-refresh/tools-preview.jpg"
+}

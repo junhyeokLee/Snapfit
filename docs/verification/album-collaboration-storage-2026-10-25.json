@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-25",
+  "scope": "Private collaborative album photo upload, URL resolution and account isolation",
+  "flutter": {
+    "unique_cases": 45,
+    "failed": 0,
+    "suites": {
+      "test/unit/album_collaboration_storage_test.dart": 12,
+      "test/unit/browser_photo_storage_test.dart": 5,
+      "test/unit/storage_service_path_test.dart": 7,
+      "test/unit/storage_image_provider_test.dart": 5,
+      "test/unit/storage_image_url_cache_test.dart": 11,
+      "test/widget/photo_recovery_lifecycle_test.dart": 5
+    },
+    "reruns_excluded_from_unique_count": true,
+    "test_flags": ["--no-test-assets", "--no-pub"],
+    "selected_static_analysis": "No issues found"
+  },
+  "verified": [
+    "Private object paths include uploader and album identity; traversal is rejected",
+    "Original and preview must both upload successfully; partial failures cannot report success",
+    "Account changes stop subsequent uploads and cannot clean up through another account",
+    "Persisted album references use private supabase URIs",
+    "Same-project legacy public URLs are resolved through current authorized signing",
+    "Album image signing requests expire in at most 60 seconds",
+    "Late signing responses cannot populate a new account cache",
+    "A new account cannot reuse a previous account image signing cache or pending request",
+    "Cleanup skips foreign paths, referenced objects and another account session"
+  ],
+  "security_advisor_comparison": {
+    "rls_enabled_no_policy": {"before": 37, "after": 40, "reason": "Three private bookkeeping tables deliberately deny direct client access"},
+    "function_search_path_mutable": {"before": 2, "after": 2},
+    "anon_security_definer_function_executable": {"before": 9, "after": 8},
+    "authenticated_security_definer_function_executable": {"before": 14, "after": 13},
+    "auth_leaked_password_protection": {"before": 1, "after": 1}
+  },
+  "limits": [
+    "A previously issued signed URL remains valid until expiry; downloaded copies cannot be recalled",
+    "No connected physical phone was available; installation and physical-device execution are not claimed"
+  ]
+}

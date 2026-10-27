@@ -17,7 +17,11 @@ void main() {
       for (final template in bundledCreationTemplates) {
         expect(
           pointShopTemplateKey(template),
-          pointShopAuthoredTemplateKey(byId[template.id]!),
+          byId.containsKey(template.id)
+              ? pointShopAuthoredTemplateKey(byId[template.id]!)
+              : storyEditions
+                    .singleWhere((e) => e.catalogId == template.id)
+                    .productKey,
         );
         expect(template.tags, isNot(contains('무료')));
       }

@@ -87,10 +87,7 @@ void main() {
               onAccept: () {},
               isAccepting: false,
             ),
-            'creation-start': AiAlbumStartStep(
-              onManualStart: () {},
-              onAiStart: () {},
-            ),
+            'creation-start': AiAlbumStartStep(onManualStart: () {}),
             'ai-brief': AiTemplateBriefStep(onContinue: (_) {}, onBack: () {}),
             'ai-confirm': AiAlbumPointConfirmationStep(
               designBrief: AiTemplateBrief(

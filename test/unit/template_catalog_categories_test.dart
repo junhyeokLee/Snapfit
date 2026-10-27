@@ -5,7 +5,7 @@ import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
 import 'package:snap_fit/features/album/presentation/providers/design_template_catalog_provider.dart';
 
 void main() {
-  test('seven populated topics keep a stable order in every catalog', () {
+  test('ten populated topics keep a stable order in every catalog', () {
     expect(templateTopicOrder, [
       '웨딩',
       '여행',
@@ -14,14 +14,18 @@ void main() {
       '가족·친구',
       '커플·기념일',
       '반려동물',
+      '스포츠·도전',
+      '졸업·새출발',
+      '동아리',
     ]);
     expect(
       orderedTemplateTopics(
         authoredCollections.reversed.map((c) => c.category),
       ),
-      templateTopicOrder,
+      templateTopicOrder.take(7).toList(),
     );
     const freeCounts = {
+      '동아리': 5,
       '웨딩': 6,
       '여행': 6,
       '일상': 6,
@@ -31,18 +35,21 @@ void main() {
       '반려동물': 6,
     };
     const totalCounts = {
-      '웨딩': 10,
-      '여행': 10,
-      '일상': 9,
-      '성장·육아': 10,
-      '가족·친구': 10,
-      '커플·기념일': 9,
-      '반려동물': 10,
+      '동아리': 15,
+      '웨딩': 15,
+      '여행': 15,
+      '일상': 14,
+      '성장·육아': 15,
+      '가족·친구': 15,
+      '커플·기념일': 14,
+      '반려동물': 15,
+      '스포츠·도전': 10,
+      '졸업·새출발': 5,
     };
     for (final topic in templateTopicOrder) {
       expect(
         bundledCreationTemplates.where((t) => t.category == topic).length,
-        freeCounts[topic],
+        freeCounts[topic] ?? 0,
       );
       expect(
         publishedDesignTemplates.where((t) => t.category == topic).length,
@@ -89,7 +96,7 @@ void main() {
       expect(fresh.length, 20);
       expect(fresh.map((c) => c.bundledId).toSet().length, 20);
       for (final c in fresh) {
-        for (final aspect in CollectionAspect.values) {
+        for (final aspect in CollectionAspect.printable) {
           final doc = c.document(aspect);
           expect(doc['source'], 'snapfit-authored-free');
           expect(doc['accessTier'], 'free');

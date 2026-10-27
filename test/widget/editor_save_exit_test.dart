@@ -11,8 +11,10 @@ import 'package:snap_fit/core/theme/snapfit_theme.dart';
 import 'package:snap_fit/features/album/data/api/album_provider.dart';
 import 'package:snap_fit/features/album/data/dto/request/create_album_request.dart';
 import 'package:snap_fit/features/album/domain/entities/layer.dart';
+import 'package:snap_fit/features/album/domain/entities/album_edit_failure.dart';
 import 'package:snap_fit/features/album/presentation/views/page_editor_screen.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
+import 'package:snap_fit/features/album/presentation/providers/album_edit_session_provider.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/page_editor_overlays.dart';
 import 'package:snap_fit/features/album/service/album_editor_service.dart';
 import '../helpers/fake_album.dart';
@@ -87,9 +89,18 @@ void main() {
     ).copyWith(targetPages: 20);
     when(() => repo.fetchAlbum('7')).thenAnswer((_) async => album);
     when(() => repo.fetchMyAlbums()).thenAnswer((_) async => [album]);
-    when(() => repo.updateAlbum(7, any())).thenAnswer((_) async => album);
+    when(
+      () => repo.updateAlbum(
+        7,
+        any(),
+        expectedUpdatedAt: any(named: 'expectedUpdatedAt'),
+        requestId: any(named: 'requestId'),
+        expectedUserId: any(named: 'expectedUserId'),
+      ),
+    ).thenAnswer((_) async => album);
     final container = ProviderContainer(
       overrides: [
+        albumEditorOwnerReaderProvider.overrideWithValue(() => 'fixture-owner'),
         if (draftStore != null)
           albumCreationDraftStoreProvider.overrideWithValue(draftStore),
         if (draftStore != null)
@@ -175,14 +186,26 @@ void main() {
       );
       session.vm.updatePageLayers([_text('완성한 앨범')]);
       when(
-        () => session.repo.updateAlbum(7, any()),
+        () => session.repo.updateAlbum(
+          7,
+          any(),
+          expectedUpdatedAt: any(named: 'expectedUpdatedAt'),
+          requestId: any(named: 'requestId'),
+          expectedUserId: any(named: 'expectedUserId'),
+        ),
       ).thenThrow(StateError('retry'));
       await tester.pump();
       await tester.tap(find.text('저장'));
       await tester.pumpAndSettle();
       expect(store.draft, isNotNull);
       when(
-        () => session.repo.updateAlbum(7, any()),
+        () => session.repo.updateAlbum(
+          7,
+          any(),
+          expectedUpdatedAt: any(named: 'expectedUpdatedAt'),
+          requestId: any(named: 'requestId'),
+          expectedUserId: any(named: 'expectedUserId'),
+        ),
       ).thenAnswer((_) async => fakeAlbum(id: 7));
       await tester.tap(find.text('저장'));
       await tester.pumpAndSettle();
@@ -247,7 +270,15 @@ void main() {
       expect(saved.pages[1].layers.single.text, '새로 꾸민 문구');
       expect(saved.pages.length, 21);
       expect(session.vm.hasUnsavedChanges, isTrue);
-      verifyNever(() => session.repo.updateAlbum(any(), any()));
+      verifyNever(
+        () => session.repo.updateAlbum(
+          any(),
+          any(),
+          expectedUpdatedAt: any(named: 'expectedUpdatedAt'),
+          requestId: any(named: 'requestId'),
+          expectedUserId: any(named: 'expectedUserId'),
+        ),
+      );
       expect(tester.takeException(), isNull);
     },
   );
@@ -527,7 +558,15 @@ void main() {
     (tester) async {
       final session = await boot(tester, const Size(844, 390), false);
       final gate = Completer<void>(), refresh = Completer<void>();
-      when(() => session.repo.updateAlbum(7, any())).thenAnswer((_) async {
+      when(
+        () => session.repo.updateAlbum(
+          7,
+          any(),
+          expectedUpdatedAt: any(named: 'expectedUpdatedAt'),
+          requestId: any(named: 'requestId'),
+          expectedUserId: any(named: 'expectedUserId'),
+        ),
+      ).thenAnswer((_) async {
         await gate.future;
         return fakeAlbum(id: 7);
       });
@@ -561,7 +600,13 @@ void main() {
       final session = await boot(tester, const Size(390, 844), false);
       session.vm.updatePageLayers([_text('잃으면 안 되는 문구')]);
       when(
-        () => session.repo.updateAlbum(7, any()),
+        () => session.repo.updateAlbum(
+          7,
+          any(),
+          expectedUpdatedAt: any(named: 'expectedUpdatedAt'),
+          requestId: any(named: 'requestId'),
+          expectedUserId: any(named: 'expectedUserId'),
+        ),
       ).thenThrow(StateError('internal-secret'));
       await tester.pump();
       await tester.tap(find.text('저장'));
@@ -575,6 +620,53 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+  for (final width in [320.0, 390.0]) {
+    testWidgets(
+      'permission revocation preserves readonly edits and safe exit at width $width',
+      (tester) async {
+        final session = await boot(tester, Size(width, 740), false);
+        session.vm.updatePageLayers([_text('로컬 편집 유지')]);
+        clearInteractions(session.repo);
+        when(() => session.repo.fetchAlbum('7')).thenAnswer(
+          (_) async => fakeAlbum(
+            id: 7,
+          ).copyWith(memberRole: 'VIEWER', userId: 'other-owner'),
+        );
+        await session.vm.checkRemoteAlbum();
+        await tester.pumpAndSettle();
+        expect(
+          find.text(const AlbumEditAccessRevoked().message),
+          findsOneWidget,
+        );
+        expect(session.vm.layers.single.text, '로컬 편집 유지');
+        expect(session.vm.hasUnsavedChanges, isTrue);
+        expect(find.text('저장'), findsNothing);
+        expect(tester.takeException(), isNull);
+        await back(tester);
+        expect(find.text('편집 유지'), findsOneWidget);
+        expect(find.text('버리고 나가기'), findsOneWidget);
+        expect(find.text('저장'), findsNothing);
+        await tester.tap(find.text('편집 유지'));
+        await tester.pumpAndSettle();
+        expect(session.vm.layers.single.text, '로컬 편집 유지');
+        await back(tester);
+        await tester.tap(find.text('버리고 나가기'));
+        await tester.pumpAndSettle();
+        expect(find.text('리더로 돌아옴'), findsOneWidget);
+        expect(session.vm.editingAllowed, isFalse);
+        verifyNever(
+          () => session.repo.updateAlbum(
+            any(),
+            any(),
+            expectedUpdatedAt: any(named: 'expectedUpdatedAt'),
+            requestId: any(named: 'requestId'),
+            expectedUserId: any(named: 'expectedUserId'),
+          ),
+        );
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 }
 
 Future<void> _captureEditor(

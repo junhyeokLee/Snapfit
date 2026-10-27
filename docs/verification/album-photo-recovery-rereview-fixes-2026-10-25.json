@@ -1,0 +1,93 @@
+{
+  "date": "2026-10-25",
+  "previous_review": "docs/verification/album-photo-recovery-rereview-2026-10-25.json",
+  "scope": "Repair explicit candidate retry, pause/resume hidden reader photo preparation, and share rejected photo/URL recovery across painting and preparation",
+  "status": "all_three_findings_fixed",
+  "production_files": [
+    "lib/shared/snapfit_image.dart",
+    "lib/shared/photo_preparation.dart",
+    "lib/core/cache/photo_failure_versions.dart",
+    "lib/core/cache/storage_image_url_cache.dart",
+    "lib/features/album/presentation/controllers/layer_builder.dart",
+    "lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart",
+    "packages/book_page_flip/lib/book_page_flip.dart",
+    "packages/book_page_flip/lib/src/widget_capture.dart"
+  ],
+  "fixes": [
+    {
+      "finding": "Explicit retry ignores a repaired preview",
+      "change": "A user retry starts a fresh finite pass in primary/alternative order, resets that group's source-choice/failure deferral, and can reconsider an earlier failed URL. Keep the retry gate closed until that pass actually fails or succeeds, so repeated taps on the old retry control cannot start another renewal.",
+      "verified": [
+        "A preview that recovers while the final original is still broken displays after retry",
+        "An unchanged renewed URL is not downloaded repeatedly during automatic recovery; a later explicit retry can reconsider it",
+        "Rapid repeated retry taps join one retry rather than restarting signing",
+        "Web manual recovery, custom placeholder/error rendering and native image builder/cache/decode options remain covered"
+      ]
+    },
+    {
+      "finding": "Hidden reader preparation starts new fallback and later photo batches",
+      "change": "Check route TickerMode and foreground activity before starting work and after awaits. Suspension has a separate exception contract, not a failed-photo result. The rasterizer keeps completed page textures and retries its unfinished preparation on visibility/foreground resume, reusing decoded photos from the existing image cache. Hidden rasterizers do not mount another photo page. A screenshot already in flight may finish, but its page advancement waits for visibility.",
+      "verified": [
+        "After a pending preview fails while hidden, neither original fallback nor the next photo batch starts",
+        "On resume the original and remaining photo start once, completed batch photos are reused, and the page is captured only after preparation finishes",
+        "An initially hidden reader mounts no image provider; its first visible capture contains decoded photo pixels",
+        "A signed URL received while hidden starts no download and is reused on resume without signing again",
+        "A storage failure received while hidden triggers its renewal only after route or app foreground resume",
+        "Closing during pending preparation/rotation starts no later photo work and causes no unhandled late error",
+        "Existing page turning, reverse/cancel, rapid selection, rotation and entry handoff tests remain passing"
+      ]
+    },
+    {
+      "finding": "Painting and preparation reload an immediately rejected URL",
+      "change": "Publish source/URL failure versions at the image stream error before its key can be reloaded. Painting and preparation avoid failed versions from their own load, direct URLs are deferred before error-widget rebuilding, and late predecessor failures follow the existing renewal result. Rejected renewal metadata remains inside the existing bounded URL cache; new loads/explicit retries can authorize again. The stream observer removes itself after success/failure and disposes its ImageInfo clone, retaining no widget/context/artwork.",
+      "verified": [
+        "Two visible photos plus reader preparation share one rejected download and one renewed download",
+        "The installed CacheManager and HttpFileService with a mock HTTP 403 transport show warm-up once, rejection once, and fresh download once",
+        "Direct preview failures also share one fallback before the error widget's next frame",
+        "Concurrent permanent rejection remains bounded and late old failures do not start another signing loop",
+        "Failed renewal metadata does not appear as a healthy URL; explicit retry and new loads can obtain fresh authorization",
+        "Late rejection of an older URL cannot invalidate the healthy replacement URL",
+        "Failure version identity, capacity, expiry and pressure cleanup are covered by unit tests"
+      ]
+    }
+  ],
+  "resource_review": {
+    "photo_candidates_per_pass": 3,
+    "reader_preparation_batch_size": 3,
+    "url_metadata_entry_limit_unchanged": 500,
+    "url_metadata_default_lifetime_seconds_unchanged": 3600,
+    "failure_version_entry_limit": 1000,
+    "failure_version_validity_seconds": 30,
+    "cache_expiry": "Failure metadata expires on lookup and stays count-bounded; memory pressure clears it together with URL/source-choice metadata. No periodic cleanup or retry timer was added.",
+    "new_global_decoded_image_cache": false,
+    "home_preview_width_cap_unchanged": 1536,
+    "reader_preview_width_cap_unchanged": 1600,
+    "reader_texture_byte_budget_unchanged": 16777216,
+    "paused_waiting_listeners_or_polling_timers": false,
+    "lifecycle_observers_removed_on_dispose": true,
+    "stream_observer_removed_after_first_result": true,
+    "evidence": "Repeated home/collection/reader visits and entry rotations release all tracked image handles after unmount and cache clearing; live/pending image-cache entries and transient callbacks return to zero. Existing cache-budget and original print/crop tests pass."
+  },
+  "verification": {
+    "final_related_suite": {
+      "passed": 220,
+      "failed": 0,
+      "log": "output/album-photo-rereview-fixes/final-suite.log",
+      "scope": "Main album, collection, cover/opening geometry, reader motion and capture, storage URL/photo recovery, lifecycle and pause/resume, template previews, editor crop context and print resolution"
+    },
+    "final_focused_suite": {"passed": 44, "failed": 0, "log": "output/album-photo-rereview-fixes/final-focused.log"},
+    "analysis": {"items": 12, "issues": 0, "log": "output/album-photo-rereview-fixes/analysis.log"},
+    "format_and_scoped_diff_whitespace_check": "clean",
+    "code_review": "No additional blocking finding after reviewing source/version guards, failed renewal reuse versus explicit retries, hidden continuation, partial page capture, provider key equality and stream/lifecycle disposal",
+    "app_build_run": false,
+    "live_backend_or_user_data_changed": false,
+    "device_frame_or_process_memory_profile_run": false
+  },
+  "test_maintenance": [
+    "Extended the earlier hidden-reader regression to verify successful resume and reuse of completed photos",
+    "Added initially hidden/photo-pixel, hidden signing, route/app background renewal, unchanged URL retry, direct URL and permanent-failure cases",
+    "The real cache-manager fixture flushes its own scheduled cleanup after disposal before widget-test invariants",
+    "The existing native options test now checks the resized Image provider, preserving its fit/alignment/cache manager/decode/disk-size expectations after replacing the recovery-path CachedNetworkImage widget"
+  ],
+  "limits": "No app build or live service call was made. Network/signing failures use controlled fixtures, including the installed cache manager with a mock HTTP transport and real image decoding. Already-started transfers may finish after hiding; no new fallback, renewal or next batch starts while the tested reader is hidden. Cache/handle tests and code review do not measure whole-device memory or frame time and do not prove the absence of every native leak or frame drop."
+}

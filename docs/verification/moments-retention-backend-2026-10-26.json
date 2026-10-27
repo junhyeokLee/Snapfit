@@ -1,0 +1,69 @@
+{
+  "status": "complete",
+  "date": "2026-10-26",
+  "project": "rrbhxdtriummqpztpjrk",
+  "migration": "20261026104459_moments_retention_and_safe_album_append.sql",
+  "sha256": "bd94b9c188da6dd78ebe8c3e56f09eec6f9d6dfbb4bc8e4f723c43cd8535cb19",
+  "contracts": {
+    "journal": [
+      "weekRecords across month boundary",
+      "monthlyAlbumPhotoIds durable source UUIDs"
+    ],
+    "append": "new pages only, actor+album locks, album CAS, source ownership and active record validation; existing cover/title/pages/root metadata preserved; eighty inner page maximum; repeated same selection is idempotent",
+    "reminders": "disabled by default; first record required; weekday 1..7 and hour 8..21 KST; one selected time per week, only while there are retained records and no actual save or recap this week; latest opt-in checked again before delivery",
+    "activity": "server generated save/create/append events; client UUID idempotent recap/preview/reward allowlist, no notes or image references; ninety-day retention",
+    "metrics": "administrator-only aggregate first-save cohort, full fourteen-day or thirty-day observation denominators; no user IDs in results"
+  },
+  "verification": {
+    "sql": {
+      "new": 17,
+      "previous_moments": 19,
+      "passed": 36,
+      "logs": [
+        "output/moments-retention-all-sql.log",
+        "output/moments-retention-metrics-sql.log"
+      ]
+    },
+    "dart": {
+      "passed": 38,
+      "log": "output/moments-retention-domain-tests.log"
+    },
+    "authenticated_api": {
+      "assertions": 31,
+      "parallel_create": 20,
+      "one_album": true,
+      "parallel_append": 20,
+      "one_append": true,
+      "report": "docs/verification/moments-retention-live-2026-10-26.json"
+    },
+    "production_scheduler": {
+      "queued": 0,
+      "enabled_preferences": 0,
+      "test_push_devices": 0,
+      "moment_notifications": 0
+    },
+    "baseline_rows_and_hashes_preserved": [
+      "17 albums",
+      "1 social profile",
+      "1 wallet",
+      "9 ledger rows",
+      "482 products"
+    ],
+    "existing_functions_changed": [
+      "moments_private.journal(date)"
+    ],
+    "existing_unrelated_functions_preserved": true,
+    "security_and_performance_warning_counts_unchanged": true,
+    "new_expected_info": [
+      "2 private default-deny RLS tables",
+      "2 new indexes not yet used"
+    ]
+  },
+  "privacy": "Existing published social works use separate immutable page snapshots; appending private album pages does not publish them. Shared album access follows existing explicit collaborator membership and asset bindings.",
+  "cleanup": {
+    "status": "complete",
+    "report": "docs/verification/moments-retention-cleanup-2026-10-26.json",
+    "allQAAccountsRemoved": true,
+    "privateCredentialsAndHelpersDeleted": true
+  }
+}

@@ -51,7 +51,7 @@ void main() {
       FreeCollectionVolume.values.map((v) => v.category).toSet(),
       hasLength(7),
     );
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       final photos = <String>{};
       for (final volume in FreeCollectionVolume.values) {
         final document = volume.document(aspect);
@@ -107,7 +107,7 @@ void main() {
     'eight jacket directions retain reading order and photograph protection',
     () {
       expect(_directions, hasLength(8));
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         for (final entry in _directions.entries) {
           final cover =
               entry.value.document(aspect)['cover'] as Map<String, dynamic>;
@@ -249,7 +249,7 @@ void main() {
     });
   }
 
-  for (final aspect in CollectionAspect.values) {
+  for (final aspect in CollectionAspect.printable) {
     testWidgets('eight jacket directions render in RAM: ${aspect.name}', (
       tester,
     ) async {

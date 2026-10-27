@@ -1,0 +1,83 @@
+{
+  "date": "2026-10-25",
+  "scope": "Catalog quality refresh, first edition",
+  "coverCatalogIds": [
+    -9303,
+    -9471,
+    -9302,
+    -9412,
+    -9452,
+    -9455,
+    -9463,
+    -9517
+  ],
+  "paidInteriorCatalogIds": [
+    -9512,
+    -9513,
+    -9516,
+    -9517
+  ],
+  "changes": [
+    "Photo-specific cover typography, hierarchy, colors and placement for 8 existing books",
+    "4 paid collections feature large theme objects and art-directed opening pages",
+    "Preserve measured letter spacing at store preview and zoom sizes",
+    "Replace two obsolete detail test fixtures with the current size dropdown and supported print ratios"
+  ],
+  "preservation": {
+    "changedDetailDocuments": [
+      "-9302",
+      "-9303",
+      "-9412",
+      "-9452",
+      "-9455",
+      "-9463",
+      "-9471",
+      "-9512",
+      "-9513",
+      "-9516",
+      "-9517"
+    ],
+    "unchangedOtherDetailDocuments": 134,
+    "fontDigestUnchanged": true,
+    "newProducts": 0,
+    "newRasterAssets": 0,
+    "newFontAssets": 0,
+    "layerCountsUnchanged": true,
+    "freeInteriorsUnchanged": true,
+    "photoSizesCropsFramesAndOrderUnchanged": true,
+    "materialBundleInventoryUnchanged": true,
+    "pricesTiersProductIdsAndSavedAlbumsPreserved": true,
+    "baseline": "test/fixtures/catalog_quality_refresh_before.json.gz"
+  },
+  "performance": {
+    "scrollWorkerAndCacheBudgetsUnchanged": true,
+    "newTickersPreloadsOrGlobalCaches": false,
+    "layoutMeasurement": "Native authoring/export only; the store uses frozen compact previews and detail assets",
+    "nativeProofImageCacheLimitBytes": 25165824,
+    "nativeProofLiveImagesAfterUnmount": 0,
+    "nativeProofPendingImagesAfterUnmount": 0,
+    "physicalDeviceFpsOrHeapMeasured": false
+  },
+  "validation": {
+    "regressionTestsPassedUnique": 480,
+    "nativeImageExportTestsPassed": 1,
+    "staticAnalysis": "No issues found in 7 Dart files",
+    "appBuildPerformed": false,
+    "scopeReviewFindingsUnresolved": [],
+    "coreSuite": "416 passed, followed by two added regression cases; final changed companion cover also passed all 3 print-cover geometry checks and 5 paid book preflights",
+    "integrationSuite": "42 unchanged integration/snapshot tests passed, all 20 detail performance tests passed after updating old UI/size fixtures",
+    "finalFocusedRegressionSuite": "21 passed: 17 catalog invariants and 4 native preview tracking tests",
+    "fonts": "Real bundled fonts loaded for geometry and native image proofs",
+    "physicalPrintProofPerformed": false
+  },
+  "preview": {
+    "url": "http://127.0.0.1:8774/?revision=2",
+    "html": "output/catalog-quality-refresh/index.html",
+    "nativePngs": 128,
+    "printRatios": [
+      "square",
+      "landscape4x3",
+      "landscape5x4"
+    ]
+  }
+}

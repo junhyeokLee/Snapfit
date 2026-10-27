@@ -55,6 +55,25 @@ void main() {
   );
 
   test(
+    'public social links survive login without exposing account data',
+    () async {
+      final backing = _BrowserStore();
+      for (final location in [
+        WebAppLocation.feed,
+        const WebAppLocation(WebAppPage.socialWork, 'work_123'),
+        const WebAppLocation(WebAppPage.socialProfile, 'user_123'),
+      ]) {
+        await backing.bind(() => instant).remember(location);
+        final afterLogin = backing.bind(
+          () => instant.add(const Duration(minutes: 1)),
+        );
+        expect(await afterLogin.take(), location);
+        expect(await afterLogin.take(), isNull);
+      }
+    },
+  );
+
+  test(
     'clear waits for a late save and cannot restore the old intent',
     () async {
       final backing = _BrowserStore()..writeBarrier = Completer<void>();

@@ -1,0 +1,103 @@
+{
+  "date": "2026-10-25",
+  "automation_id": "snapfit",
+  "trigger_time": "2026-10-25T09:06:19.330Z",
+  "finished_time": "2026-10-25T09:15:58Z",
+  "scope": "Autonomous heartbeat follow-up: ordered local template like-state persistence",
+  "previous_store_report": "docs/verification/store-followup-lifecycle-2026-10-25.json",
+  "finding": {
+    "id": "template-like-persistence-write-order",
+    "priority": "P2",
+    "status": "fixed",
+    "source": "lib/features/store/data/api/template_provider.dart",
+    "observed_before": [
+      "With cold SharedPreferences initialization, four concurrent mutations left likeCount=1 although the latest intent was likeCount=3.",
+      "A deliberately delayed first backing-store write allowed two updates to be active simultaneously; write completion was not serialized."
+    ],
+    "warm_store_control": "Ordinary warm-store cases passed before the fix. The observed regressions concern cold initialization and controlled asynchronous completion, not every concurrent call.",
+    "change": [
+      "Enqueue synchronously before the first await, then initialize/read/modify/write and await backing-store completion in call order.",
+      "Pass only account-scoped key and normalized boolean/count to the private queue helper, avoiding retention of full templates and document builders.",
+      "Preserve best-effort error handling; later queued operations continue after a failed write.",
+      "Keep one tail future and clear it only when the completing operation still owns the tail. Add no persistent history, polling or cache."
+    ]
+  },
+  "production_files_changed_this_run": [
+    "lib/features/store/data/api/template_provider.dart"
+  ],
+  "new_test_files": [
+    "test/unit/template_like_persistence_test.dart"
+  ],
+  "new_cases": 6,
+  "review": {
+    "remaining_blocking_findings_in_changed_scope": [],
+    "checked": [
+      "Latest toggle intent survives cold storage initialization.",
+      "Different template/account records and guest scope survive concurrent writes and reload from the backing store.",
+      "Delayed storage writes have peak active count one and retain both final records.",
+      "A failed write does not poison the queue; subsequent scoped updates and count normalization complete.",
+      "Queued closures hold scalar intent metadata only. Lazy documents are not generated.",
+      "Existing preference key/schema, server calls, optimistic behavior, account-generation guards, request sharing and merge/category fixes remain unchanged."
+    ],
+    "protected_store_sources_unchanged": {
+      "lib/features/store/data/repositories/supabase_template_repository.dart": true,
+      "lib/features/store/presentation/views/store_screen.dart": true,
+      "lib/features/store/presentation/widgets/store_topic_shelf.dart": true
+    },
+    "concurrent_workspace_changes": [
+      {
+        "path": "lib/features/album/presentation/viewmodels/home_view_model.dart",
+        "action": "Observed external modification during this run; did not edit or revert it."
+      }
+    ]
+  },
+  "verification": {
+    "before_cold": {
+      "passed": 2,
+      "failed": 1,
+      "log": "output/heartbeat-store-like-persistence-2026-10-25/before-tests.log"
+    },
+    "before_warm_controls": {
+      "passed": 3,
+      "failed": 0,
+      "log": "output/heartbeat-store-like-persistence-2026-10-25/before-warm-tests.log"
+    },
+    "before_controlled_cases": {
+      "passed": 4,
+      "failed": 2,
+      "log": "output/heartbeat-store-like-persistence-2026-10-25/before-controlled-tests.log"
+    },
+    "final_related_suite": {
+      "files": 9,
+      "passed": 53,
+      "failed": 0,
+      "log": "output/heartbeat-store-like-persistence-2026-10-25/final-tests.log"
+    },
+    "new_cases_included_in_final_suite": true,
+    "analysis": {
+      "items": 2,
+      "issues": 0,
+      "log": "output/heartbeat-store-like-persistence-2026-10-25/final-analysis.log"
+    },
+    "scoped_patch": "output/heartbeat-store-like-persistence-2026-10-25/scoped.patch",
+    "final_sha256": {
+      "lib/features/store/data/api/template_provider.dart": "38924641de8ef1e161d1a2e2e3ddaaa0a0e27bae618cc3722ccb0bdd2c7165d2",
+      "test/unit/template_like_persistence_test.dart": "d9126c5db54ab3abfa6138a90db96479a8cea872a75e8f58c18ead5b5a095c0e"
+    },
+    "app_build_run": false,
+    "device_run_or_frame_memory_profile_run": false,
+    "live_backend_or_user_data_changed": false
+  },
+  "follow_up": {
+    "automation_remains_useful": true,
+    "next_candidates": [
+      "Review detail like-button submission locking around asynchronous account resolution under rapid clicks and route close.",
+      "Main album/reader hidden-resume photo preparation and failure recovery, checking concurrent work/recent reports before editing shared files."
+    ]
+  },
+  "limits": [
+    "Ordering applies within the app isolate; this is not a cross-process or cross-isolate transaction.",
+    "Platform storage failures remain best-effort as before, with no retry loop or new durability guarantee.",
+    "Real device frame timing, native memory and storage internals were not profiled."
+  ]
+}

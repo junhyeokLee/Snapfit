@@ -1,0 +1,89 @@
+{
+  "date": "2026-10-25",
+  "scope": "Fresh review of photo recovery and reader entry rotation across cover, collection, navigation, hidden routes and disposal",
+  "previous_fix_report": "docs/verification/album-photo-recovery-fixes-2026-10-25.json",
+  "production_code_changed": false,
+  "test_changes": [
+    "Added test/review/photo_recovery_rereview_test.dart with six independent lifecycle and recovery cases",
+    "Transport confirmation uses the installed CacheManager and HttpFileService with an in-memory repository/filesystem and a MockClient; no real backend request is made"
+  ],
+  "findings": [
+    {
+      "priority": "P2",
+      "title": "Explicit retry cannot revisit a repaired preview after every candidate failed",
+      "location": {"file": "lib/shared/snapfit_image.dart", "start_line": 365, "end_line": 385},
+      "cause": "The explicit branch renews or resolves only _sources[_index]. The index is already at the final original, and explicit retry never starts a new bounded traversal of the other sources.",
+      "trigger": "Preview and original both fail temporarily; the preview becomes available while the view remains mounted, but the original is still unavailable. The user taps the photo retry action.",
+      "proof": {
+        "test": "review: explicit retry must reconsider a repaired preview after all sources failed",
+        "downloads": ["failed preview", "failed original", "failed original again"],
+        "decoded_photos_after_retry": 0,
+        "repaired_preview_retried": false
+      },
+      "recommendation": "Have explicit retry start a fresh finite candidate pass, clearing or updating the relevant failure markers. Keep one automatic URL renewal per storage source in that pass and retain stale-result/disposal guards."
+    },
+    {
+      "priority": "P2",
+      "title": "An already-running reader preparation keeps starting fallback and later photo batches while hidden",
+      "location": {"file": "lib/features/album/presentation/controllers/layer_builder.dart", "start_line": 132, "end_line": 145},
+      "supporting_locations": ["lib/shared/snapfit_image.dart:200", "packages/book_page_flip/lib/src/widget_capture.dart:116"],
+      "cause": "The rasterizer checks TickerMode before entering preparePage, but the asynchronous LayerBuilder/SnapfitImage loops only check context.mounted. A covered route remains mounted. After one pending download finishes or fails, its original fallback and the next batch can begin even though TickerMode is disabled.",
+      "proof": {
+        "test": "review: hiding an in-flight reader must pause fallback and later photo batches",
+        "requests_before_hiding": ["preview", "photo 2", "photo 3"],
+        "new_requests_after_hiding": ["original fallback", "photo 4"],
+        "hidden_texture_capture_started": false
+      },
+      "recommendation": "Thread an activity/cancellation guard through photo preparation and candidate traversal, checking it after awaits and before new work. Resume incomplete preparation when visible again rather than treating a paused page as successfully prepared. Existing network calls can finish, but hidden views should not start further fallback or batch work.",
+      "limits": "This reproduces unnecessary hidden work, not a proven permanent memory leak. Fully removed contexts already stop starting new work."
+    },
+    {
+      "priority": "P2",
+      "title": "Immediate URL rejection can be downloaded twice by painting and preparation before the shared renewal takes effect",
+      "location": {"file": "lib/shared/snapfit_image.dart", "start_line": 227, "end_line": 240},
+      "supporting_locations": ["lib/shared/snapfit_image.dart:401", "lib/shared/snapfit_image.dart:414"],
+      "cause": "prepareImage evicts a failed image stream while visible photos still hold the rejected URL in their own resolved future; their renewal is scheduled for a later frame. Re-resolving that evicted provider can start another rejected download before either consumer switches to the shared fresh URL. URL signing is shared, but the rejected download generation is not.",
+      "proof": {
+        "tests": [
+          "review: immediate stale failures share a renewed download across paint and preparation",
+          "review: real cache-manager transport must not download the rejected URL twice"
+        ],
+        "decode_bounds_identical_for_paint_and_preparation": {"width": 128, "height": 128},
+        "transport": "Installed flutter_cache_manager CacheManager + HttpFileService + MockClient returning HTTP 403 for the rejected URL",
+        "downloads": ["old URL warm-up", "rejected old URL", "rejected old URL again", "fresh URL"],
+        "storage_url_resolutions": 2,
+        "fresh_url_transport_requests": 1,
+        "rejected_url_transport_requests_after_reentry": 2,
+        "fresh_photo_eventually_displays": true
+      },
+      "recommendation": "Publish/share failed URL generations before evicting their image keys, and let painting/preparation join or follow the same recovery operation. Consumers that still hold an obsolete future should switch to the shared renewal instead of decoding/downloading its rejected provider again. Preserve the existing decode bounds and do not coalesce distinct image sizes by retaining full-resolution originals."
+    }
+  ],
+  "verified_without_new_findings": [
+    "Existing 201 related tests pass, covering home/collection, reader turns and rotation, URL refresh and cache bounds, disposal, preview/original fallback, template rendering and print/crop requirements",
+    "Three repeated cover-to-collection-to-reader visits with four rapid rotations per reader entry restore photos on return without layout exceptions",
+    "The tested repeated navigation releases every tracked ui.Image handle after unmount and explicit cache clearing, with zero live/pending image-cache entries and zero transient callbacks",
+    "Four reader entries closed during a gated cover download and intervening rotations do not start inner-page/original fallback work after all contexts are removed; late failure causes no unhandled exception",
+    "The original reader-entry AnimatedSize layout exception does not recur in the tested cases",
+    "Shared storage URL signing and the successful renewed download remain deduplicated in the immediate-failure reproduction"
+  ],
+  "verification": {
+    "existing_related_suite": {"passed": 201, "failed": 0, "log": "output/album-photo-rereview/suite.log"},
+    "fresh_review_cases": {
+      "passed": 2,
+      "failed": 4,
+      "distinct_confirmed_findings": 3,
+      "log": "output/album-photo-rereview/edges.log",
+      "failure_note": "Four regression tests intentionally assert the desired behavior and remain failing on the three unfixed production findings; two tests independently confirm the rejected-download duplication at different seams"
+    },
+    "total_unique_test_cases": 207,
+    "unique_passed": 203,
+    "unique_failed": 4,
+    "analysis": {"items": 12, "issues": 0, "log": "output/album-photo-rereview/analysis.log"},
+    "format": "New review test formatted; scoped diff whitespace check clean",
+    "app_build_run": false,
+    "live_backend_or_user_data_changed": false,
+    "device_frame_or_process_memory_profile_run": false
+  },
+  "limits": "Review only: no production fixes are included. Network failures, byte delivery and signing are controlled fixtures with real Flutter image decoding. The transport confirmation runs the installed cache-manager implementation with a mock HTTP client, not a live storage service. Widget/cache/handle assertions do not measure whole-device memory or frame time and cannot prove the absence of every native leak or frame drop."
+}

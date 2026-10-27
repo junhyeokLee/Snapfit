@@ -5484,8 +5484,30 @@ Map<String, dynamic> _identity(
     'designHeight',
     'chapters',
   ])
-    if (document.containsKey(key)) key: document[key],
+    if (document.containsKey(key))
+      key: key == 'title' && collection.id == 'our-walking-promise'
+          ? _originalWalkingCatalogTitle(document)
+          : document[key],
 };
+
+// The approved public rename must not weaken the immutable source contract.
+// Only this book's exact old/new naming pair is accepted; keep its frozen hash.
+String _originalWalkingCatalogTitle(Map document) {
+  expect(document['title'], walkingCatalogTitle);
+  expect(document['originalCatalogTitle'], '산책이라는 약속');
+  return '산책이라는 약속';
+}
+
+String _archivedDisplayCopy(Map layer) {
+  if (RegExp(
+    r'^our-walking-promise_(portrait|square|landscape|landscape4x3|landscape5x4)_0_signature_title$',
+  ).hasMatch('${layer['id']}')) {
+    expect(_words(layer['text']), walkingCatalogTitle);
+    expect(_words(layer['editorialSourceText']), '산책이라는 약속');
+    return '산책이라는 약속';
+  }
+  return _words(layer['text']);
+}
 
 Map<String, dynamic> _sources(Map layer) {
   final fields = <String, dynamic>{
@@ -5544,7 +5566,7 @@ Map<String, dynamic> _pageRecord(Map<String, dynamic> page) {
           'words': _digest(
             _words(layer['editorialSourceText'] ?? layer['text']),
           ),
-          'display': _digest(_words(layer['text'])),
+          'display': _digest(_archivedDisplayCopy(layer)),
         },
     },
     'photos': {
@@ -5561,7 +5583,7 @@ Map<String, dynamic> _archivedPaidCatalog(
 ) => {
   ...build(CollectionAspect.square),
   'variants': {
-    for (final aspect in CollectionAspect.values) aspect.name: build(aspect),
+    for (final aspect in CollectionAspect.archived) aspect.name: build(aspect),
   },
 };
 
@@ -5581,7 +5603,7 @@ String _paidDigest() => _digest({
       volume.id: {
         for (final count in volume.pageCounts)
           count.toString(): {
-            for (final aspect in CollectionAspect.values)
+            for (final aspect in CollectionAspect.archived)
               aspect.name: volume.document(aspect, innerPages: count),
           },
       },
@@ -5607,7 +5629,7 @@ Map<String, dynamic> _recordBaseline() => {
   'books': {
     for (final collection in authoredCollections)
       collection.id: {
-        for (final aspect in CollectionAspect.values)
+        for (final aspect in CollectionAspect.archived)
           aspect.name: _recordBook(collection, aspect),
       },
   },
@@ -5918,8 +5940,8 @@ void main() {
   setUpAll(_loadFonts);
   if (_record) {
     test('record all 126 shipping books as fixed source and identity hashes', () {
-      expect(authoredCollections, hasLength(42));
-      expect(publishedPremiumTemplates, hasLength(26));
+      expect((_baseline['books'] as Map).keys, hasLength(42));
+      expect(publishedPremiumTemplates.length, greaterThanOrEqualTo(26));
       final baseline = _recordBaseline();
       final bytes = utf8.encode(jsonEncode(baseline));
       // This file contains only IDs, types and fixed hashes. No text bodies,
@@ -5940,8 +5962,8 @@ void main() {
 
   test('all archived paid editions remain byte-for-byte identical', () {
     expect(_paidDigest(), _baseline['paid']);
-    expect(authoredCollections, hasLength(42));
-    expect(publishedPremiumTemplates, hasLength(26));
+    expect((_baseline['books'] as Map).keys, hasLength(42));
+    expect(publishedPremiumTemplates.length, greaterThanOrEqualTo(26));
   });
   test(
     'sample provenance permits only the single audited old-to-new asset pair',
@@ -5994,8 +6016,10 @@ void main() {
       );
     },
   );
-  for (final collection in authoredCollections) {
-    for (final aspect in CollectionAspect.values) {
+  for (final collection in authoredCollections.where(
+    (c) => (_baseline['books'] as Map).containsKey(c.id),
+  )) {
+    for (final aspect in CollectionAspect.archived) {
       test(
         '${collection.id}/${aspect.name}: every page preserves content and passes print-aware quality',
         () {
@@ -6104,4 +6128,43 @@ void main() {
       })}',
     );
   });
+  for (final collection in authoredCollections.where(
+    (c) => (_baseline['books'] as Map).containsKey(c.id),
+  )) {
+    for (final aspect in const [
+      CollectionAspect.landscape4x3,
+      CollectionAspect.landscape5x4,
+    ]) {
+      test(
+        '${collection.id}/${aspect.name}: exact print reflow preserves sources and passes preflight',
+        () {
+          final document = collection.document(aspect);
+          final pages = templateDocumentPages(document);
+          final original =
+              (_baseline['books'] as Map)[collection.id]['landscape'] as Map;
+          final before = original['pages'] as List;
+          expect(pages, hasLength(before.length));
+          for (final (index, page) in pages.indexed) {
+            // Aspect suffixes identify new layouts; photo/text source identities
+            // must still match the immutable pre-reflow landscape recording.
+            final normalized = Map<String, dynamic>.from(
+              jsonDecode(jsonEncode(page).replaceAll(aspect.name, 'landscape'))
+                  as Map,
+            );
+            expect(
+              _sourceDigest(normalized),
+              (before[index] as List)[2],
+              reason: '${collection.id}/${aspect.name}/$index',
+            );
+            _inspectPage(
+              page,
+              aspect,
+              index,
+              '${collection.id}/${aspect.name}',
+            );
+          }
+        },
+      );
+    }
+  }
 }

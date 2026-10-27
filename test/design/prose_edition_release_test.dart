@@ -89,7 +89,7 @@ void main() {
     );
   });
   for (final premium in [false, true]) {
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       testWidgets(
         '${premium ? 'candidate' : 'free'}/${aspect.name}: editable pages fit and render',
         (tester) async {

@@ -1,0 +1,37 @@
+{
+  "status": "passed",
+  "unique_flutter_tests": 178,
+  "by_file": {
+    "test/unit/social_album_snapshot_codec_test.dart": 2,
+    "test/unit/social_album_snapshot_test.dart": 10,
+    "test/unit/social_profile_photo_codec_test.dart": 2,
+    "test/unit/social_profile_photo_test.dart": 2,
+    "test/unit/social_repository_test.dart": 20,
+    "test/widget/social_chrome_test.dart": 2,
+    "test/widget/social_discovery_reliability_test.dart": 25,
+    "test/widget/social_feed_screens_test.dart": 47,
+    "test/widget/social_login_recovery_test.dart": 4,
+    "test/widget/social_profile_reliability_test.dart": 17,
+    "test/widget/social_profile_screens_test.dart": 38,
+    "test/widget/social_publication_flow_test.dart": 4,
+    "test/widget/social_publication_reliability_test.dart": 5
+  },
+  "failed_cases_remaining": 0,
+  "server_sql_tests_passed": 41,
+  "final_runs": [
+    "output/feed-followup-ui-final-20261026.log",
+    "output/feed-followup-ui-corrections-20261026.log",
+    "output/feed-followup-profile-final-20261026.log",
+    "output/feed-followup-profile-correction-final-20261026.log"
+  ],
+  "superseded_initial_failures": "Production image retry overflow fixed; paged fake adapters and test lifecycle cleanup corrected. Latest successful execution used per unique case.",
+  "coverage": [
+    "101 comments, oldest reachability, later and middle-page failure retry",
+    "31st works and creators, filtered own management and relationship pagination",
+    "Signed URL renewal bounded once, accessible manual retry at 320px and large text",
+    "Like/save/follow desired-state retry and lost replies",
+    "Actor A→B→A, old dialogs and responses isolated",
+    "Publication load cancellation, draft resume/discard locking, source ownership",
+    "Block and public name changes refresh all opened page caches"
+  ]
+}

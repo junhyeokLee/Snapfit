@@ -1,0 +1,101 @@
+{
+  "task": "Make album covers the home hero and simplify journal navigation",
+  "date": "2026-10-27",
+  "status": "complete",
+  "updatedAt": "2026-10-26T16:38:24.924135+00:00",
+  "changes": {
+    "journalEntry": "Compact accessible photo icon in the mobile header; desktop sidebar and narrow-web heading entry retained",
+    "openAction": "Removed separate visible open buttons; album covers remain tappable with Enter/Space and screen-reader activation",
+    "mobileCoverSizing": "Width-based stage, approximately 88 percent viewport width for square covers; details and shelf scroll below",
+    "webCoverSizing": "At most three columns with larger true-ratio cover stages and cover/title open targets",
+    "responsive": "Native physical trim dimensions preserved, accessible large-text header wraps without remounting first-visit guide",
+    "retainedActions": [
+      "Shelf selection",
+      "Previous and next album",
+      "View toggle",
+      "Create album",
+      "Notifications",
+      "Favorites",
+      "Publish",
+      "Print preparation"
+    ]
+  },
+  "verification": {
+    "bookAndReader": {
+      "log": "output/home-album-hero-book-final.log",
+      "passed": 74
+    },
+    "layoutAndJournalAndFirstVisit": {
+      "log": "output/home-album-hero-layout-final-tests.log",
+      "passed": 28
+    },
+    "chrome": {
+      "log": "output/home-album-hero-chrome-tests.log",
+      "passed": 44
+    },
+    "analysis": {
+      "log": "output/home-album-hero-analysis.log",
+      "result": "No issues found"
+    },
+    "codeReview": "Independent read-only review found no actionable regressions",
+    "productionDatabaseChanges": false,
+    "nativeAppBuildOrDeviceInstall": false,
+    "finalCaptures": {
+      "log": "output/home-album-hero-final-capture-tests.log",
+      "passed": 3
+    },
+    "diffWhitespaceCheck": "passed",
+    "finalHeader": {
+      "log": "output/home-album-hero-header-final-tests.log",
+      "passed": 14
+    },
+    "finalHeaderNote": "Fixed native-only header alignment after deployment; HomeScreen.build returns WebAlbumLibraryScreen immediately on web, so production web UI is unaffected."
+  },
+  "screenshots": [
+    "output/home-hero-20261027/home-collection-390-light.png",
+    "output/home-hero-20261027/home-collection-390-dark.png",
+    "output/home-hero-20261027/home-collection-844-light.png",
+    "output/home-album-refinement-20261027/web-library-desktop-light.png",
+    "output/home-album-refinement-20261027/web-library-desktop-dark-list.png",
+    "output/home-album-refinement-20261027/web-library-narrow-light.png"
+  ],
+  "deployment": {
+    "baseUrl": "https://snapfit-c719d.web.app",
+    "status": "complete",
+    "project": "snapfit-c719d",
+    "release": "8a13153e27a9fc79",
+    "build": {
+      "main_sha256": "fe9aa32dfd965d4fbcf3df254dc836cd6dbed8a93d452200c029430961036552",
+      "main_file": "main.fe9aa32dfd965d4fbcf3.dart.js",
+      "bootstrap_sha256": "79a24d8530afa835b7497887c82d6cd919d1cee5256eefc813d455f6210783f3",
+      "bootstrap_file": "flutter_bootstrap.79a24d8530afa835b749.js"
+    },
+    "checks": [
+      {
+        "path": "/albums",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      },
+      {
+        "path": "/snapfit-web-build.json",
+        "status": 200,
+        "matchesLocal": true
+      },
+      {
+        "path": "/flutter_bootstrap.79a24d8530afa835b749.js",
+        "status": 200,
+        "sha256": "79a24d8530afa835b7497887c82d6cd919d1cee5256eefc813d455f6210783f3"
+      },
+      {
+        "path": "/main.fe9aa32dfd965d4fbcf3.dart.js",
+        "status": 200,
+        "sha256": "fe9aa32dfd965d4fbcf3df254dc836cd6dbed8a93d452200c029430961036552"
+      }
+    ],
+    "passed": true,
+    "buildLog": "output/home-album-hero-web-build.log",
+    "deployLog": "output/home-album-hero-web-deploy.json"
+  },
+  "completedAt": "2026-10-26T16:41:36.555297+00:00"
+}

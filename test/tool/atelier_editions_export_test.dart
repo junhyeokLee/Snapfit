@@ -51,7 +51,7 @@ void main() {
       for (final edition in editions.where(
         (e) => selected.isEmpty || selected.contains(e.id),
       )) {
-        for (final aspect in CollectionAspect.values) {
+        for (final aspect in CollectionAspect.printable) {
           final pages = templateDocumentPages(edition.document(aspect));
           final lastSpread =
               const bool.fromEnvironment('EXPORT_ATELIER_COVERS_ONLY')
@@ -146,7 +146,7 @@ void main() {
           for (final edition in StudioEdition.values.where(
             (e) => selected.isEmpty || selected.contains(e.id),
           )) {
-            for (final aspect in CollectionAspect.values) {
+            for (final aspect in CollectionAspect.printable) {
               const tileWidth = 460.0, gap = 24.0, margin = 30.0;
               final tileHeight = tileWidth / (2 * aspect.canvas.aspectRatio);
               final count = edition.innerPageCount ~/ 2;

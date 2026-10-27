@@ -10,7 +10,7 @@ void main() {
     'editorial redesign preserves covers and chapters but rebuilds inner layouts',
     () {
       for (final volume in lifeConceptVolumes) {
-        for (final aspect in CollectionAspect.values) {
+        for (final aspect in CollectionAspect.printable) {
           final baseline =
               jsonDecode(
                     File(
@@ -103,7 +103,7 @@ void main() {
     for (final volume in lifeConceptVolumes.where(
       (v) => v != ConceptVolume.sharedSeasons,
     )) {
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         final baseline = jsonDecode(
           File(
             'tool/template_studio/archives/life-editorial-2/${volume.id}/${aspect.name}.json',
@@ -117,7 +117,7 @@ void main() {
   });
 
   test('shared-seasons removes floating objects and opaque photo labels', () {
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       final pages = templateDocumentPages(
         ConceptVolume.sharedSeasons.document(aspect, refineQuality: false),
       );

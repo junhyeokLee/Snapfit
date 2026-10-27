@@ -57,6 +57,15 @@ export function createPushDispatchHandler(dependencies: {
           if (!policy.allowed) {
             await finish(row, { status: 'discarded', last_error: 'notification_preferences' }); counts.discarded++; return;
           }
+          if (notification.type === 'moment_reminder') {
+            const { data: allowed, error } = await supabase.rpc('is_moment_reminder_delivery_allowed', {
+              p_user_id: row.user_id, p_notification_id: row.notification_id,
+            });
+            if (error) throw error;
+            if (allowed !== true) {
+              await finish(row, { status: 'discarded', last_error: 'moment_reminder_no_longer_due' }); counts.discarded++; return;
+            }
+          }
           const response = await fetch(`https://fcm.googleapis.com/v1/projects/${encodeURIComponent(account.project_id)}/messages:send`, {
             method: 'POST', headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
             body: JSON.stringify(fcmMessage(notification, row.token, now, policy.ttlSeconds, device.platform)), signal: AbortSignal.timeout(10_000),

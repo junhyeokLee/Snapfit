@@ -1,0 +1,165 @@
+{
+  "date": "2026-10-25",
+  "automation_id": "snapfit",
+  "trigger_time": "2026-10-25T10:06:17.599Z",
+  "finished_time": "2026-10-25T10:24:14.843760+00:00",
+  "scope": "Template detail like submissions, late metadata reconciliation, route disposal and confirmed local persistence",
+  "previous_report": "docs/verification/heartbeat-store-like-persistence-2026-10-25.json",
+  "findings": [
+    {
+      "id": "detail-like-lock-before-await",
+      "priority": "P2",
+      "status": "fixed",
+      "observed_before": [
+        "Two immediate button callbacks caused two account resolutions and duplicate server toggles.",
+        "Closing during delayed account resolution produced setState() called after dispose()."
+      ],
+      "change": [
+        "Acquire the submission lock before hydration/account lookup.",
+        "Use an outer try/finally so errors and early returns release the lock.",
+        "Stop unsubmitted work after disposal and suppress further UI/follow-up work after an already-submitted action completes."
+      ]
+    },
+    {
+      "id": "detail-like-stale-selection",
+      "priority": "P2",
+      "status": "fixed",
+      "observed_before": [
+        "The first reconciliation changed the latest unlike selection back to liked.",
+        "Late initial metadata also reset a newer like to unliked."
+      ],
+      "change": [
+        "An operation revision rejects older toggle reconciliation after a newer interaction.",
+        "A separate scalar like-state revision preserves newer optimistic, rollback and confirmed state across metadata reads and asynchronous document preparation.",
+        "Persist immutable snapshots rather than reading mutable widget state after awaits."
+      ]
+    },
+    {
+      "id": "detail-like-owner-boundary",
+      "priority": "P2",
+      "status": "fixed",
+      "observed_before": "A reconciliation completed after account-a changed to account-b and replaced account-a stored {isLiked:true,likeCount:2} with {isLiked:false,likeCount:8}.",
+      "change": [
+        "Use the existing optional TemplateSessionSource current owner instead of stale secure storage for account-aware repositories.",
+        "Check the captured repository/owner at async completion before applying fetched metadata, UI changes and follow-up invalidations.",
+        "Do not add an auth subscription or polling. Legacy repositories and offline published favorites retain their fallback."
+      ]
+    },
+    {
+      "id": "detail-like-slow-persistence",
+      "priority": "P2",
+      "status": "fixed",
+      "observed_before": "With a controlled pending preferences write, server submissions remained zero. Closing at that point could leave a locally liked record without sending the toggle.",
+      "change": [
+        "Start the server action after account resolution/optimistic UI, before waiting on local preferences.",
+        "Save the captured confirmed intent/account after server success even if its route has closed, then gate all UI and reconciliation on the live operation.",
+        "Remove the redundant identical post-success local write. A failed server toggle rolls back the view and persists the previous state while the operation is still current."
+      ]
+    }
+  ],
+  "test_fixture_follow_up": {
+    "path": "test/widget/store_gallery_review_regressions_test.dart",
+    "cause": "The edition navigation test provided an empty product catalog. The current native action correctly disables an unlisted paid product, so no edition sheet was created.",
+    "baseline_control": "The identical No element failure was reproduced using the pre-change production source snapshot in output/baseline; no shared source was swapped or reverted.",
+    "change": "Supply one active, priced product in this test fixture using the existing stable template product key. The denied purchase gate remains in place, preserving the detail after previewing editions.",
+    "production_gating_and_pricing_changed": false
+  },
+  "production_files_changed_this_run": [
+    "lib/features/store/presentation/views/template_detail_screen.dart"
+  ],
+  "new_test_files": [
+    "test/widget/template_detail_like_lifecycle_test.dart"
+  ],
+  "updated_test_files": [
+    "test/widget/store_gallery_review_regressions_test.dart"
+  ],
+  "new_cases": 11,
+  "verification": {
+    "before_original_regressions": {
+      "passed": 0,
+      "failed": 4,
+      "log": "output/heartbeat-template-detail-like-2026-10-25/before-tests.log"
+    },
+    "before_late_initial_metadata": {
+      "passed": 0,
+      "failed": 1,
+      "log": "output/heartbeat-template-detail-like-2026-10-25/before-hydration-tests.log"
+    },
+    "before_slow_storage": {
+      "passed": 0,
+      "failed": 1,
+      "log": "output/heartbeat-template-detail-like-2026-10-25/before-disk-order-tests.log"
+    },
+    "initial_related_suite": {
+      "passed": 77,
+      "failed": 1,
+      "log": "output/heartbeat-template-detail-like-2026-10-25/related-before-fixture-tests.log",
+      "failure": "Existing unlisted-product edition fixture"
+    },
+    "pre_change_source_gallery_control": {
+      "passed": 0,
+      "failed": 1,
+      "log": "output/heartbeat-template-detail-like-2026-10-25/baseline-gallery-tests.log"
+    },
+    "final_related_suite": {
+      "files": 11,
+      "passed": 79,
+      "failed": 0,
+      "log": "output/heartbeat-template-detail-like-2026-10-25/final-tests.log",
+      "concurrent_test_processes": 1
+    },
+    "final_analysis": {
+      "items": 3,
+      "issues": 0,
+      "log": "output/heartbeat-template-detail-like-2026-10-25/final-analysis.log"
+    },
+    "git_diff_check": {
+      "passed": true,
+      "scope": [
+        "lib/features/store/presentation/views/template_detail_screen.dart",
+        "test/widget/template_detail_like_lifecycle_test.dart",
+        "test/widget/store_gallery_review_regressions_test.dart"
+      ]
+    },
+    "scoped_patch": "output/heartbeat-template-detail-like-2026-10-25/scoped.patch",
+    "final_sha256": {
+      "lib/features/store/presentation/views/template_detail_screen.dart": "58ff80f29659e06be483a79d38995d58e38b2441e8312b4cf1ff4fe87ae9bbdc",
+      "test/widget/template_detail_like_lifecycle_test.dart": "074e2e713ed3ead4a9adb1977b123844d11297ace391f5437bf5d6621ad2d3c6",
+      "test/widget/store_gallery_review_regressions_test.dart": "7f49b18e7c17ee7627359423c3101ee81b1ea8d5e96855b3bd031c55129ec74a"
+    },
+    "app_build_run": false,
+    "device_run_or_frame_memory_profile_run": false,
+    "live_backend_or_user_data_changed": false
+  },
+  "review": {
+    "remaining_blocking_findings_in_changed_async_paths": [],
+    "checked": [
+      "Repeated callbacks, account lookup error/retry, API failure/rollback/retry, early close, late POST completion and close/reopen.",
+      "Older reconciliation and initial hydration cannot replace newer selection or its persisted snapshot.",
+      "Confirmed actions persist under the captured owner; close/account change does not start a new reconciliation.",
+      "Related edition navigation, gallery tabs/thumbnail movement, large text/dark mode, artwork lifetime, document preparation, purchase keys and store request-sharing regressions pass.",
+      "Only scalar revisions and operation-local guards were added. No cache/history, per-frame work, image decoding, new document generation or subscription was added.",
+      "The previous preferences write queue is preserved; each operation snapshots its intent and the successful toggle no longer writes that identical intent twice."
+    ],
+    "protected_store_sources_unchanged": {
+      "lib/features/store/data/api/template_provider.dart": true,
+      "lib/features/store/data/repositories/supabase_template_repository.dart": true,
+      "lib/features/store/presentation/views/store_screen.dart": true,
+      "lib/features/store/presentation/widgets/store_topic_shelf.dart": true
+    },
+    "shared_workspace": "Preserved all pre-existing modifications. Only the listed production file and test files were edited; baseline evidence uses isolated copies with normalized imports."
+  },
+  "follow_up": {
+    "automation_remains_useful": true,
+    "next_candidates": [
+      "Detail metadata reads currently use the full catalog even after a valid server toggle; review a single-record reconciliation without breaking legacy title matching.",
+      "Review idle detail account changes, same-account re-login and rapid account-a/account-b/account-a transitions separately; this run covers owner mismatch at async boundaries, not every session transition.",
+      "Resume main album/reader hidden-resume photo preparation and failure recovery after checking concurrent work and newer verification records."
+    ]
+  },
+  "limits": [
+    "An already-started server request is not physically cancelled; closed or superseded views ignore its metadata and avoid subsequent UI/reads. Confirmed user mutations can finish their captured local save.",
+    "Owner guards use the existing repository identity interface. They do not replace server authorization or add session event monitoring for idle details.",
+    "Real device frame timing, native memory, network throughput and customer storage were not measured. No blanket claim of zero lag or zero memory leaks is made."
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "date": "2026-10-25",
+  "scope": "Resolve all 17 failures remaining from home/store performance verification without app builds or design changes",
+  "previous_report": "docs/verification/home-store-entry-scroll-performance-2026-10-25.json",
+  "resolved_failures": [
+    {
+      "cases": 2,
+      "issue": "Editor/store title mismatch",
+      "fix": "Editor catalog metadata uses collection.catalogTitle, matching all 133 published store titles. Original authored titles, saved album content, IDs, price keys and layer builders remain unchanged.",
+      "verification": "Online/offline catalog tests now run through their existing title and printable-layout assertions."
+    },
+    {
+      "cases": 2,
+      "issue": "Recommended footer leaves All category clipped horizontally",
+      "fix": "StoreTopicShelf owns its horizontal controller and bounded current-category keys. One coalesced post-layout callback adjusts only the minimum horizontal distance needed to reveal the selected chip.",
+      "verification": "Existing footer cases assert hit testing and full chip bounds, then verify price filters. New coverage checks LTR/RTL, large text, dark mode, resize, runtime scale/direction changes, rapid selections, hidden/resumed state and disposal."
+    },
+    {
+      "cases": 1,
+      "issue": "Search retains the parent category despite presenting all templates",
+      "fix": "Template search gets a route-owned feed notifier, sharing the existing local catalog, product providers and artwork caches. Parent browse filters/paging remain intact. Department is captured when opening, and duplicate queued search opens are ignored.",
+      "verification": "Search finds a daily design while the browse page remains in travel; four search visits retain browse item identity and selection, clear prior query, load the local catalog once and make zero full-catalog requests. Two queued button callbacks open one search route."
+    },
+    {
+      "cases": 12,
+      "issue": "Main/store navigation assertions expect four icons",
+      "fix": "Tests include the existing Compass/feed icon alongside album/store/designs/profile; production destinations and stable navigation indices are unchanged.",
+      "verification": "All twelve size/theme/text-scale variants pass; experience navigation coverage verifies current and legacy destination values."
+    }
+  ],
+  "production_files": [
+    "lib/features/album/presentation/providers/design_template_catalog_provider.dart",
+    "lib/features/store/presentation/views/store_hub_screen.dart",
+    "lib/features/store/presentation/widgets/store_topic_shelf.dart"
+  ],
+  "test_files": [
+    "test/widget/store_main_experience_test.dart",
+    "test/widget/store_recommendations_test.dart",
+    "test/widget/store_topic_visibility_test.dart"
+  ],
+  "source_sha256": {
+    "lib/features/album/presentation/providers/design_template_catalog_provider.dart": {
+      "before_sha256": "7a54c3a6777783f9ed981fb829075486555aec6874b976b0fbcd4d77dccbec71",
+      "after_sha256": "7f3b53f75681a30e3a90dce4f3a01e25e3ba74628a8bef75c84a45991444afe2"
+    },
+    "lib/features/store/presentation/views/store_hub_screen.dart": {
+      "before_sha256": "304ada9a1fd25f825ca2cdb7da2f320de68f8a217bcd0bb65c03ea57fdb9cc04",
+      "after_sha256": "f3169c206c26bbf3bbc382cb192803042702d108181b9243c04d21c066a1447d"
+    },
+    "lib/features/store/presentation/widgets/store_topic_shelf.dart": {
+      "before_sha256": "bf372b59b767f78c801647f8adc71ea397cf1dbed087f062c7d1058419f7a9fd",
+      "after_sha256": "b4aae20f67fbb5328c621e5db8ef4c5584fa52199bac1dd5d79850307d0ccce4"
+    },
+    "test/widget/store_main_experience_test.dart": {
+      "before_sha256": "cbf55d872c6a5bea4572943da485b604531b7746066326a05954d751278451f8",
+      "after_sha256": "b2c6d434da9f3b32e05f7123f46524d7b27416c6f2ae6d9e97e097e537ba01de"
+    },
+    "test/widget/store_recommendations_test.dart": {
+      "before_sha256": "adfa3cc69d3ff3460a7a874358ecfda7effb9450f75563709e81aed7d9950597",
+      "after_sha256": "4a1b3b2088598e3de47a261d5440d6a8dc7749f524fb55edf70bdd5c82a9113d"
+    },
+    "test/widget/store_topic_visibility_test.dart": {
+      "after_sha256": "03ceb62d3f7dcf1fd4e853f480e15edaea36137adf4c48ff51bf621c4f7b0171"
+    }
+  },
+  "code_review": {
+    "unresolved_findings": [],
+    "reviewed": [
+      "Title change reads metadata only and never materializes a book document or alters an archived/saved title.",
+      "Search isolation overrides only the feed notifier. Shared catalog/product/artwork providers are inherited, and route removal disposes the child scope and existing generation-guarded interests.",
+      "The duplicate-open flag resets without setState after route completion; no recurring timer, polling or additional transport/cache layer is introduced.",
+      "Chip reveal is event driven and coalesced; ordinary pagination or scroll offset notifications do not schedule continuous geometry work.",
+      "Reveal reads current selection after layout, clamps finite offsets and updates only its own horizontal position. Fully visible chips are not recentered and hidden shelves do not move.",
+      "Key entries are pruned when category inputs change, controller ownership ends in dispose, and deferred callbacks stop when unmounted.",
+      "Existing first-entry deferral, image decode limits, worker pause/resume, cache pressure policies, pricing, ownership and favorite behaviors remain unchanged."
+    ],
+    "previous_eight_performance_sources_unchanged": true,
+    "previous_five_photo_recovery_sources_unchanged": true
+  },
+  "verification": {
+    "original_17_all_resolved": true,
+    "related_suite": {
+      "files": 21,
+      "initial_passed": 169,
+      "initial_failed": 1,
+      "log": "output/store-failure-fixes/related-tests.log",
+      "initial_failure": "New rapid-open test assumed a tooltip finder returned IconButton; current Flutter returns RawTooltip. Corrected the test locator to identify IconButton by its tooltip, without weakening assertions or changing production code."
+    },
+    "final_affected_file_rerun": {
+      "files": 1,
+      "passed": 10,
+      "failed": 0,
+      "log": "output/store-failure-fixes/final-store-transitions.log"
+    },
+    "unique_cases_using_latest_result_for_rerun_file": 170,
+    "unique_passed": 170,
+    "unique_failed": 0,
+    "per_case_results": "output/store-failure-fixes/test-results.json",
+    "new_widget_cases": 4,
+    "analysis": {
+      "files": 6,
+      "issues": 0,
+      "log": "output/store-failure-fixes/analysis.log"
+    },
+    "format": {
+      "files": 6,
+      "unformatted": 0
+    },
+    "scoped_diff_check_passed": true,
+    "app_build_run": false,
+    "live_backend_or_user_data_changed": false,
+    "device_frame_or_process_memory_profile_run": false
+  },
+  "limits": [
+    "Code review and controlled provider/widget tests verify lifetime and request behavior; physical-device FPS, peak native memory and plugin internals were not profiled.",
+    "The shelf adds small bounded key/controller metadata; no additional image/decoded-pixel/document cache or cache-capacity increase was introduced."
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "status": "deployed_http_verified",
+  "exit_code": 0,
+  "elapsed_seconds": 87.61,
+  "source_before": "3ff9b92e4df6e6ca6b907818277b1a4ebfc34c9cdcd480efbeaa987e228c7c42",
+  "source_after": "3ff9b92e4df6e6ca6b907818277b1a4ebfc34c9cdcd480efbeaa987e228c7c42",
+  "social_source_sha256": "66e77a60888d7d62db8274d7edcd0aeafacdfbc0ad709e7706630e4c3435e263",
+  "inputs_unchanged": true,
+  "main_sha256": "275d2829463481c7a240e7c3f5782ce730bc9cd78b208af05ab776414b6a77c1",
+  "main_file": "main.275d2829463481c7a240.dart.js",
+  "bootstrap_sha256": "92c1fe6ba12a73a866c56657b0b171d234d28b46f5ac17dc7aa3aa4563e8a35a",
+  "bootstrap_file": "flutter_bootstrap.92c1fe6ba12a73a866c5.js",
+  "index_sha256": "4941d8a107ce26e556fea878c683bd75e30c3fa7cdb78e8a717590d11feedd95",
+  "live_http_verified": {
+    "index.html": {
+      "http_status": 200,
+      "bytes": 3023,
+      "sha256": "4941d8a107ce26e556fea878c683bd75e30c3fa7cdb78e8a717590d11feedd95",
+      "cache_control": "no-store"
+    },
+    "snapfit-web-build.json": {
+      "http_status": 200,
+      "bytes": 294,
+      "sha256": "a047c3bcdd624fc8bac1d490f9f3eabbffaca5d2de3e802a63bf761ae27ccd3c",
+      "cache_control": "max-age=3600"
+    },
+    "main.275d2829463481c7a240.dart.js": {
+      "http_status": 200,
+      "bytes": 8965026,
+      "sha256": "275d2829463481c7a240e7c3f5782ce730bc9cd78b208af05ab776414b6a77c1",
+      "cache_control": "public,max-age=31536000,immutable"
+    },
+    "flutter_bootstrap.92c1fe6ba12a73a866c5.js": {
+      "http_status": 200,
+      "bytes": 14512,
+      "sha256": "92c1fe6ba12a73a866c56657b0b171d234d28b46f5ac17dc7aa3aa4563e8a35a",
+      "cache_control": "no-cache"
+    }
+  },
+  "deployment_version": "b529862f53d96715",
+  "url": "https://snapfit-c719d.web.app/feed#/feed",
+  "retained_entrypoint_generations_verified_live": 3,
+  "previous_release_entrypoint_checks": [
+    {
+      "requested": "main.fbe299b3830ca556fba0.dart.js",
+      "final_url": "https://snapfit-c719d.web.app/main.fbe299b3830ca556fba0.dart.js",
+      "status": 200,
+      "sha256": "fbe299b3830ca556fba0f29fd4078d18437c17194a2c7fe7d8079e2af124ba32"
+    },
+    {
+      "requested": "flutter_bootstrap.e67674ddbf47f8cb7592.js",
+      "final_url": "https://snapfit-c719d.web.app/flutter_bootstrap.92c1fe6ba12a73a866c5.js",
+      "status": 200,
+      "sha256": "92c1fe6ba12a73a866c56657b0b171d234d28b46f5ac17dc7aa3aa4563e8a35a"
+    },
+    {
+      "requested": "main.b65bf59b1c6ac06c958d.dart.js",
+      "final_url": "https://snapfit-c719d.web.app/main.b65bf59b1c6ac06c958d.dart.js",
+      "status": 200,
+      "sha256": "b65bf59b1c6ac06c958d9bde35b8db7f8cf17205d07ebf4b2e62133a284e1c74"
+    },
+    {
+      "requested": "flutter_bootstrap.95df0e2f8d7097fd9ec1.js",
+      "final_url": "https://snapfit-c719d.web.app/flutter_bootstrap.92c1fe6ba12a73a866c5.js",
+      "status": 200,
+      "sha256": "92c1fe6ba12a73a866c56657b0b171d234d28b46f5ac17dc7aa3aa4563e8a35a"
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import '../support/store_detail_loading.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -80,19 +81,19 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
   }
 
-  testWidgets(
+  storeDetailTestWidgets(
     'mobile artwork fits the actual spread and use action stays visible after scrolling',
     (tester) async {
       viewport(tester, const Size(390, 844));
       final destinations = <WebAppLocation>[];
       await tester.pumpWidget(host(destinations));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       final action = key('template-detail-use');
       expect(action, findsOneWidget);
       expect(action.hitTestable(), findsOneWidget);
       final coverHeight = tester.getSize(key('template-detail-stage')).height;
       await tester.tap(find.byTooltip('다음 펼침면'));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       final innerHeight = tester.getSize(key('template-detail-stage')).height;
       expect(innerHeight, lessThan(coverHeight * .65));
       expect(find.text('1–2쪽'), findsOneWidget);
@@ -101,7 +102,7 @@ void main() {
         key('web-design-detail-stacked'),
         const Offset(0, -1200),
       );
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(tester.getRect(action), actionBefore);
       expect(action.hitTestable(), findsOneWidget);
       expect(find.text('2,800P'), findsWidgets);
@@ -116,10 +117,10 @@ void main() {
           )
           .position;
       detailScroll.jumpTo(detailScroll.maxScrollExtent);
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(key('template-spread-pager'), findsNothing);
       detailScroll.jumpTo(0);
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(
         tester.widget<PageView>(key('template-spread-pager')).controller!.page,
         closeTo(1, .001),
@@ -128,19 +129,19 @@ void main() {
       expect(tester.getSize(key('template-detail-stage')).height, innerHeight);
       expect(tester.getRect(action), actionBefore);
       await tester.tap(action);
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(destinations, [WebAppLocation.login]);
       expect(tester.takeException(), isNull);
     },
     skip: !kIsWeb,
   );
 
-  testWidgets(
+  storeDetailTestWidgets(
     'scrolling away retains a late spread and its selected thumbnail',
     (tester) async {
       viewport(tester, const Size(390, 844));
       await tester.pumpWidget(host(<WebAppLocation>[]));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       final thumbnail = key('template-spread-thumb-14');
       // Drag the rail itself. ensureVisible also scrolls the outer vertical
       // viewport, which does not represent a user's horizontal thumbnail drag.
@@ -150,11 +151,11 @@ void main() {
         drag++
       ) {
         await tester.drag(key('template-spread-list'), const Offset(-200, 0));
-        await tester.pumpAndSettle();
+        await settleStoreDetail(tester);
       }
       expect(thumbnail.hitTestable(), findsOneWidget);
       await tester.tap(thumbnail);
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(find.text('27–28쪽'), findsOneWidget);
       final scroll = tester
           .state<ScrollableState>(
@@ -167,10 +168,10 @@ void main() {
           )
           .position;
       scroll.jumpTo(scroll.maxScrollExtent);
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(key('template-spread-pager'), findsNothing);
       scroll.jumpTo(0);
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(
         tester.widget<PageView>(key('template-spread-pager')).controller!.page,
         closeTo(14, .001),
@@ -187,18 +188,18 @@ void main() {
     (const Size(844, 390), 1.0),
     (const Size(1440, 1000), 1.0),
   ]) {
-    testWidgets(
+    storeDetailTestWidgets(
       'detail use action remains unique and reachable at ${sample.$1} text ${sample.$2}',
       (tester) async {
         viewport(tester, sample.$1);
         final destinations = <WebAppLocation>[];
         await tester.pumpWidget(host(destinations, scale: sample.$2));
-        await tester.pumpAndSettle();
+        await settleStoreDetail(tester);
         final action = key('template-detail-use');
         expect(tester.takeException(), isNull);
         expect(action, findsOneWidget);
         await tester.ensureVisible(action);
-        await tester.pumpAndSettle();
+        await settleStoreDetail(tester);
         expect(action.hitTestable(), findsOneWidget);
         final rect = tester.getRect(action);
         expect(rect.left, greaterThanOrEqualTo(0));
@@ -209,7 +210,7 @@ void main() {
           sample.$1.width == 1440 ? findsNothing : findsOneWidget,
         );
         await tester.tap(action);
-        await tester.pumpAndSettle();
+        await settleStoreDetail(tester);
         expect(destinations, [WebAppLocation.login]);
         expect(tester.takeException(), isNull);
       },

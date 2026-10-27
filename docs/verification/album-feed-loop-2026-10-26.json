@@ -1,0 +1,181 @@
+{
+  "task": "Album saved experience, saved works gallery, official source-template discovery",
+  "date": "2026-10-26",
+  "status": "complete",
+  "features": {
+    "savedAlbum": {
+      "freshSavedDocument": true,
+      "largeCoverAndPageViewer": true,
+      "singleSelectedPagePngSaveOrShare": true,
+      "permissionAndRevisionRecheckedBeforeOutput": true,
+      "ordinarySavesRemainLightweight": true,
+      "readerSaveReturnPreserved": true,
+      "compactPrimaryActionAlwaysVisible": true
+    },
+    "savedWorks": {
+      "largeUncroppedPhotos": true,
+      "responsiveOneOrTwoColumns": true,
+      "lazySliverRows": true,
+      "ownerScopedPageQueries": true,
+      "offsetRetryAndDuplicateGuards": true
+    },
+    "officialTemplate": {
+      "sourceProductKeyPersistsAcrossCreationDraftAndReopen": true,
+      "authorOptInDefault": false,
+      "freshPublicVisibilityAndProductValidation": true,
+      "existingTemplateDetailAndPurchaseGate": true,
+      "copiesPrivateSourceContent": false,
+      "legacyProvenanceGuessed": false
+    },
+    "navigationAndMoments": {
+      "bottomNavigationIconsOnly": true,
+      "accessibilityLabelsAndTooltipsKept": true,
+      "duplicateAlbumResumeRemoved": true,
+      "topFirstBookContinuationKept": true,
+      "dailyJournalProminentInMyAlbumsHeader": true,
+      "monthlyPreviewUsesActualPhysicalCoverSize": true,
+      "newMonthlyBookDefaultSize": "20 x 20cm square",
+      "photoFirstJournalWithNeutralCyanPalette": true,
+      "existingAuthoredDocumentsNotRewritten": true
+    }
+  },
+  "verification": {
+    "integrationRun": {
+      "log": "output/album-feed-loop-integration-tests.log",
+      "passed": 221,
+      "failedAtRun": 1,
+      "resolution": "Remaining gallery owner-observation fixture corrected and all 8 gallery tests passed in subsequent capture check."
+    },
+    "galleryAndSavedResult": {
+      "log": "output/album-feed-loop-capture-check.log",
+      "passed": 18,
+      "failed": 0
+    },
+    "finalUiRun": {
+      "log": "output/album-feed-loop-final-ui-tests.log",
+      "passed": 120,
+      "failedAtRun": 10,
+      "resolution": "Latest template notification, Material checkbox surface, and scoped draft resume locator fixed; affected suites re-run in finalAffected."
+    },
+    "finalAffected": {
+      "log": "output/album-feed-loop-final-affected-tests.log",
+      "passed": 57,
+      "failed": 0
+    },
+    "analysis": {
+      "log": "output/album-feed-loop-final-analysis.log",
+      "result": "No issues found"
+    },
+    "server": {
+      "testsPassed": 51,
+      "files": [
+        "test/server/social_template_sources_sql.test.mjs",
+        "test/server/social_publication_sql.test.mjs",
+        "test/server/social_followup_sql.test.mjs"
+      ]
+    },
+    "productionDatabase": {
+      "project": "rrbhxdtriummqpztpjrk",
+      "migration": "supabase/migrations/20261026142401_social_official_template_sources.sql",
+      "applied": true,
+      "runtimeGroupsPassed": 14,
+      "runtimeFixturesRolledBack": true,
+      "leftoverQaUsers": 0,
+      "leftoverQaProducts": 0,
+      "catalogPricesAndWalletPolicyChanged": false,
+      "securityAdvisors": "No new related warning; private bindings continue to deny client access. Pre-existing unrelated notices remain."
+    },
+    "browser": {
+      "log": "output/album-feed-web-final-tests.log",
+      "passed": 9,
+      "failed": 0,
+      "covers": [
+        "actual web journal layout at wide and 320px large text",
+        "saved gallery web shell and account isolation",
+        "selected page writer guards",
+        "real raster renderer size and pixels",
+        "real private photo PNG and JPEG pixels",
+        "late account change",
+        "template start compact controls"
+      ],
+      "fontFixtureNote": "Ordinary browser test rootBundle FontManifest has no test asset-channel response. The intentionally textless raster test does not preload fonts; native font tests and actual app smoke verify fonts separately."
+    },
+    "deployment": {
+      "status": "complete",
+      "project": "snapfit-c719d",
+      "baseUrl": "https://snapfit-c719d.web.app",
+      "release": "86b552089ca9b767",
+      "build": {
+        "main_sha256": "f1f844b2683e23b4c0e46a1baee3b43b01c01c85891963f23e5a8bb6b92b9988",
+        "main_file": "main.f1f844b2683e23b4c0e4.dart.js",
+        "bootstrap_sha256": "b6b709510a18a169d0479de879f83da35f76178e4ab23d8e50ab38d6105081cd",
+        "bootstrap_file": "flutter_bootstrap.b6b709510a18a169d047.js"
+      },
+      "httpChecksPassed": true,
+      "checkedPaths": [
+        "/feed",
+        "/albums",
+        "/moments",
+        "/snapfit-web-build.json",
+        "/flutter_bootstrap.b6b709510a18a169d047.js",
+        "/main.f1f844b2683e23b4c0e4.dart.js"
+      ],
+      "logs": [
+        "output/album-feed-moments-web-build.log",
+        "output/album-feed-moments-web-deploy.json",
+        "output/album-feed-moments-deployment-check.json"
+      ]
+    },
+    "nativeBuildOrDeviceInstall": "Not performed; app source and widget tests covered.",
+    "navigationAndMoments": {
+      "log": "output/moments-home-final-regression-tests.log",
+      "passed": 300,
+      "initialFailed": 1,
+      "resolvedIn": "output/cover-theme-colours-focused-test.log",
+      "resolution": "Cover test now waits for actual CatalogPreviewBuilder artwork, asserts no skeleton, and preserves exact light/dark RGBA equality. Focused test passed.",
+      "additionalPriorMomentsChecks": 77,
+      "analysis": "output/moments-home-final-analysis.log",
+      "analysisResult": "No issues found"
+    },
+    "guideReplay": {
+      "passed": 1,
+      "log": "output/moments-navigation-guide-final.log",
+      "actualFlow": "My profile -> settings -> app guide -> home replay",
+      "fix": "Settings fallback selects albums before popping back to root."
+    },
+    "homeScreenshot": {
+      "passed": 1,
+      "log": "output/moments-home-capture-final.log"
+    },
+    "liveBrowserSmoke": {
+      "passed": true,
+      "url": "https://snapfit-c719d.web.app/feed#/feed",
+      "checks": [
+        "Public guest feed and complete topic filters render",
+        "Korean fonts, icons and shared navigation render",
+        "Private Moments route requires login for guest",
+        "Browser back restores feed"
+      ],
+      "authenticatedPrivateWorkflows": "Covered by widget/browser fixtures and production rollback SQL; no manual interaction in the user private account.",
+      "temporaryVerificationTabClosed": true,
+      "screenshot": "output/moments-redesign-20261027/deployed-feed.png"
+    }
+  },
+  "screenshots": [
+    "output/album-feed-loop-20261026/saved-album-compact-light.png",
+    "output/album-feed-loop-20261026/saved-album-phone-dark.png",
+    "output/album-feed-loop-20261026/saved-album-desktop-light.png",
+    "output/album-feed-loop-20261026/saved-gallery-phone-light.png",
+    "output/album-feed-loop-20261026/saved-gallery-phone-dark.png",
+    "output/album-feed-loop-20261026/saved-gallery-desktop-light.png",
+    "output/moments-redesign-20261027/journal-light.png",
+    "output/moments-redesign-20261027/journal-dark.png",
+    "output/moments-redesign-20261027/journal-empty.png",
+    "output/moments-redesign-20261027/journal-desktop-light.png",
+    "output/moments-redesign-20261027/journal-desktop-dark.png",
+    "output/moments-redesign-20261027/my-albums-phone.png",
+    "output/moments-redesign-20261027/deployed-feed.png"
+  ],
+  "latestSteeringDate": "2026-10-27",
+  "completedAt": "2026-10-26T15:26:25.648572+00:00"
+}

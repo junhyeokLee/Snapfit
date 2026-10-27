@@ -1,0 +1,207 @@
+{
+  "run_id": "attendance-20261026080150-ce0dfedf",
+  "status": "live_verified_cleanup_complete",
+  "project": "rrbhxdtriummqpztpjrk",
+  "url": "https://snapfit-c719d.web.app/attendance",
+  "checks": [
+    {
+      "name": "original financial baseline still 1 wallet / 9 ledger / 3 ownership / 482 products",
+      "pass": true
+    },
+    {
+      "name": "guest get_attendance_status denied",
+      "pass": true
+    },
+    {
+      "name": "guest claim_daily_attendance denied",
+      "pass": true
+    },
+    {
+      "name": "A initial server contract / signup500 / no attendance",
+      "pass": true
+    },
+    {
+      "name": "B initial server contract / signup500 / no attendance",
+      "pass": true
+    },
+    {
+      "name": "unsupported claim parameters rejected date",
+      "pass": true
+    },
+    {
+      "name": "unsupported claim parameters rejected userId",
+      "pass": true
+    },
+    {
+      "name": "unsupported claim parameters rejected reward",
+      "pass": true
+    },
+    {
+      "name": "unsupported claim parameters rejected p_user_id,p_date,p_reward",
+      "pass": true
+    },
+    {
+      "name": "invalid parameters did not consume a day",
+      "pass": true
+    },
+    {
+      "name": "20 actual concurrent HTTP claims award exactly once",
+      "pass": true,
+      "evidence": {
+        "requests": 20,
+        "claimed": 1,
+        "awardedPointsTotal": 10
+      }
+    },
+    {
+      "name": "A exactly one authoritative DAILY_ATTENDANCE ledger",
+      "pass": true
+    },
+    {
+      "name": "A exactly one attendance record in status",
+      "pass": true
+    },
+    {
+      "name": "forged date/timezone/user headers cannot alter server day or award",
+      "pass": true
+    },
+    {
+      "name": "direct attendance ledger insert denied",
+      "pass": true
+    },
+    {
+      "name": "reserved attendance prefix cannot bypass with another reason",
+      "pass": true
+    },
+    {
+      "name": "direct attendance ledger PATCH has no effect",
+      "pass": true
+    },
+    {
+      "name": "direct attendance ledger DELETE has no effect",
+      "pass": true
+    },
+    {
+      "name": "forgeries leave authoritative attendance ledger unchanged",
+      "pass": true
+    },
+    {
+      "name": "B cannot read A ledger",
+      "pass": true
+    },
+    {
+      "name": "B cannot read A wallet",
+      "pass": true
+    },
+    {
+      "name": "A activity cannot claim for B",
+      "pass": true
+    },
+    {
+      "name": "B first claim balance510 / attendance1 / ledger1",
+      "pass": true
+    },
+    {
+      "name": "B 20 concurrent post-UI duplicates award zero",
+      "pass": true
+    },
+    {
+      "name": "A unaffected by B claim",
+      "pass": true
+    }
+  ],
+  "credentials_in_report": false,
+  "production_customer_data_modified": false,
+  "financial_before_fixtures": {
+    "point_wallets": {
+      "count": 1,
+      "sha256": "215cb70cea5c8e23906623291eda14b66c58b975653431ea901101a72d4b8f50"
+    },
+    "point_ledger": {
+      "count": 9,
+      "sha256": "a9e7b06b39ea71eb8962c022d433cd7f3e48642c87cb64e7bef8f2a7fc306849"
+    },
+    "point_shop_ownership": {
+      "count": 3,
+      "sha256": "469992c45151c8c5b78fcdd2d0a4ed4c6ead2c42c3a78e59459dc6f23f488e7d"
+    },
+    "point_shop_products": {
+      "count": 482,
+      "sha256": "a06f0f706dd65c8be32408d736158e37ddbd4bc777e60fc900d7f15c6ad5c9c6"
+    }
+  },
+  "updated_at": "2026-10-26T08:08:12.863274+00:00",
+  "synthetic_account_ids": [
+    "0d7d68a3-6881-41da-a9df-c5c7b4d88cad",
+    "eb4466c0-0426-40e3-b733-b7403197eba5"
+  ],
+  "ui_ready": true,
+  "ui_hold_max_seconds": 600,
+  "ui_done_signal": true,
+  "B_first_claim_observed_from_UI": true,
+  "all_api_checks_complete": true,
+  "cleanup_started_at": "2026-10-26T08:06:40.634097+00:00",
+  "cleanup_errors": [],
+  "financial_after_exact_cleanup": {
+    "point_wallets": {
+      "count": 1,
+      "sha256": "215cb70cea5c8e23906623291eda14b66c58b975653431ea901101a72d4b8f50"
+    },
+    "point_ledger": {
+      "count": 9,
+      "sha256": "a9e7b06b39ea71eb8962c022d433cd7f3e48642c87cb64e7bef8f2a7fc306849"
+    },
+    "point_shop_ownership": {
+      "count": 3,
+      "sha256": "469992c45151c8c5b78fcdd2d0a4ed4c6ead2c42c3a78e59459dc6f23f488e7d"
+    },
+    "point_shop_products": {
+      "count": 482,
+      "sha256": "a06f0f706dd65c8be32408d736158e37ddbd4bc777e60fc900d7f15c6ad5c9c6"
+    }
+  },
+  "original_financial_fingerprints_unchanged": true,
+  "auth_wallet_ledger_ownership_residual_zero": true,
+  "private_attendance_residual_requires_read_only_db_confirmation": false,
+  "cleanup_complete": true,
+  "read_only_authoritative_midrun": {
+    "captured_at": "2026-10-26T08:03:16.729011+00:00",
+    "auth_table_read": false,
+    "auth_table_write": false,
+    "claim_wrapper_md5": "f22d1188e265927e5cd38e98bb3dc5e5",
+    "private_table_rls": true,
+    "attendance_api_md5": "cebfc9bf1debb306340a2a4302a91f57",
+    "status_wrapper_md5": "6c7f5f3f629f130bc50c2df9e68f41f8",
+    "qa_A_attendance_count": 1,
+    "qa_B_attendance_count": 0,
+    "qa_A_attendance_points": 10,
+    "qa_A_attendance_ledger_count": 1,
+    "qa_B_attendance_ledger_count": 0
+  },
+  "read_only_final_residual": {
+    "sessions": 0,
+    "captured_at": "2026-10-26T08:07:02.6184+00:00",
+    "scope_count": 178,
+    "matching_rows": 0,
+    "nonzero_scopes": [],
+    "attendance_rows": 0
+  },
+  "existing_function_definition_md5_after": {
+    "grant_signup_bonus": "472a91fa5b8d74160a93202767e8112d",
+    "purchase_point_shop_product": "a70c9f212e88b85b8d21c83a38a8603a",
+    "grant_verified_point_purchase": "96d28f04dc802555b31ed2fab1c4e2cb",
+    "revoke_verified_point_purchase": "eab1036539058cedb6107ad567a1526f"
+  },
+  "UI_verified_by_parent": {
+    "first_claim": "500P to 510P",
+    "month_count": 1,
+    "month_points": 10,
+    "claim_button_disabled": true,
+    "refresh_and_reentry_balance": 510,
+    "my_entry_card": true,
+    "ledger_label": "출석체크 적립 +10P",
+    "logout": true,
+    "screenshots": "output/attendance-live-20261026/"
+  },
+  "private_credentials_and_helper_directory_deleted": true
+}

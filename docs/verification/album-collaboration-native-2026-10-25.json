@@ -1,0 +1,53 @@
+{
+  "checked_at": "2026-10-25T18:39:57+09:00",
+  "status": "final_collaboration_conflict_poll_fix_apk_ready_install_not_performed",
+  "apk_path": "output/native-photo-refresh/SnapFit-collaboration-debug.apk",
+  "apk_sha256": "0831570f155d10857a715804cd2bc8564d0d58e1c0019ed5d046dca42e2f9536",
+  "apk_bytes": 901718228,
+  "zip_crc_valid": true,
+  "zip_entries": 1700,
+  "packaged_android_manifest_sha256": "2b0436c7849efb70b476851f4e528ab857fb4e6d4e0c2ba88cecd1704204d0a1",
+  "packaged_kernel_sha256": "634c4a95d6e465321057b2953e9a35f70254307086e786ab9336668996ec0572",
+  "packaged_current_source_text_markers": {
+    "앨범의 편집 권한이 변경됐어요.": true,
+    "다른 사람이 먼저 저장했어요.": true,
+    "버리고 불러오기": true,
+    "저장 중 새 편집이 있어요.": true
+  },
+  "build_command": "flutter build apk --debug --target-platform android-arm64 --no-pub",
+  "gradle_seconds": 53.6,
+  "signature_verified": true,
+  "certificate_sha256": "a46a0968f62bfe49908e6e9d0b1feda3c269bf721d09a0fc1d7daaa6ecf199c3",
+  "packaged_metadata": [
+    "package: name='com.devsheep.snap_fit' versionCode='1' versionName='1.0.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+    "application-debuggable",
+    "native-code: 'arm64-v8a' 'armeabi-v7a' 'x86_64'"
+  ],
+  "source_manifest_start": "output/native-photo-refresh/source-collaboration-final-start.json",
+  "source_manifest_end": "output/native-photo-refresh/source-collaboration-final-end.json",
+  "source_sha256_start": "24f9bbaacddc1cd64f0eaf597fe91c7f4a19b8df8401f4dc2f90b246069f02c1",
+  "source_sha256_end": "24f9bbaacddc1cd64f0eaf597fe91c7f4a19b8df8401f4dc2f90b246069f02c1",
+  "source_file_count": 1813,
+  "build_input_changes": [],
+  "social_source_sha256_start": "7d7726bbc803e832f759a3f87dc558dad438ab11cf884b1e7234ab016cf342aa",
+  "social_source_sha256_end": "7d7726bbc803e832f759a3f87dc558dad438ab11cf884b1e7234ab016cf342aa",
+  "social_source_file_count": 21,
+  "web_source_manifest_path": "docs/verification/album-collaboration-conflict-source-after-2026-10-25.json",
+  "web_common_source_file_count": 1765,
+  "web_common_source_hashes_match": true,
+  "web_common_source_differences": [],
+  "both_build_outputs_and_deliverable_hashes_match": true,
+  "previous_candidate_preserved_path": "output/native-photo-refresh/SnapFit-collaboration-debug-before-conflict-poll-fix.apk",
+  "previous_candidate_sha256": "439db4a3e24c98ba2670cd6f3c9017c2f5f223620448e787d5b4a9ae3bdeb4b5",
+  "prior_photo_feed_apk_preserved_path": "output/native-photo-refresh/SnapFit-photo-feed-debug.apk",
+  "apfs_cow_copy_used": true,
+  "client_unique_regressions_passed": 141,
+  "install_performed": false,
+  "physical_device_qa_performed": false,
+  "limitation": "User phone unavailable. No USB request, install, user logout, album/data clear, emulator, SDK image download or store submission performed. Artifact is debug-signed.",
+  "free_bytes_after_artifact": 4181610496,
+  "changes_since_preserved_candidate": [
+    "lib/features/album/presentation/viewmodels/album_editor_view_model.dart"
+  ],
+  "unrelated_changes_since_preserved_candidate": []
+}

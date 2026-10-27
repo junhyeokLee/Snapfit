@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:snap_fit/features/album/presentation/providers/home_ui_state_provider.dart';
+import 'package:snap_fit/features/album/presentation/providers/album_edit_session_provider.dart';
+import 'package:snap_fit/features/moments/presentation/providers/moments_providers.dart';
 import 'package:dio/dio.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,13 +16,23 @@ import 'package:snap_fit/features/album/data/api/album_provider.dart';
 import 'package:snap_fit/features/album/data/album_creation_draft_store.dart';
 import 'package:snap_fit/features/album/presentation/views/home_screen.dart';
 import 'package:snap_fit/features/album/presentation/widgets/home/home_album_slider.dart';
+import 'package:snap_fit/features/album/presentation/widgets/home/home_album_header.dart';
+import 'package:snap_fit/features/album/presentation/widgets/home/home_bottom_navigation_bar.dart';
+import 'package:snap_fit/features/moments/presentation/widgets/first_book_next_step_card.dart';
+import 'package:snap_fit/features/album/presentation/widgets/home/home_empty_state.dart';
+import 'package:snap_fit/features/album/presentation/widgets/home/home_error_state.dart';
 import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
 import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
 import 'package:snap_fit/features/store/data/api/template_provider.dart';
+import 'package:snap_fit/features/album/domain/entities/album.dart';
+import 'package:snap_fit/features/point_shop/data/point_shop_provider.dart';
+import 'package:snap_fit/features/store/presentation/views/store_screen.dart';
+import 'package:snap_fit/shared/widgets/snapfit_shimmer.dart';
 
 import '../helpers/fake_album.dart';
 import '../helpers/mock_repositories.dart';
 import '../helpers/creation_draft_fixtures.dart' show MemoryCreationDraftStore;
+import '../helpers/memory_moment_draft_store.dart';
 
 class FakeAuthViewModel extends AuthViewModel {
   FakeAuthViewModel(this.user);
@@ -34,11 +48,96 @@ Future<void> _setLargeSurface(WidgetTester tester) async {
   addTearDown(() => tester.binding.setSurfaceSize(null));
 }
 
+ScrollController _expectOwnedScroll(WidgetTester tester, Finder owner) {
+  final scroll = tester.widget<SingleChildScrollView>(
+    find.descendant(of: owner, matching: find.byType(SingleChildScrollView)),
+  );
+  expect(scroll.primary, isFalse);
+  final controller = scroll.controller!;
+  expect(controller.positions, hasLength(1));
+  expect(PrimaryScrollController.of(tester.element(owner)), same(controller));
+  return controller;
+}
+
 void main() {
   late MockAlbumRepository mockRepo;
 
   setUp(() {
     mockRepo = MockAlbumRepository();
+  });
+
+  testWidgets('slow albums show a skeleton and never delay store navigation', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final albums = Completer<List<Album>>();
+    var catalogReads = 0;
+    when(() => mockRepo.fetchMyAlbums()).thenAnswer((_) => albums.future);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          albumEditorOwnerReaderProvider.overrideWith(
+            (_) =>
+                () => '1',
+          ),
+          momentDraftStoreProvider.overrideWithValue(MemoryMomentDraftStore()),
+          albumCreationDraftStoreProvider.overrideWithValue(
+            MemoryCreationDraftStore(),
+          ),
+          homeUiStateProvider.overrideWith(
+            () => HomeUiStateNotifier(initialIndex: 0),
+          ),
+          albumRepositoryProvider.overrideWithValue(mockRepo),
+          authViewModelProvider.overrideWith(
+            () => FakeAuthViewModel(
+              const UserInfo(id: '1', name: 'User', provider: 'kakao'),
+            ),
+          ),
+          notificationUnreadCountProvider.overrideWith((_) async => 0),
+          pointShopCatalogProvider.overrideWith((_) async => []),
+          mockTemplateList(() {
+            catalogReads++;
+            return [];
+          }),
+        ],
+        child: const MaterialApp(home: HomeScreen()),
+      ),
+    );
+    expect(find.byType(SnapFitShimmerHomeSlider), findsOneWidget);
+    _expectOwnedScroll(tester, find.byType(SnapFitShimmerHomeSlider));
+    expect(find.text('아직 만든 앨범이 없어요'), findsNothing);
+    await tester.pump();
+    expect(find.byType(SnapFitShimmerHomeSlider), findsOneWidget);
+    expect(catalogReads, 0);
+    await tester.tap(find.byTooltip('스토어'));
+    await tester.pump();
+    expect(find.byTooltip('스토어 검색'), findsOneWidget);
+    expect(find.byType(StoreScreen), findsNothing);
+    expect(catalogReads, 0);
+    await tester.pump();
+    expect(find.byType(StoreScreen), findsOneWidget);
+    expect(catalogReads, 1);
+    final storeState = tester.state(find.byType(StoreScreen));
+    expect(albums.isCompleted, isFalse);
+    await tester.tap(find.byTooltip('내 앨범'));
+    await tester.pump();
+    expect(find.byType(SnapFitShimmerHomeSlider), findsOneWidget);
+    albums.complete([fakeAlbum(id: 100, ratio: '1')]);
+    await tester.pump();
+    await tester.pump();
+    expect(find.byType(HomeAlbumSlider), findsOneWidget);
+    final albumState = tester.state(find.byType(HomeAlbumSlider));
+    await tester.tap(find.byTooltip('스토어'));
+    await tester.pump();
+    expect(tester.state(find.byType(StoreScreen)), same(storeState));
+    expect(catalogReads, 1);
+    await tester.tap(find.byTooltip('내 앨범'));
+    await tester.pump();
+    expect(tester.state(find.byType(HomeAlbumSlider)), same(albumState));
+    verify(() => mockRepo.fetchMyAlbums()).called(1);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
   });
 
   testWidgets('앨범 목록 로딩 후 비어있으면 빈 상태 문구 표시', (WidgetTester tester) async {
@@ -47,6 +146,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          albumEditorOwnerReaderProvider.overrideWith(
+            (_) =>
+                () => '1',
+          ),
+          momentDraftStoreProvider.overrideWithValue(MemoryMomentDraftStore()),
           albumCreationDraftStoreProvider.overrideWithValue(
             MemoryCreationDraftStore(),
           ),
@@ -71,13 +175,37 @@ void main() {
         ),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 1200));
+    await tester.pumpAndSettle();
 
     expect(find.text('아직 만든 앨범이 없어요'), findsOneWidget);
     expect(find.textContaining('지금은 참여 중인 앨범이 없어요.'), findsNothing);
     expect(find.text('앨범 만들기'), findsOneWidget);
     expect(find.byType(FloatingActionButton), findsNothing);
     expect(find.byKey(const ValueKey('empty-home-create')), findsOneWidget);
+    final coverScroll = _expectOwnedScroll(tester, find.byType(HomeEmptyState));
+    await tester.tap(find.byTooltip('앨범 목록'));
+    await tester.pumpAndSettle();
+    final collectionScroll = tester
+        .widget<CustomScrollView>(
+          find.descendant(
+            of: find.byType(HomeAlbumTabScreen),
+            matching: find.byType(CustomScrollView),
+          ),
+        )
+        .controller!;
+    expect(collectionScroll, isNot(same(coverScroll)));
+    await tester.binding.setSurfaceSize(const Size(844, 390));
+    await tester.pumpAndSettle();
+    expect(coverScroll.positions, hasLength(1));
+    expect(collectionScroll.positions, hasLength(1));
+    await tester.tap(find.byTooltip('표지로 보기'));
+    await tester.pumpAndSettle();
+    expect(
+      _expectOwnedScroll(tester, find.byType(HomeEmptyState)),
+      same(coverScroll),
+    );
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
   });
 
   testWidgets('앨범이 있으면 앨범 슬라이더 표시', (WidgetTester tester) async {
@@ -87,6 +215,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          albumEditorOwnerReaderProvider.overrideWith(
+            (_) =>
+                () => '1',
+          ),
+          momentDraftStoreProvider.overrideWithValue(MemoryMomentDraftStore()),
           albumCreationDraftStoreProvider.overrideWithValue(
             MemoryCreationDraftStore(),
           ),
@@ -111,7 +244,7 @@ void main() {
         ),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 1200));
+    await tester.pumpAndSettle();
 
     expect(find.byType(HomeAlbumSlider), findsOneWidget);
     expect(find.text('나의 앨범'), findsNothing);
@@ -131,6 +264,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          albumEditorOwnerReaderProvider.overrideWith(
+            (_) =>
+                () => '1',
+          ),
+          momentDraftStoreProvider.overrideWithValue(MemoryMomentDraftStore()),
           albumCreationDraftStoreProvider.overrideWithValue(
             MemoryCreationDraftStore(),
           ),
@@ -155,11 +293,38 @@ void main() {
         ),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 1200));
+    await tester.pumpAndSettle();
 
-    final sliderCenter = tester.getCenter(find.byType(HomeAlbumSlider));
-    expect(sliderCenter.dy, greaterThan(390));
-    expect(sliderCenter.dy, lessThan(610));
+    final slider = find.byType(HomeAlbumSlider);
+    final sliderBounds = tester.getRect(slider);
+    final viewport = tester.getRect(
+      find.ancestor(of: slider, matching: find.byType(Stack)).first,
+    );
+    expect(sliderBounds.center.dy, closeTo(viewport.center.dy, 1));
+    expect(
+      sliderBounds.top,
+      greaterThanOrEqualTo(tester.getRect(find.byType(HomeAlbumHeader)).bottom),
+    );
+    final nextStep = find.byType(FirstBookNextStepCard);
+    if (nextStep.evaluate().isNotEmpty) {
+      expect(
+        sliderBounds.top,
+        greaterThanOrEqualTo(tester.getRect(nextStep).bottom),
+      );
+    }
+    final navigation = tester.widget<HomeBottomNavigationBar>(
+      find.byType(HomeBottomNavigationBar),
+    );
+    final usableBottom = navigation.rail
+        ? tester.getRect(find.byType(HomeScreen)).bottom
+        : tester.getRect(find.byType(HomeBottomNavigationBar)).top;
+    expect(sliderBounds.bottom, lessThanOrEqualTo(usableBottom));
+    final artwork = tester.getRect(
+      find.byKey(const ValueKey('home-bookshelf-stage')),
+    );
+    expect(artwork.height, greaterThan(180));
+    expect(artwork.top, greaterThanOrEqualTo(sliderBounds.top));
+    expect(artwork.bottom, lessThanOrEqualTo(sliderBounds.bottom));
 
     expect(find.byTooltip('새 앨범'), findsOneWidget);
     expect(find.byType(FloatingActionButton), findsNothing);
@@ -172,6 +337,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          albumEditorOwnerReaderProvider.overrideWith(
+            (_) =>
+                () => '1',
+          ),
+          momentDraftStoreProvider.overrideWithValue(MemoryMomentDraftStore()),
           albumCreationDraftStoreProvider.overrideWithValue(
             MemoryCreationDraftStore(),
           ),
@@ -196,7 +366,7 @@ void main() {
         ),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 1200));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const ValueKey('empty-home-create')));
     await tester.pump();
@@ -211,6 +381,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          albumEditorOwnerReaderProvider.overrideWith(
+            (_) =>
+                () => '1',
+          ),
+          momentDraftStoreProvider.overrideWithValue(MemoryMomentDraftStore()),
           albumCreationDraftStoreProvider.overrideWithValue(
             MemoryCreationDraftStore(),
           ),
@@ -235,17 +410,17 @@ void main() {
         ),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 1200));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byTooltip('앨범 목록'));
-    await tester.pump(const Duration(milliseconds: 1200));
+    await tester.pumpAndSettle();
 
     expect(find.text('추억이 쌓이는 서재'), findsNothing);
     expect(find.textContaining('첫 번째 포토북을 꽂아볼까요'), findsNothing);
     expect(find.text('새 포토북 만들기'), findsNothing);
     expect(find.text('포토북 시작하기'), findsNothing);
     expect(find.text('앨범 만들기'), findsNothing);
-    expect(find.text('1권'), findsOneWidget);
+    expect(find.text('앨범 1권'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('home-collection-album-44')),
       findsOneWidget,
@@ -274,6 +449,11 @@ void main() {
       ProviderScope(
         retry: (_, __) => null,
         overrides: [
+          albumEditorOwnerReaderProvider.overrideWith(
+            (_) =>
+                () => '1',
+          ),
+          momentDraftStoreProvider.overrideWithValue(MemoryMomentDraftStore()),
           albumCreationDraftStoreProvider.overrideWithValue(
             MemoryCreationDraftStore(),
           ),
@@ -295,11 +475,12 @@ void main() {
         ),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 1200));
+    await tester.pumpAndSettle();
     expect(find.text('앨범을 불러오지 못했어요'), findsOneWidget);
+    _expectOwnedScroll(tester, find.byType(HomeErrorState));
     expect(find.text('아직 만든 앨범이 없어요'), findsNothing);
     await tester.tap(find.text('다시 불러오기'));
-    await tester.pump(const Duration(milliseconds: 1200));
+    await tester.pumpAndSettle();
     expect(find.byType(HomeAlbumSlider), findsOneWidget);
     expect(requests, 2);
     expect(tester.takeException(), isNull);
@@ -322,6 +503,13 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
+              albumEditorOwnerReaderProvider.overrideWith(
+                (_) =>
+                    () => '1',
+              ),
+              momentDraftStoreProvider.overrideWithValue(
+                MemoryMomentDraftStore(),
+              ),
               albumCreationDraftStoreProvider.overrideWithValue(
                 MemoryCreationDraftStore(),
               ),
@@ -343,14 +531,22 @@ void main() {
             ),
           ),
         );
-        await tester.pump(const Duration(milliseconds: 1200));
+        await tester.pumpAndSettle();
         expect(find.byType(HomeAlbumSlider), findsOneWidget);
+        final nextStep = find.byKey(const ValueKey('first-book-next-step'));
+        expect(nextStep.hitTestable(), findsOneWidget);
+        if (size.height < 600) {
+          expect(tester.getSize(nextStep).height, inInclusiveRange(44, 64));
+        }
         expect(tester.takeException(), isNull);
         final state = tester.state(find.byType(HomeAlbumSlider));
         tester.view.physicalSize = Size(size.height, size.width);
-        await tester.pump(const Duration(milliseconds: 1200));
+        await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
         expect(tester.state(find.byType(HomeAlbumSlider)), same(state));
+        if (size.width < 600) {
+          expect(tester.getSize(nextStep).height, inInclusiveRange(44, 64));
+        }
       });
     }
   }
@@ -364,6 +560,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          albumEditorOwnerReaderProvider.overrideWith(
+            (_) =>
+                () => '1',
+          ),
+          momentDraftStoreProvider.overrideWithValue(MemoryMomentDraftStore()),
           albumCreationDraftStoreProvider.overrideWithValue(
             MemoryCreationDraftStore(),
           ),
@@ -386,7 +587,7 @@ void main() {
         ),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 1200));
+    await tester.pumpAndSettle();
     final title = find.text('아직 만든 앨범이 없어요');
     expect(Theme.of(tester.element(title)).brightness, Brightness.dark);
     expect(tester.widget<Text>(title).style!.color, const Color(0xFFF2F6F5));

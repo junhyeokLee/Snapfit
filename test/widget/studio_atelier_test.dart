@@ -54,7 +54,7 @@ void main() {
     },
   );
 
-  for (final aspect in CollectionAspect.values) {
+  for (final aspect in CollectionAspect.printable) {
     test(
       '${aspect.name}: new frame paths and insets scale with saved geometry',
       () {

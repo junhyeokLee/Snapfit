@@ -230,14 +230,14 @@ void main() {
         ),
       );
       await _until(tester, find.text('native photo decoded'));
-      final network = tester.widget<CachedNetworkImage>(
-        find.byType(CachedNetworkImage),
-      );
+      final network = tester.widget<Image>(find.byType(Image));
       expect(network.fit, BoxFit.contain);
       expect(network.alignment, Alignment.topRight);
-      expect(network.cacheManager, same(cache));
-      expect(network.memCacheWidth, 180);
-      expect(network.maxWidthDiskCache, 500);
+      final resized = network.image as ResizeImage;
+      expect(resized.width, 180);
+      final provider = resized.imageProvider as CachedNetworkImageProvider;
+      expect(provider.cacheManager, same(cache));
+      expect(provider.maxWidth, 500);
       expect(
         find.byKey(const ValueKey('web-storage-image-retry')),
         findsNothing,

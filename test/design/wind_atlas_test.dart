@@ -54,7 +54,7 @@ void main() {
         (catalog['variants'] as Map).keys,
         containsAll(['portrait', 'square', 'landscape']),
       );
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         final original = buildWindAtlas(aspect);
         final published = catalog['variants'][aspect.name] as Map;
         // Catalog jackets and interiors include the current authored design
@@ -94,7 +94,7 @@ void main() {
     () {
       expect(bundledCreationTemplates.length, 42);
       expect(bundledCreationTemplates.every((t) => !t.isPremium), true);
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         final existing = authoredCollections
             .where((c) => c.id != windAtlasId)
             .expand((c) => templateDocumentPages(c.document(aspect)))
@@ -126,7 +126,7 @@ void main() {
     },
   );
   // Rendering checks below keep images in memory; this suite never exports files.
-  for (final aspect in CollectionAspect.values) {
+  for (final aspect in CollectionAspect.printable) {
     test(
       '${aspect.name}: bounds, typography, binding and editable roundtrip',
       () {

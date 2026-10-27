@@ -1,0 +1,218 @@
+{
+  "project_ref": "rrbhxdtriummqpztpjrk",
+  "run_id": "7988ae805876",
+  "qa_user_ids": [
+    "debdd54f-7dad-42db-bd2d-2e9b014644d5",
+    "5def3df7-d7ff-42ab-942d-70e30858d21a",
+    "f5c2f8d3-1da0-437e-96df-9dc38935c38d",
+    "28fceaab-961e-4ce4-84f0-34e6eab96ff1"
+  ],
+  "ui_completion_authorized": true,
+  "operations": [
+    {
+      "operation": "exact_auth_fixture_scope_verified",
+      "accounts": 4
+    },
+    {
+      "operation": "fresh_owned_work_and_album_scope_cleared",
+      "works": 0,
+      "albums": 6
+    },
+    {
+      "operation": "storage_exact_owner_prefixes_removed",
+      "bucket": "album-assets",
+      "objects": 5,
+      "remaining": 0
+    },
+    {
+      "operation": "storage_exact_owner_prefixes_removed",
+      "bucket": "social-snapshots",
+      "objects": 4,
+      "remaining": 0
+    },
+    {
+      "operation": "storage_exact_owner_prefixes_removed",
+      "bucket": "social-profile-photos",
+      "objects": 0,
+      "remaining": 0
+    },
+    {
+      "operation": "auth_accounts_deleted_and_sessions_revoked",
+      "accounts": 4
+    }
+  ],
+  "fresh_album_ids": [
+    88,
+    89,
+    90,
+    92,
+    87,
+    93
+  ],
+  "fresh_work_ids": [],
+  "storage_removed": {
+    "album-assets": 5,
+    "social-snapshots": 4,
+    "social-profile-photos": 0
+  },
+  "manifest_album_ids": [
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93
+  ],
+  "manifest_work_ids": [
+    "af43b20d-3d27-40f0-87cd-27dddc6ad37a",
+    "c323977f-21ad-439b-bc38-02edb70c0faa"
+  ],
+  "cleanup_completed": true,
+  "credentials_file_deleted": true,
+  "residue_scope_count": 33,
+  "residue_checks": [
+    {
+      "scope": "album_asset_bindings",
+      "remaining": 0
+    },
+    {
+      "scope": "album_assets_objects",
+      "remaining": 0
+    },
+    {
+      "scope": "album_invites",
+      "remaining": 0
+    },
+    {
+      "scope": "album_members",
+      "remaining": 0
+    },
+    {
+      "scope": "album_pages",
+      "remaining": 0
+    },
+    {
+      "scope": "album_save_cache",
+      "remaining": 0
+    },
+    {
+      "scope": "album_shared_history",
+      "remaining": 0
+    },
+    {
+      "scope": "albums",
+      "remaining": 0
+    },
+    {
+      "scope": "auth_identities",
+      "remaining": 0
+    },
+    {
+      "scope": "auth_refresh_tokens",
+      "remaining": 0
+    },
+    {
+      "scope": "auth_sessions",
+      "remaining": 0
+    },
+    {
+      "scope": "auth_users",
+      "remaining": 0
+    },
+    {
+      "scope": "notifications",
+      "remaining": 0
+    },
+    {
+      "scope": "point_ledger",
+      "remaining": 0
+    },
+    {
+      "scope": "point_wallets",
+      "remaining": 0
+    },
+    {
+      "scope": "print_checkout_consents",
+      "remaining": 0
+    },
+    {
+      "scope": "print_checkout_intents",
+      "remaining": 0
+    },
+    {
+      "scope": "print_dev_checkouts",
+      "remaining": 0
+    },
+    {
+      "scope": "print_payment_test_sessions",
+      "remaining": 0
+    },
+    {
+      "scope": "private_profiles",
+      "remaining": 0
+    },
+    {
+      "scope": "public_profiles",
+      "remaining": 0
+    },
+    {
+      "scope": "push_devices",
+      "remaining": 0
+    },
+    {
+      "scope": "push_outbox",
+      "remaining": 0
+    },
+    {
+      "scope": "push_preferences",
+      "remaining": 0
+    },
+    {
+      "scope": "social_blocks",
+      "remaining": 0
+    },
+    {
+      "scope": "social_comments",
+      "remaining": 0
+    },
+    {
+      "scope": "social_follows",
+      "remaining": 0
+    },
+    {
+      "scope": "social_likes",
+      "remaining": 0
+    },
+    {
+      "scope": "social_private_sources",
+      "remaining": 0
+    },
+    {
+      "scope": "social_profile_photos_objects",
+      "remaining": 0
+    },
+    {
+      "scope": "social_saves",
+      "remaining": 0
+    },
+    {
+      "scope": "social_snapshots_objects",
+      "remaining": 0
+    },
+    {
+      "scope": "social_works",
+      "remaining": 0
+    }
+  ],
+  "remaining_rows_or_objects": 0,
+  "anonymous_feed_items": 0,
+  "qa_works_visible": 0,
+  "non_fixture_original_album_assets": {
+    "object_count": 41,
+    "metadata_hash": "cefb34aa7d073d3613cf09aebafc27bc"
+  },
+  "original_asset_metadata_matches_before": true,
+  "scope": "exact four synthetic owners and seven tracked synthetic albums only; real customer content was not mutated",
+  "credentials_not_copied_to_reports": true
+}

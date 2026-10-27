@@ -264,7 +264,7 @@ void main() {
           'freeId': free.id,
           'spread': spread,
         };
-        for (final aspect in CollectionAspect.values) {
+        for (final aspect in CollectionAspect.printable) {
           final premiumPages = templateDocumentPages(
             edition.document(aspect),
           ).skip(spread * 2 - 1).take(2).toList();

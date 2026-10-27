@@ -1,0 +1,127 @@
+{
+  "checked_at_utc": "2026-10-25T08:13:12.866277+00:00",
+  "status": "passed; final Android APK prepared, device install excluded by user availability",
+  "app_url": "https://snapfit-c719d.web.app/feed#/feed",
+  "design_changes": {
+    "topics": [
+      "웨딩",
+      "여행",
+      "일상",
+      "성장·육아",
+      "가족·친구",
+      "커플·기념일",
+      "반려동물",
+      "스포츠·도전",
+      "졸업·새출발",
+      "동아리",
+      "기타"
+    ],
+    "feed": "Neutral matching toolbar/page surfaces, full-width photos at natural ratio, simple recommendation/following tabs, complete topic picker",
+    "profile": "Large public portrait with fresh-link full-screen zoom; two phone/three desktop gallery columns and single-column large view",
+    "photos": "Explicit full-photo public preview, bounded metadata-free PNG publication, independent profile photo update and removal",
+    "relationships": "Idempotent desired follow state with counts, lists, feed and error reconciliation"
+  },
+  "automated_tests": {
+    "flutter_vm_integration": {
+      "passed": 68,
+      "failed": 0,
+      "files": [
+        "test/unit/social_repository_test.dart",
+        "test/unit/social_profile_photo_test.dart",
+        "test/unit/social_profile_photo_codec_test.dart",
+        "test/widget/social_chrome_test.dart",
+        "test/widget/social_feed_screens_test.dart",
+        "test/widget/social_profile_screens_test.dart",
+        "test/widget/social_publication_flow_test.dart"
+      ]
+    },
+    "chrome_photo_codec": {
+      "passed": 2,
+      "failed": 0,
+      "formats": [
+        "PNG",
+        "JPEG"
+      ]
+    },
+    "operating_api": {
+      "passed": 142,
+      "failed": 0,
+      "report": "social-follow-live-2026-10-25.json"
+    },
+    "sql_and_rls": {
+      "passed": 24,
+      "failed": 0
+    },
+    "scoped_analysis": "No issues found"
+  },
+  "real_browser": {
+    "status": "passed",
+    "browser": "In-app browser, 368px phone-width viewport",
+    "checks": [
+      "All 11 canonical topics visible in the topic sheet; family/friends filter returns only its work",
+      "Selected topic automatically scrolls into the horizontal category row",
+      "Final feed renders a 3:2 photo without the previous tall letterbox",
+      "Email login from My returns to My; public identity and gallery show correctly",
+      "Profile photo opens full-screen using a refreshed URL",
+      "My switches from two-column gallery to large single-column photos",
+      "A follows B; B follower count changes 0 to 1 and button changes to following",
+      "B follower list includes A; A following count and list include B",
+      "Following feed contains only B work",
+      "Unfollow confirmation removes B from A following list",
+      "Final web file picker shows the whole selected photo before public confirmation",
+      "Confirming public photo uploads normalized PNG, displays success and changes the avatar",
+      "My settings button opens the preserved settings and account menus",
+      "QA account logs out and browser theme returns to its original system setting",
+      "Actual final light and dark headers visually match their page backgrounds",
+      "After fixture deletion and full reload, the anonymous feed displays its normal empty state with all 11 topics and no QA works"
+    ]
+  },
+  "operating_database": {
+    "project": "rrbhxdtriummqpztpjrk",
+    "new_migrations": [
+      "20261025073121_social_topic_taxonomy",
+      "20261025073122_social_idempotent_follow_state",
+      "20261025074127_social_public_profile_photos"
+    ],
+    "security_advisors": "No additional warning groups or findings relative to the existing baseline"
+  },
+  "web_release": {
+    "report": "social-feed-editorial-web-release-2026-10-25.json",
+    "hosting_version": "b13ffa002de91e2e",
+    "main_bundle": "main.7229b017bb64b555f0e4.dart.js",
+    "bootstrap": "flutter_bootstrap.c0fe4eaafdc9124e475f.js"
+  },
+  "native": {
+    "status": "final_apk_built_and_verified",
+    "artifact": "/Users/devsheep/SnapFit/SnapFit/output/native-photo-refresh/SnapFit-photo-feed-debug.apk",
+    "bytes": 901649891,
+    "sha256": "e8f6e9491a8a40c2c0e789a091f1fb51d546d1193f53729d98adc7d29e9d32f5",
+    "report": "social-photo-native-deployment-2026-10-25.json",
+    "latest_device_install_and_ui_qa": "not_performed_user_cannot_connect_device; no existing Android emulator available",
+    "store_submission": false
+  },
+  "proofs": {
+    "feed": "social-redesign-web-feed.png",
+    "feed-dark": "social-redesign-web-feed-dark.png",
+    "categories": "social-redesign-web-categories.png",
+    "my-large": "social-redesign-web-my-large.png",
+    "avatar-zoom": "social-redesign-web-avatar-zoom.png",
+    "photo-preview": "social-redesign-web-photo-preview.png",
+    "followed": "social-redesign-web-followed.png"
+  },
+  "proof_note": "Screenshots contain temporary synthetic QA accounts and bundled sample images; these fixtures are removed after verification. No real user albums/photos were published.",
+  "cleanup": {
+    "status": "completed",
+    "test_accounts_removed": 2,
+    "test_albums_removed": 5,
+    "test_works_removed": 18,
+    "snapshot_pngs_removed": 20,
+    "current_profile_pngs_removed": 2,
+    "ui_created_avatar_included": true,
+    "remaining_fixture_groups_checked": 32,
+    "remaining_fixture_rows_or_objects": 0,
+    "credential_file_removed": true,
+    "real_user_data_changed": false,
+    "fresh_browser_empty_feed_verified": true
+  }
+}

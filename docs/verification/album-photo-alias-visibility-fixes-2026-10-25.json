@@ -1,0 +1,75 @@
+{
+  "date": "2026-10-25",
+  "scope": "Fix both findings from album-photo-retry-resume-review: defer all hidden photo/signing entry paths and share failure/recovery identity between URL and storage aliases.",
+  "previous_review": "docs/verification/album-photo-retry-resume-review-2026-10-25.json",
+  "production_files": [
+    "lib/shared/snapfit_image.dart",
+    "lib/core/cache/photo_failure_versions.dart",
+    "lib/core/cache/storage_image_url_cache.dart"
+  ],
+  "fixes": [
+    {
+      "finding": "Hidden initial loading and signing",
+      "implementation": "Every nonempty source uses the same recovery renderer. Initial resolution begins only in an active dependency/lifecycle state, and image provider mounting is also gated. Existing pending results can complete without starting another hidden load. Visibility/foreground restoration resumes unresolved work without polling or parked contexts.",
+      "verified": [
+        "Actual maintained AlbumReaderSinglePageView with an opaque Navigator route, hidden cover revision and rotation, then pop/resume",
+        "Initial ordinary URL, gs URI and supabase URI under disabled TickerMode and app background: zero signings/loads until resume",
+        "Rapid retry/hide/size changes with an in-flight signing result; successful load resumes once"
+      ]
+    },
+    {
+      "finding": "Logical aliases duplicate a failed image request",
+      "implementation": "Failure records use a weak-manager scope ID plus memory/disk decode bounds and the actual resolved download URL. Direct single URLs now publish early stream failures as well. Cached and newly resolved storage aliases consult that record before decoding. Per-entry consumed failure versions make repeated invalidations idempotent and protect identical renewed URLs from older observers.",
+      "verified": [
+        "Direct URL and storage URI plus reader preparation: one rejected load and one fresh load",
+        "Storage alias first mounted after a single direct URL already failed: skips its rejected download",
+        "gs and supabase aliases resolving to one download URL: both renew their own address metadata, share one rejected and one fresh image load",
+        "Real CacheManager + HttpFileService + MockClient transport with mixed URL/storage consumers: warmup plus one rejected HTTP request, one fresh HTTP request",
+        "Failure scopes are isolated across cache manager IDs and memory/disk decode bounds",
+        "Same-URL renewal remains reusable after duplicate/older invalidations; newer failures still invalidate normally"
+      ]
+    }
+  ],
+  "code_review": {
+    "additional_blocking_findings": [],
+    "reviewed": [
+      "Activity checks precede initial signing and every new provider mount; async recovery/preparation retains its existing activity/epoch gates",
+      "Temporary image stream observers still remove themselves on success/error and dispose their ImageInfo clones",
+      "Weak cache-scope keys do not keep custom cache managers alive; failure entries contain primitive records and URL strings",
+      "Existing URL/choice/failure metadata limits and lifetimes are unchanged; pressure cleanup still clears metadata without refilling from older completions",
+      "No additional pixel cache, preload expansion, timers, image size increase, reader texture budget change, or print resolution change",
+      "Existing placeholders, custom error/builders, fitting/alignment/filter/decode options and explicit retry gates remain covered by related tests"
+    ]
+  },
+  "verification": {
+    "expanded_targeted_cases": {
+      "passed": 42,
+      "failed": 0,
+      "log": "output/album-photo-alias-visibility-fixes/expanded.log"
+    },
+    "related_suite": {
+      "files": 19,
+      "unique_passed": 236,
+      "failed": 0,
+      "log": "output/album-photo-alias-visibility-fixes/suite.log"
+    },
+    "analysis": {
+      "items": 13,
+      "issues": 0,
+      "log": "output/album-photo-alias-visibility-fixes/analysis.log"
+    },
+    "format": {
+      "files": 7,
+      "unformatted": 0
+    },
+    "app_build_run": false,
+    "live_backend_or_user_data_changed": false,
+    "device_frame_or_process_memory_profile_run": false
+  },
+  "limits": [
+    "In-flight cache/signing requests may finish while hidden; the fix prevents starting new hidden work rather than cancelling shared requests used by another visible consumer.",
+    "Aliases are associated only after they resolve to the exact same download URL in the same cache/decode scope; signed query parameters are never stripped to guess equivalence.",
+    "Controlled fixtures use real Flutter image decoding; actual CacheManager HTTP paths use MockClient, not live production services.",
+    "Image handle/cache cleanup assertions do not measure total native/device memory or guarantee the absence of every frame drop."
+  ]
+}

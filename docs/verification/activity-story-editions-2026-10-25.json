@@ -1,0 +1,169 @@
+{
+  "revision": "2026-10-25-activity-stories-10",
+  "status": "implemented-and-server-activated",
+  "books": [
+    {
+      "id": "story-club-run-together",
+      "title": "같은 속도의 우리",
+      "category": "동아리",
+      "activity": "running",
+      "catalogId": -9741,
+      "points": 1800
+    },
+    {
+      "id": "story-club-hold-circle",
+      "title": "서로의 다음 홀드",
+      "category": "동아리",
+      "activity": "climbing",
+      "catalogId": -9742,
+      "points": 1800
+    },
+    {
+      "id": "story-club-fairway-friends",
+      "title": "우리의 라운드",
+      "category": "동아리",
+      "activity": "golf",
+      "catalogId": -9743,
+      "points": 1800
+    },
+    {
+      "id": "story-club-shuttle-evening",
+      "title": "셔틀이 오가는 사이",
+      "category": "동아리",
+      "activity": "badminton",
+      "catalogId": -9744,
+      "points": 1800
+    },
+    {
+      "id": "story-club-pedal-company",
+      "title": "나란히 도는 바퀴",
+      "category": "동아리",
+      "activity": "cycling",
+      "catalogId": -9745,
+      "points": 1800
+    },
+    {
+      "id": "story-sport-pace-study",
+      "title": "나의 페이스 노트",
+      "category": "스포츠·도전",
+      "activity": "running",
+      "catalogId": -9751,
+      "points": 1800
+    },
+    {
+      "id": "story-sport-hold-study",
+      "title": "한 동작 더",
+      "category": "스포츠·도전",
+      "activity": "climbing",
+      "catalogId": -9752,
+      "points": 1800
+    },
+    {
+      "id": "story-sport-swing-notes",
+      "title": "오늘의 스윙 라인",
+      "category": "스포츠·도전",
+      "activity": "golf",
+      "catalogId": -9753,
+      "points": 1800
+    },
+    {
+      "id": "story-sport-baseline-notes",
+      "title": "베이스라인 다이어리",
+      "category": "스포츠·도전",
+      "activity": "tennis",
+      "catalogId": -9754,
+      "points": 1800
+    },
+    {
+      "id": "story-sport-breath-lanes",
+      "title": "물결 사이의 호흡",
+      "category": "스포츠·도전",
+      "activity": "swimming",
+      "catalogId": -9755,
+      "points": 1800
+    }
+  ],
+  "scope": {
+    "groupJournals": 5,
+    "personalTrainingBooks": 5,
+    "newMaterials": 30,
+    "exclusivePhotos": 50,
+    "innerPagesPerBook": 24,
+    "aspects": [
+      "portrait",
+      "square",
+      "landscape"
+    ],
+    "currentStoreTemplates": 133,
+    "freeTemplates": 47,
+    "paidTemplates": 86
+  },
+  "photoGeneration": {
+    "tool": "built-in image_gen",
+    "promptAndProvenance": "tool/template_studio/activity_story_editions_2026.json",
+    "assets": "assets/templates/activity_editions_2026",
+    "bytes": 23323912,
+    "sourceDimensions": [
+      1536,
+      1024
+    ],
+    "reusedFromOtherEditions": false,
+    "casting": "ordinary adults with varied average bodies; no model/idol casting or beauty retouch"
+  },
+  "design": {
+    "club": "Full group scenes retained without source crop in every cover and interior; 4–6 editable member names, activity logs, partner notes and participant reflections",
+    "sport": "Separate cover compositions, personal focus, pace/route/swing/footwork/breathing fields and recovery notes",
+    "matchedMaterials": "One print-compatible paper, activity line-art motif and editable title assembly per book"
+  },
+  "existingArtwork": {
+    "previousPreviewsUnchanged": 123,
+    "previousDetailDocumentHashesUnchanged": 135,
+    "savedAlbumsChanged": false,
+    "originalClubAndSportsBooksChanged": false
+  },
+  "memory": {
+    "previewCacheLimitUnchanged": true,
+    "detailQueueLimitUnchanged": true,
+    "fullDocumentLruUnchanged": true,
+    "memoryPressureCleanupPreserved": true,
+    "noEagerDecodeOrWholeCatalogPreload": true,
+    "materialsRemainVectorPaint": true,
+    "deviceFpsMeasured": false
+  },
+  "verification": {
+    "nativePngs": 80,
+    "fontLayoutAndRoundtrips": "all 65 story books in 3 formats passed, including 10 new activity books",
+    "exclusivePhotographyAudit": "150 exclusive photos checked by path, bytes and decoded pixel similarity across the published catalog; prompt/provenance verified",
+    "regressionSuite": "235 related Flutter test cases passed across focused runs; stale material count updated from 110 to 130 and rerun",
+    "nativeGalleryExportTest": "passed",
+    "sqlActivationTests": 4,
+    "staticAnalysisTargets": 21,
+    "staticAnalysis": "no issues",
+    "browser": {
+      "templatesOpened": 10,
+      "coverFormatSwitches": 30,
+      "loadedCovers": 30,
+      "detailFiguresPerTemplate": 5,
+      "categoryCounts": [
+        5,
+        5
+      ],
+      "consoleErrors": []
+    },
+    "appBuild": false,
+    "physicalPrintProof": false,
+    "physicalDeviceRun": false
+  },
+  "server": {
+    "projectRef": "rrbhxdtriummqpztpjrk",
+    "releaseRevision": "2026-10-25-activity-catalog-release",
+    "activeProducts": 482,
+    "newProducts": 40,
+    "unchangedConfiguredPrices": 442,
+    "verificationMismatches": 0,
+    "anonymousAvailableProducts": 482,
+    "walletsAndOwnershipChanged": false,
+    "auditDirectory": "output/pricing/activities-2026-10-25"
+  },
+  "previewUrl": "http://127.0.0.1:8772/"
+}

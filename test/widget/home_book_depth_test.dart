@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:book_page_flip/book_page_flip.dart';
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:snap_fit/features/album/presentation/providers/home_ui_state_provider.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +15,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
-import 'package:snap_fit/core/constants/snapfit_colors.dart';
 import 'package:snap_fit/core/constants/cover_theme.dart';
 import 'package:snap_fit/features/album/data/api/album_provider.dart';
 import 'package:snap_fit/features/album/domain/entities/album.dart';
@@ -30,6 +30,9 @@ import 'package:snap_fit/features/album/presentation/views/home_screen.dart';
 import 'package:snap_fit/features/album/presentation/widgets/cover/cover.dart';
 import 'package:snap_fit/features/album/presentation/widgets/cover/album_spine_image.dart';
 import 'package:snap_fit/features/album/presentation/widgets/home/home_album_slider.dart';
+import 'package:snap_fit/features/album/presentation/widgets/home/home_album_actions.dart';
+import 'package:snap_fit/features/album/presentation/widgets/home/home_album_header.dart';
+import 'package:snap_fit/features/album/presentation/widgets/home/home_album_tab_screen.dart';
 import 'package:snap_fit/features/album/presentation/widgets/home/album_open_origin.dart';
 import 'package:snap_fit/features/album/presentation/widgets/home/home_album_cover_thumbnail.dart';
 import 'package:snap_fit/features/album/presentation/widgets/home/home_album_slider_card.dart';
@@ -42,6 +45,8 @@ import 'package:snap_fit/features/store/data/api/template_provider.dart';
 import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
 import 'package:snap_fit/shared/widgets/album_stage_style.dart';
 import 'package:snap_fit/shared/widgets/experience_icon.dart';
+import 'package:snap_fit/features/album/presentation/widgets/reader/album_reader_page_content.dart';
+import 'package:snap_fit/features/album/presentation/widgets/reader/album_reader_single_page_view.dart';
 
 import '../helpers/fake_album.dart';
 import 'ai_album_start_step_test.dart' show loadCreationFonts;
@@ -107,6 +112,7 @@ Future<GlobalKey> _boot(
   List<Album>? catalog,
   bool reduceMotion = false,
   bool accessibleNavigation = false,
+  ValueListenable<double>? textScale,
   OrderRepository? printOrders,
 }) async {
   tester.view.physicalSize = size;
@@ -159,14 +165,18 @@ Future<GlobalKey> _boot(
           navigatorKey: navigator,
           debugShowCheckedModeBanner: false,
           theme: dark ? SnapFitTheme.dark() : SnapFitTheme.light(),
-          builder: (context, child) => MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              disableAnimations: reduceMotion,
-              accessibleNavigation: accessibleNavigation,
-              padding: const EdgeInsets.only(top: 24, bottom: 24),
-              viewPadding: const EdgeInsets.only(top: 24, bottom: 24),
+          builder: (context, child) => ValueListenableBuilder<double>(
+            valueListenable: textScale ?? const AlwaysStoppedAnimation(1),
+            builder: (context, scale, _) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                disableAnimations: reduceMotion,
+                accessibleNavigation: accessibleNavigation,
+                textScaler: TextScaler.linear(scale),
+                padding: const EdgeInsets.only(top: 24, bottom: 24),
+                viewPadding: const EdgeInsets.only(top: 24, bottom: 24),
+              ),
+              child: RepaintBoundary(key: key, child: child!),
             ),
-            child: RepaintBoundary(key: key, child: child!),
           ),
           home: const HomeScreen(),
         ),
@@ -181,6 +191,7 @@ Future<GlobalKey> _boot(
     }
   });
   await tester.pump();
+  await tester.pumpAndSettle();
   return key;
 }
 
@@ -436,10 +447,99 @@ void main() {
   );
 
   for (final size in [const Size(390, 844), const Size(844, 390)]) {
+    testWidgets('distant reader navigation bounds thumbnail work $size', (
+      tester,
+    ) async {
+      await _boot(
+        tester,
+        size,
+        false,
+        1,
+        'square',
+        catalog: [_album(1, 'square', innerPages: 80)],
+      );
+      await tester.tap(find.byKey(const ValueKey('home-bookshelf-open')));
+      for (var attempt = 0; attempt < 160; attempt++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 8)),
+        );
+        await tester.pump(const Duration(milliseconds: 24));
+        if (find.byType(AlbumReaderSinglePageView).evaluate().isNotEmpty &&
+            find.byType(HomeAlbumCoverThumbnail).evaluate().isEmpty)
+          break;
+      }
+      final landscape = size.width > size.height;
+      final list = find.byKey(
+        ValueKey(landscape ? 'reader-spread-rail' : 'reader-spread-strip'),
+      );
+      final scroll = tester.widget<ListView>(list).controller!;
+      // The navigator is interactive while optional turn textures prepare.
+      // Drive its real focus callback without waiting for the full atlas.
+      tester
+          .widget<AlbumReaderSinglePageView>(
+            find.byType(AlbumReaderSinglePageView),
+          )
+          .onFocusPageChanged!(59);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 16));
+      final firstOffset = scroll.offset;
+      final intermediate = <int>{};
+      for (var frame = 0; frame < 22; frame++) {
+        await tester.pump(const Duration(milliseconds: 16));
+        for (final element
+            in find
+                .descendant(
+                  of: list,
+                  matching: find.byType(AlbumReaderPageContent),
+                )
+                .evaluate()) {
+          for (final layer
+              in (element.widget as AlbumReaderPageContent).layers) {
+            final page = int.parse(layer.id.substring('image-'.length));
+            if (page >= 20 && page <= 45) intermediate.add(page);
+          }
+        }
+      }
+      expect(intermediate, isEmpty);
+      expect(firstOffset, closeTo(scroll.offset, .01));
+      expect(
+        find
+            .byKey(
+              ValueKey(
+                landscape ? 'reader-rail-spread-30' : 'reader-spread-30',
+              ),
+            )
+            .hitTestable(),
+        findsOneWidget,
+      );
+      final photos = tester
+          .widgetList<Image>(
+            find.descendant(of: list, matching: find.byType(Image)),
+          )
+          .where((image) {
+            final provider = image.image is ResizeImage
+                ? (image.image as ResizeImage).imageProvider
+                : image.image;
+            return provider is AssetImage &&
+                provider.assetName.startsWith('assets/snapfit_home_');
+          });
+      expect(photos, isNotEmpty);
+      for (final image in photos) {
+        expect(image.image, isA<ResizeImage>());
+        expect((image.image as ResizeImage).width, inInclusiveRange(128, 512));
+      }
+      expect(tester.takeException(), isNull);
+      Navigator.of(tester.element(find.byType(AlbumReaderScreen))).pop();
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump(const Duration(milliseconds: 300));
+    });
     for (final dark in [false, true]) {
       testWidgets(
         'spread navigator selects, follows and survives rotation $size dark=$dark',
         (tester) async {
+          final textScale = ValueNotifier(1.0);
+          addTearDown(textScale.dispose);
           final album = _album(1, 'square', innerPages: 24, varied: true);
           final key = await _boot(
             tester,
@@ -447,9 +547,11 @@ void main() {
             dark,
             1,
             'square',
+            textScale: textScale,
             catalog: [album],
           );
           await tester.tap(find.byKey(const ValueKey('home-bookshelf-open')));
+          textScale.value = dark ? 2.3 : 1;
           await tester.pump();
           for (var i = 0; i < 160; i++) {
             await tester.runAsync(
@@ -499,16 +601,14 @@ void main() {
           expect(controller.currentSpread, 12);
           expect(target.hitTestable(), findsOneWidget);
           expect(find.text('23-24'), findsWidgets);
-          if (!landscape) {
-            expect(
-              tester
-                  .widget<Text>(
-                    find.byKey(const ValueKey('reader-page-position')),
-                  )
-                  .data,
-              '23-24 / 24',
-            );
-          }
+          expect(
+            tester
+                .widget<Text>(
+                  find.byKey(const ValueKey('reader-page-position')),
+                )
+                .data,
+            '23–24쪽 / 24쪽',
+          );
           await _save(
             tester,
             key,
@@ -1182,9 +1282,9 @@ void main() {
           'square',
           catalog: [album, album.copyWith(id: 18), album.copyWith(id: 19)],
         );
-        expect(find.text('s n a p f i t'), findsOneWidget);
-        expect(find.byIcon(Icons.chevron_left_rounded), findsNothing);
-        expect(find.byIcon(Icons.chevron_right_rounded), findsNothing);
+        expect(find.text('snapfit'), findsOneWidget);
+        expect(find.byTooltip('이전 앨범'), findsOneWidget);
+        expect(find.byTooltip('다음 앨범'), findsOneWidget);
         expect(
           find.descendant(
             of: find.byType(HomeAlbumSlider),
@@ -1192,16 +1292,16 @@ void main() {
               (widget) => widget is ExperienceIcon && widget.name == 'BookOpen',
             ),
           ),
-          findsOneWidget,
+          findsNothing,
         );
         final wordmark = tester.widget<Text>(
           find.byKey(const ValueKey('home-bookshelf-wordmark')),
         );
         expect(wordmark.style!.fontFamily, 'Poppins');
-        expect(wordmark.style!.fontWeight, FontWeight.w700);
-        expect(wordmark.style!.fontSize, 18);
-        expect(wordmark.style!.letterSpacing, 0);
-        for (final name in ['Menu', 'Plus']) {
+        expect(wordmark.style!.fontWeight, FontWeight.w600);
+        expect(wordmark.style!.fontSize, 12);
+        expect(wordmark.style!.letterSpacing, 2.1);
+        for (final name in ['LayoutGrid', 'Plus']) {
           final action = find.byWidgetPredicate(
             (widget) => widget is ExperienceIcon && widget.name == name,
           );
@@ -1212,11 +1312,20 @@ void main() {
           );
           expect(tester.getSize(button).shortestSide, greaterThanOrEqualTo(44));
         }
-        final open = tester.widget<GestureDetector>(
+        final open = tester.widget<Semantics>(
           find.byKey(const ValueKey('home-bookshelf-open')),
         );
-        expect(open.behavior, HitTestBehavior.opaque);
-        expect(open.onTap, isNotNull);
+        expect(open.properties.button, isTrue);
+        expect(open.properties.onTap, isNotNull);
+        expect(open.properties.label, contains(album.title));
+        expect(find.text('앨범 열기'), findsNothing);
+        expect(
+          find.descendant(
+            of: find.byType(HomeAlbumSlider),
+            matching: find.byType(FilledButton),
+          ),
+          findsNothing,
+        );
         expect(
           tester
               .getSize(find.byKey(const ValueKey('home-bookshelf-open')))
@@ -1225,10 +1334,13 @@ void main() {
         );
         for (final id in [18, 19]) {
           final preview = find.byKey(ValueKey('home-shelf-album-$id'));
+          await tester.ensureVisible(preview);
+          await tester.pumpAndSettle();
           expect(
             tester.getSize(preview).shortestSide,
             greaterThanOrEqualTo(44),
           );
+          expect(preview.hitTestable(), findsOneWidget);
           await tester.tap(preview);
           await tester.pump();
           await tester.pump(const Duration(milliseconds: 600));
@@ -1236,13 +1348,10 @@ void main() {
             find.byType(HomeAlbumShelf),
           );
           expect(shelf.albums[shelf.selectedIndex].id, id);
-          final line = tester.widget<AnimatedContainer>(
+          final selection = tester.widget<Semantics>(
             find.byKey(ValueKey('home-shelf-selection-$id')),
           );
-          expect(
-            (line.decoration! as BoxDecoration).color,
-            SnapFitColors.accent,
-          );
+          expect(selection.properties.selected, isTrue);
         }
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox());
@@ -1250,39 +1359,54 @@ void main() {
     );
 
     for (final dark in [false, true]) {
-      testWidgets('open control stays quiet and legible: $size dark=$dark', (
+      testWidgets('cover is the accessible open action: $size dark=$dark', (
         tester,
       ) async {
-        await _boot(tester, size, dark, 1, 'square');
-        final iconFinder = find.descendant(
-          of: find.byType(HomeAlbumSlider),
-          matching: find.byWidgetPredicate(
-            (widget) => widget is ExperienceIcon && widget.name == 'BookOpen',
-          ),
-        );
-        final icon = tester.widget<ExperienceIcon>(iconFinder);
-        expect(tester.getSize(iconFinder), const Size(26, 26));
-        final context = tester.element(iconFinder);
-        final surface = tester.widget<Container>(
-          find.ancestor(of: iconFinder, matching: find.byType(Container)).first,
-        );
-        final decoration = surface.decoration! as BoxDecoration;
-        expect(decoration.color, AlbumStageStyle.controlFill(context));
-        expect(decoration.boxShadow, isNull);
-        expect(decoration.border, isNotNull);
-        final inkLuminance = icon.color!.computeLuminance();
-        final fillLuminance = decoration.color!.computeLuminance();
-        final contrast = dark
-            ? (inkLuminance + .05) / (fillLuminance + .05)
-            : (fillLuminance + .05) / (inkLuminance + .05);
-        expect(contrast, greaterThan(4.5));
+        await _boot(tester, size, dark, 1, 'square', reduceMotion: true);
+        final open = find.byKey(const ValueKey('home-bookshelf-open'));
+        final stage = find.byKey(const ValueKey('home-bookshelf-stage'));
+        final action = tester.widget<Semantics>(open);
+        expect(action.properties.button, isTrue);
+        expect(action.properties.onTap, isNotNull);
+        expect(action.properties.label, '우리의 순간, 앨범 열기');
+        expect(tester.getRect(open), tester.getRect(stage));
+        expect(tester.getSize(open).shortestSide, greaterThanOrEqualTo(44));
+        expect(find.text('앨범 열기'), findsNothing);
         expect(
-          tester
-              .getSize(find.byKey(const ValueKey('home-bookshelf-open')))
-              .shortestSide,
-          greaterThanOrEqualTo(44),
+          find.descendant(
+            of: find.byType(HomeAlbumSlider),
+            matching: find.byType(FilledButton),
+          ),
+          findsNothing,
         );
+        expect(
+          find.descendant(
+            of: find.byType(HomeAlbumSlider),
+            matching: find.byWidgetPredicate(
+              (widget) => widget is ExperienceIcon && widget.name == 'BookOpen',
+            ),
+          ),
+          findsNothing,
+        );
+        // Removing the duplicate visible control must retain keyboard access
+        // to the actual focused cover in both orientations and themes.
+        Focus.of(tester.element(open)).requestFocus();
+        await tester.pump();
+        await tester.sendKeyEvent(
+          dark ? LogicalKeyboardKey.enter : LogicalKeyboardKey.space,
+        );
+        for (
+          var i = 0;
+          i < 30 && find.byType(AlbumReaderScreen).evaluate().isEmpty;
+          i++
+        ) {
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+        expect(find.byType(AlbumReaderScreen), findsOneWidget);
         expect(tester.takeException(), isNull);
+        Navigator.of(tester.element(find.byType(AlbumReaderScreen))).pop();
+        await tester.pumpAndSettle();
+        await HomeAlbumActions.waitForReaderToClose();
         await tester.pumpWidget(const SizedBox());
       });
     }
@@ -1366,79 +1490,194 @@ void main() {
     });
   }
 
-  testWidgets('spaced wordmark stays centered and clears header actions', (
-    tester,
-  ) async {
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetDevicePixelRatio);
-    addTearDown(tester.view.resetPhysicalSize);
-    final semantics = tester.ensureSemantics();
-    try {
-      for (final size in [
-        const Size(320, 568),
-        const Size(390, 844),
-        const Size(844, 390),
-      ]) {
-        tester.view.physicalSize = size;
-        for (final scale in [1.0, 1.6, 2.0]) {
-          for (final hasDraft in [false, true]) {
-            await tester.pumpWidget(
-              ProviderScope(
-                child: MaterialApp(
-                  theme: SnapFitTheme.light(),
-                  home: MediaQuery(
-                    data: MediaQueryData(
-                      size: size,
-                      textScaler: TextScaler.linear(scale),
-                    ),
-                    child: HomeAlbumSlider(
-                      albums: const [],
-                      onOpenAlbumTab: () {},
-                      onCreateAlbum: () {},
-                      onResumeDraft: hasDraft ? () {} : null,
+  testWidgets(
+    'left aligned wordmark clears header actions at large text sizes',
+    (tester) async {
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+      final semantics = tester.ensureSemantics();
+      try {
+        for (final size in [
+          const Size(320, 568),
+          const Size(390, 844),
+          const Size(844, 390),
+        ]) {
+          tester.view.physicalSize = size;
+          for (final scale in [1.0, 1.6, 2.0]) {
+            for (final hasDraft in [false, true]) {
+              await tester.pumpWidget(
+                ProviderScope(
+                  child: MaterialApp(
+                    theme: SnapFitTheme.light(),
+                    home: MediaQuery(
+                      data: MediaQueryData(
+                        size: size,
+                        textScaler: TextScaler.linear(scale),
+                      ),
+                      child: HomeAlbumSlider(
+                        albums: const [],
+                        onOpenAlbumTab: () {},
+                        onCreateAlbum: () {},
+                        onResumeDraft: hasDraft ? () {} : null,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
-            await tester.pump();
-            final wordmark = find.byKey(
-              const ValueKey('home-bookshelf-wordmark'),
-            );
-            final paragraph = tester.renderObject<RenderBox>(wordmark);
-            final bounds = MatrixUtils.transformRect(
-              paragraph.getTransformTo(null),
-              Offset.zero & paragraph.size,
-            );
-            expect(bounds.center.dx, closeTo(size.width / 2, .01));
-            expect(find.bySemanticsLabel('snapfit'), findsOneWidget);
-            for (final name in ['Menu', 'Plus', if (hasDraft) 'History']) {
-              final action = find.byWidgetPredicate(
-                (widget) => widget is ExperienceIcon && widget.name == name,
               );
-              final button = find.ancestor(
-                of: action,
-                matching: find.byType(IconButton),
+              await tester.pump();
+              final wordmark = find.byKey(
+                const ValueKey('home-bookshelf-wordmark'),
               );
-              final actionBounds = tester.getRect(button);
-              expect(bounds.overlaps(actionBounds), isFalse);
-              expect(actionBounds.shortestSide, greaterThanOrEqualTo(44));
+              final paragraph = tester.renderObject<RenderBox>(wordmark);
+              final bounds = MatrixUtils.transformRect(
+                paragraph.getTransformTo(null),
+                Offset.zero & paragraph.size,
+              );
+              expect(bounds.left, closeTo(24, .01));
+              expect(find.bySemanticsLabel('snapfit'), findsOneWidget);
+              for (final name in [
+                'LayoutGrid',
+                'Plus',
+                'Bell',
+                if (hasDraft) 'History',
+              ]) {
+                final action = find.byWidgetPredicate(
+                  (widget) => widget is ExperienceIcon && widget.name == name,
+                );
+                final button = find.ancestor(
+                  of: action,
+                  matching: find.byWidgetPredicate(
+                    (widget) => widget is IconButton || widget is TextButton,
+                  ),
+                );
+                final actionBounds = tester.getRect(button);
+                expect(bounds.overlaps(actionBounds), isFalse);
+                expect(actionBounds.shortestSide, greaterThanOrEqualTo(44));
+              }
+              expect(tester.takeException(), isNull);
+              await tester.pumpWidget(const SizedBox());
             }
-            expect(tester.takeException(), isNull);
-            await tester.pumpWidget(const SizedBox());
           }
         }
+      } finally {
+        semantics.dispose();
       }
-    } finally {
-      semantics.dispose();
-    }
+    },
+  );
+
+  testWidgets('cover and collection keep independent scroll and selection', (
+    tester,
+  ) async {
+    final first = _album(1, 'square');
+    final albums = [for (var i = 0; i < 24; i++) first.copyWith(id: 100 + i)];
+    await _boot(
+      tester,
+      const Size(320, 568),
+      false,
+      1,
+      'square',
+      catalog: albums,
+    );
+    final sliderState = tester.state(find.byType(HomeAlbumSlider));
+    final cover = tester.widget<SingleChildScrollView>(
+      find.byKey(const PageStorageKey('home-album-cover-scroll')),
+    );
+    final coverController = cover.controller!;
+    expect(cover.primary, isFalse);
+    expect(coverController.positions, hasLength(1));
+    final coverOffset = coverController.offset;
+    final toggle = find.byKey(const ValueKey('home-album-view-toggle'));
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    final collection = tester.widget<CustomScrollView>(
+      find.descendant(
+        of: find.byType(HomeAlbumTabScreen),
+        matching: find.byType(CustomScrollView),
+      ),
+    );
+    final collectionController = collection.controller!;
+    expect(collection.primary, isFalse);
+    expect(collectionController, isNot(same(coverController)));
+    expect(collectionController.positions, hasLength(1));
+    expect(coverController.positions, hasLength(1));
+    expect(
+      PrimaryScrollController.of(tester.element(find.byType(HomeAlbumHeader))),
+      same(collectionController),
+    );
+    expect(
+      tester
+          .widget<ExperienceIcon>(
+            find.descendant(of: toggle, matching: find.byType(ExperienceIcon)),
+          )
+          .name,
+      'BookOpen',
+    );
+    expect(find.text('표지로 돌아가기'), findsNothing);
+    collectionController.jumpTo(120);
+    await tester.pump();
+    // The header has no enclosing Scrollable, so PageDown uses the active
+    // primary controller. It must never reach the retained cover position.
+    ScrollAction().invoke(
+      const ScrollIntent(
+        direction: AxisDirection.down,
+        type: ScrollIncrementType.page,
+      ),
+      tester.element(find.byType(HomeAlbumHeader)),
+    );
+    await tester.pumpAndSettle();
+    final collectionOffset = collectionController.offset;
+    expect(collectionOffset, greaterThan(120));
+    expect(coverController.offset, coverOffset);
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(tester.state(find.byType(HomeAlbumSlider)), same(sliderState));
+    expect(
+      PrimaryScrollController.of(tester.element(find.byType(HomeAlbumHeader))),
+      same(coverController),
+    );
+    expect(collectionController.offset, collectionOffset);
+    expect(
+      tester
+          .widget<ExperienceIcon>(
+            find.descendant(of: toggle, matching: find.byType(ExperienceIcon)),
+          )
+          .name,
+      'LayoutGrid',
+    );
+    tester.view.physicalSize = const Size(844, 390);
+    await tester.pumpAndSettle();
+    expect(coverController.positions, hasLength(1));
+    expect(collectionController.positions, hasLength(1));
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
   });
 
   testWidgets('selected album status follows saved progress and access', (
     tester,
   ) async {
-    final working = _album(1, 'square', innerPages: 2).copyWith(targetPages: 8);
-    final completed = _album(1, 'square').copyWith(id: 18, title: '두 번째 앨범');
+    Album authored(Album album) {
+      final document =
+          jsonDecode(album.coverLayersJson) as Map<String, dynamic>;
+      for (final page in document['pages'] as List) {
+        if (page['isCover'] == true) continue;
+        for (final layer in page['layers'] as List) {
+          if (layer['type'] == 'IMAGE') {
+            layer['templateContent'] = false;
+            layer['payload']['originalUrl'] =
+                'https://uploads.example/photo-${page['index']}.jpg';
+          }
+        }
+      }
+      return album.copyWith(coverLayersJson: jsonEncode(document));
+    }
+
+    final working = authored(
+      _album(1, 'square', innerPages: 2),
+    ).copyWith(targetPages: 8);
+    final completed = authored(
+      _album(1, 'square'),
+    ).copyWith(id: 18, title: '두 번째 앨범');
     await _boot(
       tester,
       const Size(390, 844),
@@ -1450,10 +1689,26 @@ void main() {
     );
     final status = find.byKey(const ValueKey('home-focused-album-status'));
     String label() => tester.widget<Text>(status).data!;
-    expect(label(), '3/8 페이지 진행 중');
+    await tester.pumpAndSettle();
+    expect(label(), '만드는 중 · 2/8쪽');
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('home-bookshelf-open')),
+        matching: find.text('앨범 열기'),
+      ),
+      findsNothing,
+    );
+    expect(
+      tester
+          .widget<Semantics>(find.byKey(const ValueKey('home-bookshelf-open')))
+          .properties
+          .label,
+      contains(working.title),
+    );
     await tester.tap(find.byTooltip('다음 앨범'));
     await tester.pump();
-    expect(label(), '완성한 앨범');
+    await tester.pumpAndSettle();
+    expect(label(), '완성한 앨범 · 4/4쪽');
     expect(
       tester
           .widget<Text>(find.byKey(const ValueKey('home-focused-album-title')))
@@ -1467,11 +1722,11 @@ void main() {
     final home =
         container.read(homeViewModelProvider.notifier) as _ChangingHome;
     for (final state in [
-      (working.copyWith(id: 18, targetPages: 0), '3 페이지 진행 중'),
-      (working.copyWith(id: 18, memberRole: 'VIEWER'), '보기 전용 · 3/8 페이지 진행 중'),
+      (working.copyWith(id: 18, targetPages: 0), '완성한 앨범 · 2/2쪽'),
+      (working.copyWith(id: 18, memberRole: 'VIEWER'), '보기 전용 · 2/8쪽'),
       (
         working.copyWith(id: 18, lockedById: 'other', lockedBy: '함께 만드는 사람'),
-        '3/8 페이지 진행 중',
+        '만드는 중 · 2/8쪽',
       ),
     ]) {
       home.replaceAlbums([working, state.$1]);
@@ -1481,7 +1736,10 @@ void main() {
       expect(shelf.albums[shelf.selectedIndex].id, 18);
       expect(tester.takeException(), isNull);
     }
-    expect(tester.widget<Text>(status).semanticsLabel, '앨범 상태, 3/8 페이지 진행 중');
+    expect(
+      tester.widget<Text>(status).semanticsLabel,
+      '앨범 상태, 만드는 중, 2/8 페이지 진행 중',
+    );
     home.replaceAlbums(const []);
     await tester.pumpAndSettle();
     expect(status, findsNothing);
@@ -1531,17 +1789,24 @@ void main() {
         await tester.pumpAndSettle();
         final title = find.byKey(const ValueKey('home-focused-album-title'));
         final status = find.byKey(const ValueKey('home-focused-album-status'));
+        await tester.ensureVisible(status);
+        await tester.pumpAndSettle();
         final statusBounds = tester.getRect(status);
         expect(tester.getRect(title).overlaps(statusBounds), isFalse);
         expect(
-          statusBounds.bottom,
-          lessThanOrEqualTo(
-            tester
-                .getRect(find.byKey(const ValueKey('home-bookshelf-stage')))
-                .top,
-          ),
+          tester
+              .getRect(find.byKey(const ValueKey('home-bookshelf-stage')))
+              .overlaps(statusBounds),
+          isFalse,
         );
-        for (final tooltip in ['앨범 목록', '새 앨범', '이어 만들기']) {
+        expect(
+          tester
+              .getRect(find.byKey(const ValueKey('home-bookshelf-strip')))
+              .overlaps(statusBounds),
+          isFalse,
+        );
+        expect(find.text('앨범 열기'), findsNothing);
+        for (final tooltip in ['앨범 목록', '새 앨범', '알림']) {
           expect(
             tester.getRect(find.byTooltip(tooltip)).overlaps(statusBounds),
             isFalse,
@@ -1549,7 +1814,7 @@ void main() {
         }
         expect(
           tester.getSemantics(status).getSemanticsData().label,
-          contains('보기 전용 · 3/8 페이지 진행 중'),
+          contains('보기 전용, 0/8 페이지 진행 중'),
         );
         expect(tester.takeException(), isNull);
       }
@@ -1607,6 +1872,10 @@ void main() {
         expect(bounds.center.dx, closeTo(stage.center.dx, 2));
         expect(stage.contains(bounds.topLeft), isTrue);
         expect(stage.contains(bounds.bottomRight), isTrue);
+        if (scene.$1.width < scene.$1.height) {
+          expect(bounds.width, greaterThan(scene.$1.width * .8));
+        }
+        expect(find.text('앨범 열기'), findsNothing);
         for (final side in cards.where((card) => card.index != 0)) {
           final neighbour = AlbumOpenOrigin.capture(side.coverOriginKey!)!;
           final offscreen = MatrixUtils.transformRect(
@@ -1632,10 +1901,9 @@ void main() {
             coverBounds[i].width / coverBounds[i].height,
             closeTo(albums[i].physicalCoverSize.ratio, .0001),
           );
-          final baseline = scene.$1.width > scene.$1.height ? (i ~/ 2) * 2 : 0;
           expect(
-            coverBounds[i].bottom,
-            closeTo(coverBounds[baseline].bottom, .01),
+            coverBounds[i].center.dy,
+            closeTo(coverBounds.first.center.dy, .01),
           );
         }
         await _save(tester, key, scene.$3);
@@ -1889,45 +2157,54 @@ void main() {
       for (final dark in [false, true]) {
         final name =
             '${shape.key}-${size.width.toInt()}-${dark ? 'dark' : 'light'}';
-        testWidgets('book body preserves front dimensions and float: $name', (
-          tester,
-        ) async {
-          final key = await _boot(tester, size, dark, shape.value, shape.key);
-          final card = tester.widget<HomeAlbumSliderCard>(
-            find.byType(HomeAlbumSliderCard),
-          );
-          final before = AlbumOpenOrigin.capture(card.coverOriginKey!)!;
-          _expectFrontFacing(before);
-          expect(
-            find.descendant(
-              of: find.byType(HomeAlbumSliderCard),
-              matching: find.byWidgetPredicate(
-                (widget) =>
-                    widget is CustomPaint &&
-                    widget.painter is AlbumBookDepthPainter,
+        testWidgets(
+          'book body preserves front dimensions without idle animation: $name',
+          (tester) async {
+            final key = await _boot(tester, size, dark, shape.value, shape.key);
+            final card = tester.widget<HomeAlbumSliderCard>(
+              find.byType(HomeAlbumSliderCard),
+            );
+            final before = AlbumOpenOrigin.capture(card.coverOriginKey!)!;
+            _expectFrontFacing(before);
+            expect(
+              before.size.aspectRatio,
+              closeTo(card.album.physicalCoverSize.realSize.aspectRatio, .0001),
+            );
+            if (size.width < size.height) {
+              expect(before.size.longestSide, greaterThan(size.width * .8));
+            }
+            expect(find.text('앨범 열기'), findsNothing);
+            expect(
+              find.descendant(
+                of: find.byType(HomeAlbumSliderCard),
+                matching: find.byWidgetPredicate(
+                  (widget) =>
+                      widget is CustomPaint &&
+                      widget.painter is AlbumBookDepthPainter,
+                ),
               ),
-            ),
-            findsOneWidget,
-          );
-          await _save(tester, key, 'home-$name');
-          await tester.pump(const Duration(milliseconds: 700));
-          final after = AlbumOpenOrigin.capture(card.coverOriginKey!)!;
-          _expectFrontFacing(after);
-          expect(after.size, before.size);
-          expect(
-            after.transform.storage,
-            isNot(orderedEquals(before.transform.storage)),
-          );
-          await _save(tester, key, 'home-float-$name');
-          for (var phase = 0; phase < 8; phase++) {
-            await tester.pump(const Duration(milliseconds: 475));
-            final origin = AlbumOpenOrigin.capture(card.coverOriginKey!)!;
-            expect(origin.size, before.size);
-            _expectFrontFacing(origin);
-          }
-          expect(tester.takeException(), isNull);
-          await tester.pumpWidget(const SizedBox());
-        });
+              findsOneWidget,
+            );
+            await _save(tester, key, 'home-$name');
+            await tester.pump(const Duration(milliseconds: 700));
+            final after = AlbumOpenOrigin.capture(card.coverOriginKey!)!;
+            _expectFrontFacing(after);
+            expect(after.size, before.size);
+            expect(
+              after.transform.storage,
+              orderedEquals(before.transform.storage),
+            );
+            await _save(tester, key, 'home-resting-$name');
+            for (var phase = 0; phase < 8; phase++) {
+              await tester.pump(const Duration(milliseconds: 475));
+              final origin = AlbumOpenOrigin.capture(card.coverOriginKey!)!;
+              expect(origin.size, before.size);
+              _expectFrontFacing(origin);
+            }
+            expect(tester.takeException(), isNull);
+            await tester.pumpWidget(const SizedBox());
+          },
+        );
 
         if (size.width == 320 || dark) continue;
         testWidgets(
@@ -2065,13 +2342,11 @@ void main() {
               findsOneWidget,
             );
             final edit = find.text('편집');
-            final editSurface = tester.widget<AnimatedContainer>(
-              find
-                  .ancestor(of: edit, matching: find.byType(AnimatedContainer))
-                  .first,
+            final editSurface = tester.widget<Material>(
+              find.ancestor(of: edit, matching: find.byType(Material)).first,
             );
             expect(
-              (editSurface.decoration! as BoxDecoration).color,
+              editSurface.color,
               AlbumStageStyle.controlFill(tester.element(edit)),
             );
             expect(find.byType(BookFlip, skipOffstage: false), findsOneWidget);

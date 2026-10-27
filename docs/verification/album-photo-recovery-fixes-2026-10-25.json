@@ -1,0 +1,96 @@
+{
+  "date": "2026-10-25",
+  "previous_review": "docs/verification/editor-and-album-photo-rereview-2026-10-25.json",
+  "scope": "Fix rejected native storage URLs, recover missing previews through originals, and prevent layout exceptions when rotating during reader entry",
+  "status": "all_three_findings_fixed",
+  "fixes": [
+    {
+      "finding": "Native photos retain a rejected storage URL after navigation",
+      "files": ["lib/core/cache/storage_image_url_cache.dart", "lib/shared/snapfit_image.dart"],
+      "change": "Reuse healthy URL metadata until its lifetime expires. Renew a failed storage download once automatically on native clients; share concurrent resolution/renewal and preserve an independently refreshed URL when an older failure arrives. Keep explicit retry usable after permanent failures.",
+      "bounds": {
+        "completed_url_entries": 500,
+        "default_url_metadata_max_age_seconds": 3600,
+        "signed_token_expiry_margin_seconds": 30,
+        "automatic_refreshes_per_source_per_load": 1,
+        "background_retry_timer": false
+      },
+      "verified": [
+        "Previously decoded pixels are evicted, the old URL is rejected, and native route reentry renews it and displays the photo",
+        "Concurrent visible photos and reader preparation join the same pending download/renewal and use the same decode key",
+        "Permanent failure stops after the initial request plus one renewal; a later user retry can recover",
+        "Healthy URLs, token expiry, LRU eviction, pressure cleanup and failed-version invalidation behave correctly",
+        "A signing failure after its view leaves has no unhandled error",
+        "Late resolution cannot replace a different newly selected photo",
+        "Existing web manual retry and custom placeholder/error behavior remain covered"
+      ]
+    },
+    {
+      "finding": "An unavailable preview masks an accessible original",
+      "files": [
+        "lib/shared/snapfit_image.dart",
+        "lib/features/album/presentation/controllers/layer_builder.dart",
+        "lib/features/album/presentation/controllers/layer_builder_image_rendering.dart",
+        "lib/features/album/presentation/widgets/home/home_album_cover_thumbnail.dart",
+        "lib/features/store/presentation/widgets/template_page_renderer.dart"
+      ],
+      "change": "Share a normalized, deduplicated preview/image/original candidate order between visible photos and reader preparation. Retain only source-choice metadata, defer recent failed candidates without discarding them, and preserve the existing viewport decode bounds. Ensure custom artwork uses the same resized provider key as preparation; remove redundant resizing at the affected cover renderers.",
+      "bounds": {
+        "source_candidates_per_load": 3,
+        "successful_source_choice_entries": 500,
+        "successful_source_choice_max_age_seconds": 300,
+        "recent_failed_source_entries": 1000,
+        "recent_failure_defer_seconds": 30,
+        "new_global_decoded_image_cache": false,
+        "existing_home_preview_decode_width_cap": 1536,
+        "existing_reader_decode_width_cap": 1600,
+        "reader_preparation_batch_size_unchanged": 3
+      },
+      "verified": [
+        "A main album cover displays its valid original after a missing preview",
+        "Reader preparation completes through the valid original and retains the same provider used by painting",
+        "Preparing while an original is downloading does not re-request a known-failed preview",
+        "Eight close/reopen visits reuse the working fallback, with live/pending image entries released after unmount and decoded cache within the test budget",
+        "If a remembered original fails on a later visit, a repaired preview remains available as an alternative",
+        "Closing during a pending fallback cannot start the remaining candidate",
+        "Bundled-asset alternatives recover remote previews with the requested decode dimensions",
+        "Original print rendering and crop-resolution requirements remain unchanged"
+      ]
+    },
+    {
+      "finding": "Reader entry rotation mutates AnimatedSize during its own layout",
+      "file": "lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart",
+      "change": "Remove the redundant AnimatedSize around the already-sized book stage. The opening overlay still interpolates entry geometry; book turns keep their existing renderer. Rotation applies the new viewport geometry directly and the book subtree stays mounted through entry handoff and reduced-motion changes.",
+      "verified": [
+        "The original home-to-reader opening rotation regression now passes",
+        "An independent reader-only rotation while the opening overlay is active produces no layout exception",
+        "Entry handoff and reduced-motion changes preserve the same already-prepared BookFlip element",
+        "Page turning, cancellation, reverse turns, rapid picker changes, rotation and disposal tests pass",
+        "Moving covers land at the expected reader geometry across cover ratios and orientations"
+      ]
+    }
+  ],
+  "verification": {
+    "related_suite": {
+      "passed": 200,
+      "failed": 0,
+      "log": "output/album-photo-fixes/suite.log",
+      "scope": "Home, collection, opening geometry, cover depth, reader photos, page turns, storage recovery, URL metadata, lifecycle, template previews, editor crop context and print crop resolution"
+    },
+    "final_recovery_recheck_after_edge_case_refinement": {
+      "passed": 31,
+      "failed": 0,
+      "new_unique_test_since_related_suite": 1,
+      "log": "output/album-photo-fixes/final-regressions.log"
+    },
+    "final_lifecycle_recheck": {"passed": 8, "failed": 0, "log": "output/album-photo-fixes/final-lifecycle.log"},
+    "unique_tests_passed_across_validation": 201,
+    "analysis": {"items": 11, "issues": 0, "log": "output/album-photo-fixes/analysis.log"},
+    "format_check": "10 changed Dart files formatted",
+    "code_review": "No additional blocking finding after reviewing retry bounds, candidate preservation, stale-response guards, provider key matching, closure ownership, cache cleanup and renderer handoff",
+    "app_build_run": false,
+    "live_backend_or_user_data_changed": false,
+    "device_frame_or_process_memory_profile_run": false
+  },
+  "limits": "Network behavior was verified with in-memory download/signing fixtures and real Flutter image decoding. Existing HTTP/native calls may finish after a route is removed, but closed views do not apply their result or start another fallback. The metadata caches retain no image bytes, widgets or renderers; decoded pixels remain owned by Flutter's existing image cache. Test cache budgets and resource-release assertions do not constitute a measurement of total device memory or frame time."
+}

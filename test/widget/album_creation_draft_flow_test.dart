@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'package:snap_fit/features/album/data/album_creation_draft_store.dart';
 import 'package:snap_fit/features/album/data/album_creation_catalog_provider.dart';
 import 'package:snap_fit/features/album/data/api/album_provider.dart';
@@ -15,6 +16,7 @@ import 'package:snap_fit/features/album/presentation/views/add_cover_screen.dart
 import 'package:snap_fit/features/album/presentation/views/page_editor_screen.dart';
 import 'package:snap_fit/features/album/presentation/views/home_screen.dart';
 import 'package:snap_fit/features/notification/presentation/providers/notification_provider.dart';
+import 'package:snap_fit/features/moments/presentation/widgets/first_book_next_step_card.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
 import 'package:snap_fit/features/album/service/album_editor_service.dart';
 import 'package:snap_fit/features/album/domain/entities/album_creation_draft.dart';
@@ -162,6 +164,7 @@ Future<ProviderContainer> _boot(
   bool dark = false,
   double textScale = 1,
   AlbumCreationDraft? initialDraft,
+  AlbumCreateFlowScreen? initialScreen,
 }) async {
   final container = ProviderContainer(
     overrides: [
@@ -194,9 +197,11 @@ Future<ProviderContainer> _boot(
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => AlbumCreateFlowScreen(
-                    initialDraft: initialDraft ?? _draft(),
-                  ),
+                  builder: (_) =>
+                      initialScreen ??
+                      AlbumCreateFlowScreen(
+                        initialDraft: initialDraft ?? _draft(),
+                      ),
                 ),
               ),
               child: const Text('앨범 생성 열기'),
@@ -219,6 +224,57 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     FlutterSecureStorage.setMockInitialValues({});
   });
+  testWidgets(
+    'automatic template previews stay examples and preserve local photos',
+    (tester) async {
+      _size(tester, const Size(390, 844));
+      final store = MemoryCreationDraftStore();
+      final local = AssetEntity(
+        id: 'my-local-photo',
+        typeInt: 1,
+        width: 1600,
+        height: 1200,
+      );
+      await _boot(
+        tester,
+        store,
+        initialScreen: AlbumCreateFlowScreen(
+          initialAlbumTitle: '템플릿 작업',
+          initialCoverSize: coverSizes[1],
+          initialTemplatePreviewImages: const [
+            'asset:assets/frame_preview/alpine_lake.jpg',
+          ],
+          initialTemplatePages: [
+            [],
+            [
+              LayerModel(
+                id: 'example',
+                type: LayerType.image,
+                position: Offset.zero,
+              ),
+            ],
+            [
+              LayerModel(
+                id: 'personal',
+                type: LayerType.image,
+                position: Offset.zero,
+                asset: local,
+              ),
+            ],
+          ],
+        ),
+      );
+      await tester.tap(find.byKey(const ValueKey('creation-save-draft')));
+      await tester.pumpAndSettle();
+      final pages = store.draft!.pages!;
+      expect(pages[1].single.isTemplateContent, isTrue);
+      expect(pages[2].single.asset?.id, local.id);
+      expect(pages[2].single.previewUrl, isNull);
+      expect(pages[2].single.isTemplateContent, isFalse);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('restores photo-fill page and writes a resumable local draft', (
     tester,
   ) async {
@@ -550,13 +606,21 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        expect(find.text('이어 만들기'), findsOneWidget);
+        final resume = find.descendant(
+          of: find.byType(FirstBookNextStepCard),
+          matching: find.text('이어서 만들기'),
+        );
+        expect(resume, findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('home-moments-entry')).hitTestable(),
+          findsOneWidget,
+        );
         await _capture(
           tester,
           capture,
           'creation-home-resume-${size.width.toInt()}-${dark ? 'dark' : 'light'}',
         );
-        await tester.tap(find.text('이어 만들기'));
+        await tester.tap(resume);
         await tester.pumpAndSettle();
         expect(
           tester
@@ -618,20 +682,23 @@ void main() {
     }
   }
 
-  testWidgets('empty home exposes resume independently from new album', (
-    tester,
-  ) async {
-    _size(tester, const Size(390, 844));
-    var resumed = false;
-    await tester.pumpWidget(
-      wrapCreation(
-        HomeEmptyState(onCreate: () {}, onResumeDraft: () => resumed = true),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('이어 만들기'));
-    expect(resumed, isTrue);
-  });
+  testWidgets(
+    'empty home keeps a new album action without a duplicate resume',
+    (tester) async {
+      _size(tester, const Size(390, 844));
+      var created = false;
+      await tester.pumpWidget(
+        wrapCreation(HomeEmptyState(onCreate: () => created = true)),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('이어서 만들기'), findsNothing);
+      final create = find.byKey(const ValueKey('empty-home-create'));
+      await tester.ensureVisible(create);
+      await tester.pumpAndSettle();
+      await tester.tap(create);
+      expect(created, isTrue);
+    },
+  );
 
   for (final size in [const Size(320, 568), const Size(844, 390)]) {
     testWidgets(

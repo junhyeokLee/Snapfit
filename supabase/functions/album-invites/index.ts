@@ -22,13 +22,24 @@ Deno.serve(async (req) => {
     if (action === 'info') {
       const { data: invite, error } = await supabase
         .from('album_invites')
-        .select('token,album_id,role,created_by,expires_at,accepted_at')
+        .select('token,album_id,role,created_by,expires_at,accepted_at,accepted_by')
         .eq('token', rawToken)
         .maybeSingle()
       if (error) throw error
       if (!invite) return jsonResponse({ error: 'invite_not_found' }, 404)
-      if (invite.accepted_at) return jsonResponse({ error: 'invite_used' }, 409)
-      if (invite.expires_at && new Date(invite.expires_at).getTime() <= Date.now()) {
+      let currentRole = invite.role
+      if (invite.accepted_at) {
+        // The same current member may recover a committed acceptance after a lost
+        // response/restart. A consumed link is never reusable by a removed member.
+        const current = await getUser(req).catch(() => null)
+        if (!current || current.id !== invite.accepted_by) return jsonResponse({ error: 'invite_used' }, 409)
+        const { data: membership, error: memberError } = await supabase.from('album_members')
+          .select('role,status').eq('album_id', invite.album_id).eq('user_id', current.id).maybeSingle()
+        if (memberError) throw memberError
+        if (membership?.status !== 'ACCEPTED') return jsonResponse({ error: 'invite_used' }, 409)
+        currentRole = membership.role === 'OWNER' ? 'VIEWER' : membership.role
+      }
+      if (!invite.accepted_at && invite.expires_at && new Date(invite.expires_at).getTime() <= Date.now()) {
         return jsonResponse({ error: 'invite_expired' }, 410)
       }
       const { data: album, error: albumError } = await supabase
@@ -39,18 +50,24 @@ Deno.serve(async (req) => {
       if (albumError) throw albumError
       if (!album) return jsonResponse({ error: 'invite_not_found' }, 404)
       const { data: inviter, error: inviterError } = invite.created_by
-        ? await supabase.from('profiles').select('name').eq('id', invite.created_by).maybeSingle()
+        ? await supabase.from('social_profiles').select('display_name').eq('user_id', invite.created_by).maybeSingle()
         : { data: null, error: null }
       if (inviterError) throw inviterError
       return jsonResponse({
         albumId: invite.album_id,
         albumTitle: album?.title ?? '앨범',
-        inviterName: inviter?.name ?? 'SnapFit 사용자',
-        role: invite.role ?? 'EDITOR',
+        inviterName: inviter?.display_name?.trim() || 'SnapFit 사용자',
+        role: currentRole === 'EDITOR' ? 'EDITOR' : 'VIEWER',
       })
     }
 
     const user = await getUser(req)
+    if (body.expectedActorId !== undefined) {
+      if (typeof body.expectedActorId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.expectedActorId)) {
+        return jsonResponse({ error: 'invalid_expected_actor' }, 400)
+      }
+      if (body.expectedActorId.toLowerCase() !== user.id.toLowerCase()) return jsonResponse({ error: 'album_editor_session_changed' }, 403)
+    }
 
     if (action === 'create') {
       const albumId = Number(body.albumId)
@@ -73,7 +90,7 @@ Deno.serve(async (req) => {
         expires_at: expiresAt,
       })
       if (error) throw error
-      return jsonResponse({ albumId, token: rawToken, link: `snapfit://invite?token=${rawToken}` })
+      return jsonResponse({ albumId, token: rawToken, link: `https://snapfit-c719d.web.app/invite/${rawToken}` })
     }
 
     if (action === 'accept') {

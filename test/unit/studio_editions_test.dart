@@ -31,7 +31,7 @@ void main() {
   });
 
   for (final edition in StudioEdition.values) {
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       test(
         '${edition.id}/${aspect.name}: complete editable, fitted and tier-safe book',
         () {
@@ -223,7 +223,7 @@ void main() {
         reason: 'The companion magazine needs its own material kit.',
       );
     }
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       final signatures = <String, String>{};
       for (final edition in StudioEdition.values) {
         final pages = templateDocumentPages(

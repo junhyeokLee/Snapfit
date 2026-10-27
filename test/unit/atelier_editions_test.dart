@@ -51,7 +51,7 @@ void main() {
     () {
       expect(
         AtelierEdition.values.map((e) => e.category).toSet(),
-        templateTopicOrder.toSet(),
+        templateTopicOrder.take(7).toSet(),
       );
       final covers = <String>{};
       final keys = publishedPremiumTemplates.map(pointShopTemplateKey).toList();
@@ -82,7 +82,7 @@ void main() {
   );
 
   for (final e in AtelierEdition.values) {
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       test('${e.id} ${aspect.name}: all 33 pages parse and fit', () {
         final doc = e.document(aspect);
         final pages = templateDocumentPages(doc);
@@ -163,7 +163,11 @@ void main() {
       );
       expect(e.document(CollectionAspect.square)['catalogPublishable'], false);
     }
-    expect(bundledCreationTemplates.length, 42);
+    expect(
+      bundledCreationTemplates.length,
+      authoredCollections.length +
+          storyEditions.where((e) => !e.isPremium).length,
+    );
   });
 
   test(
@@ -191,7 +195,7 @@ void main() {
 
   test('every new kit is used and its photo sits beneath its aperture', () {
     for (final edition in AtelierEdition.values) {
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         final doc = edition.document(aspect);
         final keys = templateVisualMaterialKeys(doc);
         for (final id in atelierLayeredMaterialKits[edition.id]!) {
@@ -234,7 +238,7 @@ void main() {
           if (spec.assetPath != null) 'asset:${spec.assetPath}': spec,
       };
       for (final e in AtelierEdition.values) {
-        for (final aspect in CollectionAspect.values) {
+        for (final aspect in CollectionAspect.printable) {
           final doc = e.document(aspect),
               pages = templateDocumentPages(doc).skip(1).toList();
           final geometry = <String>{}, materialPages = <String, int>{};
@@ -324,7 +328,7 @@ void main() {
 
 Map<String, String> _approvedAtelierPages() => {
   for (final e in AtelierEdition.values)
-    for (final aspect in CollectionAspect.values)
+    for (final aspect in CollectionAspect.archived)
       for (final page in templateDocumentPages(e.document(aspect)))
         if (page['side'] == 'cover' ||
             [

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/core/navigation/app_root_route_observer.dart';
 import 'package:snap_fit/core/navigation/web_app_location.dart';
@@ -60,6 +61,145 @@ void main() {
   const album = WebAppLocation(WebAppPage.album, '69');
   const editor = WebAppLocation(WebAppPage.editor, '69');
   const print = WebAppLocation(WebAppPage.print, '69');
+
+  testWidgets(
+    'browser address initializes direct social links and legacy hash links',
+    (tester) async {
+      for (final entry in <String, WebAppLocation>{
+        'https://snapfit.example/feed': WebAppLocation.feed,
+        'https://snapfit.example/works/work_123': const WebAppLocation(
+          WebAppPage.socialWork,
+          'work_123',
+        ),
+        'https://snapfit.example/users/user_123': const WebAppLocation(
+          WebAppPage.socialProfile,
+          'user_123',
+        ),
+        'https://snapfit.example/#/feed': WebAppLocation.feed,
+        'https://snapfit.example/#/users/user_123': const WebAppLocation(
+          WebAppPage.socialProfile,
+          'user_123',
+        ),
+      }.entries) {
+        final harness = _Harness();
+        final provider = WebAppRouteInformationProvider(
+          browserUri: Uri.parse(entry.key),
+        );
+        // The test platform's default route is `/`, as with Flutter's hash
+        // strategy when the real browser opens a direct `/feed` address.
+        expect(tester.binding.platformDispatcher.defaultRouteName, '/');
+        await tester.pumpWidget(
+          MaterialApp.router(
+            routerDelegate: harness.router,
+            routeInformationProvider: provider,
+            routeInformationParser: const WebAppRouteParser(),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(harness.requested, [entry.value], reason: entry.key);
+        expect(harness.router.currentConfiguration, entry.value);
+        expect(tester.takeException(), isNull);
+        await harness.close(tester);
+        provider.dispose();
+      }
+    },
+  );
+
+  testWidgets(
+    'direct startup replaces history once and later page changes create entries',
+    (tester) async {
+      final calls = <MethodCall>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.navigation,
+        (call) async {
+          calls.add(call);
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.navigation,
+          null,
+        ),
+      );
+      final harness = _Harness();
+      final provider = WebAppRouteInformationProvider(
+        browserUri: Uri.parse('https://snapfit.example/feed'),
+      );
+      await tester.pumpWidget(
+        MaterialApp.router(
+          routerDelegate: harness.router,
+          routeInformationProvider: provider,
+          routeInformationParser: const WebAppRouteParser(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final initialUpdates = calls.where(
+        (call) => call.method == 'routeInformationUpdated',
+      );
+      expect(initialUpdates, isNotEmpty);
+      // Router may report the same initial configuration more than once.
+      // None of those reports may add an extra browser history entry.
+      for (final update in initialUpdates) {
+        expect(update.arguments, {
+          'uri': '/feed',
+          'state': null,
+          'replace': true,
+        });
+      }
+      await harness.push(tester, WebAppLocation.feed);
+      harness.router.finishInitialNavigation();
+      calls.clear();
+      await harness.push(
+        tester,
+        const WebAppLocation(WebAppPage.socialProfile, 'user_123'),
+      );
+      final nextUpdate = calls.singleWhere(
+        (call) =>
+            call.method == 'routeInformationUpdated' &&
+            (call.arguments as Map)['replace'] == false,
+      );
+      expect(nextUpdate.arguments, {
+        'uri': '/users/user_123',
+        'state': null,
+        'replace': false,
+      });
+      await harness.close(tester);
+      provider.dispose();
+    },
+  );
+
+  testWidgets(
+    'startup strips callback data and still receives browser history updates',
+    (tester) async {
+      final harness = _Harness();
+      final provider = WebAppRouteInformationProvider(
+        browserUri: Uri.parse(
+          'https://snapfit.example/users/user_123?code=private-code&email=private@example.com#access_token=private-token',
+        ),
+      );
+      expect(provider.value.uri, Uri(path: '/users/user_123'));
+      await tester.pumpWidget(
+        MaterialApp.router(
+          routerDelegate: harness.router,
+          routeInformationProvider: provider,
+          routeInformationParser: const WebAppRouteParser(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(harness.requested, [
+        const WebAppLocation(WebAppPage.socialProfile, 'user_123'),
+      ]);
+      await provider.didPushRouteInformation(
+        RouteInformation(uri: Uri(path: '/feed')),
+      );
+      await tester.pumpAndSettle();
+      expect(harness.requested.last, WebAppLocation.feed);
+      expect(harness.router.currentConfiguration, WebAppLocation.feed);
+      await harness.close(tester);
+      provider.dispose();
+    },
+  );
 
   testWidgets(
     'catalog addresses change in place and browser back preserves list work',
@@ -309,6 +449,148 @@ void main() {
     expect(attempts, [false, true]);
     expect(harness.router.currentConfiguration, WebAppLocation.home);
     expect(find.text('root home'), findsOneWidget);
+    await harness.close(tester);
+  });
+
+  testWidgets(
+    'returning to a mounted section preserves its list state and avoids duplicates',
+    (tester) async {
+      final harness = _Harness();
+      await harness.mount(tester);
+      await harness.push(
+        tester,
+        WebAppLocation.feed,
+        child: const TextField(key: ValueKey('feed-search')),
+      );
+      final search = tester.state(find.byType(TextField));
+      await tester.enterText(find.byType(TextField), '우리의 제주 여행');
+      await harness.push(
+        tester,
+        const WebAppLocation(WebAppPage.socialWork, 'work_123'),
+      );
+      await harness.push(
+        tester,
+        const WebAppLocation(WebAppPage.socialProfile, 'user_123'),
+      );
+
+      expect(harness.router.containsLocation(WebAppLocation.feed), isTrue);
+      await harness.router.setNewRoutePath(WebAppLocation.feed);
+      expect(
+        await harness.router.returnToLocation(WebAppLocation.feed),
+        isTrue,
+      );
+      harness.router.finishInitialNavigation();
+      await tester.pumpAndSettle();
+
+      expect(tester.state(find.byType(TextField)), same(search));
+      expect(find.text('우리의 제주 여행'), findsOneWidget);
+      expect(harness.router.currentConfiguration, WebAppLocation.feed);
+      expect(harness.router.isDisplayingLocation(WebAppLocation.feed), isTrue);
+      expect(harness.requested, [WebAppLocation.feed]);
+      harness.navigator.currentState!.pop();
+      await tester.pumpAndSettle();
+      expect(harness.router.containsLocation(WebAppLocation.feed), isFalse);
+      expect(find.text('root home'), findsOneWidget);
+      await harness.close(tester);
+    },
+  );
+
+  testWidgets(
+    'returning to a mounted section respects an unsaved editor guard',
+    (tester) async {
+      final harness = _Harness();
+      final mayLeave = ValueNotifier(false);
+      addTearDown(mayLeave.dispose);
+      await harness.mount(tester);
+      await harness.push(tester, WebAppLocation.moments);
+      await harness.push(
+        tester,
+        editor,
+        child: ValueListenableBuilder<bool>(
+          valueListenable: mayLeave,
+          builder: (_, allowed, _) => PopScope<void>(
+            canPop: allowed,
+            child: const Text('keep unsaved monthly album'),
+          ),
+        ),
+      );
+
+      await harness.router.setNewRoutePath(WebAppLocation.moments);
+      expect(
+        await harness.router.returnToLocation(WebAppLocation.moments),
+        isFalse,
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('keep unsaved monthly album'), findsOneWidget);
+      expect(harness.router.currentConfiguration, editor);
+      mayLeave.value = true;
+      await tester.pumpAndSettle();
+      await harness.router.setNewRoutePath(WebAppLocation.moments);
+      expect(
+        await harness.router.returnToLocation(WebAppLocation.moments),
+        isTrue,
+      );
+      harness.router.finishInitialNavigation();
+      await tester.pumpAndSettle();
+      expect(harness.router.currentConfiguration, WebAppLocation.moments);
+      expect(find.text('/moments'), findsOneWidget);
+      await harness.close(tester);
+    },
+  );
+
+  testWidgets('a missing section leaves the mounted stack untouched', (
+    tester,
+  ) async {
+    final harness = _Harness();
+    await harness.mount(tester);
+    await harness.push(tester, WebAppLocation.feed);
+    expect(harness.router.containsLocation(WebAppLocation.orders), isFalse);
+    expect(
+      await harness.router.returnToLocation(WebAppLocation.orders),
+      isFalse,
+    );
+    expect(harness.router.isDisplayingLocation(WebAppLocation.feed), isTrue);
+    expect(harness.router.currentConfiguration, WebAppLocation.feed);
+    expect(harness.navigator.currentState!.canPop(), isTrue);
+    await harness.close(tester);
+  });
+
+  testWidgets('website page changes keep chrome still on the first frame', (
+    tester,
+  ) async {
+    final harness = _Harness();
+    await harness.mount(tester);
+    unawaited(
+      harness.navigator.currentState!.push<void>(
+        WebAppPageRoute<void>(
+          settings: const WebAppRouteSettings(WebAppLocation.feed),
+          builder: (_) => const Scaffold(
+            body: Align(
+              alignment: Alignment.topCenter,
+              child: Text('website header', key: ValueKey('new-page-header')),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    final firstFrame = tester.getRect(
+      find.byKey(const ValueKey('new-page-header')),
+    );
+    expect(find.text('root home'), findsNothing);
+    await tester.pumpAndSettle();
+    expect(
+      tester.getRect(find.byKey(const ValueKey('new-page-header'))),
+      firstFrame,
+    );
+    expect(
+      firstFrame.center.dx,
+      closeTo(
+        tester.view.physicalSize.width / tester.view.devicePixelRatio / 2,
+        .1,
+      ),
+    );
+    expect(tester.takeException(), isNull);
     await harness.close(tester);
   });
 

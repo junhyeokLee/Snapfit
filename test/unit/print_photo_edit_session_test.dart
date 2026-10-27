@@ -30,6 +30,7 @@ Map<String, dynamic> _snapshot({bool legacy = false}) {
       'title': 'Our album',
       'ratio': '1',
       'cover_theme': 'classic',
+      'updated_at': '2026-10-25T01:02:03.123456Z',
       'cover_layers_json': jsonEncode(
         legacy
             ? {'layers': <dynamic>[]}
@@ -78,7 +79,12 @@ void main() {
 
   setUp(() {
     albums = _Albums();
-    album = const Album(id: 7, userId: 'owner', memberRole: 'OWNER');
+    album = const Album(
+      id: 7,
+      userId: 'owner',
+      memberRole: 'OWNER',
+      updatedAt: '2026-10-25T01:02:03.123456Z',
+    );
     snapshot = _snapshot();
     owner = 'owner';
     active = true;
@@ -108,10 +114,10 @@ void main() {
   });
 
   test(
-    'saved correction validates again after lock and releases its own lock',
+    'saved correction validates role and raw revision without advisory lock writes',
     () async {
       expect(await session.run(7, target(), edit: edit), isTrue);
-      expect((edits, locks, unlocks, reads), (1, 1, 1, 2));
+      expect((edits, locks, unlocks, reads), (1, 0, 0, 1));
     },
   );
   test(
@@ -125,7 +131,6 @@ void main() {
   for (final state in [
     'viewer',
     'unknownRole',
-    'otherLock',
     'wrongAlbum',
     'unsaved',
     'signedOut',
@@ -136,8 +141,6 @@ void main() {
           album = album.copyWith(memberRole: 'VIEWER');
         case 'unknownRole':
           album = album.copyWith(memberRole: null, userId: 'someone');
-        case 'otherLock':
-          album = album.copyWith(lockedById: 'someone');
         case 'wrongAlbum':
           album = album.copyWith(id: 99);
         case 'unsaved':
@@ -186,83 +189,62 @@ void main() {
     },
   );
   test(
-    'changed document after acquiring lock aborts and releases it',
+    'stale lock belonging to another editor does not deny CAS editing',
     () async {
-      final old = target();
-      when(() => albums.lockAlbum(7)).thenAnswer((_) async {
-        locks++;
-        album = album.copyWith(lockedById: owner);
-        (snapshot['album'] as Map)['title'] = 'Changed meanwhile';
-      });
-      await expectLater(
-        session.run(7, old, edit: edit),
-        throwsA(isA<PrintPhotoEditUnavailable>()),
-      );
-      expect((edits, locks, unlocks), (0, 1, 1));
+      album = album.copyWith(lockedById: 'someone');
+      expect(await session.run(7, target(), edit: edit), isTrue);
+      expect((edits, locks, unlocks), (1, 0, 0));
     },
   );
-  test('failed lock and an unconfirmed lock do not open the editor', () async {
-    when(() => albums.lockAlbum(7)).thenThrow(StateError('lock failed'));
-    await expectLater(session.run(7, target(), edit: edit), throwsStateError);
-    when(() => albums.lockAlbum(7)).thenAnswer((_) async {});
+  for (final change in ['revision', 'role', 'account', 'route', 'dirty']) {
+    test('preparation change $change cannot open a stale correction', () async {
+      var fetches = 0;
+      when(() => albums.fetchAlbum('7')).thenAnswer((_) async {
+        if (++fetches == 2) {
+          switch (change) {
+            case 'revision':
+              album = album.copyWith(updatedAt: '2026-10-25T01:02:03.123457Z');
+            case 'role':
+              album = album.copyWith(memberRole: 'VIEWER');
+            case 'account':
+              owner = 'other';
+            case 'route':
+              active = false;
+            case 'dirty':
+              unsaved = true;
+          }
+        }
+        return album;
+      });
+      await expectLater(
+        session.run(7, target(), edit: edit),
+        throwsA(isA<PrintPhotoEditUnavailable>()),
+      );
+      expect((edits, locks, unlocks), (0, 0, 0));
+    });
+  }
+  test('missing raw source revision fails safely', () async {
+    (snapshot['album'] as Map).remove('updated_at');
     await expectLater(
       session.run(7, target(), edit: edit),
       throwsA(isA<PrintPhotoEditUnavailable>()),
     );
     expect(edits, 0);
   });
-  test('editor failure still releases the correction lock', () async {
-    await expectLater(
-      session.run(
-        7,
-        target(),
-        edit: (_, __) async => throw StateError('editor failed'),
-      ),
-      throwsStateError,
-    );
-    expect((locks, unlocks), (1, 1));
-  });
   test(
-    'leaving during lock acquisition releases it without opening editor',
+    'editor errors propagate without acquiring or releasing locks',
     () async {
-      when(() => albums.lockAlbum(7)).thenAnswer((_) async {
-        locks++;
-        album = album.copyWith(lockedById: owner);
-        active = false;
-      });
       await expectLater(
-        session.run(7, target(), edit: edit),
-        throwsA(isA<PrintPhotoEditUnavailable>()),
+        session.run(
+          7,
+          target(),
+          edit: (_, __) async => throw StateError('editor failed'),
+        ),
+        throwsStateError,
       );
-      expect((edits, locks, unlocks), (0, 1, 1));
+      expect((locks, unlocks), (0, 0));
     },
   );
-  test(
-    'account change during lock cannot unlock as the replacement account',
-    () async {
-      when(() => albums.lockAlbum(7)).thenAnswer((_) async {
-        locks++;
-        owner = 'other';
-      });
-      await expectLater(
-        session.run(7, target(), edit: edit),
-        throwsA(isA<PrintPhotoEditUnavailable>()),
-      );
-      expect((edits, locks, unlocks), (0, 1, 0));
-    },
-  );
-  test('a new unsaved edit during preparation is protected', () async {
-    when(() => albums.lockAlbum(7)).thenAnswer((_) async {
-      locks++;
-      album = album.copyWith(lockedById: owner);
-      unsaved = true;
-    });
-    await expectLater(
-      session.run(7, target(), edit: edit),
-      throwsA(isA<PrintPhotoEditUnavailable>()),
-    );
-    expect((edits, locks, unlocks), (0, 1, 1));
-  });
   for (final legacy in [false, true]) {
     test(
       'editable input preserves raw photo geometry and reviewed snapshot legacy=$legacy',
@@ -285,6 +267,7 @@ void main() {
           (.1, .2, .4, .4),
         );
         expect(jsonEncode(saved), before);
+        expect(editable.updatedAt, '2026-10-25T01:02:03.123456Z');
       },
     );
   }

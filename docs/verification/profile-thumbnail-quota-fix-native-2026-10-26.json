@@ -1,0 +1,144 @@
+{
+  "checked_at": "2026-10-26T13:51:21+09:00",
+  "status": "profile_thumbnail_expiry_and_auth_quota_debug_apk_verified_install_not_performed",
+  "scope": "Large public profile photos and portfolio defaults; one safe thumbnail signed-URL renewal after resize/expiry, stale identity response rejection, retry-loop prevention and renewal after a decoded frame; storage quota provider watches the authenticated user id.",
+  "apk_path": "output/native-photo-refresh/SnapFit-large-profile-debug.apk",
+  "apk_sha256": "e23a6df2f086ea932953ce329b5c2daa8b02b58a348ebf357873ba7a40c9c6f2",
+  "apk_bytes": 861227830,
+  "build": {
+    "command": "flutter build apk --debug --target-platform android-arm64 --no-pub",
+    "started_at": "2026-10-26T13:47:02+09:00",
+    "ended_at": "2026-10-26T13:48:47+09:00",
+    "elapsed_seconds": 105.55,
+    "exit_code": 0
+  },
+  "build_log": "output/native-photo-refresh/thumbnail-quota-fix-build-20261026.log",
+  "coordinator_verified_tests": {
+    "profile_widget_tests_passed": 38,
+    "quota_auth_transition_tests_passed": 1,
+    "combined_tests_passed": 39,
+    "combined_result": "PASS",
+    "production_and_test_analysis": "clean",
+    "rerun_by_native_builder": false
+  },
+  "billing_auth_watch_included": true,
+  "billing_auth_watch_expression": "ref.watch(authViewModelProvider.select((auth) => auth.asData?.value?.id));",
+  "affected_production_source_sha256": {
+    "lib/features/social/presentation/views/social_profile_screen.dart": "137d53fe55ab83c3b94bc4bc106c06c50caccb050b29524e6d662a8ea56239d0",
+    "lib/features/social/presentation/widgets/social_profile_widgets.dart": "ee118460908181c153f5ec5ffbeedcb87b7acce8653da5484682be7b2a6d294a",
+    "lib/features/billing/data/billing_provider.dart": "af2aed06589e5c399106cd2b51d6665471eabe9ef4af218b995133f39da0d982"
+  },
+  "zip_crc_valid": true,
+  "zip_entries": 1700,
+  "signature_verified": true,
+  "certificate_sha256": "a46a0968f62bfe49908e6e9d0b1feda3c269bf721d09a0fc1d7daaa6ecf199c3",
+  "matches_preserved_debug_certificate": true,
+  "packaged_metadata": [
+    "package: name='com.devsheep.snap_fit' versionCode='1' versionName='1.0.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+    "application-debuggable",
+    "native-code: 'arm64-v8a' 'armeabi-v7a' 'x86_64'"
+  ],
+  "packaged_android_manifest_sha256": "2b0436c7849efb70b476851f4e528ab857fb4e6d4e0c2ba88cecd1704204d0a1",
+  "packaged_kernel_sha256": "4cb11d8aeaed7a46ae310bac1c248d0783445292329c8e48d60e60f8b878520a",
+  "packaged_current_source_text_markers": {
+    "모아 보기": true,
+    "크게 보기": true,
+    "작품 공개": true,
+    "프로필 사진 크게 보기": true,
+    "원본 앨범은 비공개로 유지돼요.": true
+  },
+  "packaged_thumbnail_and_quota_symbols": {
+    "_recoverThumbnail": true,
+    "_thumbnailRecoveryAttempted": true,
+    "myStorageQuotaProvider": true
+  },
+  "apfs_cow_candidate_copy_used": true,
+  "atomic_stable_replacement": true,
+  "previous_stable_sha256": "ddf1fd41f9051784882566d06a67131cb601e09b1641d3f35b742ed7288bd782",
+  "previous_profile_apk_preserved_path": "output/native-photo-refresh/SnapFit-large-profile-debug-before-thumbnail-expiry-fix.apk",
+  "previous_profile_apk_preserved_sha256": "ddf1fd41f9051784882566d06a67131cb601e09b1641d3f35b742ed7288bd782",
+  "preservation_baseline_before_stable_replacement": {
+    "output/native-photo-refresh/SnapFit-large-profile-debug.apk": {
+      "sha256_before_stable_replacement": "ddf1fd41f9051784882566d06a67131cb601e09b1641d3f35b742ed7288bd782",
+      "bytes": 861220802,
+      "unchanged_before_stable_replacement": true
+    },
+    "output/native-photo-refresh/SnapFit-large-profile-debug-before-thumbnail-expiry-fix.apk": {
+      "sha256_before_stable_replacement": "ddf1fd41f9051784882566d06a67131cb601e09b1641d3f35b742ed7288bd782",
+      "bytes": 861220802,
+      "unchanged_before_stable_replacement": true
+    }
+  },
+  "historical_apk_path_observations": {
+    "output/native-photo-refresh/SnapFit-collaboration-debug.apk": {
+      "exists_at_current_prebuild": false,
+      "historical_verified_sha256": "0831570f155d10857a715804cd2bc8564d0d58e1c0019ed5d046dca42e2f9536"
+    },
+    "output/native-photo-refresh/SnapFit-collaboration-debug-before-conflict-poll-fix.apk": {
+      "exists_at_current_prebuild": false,
+      "historical_verified_sha256": "439db4a3e24c98ba2670cd6f3c9017c2f5f223620448e787d5b4a9ae3bdeb4b5"
+    },
+    "output/native-photo-refresh/SnapFit-photo-feed-debug.apk": {
+      "exists_at_current_prebuild": false,
+      "historical_verified_sha256": "771cfff52450419d304d8315d5944cdc996255345c29fef7b77d1f215a2278ff"
+    },
+    "output/native-photo-refresh/previous-app-debug.apk": {
+      "exists_at_current_prebuild": false,
+      "historical_verified_sha256": "9eef1431c1335565b91e2de4418957dcd70ec05111009501a4077c11369ff596"
+    }
+  },
+  "historical_apk_verification": {
+    "report": "docs/verification/profile-large-photo-native-2026-10-26.json",
+    "verified_at": "2026-10-26T13:25:28+09:00",
+    "all_four_sha256_verified_unchanged_at_that_time": true,
+    "current_prebuild_original_paths_absent": true,
+    "root_reported_no_deletion_of_the_four_legacy_apks": true,
+    "cause_of_absence": "Not determined; no cause inferred."
+  },
+  "both_build_outputs_and_candidate_hashes_match": true,
+  "source_manifest_start": "output/native-photo-refresh/source-thumbnail-quota-fix-start-20261026.json",
+  "source_manifest_end": "output/native-photo-refresh/source-thumbnail-quota-fix-end-20261026.json",
+  "source_sha256_start": "f9705e5113d0ae319722dd353829d3c13b209f5e55e500f7d63d300f4d391b52",
+  "source_sha256_end": "f9705e5113d0ae319722dd353829d3c13b209f5e55e500f7d63d300f4d391b52",
+  "source_file_count": 1813,
+  "social_source_sha256_start": "b1799f59ccb1a63b474f25198e3817bf25073df943d27088482be88ef699bcd6",
+  "social_source_sha256_end": "b1799f59ccb1a63b474f25198e3817bf25073df943d27088482be88ef699bcd6",
+  "social_source_file_count": 21,
+  "build_input_changes": [],
+  "web_source_manifest_path": "docs/verification/profile-thumbnail-quota-fix-web-source-after-2026-10-26.json",
+  "web_source_manifest_sha256": "f77ea21b2590ea7c00a8d5479fa06ea31b736ef9a372398c7fec20910627421a",
+  "web_common_source_file_count": 1765,
+  "web_common_source_hashes_match": true,
+  "web_common_source_differences": [],
+  "web_main_sha256": "e95d2be729c0e58fb40a5b0bfe42becb71a285879ea2491d29230e7101da3ba9",
+  "web_bootstrap_sha256": "97defe41097818e8167a50100c94a8308a3c5159e395fd348a0d81711369425d",
+  "supersedes_native_report": "docs/verification/profile-large-photo-native-2026-10-26.json",
+  "prior_build_logs_and_reports_preserved": true,
+  "build_output_cleanup": {
+    "performed": true,
+    "removed_files": [
+      {
+        "path": "build/app/outputs/flutter-apk/app-debug.apk",
+        "bytes": 861227830,
+        "sha256": "e23a6df2f086ea932953ce329b5c2daa8b02b58a348ebf357873ba7a40c9c6f2"
+      },
+      {
+        "path": "build/app/outputs/apk/debug/app-debug.apk",
+        "bytes": 861227830,
+        "sha256": "e23a6df2f086ea932953ce329b5c2daa8b02b58a348ebf357873ba7a40c9c6f2"
+      }
+    ],
+    "scope": "Only the two current successful-build duplicate APK files; no other source, asset, report, APK backup, directory or unrelated file was removed.",
+    "final_apk_sha256_after_cleanup": "e23a6df2f086ea932953ce329b5c2daa8b02b58a348ebf357873ba7a40c9c6f2",
+    "preserved_profile_backup_sha256_after_cleanup": "ddf1fd41f9051784882566d06a67131cb601e09b1641d3f35b742ed7288bd782",
+    "free_bytes_before": 12745707520,
+    "free_bytes_after": 13620834304
+  },
+  "free_bytes_after_verification": 12238495744,
+  "install_performed": false,
+  "physical_device_qa_performed": false,
+  "source_or_asset_changes_performed_by_native_builder": false,
+  "limitation": "Debug-signed APK. No device install, emulator, SDK download, key/environment change or store submission was performed.",
+  "non_blocking_toolchain_warning": "Existing Firebase/storage/media plugins still apply Kotlin Gradle Plugin; the build completed successfully.",
+  "free_bytes_after_artifact": 13620834304
+}

@@ -1,0 +1,109 @@
+{
+  "checked_at_utc": "2026-10-22T14:45:17.500271+00:00",
+  "requested_screen_failures_resolved": 7,
+  "fixes": [
+    {
+      "previous_failures": 1,
+      "area": "legacy lookbook card layout",
+      "change": "Card height follows its available panel width and text scaler. Seven phone sizes and 320px panels with 1.5x/2x text pass without relaxing bounds."
+    },
+    {
+      "previous_failures": 4,
+      "area": "exact image reference fixtures",
+      "change": "Existing references compared with actual rendering side by side in memory, then updated in place. Text/layout intact; exact pixel comparisons remain enabled. No new reference or preview image paths."
+    },
+    {
+      "previous_failures": 2,
+      "area": "current native creation paths",
+      "change": "Replace obsolete native AI-entry taps with actual manual setup, current template browsing, cancelled selection and preserved settings. Separate form checks preserve AI memo, format and page-count callbacks across reopening and orientation changes without generation."
+    }
+  ],
+  "verification": {
+    "final_related_files": 17,
+    "final_related_tests": {
+      "passed": 183,
+      "failed": 0,
+      "skipped": [
+        "narrow web reset restores discovery without hiding its filters behind the hero"
+      ],
+      "log_sha256": "a8d992a114efec7d2cdc5b63e644e88356d9619e995eb67bd56da776430f955a"
+    },
+    "initial_targeted_files": 3,
+    "targeted_tests": {
+      "passed": 40,
+      "failed": 0,
+      "skipped": [],
+      "log_sha256": "c1671fc85edcfa69b5c6993117afa9f54e4c71cc5cc7645160b018379664cdae"
+    },
+    "final_card_tests": {
+      "passed": 8,
+      "failed": 0,
+      "skipped": [],
+      "log_sha256": "c1a0573bc1b78f59c227543a775d9fe6e291128022c3d914e4e1eab8b85d8c53"
+    },
+    "analysis": "No issues found",
+    "format": "3 edited Dart files, zero further changes",
+    "web_only_skip": "One existing !kIsWeb rule, unchanged from task start; none of the seven failed tests skipped.",
+    "new_generation_or_customer_requests": false
+  },
+  "existing_golden_reference_updates": [
+    {
+      "path": "test/widget/goldens/store_lookbook_card_390x844.png",
+      "oldSha256": "e03691d7b756cbd092b154d1ba4ebf62fa38bec9f2aa82d3e9380e365c47c1eb",
+      "newSha256": "4b6a91e1fb0625df9373105a177c367525fc71f8607ce4fc2e6442f9fc9e8e35",
+      "bytes": 100901,
+      "visualReview": "Existing and current rendering inspected side by side in memory; text and layout intact."
+    },
+    {
+      "path": "test/widget/goldens/ai_album_theme_split_390x844.png",
+      "oldSha256": "a709a45a82269ea08ee8f16c771e2f34bb48cb94aca0b5c8d09a819a0bf832e5",
+      "newSha256": "7874e03d383b2dba6fe692158b012576ac3a57bd4d483662c44482ac4b58e29c",
+      "bytes": 80480,
+      "visualReview": "Existing and current rendering inspected side by side in memory; text and layout intact."
+    },
+    {
+      "path": "test/widget/goldens/ai_album_range_split_390x844.png",
+      "oldSha256": "c35d818099564b2c809fce12b309e1fe7e1c0d7cd8b5a67d45f50a6fd429227b",
+      "newSha256": "50b2c3eb21407121bf71307b772e40401a7a6eae2d0d6314802301b60870b14f",
+      "bytes": 45871,
+      "visualReview": "Existing and current rendering inspected side by side in memory; text and layout intact."
+    },
+    {
+      "path": "test/widget/goldens/ai_album_point_split_390x844.png",
+      "oldSha256": "c7b5252f1562b725ea9185390f8b007db4223bf399e3e646383fc59bc9b18fc2",
+      "newSha256": "d1cfc75e2c8f510515c68b78338c3fc01a51ed227cd673221107574db02932f6",
+      "bytes": 36706,
+      "visualReview": "Existing and current rendering inspected side by side in memory; text and layout intact."
+    }
+  ],
+  "runtime_source_change": "lib/features/store/presentation/widgets/premium_template_list.dart",
+  "runtime_source_fingerprint_sha256": "b7bcfe41181926c07ce4803def8a040ae2103d238d070a44edf9fc7f040c003a",
+  "runtime_reachability": "Legacy PremiumTemplateList currently has no callers in lib; web release tree-shakes it. The production web design does not require a visual change.",
+  "hosting": {
+    "main_sha256": "1cf25eaa27bf4e27f69775b31243a9743a99764b17207a065ad4a39a95e5c63c",
+    "main_file": "main.1cf25eaa27bf4e27f697.dart.js",
+    "bootstrap_sha256": "433c2ab21cf1470f68db0cdd667755af923c330f2a302fe6c97b589ee0f727d4",
+    "bootstrap_file": "flutter_bootstrap.433c2ab21cf1470f68db.js",
+    "origin": "https://snapfit-c719d.web.app/",
+    "tls_verified": true,
+    "entrypoint_chain_matches": true,
+    "web_bundle_identical_to_previous_release": true
+  },
+  "browser_verification": {
+    "url": "https://snapfit-c719d.web.app/",
+    "reloaded_after_deploy": true,
+    "current_designs_displayed": 68
+  },
+  "new_preview_files_created": false,
+  "new_golden_image_paths_created": false,
+  "existing_deleted_reference_files_restored": false,
+  "cleanup": {
+    "regenerable_outputs_removed": [
+      "build/review-web",
+      "build/unit_test_assets",
+      "build/test_cache"
+    ],
+    "free_gib_after": 15.66,
+    "release_rebuild_command": "python3 tool/build_web.py --output build/review-web"
+  }
+}

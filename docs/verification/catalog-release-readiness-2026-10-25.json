@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-25",
+  "scope": "Require pricing and activation readiness when exporting the complete published catalog; persist creation-through-live-registration workflow",
+  "workflow": "AGENTS.md",
+  "policy": "docs/point_shop_launch_pricing.md",
+  "readinessGate": {
+    "entryPoint": "tool/template_studio/export_price_application.dart:exportPriceApplication",
+    "checks": [
+      "Published template and story companion material coverage",
+      "Price-book product coverage and known product metadata",
+      "Unique stable product keys and matching kind/asset identity",
+      "Nonempty titles, integer nonnegative prices and configured price match",
+      "Free/paid tier consistency",
+      "Every release row active"
+    ],
+    "runsBeforeWritingFiles": true,
+    "runsDuringCustomerStoreEntry": false,
+    "rendersArtwork": false,
+    "automaticallyWritesServer": false
+  },
+  "server": {
+    "projectRef": "rrbhxdtriummqpztpjrk",
+    "operation": "Read-only anonymous-role catalog and get_point_shop_access verification",
+    "templates": {"active": 133, "free": 47, "paid": 86, "pending": 0},
+    "materials": {"active": 349, "free": 66, "paid": 283, "pending": 0},
+    "anonymousAvailable": 482,
+    "pricesOrWalletsOrOwnershipChangedThisTask": false
+  },
+  "verification": {
+    "focusedFlutterTests": 19,
+    "result": "passed",
+    "testFiles": [
+      "test/unit/point_shop_catalog_release_readiness_test.dart",
+      "test/unit/point_shop_launch_pricing_test.dart",
+      "test/widget/released_store_catalog_test.dart"
+    ],
+    "staticAnalysis": "2 changed Dart files: no issues",
+    "codeReview": "No unresolved issue found in changed code; app rendering, caches, server price authority and existing activation SQL preserved",
+    "appBuild": false,
+    "physicalDeviceRun": false
+  }
+}

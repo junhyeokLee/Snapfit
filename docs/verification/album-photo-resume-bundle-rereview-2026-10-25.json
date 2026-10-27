@@ -1,0 +1,99 @@
+{
+  "date": "2026-10-25",
+  "scope": "Fresh validation review of shared photo recovery and bundled/local photo visibility through rapid navigation, rotation, retries and memory pressure",
+  "previous_fix_report": "docs/verification/album-photo-resume-bundle-fixes-2026-10-25.json",
+  "production_code_changed": false,
+  "production_source_hashes_match_previous_fix": true,
+  "findings": [],
+  "test_changes": [
+    "Added test/review/photo_resume_bundle_rereview_test.dart with three combined visibility/recovery/resource cases"
+  ],
+  "fresh_cases": [
+    {
+      "name": "mixed bundled local and remote reader survives hidden replacement rotation and repeated return",
+      "fixture": "Actual AlbumReaderSinglePageView with instrumented bundled assets, browser AssetEntity memory photos, remote preview failures and valid originals; maintained below an opaque Navigator route",
+      "actions": "Three hide/return visits, each with three rapid data revisions and orientation changes while hidden",
+      "verified": [
+        "TickerMode is false beneath the covering route",
+        "Neither asset-bundle reads nor remote cache-manager loads increase while hidden",
+        "Each return completes preparation and shows photo pixels",
+        "After closing and cache clearing, all tracked ui.Image handles are disposed; pending/live image counts and transient callbacks return to zero"
+      ]
+    },
+    {
+      "name": "shared recovery survives pressure during signing with a fresh URL and rapid retry",
+      "actions": "Two consumers initially fail, one is hidden; eight retry clicks start one pending renewal. Clear metadata during signing and join reader preparation, then complete signing, return the hidden consumer and repeat five hide/resume cycles",
+      "verified": [
+        "Exactly three signing calls: initial, automatic renewal, explicit retry",
+        "Exactly one failed image load and one successful recovery load",
+        "Visible consumer, preparation and resumed consumer share the result",
+        "No retry controls remain; tracked image handles and pending/live cache entries are released after closing"
+      ]
+    },
+    {
+      "name": "shared recovery survives pressure during signing with the same URL and rapid retry",
+      "actions": "Repeat the pressure/signing/preparation/visibility combination with the renewed URL string unchanged",
+      "verified": [
+        "Same three signing calls and two bounded transport/decode loads",
+        "Both consumers display the recovered photo after return",
+        "Repeated visibility changes do not add requests",
+        "Tracked handles/cache entries and transient callbacks return to zero after cleanup"
+      ]
+    }
+  ],
+  "code_review": {
+    "additional_blocking_findings": [],
+    "reviewed": [
+      "Activity gates precede local provider creation and resumed shared-result adoption; ordinary scrolling does not run adoption scans",
+      "Adoption checks bounded source choices and scoped failure/recovery generations; no cache-wide scan or polling is introduced",
+      "Known decoded recoveries preserve same-URL identity, while newer failures and obsolete callbacks remain guarded",
+      "The recovered source is first and remaining fallback candidates stay reachable",
+      "Success/failure/URL metadata retains the established 500/1000/500 caps, expiration rules and pressure cleanup; entries contain no image bytes or widget/context references",
+      "Weak cache-manager IDs, temporary image stream observers and local visibility observers preserve their existing release paths",
+      "Decoded image/reader texture limits and original print rendering are unchanged"
+    ]
+  },
+  "verification": {
+    "existing_related_suite": {
+      "files": 21,
+      "passed": 249,
+      "failed": 0,
+      "log": "output/album-photo-resume-bundle-rereview/suite.log"
+    },
+    "fresh_combined_cases": {
+      "files": 1,
+      "passed": 3,
+      "failed": 0,
+      "log": "output/album-photo-resume-bundle-rereview/edges.log"
+    },
+    "total_unique_cases": 252,
+    "unique_passed": 252,
+    "unique_failed": 0,
+    "analysis": {
+      "items": 16,
+      "issues": 0,
+      "log": "output/album-photo-resume-bundle-rereview/analysis.log"
+    },
+    "format": {
+      "new_test_files": 1,
+      "unformatted": 0
+    },
+    "source_sha256": {
+      "lib/shared/snapfit_image.dart": "6ff98a60d457bb0032f7824cddd344c2a30e044610dd9792939120961bfd4e23",
+      "lib/shared/photo_preparation.dart": "4e5bce4b632c375f86d902fa86226a93fcdf7abad9b74f6db6826e38902ce915",
+      "lib/core/cache/photo_failure_versions.dart": "967a5b9f8cd1c91c2a0bbe173d98654cdaa12e5c95d8f5d49dde941fc7ec456d",
+      "lib/core/cache/storage_image_url_cache.dart": "c0857beb7eae16c9d2d9da6ce00cb1439f801c6550c415d80bccf3b48c68473a",
+      "lib/features/album/presentation/controllers/layer_builder_image_rendering.dart": "577c06082da30968d2ec37163e5d99c8effdc26b1ff1cbec55e8bfd6ad0c5498"
+    },
+    "app_build_run": false,
+    "live_backend_or_user_data_changed": false,
+    "device_frame_or_process_memory_profile_run": false
+  },
+  "limits": [
+    "Review and regression tests only; no production code changes were made.",
+    "New network cases use controlled signing and cache-manager fixtures with real Flutter image decoding; existing related tests also cover real CacheManager/HttpFileService using MockClient, not live production HTTP.",
+    "Requests that began before hiding may finish; the policy prevents starting new hidden work rather than cancelling a shared request used by a visible consumer.",
+    "No additional missing-photo state, duplicate request or persistent tracked image-handle leak was reproduced within these cases. This does not establish the absence of all native leaks or frame drops.",
+    "Physical-device frame time, peak process memory and real Android/iOS photo-library plugin behavior were not profiled; local AssetEntity coverage here uses BrowserPhotoAsset."
+  ]
+}

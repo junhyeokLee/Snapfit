@@ -18,13 +18,15 @@ import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_vie
 import 'package:snap_fit/features/album/domain/entities/layer.dart';
 import 'package:snap_fit/features/album/presentation/controllers/layer_builder.dart';
 import 'package:snap_fit/features/album/presentation/controllers/layer_interaction_manager.dart';
+import 'package:snap_fit/features/album/presentation/utils/reader_image_quality.dart';
 import 'package:snap_fit/features/album/presentation/widgets/reader/album_reader_single_page_view.dart';
+import 'package:snap_fit/features/album/presentation/widgets/reader/album_reader_thumbnail_strip.dart';
 import 'package:snap_fit/features/album/presentation/widgets/home/home_cover_frame.dart';
 
 import 'ai_album_start_step_test.dart' show loadCreationFonts;
 
-const _curl = BookFlipCurl(bend: .55, foldTilt: .82, droop: .14, roll: 1);
-const _noSagCurl = BookFlipCurl(bend: .55, foldTilt: .82, roll: 1);
+const _curl = BookFlipCurl(bend: .48, foldTilt: .72, droop: .08, roll: 1);
+const _noSagCurl = BookFlipCurl(bend: .48, foldTilt: .72, roll: 1);
 const _background = Color(0xffeff2f1);
 
 class _ReaderRole extends AlbumEditorViewModel {
@@ -125,9 +127,16 @@ Future<BookFlipController> _reader(
   int spread = 2,
   ValueNotifier<List<AlbumPage>>? pagesNotifier,
   String? memberRole,
+  double devicePixelRatio = 1,
+  bool reduceMotion = false,
+  bool accessibleNavigation = false,
+  bool dark = false,
+  double textScale = 1,
+  ValueNotifier<int?>? requestedPage,
+  ValueChanged<int>? onFocusPageChanged,
 }) async {
-  tester.view.physicalSize = viewport;
-  tester.view.devicePixelRatio = 1;
+  tester.view.physicalSize = viewport * devicePixelRatio;
+  tester.view.devicePixelRatio = devicePixelRatio;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
   final pageController = PageController(initialPage: spread);
@@ -143,6 +152,17 @@ Future<BookFlipController> _reader(
       child: ScreenUtilInit(
         designSize: const Size(390, 844),
         builder: (_, child) => MaterialApp(
+          theme: ThemeData(
+            brightness: dark ? Brightness.dark : Brightness.light,
+          ),
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              disableAnimations: reduceMotion,
+              accessibleNavigation: accessibleNavigation,
+              textScaler: TextScaler.linear(textScale),
+            ),
+            child: child!,
+          ),
           home: Scaffold(backgroundColor: _background, body: child),
         ),
         child: Consumer(
@@ -152,30 +172,39 @@ Future<BookFlipController> _reader(
               ref,
               () => size,
             );
-            Widget buildReader(List<AlbumPage> pages) => RepaintBoundary(
-              key: captureKey,
-              child: ColoredBox(
-                color: _background,
-                child: AlbumReaderSinglePageView(
-                  allPages: pages,
-                  selectedCover: cover,
-                  coverTheme: CoverTheme.classic,
-                  pageController: pageController,
-                  interaction: interaction,
-                  layerBuilder: LayerBuilder(interaction, () => size),
-                  canvasKey: GlobalKey(),
-                  onCanvasSizeChanged: (_) {},
-                  onPageChanged: (_) {},
-                  onStateChanged: () {},
-                  focusMode: true,
-                ),
-              ),
-            );
-            return pagesNotifier == null
-                ? buildReader(_album(cover))
+            Widget buildReader(List<AlbumPage> pages, int? requested) =>
+                RepaintBoundary(
+                  key: captureKey,
+                  child: ColoredBox(
+                    color: _background,
+                    child: AlbumReaderSinglePageView(
+                      allPages: pages,
+                      selectedCover: cover,
+                      coverTheme: CoverTheme.classic,
+                      pageController: pageController,
+                      interaction: interaction,
+                      layerBuilder: LayerBuilder(interaction, () => size),
+                      canvasKey: GlobalKey(),
+                      onCanvasSizeChanged: (_) {},
+                      onPageChanged: (_) {},
+                      onStateChanged: () {},
+                      onFocusPageChanged: onFocusPageChanged,
+                      focusMode: true,
+                      requestedFocusPageIndex: requested,
+                    ),
+                  ),
+                );
+            Widget withPages(int? requested) => pagesNotifier == null
+                ? buildReader(_album(cover), requested)
                 : ValueListenableBuilder<List<AlbumPage>>(
                     valueListenable: pagesNotifier,
-                    builder: (_, pages, _) => buildReader(pages),
+                    builder: (_, pages, _) => buildReader(pages, requested),
+                  );
+            return requestedPage == null
+                ? withPages(null)
+                : ValueListenableBuilder<int?>(
+                    valueListenable: requestedPage,
+                    builder: (_, page, _) => withPages(page),
                   );
           },
         ),
@@ -195,6 +224,639 @@ Future<BookFlipController> _reader(
 
 void main() {
   setUpAll(loadCreationFonts);
+
+  testWidgets(
+    'rotation keeps the latest picker target over an older unfinished jump',
+    (tester) async {
+      final requested = ValueNotifier<int?>(null);
+      addTearDown(requested.dispose);
+      final focused = <int>[];
+      final controller = await _reader(
+        tester,
+        viewport: const Size(844, 390),
+        cover: defaultCoverSize,
+        captureKey: GlobalKey(),
+        requestedPage: requested,
+        onFocusPageChanged: focused.add,
+      );
+      requested.value = 7;
+      await tester.pump();
+      expect(controller.isAnimating, isTrue);
+      tester.view.physicalSize = const Size(390, 844);
+      await tester.pump();
+      requested.value = 1;
+      await tester.pump();
+      await _ready(tester, controller);
+      await tester.pump(const Duration(seconds: 2));
+      expect(controller.currentSpread, 1);
+      expect(controller.isAnimating, isFalse);
+      expect(focused.last, 1);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('reader-live-spread')),
+          matching: find.byType(Image),
+        ),
+        findsNWidgets(2),
+      );
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
+    'rotation before the first control frame cancels its pending turn',
+    (tester) async {
+      final controller = await _reader(
+        tester,
+        viewport: const Size(390, 844),
+        cover: defaultCoverSize,
+        captureKey: GlobalKey(),
+        spread: 0,
+      );
+      await tester.tap(find.byTooltip('다음 페이지'));
+      tester.view.physicalSize = const Size(844, 390);
+      await tester.pump();
+      await _ready(tester, controller);
+      await tester.pump(const Duration(seconds: 2));
+      expect(controller.currentSpread, 0);
+      expect(controller.isAnimating, isFalse);
+      await tester.tap(find.byTooltip('다음 페이지'));
+      await tester.pump();
+      await _settle(tester, controller);
+      expect(controller.currentSpread, 1);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
+    'a picker selection supersedes a button waiting for its first frame',
+    (tester) async {
+      final requested = ValueNotifier<int?>(null);
+      addTearDown(requested.dispose);
+      final controller = await _reader(
+        tester,
+        viewport: const Size(844, 390),
+        cover: defaultCoverSize,
+        captureKey: GlobalKey(),
+        spread: 0,
+        requestedPage: requested,
+      );
+      final textures = tester.widget<BookFlip>(find.byType(BookFlip)).pages;
+      await tester.tap(find.byTooltip('다음 페이지'));
+      requested.value = 7;
+      for (var i = 0; i < 100; i++) {
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      expect(controller.currentSpread, 4);
+      expect(controller.isAnimating, isFalse);
+      expect(
+        tester.widget<BookFlip>(find.byType(BookFlip)).pages,
+        same(textures),
+      );
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
+    're-grabbing a closing button turn can return to its inner pages',
+    (tester) async {
+      final controller = await _reader(
+        tester,
+        viewport: const Size(844, 390),
+        cover: defaultCoverSize,
+        captureKey: GlobalKey(),
+        spread: 1,
+      );
+      final book = find.byType(BookFlip);
+      final textures = tester.widget<BookFlip>(book).pages;
+      await tester.tap(find.byTooltip('이전 페이지'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 60));
+      final rect = tester.getRect(book);
+      final drag = await tester.startGesture(
+        Offset(rect.left + 25, rect.center.dy),
+      );
+      await drag.moveBy(Offset(-rect.width * .4, 0));
+      await tester.pump();
+      expect(controller.flipProgress, lessThan(.44));
+      await tester.pump(const Duration(milliseconds: 160));
+      await drag.up();
+      await _settle(tester, controller);
+      expect(controller.currentSpread, 1);
+      expect(tester.widget<BookFlip>(book).pages, same(textures));
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
+    'reversing a button-started cover turn preserves the cancelled spread',
+    (tester) async {
+      final controller = await _reader(
+        tester,
+        viewport: const Size(390, 844),
+        cover: defaultCoverSize,
+        captureKey: GlobalKey(),
+        spread: 0,
+      );
+      await tester.tap(find.byTooltip('다음 페이지'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 60));
+      expect(controller.isAnimating, isTrue);
+      final book = find.byType(BookFlip);
+      final rect = tester.getRect(book);
+      final drag = await tester.startGesture(
+        Offset(rect.right - 25, rect.center.dy),
+      );
+      await drag.moveBy(Offset(rect.width * .48, 0));
+      await tester.pump();
+      expect(controller.flipProgress, lessThan(.44));
+      await tester.pump(const Duration(milliseconds: 160));
+      await drag.up();
+      await _settle(tester, controller);
+      expect(
+        controller.currentSpread,
+        0,
+        reason: 'The grabbed cover was pulled back and cancelled',
+      );
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
+    'rotating during a held cover turn restores the closed cover after cancellation',
+    (tester) async {
+      final controller = await _reader(
+        tester,
+        viewport: const Size(390, 844),
+        cover: defaultCoverSize,
+        captureKey: GlobalKey(),
+        spread: 0,
+      );
+      final book = find.byType(BookFlip);
+      final rect = tester.getRect(book);
+      final drag = await tester.startGesture(
+        Offset(rect.right - 25, rect.center.dy),
+      );
+      await drag.moveBy(Offset(-rect.width * .24, 0));
+      await tester.pump();
+      expect(controller.isAnimating, isTrue);
+      await drag.cancel();
+      tester.view.physicalSize = const Size(844, 390);
+      await tester.pump();
+      await _ready(tester, controller);
+      await tester.pump(const Duration(seconds: 2));
+      expect(controller.currentSpread, 0);
+      expect(controller.isAnimating, isFalse);
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is CustomPaint && widget.painter is AlbumBookDepthPainter,
+        ),
+        findsOneWidget,
+        reason:
+            'The idle closed cover must be restored, not a permanently turning cover',
+      );
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
+    'repeated rotations dispose superseded turn textures and keep live photos',
+    (tester) async {
+      final created = <ui.Image>[];
+      final previous = ui.Image.onCreate;
+      ui.Image.onCreate = (image) {
+        created.add(image);
+        previous?.call(image);
+      };
+      addTearDown(() => ui.Image.onCreate = previous);
+      final controller = await _reader(
+        tester,
+        viewport: const Size(390, 844),
+        cover: defaultCoverSize,
+        captureKey: GlobalKey(),
+        spread: 2,
+      );
+      final book = find.byType(BookFlip);
+      for (var i = 0; i < 4; i++) {
+        final oldPages = tester.widget<BookFlip>(book).pages.toList();
+        tester.view.physicalSize = i.isEven
+            ? const Size(844, 390)
+            : const Size(390, 844);
+        await tester.pump();
+        await _ready(tester, controller);
+        expect(
+          oldPages.every((image) => image.debugDisposed),
+          isTrue,
+          reason: 'Superseded snapshots must release their image handles',
+        );
+        expect(controller.currentSpread, 2);
+        expect(
+          find.descendant(
+            of: find.byKey(const ValueKey('reader-live-spread')),
+            matching: find.byType(Image),
+          ),
+          findsNWidgets(2),
+        );
+      }
+      await tester.pumpWidget(const SizedBox());
+      PaintingBinding.instance.imageCache.clear();
+      PaintingBinding.instance.imageCache.clearLiveImages();
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 30)),
+      );
+      await tester.pump(const Duration(seconds: 2));
+      final remaining = created.where((image) => !image.debugDisposed).toList();
+      expect(
+        remaining,
+        isEmpty,
+        reason:
+            'No reader, atlas, or decoded photo handles should survive disposal and cache clearing',
+      );
+      expect(tester.binding.transientCallbackCount, 0);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'rapid next/back button sequences preserve the final settled photo spread',
+    (tester) async {
+      final controller = await _reader(
+        tester,
+        viewport: const Size(844, 390),
+        cover: defaultCoverSize,
+        captureKey: GlobalKey(),
+        spread: 2,
+      );
+      final book = find.byType(BookFlip);
+      final initialPages = tester.widget<BookFlip>(book).pages;
+      for (var cycle = 0; cycle < 4; cycle++) {
+        for (var tap = 0; tap < 5; tap++) {
+          await tester.tap(find.byTooltip('다음 페이지'));
+          await tester.pump(const Duration(milliseconds: 20));
+        }
+        await _settle(tester, controller);
+        final next = controller.currentSpread;
+        expect(next, greaterThanOrEqualTo(2));
+        for (var tap = 0; tap < 5; tap++) {
+          await tester.tap(find.byTooltip('이전 페이지'));
+          await tester.pump(const Duration(milliseconds: 20));
+        }
+        await _settle(tester, controller);
+        expect(controller.currentSpread, inInclusiveRange(0, next));
+        expect(tester.widget<BookFlip>(book).pages, same(initialPages));
+        if (controller.currentSpread > 0) {
+          expect(
+            find.descendant(
+              of: find.byKey(const ValueKey('reader-live-spread')),
+              matching: find.byType(Image),
+            ),
+            findsNWidgets(2),
+          );
+        }
+      }
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
+    'latest picker request can cancel a pending jump back to the current spread',
+    (tester) async {
+      final requested = ValueNotifier<int?>(null);
+      addTearDown(requested.dispose);
+      final controller = await _reader(
+        tester,
+        viewport: const Size(844, 390),
+        cover: defaultCoverSize,
+        captureKey: GlobalKey(),
+        spread: 2,
+        requestedPage: requested,
+      );
+      requested.value = 7;
+      await tester.pump();
+      expect(controller.isAnimating, isTrue);
+      requested.value = 3;
+      await tester.pump();
+      for (var frame = 0; frame < 100; frame++) {
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      expect(controller.isAnimating, isFalse);
+      expect(
+        controller.currentSpread,
+        2,
+        reason:
+            'The latest selection is pages 3-4, not the earlier pages 7-8 request',
+      );
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets('rotating a closing inner spread restores the crisp live pages', (
+    tester,
+  ) async {
+    final controller = await _reader(
+      tester,
+      viewport: const Size(390, 844),
+      cover: defaultCoverSize,
+      captureKey: GlobalKey(),
+      spread: 1,
+    );
+    final book = find.byType(BookFlip);
+    final rect = tester.getRect(book);
+    final drag = await tester.startGesture(
+      Offset(rect.left + 25, rect.center.dy),
+    );
+    await drag.moveBy(Offset(rect.width * .24, 0));
+    await tester.pump();
+    expect(controller.isAnimating, isTrue);
+    expect(controller.flipDirection, FlipDirection.backward);
+    await drag.cancel();
+    tester.view.physicalSize = const Size(844, 390);
+    await tester.pump();
+    await _ready(tester, controller);
+    await tester.pump(const Duration(seconds: 2));
+    expect(controller.currentSpread, 1);
+    expect(controller.isAnimating, isFalse);
+    expect(tester.takeException(), isNull);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('reader-live-spread')),
+        matching: find.byType(Image),
+      ),
+      findsNWidgets(2),
+      reason:
+          'The live photo overlay must not stay hidden after the old flip engine has been replaced',
+    );
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  for (final accessible in [false, true]) {
+    testWidgets(
+      'standalone picker jumps without a zero-duration scroll accessible=$accessible',
+      (tester) async {
+        final controller = PageController();
+        addTearDown(controller.dispose);
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              albumEditorViewModelProvider.overrideWith(
+                () => _ReaderRole('OWNER'),
+              ),
+            ],
+            child: MaterialApp(
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  disableAnimations: !accessible,
+                  accessibleNavigation: accessible,
+                ),
+                child: child!,
+              ),
+              home: Scaffold(
+                body: Consumer(
+                  builder: (context, ref, _) {
+                    final interaction = LayerInteractionManager.preview(
+                      ref,
+                      () => const Size(500, 500),
+                    );
+                    return Column(
+                      children: [
+                        Expanded(
+                          child: PageView.builder(
+                            controller: controller,
+                            itemCount: 3,
+                            itemBuilder: (_, index) => Text('Spread $index'),
+                          ),
+                        ),
+                        AlbumReaderThumbnailStrip(
+                          pages: List.generate(
+                            5,
+                            (index) => AlbumPage(
+                              id: '$index',
+                              pageIndex: index,
+                              isCover: index == 0,
+                              layers: const [],
+                            ),
+                          ),
+                          pageController: controller,
+                          previewBuilder: LayerBuilder(
+                            interaction,
+                            () => const Size(500, 500),
+                          ),
+                          baseCanvasSize: const Size(500, 500),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pump();
+        await tester.tap(find.byKey(const ValueKey('reader-spread-2')));
+        await tester.pump();
+        expect(controller.page, 2);
+        expect(controller.position.isScrollingNotifier.value, isFalse);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+
+    testWidgets(
+      'reduced motion keeps buttons, swipe and picker immediate accessible=$accessible',
+      (tester) async {
+        final requested = ValueNotifier<int?>(null);
+        addTearDown(requested.dispose);
+        final controller = await _reader(
+          tester,
+          viewport: const Size(844, 390),
+          cover: defaultCoverSize,
+          captureKey: GlobalKey(),
+          spread: 0,
+          reduceMotion: !accessible,
+          accessibleNavigation: accessible,
+          requestedPage: requested,
+        );
+        final book = find.byType(BookFlip);
+        final renderer = tester.state(book);
+        final textures = tester.widget<BookFlip>(book).pages;
+
+        await tester.tap(find.byTooltip('다음 페이지'));
+        await tester.pump();
+        expect(controller.currentSpread, 1);
+        expect(controller.isAnimating, isFalse);
+
+        final rect = tester.getRect(book);
+        final swipe = await tester.startGesture(
+          Offset(rect.right - 20, rect.center.dy),
+        );
+        await swipe.moveBy(Offset(-rect.width * .4, 0));
+        await tester.pump();
+        expect(
+          controller.flipProgress,
+          0,
+          reason: 'No curl while holding the paper',
+        );
+        expect(controller.currentSpread, 1);
+        await swipe.up();
+        await tester.pump();
+        expect(controller.currentSpread, 2);
+        expect(controller.isAnimating, isFalse);
+
+        final cancel = await tester.startGesture(tester.getCenter(book));
+        await cancel.moveBy(const Offset(20, 0));
+        await cancel.cancel();
+        await tester.pump();
+        expect(controller.currentSpread, 2);
+
+        requested.value = 7;
+        await tester.pump();
+        expect(controller.currentSpread, 4);
+        expect(controller.isAnimating, isFalse);
+        expect(tester.state(book), same(renderer));
+        expect(tester.widget<BookFlip>(book).pages, same(textures));
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+  }
+
+  for (final viewport in [const Size(320, 568), const Size(844, 390)]) {
+    testWidgets('reader controls fit large text in dark mode at $viewport', (
+      tester,
+    ) async {
+      final key = GlobalKey();
+      final controller = await _reader(
+        tester,
+        viewport: viewport,
+        cover: defaultCoverSize,
+        captureKey: key,
+        dark: true,
+        textScale: 2.3,
+      );
+      final panel = tester.getRect(
+        find.byKey(const ValueKey('reader-controls')),
+      );
+      final edit = find.byTooltip('현재 페이지 편집');
+      expect(tester.getSize(edit).height, greaterThanOrEqualTo(48));
+      expect(panel.right, lessThanOrEqualTo(viewport.width));
+      expect(panel.bottom, lessThanOrEqualTo(viewport.height));
+      expect(tester.getRect(find.byType(BookFlip)).bottom, lessThan(panel.top));
+      await tester.tap(find.byTooltip('다음 페이지'));
+      await tester.pump();
+      await _settle(tester, controller);
+      expect(controller.currentSpread, 3);
+      await _save(
+        tester,
+        key,
+        'reader-controls-${viewport.width.toInt()}-dark-large',
+      );
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    });
+  }
+
+  testWidgets('button turn finishes promptly and reuses captured artwork', (
+    tester,
+  ) async {
+    final controller = await _reader(
+      tester,
+      viewport: const Size(844, 390),
+      cover: defaultCoverSize,
+      captureKey: GlobalKey(),
+    );
+    final book = find.byType(BookFlip);
+    final renderer = tester.state(book);
+    final textures = tester.widget<BookFlip>(book).pages;
+    await tester.tap(find.byTooltip('다음 페이지'));
+    await tester.pump();
+    await tester.pump();
+    expect(controller.isAnimating, isTrue);
+    var frames = 0;
+    while (controller.isAnimating && frames < 40) {
+      await tester.pump(const Duration(milliseconds: 16));
+      frames++;
+    }
+    expect(
+      controller.isAnimating,
+      isFalse,
+      reason: 'The turn must settle within 640ms',
+    );
+    expect(controller.currentSpread, 3);
+    expect(tester.state(book), same(renderer));
+    expect(tester.widget<BookFlip>(book).pages, same(textures));
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('closing during a cover turn leaves no animation callbacks', (
+    tester,
+  ) async {
+    final controller = await _reader(
+      tester,
+      viewport: const Size(390, 844),
+      cover: defaultCoverSize,
+      captureKey: GlobalKey(),
+      spread: 0,
+    );
+    await tester.tap(find.byTooltip('다음 페이지'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 32));
+    expect(controller.isAnimating, isTrue);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(seconds: 2));
+    expect(tester.binding.transientCallbackCount, 0);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'dense displays keep only two crisp live pages over bounded turn textures',
+    (tester) async {
+      final controller = await _reader(
+        tester,
+        viewport: const Size(844, 390),
+        cover: defaultCoverSize,
+        captureKey: GlobalKey(),
+        devicePixelRatio: 3,
+      );
+      final live = find.byKey(const ValueKey('reader-live-spread'));
+      final photos = find.descendant(of: live, matching: find.byType(Image));
+      expect(photos, findsNWidgets(2));
+      for (final element in photos.evaluate()) {
+        final image = element.widget as Image;
+        expect(image.filterQuality, FilterQuality.medium);
+        final provider = image.image as ResizeImage;
+        expect(provider.width, inInclusiveRange(128, 1600));
+      }
+      final textures = tester.widget<BookFlip>(find.byType(BookFlip)).pages;
+      expect(textures.first.width, greaterThan(300));
+      expect(
+        textures.fold<int>(
+          0,
+          (bytes, image) => bytes + image.width * image.height * 4,
+        ),
+        lessThan(readerCaptureByteBudget * 1.01),
+      );
+      controller.nextSpread();
+      await tester.pump(const Duration(milliseconds: 48));
+      expect(
+        photos,
+        findsNothing,
+        reason: 'The live spread yields to the paper turn',
+      );
+      await _settle(tester, controller);
+      expect(photos, findsNWidgets(2));
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
 
   test('curl option survives copying, interpolation and equality', () {
     expect(_curl.copyWith(), _curl);

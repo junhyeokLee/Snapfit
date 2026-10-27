@@ -1,0 +1,309 @@
+{
+  "date": "2026-10-26",
+  "run": "5461947617a5",
+  "status": "live_jwt_and_UI_verified",
+  "checks": [
+    {
+      "name": "original customer hashes match the approved preflight",
+      "passed": true
+    },
+    {
+      "name": "status available A",
+      "passed": true
+    },
+    {
+      "name": "status available B",
+      "passed": true
+    },
+    {
+      "name": "status available C",
+      "passed": true
+    },
+    {
+      "name": "status available D",
+      "passed": true
+    },
+    {
+      "name": "all fresh confirmed accounts have original signup 500P only",
+      "passed": true
+    },
+    {
+      "name": "status does not award referral points",
+      "passed": true
+    },
+    {
+      "name": "anonymous referral RPC denied",
+      "passed": true
+    },
+    {
+      "name": "self referral denied",
+      "passed": true
+    },
+    {
+      "name": "invalid referral denied",
+      "passed": true
+    },
+    {
+      "name": "forged actor amount and date arguments rejected",
+      "passed": true
+    },
+    {
+      "name": "20 ordinary-JWT concurrent HTTP registrations using two different inviter codes succeed safely",
+      "passed": true,
+      "details": {
+        "requests": 20
+      }
+    },
+    {
+      "name": "exactly one concurrent registration awards 100P",
+      "passed": true
+    },
+    {
+      "name": "all concurrent replies confirm one 600P invitee balance",
+      "passed": true
+    },
+    {
+      "name": "status available A",
+      "passed": true
+    },
+    {
+      "name": "status available B",
+      "passed": true
+    },
+    {
+      "name": "status available D",
+      "passed": true
+    },
+    {
+      "name": "exactly one inviter and the invitee credited 100P despite different concurrent codes",
+      "passed": true
+    },
+    {
+      "name": "reciprocal referral denied",
+      "passed": true
+    },
+    {
+      "name": "lost-response retry cannot change inviter or award twice",
+      "passed": true
+    },
+    {
+      "name": "reserved referral ledger insert denied",
+      "passed": true
+    },
+    {
+      "name": "referral ledger update denied",
+      "passed": true
+    },
+    {
+      "name": "referral ledger delete denied",
+      "passed": true
+    },
+    {
+      "name": "referral ledger owner isolation",
+      "passed": true
+    },
+    {
+      "name": "status available C",
+      "passed": true
+    },
+    {
+      "name": "status available C",
+      "passed": true
+    },
+    {
+      "name": "reserved web QA account remains unclaimed at 500P",
+      "passed": true
+    },
+    {
+      "name": "root confirmed deployed web registration",
+      "passed": true
+    },
+    {
+      "name": "status available C",
+      "passed": true
+    },
+    {
+      "name": "status available A",
+      "passed": true
+    },
+    {
+      "name": "web invitee received exactly 100P once",
+      "passed": true
+    },
+    {
+      "name": "web inviter received exactly one more 100P",
+      "passed": true
+    },
+    {
+      "name": "post-web 20 concurrent retries grant zero",
+      "passed": true
+    },
+    {
+      "name": "two redemptions are linked to exactly four 100P ledger entries",
+      "passed": true,
+      "details": {
+        "redemptions": 2,
+        "referralLedger": 4,
+        "rewardSum": 400
+      }
+    }
+  ],
+  "cleanup": {
+    "uuid_columns_scanned": 122,
+    "residual_rows": [],
+    "complete": true,
+    "original_customer_rows_and_function_hashes_unchanged": true,
+    "private_credentials_directory_deleted": true,
+    "remaining_explicit_auth_and_referral_counts": {
+      "authUsers": 0,
+      "sessions": 0,
+      "refreshTokens": 0,
+      "codes": 0,
+      "redemptions": 0
+    },
+    "uuid_scan_schemas": [
+      "auth",
+      "public",
+      "attendance_private",
+      "referral_private"
+    ],
+    "no_production_helper_functions_created": true,
+    "local_qa_helper_sha256_before_removal": "0b58a4b3ace0b9e3a2952ea2b82bbd2afce80f34db22739a306f1dbb58ea1ceb",
+    "local_qa_source_and_bytecode_removed": true,
+    "removed_own_bytecode_files": [
+      "output/__pycache__/referral-live-20261026.cpython-311.pyc"
+    ]
+  },
+  "actual_concurrent_http_requests": 20,
+  "original_state_before": {
+    "albums": {
+      "count": 17,
+      "md5": "d18a757aac97c02ff73772ad6d9b10fa"
+    },
+    "attendance": {
+      "count": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "functions": [
+      {
+        "md5": "641224efe750b4ebbbd093816becdc77",
+        "name": "claim_daily_attendance()"
+      },
+      {
+        "md5": "d9f8bd38b6e78fbb0c7a10c518bf4ca2",
+        "name": "get_attendance_status()"
+      },
+      {
+        "md5": "472a91fa5b8d74160a93202767e8112d",
+        "name": "grant_signup_bonus()"
+      },
+      {
+        "md5": "96d28f04dc802555b31ed2fab1c4e2cb",
+        "name": "grant_verified_point_purchase(uuid,jsonb)"
+      },
+      {
+        "md5": "a70c9f212e88b85b8d21c83a38a8603a",
+        "name": "purchase_point_shop_product(text,integer)"
+      },
+      {
+        "md5": "eab1036539058cedb6107ad567a1526f",
+        "name": "revoke_verified_point_purchase(text,text,jsonb)"
+      }
+    ],
+    "ledger": {
+      "count": 9,
+      "md5": "505e87fd5bf66f94baa12eb0900211b4"
+    },
+    "ownership": {
+      "count": 3,
+      "md5": "e47b13aee1fd72350a72df3e0bdf322f"
+    },
+    "products": {
+      "count": 482,
+      "md5": "8eb322bcfa5d68286dd44238de20898d"
+    },
+    "profiles": {
+      "count": 4,
+      "md5": "9c93eb23e8acebc16c2e0b94738d457f"
+    },
+    "wallets": {
+      "count": 1,
+      "md5": "730f29d93b16ef7617427674765a47f1"
+    }
+  },
+  "ui_wait_started_at_utc": "2026-10-26T08:45:16.237833+00:00",
+  "UI_result": {
+    "passed": true,
+    "explicit_first_claim": "500P to 600P",
+    "code_preserved_through_login": true,
+    "my_and_points_entry": true,
+    "ledger": "+100P 초대 코드 등록 적립",
+    "copy_code_and_link": true,
+    "final_web_reopened_600P": true,
+    "icon_verified": true,
+    "UI_signed_out": true,
+    "hosting_version": "a3b0013a7cefe8d4",
+    "screenshots": [
+      "output/referral-live-20261026/referral-complete.jpg",
+      "output/referral-live-20261026/referral-ledger.jpg"
+    ]
+  },
+  "original_state_after": {
+    "albums": {
+      "count": 17,
+      "md5": "d18a757aac97c02ff73772ad6d9b10fa"
+    },
+    "attendance": {
+      "count": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "functions": [
+      {
+        "md5": "641224efe750b4ebbbd093816becdc77",
+        "name": "claim_daily_attendance()"
+      },
+      {
+        "md5": "d9f8bd38b6e78fbb0c7a10c518bf4ca2",
+        "name": "get_attendance_status()"
+      },
+      {
+        "md5": "472a91fa5b8d74160a93202767e8112d",
+        "name": "grant_signup_bonus()"
+      },
+      {
+        "md5": "96d28f04dc802555b31ed2fab1c4e2cb",
+        "name": "grant_verified_point_purchase(uuid,jsonb)"
+      },
+      {
+        "md5": "a70c9f212e88b85b8d21c83a38a8603a",
+        "name": "purchase_point_shop_product(text,integer)"
+      },
+      {
+        "md5": "eab1036539058cedb6107ad567a1526f",
+        "name": "revoke_verified_point_purchase(text,text,jsonb)"
+      }
+    ],
+    "ledger": {
+      "count": 9,
+      "md5": "505e87fd5bf66f94baa12eb0900211b4"
+    },
+    "ownership": {
+      "count": 3,
+      "md5": "e47b13aee1fd72350a72df3e0bdf322f"
+    },
+    "products": {
+      "count": 482,
+      "md5": "8eb322bcfa5d68286dd44238de20898d"
+    },
+    "profiles": {
+      "count": 4,
+      "md5": "9c93eb23e8acebc16c2e0b94738d457f"
+    },
+    "wallets": {
+      "count": 1,
+      "md5": "730f29d93b16ef7617427674765a47f1"
+    }
+  },
+  "passed_checks": 34,
+  "finished_at_utc": "2026-10-26T08:56:13.345586+00:00"
+}

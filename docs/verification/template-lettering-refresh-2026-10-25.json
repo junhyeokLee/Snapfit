@@ -1,0 +1,100 @@
+{
+  "date": "2026-10-25",
+  "scope": "Five current catalog covers: expressive lettering and one approved public title rename",
+  "covers": {
+    "-9303": {
+      "title": "작은 날의 기록",
+      "font": "Maker",
+      "ink": "#4D3549"
+    },
+    "-9412": {
+      "title": "도시의 수집가",
+      "font": "Paece",
+      "ink": "#172E43"
+    },
+    "-9302": {
+      "title": "여행의 결",
+      "font": "Arirang2",
+      "ink": "#214B47"
+    },
+    "-9452": {
+      "title": "둘만의 장면",
+      "font": "Yeongwol",
+      "ink": "#2F4B55"
+    },
+    "-9463": {
+      "title": "너랑 걷는 오후",
+      "font": "Doldam",
+      "ink": "#FFF4DB"
+    }
+  },
+  "preserved": [
+    "All original photos, crop, frames and image z order",
+    "All interiors, material keys and layer counts",
+    "Original archived title and source factories",
+    "Existing product keys, prices, free/paid status and saved customer albums",
+    "Existing bounded preview/document/image cache architecture"
+  ],
+  "native_proofs": {
+    "images": 30,
+    "aspects": [
+      "square",
+      "landscape4x3",
+      "landscape5x4"
+    ],
+    "fixture": "test/fixtures/catalog_lettering_before.json.gz",
+    "cache_budget_bytes": 25165824,
+    "live_images_after_unmount": 0,
+    "pending_images_after_unmount": 0,
+    "log": "/tmp/catalog-lettering-native-proofs.log"
+  },
+  "snapshots": {
+    "changed_documents": 5,
+    "unchanged_documents": 140,
+    "font_digest_unchanged": true,
+    "export_log": "/tmp/catalog-lettering-export.log"
+  },
+  "verification": {
+    "quality_regressions": 424,
+    "integration_and_snapshot_tests": 51,
+    "initial_failure": "One old placement assertion required walking title y > .5. Replaced by both photographed head zones mapped through each printable crop; rerun of all 11 diversity tests passed. Other 413 quality tests passed without changes. Frozen source baselines were not re-recorded.",
+    "logs": [
+      "/tmp/catalog-lettering-quality.log",
+      "/tmp/catalog-lettering-diversity.log",
+      "/tmp/catalog-lettering-integration.log",
+      "/tmp/catalog-lettering-analysis.log"
+    ],
+    "app_build_run": false,
+    "device_performance_profile_run": false
+  },
+  "store_update": {
+    "project": "rrbhxdtriummqpztpjrk",
+    "product_key": "template:our-walking-promise",
+    "old_title": "산책이라는 약속",
+    "title": "너랑 걷는 오후",
+    "changed_fields": [
+      "title",
+      "updated_at"
+    ],
+    "preserved_price": 0,
+    "preserved_is_active": true,
+    "verified_as_anon": {
+      "title": "너랑 걷는 오후",
+      "is_free": true,
+      "available": true,
+      "point_price": 0,
+      "owned": false
+    }
+  },
+  "review": {
+    "blocking_findings": [],
+    "notes": [
+      "Expressive fonts are already bundled; no new raster/font assets or layer growth.",
+      "Publication-only naming leaves raw/saved book sources intact.",
+      "Public registration metadata uses catalogTitle so admin refresh cannot restore the retired public name.",
+      "All title layouts fit actual Korean fonts, save/reopen preserves editable text/font/ink, photographs and both walking subjects stay unobstructed.",
+      "No changes to store controllers, image decode budgets, cache lifetime or runtime preview scheduling."
+    ]
+  },
+  "comparison": "http://127.0.0.1:8774/lettering/?v=lettering-20261025-01"
+}

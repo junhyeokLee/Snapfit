@@ -187,7 +187,10 @@ void main() {
     NotificationContentKind.template,
     12,
   );
-  setUp(() => SharedPreferences.setMockInitialValues({}));
+  // This suite isolates post-introduction notification routing.
+  setUp(
+    () => SharedPreferences.setMockInitialValues({'snapfit_first_visit_v1': 3}),
+  );
   void viewport(WidgetTester tester) {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(390, 844);

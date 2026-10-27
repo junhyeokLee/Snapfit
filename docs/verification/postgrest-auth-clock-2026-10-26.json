@@ -1,0 +1,253 @@
+{
+  "project_ref": "rrbhxdtriummqpztpjrk",
+  "date_kst": "2026-10-26",
+  "status": "recovered_after_official_restart_fresh_jwt_verified_on_two_accounts_after_idle",
+  "observations": {
+    "initial": {
+      "observed_at_utc": "2026-10-26T03:40:50.315755+00:00",
+      "checks": [
+        {
+          "actor": "anonymous",
+          "status": 200,
+          "error_code": null,
+          "error_message": null,
+          "server_date": "Mon, 26 Oct 2026 03:40:51 GMT",
+          "row_count_if_success": 0
+        },
+        {
+          "actor": "ordinary_fresh_user",
+          "status": 401,
+          "error_code": "PGRST303",
+          "error_message": "JWT issued at future",
+          "server_date": "Mon, 26 Oct 2026 03:40:52 GMT",
+          "row_count_if_success": null
+        },
+        {
+          "actor": "service_fixture_scope",
+          "status": 200,
+          "error_code": null,
+          "error_message": null,
+          "server_date": "Mon, 26 Oct 2026 03:40:52 GMT",
+          "row_count_if_success": 1
+        }
+      ],
+      "ordinary_jwt_metadata": {
+        "iss": "https://rrbhxdtriummqpztpjrk.supabase.co/auth/v1",
+        "aud": "authenticated",
+        "iat": 1792986050,
+        "exp": 1792989650,
+        "role": "authenticated"
+      },
+      "jwt_algorithm": "ES256",
+      "auth_user_created": true,
+      "auth_login_succeeded": true,
+      "data_api_write_failed_before_album_or_publication": true,
+      "sensitive_values_printed": false
+    },
+    "same_jwt_first_age_probe": {
+      "jwt_algorithm": "ES256",
+      "jwt_kid": "0ffca026-d89f-4a6d-99f8-dd905b639ccb",
+      "jwt_iat": 1792986173,
+      "checks": [
+        {
+          "elapsed_since_login_seconds": 0.47,
+          "status": 401,
+          "code": "PGRST303",
+          "message": "JWT issued at future",
+          "server_date": "Mon, 26 Oct 2026 03:42:54 GMT"
+        },
+        {
+          "elapsed_since_login_seconds": 16.74,
+          "status": 401,
+          "code": "PGRST303",
+          "message": "JWT issued at future",
+          "server_date": "Mon, 26 Oct 2026 03:43:10 GMT"
+        },
+        {
+          "elapsed_since_login_seconds": 45.59,
+          "status": 401,
+          "code": "PGRST303",
+          "message": "JWT issued at future",
+          "server_date": "Mon, 26 Oct 2026 03:43:39 GMT"
+        }
+      ],
+      "same_jwt_auth_user_status": 200,
+      "same_jwt_storage_list_status": 200
+    },
+    "after_root_reload": {
+      "status": 401,
+      "code": "PGRST303",
+      "message": "JWT issued at future",
+      "rowCount": null,
+      "observedAt": "2026-10-26T03:45:57.869Z",
+      "jwtAlgorithm": "ES256",
+      "jwtKid": "0ffca026-d89f-4a6d-99f8-dd905b639ccb",
+      "iat": 1792986358,
+      "exp": 1792989958
+    },
+    "fresh_publishable_key_probes": [
+      {
+        "actor": "fresh_publishable_anonymous",
+        "status": 200,
+        "code": null,
+        "message": null,
+        "items": 0,
+        "tokenAgeSeconds": 43
+      },
+      {
+        "actor": "fresh_publishable_ordinary",
+        "status": 401,
+        "code": "PGRST303",
+        "message": "JWT issued at future",
+        "items": null,
+        "tokenAgeSeconds": 43
+      }
+    ],
+    "after_reload_aged_token": {
+      "elapsedSinceLoginSeconds": 142,
+      "status": 401,
+      "code": "PGRST303",
+      "message": "JWT issued at future",
+      "observedAt": "2026-10-26T03:48:20.404Z"
+    },
+    "postgrest_version": "14.5",
+    "database_gateway_and_auth_timestamps_agree": true
+  },
+  "root_actions": [
+    {
+      "action": "NOTIFY pgrst reload config and reload schema",
+      "observed_utc": "2026-10-26T03:44:15Z/2026-10-26T03:44:20Z",
+      "outcome": "fresh JWT and same JWT aged142s still PGRST303"
+    },
+    {
+      "action": "official Management API POST /v1/projects/{ref}/restart with no request body",
+      "observed_utc": "2026-10-26T04:07:14.947979Z",
+      "status": 200,
+      "executed_by": "root",
+      "credentials_or_security_configuration_changed": false
+    }
+  ],
+  "interpretation": {
+    "confirmed": "Only authenticated REST requests reject a correctly issued token with JWT issued at future; same token is accepted by Auth and Storage. anon/service legacy REST reads pass.",
+    "inference": "PostgREST cached current-time defect is strongly supported by current14.5 and matching upstream fixes, but this is an operational inference rather than a hosted-service diagnosis.",
+    "schema_migration_missing": false,
+    "key_rotation_or_token_modification_performed": false,
+    "rls_or_signature_validation_weakened": false
+  },
+  "management_api": {
+    "official_openapi": "https://api.supabase.com/api/v1-json",
+    "postgrest_read_update_route": "/v1/projects/{ref}/postgrest",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "postgrest_only_restart_documented": false,
+    "project_restart_route": "/v1/projects/{ref}/restart",
+    "same_config_patch_restart_guaranteed": false
+  },
+  "references": [
+    "https://docs.postgrest.org/en/v14/references/auth.html",
+    "https://github.com/PostgREST/postgrest/pull/5159",
+    "https://github.com/PostgREST/postgrest/releases/tag/v14.17",
+    "https://github.com/PostgREST/postgrest/pull/5233",
+    "https://supabase.com/docs/reference/api/v1-get-postgrest-service-config",
+    "https://supabase.com/docs/reference/api/v1-update-postgrest-service-config"
+  ],
+  "fixture_scope": {
+    "accounts_created": 1,
+    "albums_created": 0,
+    "works_published": 0,
+    "credentials_file_permission": "0600",
+    "fixture_held_for_recovery_and_cleanup": true,
+    "credentials_recovered_after_ephemeral_tmp_loss": true,
+    "credentials_directory_stable_outside_repository": true
+  },
+  "sensitive_values_in_report": false,
+  "recovery": {
+    "project_active_healthy_at": "2026-10-26T04:07:55.493367Z",
+    "postgrest_config_sha256_before_after": "0b0b1ae53a8c58ce2b921371079cb240e26f7657d462b0878ff5bc26ca0933ac",
+    "config_unchanged": true,
+    "first_fresh_ordinary_rest": {
+      "observed_at_utc": "2026-10-26T04:08:14.998708+00:00",
+      "ordinary_user_rest_status": 200,
+      "code": null,
+      "message": null,
+      "credential_recovered_for_exact_existing_synthetic_account": true,
+      "accounts": 1,
+      "albums": 0,
+      "works": 0,
+      "credentials_path": "/Users/devsheep/SnapFit/.profile-qa-private-20261026/credentials.json",
+      "credentials_mode": "0o600"
+    },
+    "stability": {
+      "checks": [
+        {
+          "actor": "A",
+          "event": "fresh_login_first_rest",
+          "status": 200,
+          "observed_at_utc": "2026-10-26T04:09:30.243501+00:00"
+        },
+        {
+          "actor": "B",
+          "event": "fresh_login_first_rest",
+          "status": 200,
+          "observed_at_utc": "2026-10-26T04:09:31.871954+00:00"
+        },
+        {
+          "actor": "A",
+          "event": "new_login_after_client_idle",
+          "status": 200,
+          "profile_rpc_status": 200,
+          "idle_since_initial_logins_seconds": 65.21,
+          "observed_at_utc": "2026-10-26T04:10:37.084095+00:00"
+        },
+        {
+          "actor": "B",
+          "event": "new_login_after_client_idle",
+          "status": 200,
+          "profile_rpc_status": 200,
+          "idle_since_initial_logins_seconds": 66.03,
+          "observed_at_utc": "2026-10-26T04:10:37.898243+00:00"
+        }
+      ],
+      "passed": 4,
+      "scope": "two synthetic accounts; immediate and at least45seconds later fresh logins",
+      "long_term_cache_bug_not_claimed_fixed": true
+    },
+    "post_restart_43_function_bodies_unchanged": true,
+    "scheduled_functions_after_restart": {
+      "window_start_utc": "2026-10-26T04:08:00Z",
+      "window_end_utc": "2026-10-26T04:12:01Z",
+      "http_status_counts": [
+        {
+          "entries": 1,
+          "function_name": "iap-reconcile",
+          "status": "200"
+        },
+        {
+          "entries": 2,
+          "function_name": "print-order-scheduler",
+          "status": "200"
+        },
+        {
+          "entries": 4,
+          "function_name": "push-dispatch",
+          "status": "200"
+        }
+      ],
+      "interpretation": "Previous downstream REST401 failures also stopped after the normal project restart. No push/payment feature settings were changed."
+    }
+  },
+  "management_followup": "Hosted PostgREST was14.5 when failure occurred. A normal restart restored tested behavior; a platform upgrade containing upstream cached-clock fixes remains a separate reliability follow-up. No JWT, RLS, grants, signing keys, dates or validation were weakened.",
+  "synthetic_validation_cleanup": {
+    "completed": true,
+    "accounts_removed": 2,
+    "sessions_remaining": 0,
+    "identity_and_refresh_tokens_remaining": 0,
+    "credentials_deleted": true,
+    "verification_report": "profile-ui-live-2026-10-26.json",
+    "data_security_and_permission_settings_weakened": false,
+    "private_helper_directory_deleted": true,
+    "completed_at_utc": "2026-10-26T04:54:49.737194+00:00"
+  }
+}

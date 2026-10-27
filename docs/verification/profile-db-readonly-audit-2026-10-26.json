@@ -1,0 +1,1579 @@
+{
+  "project_ref": "rrbhxdtriummqpztpjrk",
+  "date_kst": "2026-10-26",
+  "phase": "read_only_preflight_before_synthetic_fixture",
+  "observed_at_utc": "2026-10-26 03:25:48 UTC",
+  "decision": {
+    "relevant_pending_migrations": 0,
+    "new_schema_required_for_profile_design": false,
+    "production_ddl_executed": 0,
+    "production_data_mutations": 0,
+    "old_migrations_bulk_applied": false
+  },
+  "documentation": {
+    "changelog": "https://supabase.com/changelog.md",
+    "relevant_breaking_change": {
+      "url": "https://supabase.com/changelog/cbc-tls-ciphers-deprecated",
+      "earliest_effective_date": "2026-11-10",
+      "effect": "Legacy TLS CBC-only clients may fail; no profile/schema migration required. No claim that historical client TLS compatibility was tested."
+    },
+    "storage_docs": [
+      "https://supabase.com/docs/guides/storage/buckets/fundamentals",
+      "https://supabase.com/docs/guides/storage/serving/downloads"
+    ]
+  },
+  "migrations": {
+    "remote_count": 72,
+    "local_count": 77,
+    "relevant": [
+      {
+        "file": "20261025062446_social_publication_and_profiles.sql",
+        "version": "20261025062446",
+        "name": "social_publication_and_profiles",
+        "remoteVersion": "20261025062446",
+        "remoteName": "social_publication_and_profiles",
+        "sameNameVersions": [
+          "20261025062446"
+        ],
+        "state": "exact"
+      },
+      {
+        "file": "20261025062938_social_legacy_empty_pages_fallback.sql",
+        "version": "20261025062938",
+        "name": "social_legacy_empty_pages_fallback",
+        "remoteVersion": "20261025062938",
+        "remoteName": "social_legacy_empty_pages_fallback",
+        "sameNameVersions": [
+          "20261025062938"
+        ],
+        "state": "exact"
+      },
+      {
+        "file": "20261025073121_social_topic_taxonomy.sql",
+        "version": "20261025073121",
+        "name": "social_topic_taxonomy",
+        "remoteVersion": "20261025073121",
+        "remoteName": "social_topic_taxonomy",
+        "sameNameVersions": [
+          "20261025073121"
+        ],
+        "state": "exact"
+      },
+      {
+        "file": "20261025073122_social_idempotent_follow_state.sql",
+        "version": "20261025073122",
+        "name": "social_idempotent_follow_state",
+        "remoteVersion": "20261025073122",
+        "remoteName": "social_idempotent_follow_state",
+        "sameNameVersions": [
+          "20261025073122"
+        ],
+        "state": "exact"
+      },
+      {
+        "file": "20261025074127_social_public_profile_photos.sql",
+        "version": "20261025074127",
+        "name": "social_public_profile_photos",
+        "remoteVersion": "20261025074127",
+        "remoteName": "social_public_profile_photos",
+        "sameNameVersions": [
+          "20261025074127"
+        ],
+        "state": "exact"
+      },
+      {
+        "file": "20261025082024_social_idempotent_reaction_state.sql",
+        "version": "20261025082024",
+        "name": "social_idempotent_reaction_state",
+        "remoteVersion": "20261025082024",
+        "remoteName": "social_idempotent_reaction_state",
+        "sameNameVersions": [
+          "20261025082024"
+        ],
+        "state": "exact"
+      },
+      {
+        "file": "20261025082810_social_idempotent_comments.sql",
+        "version": "20261025082810",
+        "name": "social_idempotent_comments",
+        "remoteVersion": "20261025082810",
+        "remoteName": "social_idempotent_comments",
+        "sameNameVersions": [
+          "20261025082810"
+        ],
+        "state": "exact"
+      },
+      {
+        "file": "20261025083353_social_publication_conflict_http_status.sql",
+        "version": "20261025083353",
+        "name": "social_publication_conflict_http_status",
+        "remoteVersion": "20261025083353",
+        "remoteName": "social_publication_conflict_http_status",
+        "sameNameVersions": [
+          "20261025083353"
+        ],
+        "state": "exact"
+      },
+      {
+        "file": "20261025092237_album_collaboration_authorization_and_cas.sql",
+        "version": "20261025092237",
+        "name": "album_collaboration_authorization_and_cas",
+        "remoteVersion": "20261025092237",
+        "remoteName": "album_collaboration_authorization_and_cas",
+        "sameNameVersions": [
+          "20261025092237"
+        ],
+        "state": "exact"
+      },
+      {
+        "file": "20261025092240_album_asset_membership_bindings.sql",
+        "version": "20261025092240",
+        "name": "album_asset_membership_bindings",
+        "remoteVersion": "20261025092240",
+        "remoteName": "album_asset_membership_bindings",
+        "sameNameVersions": [
+          "20261025092240"
+        ],
+        "state": "exact"
+      },
+      {
+        "file": "20261025092245_collaborative_album_publication_history.sql",
+        "version": "20261025092245",
+        "name": "collaborative_album_publication_history",
+        "remoteVersion": "20261025092245",
+        "remoteName": "collaborative_album_publication_history",
+        "sameNameVersions": [
+          "20261025092245"
+        ],
+        "state": "exact"
+      },
+      {
+        "file": "20261025093805_album_collaboration_print_asset_owners.sql",
+        "version": "20261025093805",
+        "name": "album_collaboration_print_asset_owners",
+        "remoteVersion": "20261025093805",
+        "remoteName": "album_collaboration_print_asset_owners",
+        "sameNameVersions": [
+          "20261025093805"
+        ],
+        "state": "exact"
+      }
+    ],
+    "historical_drift": [
+      {
+        "file": "20260825030000_album_assets_storage_policies.sql",
+        "version": "20260825030000",
+        "name": "album_assets_storage_policies",
+        "remoteVersion": "20260825030000",
+        "remoteName": "template_user_count_rpc",
+        "sameNameVersions": [],
+        "state": "version_name_drift"
+      },
+      {
+        "file": "20261008080526_album_invite_accept_atomic.sql",
+        "version": "20261008080526",
+        "name": "album_invite_accept_atomic",
+        "remoteVersion": null,
+        "remoteName": null,
+        "sameNameVersions": [],
+        "state": "not_in_history"
+      },
+      {
+        "file": "20261018183536_print_public_catalog_and_order_consent.sql",
+        "version": "20261018183536",
+        "name": "print_public_catalog_and_order_consent",
+        "remoteVersion": null,
+        "remoteName": null,
+        "sameNameVersions": [
+          "20261018184419"
+        ],
+        "state": "name_with_remote_version"
+      },
+      {
+        "file": "20261018183844_print_file_retention_preparation.sql",
+        "version": "20261018183844",
+        "name": "print_file_retention_preparation",
+        "remoteVersion": null,
+        "remoteName": null,
+        "sameNameVersions": [
+          "20261018184423"
+        ],
+        "state": "name_with_remote_version"
+      },
+      {
+        "file": "20261018184546_print_retention_bounded_hourly_batch.sql",
+        "version": "20261018184546",
+        "name": "print_retention_bounded_hourly_batch",
+        "remoteVersion": null,
+        "remoteName": null,
+        "sameNameVersions": [
+          "20261018184932"
+        ],
+        "state": "name_with_remote_version"
+      },
+      {
+        "file": "20261018184830_account_deletion_review_requests.sql",
+        "version": "20261018184830",
+        "name": "account_deletion_review_requests",
+        "remoteVersion": null,
+        "remoteName": null,
+        "sameNameVersions": [
+          "20261018185244"
+        ],
+        "state": "name_with_remote_version"
+      },
+      {
+        "file": "20261018192705_ai_template_generation_billing_guard.sql",
+        "version": "20261018192705",
+        "name": "ai_template_generation_billing_guard",
+        "remoteVersion": null,
+        "remoteName": null,
+        "sameNameVersions": [
+          "20261018194356"
+        ],
+        "state": "name_with_remote_version"
+      },
+      {
+        "file": "20261019120000_ai_template_cost_500.sql",
+        "version": "20261019120000",
+        "name": "ai_template_cost_500",
+        "remoteVersion": null,
+        "remoteName": null,
+        "sameNameVersions": [],
+        "state": "not_in_history"
+      },
+      {
+        "file": "20261019121000_signup_bonus_points.sql",
+        "version": "20261019121000",
+        "name": "signup_bonus_points",
+        "remoteVersion": null,
+        "remoteName": null,
+        "sameNameVersions": [],
+        "state": "not_in_history"
+      },
+      {
+        "file": "20261019130000_ai_template_page_cost.sql",
+        "version": "20261019130000",
+        "name": "ai_template_page_cost",
+        "remoteVersion": null,
+        "remoteName": null,
+        "sameNameVersions": [],
+        "state": "not_in_history"
+      },
+      {
+        "file": "20261022134610_retire_legacy_store_template_rows.sql",
+        "version": "20261022134610",
+        "name": "retire_legacy_store_template_rows",
+        "remoteVersion": null,
+        "remoteName": null,
+        "sameNameVersions": [],
+        "state": "not_in_history"
+      }
+    ],
+    "historical_feature_metadata": {
+      "signup_trigger": true,
+      "signup_function": true,
+      "cost_500_function": true,
+      "page_cost_function": true,
+      "remaining_exact_retired_catalog_rows": 0
+    },
+    "historical_drift_action": "Read only. Older price/signup/catalog migrations were not applied. Some features already exist without their local version in history; do not infer unapplied behavior from filenames alone."
+  },
+  "functions": {
+    "compared": 43,
+    "body_matches": 43,
+    "mismatches": 0,
+    "comparison": [
+      {
+        "schema": "social_private",
+        "name": "social_blocked",
+        "source_file": "20261025062446_social_publication_and_profiles.sql",
+        "expected_body_md5": "af043469caa4da1ed539b63223fc1f45",
+        "remote": [
+          {
+            "schema": "social_private",
+            "name": "social_blocked",
+            "identity_arguments": "p_user uuid",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "af043469caa4da1ed539b63223fc1f45",
+            "anon_execute": true,
+            "authenticated_execute": true
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "social_private",
+        "name": "social_visible",
+        "source_file": "20261025062446_social_publication_and_profiles.sql",
+        "expected_body_md5": "f755cd1eb9b1ec7ab462ff58adb23e31",
+        "remote": [
+          {
+            "schema": "social_private",
+            "name": "social_visible",
+            "identity_arguments": "p_work uuid",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "f755cd1eb9b1ec7ab462ff58adb23e31",
+            "anon_execute": true,
+            "authenticated_execute": true
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "social_private",
+        "name": "social_profile_json",
+        "source_file": "20261025074127_social_public_profile_photos.sql",
+        "expected_body_md5": "15d0e723e80bd8cbba44799b13e025b5",
+        "remote": [
+          {
+            "schema": "social_private",
+            "name": "social_profile_json",
+            "identity_arguments": "p_user uuid",
+            "security_definer": false,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "15d0e723e80bd8cbba44799b13e025b5",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "social_private",
+        "name": "social_work_json",
+        "source_file": "20261025062446_social_publication_and_profiles.sql",
+        "expected_body_md5": "1cfd61e6fd7a41e51e96ef1e3fc29cf5",
+        "remote": [
+          {
+            "schema": "social_private",
+            "name": "social_work_json",
+            "identity_arguments": "p_id uuid",
+            "security_definer": false,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "1cfd61e6fd7a41e51e96ef1e3fc29cf5",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "social_private",
+        "name": "social_api",
+        "source_file": "20261025092245_collaborative_album_publication_history.sql",
+        "expected_body_md5": "3e315bc4bae71a37d36ae21d0e7ee19c",
+        "remote": [
+          {
+            "schema": "social_private",
+            "name": "social_api",
+            "identity_arguments": "p_action text, p_payload jsonb",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "3e315bc4bae71a37d36ae21d0e7ee19c",
+            "anon_execute": true,
+            "authenticated_execute": true
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "public",
+        "name": "social_api",
+        "source_file": "20261025062446_social_publication_and_profiles.sql",
+        "expected_body_md5": "d33e3d459ef8de8ed8f725562dce5c82",
+        "remote": [
+          {
+            "schema": "public",
+            "name": "social_api",
+            "identity_arguments": "p_action text, p_payload jsonb",
+            "security_definer": false,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "d33e3d459ef8de8ed8f725562dce5c82",
+            "anon_execute": true,
+            "authenticated_execute": true
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "social_private",
+        "name": "social_snapshot_access",
+        "source_file": "20261025062446_social_publication_and_profiles.sql",
+        "expected_body_md5": "64f266fd86c33cc46efa9ee6f75425a8",
+        "remote": [
+          {
+            "schema": "social_private",
+            "name": "social_snapshot_access",
+            "identity_arguments": "p_path text, p_upload boolean",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "64f266fd86c33cc46efa9ee6f75425a8",
+            "anon_execute": true,
+            "authenticated_execute": true
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "social_private",
+        "name": "social_snapshot_guard",
+        "source_file": "20261025062446_social_publication_and_profiles.sql",
+        "expected_body_md5": "9a0458078edde148cc05cf7aed8e0e36",
+        "remote": [
+          {
+            "schema": "social_private",
+            "name": "social_snapshot_guard",
+            "identity_arguments": "",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "9a0458078edde148cc05cf7aed8e0e36",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "social_private",
+        "name": "normalize_social_topic",
+        "source_file": "20261025073121_social_topic_taxonomy.sql",
+        "expected_body_md5": "5dd5254ba245546786da4376e4e7eed1",
+        "remote": [
+          {
+            "schema": "social_private",
+            "name": "normalize_social_topic",
+            "identity_arguments": "p_topic text",
+            "security_definer": false,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "5dd5254ba245546786da4376e4e7eed1",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "social_private",
+        "name": "social_profile_photo_visible",
+        "source_file": "20261025074127_social_public_profile_photos.sql",
+        "expected_body_md5": "45a0c1c2ec17b91dc67471305da664c7",
+        "remote": [
+          {
+            "schema": "social_private",
+            "name": "social_profile_photo_visible",
+            "identity_arguments": "p_path text",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "45a0c1c2ec17b91dc67471305da664c7",
+            "anon_execute": true,
+            "authenticated_execute": true
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "social_private",
+        "name": "social_profile_photo_deletable",
+        "source_file": "20261025074127_social_public_profile_photos.sql",
+        "expected_body_md5": "49241846a3a18c206f1668437818e5e2",
+        "remote": [
+          {
+            "schema": "social_private",
+            "name": "social_profile_photo_deletable",
+            "identity_arguments": "p_path text",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "49241846a3a18c206f1668437818e5e2",
+            "anon_execute": false,
+            "authenticated_execute": true
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "social_private",
+        "name": "social_profile_photo_guard",
+        "source_file": "20261025074127_social_public_profile_photos.sql",
+        "expected_body_md5": "b808991d4495579eb1411d0e5ea1d7ac",
+        "remote": [
+          {
+            "schema": "social_private",
+            "name": "social_profile_photo_guard",
+            "identity_arguments": "",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "b808991d4495579eb1411d0e5ea1d7ac",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "can_access_album",
+        "source_file": "20261025092237_album_collaboration_authorization_and_cas.sql",
+        "expected_body_md5": "00f4200b16e38da53c02b77233766edb",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "can_access_album",
+            "identity_arguments": "p_id bigint",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "00f4200b16e38da53c02b77233766edb",
+            "anon_execute": false,
+            "authenticated_execute": true
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "can_edit_album",
+        "source_file": "20261025092237_album_collaboration_authorization_and_cas.sql",
+        "expected_body_md5": "ab3b2ed6ffafb93a7b91d48ac807f1f0",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "can_edit_album",
+            "identity_arguments": "p_id bigint",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "ab3b2ed6ffafb93a7b91d48ac807f1f0",
+            "anon_execute": false,
+            "authenticated_execute": true
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "public",
+        "name": "can_access_album",
+        "source_file": "20261025092237_album_collaboration_authorization_and_cas.sql",
+        "expected_body_md5": "a3134e12b2007fb9ce20632ad51b226f",
+        "remote": [
+          {
+            "schema": "public",
+            "name": "can_access_album",
+            "identity_arguments": "target_album_id bigint",
+            "security_definer": false,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "a3134e12b2007fb9ce20632ad51b226f",
+            "anon_execute": false,
+            "authenticated_execute": true
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "public",
+        "name": "can_edit_album",
+        "source_file": "20261025092237_album_collaboration_authorization_and_cas.sql",
+        "expected_body_md5": "21678e622b15d271ed6eeb11f780f280",
+        "remote": [
+          {
+            "schema": "public",
+            "name": "can_edit_album",
+            "identity_arguments": "target_album_id bigint",
+            "security_definer": false,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "21678e622b15d271ed6eeb11f780f280",
+            "anon_execute": false,
+            "authenticated_execute": true
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "album_write_guard",
+        "source_file": "20261025092237_album_collaboration_authorization_and_cas.sql",
+        "expected_body_md5": "24f553ce56eeba0adfd7a81a7d45c11c",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "album_write_guard",
+            "identity_arguments": "",
+            "security_definer": false,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "24f553ce56eeba0adfd7a81a7d45c11c",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "album_touch_revision",
+        "source_file": "20261025092237_album_collaboration_authorization_and_cas.sql",
+        "expected_body_md5": "c4c8c7112fb2f0b1687a8d72d35072df",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "album_touch_revision",
+            "identity_arguments": "",
+            "security_definer": false,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "c4c8c7112fb2f0b1687a8d72d35072df",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "member_guard",
+        "source_file": "20261025092237_album_collaboration_authorization_and_cas.sql",
+        "expected_body_md5": "8b2df525a03d2719feb980e3e0ea82fd",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "member_guard",
+            "identity_arguments": "",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "8b2df525a03d2719feb980e3e0ea82fd",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "public",
+        "name": "accept_album_invite",
+        "source_file": "20261025092237_album_collaboration_authorization_and_cas.sql",
+        "expected_body_md5": "f093cc375891792f2ddb4da63c033075",
+        "remote": [
+          {
+            "schema": "public",
+            "name": "accept_album_invite",
+            "identity_arguments": "p_token text, p_user_id uuid",
+            "security_definer": false,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "f093cc375891792f2ddb4da63c033075",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "member_json",
+        "source_file": "20261025092237_album_collaboration_authorization_and_cas.sql",
+        "expected_body_md5": "1d0e095808db8a035d78bc26d28967cb",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "member_json",
+            "identity_arguments": "p_album bigint, p_user uuid",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "1d0e095808db8a035d78bc26d28967cb",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "collaboration_api",
+        "source_file": "20261025092237_album_collaboration_authorization_and_cas.sql",
+        "expected_body_md5": "9f8706a3e2413014d6d0f1a078bbaa23",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "collaboration_api",
+            "identity_arguments": "p_action text, p_payload jsonb",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "9f8706a3e2413014d6d0f1a078bbaa23",
+            "anon_execute": false,
+            "authenticated_execute": true
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "public",
+        "name": "album_collaboration",
+        "source_file": "20261025092237_album_collaboration_authorization_and_cas.sql",
+        "expected_body_md5": "2c84f0a0ee2aa8408e56810a83117e2c",
+        "remote": [
+          {
+            "schema": "public",
+            "name": "album_collaboration",
+            "identity_arguments": "p_action text, p_payload jsonb",
+            "security_definer": false,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "2c84f0a0ee2aa8408e56810a83117e2c",
+            "anon_execute": false,
+            "authenticated_execute": true
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "save_album",
+        "source_file": "20261025092237_album_collaboration_authorization_and_cas.sql",
+        "expected_body_md5": "df1175c2959e8e6ab733066c568b5ee9",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "save_album",
+            "identity_arguments": "p_album_id bigint, p_expected_updated_at timestamp with time zone, p_changes jsonb, p_request_id uuid, p_expected_actor_id uuid",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "df1175c2959e8e6ab733066c568b5ee9",
+            "anon_execute": false,
+            "authenticated_execute": true
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "public",
+        "name": "save_album_document",
+        "source_file": "20261025092237_album_collaboration_authorization_and_cas.sql",
+        "expected_body_md5": "de6a4e900c409e79101fabfdef697094",
+        "remote": [
+          {
+            "schema": "public",
+            "name": "save_album_document",
+            "identity_arguments": "p_album_id bigint, p_expected_updated_at timestamp with time zone, p_changes jsonb, p_request_id uuid, p_expected_actor_id uuid",
+            "security_definer": false,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "de6a4e900c409e79101fabfdef697094",
+            "anon_execute": false,
+            "authenticated_execute": true
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "decode_path",
+        "source_file": "20261025092240_album_asset_membership_bindings.sql",
+        "expected_body_md5": "cab7432e7e10c1f07d0b116ad8bf14a2",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "decode_path",
+            "identity_arguments": "p_text text",
+            "security_definer": false,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "cab7432e7e10c1f07d0b116ad8bf14a2",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "asset_path",
+        "source_file": "20261025092240_album_asset_membership_bindings.sql",
+        "expected_body_md5": "be252d1725a4048a4c90accb25d8939a",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "asset_path",
+            "identity_arguments": "p_value text",
+            "security_definer": false,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "be252d1725a4048a4c90accb25d8939a",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "paths",
+        "source_file": "20261025092240_album_asset_membership_bindings.sql",
+        "expected_body_md5": "a22718abe572dafd9c1bcdaaa67a12e1",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "paths",
+            "identity_arguments": "p_doc jsonb",
+            "security_definer": false,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "a22718abe572dafd9c1bcdaaa67a12e1",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "album_doc",
+        "source_file": "20261025092240_album_asset_membership_bindings.sql",
+        "expected_body_md5": "52ba1c94cb027f8a86737700464a5f47",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "album_doc",
+            "identity_arguments": "p_album albums",
+            "security_definer": false,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "52ba1c94cb027f8a86737700464a5f47",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "album_paths",
+        "source_file": "20261025092240_album_asset_membership_bindings.sql",
+        "expected_body_md5": "1a195716e4126b0b18beb77c86ef76bc",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "album_paths",
+            "identity_arguments": "p_id bigint",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "1a195716e4126b0b18beb77c86ef76bc",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "legacy_owner_reference",
+        "source_file": "20261025092240_album_asset_membership_bindings.sql",
+        "expected_body_md5": "254c14d186be7528fb1ecb16f32e7981",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "legacy_owner_reference",
+            "identity_arguments": "p_path text, p_album bigint",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "254c14d186be7528fb1ecb16f32e7981",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "canonical_album",
+        "source_file": "20261025092240_album_asset_membership_bindings.sql",
+        "expected_body_md5": "a24d4ac5888c6326af5e20123c42c129",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "canonical_album",
+            "identity_arguments": "p_path text",
+            "security_definer": false,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "a24d4ac5888c6326af5e20123c42c129",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "asset_allowed",
+        "source_file": "20261025092240_album_asset_membership_bindings.sql",
+        "expected_body_md5": "451530dc7fb9c92a278e90a465a83b4b",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "asset_allowed",
+            "identity_arguments": "p_path text, p_write boolean",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "451530dc7fb9c92a278e90a465a83b4b",
+            "anon_execute": false,
+            "authenticated_execute": true
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "asset_in_use",
+        "source_file": "20261025092240_album_asset_membership_bindings.sql",
+        "expected_body_md5": "2440fc804693514a8a5f68819458f5a6",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "asset_in_use",
+            "identity_arguments": "p_path text",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "2440fc804693514a8a5f68819458f5a6",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "sync_album_assets",
+        "source_file": "20261025092240_album_asset_membership_bindings.sql",
+        "expected_body_md5": "2bb937a050c76175696e01ade8e7de18",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "sync_album_assets",
+            "identity_arguments": "",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "2bb937a050c76175696e01ade8e7de18",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "protect_referenced_asset",
+        "source_file": "20261025092240_album_asset_membership_bindings.sql",
+        "expected_body_md5": "6d7a8382a4ffc74eacae017be68ad7d5",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "protect_referenced_asset",
+            "identity_arguments": "",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "6d7a8382a4ffc74eacae017be68ad7d5",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "remember_collaboration",
+        "source_file": "20261025092245_collaborative_album_publication_history.sql",
+        "expected_body_md5": "01a332f561137ef0f5b2bfd27037cad2",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "remember_collaboration",
+            "identity_arguments": "",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "01a332f561137ef0f5b2bfd27037cad2",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "was_collaborative",
+        "source_file": "20261025092245_collaborative_album_publication_history.sql",
+        "expected_body_md5": "d250f9745f87aa1968a48948a44c7ea2",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "was_collaborative",
+            "identity_arguments": "p_id bigint",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "d250f9745f87aa1968a48948a44c7ea2",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "print_source_refs",
+        "source_file": "20261025093805_album_collaboration_print_asset_owners.sql",
+        "expected_body_md5": "79d1f5f8b2610c3357e0a4a252ce2de7",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "print_source_refs",
+            "identity_arguments": "p_doc jsonb",
+            "security_definer": false,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "79d1f5f8b2610c3357e0a4a252ce2de7",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "print_asset_paths",
+        "source_file": "20261025093805_album_collaboration_print_asset_owners.sql",
+        "expected_body_md5": "9ac372a82621683b8e14d306d5e18b36",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "print_asset_paths",
+            "identity_arguments": "p_album_id bigint",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "9ac372a82621683b8e14d306d5e18b36",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "album_private",
+        "name": "print_asset_owners",
+        "source_file": "20261025093805_album_collaboration_print_asset_owners.sql",
+        "expected_body_md5": "db167d3fae2d00ed803da2befe415eed",
+        "remote": [
+          {
+            "schema": "album_private",
+            "name": "print_asset_owners",
+            "identity_arguments": "p_album_id bigint, p_actor uuid",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "db167d3fae2d00ed803da2befe415eed",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "public",
+        "name": "read_album_print_asset_authorization",
+        "source_file": "20261025093805_album_collaboration_print_asset_owners.sql",
+        "expected_body_md5": "89e63cb622c5db24cea9d1085667b888",
+        "remote": [
+          {
+            "schema": "public",
+            "name": "read_album_print_asset_authorization",
+            "identity_arguments": "p_album_id bigint, p_actor uuid",
+            "security_definer": true,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "89e63cb622c5db24cea9d1085667b888",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      },
+      {
+        "schema": "public",
+        "name": "load_owned_print_checkout_context",
+        "source_file": "20261025093805_album_collaboration_print_asset_owners.sql",
+        "expected_body_md5": "350bbde9d22ee2d6138b51c1707741e1",
+        "remote": [
+          {
+            "schema": "public",
+            "name": "load_owned_print_checkout_context",
+            "identity_arguments": "p_actor uuid, p_album_id bigint",
+            "security_definer": false,
+            "settings": [
+              "search_path=\"\""
+            ],
+            "body_md5": "350bbde9d22ee2d6138b51c1707741e1",
+            "anon_execute": false,
+            "authenticated_execute": false
+          }
+        ],
+        "body_matches": true
+      }
+    ]
+  },
+  "contracts": {
+    "rls": [
+      {
+        "rls": true,
+        "table": "asset_bindings",
+        "schema": "album_private"
+      },
+      {
+        "rls": true,
+        "table": "save_requests",
+        "schema": "album_private"
+      },
+      {
+        "rls": true,
+        "table": "shared_history",
+        "schema": "album_private"
+      },
+      {
+        "rls": true,
+        "table": "album_invites",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "table": "album_members",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "table": "album_pages",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "table": "albums",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "table": "profiles",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "table": "social_blocks",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "table": "social_comments",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "table": "social_follows",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "table": "social_likes",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "table": "social_profiles",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "table": "social_saves",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "table": "social_work_pages",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "table": "social_works",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "table": "social_publication_sources",
+        "schema": "social_private"
+      }
+    ],
+    "buckets": [
+      {
+        "id": "album-assets",
+        "public": false,
+        "file_size_limit": 52428800,
+        "allowed_mime_types": [
+          "image/jpeg",
+          "image/png",
+          "image/webp",
+          "application/pdf",
+          "application/zip"
+        ]
+      },
+      {
+        "id": "social-profile-photos",
+        "public": false,
+        "file_size_limit": 3145728,
+        "allowed_mime_types": [
+          "image/png"
+        ]
+      },
+      {
+        "id": "social-snapshots",
+        "public": false,
+        "file_size_limit": 8388608,
+        "allowed_mime_types": [
+          "image/png"
+        ]
+      }
+    ],
+    "triggers": [
+      "album_assets_protect_references",
+      "album_members_collaboration_guard",
+      "album_members_remember_collaboration",
+      "albums_sync_asset_bindings",
+      "social_profile_photo_immutable"
+    ],
+    "photo_column": "text"
+  },
+  "hardening": {
+    "triggers": [
+      {
+        "name": "album_assets_protect_references",
+        "table": "objects",
+        "enabled": "O"
+      },
+      {
+        "name": "album_members_collaboration_guard",
+        "table": "album_members",
+        "enabled": "O"
+      },
+      {
+        "name": "album_members_remember_collaboration",
+        "table": "album_members",
+        "enabled": "O"
+      },
+      {
+        "name": "albums_collaboration_guard",
+        "table": "albums",
+        "enabled": "O"
+      },
+      {
+        "name": "albums_set_updated_at",
+        "table": "albums",
+        "enabled": "O"
+      },
+      {
+        "name": "albums_sync_asset_bindings",
+        "table": "albums",
+        "enabled": "O"
+      },
+      {
+        "name": "social_profile_photo_immutable",
+        "table": "objects",
+        "enabled": "O"
+      }
+    ],
+    "storage_policies": [
+      {
+        "name": "album_assets_member_insert",
+        "roles": [
+          "authenticated"
+        ],
+        "command": "INSERT"
+      },
+      {
+        "name": "album_assets_member_read",
+        "roles": [
+          "authenticated"
+        ],
+        "command": "SELECT"
+      },
+      {
+        "name": "album_assets_uploader_delete",
+        "roles": [
+          "authenticated"
+        ],
+        "command": "DELETE"
+      },
+      {
+        "name": "album_assets_uploader_update",
+        "roles": [
+          "authenticated"
+        ],
+        "command": "UPDATE"
+      },
+      {
+        "name": "social_profile_photo_delete",
+        "roles": [
+          "authenticated"
+        ],
+        "command": "DELETE"
+      },
+      {
+        "name": "social_profile_photo_insert",
+        "roles": [
+          "authenticated"
+        ],
+        "command": "INSERT"
+      },
+      {
+        "name": "social_profile_photo_read",
+        "roles": [
+          "anon",
+          "authenticated"
+        ],
+        "command": "SELECT"
+      },
+      {
+        "name": "social_snapshot_insert",
+        "roles": [
+          "authenticated"
+        ],
+        "command": "INSERT"
+      },
+      {
+        "name": "social_snapshot_read",
+        "roles": [
+          "anon",
+          "authenticated"
+        ],
+        "command": "SELECT"
+      }
+    ],
+    "album_assets_baseline": {
+      "metadata_md5": "cefb34aa7d073d3613cf09aebafc27bc",
+      "object_count": 41
+    },
+    "raw_member_token_select": false,
+    "private_profile_anon_select": true
+  },
+  "advisors": {
+    "summary": [
+      {
+        "name": "rls_enabled_no_policy",
+        "level": "INFO",
+        "count": 40,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+      },
+      {
+        "name": "function_search_path_mutable",
+        "level": "WARN",
+        "count": 2,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable"
+      },
+      {
+        "name": "anon_security_definer_function_executable",
+        "level": "WARN",
+        "count": 8,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable"
+      },
+      {
+        "name": "authenticated_security_definer_function_executable",
+        "level": "WARN",
+        "count": 13,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+      },
+      {
+        "name": "auth_leaked_password_protection",
+        "level": "WARN",
+        "count": 1,
+        "remediation": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection"
+      }
+    ],
+    "counts_unchanged_since_previous_collaboration_deployment": true,
+    "new_profile_social_warning": false
+  },
+  "logs": {
+    "window_start_utc": "2026-10-25T15:00:00Z",
+    "window_end_utc": "2026-10-26T03:25:48Z",
+    "postgres_errors": [],
+    "http_error_counts": [
+      {
+        "entries": 1267,
+        "function_name": "",
+        "source": "edge_logs",
+        "status": "401"
+      },
+      {
+        "entries": 745,
+        "function_name": "push-dispatch",
+        "source": "function_edge_logs",
+        "status": "500"
+      },
+      {
+        "entries": 373,
+        "function_name": "print-order-scheduler",
+        "source": "function_edge_logs",
+        "status": "503"
+      },
+      {
+        "entries": 150,
+        "function_name": "iap-reconcile",
+        "source": "function_edge_logs",
+        "status": "503"
+      }
+    ],
+    "rpc_failure_counts": [
+      {
+        "entries": 744,
+        "rpc_name": "cleanup_notifications",
+        "status": "401"
+      },
+      {
+        "entries": 373,
+        "rpc_name": "consume_print_order_scheduler_nonce",
+        "status": "401"
+      },
+      {
+        "entries": 150,
+        "rpc_name": "claim_point_purchase_reconciliation",
+        "status": "401"
+      }
+    ],
+    "function_error_codes": [
+      {
+        "code": "operation_failed",
+        "entries": 746,
+        "event_code": "push_dispatch_failed",
+        "stage": "cleanup"
+      }
+    ],
+    "interpretation": "Existing scheduled functions fail their backend REST RPC calls with HTTP401; push fails at cleanup. These are separate from the fully matched social/profile schema and were not fixed or activated in this UI task. No secret values or request/user payloads were read."
+  },
+  "edge_functions": [
+    {
+      "name": "admin-ops",
+      "version": 40,
+      "status": "ACTIVE",
+      "artifact_sha256": "ba6b495826ad69d2a5b6f96f4b1bc07f0f789a0ae2261981b5db9a17695c863e"
+    },
+    {
+      "name": "album-invites",
+      "version": 30,
+      "status": "ACTIVE",
+      "artifact_sha256": "03af8e8d625d0a762ea7152be3861ab87fb7dbf37df13d596f700f66f1a82b0f"
+    },
+    {
+      "name": "iap-reconcile",
+      "version": 18,
+      "status": "ACTIVE",
+      "artifact_sha256": null
+    },
+    {
+      "name": "push-dispatch",
+      "version": 21,
+      "status": "ACTIVE",
+      "artifact_sha256": "d5c59f03e17cbc9b593a64af364dcf8315616d30c17bfe7ef22c2d6bda4a0693"
+    },
+    {
+      "name": "print-order-scheduler",
+      "version": 15,
+      "status": "ACTIVE",
+      "artifact_sha256": "cd0e066268fa7ee8bac00ddfe1d470cd1b12e4ad166b154ea0a392f0681003a7"
+    }
+  ],
+  "profile_contract": {
+    "private_account_profile_separate": true,
+    "api_returns_avatar_path_only": true,
+    "legacy_avatar_url_null": true,
+    "private_png_bucket_max_bytes": 3145728,
+    "client_signed_url_ttl_seconds": 60,
+    "profile_photo_normalized_max_edge": 1024,
+    "profile_photo_immutable": true,
+    "referenced_photo_deletion_denied": true,
+    "photo_enlargement_and_layout_require_new_database_change": false
+  },
+  "runtime_followup": {
+    "status": "recovered_after_root_official_project_restart",
+    "code_before": "PGRST303",
+    "message_before": "JWT issued at future",
+    "tracked_separately": "postgrest-auth-clock-2026-10-26.json",
+    "missing_relevant_schema_migrations": 0,
+    "new_ui_schema_required": false,
+    "actual_authenticated_qa_completed": true,
+    "ordinary_auth_publication_two_sample_works": true,
+    "same_config_fingerprint_and_43_function_bodies_preserved": true,
+    "security_validation_and_rls_unchanged": true
+  }
+}

@@ -1,0 +1,228 @@
+{
+  "checked_at_utc": "2026-10-25T06:57:31.689352+00:00",
+  "status": "deployed_and_http_artifacts_verified",
+  "url": "https://snapfit-c719d.web.app",
+  "firebase_project": "snapfit-c719d",
+  "firebase_site": "snapfit-c719d",
+  "firebase_channel": "live",
+  "hosting_release": {
+    "name": "projects/snapfit-c719d/sites/snapfit-c719d/channels/live/releases/1792911386945000",
+    "releaseTime": "2026-10-25T06:56:26.945Z",
+    "type": "DEPLOY"
+  },
+  "hosting_version": {
+    "name": "projects/snapfit-c719d/sites/snapfit-c719d/versions/b348cee42173c875",
+    "status": "FINALIZED",
+    "fileCount": "1135",
+    "versionBytes": "749657753"
+  },
+  "app_version": "1.0.0+1",
+  "build_command": "python3 tool/build_web.py --output build/review-web",
+  "client_configuration": "Existing production defaults reused; no server env files or secret defines injected.",
+  "build_manifest": {
+    "main_sha256": "8131b49848b49e89dde18aee6af21438e0ad3cc49159a0d9e67d3aaf3160bad0",
+    "main_file": "main.8131b49848b49e89dde1.dart.js",
+    "bootstrap_sha256": "c6b344eb04edde3ef727c41739cfed10dc6aa5342b52a437250792bf2a872e2d",
+    "bootstrap_file": "flutter_bootstrap.c6b344eb04edde3ef727.js"
+  },
+  "assets": {
+    "index": {
+      "sha256": "eab652fd438a641bae1580364be3f26b88fd2c11b2a33eb5ef401c764d553f7e",
+      "matches_local": true,
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      }
+    },
+    "main": {
+      "file": "main.8131b49848b49e89dde1.dart.js",
+      "sha256": "8131b49848b49e89dde18aee6af21438e0ad3cc49159a0d9e67d3aaf3160bad0",
+      "matches_local": true,
+      "headers": {
+        "status": 200,
+        "cache-control": "public,max-age=31536000,immutable",
+        "content-type": "text/javascript; charset=utf-8",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      }
+    },
+    "bootstrap": {
+      "file": "flutter_bootstrap.c6b344eb04edde3ef727.js",
+      "sha256": "c6b344eb04edde3ef727c41739cfed10dc6aa5342b52a437250792bf2a872e2d",
+      "matches_local": true,
+      "headers": {
+        "status": 200,
+        "cache-control": "no-cache",
+        "content-type": "text/javascript; charset=utf-8",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      }
+    }
+  },
+  "routes": {
+    "/index.html": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "is_current_app_html": true
+    },
+    "/feed": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "is_current_app_html": true
+    },
+    "/works/b8085629-f291-48a8-a500-0be5321639f7": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "is_current_app_html": true
+    },
+    "/users/48fa7366-f9dc-4889-acdf-be4811fc1faa": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "is_current_app_html": true
+    },
+    "/me": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "is_current_app_html": true
+    },
+    "/publish/73": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "is_current_app_html": true
+    },
+    "/albums": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "is_current_app_html": true
+    },
+    "/me/works": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "is_current_app_html": true
+    }
+  },
+  "history": {
+    "initial_browser_address_parsed_from_uri_base": true,
+    "legacy_hash_paths_supported": true,
+    "initial_router_report_replaces_entry": true,
+    "subsequent_navigation_creates_history_entry": true
+  },
+  "service_worker": {
+    "generated_flutter_worker_bytes": 0,
+    "bootstrap_retires_old_generated_worker": true,
+    "firebase_messaging_worker_preserved": true
+  },
+  "verification": {
+    "router_location_return_auth_tests_passed": 78,
+    "changed_source_analysis": "No issues found",
+    "real_browser_ui_qa": "Root verified current direct /feed, /works/id, /users/id, /me, /publish/73 and /account. Original cached /feed without a query loaded old a6 HTML script tag but executed latest 8131 main through the 302. Root signed out and removed synthetic QA accounts/works; final public feed shows the normal empty state.",
+    "root_confirmed_current_direct_feed_ui": true,
+    "web_release_compatibility_tests_passed": 6,
+    "cachedoldHTMLrecoverybrowserverified": "root"
+  },
+  "prior_deployed_main_file": "main.23b0ecbf83130cc2af46.dart.js",
+  "initial_previous_main_file": "main.09f6123c675e853fa56d.dart.js",
+  "database_ready_reported_by_root": true,
+  "local_build_file_count": 1137,
+  "deployed_public_file_count_reported_by_cli": 1133,
+  "cached_html_compatibility": {
+    "previous_generations_preserved": 2,
+    "assets": [
+      {
+        "file": "flutter_bootstrap.a6fef7e62d901831a27e.js",
+        "sha256": "a6fef7e62d901831a27e820b8bfd63a268471a22e3f50b27072851a2222d2288",
+        "bytes": 14512,
+        "sourceVersion": "67bd963dc23df805",
+        "local_original_file_preserved": true,
+        "headers": {
+          "status": 302,
+          "cache-control": "no-cache",
+          "location": "/flutter_bootstrap.c6b344eb04edde3ef727.js",
+          "content-type": "text/plain; charset=utf-8"
+        },
+        "resolved_bootstrap_sha256": "c6b344eb04edde3ef727c41739cfed10dc6aa5342b52a437250792bf2a872e2d"
+      },
+      {
+        "file": "main.23b0ecbf83130cc2af46.dart.js",
+        "sha256": "23b0ecbf83130cc2af46edb7f3002f1025576ef78e0a821619c42749c4302a2e",
+        "bytes": 8814345,
+        "sourceVersion": "67bd963dc23df805",
+        "remote_sha256": "23b0ecbf83130cc2af46edb7f3002f1025576ef78e0a821619c42749c4302a2e",
+        "remote_matches_original": true,
+        "local_original_file_preserved": true
+      },
+      {
+        "file": "flutter_bootstrap.0643387200a65274ded7.js",
+        "sha256": "0643387200a65274ded71e9e3f495eeec3970405e1a5c1a80192f9933f13d38f",
+        "bytes": 14512,
+        "sourceVersion": "69383986d71a40f6",
+        "local_original_file_preserved": true,
+        "headers": {
+          "status": 302,
+          "cache-control": "no-cache",
+          "location": "/flutter_bootstrap.c6b344eb04edde3ef727.js",
+          "content-type": "text/plain; charset=utf-8"
+        },
+        "resolved_bootstrap_sha256": "c6b344eb04edde3ef727c41739cfed10dc6aa5342b52a437250792bf2a872e2d"
+      },
+      {
+        "file": "main.09f6123c675e853fa56d.dart.js",
+        "sha256": "09f6123c675e853fa56d9f90c067d74dab199006c200c0c7b910f917ceb0c3b0",
+        "bytes": 8624053,
+        "sourceVersion": "69383986d71a40f6",
+        "remote_sha256": "09f6123c675e853fa56d9f90c067d74dab199006c200c0c7b910f917ceb0c3b0",
+        "remote_matches_original": true,
+        "local_original_file_preserved": true
+      }
+    ],
+    "temporary_recovery_channel_deleted": true,
+    "auth_domains_changed": false,
+    "current_index_and_bundle_unchanged": true,
+    "maintenance": "Build script retains current plus two previous distinct release pairs per output directory; old bootstrap URLs redirect with 302/no-cache to each new Hosting bootstrap. Older generations are pruned.",
+    "retained_generation_limit": 3,
+    "retention_history_isolated_by_output": true
+  }
+}

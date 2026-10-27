@@ -134,7 +134,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  for (final aspect in CollectionAspect.values) {
+  for (final aspect in CollectionAspect.printable) {
     test(
       '${aspect.name}: insert, undo, redo, export and photo clearing preserve all new materials',
       () async {

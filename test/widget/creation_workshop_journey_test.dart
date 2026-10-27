@@ -1,3 +1,4 @@
+import '../support/store_detail_loading.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -13,6 +14,7 @@ import 'package:snap_fit/core/templates/data_template_engine.dart';
 import 'package:snap_fit/core/templates/template_document_pages.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
 import 'package:snap_fit/features/album/ai_album/domain/ai_album_models.dart';
+import 'package:snap_fit/features/store/presentation/views/template_detail_screen.dart';
 import 'package:snap_fit/features/album/ai_album/domain/ai_album_draft_generation_service.dart';
 import 'package:snap_fit/features/album/data/api/album_provider.dart';
 import 'package:snap_fit/features/album/data/album_creation_draft_store.dart';
@@ -290,23 +292,20 @@ void main() {
       ) async {
         reset(tester);
         metrics(tester, size);
-        var manual = 0, ai = 0, selected = 0, use = 0, next = 0;
+        var manual = 0, selected = 0, use = 0, next = 0;
         await mount(
           tester,
           AiAlbumStartStep(
             templates: AsyncData(publishedCreationTemplates.take(8).toList()),
             onManualStart: () => manual++,
-            onAiStart: () => ai++,
             onTemplateSelected: (_) => selected++,
           ),
           dark: dark,
         );
         await capture(tester, 'creation-atelier-start', size, dark);
         await tap(tester, find.text('직접 만들기'));
-        await tap(tester, find.text('AI 템플릿'));
         await tap(tester, key('creation-collection-showcase'));
         expect(manual, 1);
-        expect(ai, 1);
         expect(selected, 1);
         await tap(tester, find.text('템플릿 고르기'));
         expect(find.text('템플릿').hitTestable(), findsOneWidget);
@@ -636,7 +635,7 @@ void main() {
   }
   for (final size in [const Size(390, 844), const Size(844, 390)]) {
     testWidgets(
-      'native creation paths retain manual settings and unfinished AI request $size',
+      'native manual settings survive browsing current designs $size',
       (tester) async {
         reset(tester);
         metrics(tester, size);
@@ -647,7 +646,6 @@ void main() {
           dark: dark,
           scale: 1.3,
         );
-        await capture(tester, 'creation-journey-entry', size, dark);
         await tap(tester, find.text('직접 만들기'));
         final title = key('creation-album-title');
         await tester.ensureVisible(title);
@@ -656,9 +654,50 @@ void main() {
         await tester.pumpAndSettle();
         await tap(tester, key('print-cover-hard'));
         await tap(tester, find.byTooltip('페이지 늘리기'));
-        await capture(tester, 'creation-journey-configure', size, dark);
         await tap(tester, find.byTooltip('시작 방식 변경'));
-        await tap(tester, find.text('AI 템플릿'));
+        expect(find.text('AI 템플릿'), findsNothing);
+        await tap(tester, key('creation-collection-showcase'));
+        await settleStoreDetail(tester);
+        expect(find.byType(TemplateDetailScreen), findsOneWidget);
+        expect(find.text('이 디자인 선택'), findsOneWidget);
+        await tap(tester, find.byType(BackButton));
+        await tap(tester, find.text('직접 만들기'));
+        final manual = tester.widget<AlbumCreateStep1>(
+          find.byType(AlbumCreateStep1),
+        );
+        expect(manual.albumTitle, '우리의 주말 기록');
+        expect(manual.selectedPageCount, 22);
+        expect(manual.selectedCover!.coverType, PrintCoverType.hard);
+        expect(manual.templateTitle, isNull);
+        final input = tester.widget<TextField>(title).controller!;
+        final other = size.width > size.height
+            ? const Size(390, 844)
+            : const Size(844, 390);
+        metrics(tester, other);
+        await tester.pumpAndSettle();
+        expect(tester.widget<TextField>(title).controller, same(input));
+        expect(input.text, '우리의 주말 기록');
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+
+    testWidgets(
+      'AI request form resumes options and retains edits on rotation $size',
+      (tester) async {
+        reset(tester);
+        metrics(tester, size);
+        final dark = size.width > size.height;
+        AiTemplateBrief? saved;
+        var continued = 0;
+        var backed = 0;
+        Widget form() => AiTemplateBriefStep(
+          initialBrief: saved,
+          onChanged: (brief) => saved = brief,
+          onBack: () => backed++,
+          onContinue: (_) => continued++,
+        );
+        await mount(tester, form(), dark: dark, scale: 1.3);
         final prompt = find.byKey(const Key('ai_template_brief'));
         await tester.ensureVisible(prompt);
         const request = '봄날의 주말 기록. 초록 포인트, 겹친 종이 프레임, 짧은 문구.';
@@ -669,22 +708,17 @@ void main() {
         await tap(tester, key('print-size-REDP_250X200_SOFT'));
         await tap(tester, find.byTooltip('2쪽 늘리기'));
         await tap(tester, find.byTooltip('2쪽 늘리기'));
-        await tap(tester, find.byTooltip('뒤로가기'));
-        await tap(tester, find.text('직접 만들기'));
-        final manual = tester.widget<AlbumCreateStep1>(
-          find.byType(AlbumCreateStep1),
-        );
-        expect(manual.albumTitle, '우리의 주말 기록');
-        expect(manual.selectedPageCount, 22);
-        expect(manual.selectedCover!.coverType, PrintCoverType.hard);
-        await tap(tester, find.byTooltip('시작 방식 변경'));
-        await tap(tester, find.text('AI 템플릿'));
+        await tap(tester, find.byTooltip('이전'));
+        expect(backed, 1);
+        expect(continued, 0);
+        expect(saved!.prompt, request);
+        expect(saved!.pageCount, 24);
+        expect(saved!.printProductId, 'REDP_250X200_HARD');
+        await mount(tester, form(), dark: dark, scale: 1.3);
         final restored = tester.widget<AiTemplateBriefStep>(
           find.byType(AiTemplateBriefStep),
         );
-        expect(restored.initialBrief!.prompt, request);
-        expect(restored.initialBrief!.pageCount, 24);
-        expect(restored.initialBrief!.printProductId, 'REDP_250X200_HARD');
+        expect(restored.initialBrief, same(saved));
         expect(
           tester
               .widget<CoverSizePicker>(find.byType(CoverSizePicker))
@@ -701,8 +735,8 @@ void main() {
         await tester.pumpAndSettle();
         expect(tester.widget<TextField>(prompt).controller, same(input));
         expect(input.text, request);
+        expect(continued, 0);
         expect(tester.takeException(), isNull);
-        await capture(tester, 'creation-journey-ai-resume', other, dark);
         await tester.pumpWidget(const SizedBox());
       },
     );
@@ -717,7 +751,6 @@ void main() {
         tester,
         AiAlbumStartStep(
           templates: AsyncData([template]),
-          onAiStart: () {},
           onManualStart: () {},
         ),
       );
@@ -725,11 +758,7 @@ void main() {
       expect(key('creation-collection-showcase'), findsNothing);
       await mount(
         tester,
-        AiAlbumStartStep(
-          templates: const AsyncLoading(),
-          onAiStart: () {},
-          onManualStart: () {},
-        ),
+        AiAlbumStartStep(templates: const AsyncLoading(), onManualStart: () {}),
       );
       expect(key('creation-collection-showcase'), findsNothing);
       expect(find.byType(TemplatePageRenderer), findsNothing);

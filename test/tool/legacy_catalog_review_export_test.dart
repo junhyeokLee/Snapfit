@@ -99,7 +99,7 @@ void main() {
         final catalog =
             jsonDecode(template.templateJson!) as Map<String, dynamic>;
         final formats = <String, String>{};
-        for (final aspect in CollectionAspect.values) {
+        for (final aspect in CollectionAspect.printable) {
           final document = Map<String, dynamic>.from(
             catalog['variants'][aspect.name] as Map,
           );

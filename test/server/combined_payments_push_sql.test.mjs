@@ -35,7 +35,7 @@ async function combinedDatabase() {
     await db.exec(`
       create role anon; create role authenticated; create role service_role bypassrls;
       create schema auth; create schema storage; create schema extensions;
-      create table auth.users(id uuid primary key);
+      create table auth.users(id uuid primary key,is_anonymous boolean not null default false,banned_until timestamptz,deleted_at timestamptz,created_at timestamptz default now(),email text,email_confirmed_at timestamptz);
       create function auth.uid() returns uuid language sql stable as $$
         select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
       create function auth.role() returns text language sql stable as $$
@@ -103,11 +103,17 @@ test('release migrations preserve points/private push while external print appro
     (select count(*)::integer from push_outbox) outbox,
     (select count(*)::integer from point_ledger) ledger`)).rows[0];
   try {
-    await db.exec(`insert into auth.users values ('${alice}'),('${bob}');
+    await db.exec(`insert into auth.users(id) values ('${alice}'),('${bob}');
       insert into profiles(id) values ('${alice}'),('${bob}');
       insert into albums(id,owner_id,title) values (1,'${alice}','Combined test album');
       insert into album_pages(album_id,page_index,layers_json)
         select 1,n-1,'[]'::jsonb from generate_series(1,16) n;`);
+    // Apply new rules after the existing-customer fixture is created: no bonus
+    // backfill changes the established balances. Exercise the refund-reason
+    // union and new ledger guard in the real IAP/refund/shop integration.
+    await db.exec(readFileSync(new URL('20261019121000_signup_bonus_points.sql',migrationDir),'utf8'));
+    await db.exec(readFileSync(new URL('20261026075526_daily_attendance_rewards.sql',migrationDir),'utf8'));
+    await db.exec(readFileSync(new URL('20261026084050_simple_referral_rewards.sql',migrationDir),'utf8'));
     await login(alice);
     await db.query("select register_push_device($1,'android',540,true)", [tokenA]);
     await login(bob);
@@ -198,6 +204,12 @@ test('release migrations preserve points/private push while external print appro
     await server();
     assert.deepEqual(await counts(), { notifications: 1, outbox: 1, ledger: 5 });
     assert.equal((await db.query("select amount_delta from point_ledger where reason='DIGITAL_ITEM_PURCHASE'")).rows[0].amount_delta,-300);
+    await login(alice);
+    const attended=(await db.query('select claim_daily_attendance() result')).rows[0].result;
+    assert.equal(attended.awardedPoints,10);assert.equal(attended.balance,210);
+    assert.equal((await db.query('select claim_daily_attendance() result')).rows[0].result.awardedPoints,0);
+    await server();
+    assert.deepEqual(await counts(),{notifications:1,outbox:1,ledger:6});
     t.diagnostic('Confirmed point debt/re-credit and digital ownership debit; retired payment approval; one targeted cancellation notification; owner-only rows; independent worker leases; client mutations/RPCs denied.');
   } finally { await db.close(); }
 });

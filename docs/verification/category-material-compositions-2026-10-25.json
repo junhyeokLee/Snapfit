@@ -1,0 +1,542 @@
+{
+  "revision": "2026-10-25-category-materials-40",
+  "scope": {
+    "books": 40,
+    "categories": [
+      "웨딩",
+      "여행",
+      "일상",
+      "성장·육아",
+      "가족·친구",
+      "커플·기념일",
+      "반려동물",
+      "졸업·새출발"
+    ],
+    "curatedFramesPerBook": 2,
+    "newProducts": 0,
+    "newRasterAssets": 0
+  },
+  "design": {
+    "preserved": "Existing covers, hero photographs, palette, wording, sample-content provenance, free/paid tiers and product IDs",
+    "refined": "Detail-photo mounts, paper-backed compositions with captions outside printed rules, margin motifs, complete included-material inventory",
+    "sourceRatios": "Read from asset headers during authoring and stored as constant metadata; no runtime filesystem or pixel decoding",
+    "nearSquareFilm": "Use the alternate curated mount when orientation-specific film rails cannot preserve the source ratio"
+  },
+  "preservation": {
+    "baselineFixture": "test/fixtures/category_story_material_baseline.json.gz",
+    "coversAndHeroPagesAndWordingVerifiedForAllThreePrintAspects": true,
+    "changedDetailDocuments": 40,
+    "unchangedOtherDetailDocuments": 105,
+    "fontDigestUnchanged": true,
+    "savedCustomerAlbumsRewritten": false
+  },
+  "memory": {
+    "cacheBudgetsChanged": false,
+    "newImagePreloadsOrGlobalCaches": false,
+    "nativeExportImageCacheLimitBytes": 25165824,
+    "imageListenersAfterUnmount": 0,
+    "pendingDecodesAfterUnmount": 0,
+    "boundedStorePreviewAndDetailCachesVerified": true,
+    "deviceFpsMeasured": false
+  },
+  "server": {
+    "operation": "Read-only anonymous-role product/access check",
+    "existingFrameProductsChecked": 12,
+    "allFreeActiveAvailable": true,
+    "priceOrOwnershipOrWalletWrites": false
+  },
+  "verification": {
+    "regressionTestsPassed": 234,
+    "nativeSnapshotAndGalleryExportTestsPassed": 3,
+    "staticAnalysisTargets": 8,
+    "staticAnalysis": "no issues",
+    "codeReview": "No unresolved issue found in changed code",
+    "browserCategoryFilters": 8,
+    "booksPerCategory": 5,
+    "browserRepresentativeDetailDialogs": 8,
+    "browserFormatSwitchesVerified": 24,
+    "browserConsoleErrors": [],
+    "appBuild": false,
+    "physicalPrintProof": false
+  },
+  "preview": {
+    "url": "http://127.0.0.1:8773/",
+    "nativePngs": 320,
+    "paperReview": "output/category-material-review/paper-compositions.jpg",
+    "detailReview": "output/category-material-review/detail-compositions.jpg"
+  },
+  "books": [
+    {
+      "id": "story-morning-vow",
+      "category": "웨딩",
+      "frames": [
+        "studioDoubleMat",
+        "studyFloatMount"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-flower-toast",
+      "category": "웨딩",
+      "frames": [
+        "studioGallery",
+        "studioDeckle"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-reception-glow",
+      "category": "웨딩",
+      "frames": [
+        "studioPhotoCorners",
+        "studioDoubleMat"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-intimate-ceremony",
+      "category": "웨딩",
+      "frames": [
+        "studyFloatMount",
+        "studioGallery"
+      ],
+      "preservedFrames": [
+        "studioArch",
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-vow-correspondence",
+      "category": "웨딩",
+      "frames": [
+        "studioPostcard",
+        "studioPhotoCorners"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-ridge-morning",
+      "category": "여행",
+      "frames": [
+        "studioGallery",
+        "studioPhotoCorners"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-sand-footprints",
+      "category": "여행",
+      "frames": [
+        "studioDeckle",
+        "studyFloatMount"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-window-route",
+      "category": "여행",
+      "frames": [
+        "studioFilm",
+        "studioPhotoCorners"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-coast-address",
+      "category": "여행",
+      "frames": [
+        "studioPostcard",
+        "studioGallery"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery",
+        "studioOvalMat"
+      ]
+    },
+    {
+      "id": "story-market-colors",
+      "category": "여행",
+      "frames": [
+        "studioInstant",
+        "studioPhotoCorners"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-after-stage",
+      "category": "일상",
+      "frames": [
+        "studioFilm",
+        "studioGallery"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-workshop-afternoon",
+      "category": "일상",
+      "frames": [
+        "studioPhotoCorners",
+        "studyNotchedMat"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-green-gathering",
+      "category": "일상",
+      "frames": [
+        "studioDeckle",
+        "studyFloatMount"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-room-daylight",
+      "category": "일상",
+      "frames": [
+        "studyFloatMount",
+        "studioGallery"
+      ],
+      "preservedFrames": [
+        "studioArch",
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-wardrobe-seasons",
+      "category": "일상",
+      "frames": [
+        "studioDoubleMat",
+        "studioPhotoCorners"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-first-drawn-world",
+      "category": "성장·육아",
+      "frames": [
+        "studioRounded",
+        "studioGallery"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-little-forest",
+      "category": "성장·육아",
+      "frames": [
+        "studioDeckle",
+        "studioPhotoCorners"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-tiny-findings",
+      "category": "성장·육아",
+      "frames": [
+        "studioPhotoCorners",
+        "studioInstant"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-growing-softly",
+      "category": "성장·육아",
+      "frames": [
+        "studyFloatMount",
+        "studioDoubleMat"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery",
+        "studioOvalMat"
+      ]
+    },
+    {
+      "id": "story-play-dictionary",
+      "category": "성장·육아",
+      "frames": [
+        "studioGallery",
+        "studioPhotoCorners"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-outside-table",
+      "category": "가족·친구",
+      "frames": [
+        "studioPhotoCorners",
+        "studioGallery"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-side-by-side-bench",
+      "category": "가족·친구",
+      "frames": [
+        "studyFloatMount",
+        "studioPhotoCorners"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-summer-night-company",
+      "category": "가족·친구",
+      "frames": [
+        "studioFilm",
+        "studioInstant"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-book-for-friends",
+      "category": "가족·친구",
+      "frames": [
+        "studioPostcard",
+        "studioDoubleMat"
+      ],
+      "preservedFrames": [
+        "studioArch",
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-familiar-silhouettes",
+      "category": "가족·친구",
+      "frames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-evening-for-two",
+      "category": "커플·기념일",
+      "frames": [
+        "studioDoubleMat",
+        "studyFloatMount"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-two-weekends",
+      "category": "커플·기념일",
+      "frames": [
+        "studioPhotoCorners",
+        "studioInstant"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-our-first-room",
+      "category": "커플·기념일",
+      "frames": [
+        "studioGallery",
+        "studyNotchedMat"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-two-window-seats",
+      "category": "커플·기념일",
+      "frames": [
+        "studioPostcard",
+        "studioPhotoCorners"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery",
+        "studioOvalMat"
+      ]
+    },
+    {
+      "id": "story-folded-hearts",
+      "category": "커플·기념일",
+      "frames": [
+        "studioDeckle",
+        "studioDoubleMat"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-after-little-play",
+      "category": "반려동물",
+      "frames": [
+        "studioRounded",
+        "studioPhotoCorners"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-window-resident",
+      "category": "반려동물",
+      "frames": [
+        "studyFloatMount",
+        "studioGallery"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-walking-collection",
+      "category": "반려동물",
+      "frames": [
+        "studioPhotoCorners",
+        "studioPostcard"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-your-slow-afternoon",
+      "category": "반려동물",
+      "frames": [
+        "studioGallery",
+        "studyFloatMount"
+      ],
+      "preservedFrames": [
+        "studioArch",
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-our-play-hours",
+      "category": "반려동물",
+      "frames": [
+        "studioFilm",
+        "studioInstant"
+      ],
+      "preservedFrames": [
+        "studioDoubleMat",
+        "studioGallery"
+      ]
+    },
+    {
+      "id": "story-last-classroom",
+      "category": "졸업·새출발",
+      "frames": [
+        "studioPhotoCorners",
+        "studioDoubleMat"
+      ],
+      "preservedFrames": []
+    },
+    {
+      "id": "story-first-campus",
+      "category": "졸업·새출발",
+      "frames": [
+        "studioGallery",
+        "studioInstant"
+      ],
+      "preservedFrames": []
+    },
+    {
+      "id": "story-first-commute",
+      "category": "졸업·새출발",
+      "frames": [
+        "studyNotchedMat",
+        "studioPhotoCorners"
+      ],
+      "preservedFrames": []
+    },
+    {
+      "id": "story-little-shop",
+      "category": "졸업·새출발",
+      "frames": [
+        "studioGallery",
+        "studioDoubleMat"
+      ],
+      "preservedFrames": []
+    },
+    {
+      "id": "story-learning-season",
+      "category": "졸업·새출발",
+      "frames": [
+        "studioDeckle",
+        "studyFloatMount"
+      ],
+      "preservedFrames": []
+    }
+  ]
+}

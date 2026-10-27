@@ -389,7 +389,10 @@ void main() {
         await tester.pumpAndSettle();
         expect(events, ['primary']);
         final nav = find.byType(HomeBottomNavigationBar);
-        final album = find.descendant(of: nav, matching: find.text('내 앨범'));
+        final album = find.descendant(
+          of: nav,
+          matching: find.byTooltip('내 앨범'),
+        );
         await reveal(tester, album);
         visibleText(tester, nav);
         await tester.tap(album);
@@ -458,7 +461,7 @@ void main() {
           for (var i = 0; i < labels.length; i++) {
             final destination = find.descendant(
               of: nav,
-              matching: find.text(labels[i]),
+              matching: find.byTooltip(labels[i]),
             );
             await reveal(tester, destination);
             await tester.tap(destination);

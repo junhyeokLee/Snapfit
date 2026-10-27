@@ -13,7 +13,7 @@ void main() {
   test(
     'expanded collections are free, full length, and retain baseline IDs',
     () {
-      expect(bundledCreationTemplates.length, 42);
+      expect(bundledCreationTemplates.length, 47);
       expect(bundledCreationTemplates.take(3).map((t) => t.id), [
         -9301,
         -9302,
@@ -65,7 +65,13 @@ void main() {
       final input = [
         ...old,
         ...clones,
-        ...bundledCreationTemplates,
+        ...publishedCreationTemplates.map(
+          (template) => template.copyWith(
+            title: 'Remote artwork must not replace the canonical design',
+            isPremium: !template.isPremium,
+            templateJson: '{broken',
+          ),
+        ),
         unrelated,
         malformed,
       ];
@@ -75,9 +81,29 @@ void main() {
         visible.map((t) => t.id),
         publishedCreationTemplates.map((t) => t.id),
       );
+      // Original collection membership is fixed independently of presentation
+      // flags; purchase quotes still come from each point-shop product key.
+      final currentOriginalIds = authoredCollections
+          .map((c) => c.bundledId)
+          .toSet();
+      expect(currentOriginalIds, hasLength(42));
       expect(
-        visible.where((t) => !t.isPremium).map((t) => t.id),
+        visible
+            .where((t) => currentOriginalIds.contains(t.id))
+            .map((t) => t.id),
         authoredCollections.map((c) => c.bundledId),
+      );
+      expect(
+        visible.map((t) => t.isPremium),
+        publishedCreationTemplates.map((t) => t.isPremium),
+      );
+      expect(
+        visible.map((t) => t.documentBuilder),
+        publishedCreationTemplates.map((t) => t.documentBuilder),
+      );
+      expect(
+        visible.map((t) => t.title),
+        publishedCreationTemplates.map((t) => t.title),
       );
       expect(visible.any((t) => t.id == 700 || t.id == 701), false);
       expect(input.map((t) => t.templateJson), before);

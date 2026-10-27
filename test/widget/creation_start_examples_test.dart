@@ -9,7 +9,7 @@ import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
 
 import 'ai_album_start_step_test.dart' show loadCreationFonts, wrapCreation;
 
-const _methods = ['manual', 'ai', 'template'];
+const _methods = ['manual', 'template'];
 Finder _action(String method) =>
     find.byKey(ValueKey('creation-method-$method'));
 Finder _example(String method) =>
@@ -41,38 +41,24 @@ void main() {
     viewport(tester, const Size(390, 844));
     final semantics = tester.ensureSemantics();
     try {
-      var manual = 0, ai = 0;
+      var manual = 0;
       await tester.pumpWidget(
-        wrapCreation(
-          AiAlbumStartStep(
-            aiPointCost: 780,
-            isFirstAiDraftFree: true,
-            onManualStart: () => manual++,
-            onAiStart: () => ai++,
-          ),
-        ),
+        wrapCreation(AiAlbumStartStep(onManualStart: () => manual++)),
       );
       await tester.pumpAndSettle();
       expect(find.text('직접 배치 예시'), findsOneWidget);
-      expect(find.text('AI 디자인 예시'), findsOneWidget);
       expect(find.text('기존 디자인 시작 예시'), findsOneWidget);
-      expect(find.text('실제 결과는 달라요'), findsOneWidget);
-      expect(find.text('첫 AI 템플릿 1회 무료 · 이후 현재 구성 기준 780P'), findsOneWidget);
       if (!kIsWeb) {
         final titleTop = tester.getTopLeft(find.text('직접 만들기')).dy;
         final bottom = tester.getBottomLeft(_action('manual')).dy;
-        for (final title in ['AI 템플릿', '템플릿 고르기']) {
-          expect(
-            tester.getTopLeft(find.text(title)).dy,
-            closeTo(titleTop, 0.1),
-          );
-        }
-        for (final method in ['ai', 'template']) {
-          expect(
-            tester.getBottomLeft(_action(method)).dy,
-            closeTo(bottom, 0.1),
-          );
-        }
+        expect(
+          tester.getTopLeft(find.text('템플릿 고르기')).dy,
+          closeTo(titleTop, 0.1),
+        );
+        expect(
+          tester.getBottomLeft(_action('template')).dy,
+          closeTo(bottom, 0.1),
+        );
       }
       for (final method in _methods) {
         expect(
@@ -92,10 +78,6 @@ void main() {
         );
       }
       expect(
-        tester.getSemantics(_example('ai')).label,
-        contains('사진은 이후 직접 추가해요. 실제 결과는 달라요.'),
-      );
-      expect(
         tester.getSemantics(_example('manual')).flagsCollection.isImage,
         isTrue,
       );
@@ -103,17 +85,12 @@ void main() {
       await tester.pumpAndSettle();
       expect(_action('manual').hitTestable(), findsOneWidget);
       await tester.tap(_action('manual'));
-      await tester.ensureVisible(_action('ai'));
-      await tester.pumpAndSettle();
-      expect(_action('ai').hitTestable(), findsOneWidget);
-      await tester.tap(_action('ai'));
       await tester.ensureVisible(_action('template'));
       await tester.pumpAndSettle();
       expect(_action('template').hitTestable(), findsOneWidget);
       await tester.tap(_action('template'));
       await tester.pumpAndSettle();
       expect(manual, 1);
-      expect(ai, 1);
       expect(find.text('등록된 템플릿이 없어요'), findsOneWidget);
       expect(tester.takeException(), isNull);
     } finally {
@@ -123,19 +100,14 @@ void main() {
 
   testWidgets('example actions retain keyboard activation', (tester) async {
     viewport(tester, const Size(1024, 768));
-    var manual = 0, ai = 0;
+    var manual = 0;
     await tester.pumpWidget(
-      wrapCreation(
-        AiAlbumStartStep(onManualStart: () => manual++, onAiStart: () => ai++),
-      ),
+      wrapCreation(AiAlbumStartStep(onManualStart: () => manual++)),
     );
     await tester.pumpAndSettle();
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     expect(manual, 1);
-    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-    await tester.sendKeyEvent(LogicalKeyboardKey.space);
-    expect(ai, 1);
     expect(tester.takeException(), isNull);
   });
 
@@ -152,7 +124,7 @@ void main() {
         viewport(tester, config.size);
         await tester.pumpWidget(
           wrapCreation(
-            AiAlbumStartStep(onManualStart: () {}, onAiStart: () {}),
+            AiAlbumStartStep(onManualStart: () {}),
             textScale: config.scale,
             dark: config.dark,
           ),
@@ -174,10 +146,10 @@ void main() {
     tester,
   ) async {
     viewport(tester, const Size(390, 844));
-    var manual = 0, ai = 0;
+    var manual = 0;
     await tester.pumpWidget(
       wrapCreation(
-        AiAlbumStartStep(onManualStart: () => manual++, onAiStart: () => ai++),
+        AiAlbumStartStep(onManualStart: () => manual++),
         textScale: 1.8,
       ),
     );
@@ -199,12 +171,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(_action('manual').hitTestable(), findsOneWidget);
     await tester.tap(_action('manual'));
-    await tester.ensureVisible(_action('ai'));
-    await tester.pumpAndSettle();
-    expect(_action('ai').hitTestable(), findsOneWidget);
-    await tester.tap(_action('ai'));
     expect(manual, 1);
-    expect(ai, 1);
     expect(tester.takeException(), isNull);
   });
 }

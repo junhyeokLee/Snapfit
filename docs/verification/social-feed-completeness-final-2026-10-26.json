@@ -1,0 +1,58 @@
+{
+  "status": "completed",
+  "completed_at": "2026-10-26T07:14:04.055417+00:00",
+  "current_scope": "Free public album snapshot feed and public profiles",
+  "confirmed_issues_fixed": [
+    "30-entry work/profile search truncation and filtered management pagination",
+    "Latest-100 comment truncation, older/middle page error retry",
+    "Expired search/saved/management/relationship images, bounded recovery and narrow accessible retry",
+    "Account A→B→A stale confirmations and late mutation replies",
+    "Canceled publication selection response, draft discard/review duplication",
+    "Block/profile update propagation to every loaded paginated cache"
+  ],
+  "validation": {
+    "unique_flutter_tests_passed": 178,
+    "sql_role_regressions_passed": 41,
+    "ordinary_jwt_core_page_checks_passed": 17,
+    "ordinary_jwt_follow_block_checks_passed": 36,
+    "live_browser": "31 profile works loaded, 101 comment count and older comments loaded; large photos verified"
+  },
+  "web": {
+    "url": "https://snapfit-c719d.web.app/feed#/feed",
+    "version": "b529862f53d96715",
+    "main_sha256": "275d2829463481c7a240e7c3f5782ce730bc9cd78b208af05ab776414b6a77c1",
+    "verified_current_at_finish": true
+  },
+  "android": {
+    "apk_path": "/Users/devsheep/SnapFit/SnapFit/output/native-photo-refresh/SnapFit-feed-complete-debug.apk",
+    "sha256": "c366f0d384a54a773af0c3affec0b780ae06996f89d4470e7a0a695ad2858597",
+    "signature_verified": true,
+    "physical_device_installation_verified": false,
+    "reason": "Phone unavailable per user; no connection or installation attempted"
+  },
+  "sources_exact_between_web_and_android": true,
+  "cleanup": {
+    "both_run_residual_rows": 0,
+    "read_only_table_groups": 93,
+    "temporary_helpers_and_credentials_deleted": true,
+    "original_album_asset_records": 41,
+    "original_asset_metadata_unchanged": true,
+    "customer_data_writes": false
+  },
+  "not_live": [
+    "Editable style import",
+    "Point sales and creator rewards",
+    "Social activity notifications and report moderation",
+    "Consented publication of collaborative albums; existing protective restriction remains"
+  ],
+  "verification_reports": [
+    "social-followup-follow-block-live-2026-10-26.json",
+    "social-followup-live-2026-10-26.json",
+    "social-followup-live-ui-2026-10-26.json",
+    "social-followup-native-2026-10-26.json",
+    "social-followup-server-2026-10-26.json",
+    "social-followup-space-2026-10-26.json",
+    "social-followup-ui-2026-10-26.json",
+    "social-followup-web-2026-10-26.json"
+  ]
+}

@@ -16,7 +16,7 @@ async function fixture({withShop = true} = {}) {
   const db = new PGlite()
   await db.exec(`
     create role anon; create role authenticated; create role service_role bypassrls;
-    create schema auth; create table auth.users(id uuid primary key);
+    create schema auth; create table auth.users(id uuid primary key,is_anonymous boolean not null default false,banned_until timestamptz,deleted_at timestamptz,created_at timestamptz default now(),email text,email_confirmed_at timestamptz);
     create function auth.uid() returns uuid language sql stable as $$
       select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
     create function auth.jwt() returns jsonb language sql stable as $$
@@ -26,7 +26,7 @@ async function fixture({withShop = true} = {}) {
     alter default privileges in schema public grant all on tables to anon,authenticated,service_role;
     alter default privileges in schema public grant all on sequences to anon,authenticated,service_role;
     alter default privileges in schema public grant all on functions to anon,authenticated,service_role;
-    insert into auth.users values('${alice}'),('${bob}');
+    insert into auth.users(id) values('${alice}'),('${bob}');
   `)
   const initial = migration('20260820140500_initial_snapfit_schema.sql')
   await db.exec(initial.slice(initial.indexOf('create or replace function public.set_updated_at()'), initial.indexOf('-- Profiles mirror')))
@@ -34,7 +34,12 @@ async function fixture({withShop = true} = {}) {
   // Existing refund migration permits negative balances. Full release replay is
   // covered separately in combined_payments_push_sql.test.mjs.
   await db.exec('alter table point_wallets drop constraint point_wallets_balance_check')
-  if (withShop) await db.exec(shopSql)
+  if (withShop) {
+    await db.exec(shopSql)
+    await db.exec(migration('20261019121000_signup_bonus_points.sql'))
+    await db.exec(migration('20261026075526_daily_attendance_rewards.sql'))
+    await db.exec(migration('20261026084050_simple_referral_rewards.sql'))
+  }
   return db
 }
 

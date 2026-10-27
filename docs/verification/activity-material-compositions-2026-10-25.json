@@ -1,0 +1,54 @@
+{
+  "revision": "2026-10-25-activity-material-compositions-2",
+  "scope": {
+    "templates": 10,
+    "curatedFramesPerBook": 2,
+    "distinctExistingFrames": 5,
+    "newProducts": 0,
+    "newPhotos": 0
+  },
+  "design": {
+    "frames": [
+      "studioPhotoCorners",
+      "studioGallery",
+      "studioFilm",
+      "studioDoubleMat",
+      "studyFloatMount"
+    ],
+    "usage": "Mounted detail photographs, open group/hero photographs, matching paper backing, accent motifs and editable typography",
+    "sourcePhotoAspect": 1.5,
+    "fitIncludesActualFrameInsets": true,
+    "includedMaterialInventoryMatchesArtwork": true
+  },
+  "server": {
+    "operation": "read-only anonymous product/access query",
+    "allFiveFramesFreeActiveAvailable": true,
+    "pricesChanged": false,
+    "walletsOrOwnershipChanged": false
+  },
+  "artifacts": {
+    "updatedDetailDocuments": 10,
+    "unchangedDetailDocuments": 135,
+    "nativeGalleryPngs": 100,
+    "galleryUrl": "http://127.0.0.1:8772/"
+  },
+  "verification": {
+    "focusedRegressionCasesPassedAcrossRuns": 222,
+    "nativeSnapshotAndGalleryExportTestsPassed": 3,
+    "staticAnalysisTargets": 9,
+    "staticAnalysis": "no issues",
+    "browserTemplatesVerified": 10,
+    "browserFiguresPerTemplate": 6,
+    "browserConsoleErrors": [],
+    "appBuild": false,
+    "physicalPrintProof": false,
+    "physicalDeviceFpsMeasured": false
+  },
+  "memory": {
+    "extraRasterAssets": false,
+    "cacheBudgetsUnchanged": true,
+    "wholeCatalogEagerDecodeAdded": false,
+    "boundedPreviewAndDetailCacheTestPassed": true
+  },
+  "workflow": "AGENTS.md now requires matching materials to be applied in actual pages with correct frame-window geometry and inventory"
+}

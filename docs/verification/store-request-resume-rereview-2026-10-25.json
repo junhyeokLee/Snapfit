@@ -1,0 +1,126 @@
+{
+  "date": "2026-10-25",
+  "scope": "Fresh rereview of shared store summary requests, retained category strip position, rapid search navigation and account/refresh races",
+  "previous_report": "docs/verification/store-search-request-offset-fixes-2026-10-25.json",
+  "production_code_changed": false,
+  "reviewed_source_sha256": {
+    "lib/features/store/data/repositories/supabase_template_repository.dart": "098d7f27987d74af2a4d0de395721282655c7391f4f8e97a4ebd1979ef73c38f",
+    "lib/features/store/data/api/template_provider.dart": "a58c530edb6cf507e1322064ec2813a634c42f993c8d1c65cf009e5260019931",
+    "lib/features/store/presentation/widgets/store_topic_shelf.dart": "7290fea60e4b52581c9fc7d01a16f3865c7d50cff25a344f6a27db06402bcb60",
+    "lib/features/store/presentation/views/store_hub_screen.dart": "f3169c206c26bbf3bbc382cb192803042702d108181b9243c04d21c066a1447d",
+    "lib/features/store/presentation/views/store_screen.dart": "2a01fde9e72c9817133f3f056d4d01fcf949d9c957c99f41dfbce2c0a369b63d",
+    "lib/main.dart": "63871d432a18c76725548e75b125edf81a40d1159a3f3a02820d319d9dd68390",
+    "lib/features/auth/presentation/views/auth_gate.dart": "5d23dafd9612e14f95c811264d07bd8a09df8e5a1ea76781d976de8248b41440"
+  },
+  "reviewed_sources_unchanged": true,
+  "test_changes": {
+    "new_file": "test/review/store_request_resume_review_test.dart",
+    "new_cases": 4,
+    "existing_test_files_changed": false
+  },
+  "findings": [
+    {
+      "id": "store-account-change-reuses-previous-refresh",
+      "priority": "P2",
+      "title": "Account changes can reuse an earlier account refresh before repository session isolation runs",
+      "location": {
+        "path": "lib/features/store/data/api/template_provider.dart",
+        "line": 508
+      },
+      "supporting_locations": [
+        {
+          "path": "lib/features/store/data/api/template_provider.dart",
+          "line": 344
+        },
+        {
+          "path": "lib/features/store/data/api/template_provider.dart",
+          "line": 347
+        },
+        {
+          "path": "lib/features/store/data/api/template_provider.dart",
+          "line": 595
+        },
+        {
+          "path": "lib/main.dart",
+          "line": 207
+        }
+      ],
+      "trigger": "Load account A into the retained root feed, start a delayed A refresh, switch the same client to account B and request refresh again before A finishes.",
+      "observed": {
+        "current_owner": "account-b",
+        "old_refresh_future_reused": true,
+        "http_requests_including_initial_load": 2,
+        "expected_http_requests_including_initial_load": 3,
+        "displayed_like_belongs_only_to": "account-a",
+        "displayed_isLiked": true
+      },
+      "cause": "The notifier returns _refreshRequest without checking owner. Its current-generation check only tests mounted and a numeric generation, and the provider does not observe account changes. The B call therefore never reaches the repository session check. Root feed providers are not auto-disposed; the app auth listener does not invalidate this feed on owner replacement.",
+      "impact": "A previous account response can update the current store list and like state after the account has changed, even if the new account explicitly refreshes during the pending read.",
+      "suggested_direction": "Observe the current account at feed/local-like ownership boundaries, invalidate the old generation and in-flight interests on owner replacement, reject old owner results, and preserve same-owner concurrent refresh sharing. Use the shared account source rather than adding per-scroll auth/storage work.",
+      "regression_case": "review: changing account during refresh must start a new owner generation",
+      "regression_location": {
+        "path": "test/review/store_request_resume_review_test.dart",
+        "line": 218
+      },
+      "fixed_in_this_review": false
+    }
+  ],
+  "confirmed": [
+    "Three search opens/closes while the root page-zero read is pending share one actual HTTP request; all four repository callers finish.",
+    "The manually browsed category strip retains 930.5 instead of returning to zero, with the vertical browse position also preserved.",
+    "All/recommended/travel/club return paths retain parent rows, filter and vertical position; closed search scopes reject reads and detach their controllers.",
+    "Six rapid animated search cycles with repeated open callbacks leave no search routes/scopes and return transient callbacks to zero.",
+    "Simultaneous parent/search refreshes share one transport; a later response from a disposed, differently filtered search does not replace parent rows.",
+    "A delayed previous-page error does not replace the latest filter refresh, reset loading flags or disturb its list snapshot.",
+    "Twenty disposed search scopes join the pending parent transport; all callers drain after completion and the parent next refresh obtains fresh rows.",
+    "Direct repository calls remain separated by session/account/page/size/search/category/price and release completed/failed request entries; mutation invalidation does not allow an older completion to evict its replacement.",
+    "LTR/RTL, large text, dark mode, hidden selection changes and hidden resize still reveal only when needed without moving the outer catalog."
+  ],
+  "verification": {
+    "related_suite": {
+      "files": 18,
+      "total": 140,
+      "passed": 139,
+      "failed": 1,
+      "log": "output/store-request-resume-review/related-tests.log",
+      "failed_case_is_confirmed_product_finding": true
+    },
+    "fresh_cases": {
+      "files": 1,
+      "passed": 3,
+      "failed": 1,
+      "log": "output/store-request-resume-review/fresh-cases.log",
+      "included_in_related_suite": true
+    },
+    "previous_suite": {
+      "cases": 136,
+      "passed": 136,
+      "failed": 0,
+      "included_in_related_suite": true
+    },
+    "analysis": {
+      "items": 9,
+      "issues": 0,
+      "log": "output/store-request-resume-review/analysis.log"
+    },
+    "new_test_sha256": "92922b32c0b77da82a5b12f5c3d285a154721c983d8ad530aafb0b1c01338062",
+    "app_build_run": false,
+    "device_frame_or_process_memory_profile_run": false,
+    "live_backend_or_user_data_changed": false
+  },
+  "sdk_fixture": {
+    "skill": "/Users/devsheep/.codex/plugins/cache/openai-curated-remote/supabase/1.0.0/skills/supabase/SKILL.md",
+    "reference": "https://supabase.com/docs/reference/dart/select",
+    "changelog_and_api_verification": "Current-day changelog and docs evidence retained in the previous fix report; no API/SDK changes made in this review.",
+    "execution": "Actual SupabaseTemplateRepository and SupabaseClient with MockClient at fixture.invalid. Synthetic sessions are installed using the actual GoTrue SDK. Native JSON decoding and client shutdown complete before fixture disposal.",
+    "installed_versions": {
+      "supabase": "2.16.1",
+      "gotrue": "2.27.2"
+    }
+  },
+  "limits": [
+    "The new failing test remains as a reproducible review regression; production code was not modified in this review turn.",
+    "Widget scopes, controllers, callbacks and transport lifecycle were tested under controlled response ordering. Real-device FPS, native heap/RSS peaks and OS/plugin behavior were not profiled.",
+    "No additional persistent route/controller leak was reproduced. Sharing bounds tracked keys at 32 but does not cancel network work that is already running; consumers may remain pending until their transport settles."
+  ]
+}

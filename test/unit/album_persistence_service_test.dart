@@ -26,6 +26,7 @@ class FakeStorageService implements StorageService {
   Future<UploadedUrls> uploadImageVariants(
     AssetEntity asset, {
     int previewMaxDimension = 1600,
+    int? albumId,
   }) async => const UploadedUrls(
     previewGsPath: 'supabase://album-assets/ai/preview.jpg',
     originalGsPath: 'supabase://album-assets/ai/original.jpg',
@@ -36,6 +37,7 @@ class FakeStorageService implements StorageService {
     Uint8List pngBytes, {
     int originalMaxDimension = 4096,
     int previewMaxDimension = 1024,
+    int? albumId,
   }) async {
     return const UploadedUrls(
       previewUrl: 'https://example.com/preview.jpg',
@@ -54,6 +56,12 @@ class FakeStorageService implements StorageService {
 
   @override
   Future<void> deleteAiAlbumPreviews(Iterable<String> paths) async {}
+
+  @override
+  Future<void> removeUnreferencedAlbumUploads(
+    Iterable<String> references, {
+    required String expectedOwner,
+  }) async {}
 }
 
 class QuotaFailStorageService implements StorageService {
@@ -67,6 +75,7 @@ class QuotaFailStorageService implements StorageService {
   Future<UploadedUrls> uploadImageVariants(
     AssetEntity asset, {
     int previewMaxDimension = 1600,
+    int? albumId,
   }) async => throw const StorageQuotaExceededException(
     hardLimitBytes: 1024,
     usedBytes: 1024,
@@ -80,6 +89,7 @@ class QuotaFailStorageService implements StorageService {
     Uint8List pngBytes, {
     int originalMaxDimension = 4096,
     int previewMaxDimension = 1024,
+    int? albumId,
   }) async => throw const StorageQuotaExceededException(
     hardLimitBytes: 1024,
     usedBytes: 1024,
@@ -97,6 +107,12 @@ class QuotaFailStorageService implements StorageService {
 
   @override
   Future<void> deleteAiAlbumPreviews(Iterable<String> paths) async {}
+
+  @override
+  Future<void> removeUnreferencedAlbumUploads(
+    Iterable<String> references, {
+    required String expectedOwner,
+  }) async {}
 }
 
 void main() {
@@ -114,13 +130,22 @@ void main() {
   test('performBackgroundUpload updates album with cover urls', () async {
     final mockRepo = MockAlbumRepository();
     when(
-      () => mockRepo.updateAlbum(any(), any()),
+      () => mockRepo.updateAlbum(
+        any(),
+        any(),
+        expectedUpdatedAt: any(named: 'expectedUpdatedAt'),
+        requestId: any(named: 'requestId'),
+        expectedUserId: any(named: 'expectedUserId'),
+      ),
     ).thenAnswer((_) async => fakeAlbum(id: 1));
 
     final service = AlbumPersistenceService(FakeStorageService(), mockRepo);
 
     await service.performBackgroundUpload(
       albumId: 1,
+      expectedUpdatedAt: '2025-01-01T00:00:00.123456Z',
+      expectedUserId: 'owner',
+      requestId: 'save-request',
       canvasSize: const Size(300, 400),
       currentLayers: const <LayerModel>[],
       coverImageBytes: Uint8List.fromList([0, 1, 2]),
@@ -128,6 +153,7 @@ void main() {
       title: 'title',
       coverRatio: 1.0,
       targetPages: 24,
+      sourceTemplateProductKey: 'template:summer-memory',
       printProduct: const {
         'id': 'REDP_300_SOFT',
         'trimWidthMm': 300,
@@ -136,9 +162,19 @@ void main() {
     );
 
     final captured = verify(
-      () => mockRepo.updateAlbum(1, captureAny()),
+      () => mockRepo.updateAlbum(
+        1,
+        captureAny(),
+        expectedUpdatedAt: any(named: 'expectedUpdatedAt'),
+        requestId: any(named: 'requestId'),
+        expectedUserId: any(named: 'expectedUserId'),
+      ),
     ).captured.single;
     expect(captured.coverLayersJson, contains('REDP_300_SOFT'));
+    expect(
+      captured.coverLayersJson,
+      contains('"sourceTemplate":{"productKey":"template:summer-memory"}'),
+    );
     expect(captured.coverLayersJson, contains('"trimWidthMm":300'));
     expect(captured.coverPreviewUrl, 'gs://bucket/preview.jpg');
     expect(captured.coverOriginalUrl, 'gs://bucket/original.jpg');
@@ -149,12 +185,21 @@ void main() {
     () async {
       final mockRepo = MockAlbumRepository();
       when(
-        () => mockRepo.updateAlbum(any(), any()),
+        () => mockRepo.updateAlbum(
+          any(),
+          any(),
+          expectedUpdatedAt: any(named: 'expectedUpdatedAt'),
+          requestId: any(named: 'requestId'),
+          expectedUserId: any(named: 'expectedUserId'),
+        ),
       ).thenAnswer((_) async => fakeAlbum(id: 1));
       final service = AlbumPersistenceService(FakeStorageService(), mockRepo);
 
       await service.performBackgroundUpload(
         albumId: 1,
+        expectedUpdatedAt: '2025-01-01T00:00:00.123456Z',
+        expectedUserId: 'owner',
+        requestId: 'save-request',
         canvasSize: const Size(300, 400),
         currentLayers: [
           LayerModel(
@@ -174,7 +219,15 @@ void main() {
       );
 
       final captured =
-          verify(() => mockRepo.updateAlbum(1, captureAny())).captured.single
+          verify(
+                () => mockRepo.updateAlbum(
+                  1,
+                  captureAny(),
+                  expectedUpdatedAt: any(named: 'expectedUpdatedAt'),
+                  requestId: any(named: 'requestId'),
+                  expectedUserId: any(named: 'expectedUserId'),
+                ),
+              ).captured.single
               as CreateAlbumRequest;
       expect(
         captured.coverLayersJson,
@@ -204,6 +257,9 @@ void main() {
       expect(
         () => service.performBackgroundUpload(
           albumId: 1,
+          expectedUpdatedAt: '2025-01-01T00:00:00.123456Z',
+          expectedUserId: 'owner',
+          requestId: 'save-request',
           canvasSize: const Size(300, 400),
           currentLayers: const <LayerModel>[],
           coverImageBytes: Uint8List.fromList([0, 1, 2]),

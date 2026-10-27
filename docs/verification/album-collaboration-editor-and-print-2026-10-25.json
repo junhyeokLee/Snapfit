@@ -1,0 +1,86 @@
+{
+  "checked_at": "2026-10-25T18:36:38+09:00",
+  "status": "client_regressions_green_print_applied_by_root",
+  "client_regressions": {
+    "unique_passed": 141,
+    "final_changed_scope_rerun_passed": 47,
+    "rerun_added_to_unique_count": false,
+    "test_files": [
+      "test/unit/album_editor_view_model_test.dart",
+      "test/unit/album_persistence_service_test.dart",
+      "test/unit/home_view_model_test.dart",
+      "test/unit/shared_album_repository_test.dart",
+      "test/unit/print_photo_edit_session_test.dart",
+      "test/unit/editor_save_safety_test.dart",
+      "test/unit/album_first_page_progress_test.dart",
+      "test/unit/album_save_error_message_test.dart",
+      "test/unit/album_collaboration_save_test.dart",
+      "test/widget/editor_save_exit_test.dart"
+    ],
+    "analyze": "Owned production and test files clean. Final VM plus new regression re-analysis clean."
+  },
+  "confirmed_behaviors": [
+    "Whole-document CAS uses exact original timestamp string, expected actor, immutable request UUID.",
+    "Lost responses retry identical payload/key before preparing a newer save.",
+    "Definitive conflict or permission rejection clears only the rejected pending request, resuming role/revision polling.",
+    "New edits during save remain dirty; upload completion preserves newer transforms and never resurrects a deleted layer.",
+    "Late responses/checkpoints cannot paint another album or account.",
+    "Conflict and offline checks keep local edits; explicit discard/reload is required to replace them.",
+    "Permission revocation preserves local pages in readonly UI with safe exit at 320 and 390 widths.",
+    "Home account replacement removes previous private list; late refresh/rollback cannot restore it.",
+    "Print correction checks fresh role and exact reviewed raw revision without advisory lock writes.",
+    "Existing cover editing saves all inner pages instead of replacing the book with legacy cover-only JSON."
+  ],
+  "collaboration_model": "Concurrent local editing with server compare-and-swap. Foreground 15-second advisory checks; no automatic live merge or CRDT.",
+  "limits": [
+    "No physical-device installation or QA: user phone unavailable, no USB request or emulator download.",
+    "An unknown initial album INSERT response still cannot be recovered by request ID; once the returned album ID is known, upload retries retain that ID.",
+    "Files belonging to an ambiguous submitted save are retained instead of speculatively deleted; only known-unsubmitted files are safely cleaned."
+  ],
+  "print_source_regressions": {
+    "sql_passed": 9,
+    "edge_new_passed": 6,
+    "edge_existing_impacted_passed": 43,
+    "total_passed": 58,
+    "existing_real_flutter_pdf_fixtures_skipped": 2,
+    "new_unique_server_cases": 15,
+    "migration": "supabase/migrations/20261025093805_album_collaboration_print_asset_owners.sql",
+    "source": "supabase/functions/_shared/print-package.ts",
+    "sql_test": "test/server/album_collaboration_print_sql.test.mjs",
+    "edge_test": "test/server/album_collaboration_print.test.mjs",
+    "pricing_payment_context_diff": "Only membership owners query changed to exact saved-path authorization helper. Separate source-definition regression passes.",
+    "current_saved_contributor_paths": "Preserved after contributor leaves or becomes VIEWER.",
+    "denied": [
+      "PENDING membership without actual saved source",
+      "Unbound guessed private and cross-album references",
+      "Stale unused binding namespace expansion",
+      "Unsupported private URI and nested JSON source bypass",
+      "Authenticated/anonymous direct authorization RPC calls"
+    ],
+    "historical_contract": "Frozen intent owners take precedence without RPC. Historical fallback can add exact server-saved paths only, not uploader namespace.",
+    "minimum_edge_deployment": "admin-ops",
+    "deployment_performed_by_this_agent": false,
+    "actual_order_payment_or_fulfillment_performed": false,
+    "deployment_by_root": {
+      "migration_version": "20261025093805",
+      "edge_function": "admin-ops",
+      "edge_version": 40,
+      "confirmation": "Root reported successful migration application and Edge deployment."
+    },
+    "prepare_freeze_guard": "Existing create/prepare checkout locks album FOR UPDATE and recomputes context/sourceDigest before persisting PREPARED intent, protecting initial preview races without changing the frozen owner contract.",
+    "migration_sha256": "3b96f21d796c63266a94721e1c33da05b4368a03092de23536cde7b448736e96",
+    "live_api_verification_reported_by_backend_agent": {
+      "passed": 13,
+      "actual_orders_payments_renders": 0,
+      "checks": [
+        "Saved contributor exact paths remain after VIEWER/leave",
+        "Unshared private and PENDING uploader excluded",
+        "Unknown URI fails closed",
+        "Ordinary JWT cannot invoke service-only authorization",
+        "Wrong actual owner rejected"
+      ],
+      "fixtures_restored": true
+    }
+  },
+  "native_final_report": "docs/verification/album-collaboration-native-2026-10-25.json"
+}

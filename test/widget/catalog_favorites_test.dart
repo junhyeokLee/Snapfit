@@ -220,7 +220,6 @@ void main() {
       await tester.pumpWidget(
         wrapCreation(
           AiAlbumStartStep(
-            onAiStart: () {},
             onManualStart: () {},
             templates: AsyncData(bundledCreationTemplates),
             onTemplateSelected: (_) => selected++,

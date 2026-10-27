@@ -18,6 +18,7 @@ import 'package:snap_fit/features/store/presentation/views/store_hub_screen.dart
 import 'package:snap_fit/features/store/presentation/views/store_screen.dart';
 import 'package:snap_fit/features/store/presentation/widgets/store_material_discovery.dart';
 import 'package:snap_fit/features/store/presentation/widgets/template_editorial_list.dart';
+import 'package:snap_fit/features/store/presentation/widgets/template_curation.dart';
 import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
 import 'ai_album_start_step_test.dart' show wrapCreation, loadCreationFonts;
 
@@ -164,24 +165,36 @@ void main() {
         find.byKey(const ValueKey('curation-details')),
       );
       final suffix = dark ? 'dark' : 'light';
-      await tester.tap(find.byTooltip('다음 컬렉션'));
-      await _paint(tester);
-      expect(find.byKey(const ValueKey('curation-scene-1')), findsWidgets);
-      expect(
-        tester.getRect(find.byKey(const ValueKey('curation-details'))),
-        details,
-      );
-      await _capture(tester, boundary, 'collection-wedding-390-$suffix');
-      await tester.tap(find.byTooltip('다음 컬렉션'));
-      await _paint(tester);
-      await tester.tap(find.byTooltip('다음 컬렉션'));
-      await _paint(tester);
+      final selected = curateTemplates(publishedCreationTemplates);
+      expect(selected.map((t) => t.category), [
+        '일상',
+        '여행',
+        '가족·친구',
+        '동아리',
+        '반려동물',
+        '커플·기념일',
+      ]);
       expect(find.byKey(const ValueKey('curation-scene-2')), findsWidgets);
+      await tester.tap(find.byTooltip('다음 컬렉션'));
+      await _paint(tester);
+      expect(find.byKey(const ValueKey('curation-scene-0')), findsWidgets);
+      expect(find.text('02 / 06'), findsOneWidget);
       expect(
         tester.getRect(find.byKey(const ValueKey('curation-details'))),
         details,
       );
-      await _capture(tester, boundary, 'collection-daily-390-$suffix');
+      await _capture(tester, boundary, 'collection-travel-390-$suffix');
+      for (var index = 2; index < selected.length; index++) {
+        await tester.tap(find.byTooltip('다음 컬렉션'));
+        await _paint(tester);
+      }
+      expect(find.byKey(const ValueKey('curation-scene-1')), findsWidgets);
+      expect(find.text('06 / 06'), findsOneWidget);
+      expect(
+        tester.getRect(find.byKey(const ValueKey('curation-details'))),
+        details,
+      );
+      await _capture(tester, boundary, 'collection-couple-390-$suffix');
       final scrollable = find
           .descendant(
             of: find.byType(CustomScrollView).first,

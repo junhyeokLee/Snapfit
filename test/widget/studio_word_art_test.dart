@@ -70,7 +70,7 @@ void main() {
     CatalogFavorites.instance = previous;
   });
 
-  for (final aspect in CollectionAspect.values) {
+  for (final aspect in CollectionAspect.printable) {
     test(
       '${aspect.name}: all word art inserts atomically, stays editable and roundtrips',
       () async {

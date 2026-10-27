@@ -1,0 +1,114 @@
+{
+  "date": "2026-10-25",
+  "scope": "Fresh verification of the editor fixes plus missing photos across home, collection and reader navigation",
+  "production_code_changed": false,
+  "test_changes": [
+    "Added test/review/album_photo_navigation_verification_test.dart with in-memory image downloads, real decoding and an isolated reader rotation case",
+    "Updated the existing edit-button surface assertion in test/widget/home_book_depth_test.dart from AnimatedContainer to the current Material widget; its color/geometry expectations are preserved"
+  ],
+  "editor_findings": [],
+  "editor_verified": [
+    "A reorder immediately after undo preserves the newest photo geometry and commits only order",
+    "Stale reorder callbacks cannot overwrite additions, deletions, another order change or a replacement edit session",
+    "Actual pointer drops finishing after undo retain the undone geometry",
+    "Rapid More taps during dismissal do not overlap tool sheets or drop the selected action",
+    "The More gate survives parent rebuilds and stale callbacks and is released after cancellation",
+    "A fast reverse scroll of 72 unresolved thumbnails starts only two native calls and requests the top photo once",
+    "Fast close/reopen shares active thumbnail work; no-consumer queued work is discarded",
+    "Completed thumbnail entries obey the 32-entry/2-MiB bounds independently of pending requests",
+    "Late thumbnail results cannot replace a newly selected photo or refill a disposed panel cache",
+    "Eight repeated arrangement visits detach the tested scroll controllers and image listeners"
+  ],
+  "findings": [
+    {
+      "priority": "P1",
+      "title": "Native photo widgets reuse a rejected signed storage URL after route return",
+      "location": {
+        "file": "lib/shared/snapfit_image.dart",
+        "start_line": 178,
+        "end_line": 180
+      },
+      "cause": "The native branch renders _resolvedUrls directly. The shared map has no expiry metadata; a download failure does not invalidate that URL or expose the bounded recovery used by _WebStorageImage. The storage resolver creates six-hour Supabase signed URLs.",
+      "trigger": "A previously shown photo is remounted after decoded pixels are evicted and the old URL is no longer accepted, for example after expiry or revocation.",
+      "proof": {
+        "test": "review: native route return must recover a rejected cached storage URL",
+        "resolutions_actual": 1,
+        "resolutions_expected_for_recovery": 2,
+        "downloads": ["old signed URL", "old signed URL"],
+        "fresh_authorized_url_would_succeed": true,
+        "result": "Broken-image state persists after remount"
+      },
+      "recommendation": "Give native storage photos a bounded refresh/retry path and expiry-aware URL reuse. Invalidate only the failed URL version, coalesce refresh requests and stop late updates after source changes/disposal. Preserve existing decode bounds and custom placeholder/error rendering.",
+      "supporting_files": ["lib/core/utils/storage_url_resolver.dart:30", "lib/shared/snapfit_image.dart:72"],
+      "official_reference": "https://supabase.com/docs/reference/dart/storage-from-createsignedurl"
+    },
+    {
+      "priority": "P1",
+      "title": "A failed preview prevents a valid original from appearing in both home and reader",
+      "location": {
+        "file": "lib/features/album/presentation/controllers/layer_builder_image_rendering.dart",
+        "start_line": 11,
+        "end_line": 16
+      },
+      "cause": "_photoSource selects the first nonempty previewUrl/imageUrl/originalUrl once. Painting and prepareImages use only that candidate. On download failure neither path tries the remaining valid source, so a stored preview can mask an accessible original indefinitely.",
+      "proof": {
+        "tests": [
+          "review: home cover must use the valid original when its preview is unavailable",
+          "review: reader photo preparation must recover through the valid original"
+        ],
+        "home_decoded_photos": 0,
+        "home_downloads": ["missing preview"],
+        "reader_preparation": "Throws the preview download error",
+        "reader_downloads": ["missing preview"],
+        "original_download_attempts": 0
+      },
+      "recommendation": "Use a shared, finite candidate-fallback policy for visible painting and reader preparation, deduplicating equal sources. Try an available imageUrl/originalUrl after a preview fails, with the existing screen-sized decode cap; do not switch every photo to unrestricted original decoding.",
+      "supporting_files": ["lib/features/album/presentation/controllers/layer_builder.dart:137", "lib/features/album/presentation/controllers/layer_builder.dart:169"]
+    },
+    {
+      "priority": "P2",
+      "title": "Rotating during reader entry triggers a layout mutation exception",
+      "location": {
+        "file": "lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart",
+        "start_line": 1079,
+        "end_line": 1085
+      },
+      "cause": "While the opening overlay is visible, the stage keeps AnimatedSize mounted with Duration.zero. A portrait-to-landscape size change restarts its animation during layout; in the installed Flutter runtime that synchronously marks the same RenderAnimatedSize dirty inside performLayout.",
+      "proof": {
+        "tests": [
+          "rotation during opening lands on the new reader geometry",
+          "review: rotating the reader while its entry cover is visible must not mutate layout"
+        ],
+        "rotation": "390x844 to 844x390",
+        "exception": "A RenderAnimatedSize was mutated in its own performLayout implementation",
+        "independent_reader_only_reproduction": true,
+        "network_dependency": false,
+        "diagnostic_stack": "RenderAnimatedSize.performLayout -> _layoutStable -> _restartAnimation -> AnimationController.forward -> notifyListeners -> markNeedsLayout"
+      },
+      "recommendation": "Bypass the size-animation render object while entry/reduced motion requires an immediate geometry change. Keep the existing opening overlay and current reader target geometry; do not add a second animation or image capture.",
+      "limits": "This confirms a debug/widget-runtime layout exception. It does not establish identical release-mode rendering failure or prove it caused the user's specific missing photo."
+    }
+  ],
+  "verification": {
+    "editor_suite": {"passed": 149, "failed": 0, "skipped": 1, "log": "output/editor-photo-rereview/editor-tests.log"},
+    "home_reader_existing_suite_initial": {
+      "passed": 162,
+      "failed": 7,
+      "log": "output/editor-photo-rereview/home-reader-baseline.log",
+      "failure_breakdown": "One genuine entry-rotation layout exception; six outdated AnimatedContainer finder assertions for the current Material edit button"
+    },
+    "corrected_existing_button_assertions": {"passed": 6, "failed": 0, "log": "output/editor-photo-rereview/home-reader-selector.log"},
+    "new_photo_navigation_cases": {
+      "passed": 1,
+      "failed": 4,
+      "distinct_confirmed_findings": 3,
+      "log": "output/editor-photo-rereview/photo-regressions.log",
+      "passing_case": "Eight hidden/resume cycles plus cache pressure restore the home photo, with zero live/pending image entries after unmount"
+    },
+    "analysis": {"items": 14, "issues": 0, "log": "output/editor-photo-rereview/analysis.log"},
+    "app_build_run": false,
+    "live_backend_or_user_data_changed": false,
+    "device_frame_or_process_memory_profile_run": false
+  },
+  "limits": "Review only: the three newly confirmed production issues remain unfixed. The added regression tests intentionally fail on those issues. Downloads and URL rejection were simulated with in-memory fixtures, so the tests prove the code paths rather than identify the user's particular album or remote object. Resource-release and bounded-work tests passed for the editor; no claim is made that all device frame drops or native memory leaks have been ruled out."
+}

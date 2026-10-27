@@ -1,0 +1,102 @@
+{
+  "date": "2026-10-25",
+  "scope": "Fresh validation review of hidden reader resume, URL/storage photo request sharing, rapid retries, navigation, rotation and resource cleanup",
+  "previous_fix_report": "docs/verification/album-photo-alias-visibility-fixes-2026-10-25.json",
+  "production_code_changed": false,
+  "test_changes": [
+    "Added test/review/photo_alias_resume_rereview_test.dart with three cases that assert the desired behavior and reproduce two remaining findings"
+  ],
+  "findings": [
+    {
+      "priority": "P2",
+      "title": "A resumed photo keeps its failed local result after another consumer successfully recovers the same storage photo",
+      "location": {
+        "file": "lib/shared/snapfit_image.dart",
+        "start_line": 439,
+        "end_line": 445
+      },
+      "supporting_locations": [
+        "lib/shared/snapfit_image.dart:522",
+        "lib/shared/snapfit_image.dart:626"
+      ],
+      "trigger": "Two maintained consumers reach terminal failure for the same storage URI. Hide one, repair the photo, and click retry eight times on the visible consumer. The visible consumer recovers; resume the hidden consumer.",
+      "cause": "_startIfActive returns whenever _resolved already exists. Resuming therefore does not adopt the healthy URL/decoded generation now shared by the other consumer. The retained failed future and old failure version are checked again, and _refreshUsed remains true after the earlier automatic attempt, leaving the resumed consumer terminal.",
+      "proof": {
+        "tests": [
+          "a hidden consumer resumes pixels recovered by another consumer with a new URL",
+          "a hidden consumer resumes pixels recovered by another consumer with an identical URL"
+        ],
+        "successful_photo_count_expected": 2,
+        "successful_photo_count_actual": 1,
+        "retry_controls_remaining": 1,
+        "signing_requests": 3,
+        "downloads": "one rejected load and one explicit successful retry load; no extra transport duplicate was needed to reproduce the missing photo",
+        "resource_cleanup": "Unmount/cache cleanup returns pending/live image counts and transient callbacks to zero before the failing display assertion"
+      },
+      "recommendation": "On route/foreground restoration, reconcile the existing candidate with a newer healthy shared URL/decoded generation. Adopt the successful result without new signing/downloading, and distinguish it from the older failed generation even if the URL string is unchanged. Keep explicit retry bounds and prevent stale failures from rejecting the newer successful result."
+    },
+    {
+      "priority": "P2",
+      "title": "Bundled photos bypass the hidden-reader loading guard through LayerBuilder",
+      "location": {
+        "file": "lib/features/album/presentation/controllers/layer_builder_image_rendering.dart",
+        "start_line": 162,
+        "end_line": 170
+      },
+      "supporting_locations": [
+        "lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart:613",
+        "lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart:1168"
+      ],
+      "trigger": "Keep an actual AlbumReaderSinglePageView underneath an opaque Navigator route, update its bundled cover photo and rotate while it is hidden.",
+      "cause": "SnapfitImage now guards all of its own source branches, but LayerBuilder directly mounts Image.asset or an AssetImage-backed spine preview for a single bundled source. The live cover can therefore load/decode a new asset while TickerMode is false, independently of the guarded rasterizer.",
+      "proof": {
+        "test": "a hidden reader defers new bundled-photo loads through a data update and rotation",
+        "ticker_mode_while_hidden": false,
+        "loads_before": [
+          "assets/review/hidden-photo-0-0.png",
+          "assets/review/hidden-photo-0-1.png",
+          "assets/review/hidden-photo-0-2.png"
+        ],
+        "new_load_while_hidden": "assets/review/hidden-photo-1-0.png",
+        "resume": "Actual reader becomes ready and photo pixels return after popping the covering route",
+        "resource_cleanup": "All tracked ui.Image handles are disposed after unmount/cache cleanup; pending/live image entries and transient callbacks are zero"
+      },
+      "recommendation": "Gate live LayerBuilder bundled-photo/spine mounting with the same route/foreground activity policy, resuming when visible. Preserve its asset fit, decode bound and print-original rendering path. The analogous local AssetEntity branch merits coverage as part of the fix.",
+      "limits": "This reproduction confirms one unnecessary bundled-file load/decode per hidden update, not a network download, permanent memory leak or measured device frame drop. The AssetEntity branch was read but is not claimed as a separately reproduced finding."
+    }
+  ],
+  "verified_without_new_findings": [
+    "All existing 236 related cases pass, including main cover/collection/reader navigation, repeated entry rotations, page-turn cancel/reverse, photo fallback, custom rendering, editor crop and print resolution",
+    "Ordinary URL and gs/supabase initial signing/loading remain deferred while hidden or backgrounded, and resume normally",
+    "URL/storage aliases share immediate rejected downloads and successful recovery, including actual CacheManager+HttpFileService with MockClient transport",
+    "Rapid retry clicks remain coalesced; the fresh recovery fixture makes only three signing calls and one successful retry load",
+    "Tracked resource release assertions pass; no new persistent image-handle or pending/live image-cache leak was reproduced",
+    "The fresh failures identify a missing-photo state and unnecessary hidden asset work rather than a new duplicate HTTP request"
+  ],
+  "verification": {
+    "existing_related_suite": {
+      "files": 19,
+      "passed": 236,
+      "failed": 0,
+      "log": "output/album-photo-alias-resume-rereview/suite.log"
+    },
+    "fresh_cases": {
+      "passed": 0,
+      "failed": 3,
+      "distinct_confirmed_findings": 2,
+      "log": "output/album-photo-alias-resume-rereview/edges.log"
+    },
+    "total_unique_cases": 239,
+    "unique_passed": 236,
+    "unique_failed": 3,
+    "analysis": {
+      "items": 14,
+      "issues": 0,
+      "log": "output/album-photo-alias-resume-rereview/analysis.log"
+    },
+    "app_build_run": false,
+    "live_backend_or_user_data_changed": false,
+    "device_frame_or_process_memory_profile_run": false
+  },
+  "limits": "Review only: production fixes are not included. Signing/download fixtures and an instrumented AssetBundle use real Flutter image decoding without live services. Resource assertions do not measure whole-device memory or frame time and do not establish the absence of every native leak or frame drop."
+}

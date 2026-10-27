@@ -1,0 +1,86 @@
+{
+  "status": "complete",
+  "actorIds": [
+    "2b30cb01-2018-4b7b-ab9c-7fae5b1de84c",
+    "febfe957-eef2-4927-a9f0-264590f34e41"
+  ],
+  "startedAt": "2026-10-26T11:03:36.838110+00:00",
+  "steps": [
+    "cleared_only_owned_active_record_album_and_profile_references",
+    "storage_api:album-assets/2b30cb01-2018-4b7b-ab9c-7fae5b1de84c/moments/1777d1ee-a08c-4c9d-b943-a2044d35bb5a/a93d865d-9b2c-423d-90c8-a52fe53738de.jpg",
+    "storage_api:album-assets/2b30cb01-2018-4b7b-ab9c-7fae5b1de84c/moments/1777d1ee-a08c-4c9d-b943-a2044d35bb5a/41d71c2b-f9ab-4968-a85f-cbc5cb008c7c.jpg",
+    "storage_api:album-assets/2b30cb01-2018-4b7b-ab9c-7fae5b1de84c/moments/1777d1ee-a08c-4c9d-b943-a2044d35bb5a/67872617-d628-47b2-a8c3-640bf91904cd.jpg",
+    "storage_api:album-assets/2b30cb01-2018-4b7b-ab9c-7fae5b1de84c/moments/d77885da-0cf0-4637-bca9-c03959e9738d/809056f2-7d8b-4251-ae2e-5d8f28799178.png",
+    "global_revoke_then_auth_delete"
+  ],
+  "before": {
+    "actor": "2b30cb01-2018-4b7b-ab9c-7fae5b1de84c",
+    "albums": [
+      106
+    ],
+    "objects": [
+      {
+        "bucket": "album-assets",
+        "name": "2b30cb01-2018-4b7b-ab9c-7fae5b1de84c/moments/1777d1ee-a08c-4c9d-b943-a2044d35bb5a/a93d865d-9b2c-423d-90c8-a52fe53738de.jpg"
+      },
+      {
+        "bucket": "album-assets",
+        "name": "2b30cb01-2018-4b7b-ab9c-7fae5b1de84c/moments/1777d1ee-a08c-4c9d-b943-a2044d35bb5a/41d71c2b-f9ab-4968-a85f-cbc5cb008c7c.jpg"
+      },
+      {
+        "bucket": "album-assets",
+        "name": "2b30cb01-2018-4b7b-ab9c-7fae5b1de84c/moments/1777d1ee-a08c-4c9d-b943-a2044d35bb5a/67872617-d628-47b2-a8c3-640bf91904cd.jpg"
+      },
+      {
+        "bucket": "album-assets",
+        "name": "2b30cb01-2018-4b7b-ab9c-7fae5b1de84c/moments/d77885da-0cf0-4637-bca9-c03959e9738d/809056f2-7d8b-4251-ae2e-5d8f28799178.png"
+      }
+    ],
+    "push_devices": 0,
+    "records": 2,
+    "reminder": {
+      "enabled": false,
+      "hour": 19,
+      "minute": 0,
+      "weekday": 2
+    }
+  },
+  "storageObjectsDeletedViaAPI": 4,
+  "globalSignoutStatus": 204,
+  "remainingAReferences": [],
+  "remainingBReferences": [],
+  "refreshTokensRemaining": 0,
+  "finishedAt": "2026-10-26T11:04:04.757975+00:00",
+  "storageObjectsRemaining": 0,
+  "fullDatabaseUUIDReferencesRemaining": 0,
+  "allQAAccountsRemoved": true,
+  "realBaselineRowsAndHashesPreserved": true,
+  "existingFunctionsChanged": [
+    "moments_private.journal(date)"
+  ],
+  "allOtherExistingFunctionHashesPreserved": true,
+  "finalBaseline": {
+    "albums": {
+      "md5": "39edc1d7423b4857d58b7815f993834c",
+      "count": 17
+    },
+    "profiles": {
+      "md5": "1912bf37ecf6d42d5987a54d20ae012f",
+      "count": 1
+    },
+    "wallets": {
+      "md5": "2e3d2032b366cb096bffa84d7d3b4f86",
+      "count": 1
+    },
+    "ledger": {
+      "md5": "dd1421f3783c4113fc4553f2433cf8a2",
+      "count": 9
+    },
+    "products": {
+      "md5": "e191cfd4353895532adc1748d5e3ebf0",
+      "count": 482
+    }
+  },
+  "proofReport": "docs/verification/moments-retention-cleanup-proof-2026-10-26.json",
+  "privateCredentialsAndHelpersDeleted": true
+}

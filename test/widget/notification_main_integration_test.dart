@@ -34,6 +34,7 @@ import 'package:snap_fit/features/store/domain/entities/premium_template.dart';
 import 'package:snap_fit/features/store/domain/repositories/template_repository.dart';
 import 'package:snap_fit/features/store/presentation/views/template_detail_screen.dart';
 import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
+import 'package:snap_fit/features/moments/presentation/views/moments_screen.dart';
 
 import '../support/point_purchase_fakes.dart';
 import 'ai_album_start_step_test.dart' show loadCreationFonts;
@@ -156,7 +157,10 @@ void main() {
   late _Templates templates;
 
   setUpAll(() async {
-    SharedPreferences.setMockInitialValues({'push_permission_requested': true});
+    SharedPreferences.setMockInitialValues({
+      'push_permission_requested': true,
+      'snapfit_first_visit_v1': 3,
+    });
     await loadCreationFonts();
     await Firebase.initializeApp();
     previousLinks = AppLinksPlatform.instance;
@@ -185,6 +189,23 @@ void main() {
         if (request.url.path.endsWith('/register_push_device') ||
             request.method == 'DELETE') {
           return http.Response('', 204, request: request);
+        }
+        if (request.url.path.endsWith('/get_moment_journal')) {
+          return http.Response(
+            jsonEncode({
+              'today': '2026-10-26',
+              'weekStart': '2026-10-26',
+              'month': (jsonDecode(request.body) as Map)['p_month'],
+              'records': [],
+              'weekRecords': [],
+              'weekPhotoCount': 0,
+              'monthlyAlbumId': null,
+              'monthlyAlbumPhotoIds': [],
+            }),
+            200,
+            request: request,
+            headers: {'content-type': 'application/json'},
+          );
         }
         return http.Response(
           '[]',
@@ -349,4 +370,28 @@ void main() {
       await expectDestination(tester, 13);
     },
   );
+
+  testWidgets('private journal reminder destination survives native splash', (
+    tester,
+  ) async {
+    links.initial = Uri.parse('snapfit://moments');
+    await mount(tester);
+    for (
+      var frame = 0;
+      frame < 30 && find.byType(MomentsScreen).evaluate().isEmpty;
+      frame++
+    ) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 10)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.byType(MomentsScreen), findsOneWidget);
+    expect(templateReads, isEmpty);
+    expect(find.byType(SplashScreen), findsNothing);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(milliseconds: 400));
+  });
 }

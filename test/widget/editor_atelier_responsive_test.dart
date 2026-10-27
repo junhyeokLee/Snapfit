@@ -39,6 +39,9 @@ class _Binding extends AutomatedTestWidgetsFlutterBinding {
 
 class _Interaction extends Mock implements LayerInteractionManager {
   @override
+  List<LayerModel> sortByZ(List<LayerModel> layers) => layers;
+
+  @override
   bool get isPrintPreview => false;
   @override
   bool get isPreviewMode => false;

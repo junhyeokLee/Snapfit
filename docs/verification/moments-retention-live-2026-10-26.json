@@ -1,0 +1,57 @@
+{
+  "status": "passed",
+  "project": "rrbhxdtriummqpztpjrk",
+  "qaActors": [
+    "2b30cb01-2018-4b7b-ab9c-7fae5b1de84c",
+    "febfe957-eef2-4927-a9f0-264590f34e41"
+  ],
+  "albumId": 106,
+  "assertions": 31,
+  "checks": [
+    "default_reminder_disabled",
+    "requires_first_record",
+    "first_saved",
+    "idempotent_save",
+    "twenty_create_one_album",
+    "created_import_ids",
+    "cross_user_journal_empty",
+    "cross_user_album_hidden",
+    "cross_user_write_denied",
+    "new_photos_saved_revision_two",
+    "cross_user_append_denied",
+    "stale_append_conflict",
+    "twenty_concurrent_append_one_change",
+    "edited_title_preserved",
+    "edited_cover_and_pages_preserved",
+    "custom_document_metadata_preserved",
+    "append_one_inner_page",
+    "cover_urls_preserved",
+    "durable_import_ids_two",
+    "third_photo_pending",
+    "weekly_server_records_and_photo_count",
+    "other_month_keeps_actual_week",
+    "enabled_optin_saved",
+    "disabled_optin_saved",
+    "other_user_settings_isolated",
+    "review_event_recorded",
+    "review_event_idempotent",
+    "client_cannot_forge_save_event",
+    "client_scheduler_forbidden",
+    "client_delivery_check_forbidden",
+    "source_photo_private"
+  ],
+  "concurrency": {
+    "createRequests": 20,
+    "oneCreated": true,
+    "appendRequests": 20,
+    "oneAppended": true
+  },
+  "reminderOptinFinal": false,
+  "registeredPushDevices": 0,
+  "cleanup": {
+    "status": "complete",
+    "report": "docs/verification/moments-retention-cleanup-2026-10-26.json",
+    "allQAAccountsRemoved": true,
+    "privateCredentialsAndHelpersDeleted": true
+  }
+}

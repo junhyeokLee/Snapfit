@@ -9,6 +9,7 @@ import 'package:snap_fit/features/album/presentation/widgets/create_flow/creatio
 import 'package:snap_fit/features/store/domain/entities/premium_template.dart';
 import 'package:snap_fit/features/store/presentation/widgets/catalog_edition_artwork.dart';
 import 'package:snap_fit/features/store/presentation/widgets/template_page_renderer.dart';
+import '../support/catalog_preview_loading.dart';
 
 class _CountedTemplate extends PremiumTemplate {
   _CountedTemplate(PremiumTemplate template)
@@ -81,6 +82,7 @@ void main() {
       ),
     );
 
+    await loadCatalogPreview(tester, template);
     final renderer = tester.widget<TemplatePageRenderer>(
       find.byType(TemplatePageRenderer),
     );
@@ -126,6 +128,7 @@ void main() {
           height: 156,
         ),
       );
+      await loadCatalogPreview(tester, template);
       final renderer = tester.widget<TemplatePageRenderer>(
         find.byType(TemplatePageRenderer),
       );
@@ -152,6 +155,7 @@ void main() {
       _card(CatalogSpreadPreview(template: template, decodeWidth: 8192)),
     );
 
+    await loadCatalogPreview(tester, template);
     expect(
       find.byKey(const ValueKey('catalog-live-spread--9304')),
       findsOneWidget,
@@ -170,7 +174,7 @@ void main() {
       expect(renderers[index].preserveTypography, isTrue);
       expect(renderers[index].imageDecodeWidth, 1024);
     }
-    expect(template.documentReads, 1);
+    expect(template.documentReads, 0);
 
     await tester.pumpWidget(
       _card(
@@ -179,7 +183,8 @@ void main() {
         height: 64,
       ),
     );
-    expect(template.documentReads, 1);
+    await tester.pump();
+    expect(template.documentReads, 0);
     expect(
       tester
           .widgetList<TemplatePageRenderer>(find.byType(TemplatePageRenderer))
@@ -195,9 +200,9 @@ void main() {
   ) async {
     final template = _CountedTemplate(publishedPremiumTemplates.first);
     await tester.pumpWidget(_card(CatalogSpreadPreview(template: template)));
-
+    await loadCatalogPreview(tester, template);
     expect(find.byType(TemplatePageRenderer), findsNWidgets(2));
-    expect(template.documentReads, 1);
+    expect(template.documentReads, 0);
     expect(find.byKey(ValueKey('catalog-spread-${template.id}')), findsNothing);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
@@ -217,6 +222,7 @@ void main() {
         jsonDecode(template.templateJson!) as Map<String, dynamic>,
       );
       await tester.pumpWidget(_card(CatalogSpreadPreview(template: template)));
+      await loadCatalogPreview(tester, template);
       final renderers = tester
           .widgetList<TemplatePageRenderer>(find.byType(TemplatePageRenderer))
           .toList();

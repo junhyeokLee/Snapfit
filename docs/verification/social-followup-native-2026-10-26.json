@@ -1,0 +1,23 @@
+{
+  "status": "verified_build_succeeded",
+  "exit_code": 0,
+  "elapsed_seconds": 127.22,
+  "task": ":app:packageDebug",
+  "platform": "android-arm64",
+  "source_before": "3ff9b92e4df6e6ca6b907818277b1a4ebfc34c9cdcd480efbeaa987e228c7c42",
+  "source_after": "3ff9b92e4df6e6ca6b907818277b1a4ebfc34c9cdcd480efbeaa987e228c7c42",
+  "social_source_sha256": "66e77a60888d7d62db8274d7edcd0aeafacdfbc0ad709e7706630e4c3435e263",
+  "inputs_unchanged": true,
+  "phone_install_attempted": false,
+  "apk_zip_entries": 1700,
+  "apk_all_crc_valid": true,
+  "kernel_exact_match": true,
+  "apk_bytes": 861299914,
+  "apk_sha256": "c366f0d384a54a773af0c3affec0b780ae06996f89d4470e7a0a695ad2858597",
+  "apk_path": "/Users/devsheep/SnapFit/SnapFit/output/native-photo-refresh/SnapFit-feed-complete-debug.apk",
+  "free_bytes_after_build": 461426688,
+  "apk_signature_verified": true,
+  "certificate_sha256": "a46a0968f62bfe49908e6e9d0b1feda3c269bf721d09a0fc1d7daaa6ecf199c3",
+  "certificate_matches_previous_apks": true,
+  "web_and_android_all_manifested_public_inputs_exact_match": true
+}

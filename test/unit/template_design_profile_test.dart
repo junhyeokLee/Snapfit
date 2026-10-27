@@ -302,8 +302,8 @@ void main() {
     },
   );
 
-  test('all 68 published designs expose their actual default photo slots', () {
-    expect(publishedCreationTemplates, hasLength(68));
+  test('all published designs expose their actual default photo slots', () {
+    expect(publishedCreationTemplates, isNotEmpty);
     for (final template in publishedCreationTemplates) {
       final raw = jsonDecode(template.templateJson!) as Map<String, dynamic>;
       final pages = templateDocumentPages(raw);

@@ -42,6 +42,34 @@ void _alignment(LayerModel layer, Alignment expected) {
 }
 
 void main() {
+  test('JSON compilation preserves only explicit saved provenance', () {
+    for (final marker in [true, false, null, 'false', 0]) {
+      final compiled = _build(_layer(fields: {'templateContent': marker}));
+      expect(compiled.isTemplateContent, marker is bool ? marker : null);
+    }
+  });
+
+  test('sample flags cannot be lost when compiling saved template layers', () {
+    for (final flag in ['isSample', 'isPlaceholder']) {
+      for (final inPayload in [true, false]) {
+        final compiled = _build(
+          _layer(
+            fields: {'templateContent': false, if (!inPayload) flag: true},
+            payload: {if (inPayload) flag: true},
+          ),
+        );
+        expect(compiled.isTemplateContent, isTrue);
+        expect(
+          LayerExportMapper.toJson(
+            compiled,
+            canvasSize: const Size(500, 700),
+          )['templateContent'],
+          isTrue,
+        );
+      }
+    }
+  });
+
   for (final canvas in [
     const Size(500, 700),
     const Size(600, 600),
@@ -75,6 +103,7 @@ void main() {
                 )
                 as Map<String, dynamic>;
         final compiled = _build(saved, canvas: canvas);
+        expect(compiled.isTemplateContent, isFalse);
         expect(compiled.imageZoom, 2.3);
         expect(compiled.imageBackground, 'archSoft');
         expect(compiled.imageTemplate, '4:3');

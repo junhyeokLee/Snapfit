@@ -8,7 +8,10 @@ import 'package:snap_fit/core/templates/authored_collections.dart';
 import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
 import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
 import 'package:snap_fit/features/album/presentation/providers/design_template_catalog_provider.dart';
+import 'package:snap_fit/features/point_shop/domain/point_shop_launch_pricing.dart';
+import 'package:snap_fit/features/point_shop/domain/point_shop_template_key.dart';
 import 'package:snap_fit/features/store/data/api/template_provider.dart';
+import '../../tool/template_studio/export_price_application.dart';
 
 class _TokenStorage extends Mock implements TokenStorage {}
 
@@ -55,6 +58,11 @@ const _publishedIds = [
   -9473,
   -9474,
   -9475,
+  -9721,
+  -9722,
+  -9723,
+  -9724,
+  -9725,
   -9501,
   -9502,
   -9503,
@@ -81,11 +89,104 @@ const _publishedIds = [
   -9533,
   -9534,
   -9535,
+  -9601,
+  -9602,
+  -9603,
+  -9604,
+  -9605,
+  -9611,
+  -9612,
+  -9613,
+  -9614,
+  -9615,
+  -9621,
+  -9622,
+  -9623,
+  -9624,
+  -9625,
+  -9631,
+  -9632,
+  -9633,
+  -9634,
+  -9635,
+  -9641,
+  -9642,
+  -9643,
+  -9644,
+  -9645,
+  -9651,
+  -9652,
+  -9653,
+  -9654,
+  -9655,
+  -9661,
+  -9662,
+  -9663,
+  -9664,
+  -9665,
+  -9701,
+  -9702,
+  -9703,
+  -9704,
+  -9705,
+  -9711,
+  -9712,
+  -9713,
+  -9714,
+  -9715,
+  -9731,
+  -9732,
+  -9733,
+  -9734,
+  -9735,
+  -9741,
+  -9742,
+  -9743,
+  -9744,
+  -9745,
+  -9751,
+  -9752,
+  -9753,
+  -9754,
+  -9755,
 ];
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  test(
+    'all 133 released identities retain their tier after stale server metadata',
+    () {
+      final rows = {
+        for (final row in pointShopPriceApplicationRows())
+          row['product_key']: row,
+      };
+      final merged = mergeTemplatesWithServer(
+        publishedCreationTemplates,
+        publishedCreationTemplates
+            .map((t) => t.copyWith(isPremium: !t.isPremium))
+            .toList(),
+      );
+      expect(merged, hasLength(133));
+      expect(merged.where((t) => !t.isPremium), hasLength(47));
+      expect(merged.where((t) => t.isPremium), hasLength(86));
+      for (final t in merged) {
+        final canonical = publishedCreationTemplates.singleWhere(
+          (p) => p.id == t.id,
+        );
+        final row = rows[pointShopTemplateKey(t)]!;
+        expect(row['is_active'], true, reason: t.title);
+        expect(
+          row['point_price'],
+          t.isPremium ? greaterThan(0) : 0,
+          reason: t.title,
+        );
+        expect(t.documentBuilder, same(canonical.documentBuilder));
+        expect(t.title, canonical.title);
+      }
+    },
+  );
 
   ProviderContainer container({bool offline = false}) {
     final storage = _TokenStorage();
@@ -117,21 +218,55 @@ void main() {
       );
       final result =
           StoreTemplateFeedNotifier.mergeServerSummaryWithLocalStatic(
-            server: [stale, source.copyWith(id: 42)],
+            server: [
+              stale,
+              ...publishedCreationTemplates
+                  .skip(1)
+                  .map(
+                    (template) =>
+                        template.copyWith(isPremium: !template.isPremium),
+                  ),
+              source.copyWith(id: 42),
+            ],
             local: [source.copyWith(id: -9201)],
           );
       expect(result.map((t) => t.id), _publishedIds);
       expect(result.first.title, source.title);
       expect(result.first.templateJson, source.templateJson);
-      expect(result.where((t) => !t.isPremium), hasLength(42));
-      expect(result.where((t) => t.isPremium), hasLength(26));
+      // The fixed first 47 IDs identify the original free collection. A
+      // presentation flag is not a server price or a collection membership.
+      final freeOriginalIds = _publishedIds.take(47).toList();
+      expect(bundledCreationTemplates.map((t) => t.id), freeOriginalIds);
+      expect(
+        result.where((t) => freeOriginalIds.contains(t.id)).map((t) => t.id),
+        freeOriginalIds,
+      );
+      expect(
+        result.where((t) => !freeOriginalIds.contains(t.id)).map((t) => t.id),
+        _publishedIds.skip(47),
+      );
+      for (final template in bundledCreationTemplates) {
+        expect(
+          pointShopRequiresFreePrice(pointShopTemplateKey(template)),
+          isTrue,
+          reason: template.title,
+        );
+      }
+      expect(
+        result.map((t) => t.isPremium),
+        publishedCreationTemplates.map((t) => t.isPremium),
+      );
+      expect(
+        result.map((t) => t.documentBuilder),
+        publishedCreationTemplates.map((t) => t.documentBuilder),
+      );
       expect(stale.templateJson, '{bad');
     },
   );
 
   for (final offline in [false, true]) {
     test(
-      'store, feed, runtime and editor expose all 68, offline=$offline',
+      'store, feed, runtime and editor expose all 133, offline=$offline',
       () async {
         final scope = container(offline: offline);
         final subscription = scope.listen(
@@ -139,7 +274,7 @@ void main() {
           (_, __) {},
         );
         addTearDown(subscription.close);
-        expect(scope.read(storeTemplateFeedProvider).items.length, 68);
+        expect(scope.read(storeTemplateFeedProvider).items.length, 133);
         for (var refresh = 0; refresh < 3; refresh++) {
           final catalog = await scope.read(templateListProvider.future);
           expect(catalog.map((t) => t.id), _publishedIds);
@@ -159,7 +294,7 @@ void main() {
           publishedCreationTemplates.map((t) => t.title),
         );
         for (var i = 0; i < authoredCollections.length; i++) {
-          for (final aspect in CollectionAspect.values) {
+          for (final aspect in CollectionAspect.printable) {
             final layers = editor[i].buildLayers(aspect.canvas);
             final doc = authoredCollections[i].document(aspect);
             expect(layers.length, (doc['cover']['layers'] as List).length);

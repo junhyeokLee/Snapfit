@@ -1,0 +1,1052 @@
+{
+  "project_ref": "rrbhxdtriummqpztpjrk",
+  "run_id": "9cd110dd4e3e",
+  "verified_at_utc": "2026-10-25T07:28:17.403535+00:00",
+  "fixtures": [
+    {
+      "role": "A",
+      "user_id": "7654c4e1-53a4-4985-93f9-15c9f9ae1333",
+      "album_id": 77,
+      "work_id": "c7fb6332-0150-45c6-b937-9af16d5b150d",
+      "page_indexes": [
+        2,
+        0
+      ]
+    },
+    {
+      "role": "B",
+      "user_id": "ebcd004a-b2a2-4471-98f4-03a6d0787042",
+      "album_id": 78,
+      "work_id": "fa9e14f6-3ba6-4778-87e6-a7ee0f2ec2fa",
+      "page_indexes": [
+        0,
+        2
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "check": "fresh_accounts_have_no_relations",
+      "passed": true
+    },
+    {
+      "check": "fresh_following_feed_empty",
+      "passed": true
+    },
+    {
+      "check": "anon_cannot_follow",
+      "passed": true
+    },
+    {
+      "check": "self_follow_rejected",
+      "passed": true
+    },
+    {
+      "check": "follow_missing_profile_rejected",
+      "passed": true
+    },
+    {
+      "check": "A_follow_B_returns_true",
+      "passed": true
+    },
+    {
+      "check": "following_state_is_actor_specific",
+      "passed": true
+    },
+    {
+      "check": "A_following_and_B_follower_counts_increment",
+      "passed": true
+    },
+    {
+      "check": "A_following_list_B_and_B_followers_A",
+      "passed": true
+    },
+    {
+      "check": "public_relation_lists_match",
+      "passed": true
+    },
+    {
+      "check": "following_feed_contains_only_followed_author",
+      "passed": true
+    },
+    {
+      "check": "following_feed_retains_topic_filter",
+      "passed": true
+    },
+    {
+      "check": "B_follows_A_for_mutual_relation",
+      "passed": true
+    },
+    {
+      "check": "mutual_counts_are_one_each",
+      "passed": true
+    },
+    {
+      "check": "remove_follower_preserves_outgoing_follow",
+      "passed": true
+    },
+    {
+      "check": "remove_follower_updates_only_correct_counts",
+      "passed": true
+    },
+    {
+      "check": "remove_follower_lists_and_following_feed_match",
+      "passed": true
+    },
+    {
+      "check": "removed_follower_can_follow_again",
+      "passed": true
+    },
+    {
+      "check": "blocking_hides_profiles_both_directions",
+      "passed": true
+    },
+    {
+      "check": "blocking_removes_both_relationship_counts",
+      "passed": true
+    },
+    {
+      "check": "blocking_hides_lists_and_following_feeds",
+      "passed": true
+    },
+    {
+      "check": "blocking_hides_work_detail_both_directions",
+      "passed": true
+    },
+    {
+      "check": "blocker_has_private_unblock_list_only",
+      "passed": true
+    },
+    {
+      "check": "blocked_user_follow_is_rejected",
+      "passed": true
+    },
+    {
+      "check": "unblock_restores_visibility_without_refollow",
+      "passed": true
+    },
+    {
+      "check": "unblock_counts_lists_and_feed_remain_empty",
+      "passed": true
+    },
+    {
+      "check": "normal_follow_still_works_after_unblock",
+      "passed": true
+    },
+    {
+      "check": "explicit_second_toggle_unfollows",
+      "passed": true
+    },
+    {
+      "check": "unfollow_counts_lists_and_feed_reset",
+      "passed": true
+    },
+    {
+      "check": "fixtures_are_left_neutral_for_screen_qa",
+      "passed": true
+    }
+  ],
+  "passed": 30,
+  "failed": 0,
+  "auth_mode": "Ordinary JWTs with authenticated role for all social requests; anon for public/unauthorized checks.",
+  "admin_usage": "Only ephemeral confirmed-user creation and scoped cleanup. No administrative RLS bypass used as feature evidence.",
+  "fixtures_retained_for_screen_qa": false,
+  "relations_left_neutral": true,
+  "emails_sent": 0,
+  "post_migration": {
+    "verified_at_utc": "2026-10-25T07:32:09.975044+00:00",
+    "checks": [
+      {
+        "check": "desired_follow_true_retry_0",
+        "passed": true
+      },
+      {
+        "check": "desired_follow_true_retry_1",
+        "passed": true
+      },
+      {
+        "check": "desired_follow_true_retry_2",
+        "passed": true
+      },
+      {
+        "check": "desired_true_has_one_edge_and_matching_counts",
+        "passed": true
+      },
+      {
+        "check": "desired_follow_false_retry_0",
+        "passed": true
+      },
+      {
+        "check": "desired_follow_false_retry_1",
+        "passed": true
+      },
+      {
+        "check": "desired_follow_false_retry_2",
+        "passed": true
+      },
+      {
+        "check": "desired_false_has_no_edge_and_matching_counts",
+        "passed": true
+      },
+      {
+        "check": "strict_boolean_rejects_null",
+        "passed": true
+      },
+      {
+        "check": "strict_boolean_rejects_string",
+        "passed": true
+      },
+      {
+        "check": "strict_boolean_rejects_number",
+        "passed": true
+      },
+      {
+        "check": "strict_boolean_rejects_object",
+        "passed": true
+      },
+      {
+        "check": "strict_boolean_rejects_array",
+        "passed": true
+      },
+      {
+        "check": "strict_boolean_rejects_missing",
+        "passed": true
+      },
+      {
+        "check": "anon_desired_follow_denied",
+        "passed": true
+      },
+      {
+        "check": "blocked_desired_state_denied_True",
+        "passed": true
+      },
+      {
+        "check": "blocked_desired_state_denied_False",
+        "passed": true
+      },
+      {
+        "check": "unblock_does_not_restore_desired_follow",
+        "passed": true
+      },
+      {
+        "check": "topic_publication_웨딩",
+        "passed": true
+      },
+      {
+        "check": "canonical_filter_finds_웨딩",
+        "passed": true
+      },
+      {
+        "check": "canonical_search_finds_웨딩",
+        "passed": true
+      },
+      {
+        "check": "topic_publication_여행",
+        "passed": true
+      },
+      {
+        "check": "canonical_filter_finds_여행",
+        "passed": true
+      },
+      {
+        "check": "canonical_search_finds_여행",
+        "passed": true
+      },
+      {
+        "check": "topic_publication_일상",
+        "passed": true
+      },
+      {
+        "check": "canonical_filter_finds_일상",
+        "passed": true
+      },
+      {
+        "check": "canonical_search_finds_일상",
+        "passed": true
+      },
+      {
+        "check": "topic_publication_성장·육아",
+        "passed": true
+      },
+      {
+        "check": "canonical_filter_finds_성장·육아",
+        "passed": true
+      },
+      {
+        "check": "canonical_search_finds_성장·육아",
+        "passed": true
+      },
+      {
+        "check": "topic_publication_가족·친구",
+        "passed": true
+      },
+      {
+        "check": "canonical_filter_finds_가족·친구",
+        "passed": true
+      },
+      {
+        "check": "canonical_search_finds_가족·친구",
+        "passed": true
+      },
+      {
+        "check": "topic_publication_커플·기념일",
+        "passed": true
+      },
+      {
+        "check": "canonical_filter_finds_커플·기념일",
+        "passed": true
+      },
+      {
+        "check": "canonical_search_finds_커플·기념일",
+        "passed": true
+      },
+      {
+        "check": "topic_publication_반려동물",
+        "passed": true
+      },
+      {
+        "check": "canonical_filter_finds_반려동물",
+        "passed": true
+      },
+      {
+        "check": "canonical_search_finds_반려동물",
+        "passed": true
+      },
+      {
+        "check": "topic_publication_스포츠·도전",
+        "passed": true
+      },
+      {
+        "check": "canonical_filter_finds_스포츠·도전",
+        "passed": true
+      },
+      {
+        "check": "canonical_search_finds_스포츠·도전",
+        "passed": true
+      },
+      {
+        "check": "topic_publication_졸업·새출발",
+        "passed": true
+      },
+      {
+        "check": "canonical_filter_finds_졸업·새출발",
+        "passed": true
+      },
+      {
+        "check": "canonical_search_finds_졸업·새출발",
+        "passed": true
+      },
+      {
+        "check": "topic_publication_동아리",
+        "passed": true
+      },
+      {
+        "check": "canonical_filter_finds_동아리",
+        "passed": true
+      },
+      {
+        "check": "canonical_search_finds_동아리",
+        "passed": true
+      },
+      {
+        "check": "topic_publication_기타",
+        "passed": true
+      },
+      {
+        "check": "canonical_filter_finds_기타",
+        "passed": true
+      },
+      {
+        "check": "canonical_search_finds_기타",
+        "passed": true
+      },
+      {
+        "check": "topic_publication_커플",
+        "passed": true
+      },
+      {
+        "check": "canonical_filter_finds_커플",
+        "passed": true
+      },
+      {
+        "check": "canonical_search_finds_커플",
+        "passed": true
+      },
+      {
+        "check": "topic_publication_가족",
+        "passed": true
+      },
+      {
+        "check": "canonical_filter_finds_가족",
+        "passed": true
+      },
+      {
+        "check": "canonical_search_finds_가족",
+        "passed": true
+      },
+      {
+        "check": "fixtures_left_neutral_after_post_migration_qa",
+        "passed": true
+      }
+    ],
+    "passed": 58,
+    "failed": 0,
+    "topic_works": [
+      {
+        "work_id": "7a9a62cc-6b7b-499d-abff-973b6cef1104",
+        "stored_topic": "웨딩",
+        "canonical_filter": "웨딩"
+      },
+      {
+        "work_id": "bd0995ee-5888-4fcd-a01c-7d0670cd84d8",
+        "stored_topic": "여행",
+        "canonical_filter": "여행"
+      },
+      {
+        "work_id": "792e8f5a-1c4f-4460-a640-0633eedc0bea",
+        "stored_topic": "일상",
+        "canonical_filter": "일상"
+      },
+      {
+        "work_id": "cac4f6ee-a0b4-4335-b145-fac7dda06308",
+        "stored_topic": "성장·육아",
+        "canonical_filter": "성장·육아"
+      },
+      {
+        "work_id": "b841bcad-72cf-4d2e-9af0-a903e84bdfc9",
+        "stored_topic": "가족·친구",
+        "canonical_filter": "가족·친구"
+      },
+      {
+        "work_id": "d2f9a2aa-bc8a-4f9a-bbea-1966b09c72c6",
+        "stored_topic": "커플·기념일",
+        "canonical_filter": "커플·기념일"
+      },
+      {
+        "work_id": "84c82269-41d2-4aa0-87bb-20ad722e9e02",
+        "stored_topic": "반려동물",
+        "canonical_filter": "반려동물"
+      },
+      {
+        "work_id": "65604abf-140e-4b4b-a61e-2a090b8682a5",
+        "stored_topic": "스포츠·도전",
+        "canonical_filter": "스포츠·도전"
+      },
+      {
+        "work_id": "52725338-3f31-4d3f-ac11-7ff2802b4af8",
+        "stored_topic": "졸업·새출발",
+        "canonical_filter": "졸업·새출발"
+      },
+      {
+        "work_id": "be56c8d8-fe50-4f92-a32e-1cfc9a5b57dd",
+        "stored_topic": "동아리",
+        "canonical_filter": "동아리"
+      },
+      {
+        "work_id": "1e2473c4-a822-44af-b7c2-c32d044186ad",
+        "stored_topic": "기타",
+        "canonical_filter": "기타"
+      },
+      {
+        "work_id": "60e7117e-8c59-43aa-aacf-689c164b0fc9",
+        "stored_topic": "커플",
+        "canonical_filter": "커플·기념일"
+      },
+      {
+        "work_id": "2a75c834-1c01-4a6d-9a73-ad3ab6adf30c",
+        "stored_topic": "가족",
+        "canonical_filter": "가족·친구"
+      }
+    ],
+    "fixtures_retained_for_screen_qa": false
+  },
+  "bundled_photo_fixtures": {
+    "fixtures": [
+      {
+        "role": "A",
+        "album_id": 79,
+        "work_id": "ebc7fc2c-ebbc-4a2d-8e9e-e2a643187af5",
+        "asset": "assets/templates/original_editorial/images/travel_harbor.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2663168,
+        "sha256": "cf1b7c024ff483905f62105c238551af176318503aff0928717904940119a546"
+      },
+      {
+        "role": "B",
+        "album_id": 80,
+        "work_id": "77843e63-15fd-466b-8d70-de3ee93a3ecd",
+        "asset": "assets/templates/original_editorial/images/travel_coast.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3323218,
+        "sha256": "3cf086e5f4447a3f5c963226f92c690990e5d5a4498072e44499f91aa2684a09"
+      },
+      {
+        "role": "A",
+        "album_id": 81,
+        "work_id": "c77c9c26-56c6-4841-af79-afb2db199da8",
+        "asset": "assets/templates/original_editorial/images/family_table.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2876038,
+        "sha256": "1a2ad0864a5fc9589d5f782b0b076fe49610c76c5ded9ba27e3b9bcb4c4967eb"
+      }
+    ],
+    "checks": [
+      {
+        "check": "photo_ratio_matches_original_항구",
+        "passed": true
+      },
+      {
+        "check": "photo_bytes_match_bundled_original_항구",
+        "passed": true
+      },
+      {
+        "check": "photo_ratio_matches_original_해안",
+        "passed": true
+      },
+      {
+        "check": "photo_bytes_match_bundled_original_해안",
+        "passed": true
+      },
+      {
+        "check": "photo_ratio_matches_original_식탁",
+        "passed": true
+      },
+      {
+        "check": "photo_bytes_match_bundled_original_식탁",
+        "passed": true
+      }
+    ],
+    "passed": 6,
+    "failed": 0,
+    "image_mutations": "None; exact original PNG bytes uploaded."
+  },
+  "profile_photo_qa": {
+    "checks": [
+      {
+        "check": "pending_photo_private_to_owner_A",
+        "passed": true
+      },
+      {
+        "check": "pending_photo_hidden_from_other_account_A",
+        "passed": true
+      },
+      {
+        "check": "explicit_public_photo_path_only_A",
+        "passed": true
+      },
+      {
+        "check": "name_handle_bio_unchanged_A",
+        "passed": true
+      },
+      {
+        "check": "selected_photo_public_signable_A",
+        "passed": true
+      },
+      {
+        "check": "public_profile_png_unchanged_A",
+        "passed": true
+      },
+      {
+        "check": "profile_signed_url_has_60_second_ttl_A",
+        "passed": true
+      },
+      {
+        "check": "pending_photo_private_to_owner_B",
+        "passed": true
+      },
+      {
+        "check": "pending_photo_hidden_from_other_account_B",
+        "passed": true
+      },
+      {
+        "check": "explicit_public_photo_path_only_B",
+        "passed": true
+      },
+      {
+        "check": "name_handle_bio_unchanged_B",
+        "passed": true
+      },
+      {
+        "check": "selected_photo_public_signable_B",
+        "passed": true
+      },
+      {
+        "check": "public_profile_png_unchanged_B",
+        "passed": true
+      },
+      {
+        "check": "profile_signed_url_has_60_second_ttl_B",
+        "passed": true
+      },
+      {
+        "check": "foreign_photo_pointer_denied",
+        "passed": true
+      },
+      {
+        "check": "external_url_pointer_denied",
+        "passed": true
+      },
+      {
+        "check": "referenced_photo_owner_delete_is_denied",
+        "passed": true
+      },
+      {
+        "check": "foreign_photo_delete_is_denied",
+        "passed": true
+      },
+      {
+        "check": "profile_photo_overwrite_denied",
+        "passed": true
+      },
+      {
+        "check": "replacement_revokes_new_old_photo_signing",
+        "passed": true
+      },
+      {
+        "check": "owner_can_delete_unreferenced_old_photo",
+        "passed": true
+      },
+      {
+        "check": "clear_hides_pointer_and_new_public_signing",
+        "passed": true
+      },
+      {
+        "check": "blocked_profile_photos_cannot_be_newly_signed_both_directions",
+        "passed": true
+      },
+      {
+        "check": "block_is_viewer_specific_for_public_photo",
+        "passed": true
+      },
+      {
+        "check": "unblock_restores_photo_access",
+        "passed": true
+      },
+      {
+        "check": "photo_qa_leaves_relationships_neutral",
+        "passed": true
+      }
+    ],
+    "passed": 26,
+    "failed": 0,
+    "fixtures": [
+      {
+        "role": "A",
+        "path": "7654c4e1-53a4-4985-93f9-15c9f9ae1333/f79c59f1-0352-4608-9ceb-8312ee809dc5.png"
+      },
+      {
+        "role": "B",
+        "path": "ebcd004a-b2a2-4471-98f4-03a6d0787042/ecc4b02d-6094-47c1-82ee-6c61ebaac1a2.png"
+      }
+    ],
+    "bucket": "social-profile-photos",
+    "requested_signed_ttl_seconds": 60,
+    "revocation_limit": "New signing is denied after removal/block; an already issued URL can remain usable until its 60-second expiry."
+  },
+  "reaction_regression": {
+    "checks": [
+      {
+        "check": "reaction_fixture_starts_neutral",
+        "passed": true
+      },
+      {
+        "check": "ordinary_jwt_like",
+        "passed": true
+      },
+      {
+        "check": "ordinary_jwt_save",
+        "passed": true
+      },
+      {
+        "check": "reaction_flags_and_like_count_match",
+        "passed": true
+      },
+      {
+        "check": "saved_list_contains_work",
+        "passed": true
+      },
+      {
+        "check": "comment_visible_with_correct_author",
+        "passed": true
+      },
+      {
+        "check": "comment_count_increments",
+        "passed": true
+      },
+      {
+        "check": "author_comment_delete_updates_list_and_count",
+        "passed": true
+      },
+      {
+        "check": "title_search_finds_synthetic_work",
+        "passed": true
+      },
+      {
+        "check": "detail_png_page_0",
+        "passed": true
+      },
+      {
+        "check": "detail_png_page_1",
+        "passed": true
+      },
+      {
+        "check": "withdrawal_hides_detail_feed_and_saved",
+        "passed": true
+      },
+      {
+        "check": "owner_retains_private_management",
+        "passed": true
+      },
+      {
+        "check": "republish_preserves_snapshot_and_saved_relationship",
+        "passed": true
+      },
+      {
+        "check": "like_can_be_removed",
+        "passed": true
+      },
+      {
+        "check": "save_can_be_removed",
+        "passed": true
+      },
+      {
+        "check": "reaction_fixture_restored_to_neutral",
+        "passed": true
+      }
+    ],
+    "passed": 17,
+    "failed": 0,
+    "work_id": "fa9e14f6-3ba6-4778-87e6-a7ee0f2ec2fa",
+    "restored_to_neutral": true
+  },
+  "visual_fixture_curation": {
+    "published_photo_work_ids": [
+      "77843e63-15fd-466b-8d70-de3ee93a3ecd",
+      "c77c9c26-56c6-4841-af79-afb2db199da8",
+      "ebc7fc2c-ebbc-4a2d-8e9e-e2a643187af5"
+    ],
+    "hidden_generic_work_ids": [
+      "c7fb6332-0150-45c6-b937-9af16d5b150d",
+      "7a9a62cc-6b7b-499d-abff-973b6cef1104",
+      "bd0995ee-5888-4fcd-a01c-7d0670cd84d8",
+      "792e8f5a-1c4f-4460-a640-0633eedc0bea",
+      "cac4f6ee-a0b4-4335-b145-fac7dda06308",
+      "b841bcad-72cf-4d2e-9af0-a903e84bdfc9",
+      "d2f9a2aa-bc8a-4f9a-bbea-1966b09c72c6",
+      "84c82269-41d2-4aa0-87bb-20ad722e9e02",
+      "65604abf-140e-4b4b-a61e-2a090b8682a5",
+      "52725338-3f31-4d3f-ac11-7ff2802b4af8",
+      "be56c8d8-fe50-4f92-a32e-1cfc9a5b57dd",
+      "1e2473c4-a822-44af-b7c2-c32d044186ad",
+      "60e7117e-8c59-43aa-aacf-689c164b0fc9",
+      "2a75c834-1c01-4a6d-9a73-ad3ab6adf30c",
+      "fa9e14f6-3ba6-4778-87e6-a7ee0f2ec2fa"
+    ],
+    "checks": [
+      {
+        "check": "public_gallery_only_bundled_photos_A",
+        "passed": true
+      },
+      {
+        "check": "public_photo_and_work_count_retained_A",
+        "passed": true
+      },
+      {
+        "check": "public_gallery_only_bundled_photos_B",
+        "passed": true
+      },
+      {
+        "check": "public_photo_and_work_count_retained_B",
+        "passed": true
+      },
+      {
+        "check": "only_three_photo_fixture_works_in_public_feed",
+        "passed": true
+      }
+    ],
+    "passed": 5,
+    "failed": 0,
+    "profiles_and_photos_retained": true
+  },
+  "total_live_api_checks": 142,
+  "sql_validation": {
+    "tests_passed": 24,
+    "tests_failed": 0,
+    "runtime": "@electric-sql/pglite@0.3.14",
+    "command": "PGLITE_MODULE=/tmp/snapfit-social-sql-test/node_modules/@electric-sql/pglite/dist/index.js node --test test/server/social_publication_sql.test.mjs",
+    "applied_migrations": [
+      "20261025073121_social_topic_taxonomy",
+      "20261025073122_social_idempotent_follow_state",
+      "20261025074127_social_public_profile_photos"
+    ],
+    "production_apply_confirmed_by": "root",
+    "after_filename_alignment": "24 passed, 0 failed"
+  },
+  "review_finding": {
+    "problem": "An uncertain toggleFollow response could leave cached button/count/feed state stale; retrying a toggle could undo a committed follow.",
+    "server_resolution": "Idempotent desired-state setFollowing with strict JSON boolean, stable two-profile lock, and existing block/ownership guards.",
+    "ui_review": "Latest profile/relations call setFollowing with the desired boolean. Both relation actions and profile follow/block failure paths invalidate profile, relation and feed data; lost-response widget regressions are present in the UI owner test file.",
+    "status": "Resolved in current SQL and inspected UI code."
+  },
+  "fixture_state": {
+    "status": "cleaned",
+    "accounts": 0,
+    "album_ids": [],
+    "works_total": 0,
+    "published_photo_works": 0,
+    "generic_works_private": 0,
+    "snapshot_png_paths": 0,
+    "active_public_profile_photos": 0,
+    "credentials_archived": false,
+    "kept_for_screen_qa": false
+  },
+  "cleanup": {
+    "project_ref": "rrbhxdtriummqpztpjrk",
+    "run_id": "9cd110dd4e3e",
+    "synthetic_accounts_deleted": 2,
+    "synthetic_albums_deleted": 5,
+    "qa_user_ids": [
+      "7654c4e1-53a4-4985-93f9-15c9f9ae1333",
+      "ebcd004a-b2a2-4471-98f4-03a6d0787042"
+    ],
+    "original_synthetic_album_ids": [
+      77,
+      78,
+      79,
+      80,
+      81
+    ],
+    "cleanup_completed": true,
+    "profile_photo_cleanup": {
+      "pointer_cleared_before_delete": true,
+      "observed_and_removed_paths": [
+        "7654c4e1-53a4-4985-93f9-15c9f9ae1333/1aa8e557-6766-4f9d-8139-de77c1173deb.png",
+        "ebcd004a-b2a2-4471-98f4-03a6d0787042/ecc4b02d-6094-47c1-82ee-6c61ebaac1a2.png"
+      ],
+      "newly_discovered_ui_upload_paths": [
+        "7654c4e1-53a4-4985-93f9-15c9f9ae1333/1aa8e557-6766-4f9d-8139-de77c1173deb.png"
+      ],
+      "removed_object_count": 2
+    },
+    "scope": "Only this QA run's two exact Auth UUIDs, albums 77–81, 18 works, and their owned Storage paths were removed. No real-user rows were changed.",
+    "pre_cleanup_inventory": {
+      "album_ids": [
+        77,
+        78,
+        79,
+        80,
+        81
+      ],
+      "public_profiles": 2,
+      "works_by_status": {
+        "private": 15,
+        "published": 3
+      },
+      "private_profiles": 2,
+      "storage_by_bucket": {
+        "social-snapshots": 20,
+        "social-profile-photos": 2
+      },
+      "active_public_photos": 2,
+      "noncascade_references": 0,
+      "auth_matches_exact_run": 2,
+      "nonfixture_interactions": 0,
+      "nonfixture_album_members": 0
+    },
+    "post_cleanup_residual_counts": {
+      "likes": 0,
+      "saves": 0,
+      "works": 0,
+      "albums": 0,
+      "blocks": 0,
+      "ledger": 0,
+      "orders": 0,
+      "quotas": 0,
+      "follows": 0,
+      "wallets": 0,
+      "comments": 0,
+      "auth_users": 0,
+      "work_pages": 0,
+      "push_outbox": 0,
+      "push_devices": 0,
+      "album_members": 0,
+      "auth_sessions": 0,
+      "notifications": 0,
+      "subscriptions": 0,
+      "billing_orders": 0,
+      "auth_identities": 0,
+      "public_profiles": 0,
+      "store_purchases": 0,
+      "private_profiles": 0,
+      "push_preferences": 0,
+      "notification_reads": 0,
+      "auth_refresh_tokens": 0,
+      "publication_sources": 0,
+      "point_shop_ownership": 0,
+      "public_avatar_references": 0,
+      "noncascade_user_references": 0,
+      "storage_objects_all_buckets": 0
+    },
+    "verified_residual_categories": 32,
+    "delete_methods": [
+      "Cleared each QA public avatar pointer through ordinary-owner setProfilePhoto(null).",
+      "Re-enumerated each exact owner prefix in social-profile-photos and deleted the currently present PNGs through Storage API, including the UI-created UUID absent from the original manifest.",
+      "Ordinary owner deleteWork marked all QA works deleted; scoped Storage API removed all snapshot binaries.",
+      "Ordinary owner album deletion plus exact QA Auth hard deletion cascaded remaining owned albums, profiles, social rows, wallets and notifications.",
+      "Verified all known work IDs, owner prefixes and related data with scoped read-only SQL counts."
+    ],
+    "api_readback_checks": [
+      {
+        "check": "anon_work_absent_c7fb6332-0150-45c6-b937-9af16d5b150d",
+        "passed": true
+      },
+      {
+        "check": "anon_work_absent_fa9e14f6-3ba6-4778-87e6-a7ee0f2ec2fa",
+        "passed": true
+      },
+      {
+        "check": "anon_work_absent_7a9a62cc-6b7b-499d-abff-973b6cef1104",
+        "passed": true
+      },
+      {
+        "check": "anon_work_absent_bd0995ee-5888-4fcd-a01c-7d0670cd84d8",
+        "passed": true
+      },
+      {
+        "check": "anon_work_absent_792e8f5a-1c4f-4460-a640-0633eedc0bea",
+        "passed": true
+      },
+      {
+        "check": "anon_work_absent_cac4f6ee-a0b4-4335-b145-fac7dda06308",
+        "passed": true
+      },
+      {
+        "check": "anon_work_absent_b841bcad-72cf-4d2e-9af0-a903e84bdfc9",
+        "passed": true
+      },
+      {
+        "check": "anon_work_absent_d2f9a2aa-bc8a-4f9a-bbea-1966b09c72c6",
+        "passed": true
+      },
+      {
+        "check": "anon_work_absent_84c82269-41d2-4aa0-87bb-20ad722e9e02",
+        "passed": true
+      },
+      {
+        "check": "anon_work_absent_65604abf-140e-4b4b-a61e-2a090b8682a5",
+        "passed": true
+      },
+      {
+        "check": "anon_work_absent_52725338-3f31-4d3f-ac11-7ff2802b4af8",
+        "passed": true
+      },
+      {
+        "check": "anon_work_absent_be56c8d8-fe50-4f92-a32e-1cfc9a5b57dd",
+        "passed": true
+      },
+      {
+        "check": "anon_work_absent_1e2473c4-a822-44af-b7c2-c32d044186ad",
+        "passed": true
+      },
+      {
+        "check": "anon_work_absent_60e7117e-8c59-43aa-aacf-689c164b0fc9",
+        "passed": true
+      },
+      {
+        "check": "anon_work_absent_2a75c834-1c01-4a6d-9a73-ad3ab6adf30c",
+        "passed": true
+      },
+      {
+        "check": "anon_work_absent_ebc7fc2c-ebbc-4a2d-8e9e-e2a643187af5",
+        "passed": true
+      },
+      {
+        "check": "anon_work_absent_77843e63-15fd-466b-8d70-de3ee93a3ecd",
+        "passed": true
+      },
+      {
+        "check": "anon_work_absent_c77c9c26-56c6-4841-af79-afb2db199da8",
+        "passed": true
+      },
+      {
+        "check": "anon_profile_absent_A",
+        "passed": true
+      },
+      {
+        "check": "anon_gallery_empty_A",
+        "passed": true
+      },
+      {
+        "check": "anon_relations_empty_A_True",
+        "passed": true
+      },
+      {
+        "check": "anon_relations_empty_A_False",
+        "passed": true
+      },
+      {
+        "check": "anon_profile_absent_B",
+        "passed": true
+      },
+      {
+        "check": "anon_gallery_empty_B",
+        "passed": true
+      },
+      {
+        "check": "anon_relations_empty_B_True",
+        "passed": true
+      },
+      {
+        "check": "anon_relations_empty_B_False",
+        "passed": true
+      },
+      {
+        "check": "anon_feed_has_no_fixture_work",
+        "passed": true
+      },
+      {
+        "check": "anon_search_has_no_fixture_work",
+        "passed": true
+      },
+      {
+        "check": "removed_social-snapshots_cannot_get_new_signed_urls",
+        "passed": true
+      },
+      {
+        "check": "removed_social-profile-photos_cannot_get_new_signed_urls",
+        "passed": true
+      },
+      {
+        "check": "all_local_qa_credentials_removed",
+        "passed": true
+      }
+    ],
+    "api_readback_passed": 31,
+    "verified_at_utc": "2026-10-25T08:13:25.617520+00:00",
+    "local_credential_file_removed": true
+  },
+  "fixture_state_before_cleanup": {
+    "accounts": 2,
+    "album_ids": [
+      77,
+      78,
+      79,
+      80,
+      81
+    ],
+    "works_total": 18,
+    "published_photo_works": 3,
+    "generic_works_private": 15,
+    "snapshot_png_paths": 20,
+    "active_public_profile_photos": 2,
+    "credentials_archived": false,
+    "kept_for_screen_qa": true
+  },
+  "final_ui_qa": {
+    "web": "Completed as confirmed by root; UI follow/unfollow returned to neutral and a new avatar was uploaded through photo-selection/public-confirmation UI.",
+    "native": "Final APK build only for this iteration; device unavailable for final native UI QA."
+  }
+}

@@ -1,0 +1,271 @@
+{
+  "date": "2026-10-26",
+  "status": "production_read_only_preflight",
+  "project": "rrbhxdtriummqpztpjrk",
+  "capturedAt": "2026-10-26T09:21:06.815Z",
+  "query": "select jsonb_build_object(\n 'albums',(select jsonb_build_object('count',count(*),'md5',md5(coalesce(string_agg(to_jsonb(t)::text,'|'order by id),'')))from public.albums t),\n 'profiles',(select jsonb_build_object('count',count(*),'md5',md5(coalesce(string_agg(to_jsonb(t)::text,'|'order by user_id),'')))from public.social_profiles t),\n 'wallets',(select jsonb_build_object('count',count(*),'md5',md5(coalesce(string_agg(to_jsonb(t)::text,'|'order by user_id),'')))from public.point_wallets t),\n 'ledger',(select jsonb_build_object('count',count(*),'md5',md5(coalesce(string_agg(to_jsonb(t)::text,'|'order by id),'')))from public.point_ledger t),\n 'products',(select jsonb_build_object('count',count(*),'md5',md5(coalesce(string_agg(to_jsonb(t)::text,'|'order by to_jsonb(t)::text),'')))from public.point_shop_products t),\n 'existing_functions',(select jsonb_agg(jsonb_build_object('schema',n.nspname,'name',p.oid::regprocedure::text,'md5',md5(pg_get_functiondef(p.oid))) order by n.nspname,p.proname) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname in('album_private','attendance_private','referral_private') or n.nspname='public' and p.proname in('get_attendance_status','claim_daily_attendance','get_referral_status','redeem_referral_code','save_album_document','album_collaboration','grant_signup_bonus','grant_verified_point_purchase','purchase_point_shop_product','revoke_verified_point_purchase')))baseline;",
+  "baseline": {
+    "albums": {
+      "md5": "39edc1d7423b4857d58b7815f993834c",
+      "count": 17
+    },
+    "ledger": {
+      "md5": "dd1421f3783c4113fc4553f2433cf8a2",
+      "count": 9
+    },
+    "wallets": {
+      "md5": "2e3d2032b366cb096bffa84d7d3b4f86",
+      "count": 1
+    },
+    "products": {
+      "md5": "e191cfd4353895532adc1748d5e3ebf0",
+      "count": 482
+    },
+    "profiles": {
+      "md5": "1912bf37ecf6d42d5987a54d20ae012f",
+      "count": 1
+    },
+    "existing_functions": [
+      {
+        "md5": "0e898bfcf026e1af91d1df2b6f2fa8be",
+        "name": "album_private.album_doc(albums)",
+        "schema": "album_private"
+      },
+      {
+        "md5": "becfcfe855b3d9354dec746a5efe4a03",
+        "name": "album_private.album_paths(bigint)",
+        "schema": "album_private"
+      },
+      {
+        "md5": "6c078dbe08b3da35aa0cbd77ef5d1c3f",
+        "name": "album_private.album_touch_revision()",
+        "schema": "album_private"
+      },
+      {
+        "md5": "cd6fc8cfea75bf905620d48ac407ba02",
+        "name": "album_private.album_write_guard()",
+        "schema": "album_private"
+      },
+      {
+        "md5": "fa3af89c9bd2b84db96c7974247b76e7",
+        "name": "album_private.asset_allowed(text,boolean)",
+        "schema": "album_private"
+      },
+      {
+        "md5": "fba508b434becaad5e1b812e652d2354",
+        "name": "album_private.asset_in_use(text)",
+        "schema": "album_private"
+      },
+      {
+        "md5": "63bb49f5b95666217e27b65b4eb66c8e",
+        "name": "album_private.asset_path(text)",
+        "schema": "album_private"
+      },
+      {
+        "md5": "832c331f03943022fd4ca80a5968cf3a",
+        "name": "album_private.can_access_album(bigint)",
+        "schema": "album_private"
+      },
+      {
+        "md5": "5f100523f522d7459baa2108b4ddaa18",
+        "name": "album_private.can_edit_album(bigint)",
+        "schema": "album_private"
+      },
+      {
+        "md5": "86b6f1c372edd1ac992ce3fd765ca582",
+        "name": "album_private.canonical_album(text)",
+        "schema": "album_private"
+      },
+      {
+        "md5": "54988782fcd05bc7770732a606914254",
+        "name": "album_private.collaboration_api(text,jsonb)",
+        "schema": "album_private"
+      },
+      {
+        "md5": "14f0b7d141f0b6b8bd6a863f194d765f",
+        "name": "album_private.decode_path(text)",
+        "schema": "album_private"
+      },
+      {
+        "md5": "325e4ac75449900f74cd08247d218b32",
+        "name": "album_private.legacy_owner_reference(text,bigint)",
+        "schema": "album_private"
+      },
+      {
+        "md5": "7b2b53be1c8bf8934e20d71e853cf019",
+        "name": "album_private.member_guard()",
+        "schema": "album_private"
+      },
+      {
+        "md5": "b0ca5b05dd781c6d9a3327a223c909ff",
+        "name": "album_private.member_json(bigint,uuid)",
+        "schema": "album_private"
+      },
+      {
+        "md5": "a9b4a4fe05b9f5efeb9287fb3eea00c9",
+        "name": "album_private.paths(jsonb)",
+        "schema": "album_private"
+      },
+      {
+        "md5": "020c33f28784a2f6ac7f71ee3899dd77",
+        "name": "album_private.print_asset_owners(bigint,uuid)",
+        "schema": "album_private"
+      },
+      {
+        "md5": "46c516e6e968fd2c11c20aaec9006958",
+        "name": "album_private.print_asset_paths(bigint)",
+        "schema": "album_private"
+      },
+      {
+        "md5": "8a229c4ef8494ecd14eeed4bb0cf082f",
+        "name": "album_private.print_source_refs(jsonb)",
+        "schema": "album_private"
+      },
+      {
+        "md5": "cde6ce35af9afc1b9a8c7af20420a04b",
+        "name": "album_private.protect_referenced_asset()",
+        "schema": "album_private"
+      },
+      {
+        "md5": "0b8a37934ba3731dc5fd23096b58c66a",
+        "name": "album_private.remember_collaboration()",
+        "schema": "album_private"
+      },
+      {
+        "md5": "3de407d62cbf5128d34d2c5cb65487de",
+        "name": "album_private.save_album(bigint,timestamp with time zone,jsonb,uuid,uuid)",
+        "schema": "album_private"
+      },
+      {
+        "md5": "66d41350a44ac015d0b026cea5cf78d4",
+        "name": "album_private.sync_album_assets()",
+        "schema": "album_private"
+      },
+      {
+        "md5": "992e8c80816447d6ff62ac93aa70d2c5",
+        "name": "album_private.was_collaborative(bigint)",
+        "schema": "album_private"
+      },
+      {
+        "md5": "ed6ce5fb0e234527a32f6ff98915d147",
+        "name": "attendance_private.attendance_api(boolean)",
+        "schema": "attendance_private"
+      },
+      {
+        "md5": "51b9ef0eb25620ec5ac5d32544c9067b",
+        "name": "attendance_private.guard_attendance()",
+        "schema": "attendance_private"
+      },
+      {
+        "md5": "fb89cfa6dce2412cc43f46f22da7f4a8",
+        "name": "attendance_private.guard_ledger()",
+        "schema": "attendance_private"
+      },
+      {
+        "md5": "1e5905276a56a819561da291a23ebf88",
+        "name": "attendance_private.server_now()",
+        "schema": "attendance_private"
+      },
+      {
+        "md5": "c0d8a47610cf7ad7f8f68bbf90395c4e",
+        "name": "attendance_private.status_json(uuid,timestamp with time zone,boolean,integer)",
+        "schema": "attendance_private"
+      },
+      {
+        "md5": "45fe5d896b0911f1f7e975b7810621e8",
+        "name": "album_collaboration(text,jsonb)",
+        "schema": "public"
+      },
+      {
+        "md5": "641224efe750b4ebbbd093816becdc77",
+        "name": "claim_daily_attendance()",
+        "schema": "public"
+      },
+      {
+        "md5": "d9f8bd38b6e78fbb0c7a10c518bf4ca2",
+        "name": "get_attendance_status()",
+        "schema": "public"
+      },
+      {
+        "md5": "12575acd55f0264f2f792512c5d4c2c3",
+        "name": "get_referral_status()",
+        "schema": "public"
+      },
+      {
+        "md5": "472a91fa5b8d74160a93202767e8112d",
+        "name": "grant_signup_bonus()",
+        "schema": "public"
+      },
+      {
+        "md5": "96d28f04dc802555b31ed2fab1c4e2cb",
+        "name": "grant_verified_point_purchase(uuid,jsonb)",
+        "schema": "public"
+      },
+      {
+        "md5": "a70c9f212e88b85b8d21c83a38a8603a",
+        "name": "purchase_point_shop_product(text,integer)",
+        "schema": "public"
+      },
+      {
+        "md5": "f48f187a7a84e8a23325d4eab2459d49",
+        "name": "redeem_referral_code(text)",
+        "schema": "public"
+      },
+      {
+        "md5": "eab1036539058cedb6107ad567a1526f",
+        "name": "revoke_verified_point_purchase(text,text,jsonb)",
+        "schema": "public"
+      },
+      {
+        "md5": "cc0d74ee4cc6457b45dace9786289418",
+        "name": "save_album_document(bigint,timestamp with time zone,jsonb,uuid,uuid)",
+        "schema": "public"
+      },
+      {
+        "md5": "5f92c923cefb45eee384e9cdcc0ccaca",
+        "name": "referral_private.ensure_code(uuid)",
+        "schema": "referral_private"
+      },
+      {
+        "md5": "f7f871fac1bbadb754ae3718ffd1c544",
+        "name": "referral_private.guard_ledger()",
+        "schema": "referral_private"
+      },
+      {
+        "md5": "c3640d7707e01e4771d531092959ff7d",
+        "name": "referral_private.guard_redemption()",
+        "schema": "referral_private"
+      },
+      {
+        "md5": "268553ecbe2eb4e2e006abd43ec9789e",
+        "name": "referral_private.referral_api(boolean,text)",
+        "schema": "referral_private"
+      },
+      {
+        "md5": "0af223f8e310fca03ae94ddaba6d40ba",
+        "name": "referral_private.server_now()",
+        "schema": "referral_private"
+      },
+      {
+        "md5": "45bc6469bdb00dd74547af52b596d832",
+        "name": "referral_private.status_json(uuid,timestamp with time zone,boolean,integer)",
+        "schema": "referral_private"
+      }
+    ]
+  },
+  "storage": {
+    "bucketPrivate": true,
+    "allowedImageMimeTypes": [
+      "image/jpeg",
+      "image/png",
+      "image/webp"
+    ],
+    "path": "<owner uuid>/moments/<record uuid>/<photo uuid>.(jpg|jpeg|png|webp)",
+    "existingFourStoragePoliciesUnchanged": true,
+    "storageDeleteViaAPIRequired": true,
+    "albumColumnsAndIdentityConfirmed": true,
+    "albumBindingTriggerPresent": true
+  },
+  "migrationApplied": false,
+  "productionFixturesCreated": false
+}

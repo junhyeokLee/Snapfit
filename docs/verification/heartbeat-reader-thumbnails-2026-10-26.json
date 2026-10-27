@@ -1,0 +1,173 @@
+{
+  "date": "2026-10-26",
+  "automation_id": "snapfit",
+  "trigger_time": "2026-10-26T03:21:44.024Z",
+  "finished_time": "2026-10-26T04:18:19.968275+00:00",
+  "scope": "Reader thumbnail navigation, preview decode width and spread-index preparation in portrait and landscape",
+  "previous_reports": [
+    "docs/verification/heartbeat-detail-record-read-2026-10-25.json",
+    "docs/verification/album-photo-resume-bundle-rereview-2026-10-25.json",
+    "docs/verification/home-store-entry-scroll-performance-2026-10-25.json"
+  ],
+  "findings": [
+    {
+      "id": "reader-thumbnail-distant-scroll-work",
+      "priority": "P2",
+      "status": "fixed",
+      "observed_before": "A cover-to-spread-80 change in a 201-page widget fixture mounted intermediate artwork including pages 27-34, 55-62, 79-86 and later intermediate pages. Its 240ms scroll traversed unneeded previews.",
+      "change": [
+        "Jump to distant targets instead of scrolling through them; preserve nearby easing within 1.5 viewports.",
+        "Treat geometry changes as immediate alignment and cancel an obsolete scroll activity when a rapid return targets the current position.",
+        "Apply the same distance/layout rule to the landscape rail.",
+        "Supply known item extents so distant positioning does not depend on incomplete extent estimates."
+      ]
+    },
+    {
+      "id": "reader-thumbnail-unbounded-photo-decode",
+      "priority": "P2",
+      "status": "fixed",
+      "observed_before": "The visible cover photo provider was an unresized AssetImage. Both reader navigators used builders without previewImageDecodeWidth, allowing thumbnail photos to decode at original dimensions.",
+      "change": [
+        "Use display-size/device-density thumbnail widths bucketed by 64, normally 128-512 pixels. Preserve an explicitly smaller incoming preview budget.",
+        "Use separate thumbnail builders for cover and interiors without mutating the supplied full-reader builder.",
+        "Keep full-page, zoom, print and turn-texture sizing functions unchanged. No new cache or pixel history is introduced."
+      ]
+    },
+    {
+      "id": "reader-rail-repeated-spread-lists",
+      "priority": "P2",
+      "status": "fixed",
+      "code_evidence": "The landscape _spreadItems getter built every cover/interior pair and was called for itemCount and again for each built row. The horizontal strip also rebuilt the complete pair list on each widget rebuild.",
+      "change": [
+        "Calculate spread count and visible row indices arithmetically. Only the current item pair is allocated during lazy row construction.",
+        "Retain the public spreads() helper behavior for existing callers; validate counts, cover grouping, odd endings, invalid indices and a billion-page arithmetic lookup in unit tests."
+      ],
+      "measurement_limit": "This is a code-supported removal of repeated grouping allocations, not a physical-device timing or allocator benchmark."
+    }
+  ],
+  "production_files_changed_this_run": [
+    "lib/features/album/presentation/utils/reader_image_quality.dart",
+    "lib/features/album/presentation/widgets/reader/album_reader_thumbnail_strip.dart",
+    "lib/features/album/presentation/views/album_reader_screen.dart"
+  ],
+  "new_test_files": [
+    "test/widget/reader_thumbnail_performance_test.dart",
+    "test/unit/reader_thumbnail_layout_test.dart"
+  ],
+  "updated_test_files": [
+    "test/widget/home_book_depth_test.dart"
+  ],
+  "new_cases": 12,
+  "review": {
+    "remaining_blocking_findings_in_changed_scope": [],
+    "checked": [
+      "Nearby movement still contains intermediate animation frames; distant movement immediately reveals the selected preview without intermediate page artwork.",
+      "Rapid return stops the earlier animation; both reduced-motion preferences remain immediate.",
+      "Cover and interior photo providers use bounded widths while the original full-size builder is unchanged; a caller-supplied 64px budget is preserved.",
+      "Actual portrait/landscape reader navigators handle a far focus update while optional turn textures are still preparing.",
+      "Count/index arithmetic retains every old cover/pair/final-page mapping and range error behavior.",
+      "Existing home cover geometry, book depth, photo recovery, fast selection, rotation, hidden/resume, memory pressure, tracked handles and pending/live image-cache cleanup regressions pass.",
+      "The existing per-build cover interaction behavior is preserved; no persistent interaction-map history or extra subscription was added.",
+      "Saved layers, z order, source photo references, titles, gallery/full-reader typography, catalog prices/ownership and store request/category behavior were not edited."
+    ],
+    "protected_sources_unchanged": {
+      "lib/shared/snapfit_image.dart": true,
+      "lib/shared/photo_preparation.dart": true,
+      "lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart": true,
+      "lib/features/store/presentation/views/template_detail_screen.dart": true
+    },
+    "shared_workspace": "No other task changes were reverted. Snapshots preceded these edits. Only the listed reader source/test files and this new verification record were written for this run."
+  },
+  "verification": {
+    "before_controlled_cases": {
+      "passed": 0,
+      "failed": 2,
+      "log": "output/heartbeat-reader-thumbnails-2026-10-26/before-tests.log"
+    },
+    "first_fix_controlled_cases": {
+      "passed": 2,
+      "failed": 0,
+      "log": "output/heartbeat-reader-thumbnails-2026-10-26/fix-tests.log"
+    },
+    "initial_related_suite": {
+      "passed": 149,
+      "failed": 2,
+      "log": "output/heartbeat-reader-thumbnails-2026-10-26/related-suite-before-integration-fixture.log",
+      "failure_kind": "Only the two new integration fixtures waited for an inner BookFlip widget before the optional atlas was ready. The reader and live thumbnail controls were already present."
+    },
+    "integration_fixture_follow_up": {
+      "change": "Use the supported 80-page reader and drive its actual public focus callback while textures prepare; do not gate thumbnail interaction on atlas readiness. The standalone 201-page bound remains.",
+      "focused_passed": 2,
+      "focused_failed": 0,
+      "log": "output/heartbeat-reader-thumbnails-2026-10-26/integration-final-tests.log"
+    },
+    "final_related_suite": {
+      "files": 9,
+      "passed": 151,
+      "failed": 0,
+      "log": "output/heartbeat-reader-thumbnails-2026-10-26/final-tests.log",
+      "agent_owned_concurrent_test_processes": 1,
+      "uses_existing_test_assets": true
+    },
+    "analysis": {
+      "items": 6,
+      "issues": 0,
+      "log": "output/heartbeat-reader-thumbnails-2026-10-26/final-analysis.log"
+    },
+    "git_diff_check": {
+      "passed": true,
+      "scope": [
+        "lib/features/album/presentation/utils/reader_image_quality.dart",
+        "lib/features/album/presentation/widgets/reader/album_reader_thumbnail_strip.dart",
+        "lib/features/album/presentation/views/album_reader_screen.dart",
+        "test/widget/reader_thumbnail_performance_test.dart",
+        "test/unit/reader_thumbnail_layout_test.dart",
+        "test/widget/home_book_depth_test.dart"
+      ]
+    },
+    "scoped_patch": "output/heartbeat-reader-thumbnails-2026-10-26/scoped.patch",
+    "final_sha256": {
+      "lib/features/album/presentation/utils/reader_image_quality.dart": "95232fe543c16485bc1fbf23c3a976492c9143efeccac23b740d07cab8b87fe9",
+      "lib/features/album/presentation/widgets/reader/album_reader_thumbnail_strip.dart": "9b72d6aadafc3e89bc263d0161c0ba9bd45e81f08b131da11575868681b80f36",
+      "lib/features/album/presentation/views/album_reader_screen.dart": "811e3602a66352b1710240785f53242164ae9f7727fe904036a3ed0cb8369a7d",
+      "test/widget/reader_thumbnail_performance_test.dart": "a2912d4774d55e4579d4557aedeaef90f4129a483a1a008c27a3daf8f8521e5a",
+      "test/unit/reader_thumbnail_layout_test.dart": "1d64378a64e50fcc7cfe8cb9a15e6603529f6334674ad78ad21b1a016e0ec229",
+      "test/widget/home_book_depth_test.dart": "b2618755684c25e0709a248282f36e656a6506de3c76b32323a8734ec84abe60"
+    },
+    "app_build_run": false,
+    "device_run_or_frame_memory_profile_run": false,
+    "live_backend_or_user_data_changed": false
+  },
+  "resource_incident": {
+    "status": "Final tests completed, but host storage remains low and needs attention before further compilation.",
+    "evidence": "An earlier related-suite attempt failed before executing tests when Flutter could not copy output.dill: OS errno 28, No space left on device.",
+    "log": "output/heartbeat-reader-thumbnails-2026-10-26/related-tests.log",
+    "handling": [
+      "Stopped/paused only this heartbeat-owned work when avoiding overlap with externally initiated profile QA. Did not terminate another task or the user device run.",
+      "Inspected only the known heartbeat compiler temp paths; Flutter had already removed them. No user files, shared build cache, global SDK cache or customer data were manually deleted.",
+      "Observed approximately 15 GiB free after compilation ended, then reran with --no-test-assets to reuse the valid asset bundle from the successful controlled tests.",
+      "Each agent-owned test invocation used concurrency=1; external profile QA restarted independently during portions of this run, so global exclusivity across other tasks is not claimed."
+    ],
+    "free_disk_bytes_at_record": 124727296,
+    "classification": "Host storage/tooling interruption, not an app test assertion failure or a measured app memory leak.",
+    "final_environment_probe": "output/heartbeat-reader-thumbnails-2026-10-26/final-environment.json",
+    "final_free_disk_bytes": 2012143616,
+    "host_swapusage": "vm.swapusage: total = 9216.00M  used = 8792.12M  free = 423.88M  (encrypted)",
+    "cause_of_host_storage_and_swap_pressure": "Not attributed to the app or one specific task; system measurements cover all current processes."
+  },
+  "follow_up": {
+    "automation_remains_useful": true,
+    "next_candidates": [
+      "Before the next compiler/test run, recheck free disk and other active test processes. With less than 2 GiB free, prefer read-only review and record the environment limit; do not repeatedly compile or delete user/shared caches.",
+      "Review PageController replacement lifecycle in BookPageView and AlbumReaderSinglePageView; init/dispose listener ownership deserves a controlled replacement case before editing.",
+      "Continue reader/home async owner and cache recovery checks using recent verification records; do not repeat the completed store like/read changes without new evidence.",
+      "Coordinate test resource use with other active tasks if compiler storage failures recur."
+    ]
+  },
+  "limits": [
+    "No physical-device frame time, peak process memory or visual quality profile was run. Width caps and skipped intermediate construction are verified widget/code properties, not measured FPS or MB savings.",
+    "Thumbnail decode widths are bounded; this is not an absolute byte budget for every unusual source aspect ratio. Existing global cache policies still apply.",
+    "An already-started shared image/atlas operation may finish after hiding. Existing activity/disposal gates remain responsible for stopping new work and discarding obsolete results.",
+    "The optional full-book atlas can still be preparing when the navigator is usable. The integration fixture deliberately verifies navigation before that optional renderer is ready."
+  ]
+}

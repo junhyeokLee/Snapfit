@@ -16,6 +16,7 @@ AlbumCreationDraft creationDraftFixture({
   List<List<LayerModel>>? pages,
   int step = 1,
   bool showPhotoFill = true,
+  String? sourceTemplateProductKey,
 }) {
   final photo = AssetEntity(
     id: 'local-photo-1',
@@ -79,6 +80,7 @@ AlbumCreationDraft creationDraftFixture({
     showPhotoFill: showPhotoFill,
     hasSelectedMode: true,
     sourceLabel: '선택한 템플릿',
+    sourceTemplateProductKey: sourceTemplateProductKey,
     usesPhysicalCanvas: true,
     preserveTypography: true,
     pages: content,
@@ -97,6 +99,98 @@ AlbumCreationDraft creationDraftFixture({
 }
 
 void main() {
+  test(
+    'official template identity survives draft and editor checkpoint round trips',
+    () {
+      final source = creationDraftFixture(
+        sourceTemplateProductKey: 'template:summer-memory',
+      );
+      var draft = source.withEditorCheckpoint(
+        AlbumCreationEditorCheckpoint(
+          pages: [
+            AlbumPage(id: 'cover', pageIndex: 0, isCover: true, layers: []),
+            AlbumPage(id: 'inner', pageIndex: 1, isCover: false, layers: []),
+          ],
+          pageIndex: 1,
+          coverCanvas: const Size(500, 375),
+          innerCanvas: const Size(500, 375),
+          theme: CoverTheme.classic,
+          sourceTemplateProductKey: source.sourceTemplateProductKey,
+        ),
+        cover: source.cover,
+      );
+      for (var cycle = 0; cycle < 3; cycle++) {
+        final json =
+            jsonDecode(jsonEncode(draft.toJson())) as Map<String, dynamic>;
+        expect(json['sourceTemplate'], {
+          'productKey': 'template:summer-memory',
+        });
+        draft = AlbumCreationDraft.fromJson(json);
+        expect(draft.sourceTemplateProductKey, 'template:summer-memory');
+        expect(
+          draft.editorCheckpoint!.sourceTemplateProductKey,
+          'template:summer-memory',
+        );
+      }
+      final legacy = AlbumCreationDraft.fromJson(
+        creationDraftFixture().toJson(),
+      );
+      expect(legacy.sourceTemplateProductKey, isNull);
+      final malformed = creationDraftFixture().toJson()
+        ..['sourceTemplate'] = {'productKey': 123};
+      expect(
+        AlbumCreationDraft.fromJson(malformed).sourceTemplateProductKey,
+        isNull,
+      );
+    },
+  );
+
+  test('resuming and resaving a legacy draft preserves unknown captions', () {
+    final unknown = LayerModel(
+      id: 'legacy-example',
+      type: LayerType.text,
+      position: Offset.zero,
+      text: '예시 문구',
+      isTemplateContent: null,
+    );
+    final source = creationDraftFixture(
+      pages: [
+        [],
+        [unknown],
+      ],
+    );
+    var draft = source.withEditorCheckpoint(
+      AlbumCreationEditorCheckpoint(
+        pages: [
+          AlbumPage(id: 'cover', pageIndex: 0, isCover: true, layers: []),
+          AlbumPage(
+            id: 'inner',
+            pageIndex: 1,
+            isCover: false,
+            layers: [unknown],
+          ),
+        ],
+        pageIndex: 1,
+        coverCanvas: const Size(500, 375),
+        innerCanvas: const Size(300, 225),
+        theme: CoverTheme.nature1,
+      ),
+      cover: source.cover,
+    );
+    for (var cycle = 0; cycle < 3; cycle++) {
+      draft = AlbumCreationDraft.fromJson(
+        jsonDecode(jsonEncode(draft.toJson())),
+      );
+      expect(draft.pages![1].single.isTemplateContent, isNull);
+      expect(draft.basePages![1].single.isTemplateContent, isNull);
+      expect(draft.variants!['landscape']![1].single.isTemplateContent, isNull);
+      expect(
+        draft.editorCheckpoint!.pages[1].layers.single.isTemplateContent,
+        isNull,
+      );
+    }
+  });
+
   AlbumCreationEditorCheckpoint checkpoint() {
     final source = creationDraftFixture();
     return AlbumCreationEditorCheckpoint(

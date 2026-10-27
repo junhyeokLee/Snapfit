@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-25",
+  "scope": "Store template navigation and recommendations",
+  "navigation": [
+    "전체", "추천", "일상", "여행", "가족·친구", "커플·기념일",
+    "성장·육아", "반려동물", "동아리", "스포츠·도전", "졸업·새출발", "웨딩"
+  ],
+  "categoryOrderBasis": "Editorial broad-use order; not a measured category popularity ranking",
+  "recommendations": {
+    "limit": 24,
+    "selection": "Topic round robin; favorites, editorial selections and available usage metadata rank within each topic; mix free and paid when available",
+    "eligibility": "Apply search, price and favorites first; exclude disabled/unpriced products and unregistered premium templates",
+    "pagination": "Retain batches of 12 in grid mode; stop remote paging at the recommendation limit",
+    "networkRegression": "Real feed: one initial summary request; repeated all/recommended switches and scrolling to recommendation end issue no additional requests; no full-catalog requests",
+    "artwork": "Metadata only; no recommendation image generation, document parsing or persistent recommendation cache"
+  },
+  "productionCuration": {
+    "project": "rrbhxdtriummqpztpjrk",
+    "placement": "templates",
+    "version": 2,
+    "enabled": true,
+    "updateGuard": "Only replace the original enabled version-1 launch selection; existing curation RPC validates sale availability and version",
+    "productKeys": [
+      "template:alley-afternoon",
+      "template:story-coast-address",
+      "template:our-family-year",
+      "template:story-club-run-together",
+      "template:a-day-with-you",
+      "template:story-evening-for-two"
+    ],
+    "verification": "Re-read committed row as anon; all 6 products visible and active, 3 at 0P and 3 at 1800P. No price or ownership writes."
+  },
+  "review": {
+    "unresolvedFindings": [],
+    "authoringCategoryOrder": "Unchanged in this task to preserve existing template geometry",
+    "rendering": "Existing large curation hero, preview limits, offstage behavior and lazy artwork retained",
+    "limitations": "Native unit/widget regressions and static review; physical-device FPS and heap profiling not performed"
+  },
+  "verification": {
+    "uniqueTestsPassed": 56,
+    "testsSkipped": 1,
+    "skipReason": "Existing narrow web-only filter continuity case skipped on native test runner",
+    "testFiles": [
+      "test/unit/store_template_recommendations_test.dart",
+      "test/widget/store_recommendations_test.dart",
+      "test/unit/store_curation_provider_test.dart",
+      "test/unit/template_catalog_categories_test.dart",
+      "test/widget/store_filter_continuity_test.dart",
+      "test/widget/store_paging_test.dart",
+      "test/widget/store_main_experience_test.dart",
+      "test/widget/store_editorial_experience_test.dart",
+      "test/widget/released_store_catalog_test.dart",
+      "test/widget/store_entry_loading_test.dart"
+    ],
+    "additionalFocusedTest": "test/widget/discovery_refinement_test.dart: curation follows the editorial order and includes a free edition",
+    "rerunNote": "Two editorial layout assertions referring to the previous selection were updated to verify the new daily/travel/couple scenes; all five editorial experience tests passed on rerun",
+    "analysis": "No issues in 8 touched Dart files",
+    "appBuildPerformed": false
+  }
+}

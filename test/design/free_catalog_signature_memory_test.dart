@@ -132,7 +132,7 @@ Future<ui.Image> _contactSheet(
     width: width - padding * 2,
     size: 20,
   );
-  for (final (column, aspect) in CollectionAspect.values.indexed) {
+  for (final (column, aspect) in CollectionAspect.printable.indexed) {
     final x = padding + column * (_renderWidth + gutter);
     _label(canvas, aspect.name, Offset(x, 45), size: 12);
   }
@@ -180,7 +180,7 @@ void main() {
       final captures = <ui.Image>[];
       try {
         for (final collection in collections) {
-          for (final aspect in CollectionAspect.values) {
+          for (final aspect in CollectionAspect.printable) {
             final result = await _capture(tester, collection, aspect);
             captures.add(result.image);
             summaries.add({

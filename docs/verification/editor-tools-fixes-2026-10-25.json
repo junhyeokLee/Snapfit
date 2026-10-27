@@ -1,0 +1,84 @@
+{
+  "date": "2026-10-25",
+  "scope": "Fix the three editor-tool findings, preserve the current tool design and verify lifecycle/performance bounds without an app build",
+  "previous_review": "docs/verification/editor-tools-review-2026-10-25.json",
+  "status": "all_three_findings_fixed",
+  "fixes": [
+    {
+      "finding": "Stale rearrangement overwrites undo",
+      "file": "lib/features/album/presentation/widgets/editor/layer_manager_panel.dart",
+      "change": "Validate the page/session and the source ID/z-index order at commit. Apply the requested order to the newest VM records and change only zIndex. Reject stale additions, deletions and external order changes without recording history.",
+      "verified": [
+        "A photo edited from width 200 to 240, then undone, remains width 200 when a reorder commits before the next rebuild",
+        "An actual pointer drag can finish its drop after undo, change the order and preserve the undone geometry",
+        "Selection alone does not change order; arrows, undo and redo retain their behavior",
+        "A stale callback cannot resurrect a deleted layer, remove a newly added layer, overwrite another order change or add an undo entry"
+      ]
+    },
+    {
+      "finding": "More reopens during dismissal and loses the chosen action",
+      "file": "lib/features/album/presentation/widgets/editor/editor_context_dock.dart",
+      "change": "Keep a state-owned gate through opening, dismissal and action handoff. All dock callbacks check the gate, including callbacks captured by old builds. Wait for route removal before executing the selected action; release the gate in finally. Revalidate mounted context, provider scope, interaction instance, session, page and selection.",
+      "verified": [
+        "A second real tap 16 ms into dismissal does not overlap sheets or discard the layout action",
+        "Rebuilding the parent and invoking old callbacks during dismissal cannot bypass the gate",
+        "Other dock tools cannot interrupt the pending handoff",
+        "Repeated cancellation releases the gate after removal, allowing the next normal opening",
+        "Changing edit sessions during dismissal discards a stale tool action"
+      ]
+    },
+    {
+      "finding": "Pending thumbnail eviction duplicates native work",
+      "files": [
+        "lib/features/album/presentation/widgets/editor/editor_thumbnail_cache.dart",
+        "lib/features/album/presentation/widgets/editor/editor_asset_thumbnail.dart",
+        "lib/features/album/presentation/widgets/editor/layer_manager_panel.dart"
+      ],
+      "change": "Coalesce pending requests by asset ID separately from the completed LRU. Share a dispatcher across panels, lease work only to mounted lazy rows, cancel unneeded queued work and drop late results for disposed panels. Reuse the row lease during selection rebuilds and reset FutureBuilder on source replacement.",
+      "bounds": {
+        "shared_active_native_requests_max": 2,
+        "panel_completed_entries_max": 32,
+        "panel_completed_encoded_bytes_max": 2097152,
+        "decode_dimensions": [120, 120],
+        "global_completed_byte_cache": false
+      },
+      "verified": [
+        "Fast traversal of 72 unresolved photo thumbnails starts only two requests and requests the top photo once",
+        "Closing discards queued rows; finishing the two active calls does not start closed-panel work",
+        "A fast close/reopen reuses the same still-running photo request and obeys the shared concurrency limit",
+        "LRU eviction cannot forget pending work; completed null results reuse the cache",
+        "Canceled queued work is not cached as a failed photo",
+        "Entry and byte limits, source pruning and disposal release completed cache entries",
+        "Sync/async photo failures free the dispatcher slot",
+        "A replaced photo ignores the old thumbnail completing late",
+        "Eight open/close cycles detach the tested scroll controllers and image listeners"
+      ]
+    }
+  ],
+  "verification": {
+    "related_suite": {
+      "passed": 149,
+      "failed": 0,
+      "skipped": 1,
+      "skip_reason": "Optional native design-proof export requires EXPORT_EDITOR_TOOLS=true",
+      "log": "output/editor-tools-fixes/tests.log"
+    },
+    "final_dock_and_regression_recheck": {
+      "passed": 28,
+      "failed": 0,
+      "skipped": 1,
+      "log": "output/editor-tools-fixes/final-dock.log"
+    },
+    "analysis": {
+      "items": 7,
+      "issues": 0,
+      "log": "output/editor-tools-fixes/analysis.log"
+    },
+    "format_check": "6 changed Dart files formatted with no remaining changes",
+    "code_review": "No additional blocking issue found in the modified order commit, modal handoff, thumbnail ownership or disposal paths",
+    "app_build_run": false,
+    "device_frame_or_memory_profile_run": false
+  },
+  "test_harness_correction": "The original actual-drag review test used tester.drag without advancing the pickup animation, so its first undo assertion could undo an already-completed reorder. It now holds the pointer and advances pickup frames before dropping to verify the intended pending-drop race. The independent pre-rebuild callback regression also passes.",
+  "limits": "Active native thumbnail calls are not forcibly canceled; at most two may finish after closing, and their results cannot repopulate a disposed panel cache. The 2 MiB limit applies to this panel's retained encoded thumbnail cache, not total app memory. Tests and code review do not substitute for device frame-time or process-memory measurements."
+}

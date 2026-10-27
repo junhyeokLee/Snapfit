@@ -163,6 +163,161 @@ void main() {
     }
   });
 
+  testWidgets('panning a zoomed page reuses its painted lettering', (
+    tester,
+  ) async {
+    _viewport(tester, const Size(390, 844));
+    await tester.pumpWidget(
+      _app(
+        TemplateFullScreenView(
+          parsedPages: _pages(),
+          previewImages: const [],
+          designCanvasSize: const Size(500, 500),
+          preserveTypography: true,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('확대'));
+    await tester.pumpAndSettle();
+    final page = find.byKey(const ValueKey('template-native-zoom-stage-0'));
+    final lettering = {
+      for (final element
+          in find
+              .descendant(of: page, matching: find.byType(RichText))
+              .evaluate())
+        element.renderObject,
+    };
+    expect(lettering, isNotEmpty);
+    final before = _transform(tester, 0).getTranslation().x;
+    var paints = 0;
+    final previous = debugOnProfilePaint;
+    debugOnProfilePaint = (object) {
+      previous?.call(object);
+      if (lettering.contains(object)) paints++;
+    };
+    try {
+      final start = tester.getCenter(page);
+      final pointer = await tester.startGesture(start);
+      for (var frame = 1; frame <= 12; frame++) {
+        await pointer.moveTo(start + Offset(frame * 5, 0));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      await pointer.up();
+      await tester.pumpAndSettle();
+      expect(_transform(tester, 0).getTranslation().x, greaterThan(before));
+      expect(
+        paints,
+        0,
+        reason: 'Panning must composite the existing page artwork',
+      );
+      expect(tester.binding.hasScheduledFrame, false);
+      expect(tester.takeException(), isNull);
+    } finally {
+      debugOnProfilePaint = previous;
+    }
+  });
+
+  testWidgets('closing during a pinch releases page layers and listeners', (
+    tester,
+  ) async {
+    _viewport(tester, const Size(390, 844));
+    late BuildContext launcher;
+    await tester.pumpWidget(
+      _app(
+        Builder(
+          builder: (context) {
+            launcher = context;
+            return Scaffold(
+              body: TextButton(
+                onPressed: () => Navigator.of(context).push<void>(
+                  MaterialPageRoute(
+                    builder: (_) => TemplateFullScreenView(
+                      parsedPages: _pages(),
+                      previewImages: const [],
+                      designCanvasSize: const Size(500, 500),
+                    ),
+                  ),
+                ),
+                child: const Text('확대 검증 열기'),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+    for (var visit = 0; visit < 3; visit++) {
+      await tester.tap(find.text('확대 검증 열기'));
+      await tester.pumpAndSettle();
+      final page = find.byKey(const ValueKey('template-native-zoom-stage-0'));
+      final transformer =
+          tester
+                  .widget<ValueListenableBuilder<Matrix4>>(
+                    find.descendant(
+                      of: page,
+                      matching: find.byType(ValueListenableBuilder<Matrix4>),
+                    ),
+                  )
+                  .valueListenable
+              as TransformationController;
+      expect(transformer.value.getMaxScaleOnAxis(), 1);
+      final center = tester.getCenter(page);
+      final left = await tester.startGesture(center - const Offset(40, 0));
+      final right = await tester.startGesture(center + const Offset(40, 0));
+      await left.moveBy(const Offset(-40, 0));
+      await right.moveBy(const Offset(40, 0));
+      await tester.pump();
+      expect(transformer.value.getMaxScaleOnAxis(), greaterThan(1));
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+        find.descendant(of: page, matching: find.byType(RepaintBoundary)).first,
+      );
+      final layer = boundary.debugLayer!;
+      // System back can dismiss the page before both pointers are lifted.
+      Navigator.of(launcher).pop();
+      await tester.pumpAndSettle();
+      await left.up();
+      await right.up();
+      await tester.pumpAndSettle();
+      expect(boundary.debugDisposed, isTrue);
+      expect(layer.debugDisposed, isTrue);
+      expect(() => transformer.addListener(() {}), throwsFlutterError);
+      expect(find.byType(TemplateFullScreenView), findsNothing);
+      expect(tester.binding.hasScheduledFrame, isFalse);
+      expect(tester.takeException(), isNull);
+    }
+  });
+
+  testWidgets('accessible navigation makes explicit page movement immediate', (
+    tester,
+  ) async {
+    _viewport(tester, const Size(390, 844));
+    await tester.pumpWidget(
+      _app(
+        Builder(
+          builder: (context) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(disableAnimations: false, accessibleNavigation: true),
+            child: TemplateFullScreenView(
+              parsedPages: _pages(),
+              previewImages: const [],
+              designCanvasSize: const Size(500, 500),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('다음 페이지'));
+    await tester.pump(const Duration(milliseconds: 16));
+    final pager = tester.widget<PageView>(
+      find.byKey(const ValueKey('template-native-page-view')),
+    );
+    expect(pager.controller!.page, closeTo(1, .001));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'native 1x swipe still changes pages and reports the viewed page',
     (tester) async {

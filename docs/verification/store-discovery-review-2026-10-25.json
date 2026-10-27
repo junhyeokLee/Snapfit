@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-25",
+  "scope": "Follow-up review of store categories, recommendations, filters and scroll/preview lifetime",
+  "verdict": "Two reproducible findings remain",
+  "productionCodeChanged": false,
+  "findings": [
+    {
+      "priority": "P2",
+      "title": "Search retains the previous browsing category while displaying all templates",
+      "location": "lib/features/store/presentation/views/store_screen.dart:369",
+      "entry": "lib/features/store/presentation/views/store_hub_screen.dart:76",
+      "reproduction": "Choose travel, open store search, search for a daily-life template. The search header says all templates, but the shared feed still contains only travel templates and the expected daily-life result is absent.",
+      "cause": "Both route instances watch the same storeTemplateFeedProvider; the new route starts with local category set to all without acquiring an independent feed scope.",
+      "recommendation": "Separate the search feed/filter scope from the retained browsing route; resetting the shared feed alone would desynchronize the original route.",
+      "test": "search opened after a category selection searches the full catalog"
+    },
+    {
+      "priority": "P3",
+      "title": "Programmatic return to all leaves the selected category chip outside the horizontal viewport",
+      "location": "lib/features/store/presentation/widgets/store_topic_shelf.dart:22",
+      "entry": "lib/features/store/presentation/views/store_screen.dart:969",
+      "reproduction": "Reveal/select recommended at the leading edge of the horizontal shelf, reach the recommendation footer, and tap all templates. Results change correctly, but the newly selected all chip remains clipped outside the shelf. Reproduces with both grid and editorial lists.",
+      "evidence": "All-chip rect x=-45.8..12.0 while the shelf starts at x=20.0; vertical filter reveal succeeds.",
+      "cause": "The selection callback restores only the vertical filter anchor. The stateless horizontal shelf does not reveal a programmatically selected chip.",
+      "recommendation": "Reveal the selected chip on programmatic selection changes while preserving manual horizontal scrolling.",
+      "tests": [
+        "recommended footer returns to usable all controls, editorial=false",
+        "recommended footer returns to usable all controls, editorial=true"
+      ]
+    }
+  ],
+  "verified": [
+    "All/recommended/category navigation retains free/paid/favorites filters",
+    "Actual favorite button add/remove updates all, recommended and category views, including empty results",
+    "Late initial and category responses cannot overwrite the newest recommendation scope",
+    "All/recommended switches share the initial summary request; no full-catalog load is started",
+    "Recommendation paging stops at 24 items",
+    "Six fast scroll reversals keep mounted tiles at or below 12 and issue no additional summary requests",
+    "Unmounting after scroll reversals leaves no transient animation callbacks",
+    "Hidden/background artwork unmounts; queued preview work and native layer preparation are cancelled when unused",
+    "Shared native worker handles cover/spread and favorite copies without UI-isolate document construction",
+    "Preview LRU eviction preserves the 18-entry bound",
+    "Memory pressure clears existing previews and pre-pressure queued work cannot refill the cleared cache"
+  ],
+  "tests": {
+    "uniquePassed": 44,
+    "failed": 3,
+    "failureCauses": 2,
+    "skipped": 1,
+    "skipReason": "Existing web-only filter test excluded on native runner",
+    "files": [
+      "test/unit/store_template_recommendations_test.dart",
+      "test/widget/store_recommendations_test.dart",
+      "test/widget/store_filter_continuity_test.dart",
+      "test/widget/store_paging_test.dart",
+      "test/widget/store_entry_loading_test.dart",
+      "test/widget/store_editorial_experience_test.dart",
+      "test/widget/catalog_artwork_visibility_test.dart",
+      "test/widget/catalog_preview_pipeline_test.dart",
+      "test/unit/catalog_preview_test.dart",
+      "test/unit/catalog_preview_preparation_test.dart"
+    ],
+    "addedCases": "Six store interaction/reproduction cases plus one memory-pressure regression case",
+    "failedCasesRetained": "The three assertions describe the desired behavior and intentionally remain failing until the two findings are fixed"
+  },
+  "staticAnalysis": "No issues found in 6 reviewed/changed Dart files",
+  "appBuildPerformed": false,
+  "physicalDeviceProfilingPerformed": false,
+  "limits": "Automated native unit/widget tests and source review; no measured device FPS or heap-leak guarantee"
+}

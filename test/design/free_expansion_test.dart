@@ -82,7 +82,7 @@ void main() {
       -9302,
       -9303,
     ]);
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       final coverGrids = <String>{};
       final coverPhotos = <String>{};
       final coverTypeDirections = <String>{};
@@ -192,7 +192,7 @@ void main() {
   });
 
   for (final volume in FreeCollectionVolume.values) {
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       test(
         '${volume.id}/${aspect.name}: text, photos, masks, identity and saved roundtrip',
         () {

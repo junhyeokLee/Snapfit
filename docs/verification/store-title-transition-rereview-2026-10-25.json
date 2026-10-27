@@ -1,0 +1,111 @@
+{
+  "date": "2026-10-25",
+  "scope": "Fresh verification of unified catalog titles, store scope switching, retained browse state, rapid search navigation and resource cleanup",
+  "previous_fix_report": "docs/verification/store-remaining-failures-fixes-2026-10-25.json",
+  "production_code_changed": false,
+  "previous_three_fix_sources_unchanged": true,
+  "reviewed_source_sha256": {
+    "lib/features/album/presentation/providers/design_template_catalog_provider.dart": "7f3b53f75681a30e3a90dce4f3a01e25e3ba74628a8bef75c84a45991444afe2",
+    "lib/features/store/presentation/views/store_hub_screen.dart": "f3169c206c26bbf3bbc382cb192803042702d108181b9243c04d21c066a1447d",
+    "lib/features/store/presentation/widgets/store_topic_shelf.dart": "b4aae20f67fbb5328c621e5db8ef4c5584fa52199bac1dd5d79850307d0ccce4",
+    "lib/features/store/presentation/views/store_screen.dart": "2a01fde9e72c9817133f3f056d4d01fcf949d9c957c99f41dfbce2c0a369b63d",
+    "lib/features/store/data/api/template_provider.dart": "a58c530edb6cf507e1322064ec2813a634c42f993c8d1c65cf009e5260019931",
+    "lib/features/store/data/repositories/supabase_template_repository.dart": "4bf6be27f26de97cf71ae2e83fe057c1706b60de3cb319d583db9678ec09d549"
+  },
+  "test_changes": [
+    "Added test/review/store_transition_rereview_test.dart with five focused review cases; no existing assertions were weakened."
+  ],
+  "findings": [
+    {
+      "id": "store-search-duplicate-page-zero",
+      "priority": "P2",
+      "title": "Independent search feeds start duplicate identical HTTP reads while the parent read is still pending",
+      "location": {
+        "path": "lib/features/store/presentation/views/store_hub_screen.dart",
+        "line": 93
+      },
+      "supporting_locations": [
+        {
+          "path": "lib/features/store/data/api/template_provider.dart",
+          "line": 368
+        },
+        {
+          "path": "lib/features/store/data/repositories/supabase_template_repository.dart",
+          "line": 128
+        }
+      ],
+      "trigger": "Keep the parent All/page-0 request pending and open/close template search three times.",
+      "observed": "Four concurrent identical GET /rest/v1/templates requests (same select, is_active, ordering, offset=0 and limit=20). Each search scope starts a fresh notifier; its first-page single-flight field is instance-local and the actual repository has no cross-scope sharing.",
+      "evidence": "Reproduced with the actual SupabaseTemplateRepository and SupabaseClient using MockClient. All four HTTP responses completed native SDK JSON decoding. Late replies to disposed search scopes were correctly ignored, but transport and parsing were duplicated.",
+      "impact": "Extra in-flight responses and JSON parsing can increase latency, transient allocation and resource use during rapid search visits; this is not a demonstrated permanent memory leak.",
+      "suggested_direction": "Keep independent search/browse filters and generations, but share identical in-flight summary reads using account/session plus page, size, category, query and paid-state keys. Release finished interests without adding an unbounded document/image cache.",
+      "regression_case": "review: pending identical HTTP reads must be shared across search scopes"
+    },
+    {
+      "id": "store-category-strip-resume-offset",
+      "priority": "P2",
+      "title": "Returning from search overwrites a manually scrolled category-strip position",
+      "location": {
+        "path": "lib/features/store/presentation/widgets/store_topic_shelf.dart",
+        "line": 40
+      },
+      "trigger": "With All selected, scroll the category strip toward its far end without changing selection, open template search, and return.",
+      "observed": "Horizontal offset changes from 930.5 to 0.0. Vertical catalog offset remains unchanged.",
+      "cause": "TickerMode restoration calls didChangeDependencies and unconditionally schedules selected-chip reveal, even when selection, chip sizes and viewport dimensions have not changed.",
+      "impact": "The user loses the category area they were browsing after an unrelated search visit.",
+      "suggested_direction": "Preserve the last user offset on a plain visibility change. Track pending selection/layout reveal separately, and resume it only when an actual selection or geometry change requires it.",
+      "regression_case": "review: manually browsed category strip must keep its offset after search"
+    }
+  ],
+  "confirmed": [
+    "Store and editor titles match across the published catalog in the related tests. Fresh coverage additionally checks the renamed cover, editor text layers and all five printable store variants; original authored title metadata is preserved.",
+    "Recommendation, All, travel and club scope changes retain correct parent rows; search return preserves parent StoreScreen identity, exact browse list snapshot, category and vertical position.",
+    "Every closed search scope rejects subsequent reads as disposed, and its scroll controller detaches. The shared local catalog loads once across repeated visits.",
+    "Six rapid animated open/close cycles with duplicate queued open callbacks finish with one parent and no search scopes; parent list identity is retained and transient callbacks return to zero.",
+    "Actual late HTTP replies from closed searches do not overwrite the parent list.",
+    "Existing preview visibility, bounded cache, entry-loading, price/favorite filters and navigation tests remain green."
+  ],
+  "verification": {
+    "related_suite": {
+      "files": 15,
+      "passed": 123,
+      "failed": 0,
+      "log": "output/store-transition-rereview/related-tests.log"
+    },
+    "fresh_cases": {
+      "files": 1,
+      "passed": 3,
+      "failed": 2,
+      "log": "output/store-transition-rereview/fresh-cases.log",
+      "failures_are_confirmed_product_findings": true
+    },
+    "total_unique_cases": 128,
+    "unique_passed": 126,
+    "unique_failed": 2,
+    "analysis": {
+      "items": 7,
+      "issues": 0,
+      "log": "output/store-transition-rereview/analysis.log"
+    },
+    "format": {
+      "new_test_files": 1,
+      "unformatted": 0
+    },
+    "new_test_sha256": "127f351a18631974bcdffc4985d88c40d7b0a264929209e6619e5ed893347471",
+    "app_build_run": false,
+    "live_backend_or_user_data_changed": false,
+    "device_frame_or_process_memory_profile_run": false
+  },
+  "supabase_review": {
+    "skill": "/Users/devsheep/.codex/plugins/cache/openai-curated-remote/supabase/1.0.0/skills/supabase/SKILL.md",
+    "api_reference": "https://supabase.com/docs/reference/dart/select",
+    "changelog_index_attempt": "Markdown endpoint was unsupported by the browsing tool and fallback Python fetch failed certificate verification. No Supabase feature, SDK version, database policy or production query was changed.",
+    "transport_fixture": "Actual client/repository GETs intercepted by MockClient at https://fixture.invalid; no production credentials or live project were used. Native decoder and client disposal futures are explicitly drained in the widget harness."
+  },
+  "limits": [
+    "The two review regressions deliberately fail on the unchanged implementation and remain unfixed in this review-only turn.",
+    "Scope/controller/callback cleanup was verified in controlled tests; real-device FPS, native process peak memory, OS keyboard behavior and plugin internals were not profiled.",
+    "No additional persistent route/scope leak was reproduced after cleanup. The duplicated HTTP work is a transient resource problem, not evidence of an indefinite native memory leak.",
+    "The repository fixture sends empty/tiny rows; real production response sizes and parsing costs were not benchmarked."
+  ]
+}

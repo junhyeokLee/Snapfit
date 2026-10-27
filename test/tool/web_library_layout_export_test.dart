@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:snap_fit/features/album/domain/entities/album.dart';
 import '../widget/web_album_library_test.dart' show mountWebLibraryFixture;
 
 void main() {
@@ -43,15 +44,58 @@ void main() {
       ),
     ]) {
       await tester.pumpWidget(const SizedBox());
+      // Asset image decoding needs the real async event loop. Warming the
+      // actual providers before mounting avoids waiting on an animated loading
+      // placeholder while the test's fake clock cannot finish the decode.
+      final preloadContext = tester.element(find.byType(SizedBox));
+      await tester.runAsync(() async {
+        for (final asset in [
+          'assets/snapfit_home_square.jpg',
+          'assets/snapfit_home_landscape.jpg',
+        ]) {
+          await precacheImage(AssetImage(asset), preloadContext);
+        }
+      });
       await mountWebLibraryFixture(
         tester,
         size: fixture.size,
         brightness: fixture.brightness,
+        items: const [
+          Album(
+            id: 1,
+            title: '우리의 작은 순간들',
+            coverTheme: 'classic',
+            userId: 'owner',
+            ratio: '1',
+            totalPages: 20,
+            targetPages: 20,
+            updatedAt: '2026-10-27T10:00:00',
+            coverImageUrl: 'asset:assets/snapfit_home_square.jpg',
+          ),
+          Album(
+            id: 2,
+            title: '함께 걸었던 계절',
+            coverTheme: 'classic',
+            userId: 'owner',
+            ratio: '1.3333333333333333',
+            totalPages: 2,
+            targetPages: 24,
+            updatedAt: '2026-10-26T10:00:00',
+            coverImageUrl: 'asset:assets/snapfit_home_landscape.jpg',
+          ),
+        ],
       );
       if (fixture.list) {
         await tester.tap(find.byTooltip('앨범 목록 보기'));
         await tester.pumpAndSettle();
       }
+      expect(
+        tester
+            .widgetList<RawImage>(find.byType(RawImage))
+            .where((image) => image.image != null),
+        isNotEmpty,
+        reason: 'Capture the actual sample photograph after decoding.',
+      );
       expect(tester.takeException(), isNull);
       final boundary = tester.renderObject<RenderRepaintBoundary>(
         find.byKey(const ValueKey('web-library-layout-proof')),
@@ -59,7 +103,9 @@ void main() {
       await tester.runAsync(() async {
         final image = await boundary.toImage(pixelRatio: 1);
         final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-        final file = File('output/web-design-2026-10-18/${fixture.name}.png');
+        final file = File(
+          'output/home-album-refinement-20261027/web-${fixture.name}.png',
+        );
         await file.parent.create(recursive: true);
         await file.writeAsBytes(bytes!.buffer.asUint8List());
         image.dispose();

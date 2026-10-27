@@ -124,7 +124,7 @@ void main() {
   });
 
   for (final collection in retiredAuthoredCollections) {
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       final label = '${collection.id}_${aspect.name}';
       final data = collection.document(aspect);
       final pages = templateDocumentPages(data)

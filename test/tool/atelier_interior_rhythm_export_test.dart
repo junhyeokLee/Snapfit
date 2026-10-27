@@ -81,7 +81,7 @@ void main() {
               .single,
           'typographyDirection': e.id,
         };
-        for (final aspect in CollectionAspect.values) {
+        for (final aspect in CollectionAspect.printable) {
           const tileWidth = 460.0, gap = 24.0, margin = 36.0;
           final imageHeight = tileWidth / (2 * aspect.canvas.aspectRatio);
           final rowHeight = imageHeight + 60;
@@ -111,6 +111,8 @@ void main() {
             CollectionAspect.portrait => '세로',
             CollectionAspect.square => '정사각형',
             CollectionAspect.landscape => '가로',
+            CollectionAspect.landscape4x3 => '가로 20×15',
+            CollectionAspect.landscape5x4 => '가로 25×20',
           };
           text(
             '${e.title} / $label / 내지 32쪽',

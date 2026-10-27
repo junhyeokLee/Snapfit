@@ -31,8 +31,8 @@ void main() {
       expect(data['changesPaidProducts'], false);
       expect(data['grantsOwnership'], false);
       final rows = (data['rows'] as List).cast<Map>();
-      expect(rows, hasLength(93));
-      expect(rows.map((r) => r['product_key']).toSet(), hasLength(93));
+      expect(rows, hasLength(113));
+      expect(rows.map((r) => r['product_key']).toSet(), hasLength(113));
       expect(rows.every((r) => r['point_price'] == 0), true);
       expect(
         rows.every(
@@ -40,7 +40,7 @@ void main() {
         ),
         true,
       );
-      expect(data['collections'], hasLength(42));
+      expect(data['collections'], hasLength(47));
       expect(
         jsonDecode(File('${out.path}/manifest.json').readAsStringSync()),
         data,
@@ -90,7 +90,7 @@ void main() {
   test(
     'free kit has explicit zero prices and registered stable identities',
     () {
-      expect(freeTemplateMaterialProductKeys, hasLength(51));
+      expect(freeTemplateMaterialProductKeys, hasLength(66));
       for (final key in freeTemplateMaterialProductKeys) {
         expect(pointShopLaunchPrices[key]?.points, 0, reason: key);
         expect(

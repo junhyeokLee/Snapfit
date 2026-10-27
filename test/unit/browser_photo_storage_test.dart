@@ -182,7 +182,10 @@ void main() {
         bytes: browserPhotoFixture(),
       );
       final storage = _Storage(), albums = MockAlbumRepository();
-      when(() => storage.uploadImageVariants(any())).thenAnswer(
+      when(
+        () =>
+            storage.uploadImageVariants(any(), albumId: any(named: 'albumId')),
+      ).thenAnswer(
         (_) async => const UploadedUrls(
           previewGsPath: 'supabase://album-assets/owner-a/preview.jpg',
         ),
@@ -191,6 +194,9 @@ void main() {
       await expectLater(
         service.performBackgroundUpload(
           albumId: 1,
+          expectedUpdatedAt: '2026-10-25T00:00:00Z',
+          expectedUserId: 'owner-a',
+          requestId: '00000000-0000-4000-8000-000000000001',
           canvasSize: const Size(300, 300),
           currentLayers: [
             LayerModel(
@@ -208,7 +214,15 @@ void main() {
         ),
         throwsStateError,
       );
-      verifyNever(() => albums.updateAlbum(any(), any()));
+      verifyNever(
+        () => albums.updateAlbum(
+          any(),
+          any(),
+          expectedUpdatedAt: any(named: 'expectedUpdatedAt'),
+          expectedUserId: any(named: 'expectedUserId'),
+          requestId: any(named: 'requestId'),
+        ),
+      );
     },
   );
 }

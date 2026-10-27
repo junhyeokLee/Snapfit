@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +8,7 @@ import 'package:snap_fit/features/point_shop/domain/point_shop_product.dart';
 import 'package:snap_fit/features/point_shop/presentation/point_shop_access.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_album_start_step.dart';
+import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
 import 'package:snap_fit/features/store/domain/entities/premium_template.dart';
 
 // Artwork and layout tests use a controlled free catalog, never a live shop.
@@ -72,76 +72,31 @@ Future<void> loadCreationFonts() async {
       .load();
 }
 
-Future<List<PremiumTemplate>> creationFixtures() async {
-  final result = <PremiumTemplate>[];
-  for (final name in [
-    'jeju_travel',
-    'film_diary',
-    'soft_babybook',
-    'minimal_editorial',
-  ]) {
-    final data =
-        jsonDecode(
-              await rootBundle.loadString(
-                'assets/templates/${name}_handoff.json',
-              ),
-            )
-            as Map<String, dynamic>;
-    result.add(
-      PremiumTemplate.fromJson(
-        Map<String, dynamic>.from(data['template'] as Map),
-      ),
-    );
-  }
-  return result;
-}
+Future<List<PremiumTemplate>> creationFixtures() async =>
+    List<PremiumTemplate>.unmodifiable(publishedCreationTemplates);
 
 void main() {
-  for (final firstFree in [false, true]) {
-    testWidgets(
-      'AI start explains the result and supplied point conditions: free=$firstFree',
-      (tester) async {
-        await tester.binding.setSurfaceSize(const Size(390, 844));
-        addTearDown(() => tester.binding.setSurfaceSize(null));
-        var starts = 0;
-        await tester.pumpWidget(
-          wrapCreation(
-            AiAlbumStartStep(
-              aiPointCost: 780,
-              isFirstAiDraftFree: firstFree,
-              freeDraftLabel: '사진은 직접 고르고 바꿀 수 있어요',
-              onAiStart: () => starts++,
-              onManualStart: () {},
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-        expect(
-          find.text(
-            firstFree
-                ? '첫 AI 템플릿 1회 무료 · 이후 현재 구성 기준 780P'
-                : 'AI 템플릿 · 현재 구성 780P',
-          ),
-          findsOneWidget,
-        );
-        expect(find.text('쪽수에 따라 달라져요. 최종 포인트는 생성 전에 확인해요.'), findsOneWidget);
-        expect(find.text('사진은 직접 고르고 바꿀 수 있어요'), findsOneWidget);
-        expect(find.text('빈 앨범부터'), findsOneWidget);
-        expect(find.text('분위기로 생성'), findsOneWidget);
-        expect(find.text('디자인 선택'), findsOneWidget);
-        await tester.tap(find.text('AI 템플릿'));
-        expect(starts, 1);
-        expect(tester.takeException(), isNull);
-      },
-    );
-  }
+  test(
+    'creation fixtures use the current published catalog without handoffs',
+    () async {
+      final templates = await creationFixtures();
+      expect(templates, hasLength(68));
+      expect(
+        templates.map((template) => template.id),
+        publishedCreationTemplates.map((template) => template.id),
+      );
+      for (var i = 0; i < templates.length; i++) {
+        expect(templates[i], same(publishedCreationTemplates[i]));
+      }
+    },
+  );
 
   testWidgets(
-    'manual, AI, free and point previews use server pricing without buying',
+    'manual, free and point previews use server pricing without buying',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(390, 844));
       addTearDown(() => tester.binding.setSurfaceSize(null));
-      var manual = 0, ai = 0, purchaseChecks = 0;
+      var manual = 0, purchaseChecks = 0;
       PremiumTemplate? selected;
       final templates = [
         PremiumTemplate(
@@ -167,7 +122,6 @@ void main() {
         wrapCreation(
           AiAlbumStartStep(
             onManualStart: () => manual++,
-            onAiStart: () => ai++,
             templates: AsyncData(templates),
             onTemplateSelected: (value) => selected = value,
           ),
@@ -198,9 +152,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       await tester.tap(find.text('직접 만들기'));
-      await tester.tap(find.text('AI 템플릿'));
       expect(manual, 1);
-      expect(ai, 1);
       expect(find.text('첫 템플릿 무료'), findsNothing);
       await tester.tap(find.text('유료').first);
       await tester.pumpAndSettle();
@@ -235,7 +187,6 @@ void main() {
       wrapCreation(
         AiAlbumStartStep(
           onManualStart: () {},
-          onAiStart: () {},
           templates: AsyncData([
             PremiumTemplate(
               id: 9,
@@ -270,16 +221,22 @@ void main() {
     const Size(844, 390),
     const Size(320, 568),
   ]) {
-    testWidgets('catalog layout $size', (tester) async {
+    testWidgets('current catalog layout, search and selection $size', (
+      tester,
+    ) async {
       await loadCreationFonts();
-      await tester.binding.setSurfaceSize(size);
-      addTearDown(() => tester.binding.setSurfaceSize(null));
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       final templates = (await tester.runAsync(creationFixtures))!;
+      var manual = 0;
+      PremiumTemplate? selected;
       await tester.pumpWidget(
         wrapCreation(
           AiAlbumStartStep(
-            onManualStart: () {},
-            onAiStart: () {},
+            onManualStart: () => manual++,
+            onTemplateSelected: (value) => selected = value,
             templates: AsyncData(templates),
           ),
         ),
@@ -292,12 +249,42 @@ void main() {
         }
       });
       await tester.pumpAndSettle();
-      await expectLater(
-        find.byType(MaterialApp),
-        matchesGoldenFile(
-          'goldens/creation_hub_${size.width.toInt()}x${size.height.toInt()}.png',
-        ),
+      await tester.ensureVisible(find.text('직접 만들기'));
+      await tester.tap(find.text('직접 만들기'));
+      expect(manual, 1);
+      // The grid is lazily built below the opening artwork on short displays.
+      // Use the actual browse action before inspecting its delegate.
+      await tester.ensureVisible(find.text('템플릿 고르기'));
+      await tester.tap(find.text('템플릿 고르기'));
+      await tester.pumpAndSettle();
+      expect(
+        (tester.widget<SliverGrid>(find.byType(SliverGrid)).delegate
+                as SliverChildBuilderDelegate)
+            .childCount,
+        68,
       );
+      await tester.ensureVisible(find.text('검색'));
+      await tester.tap(find.text('검색'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), templates.last.title);
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
+      expect(
+        (tester.widget<SliverGrid>(find.byType(SliverGrid)).delegate
+                as SliverChildBuilderDelegate)
+            .childCount,
+        1,
+      );
+      final card = find.byKey(
+        ValueKey('creation-template-${templates.last.id}'),
+      );
+      await tester.ensureVisible(card);
+      await tester.pumpAndSettle();
+      expect(card.hitTestable(), findsOneWidget);
+      await tester.tap(card);
+      await tester.pumpAndSettle();
+      expect(selected, same(templates.last));
+      expect(tester.takeException(), isNull);
     });
   }
 }

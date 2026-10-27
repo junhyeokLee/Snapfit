@@ -1,0 +1,207 @@
+{
+  "date": "2026-10-26",
+  "status": "production_applied_live_jwt_and_UI_verified_cleanup_complete",
+  "production_project": "rrbhxdtriummqpztpjrk",
+  "production_changes_performed": true,
+  "production_fixtures_created": true,
+  "migration": {
+    "file": "supabase/migrations/20261026084050_simple_referral_rewards.sql",
+    "created_via": "supabase migration new simple_referral_rewards",
+    "sha256": "409b41de0abb30bfd4c2a2b7c8f6fa3651305eeae2ca0989073391e0013d0ef8",
+    "initial_cli_generated_version": "20261026082733",
+    "operating_ledger_version": "20261026084050",
+    "version_alignment": "Local filename aligned with operating migration ledger; SQL bytes unchanged"
+  },
+  "policy": {
+    "inviter_points": 100,
+    "invitee_points": 100,
+    "registration_window_days": 7,
+    "per_invitee": "once per authenticated UID",
+    "inviter_reward_limit": 20,
+    "limit_period": "Asia/Seoul calendar month",
+    "cap_scope": "At cap, neither party receives a credit and no redemption is consumed",
+    "wait_or_conversation_required": false,
+    "email_fingerprint_or_device_tracking": false,
+    "deleted_recreated_account_person_deduplication_guaranteed": false
+  },
+  "contract": {
+    "rpc": [
+      "get_referral_status()",
+      "redeem_referral_code(p_code text)"
+    ],
+    "only_client_parameter": "p_code",
+    "code_alphabet": "ABCDEFGHJKMNPQRSTUVWXYZ23456789",
+    "code_length": 10,
+    "fields": [
+      "ownCode",
+      "inviterPoints",
+      "inviteePoints",
+      "registrationWindowDays",
+      "rewardLimit",
+      "monthlyRewardedCount",
+      "remaining",
+      "invitedCount",
+      "totalEarned",
+      "balance",
+      "canRedeem",
+      "redeemed",
+      "eligibleUntil",
+      "serverTime",
+      "claimed",
+      "awardedPoints",
+      "rewardMonth",
+      "timezone",
+      "ineligibleReason"
+    ],
+    "ineligible_reasons": [
+      null,
+      "already_redeemed",
+      "unverified",
+      "expired"
+    ],
+    "errors": [
+      "REFERRAL_LOGIN_REQUIRED",
+      "REFERRAL_ACCOUNT_REQUIRED",
+      "REFERRAL_UNVERIFIED_ACCOUNT",
+      "REFERRAL_WINDOW_EXPIRED",
+      "REFERRAL_INVALID_CODE",
+      "REFERRAL_SELF_NOT_ALLOWED",
+      "REFERRAL_RECIPROCAL_NOT_ALLOWED",
+      "REFERRAL_LIMIT_REACHED"
+    ],
+    "repeat_registration": "claimed=false, awardedPoints=0, redeemed=true; inviter is unchanged"
+  },
+  "security": {
+    "private_tables_rls_no_client_grants": true,
+    "public_security_invoker_authenticated_only": true,
+    "private_api_security_definer_empty_search_path": true,
+    "permanent_active_confirmed_email_actors_only_for_redemption": true,
+    "wallet_creation_and_row_lock_in_sorted_uuid_order": true,
+    "eligibility_and_month_rechecked_after_lock": true,
+    "monthly_cap_and_totals_from_immutable_inviter_ledger": true,
+    "both_ledger_and_wallet_credits_in_one_transaction": true,
+    "legacy_permissive_ledger_policy_reserved_namespace_protected": true,
+    "ledger_reason_union_preserves_all_existing_reasons": true,
+    "signup_attendance_checkout_iap_refund_function_definitions_unchanged": true,
+    "deletion": "Invitee deletion keeps inviter paid cap/totals; inviter deletion preserves invitee one-time redemption; ordinary auth cascades remain enabled"
+  },
+  "production_preflight": {
+    "ledger": {
+      "md5": "505e87fd5bf66f94baa12eb0900211b4",
+      "count": 9
+    },
+    "wallets": {
+      "md5": "730f29d93b16ef7617427674765a47f1",
+      "count": 1
+    },
+    "products": {
+      "md5": "8eb322bcfa5d68286dd44238de20898d",
+      "count": 482
+    },
+    "functions": [
+      {
+        "md5": "641224efe750b4ebbbd093816becdc77",
+        "name": "claim_daily_attendance()"
+      },
+      {
+        "md5": "d9f8bd38b6e78fbb0c7a10c518bf4ca2",
+        "name": "get_attendance_status()"
+      },
+      {
+        "md5": "472a91fa5b8d74160a93202767e8112d",
+        "name": "grant_signup_bonus()"
+      },
+      {
+        "md5": "96d28f04dc802555b31ed2fab1c4e2cb",
+        "name": "grant_verified_point_purchase(uuid,jsonb)"
+      },
+      {
+        "md5": "a70c9f212e88b85b8d21c83a38a8603a",
+        "name": "purchase_point_shop_product(text,integer)"
+      },
+      {
+        "md5": "eab1036539058cedb6107ad567a1526f",
+        "name": "revoke_verified_point_purchase(text,text,jsonb)"
+      }
+    ],
+    "ownership": {
+      "md5": "e47b13aee1fd72350a72df3e0bdf322f",
+      "count": 3
+    },
+    "attendance": {
+      "md5": "d41d8cd98f00b204e9800998ecf8427e",
+      "count": 0
+    }
+  },
+  "security_advisor_before_counts": {
+    "INFO:rls_enabled_no_policy": 41,
+    "WARN:function_search_path_mutable": 2,
+    "WARN:anon_security_definer_function_executable": 8,
+    "WARN:authenticated_security_definer_function_executable": 13,
+    "WARN:auth_leaked_password_protection": 1
+  },
+  "validation": {
+    "engine": "PGlite 0.3.14 with actual migration SQL and local anon/authenticated/service_role",
+    "referral_cases_passed_initial": 17,
+    "integrated_regression_pending": false,
+    "report_log": "output/referral-commerce-sql-final-20261026.log",
+    "limits": "Queued requests share one PGlite connection; live ordinary-JWT multi-session concurrency still required",
+    "integrated_regression_passed": 44,
+    "referral_cases_passed": 17,
+    "attendance_cases_passed": 13,
+    "checkout_iap_refund_cases_passed": 14,
+    "command": "node --test --test-concurrency=1 test/server/referral_rewards_sql.test.mjs test/server/daily_attendance_sql.test.mjs test/server/digital_point_shop_sql.test.mjs test/server/combined_payments_push_sql.test.mjs"
+  },
+  "references": [
+    "https://supabase.com/changelog.md",
+    "https://supabase.com/docs/guides/database/functions",
+    "https://supabase.com/docs/guides/auth/managing-user-data",
+    "https://www.postgresql.org/docs/current/explicit-locking.html"
+  ],
+  "recorded_at_utc": "2026-10-26T08:38:05.723Z",
+  "production_postflight": {
+    "original_financial_and_attendance_row_hashes_unchanged": true,
+    "existing_six_point_and_attendance_function_fingerprints_unchanged": true,
+    "public_rpc_security_invoker_empty_search_path_authenticated_execute_only": true,
+    "private_tables_RLS_enabled_and_all_client_grants_revoked": true,
+    "migration_ledger_version": "20261026084050",
+    "security_advisor_counts": {
+      "INFO:rls_enabled_no_policy": 43,
+      "WARN:function_search_path_mutable": 2,
+      "WARN:anon_security_definer_function_executable": 8,
+      "WARN:authenticated_security_definer_function_executable": 13,
+      "WARN:auth_leaked_password_protection": 1
+    },
+    "new_WARN_count": 0,
+    "new_INFO": "Two intentionally default-deny, private RLS tables with no client table grants"
+  },
+  "live_verification": {
+    "report": "docs/verification/referral-live-2026-10-26.json",
+    "status": "live_jwt_and_UI_verified",
+    "ordinary_jwt_api_checks_passed_so_far": 27,
+    "actual_concurrent_HTTP_registration_requests": 20,
+    "different_inviter_codes_in_concurrent_batch": 2,
+    "exactly_one_claimed_and_one_inviter_reward": true,
+    "UI_account_unclaimed_and_reserved": true,
+    "cleanup_pending_UI": false,
+    "UI_first_claim_readonly_interim": {
+      "inviteeBalance": 600,
+      "inviteeCredit": 100,
+      "linkedInviterCredit": 100,
+      "redemptionCount": 1
+    },
+    "ordinary_jwt_API_assertions_passed": 34,
+    "post_UI_concurrent_HTTP_retries": 20,
+    "post_UI_retries_award_zero": true,
+    "both_invitee_and_linked_inviter_UI_credits_100_each": true,
+    "UUID_columns_scanned": 122,
+    "remaining_UUID_scoped_rows": 0,
+    "remaining_sessions": 0,
+    "remaining_refresh_tokens": 0,
+    "remaining_QA_auth_users": 0,
+    "private_credentials_directory_deleted": true,
+    "local_qa_helpers_deleted": true,
+    "original_customer_rows_and_six_function_hashes_unchanged": true
+  },
+  "production_fixtures_cleaned": true
+}

@@ -1,0 +1,22 @@
+{
+  "status": "passed",
+  "unique_flutter_cases": 170,
+  "by_file": {
+    "test/unit/attendance_repository_test.dart": 13,
+    "test/unit/attendance_status_test.dart": 10,
+    "test/unit/billing_repository_test.dart": 10,
+    "test/unit/web_app_location_test.dart": 35,
+    "test/widget/attendance_entry_test.dart": 1,
+    "test/widget/attendance_screen_test.dart": 18,
+    "test/widget/billing_management_ai_return_test.dart": 5,
+    "test/widget/billing_responsive_refinement_test.dart": 21,
+    "test/widget/social_profile_screens_test.dart": 38,
+    "test/widget/web_app_router_test.dart": 19
+  },
+  "logs": [
+    "output/attendance-ui-first-20261026.log",
+    "output/attendance-ui-final-20261026.log"
+  ],
+  "superseded_failures": "Two narrow large-text calendar overflows fixed with naturally expanding row height; attendance suite 18/18 rerun passed.",
+  "sql_cases_passed": 68
+}

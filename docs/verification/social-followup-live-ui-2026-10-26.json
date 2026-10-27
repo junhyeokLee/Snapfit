@@ -1,0 +1,28 @@
+{
+  "verified_at": "2026-10-26T07:09:45.917916+00:00",
+  "deployed_version": "b529862f53d96715",
+  "browser": "existing in-app browser, ordinary guest session",
+  "observed": [
+    "Public profile has 31 works; 12\u219224\u219231 load-more; final load-more action removed; no duplicate work titles",
+    "Profile follow action directs anonymous guest to login; browser back returns to public profile",
+    "Published work renders its full 3:2 snapshot, displays 101 comment count, and loads 12\u219224 comments",
+    "Large photo layout preserved, dark system theme, 1280x720 viewport",
+    "Returned to canonical /feed#/feed, guest and system theme retained; no QA works shown after isolation window"
+  ],
+  "captures": {
+    "detail-large.jpg": {
+      "bytes": 30271,
+      "sha256": "83358c39bab70bc53d449b5b734ddf756e390bc4ac19824397a27bb20f247ff1"
+    },
+    "profile-large.jpg": {
+      "bytes": 39064,
+      "sha256": "bdcb26e1ff2a3fc7a05e7efe8577a1926a2506b97aa003c0662e920d474e1411"
+    },
+    "detail-photo.jpg": {
+      "bytes": 102095,
+      "sha256": "332245399c171019626ac8d1ec8e7d9b137a81f0a2b416efa1d319c67b448d1f"
+    }
+  },
+  "phone_installation_performed": false,
+  "synthetic_verification_content": "Only dedicated temporary QA accounts/documents; screenshots contain no real customer content or credentials."
+}

@@ -171,15 +171,19 @@ void main() {
             );
             expect(pdf, contains('/ICCBased'));
           }
-          final directory = Directory('output/pdf/print-five-sizes/$id')
-            ..createSync(recursive: true);
-          File('${directory.path}/cover.pdf').writeAsBytesSync(output.coverPdf);
-          File(
-            '${directory.path}/interior.pdf',
-          ).writeAsBytesSync(output.interiorPdf);
-          File('${directory.path}/report.json').writeAsStringSync(
-            const JsonEncoder.withIndent('  ').convert(output.report),
-          );
+          if (const bool.fromEnvironment('EXPORT_PRINT_SIZE_FIXTURES')) {
+            final directory = Directory('output/pdf/print-five-sizes/$id')
+              ..createSync(recursive: true);
+            File(
+              '${directory.path}/cover.pdf',
+            ).writeAsBytesSync(output.coverPdf);
+            File(
+              '${directory.path}/interior.pdf',
+            ).writeAsBytesSync(output.interiorPdf);
+            File('${directory.path}/report.json').writeAsStringSync(
+              const JsonEncoder.withIndent('  ').convert(output.report),
+            );
+          }
         });
       },
       timeout: const Timeout(Duration(minutes: 4)),

@@ -161,11 +161,12 @@ void main() {
 
   test('curation follows the editorial order and includes a free edition', () {
     final selected = curateTemplates(templates);
-    expect(selected.length, lessThanOrEqualTo(4));
+    expect(selected.length, lessThanOrEqualTo(6));
     expect(selected.map((t) => t.id).toSet().length, selected.length);
     expect(selected.any((t) => !t.isPremium), isTrue);
     expect(selected.any((t) => t.isPremium), isTrue);
-    expect(selected.first.title, '해변에서 보낸 날');
+    expect(selected.first.category, '일상');
+    expect(selected.map((t) => t.category).toSet(), hasLength(6));
     expect(curateTemplates([]), isEmpty);
   });
 

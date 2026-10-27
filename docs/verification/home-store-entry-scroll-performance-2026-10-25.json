@@ -1,0 +1,139 @@
+{
+  "date": "2026-10-25",
+  "scope": "Home album entry/collection metadata preparation and store entry/scroll catalog preparation; existing UI and behavior preserved",
+  "production_source_hashes": {
+    "lib/core/data/catalog_preview.dart": {
+      "before_sha256": "d0e4e5636a24bbb20394d912124241dc8ccaa3e5aea58411bc242480763ae63c",
+      "after_sha256": "34304effe87aa7a7f263efc405099cb55cc3c03190820b73066dd20eece368fc"
+    },
+    "lib/core/templates/published_premium_templates.dart": {
+      "before_sha256": "0a812ae007673492150d309640de754fb8ab7fa481bc97c2e0a8548b11baf4cb",
+      "after_sha256": "316b500c47e9f778476e3e84472bbb699f8e7a0d0bcb4c376c00fc769c93a934"
+    },
+    "lib/features/album/data/bundled_creation_templates.dart": {
+      "before_sha256": "e4b2ac24b7cd781e149e52eb775181d6ea31e9d49f437ced42ccbe8464c6c7ef",
+      "after_sha256": "0eecffdd6e27e885a3603ca9ae6f5abedc8a7a82e4757dace660104280abfcd2"
+    },
+    "lib/features/album/presentation/utils/home_album_section_builder.dart": {
+      "before_sha256": "de5c5bb4f4b0ae297bd43edb084a1c1ed9ac6c3516c3829ba2d9aa3c5a5bf56f",
+      "after_sha256": "725948d04dc14d2beab6b59d60decf06d40a4153d28247ee338fb2a1b224b930"
+    },
+    "lib/features/album/presentation/widgets/home/home_album_tab_screen.dart": {
+      "before_sha256": "e868935e70488aa8199f106f5cec290a97f4ab1adf52da72e7b752fcd9d5beb7",
+      "after_sha256": "fc35c48c547ea273625b8e70046951d7ca80d8d4c549b16b1fb5fa24944a3204"
+    },
+    "lib/features/point_shop/domain/point_shop_template_key.dart": {
+      "before_sha256": "6134baae0282c502c9836c6f6aa3db81314611fe0d90a68e687e2911387c0bce",
+      "after_sha256": "0121f6699a893d77a9cf7fafe8c525236a931482449467ebc271c8a5abd3ea04"
+    },
+    "lib/features/store/presentation/views/store_screen.dart": {
+      "before_sha256": "f00742d807780700be24f6fea4bc553b7c6560f60f660a6e16e5d12255a7b373",
+      "after_sha256": "2a01fde9e72c9817133f3f056d4d01fcf949d9c957c99f41dfbce2c0a369b63d"
+    },
+    "lib/features/store/presentation/widgets/catalog_edition_artwork.dart": {
+      "before_sha256": "104817036c18bb92a0b5d416aa23bf879378a321d5557a656aa0bd4d0bfc099e",
+      "after_sha256": "0ab30c9ea793ea00140c615c67b0bb42f351b226482a07f3eee42eb17bb5b4cc"
+    }
+  },
+  "changes": [
+    "Reuse already chronological home metadata; stable favorite partition uses one output list instead of separately sorted favorite/nonfavorite lists.",
+    "Collection compares immutable Album object identity and reuses its source snapshot on favorite-only updates; in-place list edits, deletions and owner changes still invalidate prepared data.",
+    "Use bounded published/retired/product identity indexes instead of per-template catalog scans and temporary authored lists. Canonical preview/artwork still requires the identical published document builder.",
+    "Merge favorite metadata in one catalog traversal using a temporary index limited to published IDs. Return the canonical object when favorite metadata is unchanged, preserving artwork identity during refresh.",
+    "Store reuses a single current-catalog price map and recommendation widget between pagination/comparison updates. Provider, favorite and filter changes invalidate the current data; hidden stores postpone preparation until visible."
+  ],
+  "code_review": {
+    "new_blocking_findings": [],
+    "reviewed": [
+      "No new image, document, layer, widget-context or transport caches in global identity indexes; only fixed IDs/product strings or existing canonical object references.",
+      "Price/recommendation memoization is screen-instance scoped, retains one current snapshot, replaces prior data and releases with the existing state lifecycle. No timers, observers or requests were added.",
+      "Source list copying/sorting never mutates the parent album list. Immutable object checks detect updated content even when IDs remain the same.",
+      "Favorite merge keeps the first matching duplicate row; free/paid tier, pricing, catalog order, canonical lazy builder and server-ID fallback are unchanged.",
+      "Existing image decode limits, preview worker gates, memory-pressure cleanup and photo recovery sources were not modified.",
+      "Recommendation reuse is local to StoreScreen; the public TemplateCuration widget continues to process updated mutable inputs as before."
+    ],
+    "previous_photo_recovery_sources_unchanged": true
+  },
+  "new_tests": {
+    "files": [
+      "test/unit/home_album_preparation_test.dart",
+      "test/unit/catalog_metadata_index_test.dart",
+      "test/widget/store_preparation_reuse_test.dart",
+      "test/widget/home_collection_updates_test.dart"
+    ],
+    "cases": 12,
+    "coverage": [
+      "Sorted/unsorted/empty albums, draft exclusion, equal/invalid dates, favorites, deletion, edited same-ID objects, in-place mutation and account switch.",
+      "5,000 albums share large undecoded document text while metadata preparation preserves ordering and object identity.",
+      "Every published ID, free/paid/retired product identity, unknown server IDs and different-builder impostors; identity checks do not invoke custom document builders.",
+      "Catalog merge traverses 2,133 source rows once and preserves first duplicate favorite row; unchanged metadata preserves canonical object identity.",
+      "Instrumented 530-row price catalog is traversed once across pagination and curation reuse. Updated activation replaces recommendation candidates. Hidden updates perform no store indexing until resumed."
+    ]
+  },
+  "verification": {
+    "final_related_suite": {
+      "files": 18,
+      "passed": 117,
+      "failed": 0,
+      "name_filter": "Exclude only the 17 failures separately reproduced on pre-change sources; see final_known_failures and baseline comparison",
+      "log": "output/home-store-scroll-review/final-related-tests.log"
+    },
+    "final_known_failures": {
+      "cases": 17,
+      "passed": 0,
+      "failed": 17,
+      "log": "output/home-store-scroll-review/final-known-failures.log"
+    },
+    "pre_change_baseline": {
+      "cases": 17,
+      "failed": 17,
+      "same_case_set_as_final": true,
+      "isolation": "Separate temporary Flutter package with pre-change copies of all eight modified production files; remaining source/resources linked read-only. Main workspace was never reverted.",
+      "log": "output/home-store-scroll-review/baseline-tests.log",
+      "comparison": "output/home-store-scroll-review/baseline-comparison.json"
+    },
+    "total_unique_cases": 134,
+    "unique_passed": 117,
+    "unique_failed": 17,
+    "analysis": {
+      "items": 12,
+      "issues": 0,
+      "log": "output/home-store-scroll-review/analyze.log"
+    },
+    "format": {
+      "items": 12,
+      "unformatted": 0
+    },
+    "scoped_diff_check_passed": true,
+    "app_build_run": false,
+    "live_backend_or_user_data_changed": false,
+    "device_frame_or_process_memory_profile_run": false
+  },
+  "existing_failures_not_changed_by_this_patch": [
+    {
+      "cases": 2,
+      "file": "test/unit/published_template_catalog_test.dart",
+      "detail": "Editor still uses authored collection title 산책이라는 약속, while published store title is 너랑 걷는 오후."
+    },
+    {
+      "cases": 2,
+      "file": "test/widget/store_recommendations_test.dart",
+      "detail": "Recommended footer returning to All leaves the selected All chip clipped horizontally."
+    },
+    {
+      "cases": 1,
+      "file": "test/widget/store_recommendations_test.dart",
+      "detail": "Search after choosing a category does not find a design in another category."
+    },
+    {
+      "cases": 12,
+      "file": "test/widget/store_main_experience_test.dart",
+      "detail": "Test expects four navigation icons; current UI already includes an additional Compass tab."
+    }
+  ],
+  "limits": [
+    "The full set is not green: 17 existing failures were reproduced before and after this change and remain open. No assertions were weakened or existing tests edited to hide them.",
+    "Identity indexes add small bounded metadata tables; they do not retain extra image bytes or materialize documents. Real-device peak memory and FPS were not measured, so this review cannot claim zero native leaks or frame drops.",
+    "Unit/widget tests use controlled provider fixtures, not live purchases or backend writes."
+  ]
+}

@@ -618,13 +618,13 @@ void main() {
         final icon = tester.widget<Icon>(find.byIcon(Icons.image_outlined));
         final context = tester.element(find.byType(LayerActionPanel));
         expect(icon.color, ExperienceFormStyle.ink(context));
-        for (final label in ['사진변경', '사진위치', '불투명도', '꾸미기', '삭제']) {
+        for (final label in ['사진 바꾸기', '사진 위치 조정', '진하기', '꾸미기', '삭제']) {
           final target = tester.getSize(find.byTooltip(label));
           expect(target.width, greaterThanOrEqualTo(44));
           expect(target.height, greaterThanOrEqualTo(44));
         }
         await _capture(tester, key, 'tools-$suffix');
-        await tester.tap(find.byTooltip('불투명도'));
+        await tester.tap(find.byTooltip('진하기'));
         await _paint(tester);
         expect(find.byType(Slider), findsOneWidget);
         expect(tester.takeException(), isNull);

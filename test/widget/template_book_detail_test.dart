@@ -1,3 +1,4 @@
+import '../support/store_detail_loading.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:ui' as ui;
@@ -92,13 +93,20 @@ void _size(WidgetTester tester, Size size) {
 }
 
 Future<void> _paint(WidgetTester tester) async {
-  await tester.pumpAndSettle();
+  await settleStoreDetail(tester);
   await tester.runAsync(() async {
     for (final element in find.byType(Image).evaluate()) {
       await precacheImage((element.widget as Image).image, element);
     }
   });
-  await tester.pumpAndSettle();
+  await settleStoreDetail(tester);
+}
+
+Future<void> _openUsage(WidgetTester tester, {bool material = false}) async {
+  final title = find.text(material ? '소재 이용 안내' : '디자인 구성 · 사진과 글');
+  await tester.ensureVisible(title);
+  await tester.tap(title);
+  await settleStoreDetail(tester);
 }
 
 Future<void> _capture(WidgetTester tester, GlobalKey key, String name) async {
@@ -138,86 +146,92 @@ void main() {
   });
   tearDown(() => CatalogFavorites.instance.dispose());
 
-  testWidgets('rotating the detail preserves the selected spread and format', (
-    tester,
-  ) async {
-    _size(tester, const Size(390, 844));
-    await tester.pumpWidget(
-      _app(
-        TemplateDetailScreen(
-          template: publishedCreationTemplates.firstWhere(
-            (item) => item.id == -9501,
+  storeDetailTestWidgets(
+    'rotating the detail preserves the selected spread and format',
+    (tester) async {
+      _size(tester, const Size(390, 844));
+      await tester.pumpWidget(
+        _app(
+          TemplateDetailScreen(
+            template: publishedCreationTemplates.firstWhere(
+              (item) => item.id == -9501,
+            ),
           ),
         ),
-      ),
-    );
-    await _paint(tester);
-    final list = find.byKey(const ValueKey('template-spread-list'));
-    expect(tester.widget<ListView>(list).scrollDirection, Axis.horizontal);
-    final selectedThumb = find.byKey(
-      const ValueKey('template-spread-thumb-10'),
-    );
-    await tester.scrollUntilVisible(
-      selectedThumb,
-      180,
-      scrollable: find.descendant(of: list, matching: find.byType(Scrollable)),
-    );
-    await Scrollable.ensureVisible(
-      tester.element(selectedThumb),
-      alignment: .5,
-    );
-    await _paint(tester);
-    await tester.tap(selectedThumb);
-    await _paint(tester);
-    expect(find.text('19–20쪽'), findsOneWidget);
-    final selector = find.byKey(const ValueKey('template-size-selector'));
-    await tester.ensureVisible(selector);
-    await tester.tap(find.descendant(of: selector, matching: find.text('세로형')));
-    await _paint(tester);
-    final spread = find.descendant(
-      of: find.byKey(const ValueKey('template-detail-stage')),
-      matching: find.byKey(const ValueKey('template-book-spread-19')),
-    );
-    final ratio = tester.getSize(spread).aspectRatio;
+      );
+      await _paint(tester);
+      final list = find.byKey(const ValueKey('template-spread-list'));
+      expect(tester.widget<ListView>(list).scrollDirection, Axis.horizontal);
+      final selectedThumb = find.byKey(
+        const ValueKey('template-spread-thumb-10'),
+      );
+      await tester.scrollUntilVisible(
+        selectedThumb,
+        180,
+        scrollable: find.descendant(
+          of: list,
+          matching: find.byType(Scrollable),
+        ),
+      );
+      await Scrollable.ensureVisible(
+        tester.element(selectedThumb),
+        alignment: .5,
+      );
+      await _paint(tester);
+      await tester.tap(selectedThumb);
+      await _paint(tester);
+      expect(find.text('19–20쪽'), findsOneWidget);
+      final selector = find.byKey(const ValueKey('template-size-selector'));
+      await tester.ensureVisible(selector);
+      await tester.tap(selector);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('가로형 25 × 20cm').last);
+      await _paint(tester);
+      final spread = find.descendant(
+        of: find.byKey(const ValueKey('template-detail-stage')),
+        matching: find.byKey(const ValueKey('template-book-spread-19')),
+      );
+      final ratio = tester.getSize(spread).aspectRatio;
 
-    tester.view.physicalSize = const Size(844, 390);
-    tester.view.padding = const FakeViewPadding(
-      left: 44,
-      right: 24,
-      bottom: 24,
-    );
-    await _paint(tester);
-    expect(
-      find.byKey(const ValueKey('store-detail-workspace-landscape')),
-      findsOneWidget,
-    );
-    expect(tester.widget<ListView>(list).scrollDirection, Axis.vertical);
-    expect(find.text('19–20쪽'), findsOneWidget);
-    expect(selectedThumb.hitTestable(), findsOneWidget);
-    expect(tester.getSize(spread).aspectRatio, closeTo(ratio, .0001));
-    final stage = tester.getRect(
-      find.byKey(const ValueKey('template-detail-stage')),
-    );
-    final action = tester.getRect(
-      find.byKey(const ValueKey('template-detail-use')),
-    );
-    expect(stage.right, lessThan(action.left));
-    expect(stage.bottom, greaterThan(action.top));
-    expect(action.bottom, lessThanOrEqualTo(390 - 24));
+      tester.view.physicalSize = const Size(844, 390);
+      tester.view.padding = const FakeViewPadding(
+        left: 44,
+        right: 24,
+        bottom: 24,
+      );
+      await _paint(tester);
+      expect(
+        find.byKey(const ValueKey('store-detail-workspace-landscape')),
+        findsOneWidget,
+      );
+      expect(tester.widget<ListView>(list).scrollDirection, Axis.vertical);
+      expect(find.text('19–20쪽'), findsOneWidget);
+      expect(selectedThumb.hitTestable(), findsOneWidget);
+      expect(tester.getSize(spread).aspectRatio, closeTo(ratio, .0001));
+      final stage = tester.getRect(
+        find.byKey(const ValueKey('template-detail-stage')),
+      );
+      final action = tester.getRect(
+        find.byKey(const ValueKey('template-detail-use')),
+      );
+      expect(stage.right, lessThan(action.left));
+      expect(stage.bottom, greaterThan(action.top));
+      expect(action.bottom, lessThanOrEqualTo(390 - 24));
 
-    tester.view.physicalSize = const Size(390, 844);
-    tester.view.padding = const FakeViewPadding(top: 24, bottom: 24);
-    await _paint(tester);
-    expect(tester.widget<ListView>(list).scrollDirection, Axis.horizontal);
-    expect(find.text('19–20쪽'), findsOneWidget);
-    await tester.ensureVisible(list);
-    expect(selectedThumb.hitTestable(), findsOneWidget);
-    expect(tester.getSize(spread).aspectRatio, closeTo(ratio, .0001));
-    expect(tester.takeException(), isNull);
-  });
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.padding = const FakeViewPadding(top: 24, bottom: 24);
+      await _paint(tester);
+      expect(tester.widget<ListView>(list).scrollDirection, Axis.horizontal);
+      expect(find.text('19–20쪽'), findsOneWidget);
+      await tester.ensureVisible(list);
+      expect(selectedThumb.hitTestable(), findsOneWidget);
+      expect(tester.getSize(spread).aspectRatio, closeTo(ratio, .0001));
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   for (final size in [const Size(320, 568), const Size(648, 320)]) {
-    testWidgets('large type keeps detail purchase reachable $size', (
+    storeDetailTestWidgets('large type keeps detail purchase reachable $size', (
       tester,
     ) async {
       _size(tester, size);
@@ -251,6 +265,7 @@ void main() {
           lessThanOrEqualTo(size.height - 24),
         );
         if (page is MaterialDetailScreen) {
+          await _openUsage(tester, material: true);
           await tester.ensureVisible(find.text('사진과 분리된 프레임'));
           expect(find.text('미리보기 사진은 포함되지 않아요.'), findsOneWidget);
         }
@@ -275,7 +290,7 @@ void main() {
     const Size(844, 390),
   ]) {
     for (final dark in [false, true]) {
-      testWidgets('material access and usage fit $size dark=$dark', (
+      storeDetailTestWidgets('material access and usage fit $size dark=$dark', (
         tester,
       ) async {
         _size(tester, size);
@@ -307,6 +322,7 @@ void main() {
           key,
           'material-${size.width.toInt()}-${dark ? 'dark' : 'light'}',
         );
+        await _openUsage(tester, material: true);
         await tester.ensureVisible(find.text('여러 앨범에 계속 사용'));
         expect(find.text('사진과 분리된 프레임'), findsOneWidget);
         expect(tester.takeException(), isNull);
@@ -314,34 +330,35 @@ void main() {
     }
   }
 
-  testWidgets('an unregistered paid material never claims to be free', (
-    tester,
-  ) async {
-    _size(tester, const Size(390, 844));
-    await tester.pumpWidget(
-      _app(
-        MaterialDetailScreen(
-          productKey: 'frame:storyVowGate',
-          favoriteKey: 'frame:storyVowGate',
-          title: '벨벳 양문 접지',
-          type: '프레임',
-          preview: (_) => const SizedBox(),
+  storeDetailTestWidgets(
+    'an unregistered paid material never claims to be free',
+    (tester) async {
+      _size(tester, const Size(390, 844));
+      await tester.pumpWidget(
+        _app(
+          MaterialDetailScreen(
+            productKey: 'frame:storyVowGate',
+            favoriteKey: 'frame:storyVowGate',
+            title: '벨벳 양문 접지',
+            type: '프레임',
+            preview: (_) => const SizedBox(),
+          ),
+          catalog: [],
         ),
-        catalog: [],
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('무료로 이용하기'), findsNothing);
-    expect(find.text('무료'), findsNothing);
-    expect(
-      tester
-          .widget<FilledButton>(find.byKey(const ValueKey('material-access')))
-          .onPressed,
-      isNull,
-    );
-    expect(find.text('판매 준비 중'), findsWidgets);
-    expect(tester.takeException(), isNull);
-  });
+      );
+      await settleStoreDetail(tester);
+      expect(find.text('무료로 이용하기'), findsNothing);
+      expect(find.text('무료'), findsNothing);
+      expect(
+        tester
+            .widget<FilledButton>(find.byKey(const ValueKey('material-access')))
+            .onPressed,
+        isNull,
+      );
+      expect(find.text('판매 준비 중'), findsWidgets);
+      expect(tester.takeException(), isNull);
+    },
+  );
   test('inclusion alone never grants paid material reuse', () {
     expect(
       templateMaterialReuse(paidKey, AsyncData([paid]), const AsyncData({})),
@@ -397,13 +414,13 @@ void main() {
     const Size(844, 390),
   ]) {
     for (final dark in [false, true]) {
-      testWidgets(
+      storeDetailTestWidgets(
         'native book detail, actual spreads and rights $size dark=$dark',
         (tester) async {
           _size(tester, size);
-          final template = publishedCreationTemplates.firstWhere(
-            (item) => item.id == -9501,
-          );
+          final template = publishedCreationTemplates
+              .firstWhere((item) => item.id == -9501)
+              .copyWith(isPremium: true);
           final original = template.templateJson;
           final key = GlobalKey();
           final suffix = '${size.width.toInt()}-${dark ? 'dark' : 'light'}';
@@ -456,7 +473,7 @@ void main() {
           await tester.tapAt(
             tester.getRect(spread).centerRight - const Offset(25, 0),
           );
-          await tester.pumpAndSettle();
+          await settleStoreDetail(tester);
           expect(
             tester
                 .widget<TemplateFullScreenView>(
@@ -468,15 +485,15 @@ void main() {
           Navigator.of(
             tester.element(find.byType(TemplateFullScreenView)),
           ).pop();
-          await tester.pumpAndSettle();
+          await settleStoreDetail(tester);
 
           final selector = find.byKey(const ValueKey('template-size-selector'));
           await tester.ensureVisible(selector);
-          await tester.tap(
-            find.descendant(of: selector, matching: find.text('세로형')),
-          );
+          await tester.tap(selector);
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('가로형 25 × 20cm').last);
           await _paint(tester);
-          final portraitCanvas = tester
+          final landscapeCanvas = tester
               .widget<TemplatePageRenderer>(
                 find
                     .descendant(
@@ -488,17 +505,19 @@ void main() {
               .designCanvasSize!;
           expect(
             tester.getSize(spread).aspectRatio,
-            closeTo(portraitCanvas.aspectRatio * 2, .0001),
+            closeTo(landscapeCanvas.aspectRatio * 2, .0001),
           );
           await tester.ensureVisible(stage);
-          await _capture(tester, key, 'portrait-spread-$suffix');
+          await _capture(tester, key, 'landscape5x4-spread-$suffix');
           await tester.ensureVisible(selector);
-          await tester.tap(
-            find.descendant(of: selector, matching: find.text('가로형')),
-          );
+          await tester.tap(selector);
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('가로형 20 × 15cm').last);
           await _paint(tester);
           expect(tester.getSize(spread).aspectRatio, greaterThan(2));
           expect(find.text('1–2쪽'), findsOneWidget);
+
+          await _openUsage(tester);
 
           await tester.ensureVisible(
             find.byKey(const ValueKey('template-purchase-overview')),
@@ -518,7 +537,7 @@ void main() {
           await tester.tap(
             find.byKey(const ValueKey('template-reuse-details')),
           );
-          await tester.pumpAndSettle();
+          await settleStoreDetail(tester);
           expect(
             find.byKey(const ValueKey('template-material-list')),
             findsOneWidget,
@@ -536,7 +555,7 @@ void main() {
               matching: find.byType(Scrollable),
             ),
           );
-          await tester.pumpAndSettle();
+          await settleStoreDetail(tester);
           expect(lastRow.hitTestable(), findsOneWidget);
           await tester.tap(lastRow);
           await _paint(tester);
@@ -553,7 +572,7 @@ void main() {
     }
   }
 
-  testWidgets('zero-point premium promotion is displayed as free', (
+  storeDetailTestWidgets('zero-point premium promotion is displayed as free', (
     tester,
   ) async {
     _size(tester, const Size(390, 844));
@@ -582,44 +601,48 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('unknown paid template is never labelled free; large type fits', (
-    tester,
-  ) async {
-    _size(tester, const Size(320, 568));
-    final template = publishedCreationTemplates.firstWhere(
-      (item) => item.id == -9501,
-    );
-    await tester.pumpWidget(
-      _app(TemplateDetailScreen(template: template), catalog: [], scale: 1.6),
-    );
-    await _paint(tester);
-    expect(find.text('무료'), findsNothing);
-    expect(find.text('판매 준비 중'), findsWidgets);
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('template-purchase-overview')),
-    );
-    expect(tester.takeException(), isNull);
-  });
+  storeDetailTestWidgets(
+    'unknown paid template is never labelled free; large type fits',
+    (tester) async {
+      _size(tester, const Size(320, 568));
+      final template = publishedCreationTemplates
+          .firstWhere((item) => item.id == -9501)
+          .copyWith(isPremium: true);
+      await tester.pumpWidget(
+        _app(TemplateDetailScreen(template: template), catalog: [], scale: 1.6),
+      );
+      await _paint(tester);
+      expect(find.text('무료'), findsNothing);
+      expect(find.text('판매 준비 중'), findsWidgets);
+      await _openUsage(tester);
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('template-purchase-overview')),
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 
-  testWidgets('free template uses the same book without claiming a purchase', (
-    tester,
-  ) async {
-    _size(tester, const Size(390, 844));
-    final key = GlobalKey();
-    await tester.pumpWidget(
-      _app(
-        TemplateDetailScreen(template: publishedCreationTemplates.first),
-        captureKey: key,
-      ),
-    );
-    await _paint(tester);
-    expect(find.text('무료 템플릿 안내'), findsOneWidget);
-    expect(find.text('템플릿 구매 안내'), findsNothing);
-    await _capture(tester, key, 'free-cover-390-light');
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('template-purchase-overview')),
-    );
-    await _capture(tester, key, 'free-usage-390-light');
-    expect(tester.takeException(), isNull);
-  });
+  storeDetailTestWidgets(
+    'free template uses the same book without claiming a purchase',
+    (tester) async {
+      _size(tester, const Size(390, 844));
+      final key = GlobalKey();
+      await tester.pumpWidget(
+        _app(
+          TemplateDetailScreen(template: publishedCreationTemplates.first),
+          captureKey: key,
+        ),
+      );
+      await _paint(tester);
+      await _openUsage(tester);
+      expect(find.text('무료 템플릿 안내'), findsOneWidget);
+      expect(find.text('템플릿 구매 안내'), findsNothing);
+      await _capture(tester, key, 'free-cover-390-light');
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('template-purchase-overview')),
+      );
+      await _capture(tester, key, 'free-usage-390-light');
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

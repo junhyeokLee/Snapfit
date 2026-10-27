@@ -1,3 +1,4 @@
+import '../support/store_detail_loading.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -74,7 +75,7 @@ Future<ProviderContainer> _mountReturnFlow(
       ),
     ),
   );
-  await tester.pumpAndSettle();
+  await settleStoreDetail(tester);
   return ProviderScope.containerOf(tester.element(find.byType(AuthGate)));
 }
 
@@ -85,7 +86,9 @@ void main() {
     await CatalogFavorites.instance.load();
   });
   tearDown(() => CatalogFavorites.instance.dispose());
-  testWidgets('AuthGate shows LoginScreen when user is null', (tester) async {
+  storeDetailTestWidgets('AuthGate shows LoginScreen when user is null', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -105,7 +108,9 @@ void main() {
     expect(find.text('카카오로 계속하기'), findsOneWidget);
   });
 
-  testWidgets('AuthGate shows HomeScreen when user exists', (tester) async {
+  storeDetailTestWidgets('AuthGate shows HomeScreen when user exists', (
+    tester,
+  ) async {
     final user = UserInfo(id: '7', name: 'Tester', provider: 'kakao');
 
     await tester.pumpWidget(
@@ -123,36 +128,37 @@ void main() {
       ),
     );
 
-    await tester.pumpAndSettle();
+    await settleStoreDetail(tester);
 
     expect(find.byType(HomeScreen), findsOneWidget);
   });
 
-  testWidgets('AuthGate shows loading indicator while auth is loading', (
-    tester,
-  ) async {
-    final completer = Completer<UserInfo?>();
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          authViewModelProvider.overrideWith(
-            () => LoadingAuthViewModel(completer),
+  storeDetailTestWidgets(
+    'AuthGate shows loading indicator while auth is loading',
+    (tester) async {
+      final completer = Completer<UserInfo?>();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authViewModelProvider.overrideWith(
+              () => LoadingAuthViewModel(completer),
+            ),
+          ],
+          child: ScreenUtilInit(
+            designSize: const Size(390, 844),
+            minTextAdapt: true,
+            builder: (_, __) => const MaterialApp(home: AuthGate()),
           ),
-        ],
-        child: ScreenUtilInit(
-          designSize: const Size(390, 844),
-          minTextAdapt: true,
-          builder: (_, __) => const MaterialApp(home: AuthGate()),
         ),
-      ),
-    );
+      );
 
-    await tester.pump();
+      await tester.pump();
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-  });
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    },
+  );
 
-  testWidgets(
+  storeDetailTestWidgets(
     'native guest selection returns to the canonical detail once after login',
     (tester) async {
       final auth = FakeAuthViewModel(null);
@@ -166,9 +172,9 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       await tester.tap(find.text('로그인하고 이 디자인으로 시작'));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(find.byType(LoginScreen), findsOneWidget);
       expect(container.read(publicTemplateReturnIntentProvider), canonical.id);
       final user = UserInfo(
@@ -177,7 +183,7 @@ void main() {
         provider: 'kakao',
       );
       auth.setUser(user);
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       final detail = tester.widget<TemplateDetailScreen>(
         find.byType(TemplateDetailScreen),
       );
@@ -185,9 +191,9 @@ void main() {
       expect(detail.guestPreview, isFalse);
       expect(container.read(publicTemplateReturnIntentProvider), isNull);
       Navigator.of(tester.element(find.byType(TemplateDetailScreen))).pop();
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       auth.setUser(user);
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(find.byType(TemplateDetailScreen), findsNothing);
       expect(find.byType(HomeScreen), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -195,43 +201,47 @@ void main() {
     },
   );
 
-  testWidgets('logout before the scheduled return cancels the choice', (
-    tester,
-  ) async {
-    final auth = FakeAuthViewModel(null);
-    final container = await _mountReturnFlow(tester, auth);
-    container
-        .read(publicTemplateReturnIntentProvider.notifier)
-        .remember(publishedCreationTemplates.first.id);
-    auth.setUser(
-      UserInfo(id: 'previous-owner', name: 'Tester', provider: 'kakao'),
-    );
-    auth.setUser(null);
-    await tester.pumpAndSettle();
-    expect(container.read(publicTemplateReturnIntentProvider), isNull);
-    expect(find.byType(TemplateDetailScreen), findsNothing);
-    expect(find.byType(LoginScreen), findsOneWidget);
-    expect(tester.takeException(), isNull);
-    await tester.pumpWidget(const SizedBox());
-  });
+  storeDetailTestWidgets(
+    'logout before the scheduled return cancels the choice',
+    (tester) async {
+      final auth = FakeAuthViewModel(null);
+      final container = await _mountReturnFlow(tester, auth);
+      container
+          .read(publicTemplateReturnIntentProvider.notifier)
+          .remember(publishedCreationTemplates.first.id);
+      auth.setUser(
+        UserInfo(id: 'previous-owner', name: 'Tester', provider: 'kakao'),
+      );
+      auth.setUser(null);
+      await settleStoreDetail(tester);
+      expect(container.read(publicTemplateReturnIntentProvider), isNull);
+      expect(find.byType(TemplateDetailScreen), findsNothing);
+      expect(find.byType(LoginScreen), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
 
-  testWidgets('changing accounts invalidates an already scheduled return', (
-    tester,
-  ) async {
-    final auth = FakeAuthViewModel(null);
-    final container = await _mountReturnFlow(tester, auth);
-    container
-        .read(publicTemplateReturnIntentProvider.notifier)
-        .remember(publishedCreationTemplates.first.id);
-    auth.setUser(UserInfo(id: 'first-owner', name: 'First', provider: 'kakao'));
-    auth.setUser(
-      UserInfo(id: 'second-owner', name: 'Second', provider: 'kakao'),
-    );
-    await tester.pumpAndSettle();
-    expect(container.read(publicTemplateReturnIntentProvider), isNull);
-    expect(find.byType(TemplateDetailScreen), findsNothing);
-    expect(find.byType(HomeScreen), findsOneWidget);
-    expect(tester.takeException(), isNull);
-    await tester.pumpWidget(const SizedBox());
-  });
+  storeDetailTestWidgets(
+    'changing accounts invalidates an already scheduled return',
+    (tester) async {
+      final auth = FakeAuthViewModel(null);
+      final container = await _mountReturnFlow(tester, auth);
+      container
+          .read(publicTemplateReturnIntentProvider.notifier)
+          .remember(publishedCreationTemplates.first.id);
+      auth.setUser(
+        UserInfo(id: 'first-owner', name: 'First', provider: 'kakao'),
+      );
+      auth.setUser(
+        UserInfo(id: 'second-owner', name: 'Second', provider: 'kakao'),
+      );
+      await settleStoreDetail(tester);
+      expect(container.read(publicTemplateReturnIntentProvider), isNull);
+      expect(find.byType(TemplateDetailScreen), findsNothing);
+      expect(find.byType(HomeScreen), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
 }

@@ -1,3 +1,4 @@
+import '../support/store_detail_loading.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -169,14 +170,14 @@ Future<void> _tap(
   if (pending) {
     await tester.pump(const Duration(milliseconds: 350));
   } else {
-    await tester.pumpAndSettle();
+    await settleStoreDetail(tester);
   }
   expect(finder.hitTestable(), findsOneWidget);
   await tester.tap(finder);
   if (pending) {
     await tester.pump(const Duration(milliseconds: 350));
   } else {
-    await tester.pumpAndSettle();
+    await settleStoreDetail(tester);
   }
 }
 
@@ -189,7 +190,7 @@ void main() {
   });
   tearDown(() => CatalogFavorites.instance.dispose());
 
-  testWidgets(
+  storeDetailTestWidgets(
     'entry awaits initial account restoration before reading drafts',
     (tester) async {
       final account = Completer<UserInfo?>();
@@ -197,24 +198,24 @@ void main() {
       await tester.pumpWidget(
         fixture.host(authRestoration: account.future, watchAuth: false),
       );
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       await _tap(tester, _key('enter-album'));
       expect(fixture.store.loads, isEmpty);
       expect(find.textContaining('로그인 상태를 확인한 뒤'), findsNothing);
       account.complete(_owner);
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(await fixture.request, isNotNull);
       expect(fixture.store.loads, ['owner-a']);
       fixture.untouched();
     },
   );
 
-  testWidgets('an empty store explicitly resolves to a new album', (
+  storeDetailTestWidgets('an empty store explicitly resolves to a new album', (
     tester,
   ) async {
     final fixture = _Fixture();
     await tester.pumpWidget(fixture.host());
-    await tester.pumpAndSettle();
+    await settleStoreDetail(tester);
     await _tap(tester, _key('enter-album'));
     final result = await fixture.request;
     expect(result, isNotNull);
@@ -224,58 +225,60 @@ void main() {
   });
 
   for (final choice in ['cancel', 'resume', 'new']) {
-    testWidgets('existing work requires an explicit $choice decision', (
-      tester,
-    ) async {
-      final fixture = _Fixture()..store.draft = _draft();
-      final original = fixture.store.draft!;
-      await tester.pumpWidget(fixture.host());
-      await tester.pumpAndSettle();
-      await _tap(tester, _key('enter-album'));
-      expect(find.text(original.title), findsOneWidget);
-      expect(find.textContaining('새로 고른 여행 디자인'), findsOneWidget);
-      expect(find.textContaining('기존 임시 저장을 대체'), findsOneWidget);
-      expect(
-        tester
-            .widget<FilledButton>(_key('album-creation-entry-resume'))
-            .onPressed,
-        isNotNull,
-      );
-      await _tap(tester, _key('album-creation-entry-$choice'));
-      final result = await fixture.request;
-      if (choice == 'cancel') {
-        expect(result, isNull);
-      } else {
-        expect(result, isNotNull);
-        expect(result!.draft, choice == 'resume' ? same(original) : isNull);
-      }
-      expect(fixture.store.draft, same(original));
-      fixture.untouched();
-    });
+    storeDetailTestWidgets(
+      'existing work requires an explicit $choice decision',
+      (tester) async {
+        final fixture = _Fixture()..store.draft = _draft();
+        final original = fixture.store.draft!;
+        await tester.pumpWidget(fixture.host());
+        await settleStoreDetail(tester);
+        await _tap(tester, _key('enter-album'));
+        expect(find.text(original.title), findsOneWidget);
+        expect(find.textContaining('새로 고른 여행 디자인'), findsOneWidget);
+        expect(find.textContaining('기존 임시 저장을 대체'), findsOneWidget);
+        expect(
+          tester
+              .widget<FilledButton>(_key('album-creation-entry-resume'))
+              .onPressed,
+          isNotNull,
+        );
+        await _tap(tester, _key('album-creation-entry-$choice'));
+        final result = await fixture.request;
+        if (choice == 'cancel') {
+          expect(result, isNull);
+        } else {
+          expect(result, isNotNull);
+          expect(result!.draft, choice == 'resume' ? same(original) : isNull);
+        }
+        expect(fixture.store.draft, same(original));
+        fixture.untouched();
+      },
+    );
   }
 
-  testWidgets('a requested identity resumes the latest stored revision', (
-    tester,
-  ) async {
-    final fixture = _Fixture()..store.draft = _draft();
-    await tester.pumpWidget(fixture.host(requestedDraftId: 'saved-album'));
-    await tester.pumpAndSettle();
-    await fixture.ref.read(albumCreationDraftProvider.future);
-    final latest = _draft(revision: 2, title: '다른 창에서 이어 쓴 최신 제목');
-    fixture.store.draft = latest;
-    await _tap(tester, _key('enter-album'));
-    expect((await fixture.request)!.draft, same(latest));
-    expect(_key('album-creation-entry-dialog'), findsNothing);
-    expect(fixture.store.loads, ['owner-a', 'owner-a']);
-    fixture.untouched();
-  });
+  storeDetailTestWidgets(
+    'a requested identity resumes the latest stored revision',
+    (tester) async {
+      final fixture = _Fixture()..store.draft = _draft();
+      await tester.pumpWidget(fixture.host(requestedDraftId: 'saved-album'));
+      await settleStoreDetail(tester);
+      await fixture.ref.read(albumCreationDraftProvider.future);
+      final latest = _draft(revision: 2, title: '다른 창에서 이어 쓴 최신 제목');
+      fixture.store.draft = latest;
+      await _tap(tester, _key('enter-album'));
+      expect((await fixture.request)!.draft, same(latest));
+      expect(_key('album-creation-entry-dialog'), findsNothing);
+      expect(fixture.store.loads, ['owner-a', 'owner-a']);
+      fixture.untouched();
+    },
+  );
 
-  testWidgets(
+  storeDetailTestWidgets(
     'a replaced requested identity shows only the current stored album',
     (tester) async {
       final fixture = _Fixture()..store.draft = _draft(id: 'replacement');
       await tester.pumpWidget(fixture.host(requestedDraftId: 'old-album'));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       await _tap(tester, _key('enter-album'));
       expect(find.text('임시 저장한 앨범이 변경되었어요'), findsOneWidget);
       expect(find.text(fixture.store.draft!.title), findsOneWidget);
@@ -285,43 +288,45 @@ void main() {
     },
   );
 
-  testWidgets('a deleted requested album never becomes an implicit new album', (
-    tester,
-  ) async {
-    final fixture = _Fixture();
-    await tester.pumpWidget(fixture.host(requestedDraftId: 'deleted-album'));
-    await tester.pumpAndSettle();
-    await _tap(tester, _key('enter-album'));
-    expect(await fixture.request, isNull);
-    expect(find.textContaining('변경되었거나 삭제'), findsOneWidget);
-    expect(_key('album-creation-entry-dialog'), findsNothing);
-    fixture.untouched();
-  });
+  storeDetailTestWidgets(
+    'a deleted requested album never becomes an implicit new album',
+    (tester) async {
+      final fixture = _Fixture();
+      await tester.pumpWidget(fixture.host(requestedDraftId: 'deleted-album'));
+      await settleStoreDetail(tester);
+      await _tap(tester, _key('enter-album'));
+      expect(await fixture.request, isNull);
+      expect(find.textContaining('변경되었거나 삭제'), findsOneWidget);
+      expect(_key('album-creation-entry-dialog'), findsNothing);
+      fixture.untouched();
+    },
+  );
 
-  testWidgets('a change while the decision is open requires a fresh decision', (
-    tester,
-  ) async {
-    final fixture = _Fixture()..store.draft = _draft();
-    await tester.pumpWidget(fixture.host());
-    await tester.pumpAndSettle();
-    await _tap(tester, _key('enter-album'));
-    final replacement = _draft(revision: 2, title: '결정 중 변경된 원고');
-    fixture.store.draft = replacement;
-    await _tap(tester, _key('album-creation-entry-new'));
-    expect(await fixture.request, isNull);
-    expect(fixture.store.draft, same(replacement));
-    expect(find.textContaining('변경되었거나 삭제'), findsOneWidget);
-    fixture.untouched();
-  });
+  storeDetailTestWidgets(
+    'a change while the decision is open requires a fresh decision',
+    (tester) async {
+      final fixture = _Fixture()..store.draft = _draft();
+      await tester.pumpWidget(fixture.host());
+      await settleStoreDetail(tester);
+      await _tap(tester, _key('enter-album'));
+      final replacement = _draft(revision: 2, title: '결정 중 변경된 원고');
+      fixture.store.draft = replacement;
+      await _tap(tester, _key('album-creation-entry-new'));
+      expect(await fixture.request, isNull);
+      expect(fixture.store.draft, same(replacement));
+      expect(find.textContaining('변경되었거나 삭제'), findsOneWidget);
+      fixture.untouched();
+    },
+  );
 
   for (final hadDraft in [false, true]) {
-    testWidgets(
+    storeDetailTestWidgets(
       'final validation rejects a newer stored revision (saved=$hadDraft)',
       (tester) async {
         final fixture = _Fixture();
         if (hadDraft) fixture.store.draft = _draft();
         await tester.pumpWidget(fixture.host());
-        await tester.pumpAndSettle();
+        await settleStoreDetail(tester);
         await _tap(tester, _key('enter-album'));
         if (hadDraft) await _tap(tester, _key('album-creation-entry-new'));
         final decision = (await fixture.request)!;
@@ -340,7 +345,7 @@ void main() {
           fixture.ref,
           decision,
         );
-        await tester.pumpAndSettle();
+        await settleStoreDetail(tester);
         expect(await validation, false);
         expect(fixture.store.draft, same(replacement));
         fixture.untouched();
@@ -348,7 +353,7 @@ void main() {
     );
   }
 
-  testWidgets(
+  storeDetailTestWidgets(
     'load errors stop entry and the retry action invalidates the load',
     (tester) async {
       final fixture = _Fixture();
@@ -358,7 +363,7 @@ void main() {
         return null;
       };
       await tester.pumpWidget(fixture.host());
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       await _tap(tester, _key('enter-album'));
       expect(await fixture.request, isNull);
       expect(find.textContaining('확인하지 못했어요'), findsOneWidget);
@@ -373,14 +378,14 @@ void main() {
   );
 
   for (final change in ['account', 'route', 'caller', 'unmount']) {
-    testWidgets('$change changes invalidate a pending draft read', (
+    storeDetailTestWidgets('$change changes invalidate a pending draft read', (
       tester,
     ) async {
       final pending = Completer<AlbumCreationDraft?>();
       final fixture = _Fixture();
       fixture.store.onLoad = (_) => pending.future;
       await tester.pumpWidget(fixture.host());
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       await _tap(tester, _key('enter-album'));
       final request = fixture.request!;
       switch (change) {
@@ -401,9 +406,9 @@ void main() {
         case 'unmount':
           await tester.pumpWidget(const SizedBox.shrink());
       }
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       pending.complete(_draft());
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(await request, isNull);
       expect(_key('album-creation-entry-dialog'), findsNothing);
       fixture.untouched();
@@ -411,26 +416,27 @@ void main() {
     });
   }
 
-  testWidgets('an account change also invalidates an open decision', (
-    tester,
-  ) async {
-    final fixture = _Fixture()..store.draft = _draft();
-    await tester.pumpWidget(fixture.host());
-    await tester.pumpAndSettle();
-    await _tap(tester, _key('enter-album'));
-    (fixture.ref.read(authViewModelProvider.notifier) as _Auth).change(null);
-    await tester.pumpAndSettle();
-    await _tap(tester, _key('album-creation-entry-resume'));
-    expect(await fixture.request, isNull);
-    fixture.untouched();
-  });
+  storeDetailTestWidgets(
+    'an account change also invalidates an open decision',
+    (tester) async {
+      final fixture = _Fixture()..store.draft = _draft();
+      await tester.pumpWidget(fixture.host());
+      await settleStoreDetail(tester);
+      await _tap(tester, _key('enter-album'));
+      (fixture.ref.read(authViewModelProvider.notifier) as _Auth).change(null);
+      await settleStoreDetail(tester);
+      await _tap(tester, _key('album-creation-entry-resume'));
+      expect(await fixture.request, isNull);
+      fixture.untouched();
+    },
+  );
 
-  testWidgets(
+  storeDetailTestWidgets(
     'an observed SDK account switch blocks a cached profile before reading',
     (tester) async {
       final fixture = _Fixture()..store.draft = _draft();
       await tester.pumpWidget(fixture.host());
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       fixture.ref.read(orderSessionOwnerProvider.notifier).observe('owner-b');
       expect(
         fixture.ref.read(authViewModelProvider).asData!.value!.id,
@@ -444,14 +450,14 @@ void main() {
     },
   );
 
-  testWidgets(
+  storeDetailTestWidgets(
     'an observed SDK logout discards a pending old-account draft read',
     (tester) async {
       final pending = Completer<AlbumCreationDraft?>();
       final fixture = _Fixture();
       fixture.store.onLoad = (_) => pending.future;
       await tester.pumpWidget(fixture.host());
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       await _tap(tester, _key('enter-album'));
       fixture.ref.read(orderSessionOwnerProvider.notifier).observe(null);
       expect(
@@ -459,7 +465,7 @@ void main() {
         'owner-a',
       );
       pending.complete(_draft());
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(await fixture.request, isNull);
       expect(_key('album-creation-entry-dialog'), findsNothing);
       expect(fixture.store.loads, ['owner-a']);
@@ -467,57 +473,59 @@ void main() {
     },
   );
 
-  testWidgets('SDK owner checks protect open decisions and final validation', (
-    tester,
-  ) async {
-    final fixture = _Fixture()..store.draft = _draft();
-    await tester.pumpWidget(fixture.host());
-    await tester.pumpAndSettle();
-    await _tap(tester, _key('enter-album'));
-    fixture.ref.read(orderSessionOwnerProvider.notifier).observe('owner-b');
-    await _tap(tester, _key('album-creation-entry-resume'));
-    expect(await fixture.request, isNull);
-    expect(fixture.store.loads.length, 1);
+  storeDetailTestWidgets(
+    'SDK owner checks protect open decisions and final validation',
+    (tester) async {
+      final fixture = _Fixture()..store.draft = _draft();
+      await tester.pumpWidget(fixture.host());
+      await settleStoreDetail(tester);
+      await _tap(tester, _key('enter-album'));
+      fixture.ref.read(orderSessionOwnerProvider.notifier).observe('owner-b');
+      await _tap(tester, _key('album-creation-entry-resume'));
+      expect(await fixture.request, isNull);
+      expect(fixture.store.loads.length, 1);
 
-    fixture.ref.read(orderSessionOwnerProvider.notifier).observe('owner-a');
-    await _tap(tester, _key('enter-album'));
-    await _tap(tester, _key('album-creation-entry-new'));
-    final decision = (await fixture.request)!;
-    final readsBeforeLogout = fixture.store.loads.length;
-    fixture.ref.read(orderSessionOwnerProvider.notifier).observe(null);
-    expect(
-      fixture.ref.read(authViewModelProvider).asData!.value!.id,
-      'owner-a',
-    );
-    expect(
-      await validateAlbumCreationEntry(
-        fixture.entryContext,
-        fixture.ref,
-        decision,
-      ),
-      false,
-    );
-    expect(fixture.store.loads.length, readsBeforeLogout);
-    fixture.untouched();
-  });
+      fixture.ref.read(orderSessionOwnerProvider.notifier).observe('owner-a');
+      await _tap(tester, _key('enter-album'));
+      await _tap(tester, _key('album-creation-entry-new'));
+      final decision = (await fixture.request)!;
+      final readsBeforeLogout = fixture.store.loads.length;
+      fixture.ref.read(orderSessionOwnerProvider.notifier).observe(null);
+      expect(
+        fixture.ref.read(authViewModelProvider).asData!.value!.id,
+        'owner-a',
+      );
+      expect(
+        await validateAlbumCreationEntry(
+          fixture.entryContext,
+          fixture.ref,
+          decision,
+        ),
+        false,
+      );
+      expect(fixture.store.loads.length, readsBeforeLogout);
+      fixture.untouched();
+    },
+  );
 
-  testWidgets('the decision remains usable at 320px and 200 percent text', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(320, 568);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    final fixture = _Fixture()
-      ..store.draft = _draft(title: '아주 길고 따뜻한 우리 가족의 여름 여행을 기록한 앨범');
-    await tester.pumpWidget(fixture.host(textScale: 2));
-    await tester.pumpAndSettle();
-    await _tap(tester, _key('enter-album'));
-    expect(tester.takeException(), isNull);
-    await _tap(tester, _key('album-creation-entry-cancel'));
-    expect(await fixture.request, isNull);
-    fixture.untouched();
-  });
+  storeDetailTestWidgets(
+    'the decision remains usable at 320px and 200 percent text',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final fixture = _Fixture()
+        ..store.draft = _draft(title: '아주 길고 따뜻한 우리 가족의 여름 여행을 기록한 앨범');
+      await tester.pumpWidget(fixture.host(textScale: 2));
+      await settleStoreDetail(tester);
+      await _tap(tester, _key('enter-album'));
+      expect(tester.takeException(), isNull);
+      await _tap(tester, _key('album-creation-entry-cancel'));
+      expect(await fixture.request, isNull);
+      fixture.untouched();
+    },
+  );
 
   final template = publishedCreationTemplates
       .firstWhere((item) => !item.isPremium)
@@ -534,80 +542,19 @@ void main() {
         }),
       );
 
-  testWidgets('detail rejects a draft saved while purchase access is pending', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(390, 844);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    final fixture = _Fixture()..store.draft = _draft();
-    final pending = Completer<bool>();
-    var accessRequests = 0;
-    await tester.pumpWidget(
-      fixture.host(
-        home: TemplateDetailScreen(template: template),
-        overrides: [
-          pointShopCatalogProvider.overrideWith(
-            (_) async => [
-              PointShopProduct(
-                productKey: pointShopTemplateKey(template),
-                kind: 'template',
-                assetId: '${template.id}',
-                title: template.title,
-                pointPrice: 0,
-                isActive: true,
-              ),
-            ],
-          ),
-          ownedPointShopKeysProvider.overrideWith((_) async => <String>{}),
-          pointShopAccessGateProvider.overrideWithValue((
-            context,
-            ref, {
-            required productKey,
-            required title,
-          }) {
-            accessRequests++;
-            return pending.future;
-          }),
-          pointShopRepositoryProvider.overrideWith(
-            (_) => throw StateError('No real purchase calls in entry tests'),
-          ),
-        ],
-      ),
-    );
-    await tester.pumpAndSettle();
-    await _tap(tester, _key('template-detail-use'), pending: true);
-    await _tap(tester, _key('album-creation-entry-new'), pending: true);
-    expect(accessRequests, 1);
-    final replacement = _draft(revision: 4, title: '구매 확인 중 다른 창에서 저장한 원고');
-    fixture.store.draft = replacement;
-    pending.complete(true);
-    await tester.pumpAndSettle();
-    expect(find.byType(AlbumCreateFlowScreen), findsNothing);
-    expect(find.textContaining('변경되었거나 삭제'), findsOneWidget);
-    expect(fixture.store.draft, same(replacement));
-    fixture.untouched();
-    expect(tester.takeException(), isNull);
-  });
-
-  for (final choice in ['cancel', 'resume', 'new', 'selectForCreation']) {
-    testWidgets('detail $choice preserves saved work and purchase boundaries', (
-      tester,
-    ) async {
+  storeDetailTestWidgets(
+    'detail rejects a draft saved while purchase access is pending',
+    (tester) async {
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       final fixture = _Fixture()..store.draft = _draft();
-      final original = fixture.store.draft!;
+      final pending = Completer<bool>();
       var accessRequests = 0;
       await tester.pumpWidget(
         fixture.host(
-          home: TemplateDetailScreen(
-            template: template,
-            selectForCreation: choice == 'selectForCreation',
-          ),
+          home: TemplateDetailScreen(template: template),
           overrides: [
             pointShopCatalogProvider.overrideWith(
               (_) async => [
@@ -627,9 +574,9 @@ void main() {
               ref, {
               required productKey,
               required title,
-            }) async {
+            }) {
               accessRequests++;
-              return false;
+              return pending.future;
             }),
             pointShopRepositoryProvider.overrideWith(
               (_) => throw StateError('No real purchase calls in entry tests'),
@@ -637,39 +584,107 @@ void main() {
           ],
         ),
       );
-      await tester.pumpAndSettle();
-      await _tap(
-        tester,
-        choice == 'selectForCreation' && !kIsWeb
-            ? find.widgetWithText(FilledButton, '이 디자인 선택')
-            : _key('template-detail-use'),
-        pending: true,
-      );
-      if (choice == 'selectForCreation') {
-        expect(_key('album-creation-entry-dialog'), findsNothing);
-        expect(fixture.store.loads, isEmpty);
-        expect(accessRequests, 1);
-      } else {
-        expect(_key('album-creation-entry-dialog'), findsOneWidget);
-        expect(accessRequests, 0);
-        await _tap(tester, _key('album-creation-entry-$choice'), pending: true);
-        await tester.pumpAndSettle();
-        if (choice == 'resume') {
-          final flow = tester.widget<AlbumCreateFlowScreen>(
-            find.byType(AlbumCreateFlowScreen),
-          );
-          expect(flow.initialDraft, same(original));
-          expect(flow.initialCreationTemplate, isNull);
-          expect(accessRequests, 0);
-        } else {
-          expect(find.byType(AlbumCreateFlowScreen), findsNothing);
-          expect(accessRequests, choice == 'new' ? 1 : 0);
-        }
-      }
-      expect(fixture.store.draft, same(original));
+      await settleStoreDetail(tester);
+      await _tap(tester, _key('template-detail-use'), pending: true);
+      await _tap(tester, _key('album-creation-entry-new'), pending: true);
+      expect(accessRequests, 1);
+      final replacement = _draft(revision: 4, title: '구매 확인 중 다른 창에서 저장한 원고');
+      fixture.store.draft = replacement;
+      pending.complete(true);
+      await settleStoreDetail(tester);
+      expect(find.byType(AlbumCreateFlowScreen), findsNothing);
+      expect(find.textContaining('변경되었거나 삭제'), findsOneWidget);
+      expect(fixture.store.draft, same(replacement));
       fixture.untouched();
       expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox.shrink());
-    });
+    },
+  );
+
+  for (final choice in ['cancel', 'resume', 'new', 'selectForCreation']) {
+    storeDetailTestWidgets(
+      'detail $choice preserves saved work and purchase boundaries',
+      (tester) async {
+        tester.view.physicalSize = const Size(390, 844);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final fixture = _Fixture()..store.draft = _draft();
+        final original = fixture.store.draft!;
+        var accessRequests = 0;
+        await tester.pumpWidget(
+          fixture.host(
+            home: TemplateDetailScreen(
+              template: template,
+              selectForCreation: choice == 'selectForCreation',
+            ),
+            overrides: [
+              pointShopCatalogProvider.overrideWith(
+                (_) async => [
+                  PointShopProduct(
+                    productKey: pointShopTemplateKey(template),
+                    kind: 'template',
+                    assetId: '${template.id}',
+                    title: template.title,
+                    pointPrice: 0,
+                    isActive: true,
+                  ),
+                ],
+              ),
+              ownedPointShopKeysProvider.overrideWith((_) async => <String>{}),
+              pointShopAccessGateProvider.overrideWithValue((
+                context,
+                ref, {
+                required productKey,
+                required title,
+              }) async {
+                accessRequests++;
+                return false;
+              }),
+              pointShopRepositoryProvider.overrideWith(
+                (_) =>
+                    throw StateError('No real purchase calls in entry tests'),
+              ),
+            ],
+          ),
+        );
+        await settleStoreDetail(tester);
+        await _tap(
+          tester,
+          choice == 'selectForCreation' && !kIsWeb
+              ? find.widgetWithText(FilledButton, '이 디자인 선택')
+              : _key('template-detail-use'),
+          pending: true,
+        );
+        if (choice == 'selectForCreation') {
+          expect(_key('album-creation-entry-dialog'), findsNothing);
+          expect(fixture.store.loads, isEmpty);
+          expect(accessRequests, 1);
+        } else {
+          expect(_key('album-creation-entry-dialog'), findsOneWidget);
+          expect(accessRequests, 0);
+          await _tap(
+            tester,
+            _key('album-creation-entry-$choice'),
+            pending: true,
+          );
+          await settleStoreDetail(tester);
+          if (choice == 'resume') {
+            final flow = tester.widget<AlbumCreateFlowScreen>(
+              find.byType(AlbumCreateFlowScreen),
+            );
+            expect(flow.initialDraft, same(original));
+            expect(flow.initialCreationTemplate, isNull);
+            expect(accessRequests, 0);
+          } else {
+            expect(find.byType(AlbumCreateFlowScreen), findsNothing);
+            expect(accessRequests, choice == 'new' ? 1 : 0);
+          }
+        }
+        expect(fixture.store.draft, same(original));
+        fixture.untouched();
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+      },
+    );
   }
 }

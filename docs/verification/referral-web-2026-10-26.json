@@ -1,0 +1,46 @@
+{
+  "status": "deployed_and_remote_hashes_verified",
+  "exit_code": 0,
+  "elapsed_seconds": 167.09,
+  "source_before": "2abb7c0c8dd07935d52d70ff1ba0cd1e60a2fd5125f8a7260bbf8a34ff4c43c3",
+  "source_after": "2abb7c0c8dd07935d52d70ff1ba0cd1e60a2fd5125f8a7260bbf8a34ff4c43c3",
+  "social_source_sha256": "705ebbfda50fa842f042e4a735e4cf9b77ea13b24e6eac8318adf18fa8e76d1a",
+  "inputs_unchanged": true,
+  "main_sha256": "2cc5bd3c3c2196410c8139dbaf6fff25a3bfd5065ca761eb8bf504f6baec7f2e",
+  "main_file": "main.2cc5bd3c3c2196410c81.dart.js",
+  "bootstrap_sha256": "475a188edac8f301ff2ef90d4b814f0185a9dbacf59ea6e82629917f8b502fdf",
+  "bootstrap_file": "flutter_bootstrap.475a188edac8f301ff2e.js",
+  "index_sha256": "b56bd460347fc11f7cd3dac9cf9056fb6d92bfa3ba239e63f1c55941e69acc09",
+  "hosting_version": "a3b0013a7cefe8d4",
+  "url": "https://snapfit-c719d.web.app/friends",
+  "remote_checks": [
+    {
+      "path": "index.html",
+      "sha256": "b56bd460347fc11f7cd3dac9cf9056fb6d92bfa3ba239e63f1c55941e69acc09",
+      "bytes": 3023
+    },
+    {
+      "path": "main.2cc5bd3c3c2196410c81.dart.js",
+      "sha256": "2cc5bd3c3c2196410c8139dbaf6fff25a3bfd5065ca761eb8bf504f6baec7f2e",
+      "bytes": 9025299
+    },
+    {
+      "path": "flutter_bootstrap.475a188edac8f301ff2e.js",
+      "sha256": "475a188edac8f301ff2ef90d4b814f0185a9dbacf59ea6e82629917f8b502fdf",
+      "bytes": 14512
+    },
+    {
+      "path": "friends",
+      "sha256": "b56bd460347fc11f7cd3dac9cf9056fb6d92bfa3ba239e63f1c55941e69acc09",
+      "bytes": 3023
+    },
+    {
+      "path": "friends/ABCD2345XY",
+      "sha256": "b56bd460347fc11f7cd3dac9cf9056fb6d92bfa3ba239e63f1c55941e69acc09",
+      "bytes": 3023
+    }
+  ],
+  "remote_manifest_matches": true,
+  "final_visual_fix": "Use established people_outline glyph for existing browser icon font compatibility; no reward behavior change.",
+  "live_UI_verified": true
+}

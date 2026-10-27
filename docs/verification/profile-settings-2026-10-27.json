@@ -1,0 +1,135 @@
+{
+  "task": "My personal hub and focused settings structure",
+  "date": "2026-10-27",
+  "status": "complete",
+  "updatedAt": "2026-10-26T15:49:43.146927+00:00",
+  "changes": {
+    "my": [
+      "Public profile, large work gallery and relationships preserved",
+      "Private login ID/email and wallet with charge/history",
+      "Always accessible album/library/print-order shortcuts",
+      "Private saved album and owned design shelves",
+      "Print order summary and history, shared albums and storage",
+      "Moments, attendance, referrals, saved works and notifications remain on My",
+      "Private controls survive missing/loading/failed public profile",
+      "Owner snapshot checks and late response guards"
+    ],
+    "settings": [
+      "Account/security/logout",
+      "Theme and notification preferences",
+      "Support, app guide, terms and privacy",
+      "Existing authorized admin tools"
+    ],
+    "topup": [
+      "Attendance and referral cards removed on app and web",
+      "Direct point history entry preserves default charge entry"
+    ],
+    "adjacentFix": "Library favorites and search toggle wrap at narrow width with large text"
+  },
+  "verification": {
+    "passingRuns": [
+      {
+        "log": "output/profile-settings-focused-tests.log",
+        "passed": 23
+      },
+      {
+        "log": "output/profile-billing-cleanup-tests.log",
+        "passed": 27
+      },
+      {
+        "log": "output/profile-settings-layout-tests-final.log",
+        "passed": 3
+      },
+      {
+        "log": "output/profile-personal-workshop-final-tests.log",
+        "passed": 28
+      },
+      {
+        "log": "output/profile-owner-data-final-tests.log",
+        "passed": 39
+      },
+      {
+        "log": "output/profile-private-web-tests.log",
+        "passed": 10
+      },
+      {
+        "log": "output/profile-private-navigation-final-tests.log",
+        "passed": 18
+      },
+      {
+        "log": "output/profile-settings-and-billing-web-tests-final.log",
+        "passed": 3
+      },
+      {
+        "log": "output/profile-private-web-final-tests.log",
+        "passed": 12
+      }
+    ],
+    "initialIntegration": {
+      "log": "output/profile-structure-integration-tests.log",
+      "passed": 89,
+      "failedAtRun": 4,
+      "resolution": "Duplicate test-provider override corrected; completed-album fixtures now use authored interiors; library search row wraps at narrow width. All affected suites re-run in passing runs."
+    },
+    "analysis": {
+      "log": "output/profile-settings-final-analysis.log",
+      "result": "No issues found"
+    },
+    "diffWhitespaceCheck": "passed",
+    "nativeAppBuildOrDeviceInstall": "Not performed; native widget and Chrome tests cover source changes.",
+    "productionDatabaseChanges": false,
+    "latestAnalysis": {
+      "log": "output/profile-settings-last-navigation-analysis.log",
+      "result": "No issues found"
+    },
+    "review": {
+      "result": "One navigation issue found and fixed; no other blocking finding",
+      "fixed": "Album shortcuts now await current albums, debounce repeated taps and recheck the account revision before navigation. Failure offers retry.",
+      "regressionTests": "Pending initial album load and account A B A while awaiting albums"
+    },
+    "webRouteFixtureCorrections": "Updated existing account-security heading expectation; provided local SDK client fixture to the topup panel. Final 3 browser route cases pass.",
+    "liveBrowserSmoke": {
+      "url": "https://snapfit-c719d.web.app/me",
+      "result": "Guest redirected to /me#/login; Korean fonts and brand shell render correctly.",
+      "privateAccountMutations": false,
+      "authenticatedPrivateFlows": "Verified using actual native widgets and Chrome test fixtures; no manual sign-in to the user account.",
+      "temporaryBrowserTabClosed": true
+    }
+  },
+  "screenshots": [
+    "output/profile-settings-20261027/deployed-my-login-gate.png",
+    "output/profile-settings-20261027/my-collections-light.png",
+    "output/profile-settings-20261027/my-phone-dark.png",
+    "output/profile-settings-20261027/my-phone-light.png",
+    "output/profile-settings-20261027/settings-landscape-light.png",
+    "output/profile-settings-20261027/settings-phone-light.png",
+    "output/profile-settings-20261027/settings-small-light.png"
+  ],
+  "deployment": {
+    "status": "complete",
+    "project": "snapfit-c719d",
+    "release": "5c9e852383bf4696",
+    "baseUrl": "https://snapfit-c719d.web.app",
+    "build": {
+      "main_sha256": "9494efd84c04c79eababb1f8253adc59e63a54e24e70836a5af99e18a6acb649",
+      "main_file": "main.9494efd84c04c79eabab.dart.js",
+      "bootstrap_sha256": "607bdfa06d0e626cba1e5d3000291da6d69297c0751025d01cb495d7d1c939f6",
+      "bootstrap_file": "flutter_bootstrap.607bdfa06d0e626cba1e.js"
+    },
+    "httpChecksPassed": true,
+    "checkedPaths": [
+      "/me",
+      "/account",
+      "/feed",
+      "/snapfit-web-build.json",
+      "/flutter_bootstrap.607bdfa06d0e626cba1e.js",
+      "/main.9494efd84c04c79eabab.dart.js"
+    ],
+    "logs": [
+      "output/profile-settings-web-build.log",
+      "output/profile-settings-web-deploy.json",
+      "output/profile-settings-deployment-check.json"
+    ]
+  },
+  "completedAt": "2026-10-26T15:59:58.258613+00:00"
+}

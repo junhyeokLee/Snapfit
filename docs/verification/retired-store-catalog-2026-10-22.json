@@ -1,0 +1,129 @@
+{
+  "checked_at_utc": "2026-10-22T14:19:16.557599+00:00",
+  "retired_titles": [
+    "제주의 기록",
+    "가족의 주말",
+    "우리의 기념일",
+    "Wedding Editorial",
+    "Scrapbook",
+    "SAVE THE DATE",
+    "화이트 에디토리얼",
+    "필름 다이어리",
+    "소프트 베이비북"
+  ],
+  "production_database": {
+    "retired_rows_deleted": 9,
+    "retired_rows_remaining": 0,
+    "current_template_products": 68,
+    "saved_albums_before_after": [
+      17,
+      17
+    ],
+    "album_pages_before_after": [
+      0,
+      0
+    ],
+    "ownership_records_before_after": [
+      3,
+      3
+    ],
+    "point_ledger_records_before_after": [
+      9,
+      9
+    ],
+    "products_and_prices_modified": false,
+    "existing_album_snapshots_modified": false,
+    "cleanup_applied": "manual exact-id-and-title DELETE; equivalent idempotent migration saved as source, not applied to migration history"
+  },
+  "code_guards": [
+    "store list/feed/refresh",
+    "repository list/detail/like/create",
+    "stale detail rendering and selection",
+    "authenticated admin upsert",
+    "CLI publication and merge",
+    "explicit release inputs"
+  ],
+  "current_catalog_publication": "Bundled canonical negative IDs retained by admin UI and CLI publisher; no new products published during this cleanup.",
+  "notification_catalog": "Current published IDs; first installation/migration is a silent baseline.",
+  "verification": {
+    "flutter_analyze": "No issues found",
+    "focused_flutter_cases": {
+      "passed": 56,
+      "failed": 0,
+      "files": 5,
+      "logs_sha256": "e336217ead0ab564135a8496af73fe259331286ebe503a2257c262127f4994ae"
+    },
+    "notification_cases_passed_in_broader_run": 8,
+    "server_policy_auth_and_real_postgres_cleanup_cases": {
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cli_local_fake_http_scenarios_passed": 7,
+    "quality_and_asset_checks": "68 templates, 133 tracked assets, zero issues",
+    "broader_ui_tests": {
+      "remaining_preexisting_failures": 7,
+      "details": [
+        "lookbook CTA top is 322px against an existing 320px threshold on 320x568",
+        "lookbook exact image baseline mismatch",
+        "AI theme, photo range, point exact image baseline mismatches",
+        "two creation journey tests expect the previously removed AI entry"
+      ],
+      "runtime_sources_match_task_start_sha256": {
+        "lib/features/store/presentation/widgets/premium_template_list.dart": "388b94468ba70342312492cb82a12a1999fae7f3bb49475009467992f9825076",
+        "lib/features/album/presentation/widgets/create_flow/ai_album_start_step.dart": "64106ad7e154cc709806546173c3ea90fee2aa88eb553e0aa1db274aef3adc67",
+        "lib/features/album/presentation/widgets/create_flow/ai_album_theme_step.dart": "88f44f560301f19c4bbce54ca19dfc0b0413c20c51417df7c70385f7dc27e952",
+        "lib/features/album/presentation/widgets/create_flow/ai_album_photo_range_step.dart": "3eb38ddcd9480332f2d893df529d2ab2c32d524524d51060365a4e432290f81c",
+        "lib/features/album/presentation/widgets/create_flow/ai_album_point_confirmation_step.dart": "6d08f7d97561336685e52ef02300f589df55563ed4506023caf40a57fa33eea6",
+        "lib/features/album/presentation/views/album_create_flow_screen.dart": "92996f4ffdf07b59aa97b9af0215c20ccf3821bb2ae6bc7de4e5eba5134762c4",
+        "test/widget/creation_workshop_journey_test.dart": "7ee8cde4a848cc7009d88f727bf9856d3ba2bb5d90be806f0bc586d36f901309",
+        "test/flutter_test_config.dart": "a4d4f893f1ec3e92a30fa69a5bcdea9bd55affb0ec58d1972c2f9a03b7d77724"
+      },
+      "no_thresholds_relaxed_or_goldens_updated": true
+    }
+  },
+  "hosting": {
+    "main_sha256": "1cf25eaa27bf4e27f69775b31243a9743a99764b17207a065ad4a39a95e5c63c",
+    "main_file": "main.1cf25eaa27bf4e27f697.dart.js",
+    "bootstrap_sha256": "433c2ab21cf1470f68db0cdd667755af923c330f2a302fe6c97b589ee0f727d4",
+    "bootstrap_file": "flutter_bootstrap.433c2ab21cf1470f68db.js",
+    "origin": "https://snapfit-c719d.web.app/",
+    "tls_verified": true,
+    "entrypoint_chain_matches": true,
+    "retired_manifest_http_status": {
+      "assets/assets/templates/generated/latest.json": "404",
+      "assets/assets/templates/generated/store_latest.json": "404",
+      "assets/assets/templates/generated/template_factory_registry.json": "404"
+    }
+  },
+  "browser_checks": {
+    "current_store_count": 68,
+    "search_results_empty_for": [
+      "제주의 기록",
+      "우리의 기념일",
+      "SAVE THE DATE"
+    ],
+    "old_detail_46_blocked": true,
+    "current_journey_detail_9302_opened": true,
+    "deliverable_url": "https://snapfit-c719d.web.app/#/designs"
+  },
+  "source_fingerprint_sha256": "290c5e14df001964ff0628af6bd2e7b2c9650691afc2b88350ca9c66838d6fb3",
+  "shared_current_photographs_preserved": true,
+  "new_preview_files_created": false,
+  "cleanup": {
+    "regenerable_outputs_removed": [
+      "build/app",
+      "build/review-web",
+      "build/unit_test_assets",
+      "build/test_cache",
+      "/private/tmp/snapfit-retired-sql-runtime"
+    ],
+    "free_gib_after": 14.66,
+    "release_rebuild_command": "python3 tool/build_web.py --output build/review-web"
+  },
+  "screen_test_followup": {
+    "resolved_at_utc": "2026-10-22T14:45:17.500271+00:00",
+    "remaining_requested_failures": 0,
+    "verification_record": "docs/verification/screen-test-fixes-2026-10-22.json"
+  }
+}

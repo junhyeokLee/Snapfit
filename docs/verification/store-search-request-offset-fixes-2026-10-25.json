@@ -1,0 +1,116 @@
+{
+  "date": "2026-10-25",
+  "scope": "Fix both confirmed store search request-sharing and category-strip resume-position findings",
+  "previous_review": "docs/verification/store-title-transition-rereview-2026-10-25.json",
+  "resolved_findings": [
+    {
+      "id": "store-search-duplicate-page-zero",
+      "status": "fixed",
+      "source": "lib/features/store/data/repositories/supabase_template_repository.dart",
+      "changes": [
+        "Share only identical in-flight summary reads across route-owned feed notifiers. Preserve independent parent/search filters, pagination, rows and generation guards.",
+        "Capture current user and SDK session identity before lookup. Drop sharing on account or session replacement, including a restored session with equal token contents.",
+        "Key queries by page, size, effective category, exact nonempty search string and nullable paid state. Normalize only already-equivalent All/empty values.",
+        "Remove tracked futures on success and failure, guard removal by future identity, cap tracked keys at 32 and keep no completed-response cache.",
+        "Drop pending lookup entries after a successful like mutation or album creation/count update so a subsequent refresh cannot join a pre-write snapshot. Failed likes do not discard an otherwise valid pending read.",
+        "Expose the shared response content as an unmodifiable list; parse the response only once."
+      ],
+      "reproduced_before": "Parent All/page-0 pending plus three opened/closed search scopes sent four identical concurrent HTTP requests.",
+      "verified_after": "The same scenario sends one HTTP request. Four repository callers finish; closed route scopes do not change the parent list."
+    },
+    {
+      "id": "store-category-strip-resume-offset",
+      "status": "fixed",
+      "source": "lib/features/store/presentation/widgets/store_topic_shelf.dart",
+      "changes": [
+        "Separate pending selection/layout reveal from post-frame scheduling and route visibility.",
+        "Keep manual horizontal browsing on plain hide/resume. Schedule reveal only for initial layout, actual category/selection/viewport/typography/chip-geometry dependencies.",
+        "Keep real reveal work pending while hidden and resume once visible. Continue to use only the horizontal controller with finite bounded offsets.",
+        "Retain coalesced callbacks, bounded current-category keys and controller disposal; add no animation controller, timer or scroll listener."
+      ],
+      "reproduced_before": "Search return changed horizontal position from 930.5 to 0.0.",
+      "verified_after": "Search return preserves 930.5; parent vertical offset is unchanged. LTR/RTL, text scales 1.0/2.5, hidden selections and hidden layout changes also pass."
+    }
+  ],
+  "production_files_changed": [
+    "lib/features/store/data/repositories/supabase_template_repository.dart",
+    "lib/features/store/presentation/widgets/store_topic_shelf.dart"
+  ],
+  "existing_test_files_updated": [
+    "test/review/store_transition_rereview_test.dart",
+    "test/widget/store_topic_visibility_test.dart"
+  ],
+  "new_test_files": [
+    "test/unit/store_summary_request_sharing_test.dart"
+  ],
+  "unchanged_previous_review_sources": {
+    "lib/features/album/presentation/providers/design_template_catalog_provider.dart": true,
+    "lib/features/store/presentation/views/store_hub_screen.dart": true,
+    "lib/features/store/presentation/views/store_screen.dart": true,
+    "lib/features/store/data/api/template_provider.dart": true
+  },
+  "review": {
+    "remaining_blocking_findings_in_changed_scope": [],
+    "checked": [
+      "Failure propagation and retry release use the same returned future; no discarded error-producing cleanup future is created.",
+      "A stale completion after session replacement or mutation invalidation cannot evict a newer request for the same query.",
+      "No notifier state or Ref is held by the request registry. Sharing does not couple parent/search generations or route ownership.",
+      "No new completed document/image cache, eager document generation, decode size, offscreen scroll extent or recurring work is introduced.",
+      "A plain TickerMode restoration does not mark reveal pending; actual hidden selection/geometry changes still resume and reveal the selected chip.",
+      "Old title/catalog identity fixes and StoreHub/StoreScreen/feed source files are byte-for-byte unchanged against the preceding review."
+    ]
+  },
+  "verification": {
+    "related_suite": {
+      "files": 17,
+      "passed": 136,
+      "failed": 0,
+      "log": "output/store-transition-fixes/related-tests.log"
+    },
+    "focused_regressions": {
+      "files": 2,
+      "passed": 9,
+      "failed": 0,
+      "log": "output/store-transition-fixes/regressions.log"
+    },
+    "request_sharing_cases": {
+      "files": 1,
+      "passed": 8,
+      "failed": 0,
+      "log": "output/store-transition-fixes/request-sharing-tests.log",
+      "included_in_final_related_suite": true
+    },
+    "analysis": {
+      "items": 5,
+      "issues": 0,
+      "log": "output/store-transition-fixes/analysis.log"
+    },
+    "scope_patch": "output/store-transition-fixes/scoped.patch",
+    "final_sha256": {
+      "lib/features/store/data/repositories/supabase_template_repository.dart": "098d7f27987d74af2a4d0de395721282655c7391f4f8e97a4ebd1979ef73c38f",
+      "lib/features/store/presentation/widgets/store_topic_shelf.dart": "7290fea60e4b52581c9fc7d01a16f3865c7d50cff25a344f6a27db06402bcb60",
+      "test/review/store_transition_rereview_test.dart": "e025b8cba26f5b6c25c0c8586dfdf42deb127c2629f12c6fd3eaf092d84dc92c",
+      "test/widget/store_topic_visibility_test.dart": "8241a625d7973c7863d63060377a0b54bf332262d2f3e0101f73b1a7e194d3fa",
+      "test/unit/store_summary_request_sharing_test.dart": "20d1288e43009084e21e205124cb2bf0ef07df0219311bd1b193e9282eb621bc"
+    },
+    "app_build_run": false,
+    "live_backend_or_user_data_changed": false,
+    "device_frame_or_process_memory_profile_run": false
+  },
+  "supabase_verification": {
+    "skill": "/Users/devsheep/.codex/plugins/cache/openai-curated-remote/supabase/1.0.0/skills/supabase/SKILL.md",
+    "changelog": "https://supabase.com/changelog.md",
+    "changelog_fetched": true,
+    "relevant_breaking_changes_found": false,
+    "api_reference": "https://supabase.com/docs/reference/dart/select",
+    "installed_sdk_checked": {
+      "supabase": "2.16.1",
+      "gotrue": "2.27.2"
+    },
+    "test_query": "Real SupabaseTemplateRepository/SupabaseClient requests intercepted using MockClient at fixture.invalid. Includes request separation, success/error cleanup, synthetic auth transitions, like writes and album/count writes; no live account or database was accessed."
+  },
+  "limits": [
+    "Tests verify controlled Flutter state/transport/cleanup behavior; actual device FPS and native process memory were not measured.",
+    "The sharing cap bounds registry retention, not the number of independently requested distinct queries. Existing HTTP work is not cancelled when a route closes or sharing is invalidated."
+  ]
+}

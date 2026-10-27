@@ -1,0 +1,175 @@
+{
+  "checked_at": "2026-10-25T17:51:26+09:00",
+  "status": "final_photo_snapshot_fix_apk_ready_native_install_not_performed",
+  "scope": "Final compact mobile creator-profile header, readable gallery mode controls, public-photo selection/confirmation/zoom, free public viewing and idempotent social interactions; includes the verified PNG/JPEG web snapshot rendering correction.",
+  "authorization": "User authorized builds/deployment and stated that phone connection is currently unavailable. No reconnect request, device install or emulator download was performed.",
+  "build": {
+    "command": "flutter build apk --debug --target-platform android-arm64 --no-pub",
+    "variant": "debug",
+    "application_id": "com.devsheep.snap_fit",
+    "version_name": "1.0.0",
+    "version_code": 1,
+    "apk": {
+      "path": "output/native-photo-refresh/SnapFit-photo-feed-debug.apk",
+      "bytes": 901652008,
+      "sha256": "771cfff52450419d304d8315d5944cdc996255345c29fef7b77d1f215a2278ff"
+    },
+    "zip_crc_valid": true,
+    "zip_entries": 1700,
+    "signature_verified": true,
+    "signer": "Android Debug",
+    "certificate_sha256": "a46a0968f62bfe49908e6e9d0b1feda3c269bf721d09a0fc1d7daaa6ecf199c3",
+    "matches_previously_installed_debug_certificate": true,
+    "final_incremental_gradle_seconds": 76.5,
+    "packaged_metadata": [
+      "package: name='com.devsheep.snap_fit' versionCode='1' versionName='1.0.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+      "application-debuggable",
+      "native-code: 'arm64-v8a' 'armeabi-v7a' 'x86_64'"
+    ],
+    "packaged_android_manifest_sha256": "2b0436c7849efb70b476851f4e528ab857fb4e6d4e0c2ba88cecd1704204d0a1",
+    "packaged_kernel_path": "assets/flutter_assets/kernel_blob.bin",
+    "packaged_kernel_sha256": "b6aaa67dd2a61ad2eb8634795a0b411fcd60eb2a22985fe158aac17d0e8e1716",
+    "both_build_output_hashes_match": true,
+    "stable_deliverable_copy_hash_matches": true,
+    "apfs_cow_copy_used": true,
+    "non_blocking_toolchain_warning": "Existing Firebase/storage/media plugins still apply Kotlin Gradle Plugin. Current build passed; upstream plugin migration remains a future toolchain concern.",
+    "packaged_current_source_text_markers": {
+      "원본 앨범은 비공개로 유지돼요.": true,
+      "갤러리": true,
+      "크게 보기": true,
+      "사진을 읽지 못했어요. 다른 사진이 있는 페이지를 선택해 주세요.": true
+    }
+  },
+  "source_consistency": {
+    "manifest_algorithm": "SHA256 of sorted UTF-8 lines: <file sha256>  <repository relative path>\\n",
+    "scope": "All lib Dart files; local packages/*/lib Dart files; static assets; android/app/src; explicitly listed Flutter/Android build configuration. Signing keys, local.properties, environment files and private user albums are excluded.",
+    "start_manifest": {
+      "path": "output/native-photo-refresh/source-start-20261025-174729.json",
+      "sha256": "72117972ccbabf105fe66ba2cca98aa5f7e0701038333d60ec5e749133e3503d",
+      "captured_at": "2026-10-25T17:47:30+09:00"
+    },
+    "end_manifest": {
+      "path": "output/native-photo-refresh/source-end-20261025-174907.json",
+      "sha256": "98c54c3490d9de0d3018c26183aa054359d9a533ae4869625ce1df2f051c7132",
+      "captured_at": "2026-10-25T17:49:09+09:00"
+    },
+    "source_sha256_start": "48e723b75ea6f47388836c7ff2b89c46af43fa59b65b34f969ca4cc3277ea2f3",
+    "source_sha256_end": "48e723b75ea6f47388836c7ff2b89c46af43fa59b65b34f969ca4cc3277ea2f3",
+    "social_source_sha256_start": "7d7726bbc803e832f759a3f87dc558dad438ab11cf884b1e7234ab016cf342aa",
+    "social_source_sha256_end": "7d7726bbc803e832f759a3f87dc558dad438ab11cf884b1e7234ab016cf342aa",
+    "source_file_count": 1809,
+    "social_source_file_count": 21,
+    "category_counts": {
+      "android_configuration_or_source": 47,
+      "flutter_configuration": 2,
+      "local_package": 10,
+      "other_app_dart": 615,
+      "social": 21,
+      "static_asset": 1114
+    },
+    "all_selected_inputs_unchanged_during_build": true,
+    "social_sources_unchanged_during_build": true,
+    "build_input_changes": [],
+    "unrelated_build_input_changes_during_build": [],
+    "preexisting_shared_working_tree_changes": "Large existing uncommitted album/editor/catalog/store and social work was preserved. The APK was built from this shared working tree; no reset, checkout, source removal or unrelated edits were performed by the native build agent.",
+    "web_source_alignment": {
+      "social_source_frozen_by_coordinator": true,
+      "all_social_sources_last_modified_before_final_web_compile": true,
+      "latest_web_main_sha256": "91e2f074dcf58338563cbc259ab16121e05141ed36897bbd3607c215431b295e",
+      "actual_index_selected_bootstrap": "build/review-web/flutter_bootstrap.a43ddf8946cff4d1e2ae.js",
+      "latest_web_entry_bootstrap_sha256": "a43ddf8946cff4d1e2ae1a03e10976214c08b2eed49413cafbb22090f039eae8",
+      "main_and_selected_bootstrap_match_coordinator_fingerprints": true
+    },
+    "changes_since_previous_native_candidate": [
+      "lib/features/social/data/social_album_snapshot.dart"
+    ],
+    "non_social_changes_since_previous_native_candidate": []
+  },
+  "verification": {
+    "flutter_test_flags": [
+      "--no-test-assets",
+      "--no-pub"
+    ],
+    "final_passing_state": {
+      "final_unique_test_cases": 98,
+      "base_social_suite_count": 9,
+      "base_unique_test_cases": 96,
+      "new_real_chrome_snapshot_cases": 2,
+      "profile_widget_cases": 26,
+      "repository_cases": 16,
+      "feed_widget_cases": 30,
+      "affected_feed_rerun_passed": 30,
+      "native_snapshot_codec_publication_impact_rerun_passed": 16,
+      "rerun_cases_not_added_to_total": true
+    },
+    "test_harness_repair": "The base combined run had 95 passes and one unreleased SemanticsHandle failure in the feed test. Its try/finally disposal was fixed; all 30 affected feed tests passed on rerun. The 96 base cases plus two new real-Chrome snapshot cases give a final unique-case passing state of 98. Impact reruns are not counted again.",
+    "analysis": "Coordinator analyzed lib/features/social plus repository/publication checks clean; feed owner analyzed the three feed sources and feed tests clean. Profile owner analysis of all five owned files was clean. Final snapshot renderer fix analysis was also clean.",
+    "covered_behaviors": [
+      "Mobile 368px compact profile keeps the 120px portrait beside the name, full-width bio and first work visible without scrolling in the widget viewport.",
+      "Readable gallery/large-view labels; mobile two columns, wide three columns, optional single-column large view and narrow dark large-text controls.",
+      "Own/visitor management and private/public boundaries; private account avatar is never automatically copied.",
+      "Fresh signed photo URL before zoom; unavailable-photo and session/target change guards.",
+      "Public-photo picker cancellation and full-photo public confirmation before upload; normalized PNG limits, independent text drafts and confirmed removal.",
+      "Idempotent follow/like/save/comment requests with response-loss reconciliation and actor/session guards.",
+      "Publication source revision/selected-page order, draft recovery, consent and immutable isolated public snapshots."
+    ],
+    "native_ui_qa": {
+      "status": "not_performed_for_this_latest_apk",
+      "reason": "User explicitly cannot connect the physical phone. No install was attempted, and no emulator/AVD/system image was downloaded. Earlier native live QA applies only to the older installed APK.",
+      "install_performed": false,
+      "phone_reconnect_requested": false,
+      "emulator_download_performed": false,
+      "prior_native_qa_report": "docs/verification/social-native-deployment-2026-10-25.json"
+    },
+    "web_photo_snapshot_regression": {
+      "status": "passed",
+      "failure_before_fix": "ImageDescriptor width access was unsupported in the web renderer; real Chrome PNG/JPEG regression was 0/2.",
+      "fix": "instantiateImageCodecWithSize with encoded-dimension preflight and decoded pixel budgets; native/web input ownership and cleanup remain bounded.",
+      "real_chrome_png_jpeg_after_fix": "2/2 passed",
+      "native_impact_subset": "snapshot 10 + photo codec 2 + publication flow 4 = 16/16 passed (subset reruns)."
+    },
+    "live_production_web_qa": {
+      "status": "passed_by_coordinator",
+      "report": "docs/verification/social-community-browser-2026-10-25.json",
+      "verified_flow": "Existing synthetic photo album → selected cover page → topic/title/consent/free publication → render/upload/finalize → visible work photo → like on/off → own profile new tile → newest recommended feed item.",
+      "latest_native_install_not_covered_by_web_qa": true
+    }
+  },
+  "preservation": {
+    "real_user_albums_untouched": true,
+    "private_account_avatar_not_automatically_published": true,
+    "actual_user_photo_not_selected_by_agent": true,
+    "real_user_album_publication_performed": false,
+    "existing_app_data_not_cleared": true,
+    "existing_user_not_logged_out": true,
+    "current_phase_device_mutations_performed": false,
+    "private_screenshots_created_for_current_phase": false,
+    "previous_photo_release_apk": {
+      "path": "output/native-photo-refresh/SnapFit-photo-feed-debug-20261025-1704.apk",
+      "sha256": "e8f6e9491a8a40c2c0e789a091f1fb51d546d1193f53729d98adc7d29e9d32f5",
+      "preserved": true
+    },
+    "previous_installed_apk": {
+      "path": "output/native-photo-refresh/previous-app-debug.apk",
+      "sha256": "9eef1431c1335565b91e2de4418957dcd70ec05111009501a4077c11369ff596",
+      "preserved": true
+    },
+    "original_pre_social_rollback_preserved": true,
+    "unrelated_flutter_test_processes_and_common_test_assets_not_modified": true,
+    "source_and_original_user_files_not_removed": true,
+    "previous_native_candidate_apk": {
+      "path": "output/native-photo-refresh/SnapFit-photo-feed-debug-20261025-1737.apk",
+      "sha256": "61d1363b0b3d23b89a141e16d935baa15f9b6c86348bc99dc55a92c18033d37b",
+      "preserved": true
+    }
+  },
+  "store_distribution": {
+    "status": "not_submitted",
+    "reason": "No configured Android release key.properties / Play signing pipeline, existing Fastlane/native store release workflow, or SnapFit iOS distribution/App Store credentials. Existing authorized Android debug path was used; no signing key or store project was created."
+  },
+  "host_space": {
+    "free_bytes_after_final_artifact": 6140764160,
+    "native_intermediates_retained": true,
+    "other_chat_processes_or_shared_assets_removed": false
+  }
+}

@@ -299,6 +299,8 @@ Future<void> _emitCoverCategory(
         CollectionAspect.portrait => '세로 · portrait',
         CollectionAspect.square => '정사각 · square',
         CollectionAspect.landscape => '가로 · landscape',
+        CollectionAspect.landscape4x3 => '가로 20×15',
+        CollectionAspect.landscape5x4 => '가로 25×20 · landscape5x4',
       },
       Offset(padding + column * (_coverWidth + gap), 52),
       _coverWidth,
@@ -486,7 +488,7 @@ void main() {
     if (_coversOnly) {
       expect(cases, hasLength(78));
       expect(cases.map((book) => book.template.id).toSet(), hasLength(26));
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         expect(cases.where((book) => book.aspect == aspect), hasLength(26));
       }
     }

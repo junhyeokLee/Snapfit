@@ -11,7 +11,7 @@ import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_vie
 import 'package:snap_fit/features/album/presentation/providers/design_template_catalog_provider.dart';
 import 'package:snap_fit/features/album/presentation/views/page_editor_screen.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/edit_cover.dart';
-import 'package:snap_fit/features/album/presentation/widgets/editor/editor_bottom_menu.dart';
+import 'package:snap_fit/features/album/presentation/widgets/editor/editor_context_dock.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/editor_keyboard_shortcuts.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/page_editor_canvas.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/selection_frame.dart';
@@ -173,7 +173,7 @@ void main() {
     (tester) async {
       await _mount(tester);
       for (final tool in <(String, Type)>[
-        ('레이어', LayerManagerPanel),
+        ('재배치', LayerManagerPanel),
         ('레이아웃', TemplateSelectionPanel),
         ('템플릿', DesignTemplatePanel),
         ('꾸미기', DecoratePanel),
@@ -210,7 +210,7 @@ void main() {
     (tester) async {
       final container = await _mount(tester);
       final vm = container.read(albumEditorViewModelProvider.notifier);
-      await tester.tap(find.widgetWithText(TextButton, '레이어'));
+      await tester.tap(find.widgetWithText(TextButton, '재배치'));
       await tester.pumpAndSettle();
       await tester.tap(
         find.descendant(
@@ -426,23 +426,25 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   }, skip: !kIsWeb);
 
-  testWidgets('native page retains the original controls and layout', (
-    tester,
-  ) async {
-    await _mount(tester, size: const Size(390, 844));
-    final interaction = tester
-        .widget<PageEditorCanvas>(find.byType(PageEditorCanvas))
-        .interaction;
-    expect(interaction.enableWebTransforms, isFalse);
-    interaction.setSelectedLayer('web-text');
-    await tester.pumpAndSettle();
-    expect(find.byType(WebLayerTransformInspector), findsNothing);
-    expect(find.byType(EditorBottomMenu), findsOneWidget);
-    expect(
-      find.byKey(const ValueKey('page-editor-desktop-workspace')),
-      findsNothing,
-    );
-    expect(tester.takeException(), isNull);
-    await tester.pumpWidget(const SizedBox());
-  }, skip: kIsWeb);
+  testWidgets(
+    'native page uses the context dock without web transform controls',
+    (tester) async {
+      await _mount(tester, size: const Size(390, 844));
+      final interaction = tester
+          .widget<PageEditorCanvas>(find.byType(PageEditorCanvas))
+          .interaction;
+      expect(interaction.enableWebTransforms, isFalse);
+      interaction.setSelectedLayer('web-text');
+      await tester.pumpAndSettle();
+      expect(find.byType(WebLayerTransformInspector), findsNothing);
+      expect(find.byType(EditorContextDock), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('page-editor-desktop-workspace')),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+    skip: kIsWeb,
+  );
 }

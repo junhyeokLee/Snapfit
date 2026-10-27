@@ -231,6 +231,56 @@ void main() {
   });
   tearDown(() => CatalogFavorites.instance.dispose());
 
+  testWidgets(
+    'compact filter summary retains hero size, local filtering and reset',
+    (tester) async {
+      _viewport(tester, const Size(390, 844));
+      final fixture = _Fixture();
+      await tester.pumpWidget(fixture.host());
+      await tester.pumpAndSettle();
+      final hero = find.byKey(const ValueKey('curation-pager'));
+      final heroHeight = tester.getSize(hero).height;
+      expect(heroHeight, greaterThan(350));
+      expect(fixture.catalogLoads, 1);
+      await _reachFilters(tester);
+      await _tapTopic(tester, '여행');
+      expect(find.text('여행 템플릿'), findsOneWidget);
+      expect(find.text('18개의 디자인'), findsOneWidget);
+      expect(find.text('여행 · 18종'), findsNothing);
+      await _price(tester, '유료');
+      expect(_count(tester), 6);
+      expect(find.text('6개의 디자인'), findsOneWidget);
+      expect(find.textContaining('선택한 조건'), findsNothing);
+      await _tapVisible(tester, find.byTooltip('가격 · 유료 조건 해제'));
+      await tester.pumpAndSettle();
+      expect(_count(tester), 12);
+      expect(find.text('18개의 디자인'), findsOneWidget);
+      expect(find.text('주제 · 여행'), findsOneWidget);
+      await _tapVisible(
+        tester,
+        find.byKey(const ValueKey('catalog-reset-filters')),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.widget<ChoiceChip>(_topic('전체')).selected, isTrue);
+      expect(_filters().hitTestable(), findsOneWidget);
+      expect(find.byKey(const ValueKey('catalog-reset-filters')), findsNothing);
+      expect(find.text('36개의 디자인'), findsOneWidget);
+      expect(_count(tester), 12);
+      expect(
+        tester
+            .getSize(
+              find.byKey(const ValueKey('curation-pager'), skipOffstage: false),
+            )
+            .height,
+        heroHeight,
+      );
+      expect(fixture.catalogLoads, 1);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+    skip: kIsWeb,
+  );
+
   for (final scale in [1.0, 2.0]) {
     testWidgets(
       'subject changes keep controls visible when the collection appears and disappears at ${scale}x',

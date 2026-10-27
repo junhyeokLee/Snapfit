@@ -45,7 +45,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     final summaries = <Map<String, Object?>>[];
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       summaries.add(await _inspect(tester, aspect, 'authored', windAtlasCopy));
       summaries.add(await _inspect(tester, aspect, 'long-copy', _longCopy));
       summaries.add(await _inspect(tester, aspect, 'empty-copy', _emptyCopy));

@@ -1,0 +1,95 @@
+{
+  "revision": "2026-10-25-redprinting-five-sizes",
+  "verifiedAt": "2026-10-24T16:59:58.824836+00:00",
+  "vendorProduct": {
+    "name": "내 파일로 만드는 포토북",
+    "code": "PHBKMYB",
+    "source": "https://www.redprinting.co.kr/ko/product/item/PH/PHBKMYB",
+    "actualOrderOptions": [
+      "8X6",
+      "8X8",
+      "10X8",
+      "10X10",
+      "12X12"
+    ],
+    "portraitSelectable": false,
+    "unselectableIllustrationSizesExcluded": [
+      "mini 145×145mm",
+      "Big 315×390mm"
+    ]
+  },
+  "trimSizesMm": [
+    [
+      200,
+      150
+    ],
+    [
+      200,
+      200
+    ],
+    [
+      250,
+      200
+    ],
+    [
+      250,
+      250
+    ],
+    [
+      300,
+      300
+    ]
+  ],
+  "catalogCount": 133,
+  "shippingDetailDocuments": 145,
+  "printableLayoutKeys": [
+    "landscape4x3",
+    "landscape5x4",
+    "square"
+  ],
+  "allLiveDetailHashesMatch": true,
+  "legacySourceFingerprintsPreserved": true,
+  "legacySavedAlbums": "Original dimensions retained; unsupported portrait is excluded from new creation and store choices.",
+  "serverPrintContract": "Already matches all five soft/hard trim sizes; no server print product mutation.",
+  "validation": {
+    "uniqueRelatedTestsPassed": 1727,
+    "staticAnalysis": "No issues found",
+    "formatting": "0 files changed",
+    "publicPrintCatalogNodeTestsPassed": 3,
+    "assetPathFixFocusedRerun": "77 test events succeeded; all affected tests and native-font data freshness passed"
+  },
+  "web": {
+    "url": "https://snapfit-c719d.web.app/",
+    "main_sha256": "09f6123c675e853fa56d9f90c067d74dab199006c200c0c7b910f917ceb0c3b0",
+    "main_file": "main.09f6123c675e853fa56d.dart.js",
+    "bootstrap_sha256": "0643387200a65274ded71e9e3f495eeec3970405e1a5c1a80192f9933f13d38f",
+    "bootstrap_file": "flutter_bootstrap.0643387200a65274ded7.js",
+    "liveBootstrapAndMainHashesMatch": true
+  },
+  "previewImageHtmlPdfFilesGenerated": false,
+  "liveUiChecks": {
+    "templateId": -9522,
+    "fivePhysicalSizeChoicesVisible": true,
+    "portraitChoiceAbsent": true,
+    "squareAndBothLandscapeLayoutsLoad": true,
+    "landscape20x15SpreadRatio": 2.6666666666666665,
+    "landscape25x20SpreadRatio": 2.5,
+    "fullScreenCoverLoads": true,
+    "latestBuildAssetWarnings": 0
+  },
+  "localCleanup": {
+    "removedGeneratedDirectories": [
+      {
+        "path": "build/review-web",
+        "bytes": 860739907
+      },
+      {
+        "path": ".dart_tool/flutter_build",
+        "bytes": 431486008
+      }
+    ],
+    "bytesRemovedInFinalCleanup": 1292225915,
+    "runtimeSourceAssetsRetained": true,
+    "rebuildCommand": "python3 tool/build_web.py --output build/review-web"
+  }
+}

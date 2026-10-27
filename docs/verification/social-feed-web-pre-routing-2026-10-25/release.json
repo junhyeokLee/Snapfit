@@ -1,0 +1,15 @@
+{
+  "status": "interim_deployed_before_direct_path_startup_fix",
+  "url": "https://snapfit-c719d.web.app",
+  "hosting_version": "67bd963dc23df805",
+  "release_time_utc": "2026-10-25T06:29:59.885Z",
+  "main_file": "main.23b0ecbf83130cc2af46.dart.js",
+  "main_sha256": "23b0ecbf83130cc2af46edb7f3002f1025576ef78e0a821619c42749c4302a2e",
+  "bootstrap_file": "flutter_bootstrap.a6fef7e62d901831a27e.js",
+  "bootstrap_sha256": "a6fef7e62d901831a27e820b8bfd63a268471a22e3f50b27072851a2222d2288",
+  "index_sha256": "4bf5b42ce2cf1a43dcdf2edb060359d285df0a1754f9681369336dacd5135369",
+  "spa_rewrite": true,
+  "direct_route_html_cache_control": "no-store",
+  "remaining_issue": "Direct path starts at home until pending Uri.base route provider fix is built. Legacy hash links work.",
+  "local_build_removed_for_native_packaging_space": true
+}

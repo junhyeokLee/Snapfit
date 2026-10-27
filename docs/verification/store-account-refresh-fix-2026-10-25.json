@@ -1,0 +1,100 @@
+{
+  "date": "2026-10-25",
+  "scope": "Fix account changes reusing a previous-owner store refresh while preserving shared summary reads and retained category position",
+  "previous_review": "docs/verification/store-request-resume-rereview-2026-10-25.json",
+  "resolved_findings": [
+    {
+      "id": "store-account-change-reuses-previous-refresh",
+      "status": "fixed",
+      "before": "Account B reused account A refresh future: reused=true, 2 HTTP reads including initial A load, displayed isLiked=true from A.",
+      "after": "Account B starts a new owner generation: reused=false, 3 HTTP reads including initial A load, displayed isLiked=false for A-only like.",
+      "changes": [
+        "Expose an optional synchronous repository identity and auth-owner stream through TemplateSessionSource without breaking existing stateless/fake repository implementations.",
+        "Share one owner subscription among browse, search and local/full template catalogs; ignore same-owner token renewals and cancel the subscription at provider disposal.",
+        "On an account change, invalidate the old generation and clear old first-page/paging/refresh interests, remote rows, old likes and sync timestamp. Preserve the current route filters and widget/controller ownership.",
+        "Restart the selected query automatically for the new owner. Refresh/loadMore/setFilters/refreshIfStale also check the synchronous owner before reusing pending work, covering asynchronous auth-event delivery.",
+        "Validate both generation and current owner before any async success/error updates the feed; old replies cannot stop the new owner loading state or replace its list/error.",
+        "Bind local/full catalogs and persisted-like overlays to the same owner, reject stale metadata snapshots, and use the current SDK owner instead of delayed secure storage when identity is available.",
+        "Keep stateless/offline metadata and legacy token-storage fallback working when the optional repository identity is unavailable."
+      ]
+    }
+  ],
+  "production_files_changed": [
+    "lib/features/store/domain/repositories/template_repository.dart",
+    "lib/features/store/data/repositories/supabase_template_repository.dart",
+    "lib/features/store/data/api/template_provider.dart"
+  ],
+  "existing_test_files_extended": [
+    "test/review/store_request_resume_review_test.dart"
+  ],
+  "new_boundary_cases": 7,
+  "verified_before_sources_unchanged": {
+    "lib/features/store/presentation/widgets/store_topic_shelf.dart": true,
+    "lib/features/store/presentation/views/store_hub_screen.dart": true,
+    "lib/features/store/presentation/views/store_screen.dart": true
+  },
+  "repository_summary_sharing_implementation_unchanged": true,
+  "review": {
+    "remaining_blocking_findings_in_changed_scope": [],
+    "checked": [
+      "Old-success-first, old-error-first and old-success-last all preserve the new owner query, loading flags, page zero and final list identity.",
+      "Account replacement and logout restart an initially pending feed without requiring a manual refresh. Rapid A-to-B-to-A transitions reject both older generations.",
+      "Same-account renewal does not restart the refresh. Twelve successive search scopes share one auth subscription, and the count returns to zero when the root is disposed.",
+      "Persisted A and guest likes cannot overlay B; a late A full-catalog response is ignored after B completes.",
+      "Parent/search same-query transport sharing, different-query isolation, old-page error guards and closed-scope cleanup remain covered.",
+      "No recurring timer, auth call per scroll, expanded image/document cache, larger decode target or eager template document build is added.",
+      "StoreScreen, StoreHubScreen and StoreTopicShelf are byte-for-byte unchanged. Existing horizontal/vertical position retention and rapid animated navigation cases pass.",
+      "Device-local CatalogFavorites ownership/storage semantics are unchanged; the account-specific isLiked overlay is separately guarded."
+    ]
+  },
+  "verification": {
+    "related_suite": {
+      "files": 18,
+      "passed": 147,
+      "failed": 0,
+      "log": "output/store-account-refresh-fix/related-tests.log"
+    },
+    "owner_boundary_file": {
+      "cases": 11,
+      "passed": 11,
+      "failed": 0,
+      "included_in_related_suite": true
+    },
+    "analysis": {
+      "items": 7,
+      "issues": 0,
+      "log": "output/store-account-refresh-fix/analysis.log"
+    },
+    "scope_patch": "output/store-account-refresh-fix/scoped.patch",
+    "initial_repairs": [
+      "Corrected a Dart unrelated-interface conditional assignment with an explicit checked cast before rerunning tests.",
+      "The persisted/full-catalog fixture now keeps an active provider listener, matching a mounted consumer; a bare read does not force lazy dependency rebuilds. The original state assertions remain intact."
+    ],
+    "final_sha256": {
+      "lib/features/store/domain/repositories/template_repository.dart": "66d3ab74951f7deb717bfe79b53d40aaf8199ef019338826efc026774541865f",
+      "lib/features/store/data/repositories/supabase_template_repository.dart": "ea16ef8d35cc8b8b7c2edd49a4d2fad9d9d7387e87969736c9a778daae932ef3",
+      "lib/features/store/data/api/template_provider.dart": "6cec0cce4120aeb805701a60954d789dbfa96ca38bdd7a354570153de462f615",
+      "test/review/store_request_resume_review_test.dart": "93315fdf2ea22be040d7f9af4b668926a7be8528e28766f82ab4163216f9d5a3"
+    },
+    "app_build_run": false,
+    "live_backend_or_user_data_changed": false,
+    "device_frame_or_process_memory_profile_run": false
+  },
+  "supabase_verification": {
+    "skill": "/Users/devsheep/.codex/plugins/cache/openai-curated-remote/supabase/1.0.0/skills/supabase/SKILL.md",
+    "changelog": "https://supabase.com/changelog.md",
+    "changelog_fetched": true,
+    "relevant_breaking_changes_found": false,
+    "reference": "https://supabase.com/docs/reference/dart/auth-onauthstatechange",
+    "installed_versions": {
+      "supabase": "2.16.1",
+      "gotrue": "2.27.2"
+    },
+    "api_used": "Public onAuthStateChange/currentUser only; internal sync auth streams are not used.",
+    "test_query": "Actual Supabase client/repository query and auth-session paths intercepted using MockClient at fixture.invalid. No live account, service key, database policy or production data was accessed."
+  },
+  "limits": [
+    "Controlled tests verify response ordering, retained state, transport sharing and listener cleanup. Real-device FPS and native heap/RSS peaks were not measured.",
+    "Invalidation ignores earlier work rather than cancelling already-running HTTP operations. Existing in-flight registry capacity and completed-response release policy are unchanged."
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "status": "deployed_and_remote_hashes_verified",
+  "exit_code": 0,
+  "elapsed_seconds": 134.21,
+  "source_before": "0e364e7b2b2d37ee70353d3b0163b13588958d74909058988c5e9b916d3f629b",
+  "source_after": "0e364e7b2b2d37ee70353d3b0163b13588958d74909058988c5e9b916d3f629b",
+  "social_source_sha256": "1578c790ecf87fe78942d21499a47f36d4d65da2f5ddcdcf03d5fe97a8805f9c",
+  "inputs_unchanged": true,
+  "main_sha256": "7d2391a82f4811711508429daf1a6ff260119083b2179f7b8fcdeca15ad92d78",
+  "main_file": "main.7d2391a82f4811711508.dart.js",
+  "bootstrap_sha256": "2d95d1f229e33bb6f4b0c5a89f399d9df581483fac8a9191b2b87b2fa4b588b2",
+  "bootstrap_file": "flutter_bootstrap.2d95d1f229e33bb6f4b0.js",
+  "index_sha256": "b509ab9f2674908a7be4519ad2a937cf91e454126c6e7b101cbbbc698f23f7de",
+  "hosting_version": "09c8fa9231ca4f1d",
+  "url": "https://snapfit-c719d.web.app/attendance",
+  "remote_checks": [
+    {
+      "path": "index.html",
+      "sha256": "b509ab9f2674908a7be4519ad2a937cf91e454126c6e7b101cbbbc698f23f7de",
+      "bytes": 3023,
+      "headers": "HTTP/2 200 \ncache-control: no-store\ncontent-type: text/html; charset=utf-8\netag: \"a69d2f9abd3ec501804f151a6f6a059f2a63b651d93efb6e84c70e41b804f1cb\"\nlast-modified: Mon, 26 Oct 2026 07:59:29 GMT\nreferrer-policy: strict-origin-when-cross-origin\nstrict-transport-security: max-age=31556926; includeSubDomains; preload\nx-content-type-options: nosniff\nx-robots-tag: noindex, nofollow\naccept-ranges: bytes\ndate: Mon, 26 Oct 2026 08:04:17 GMT\nx-served-by: cache-icn1450056-ICN\nx-cache: MISS\nx-cache-hits: 0\nx-timer: S1793001857.443850,VS0,VE101\nvary: x-fh-requested-host, accept-encoding\nalt-svc: h3=\":443\";ma=86400,h3-29=\":443\";ma=86400,h3-27=\":443\";ma=86400\n\n"
+    },
+    {
+      "path": "main.7d2391a82f4811711508.dart.js",
+      "sha256": "7d2391a82f4811711508429daf1a6ff260119083b2179f7b8fcdeca15ad92d78",
+      "bytes": 8989268,
+      "headers": "HTTP/2 200 \ncache-control: public,max-age=31536000,immutable\ncontent-type: text/javascript; charset=utf-8\netag: \"117cca740c5ab39328d4eff29978773471264acd7bd02e78c60f1ec0616ff515\"\nlast-modified: Mon, 26 Oct 2026 07:59:29 GMT\nreferrer-policy: strict-origin-when-cross-origin\nstrict-transport-security: max-age=31556926; includeSubDomains; preload\nx-content-type-options: nosniff\nx-robots-tag: noindex, nofollow\naccept-ranges: bytes\ndate: Mon, 26 Oct 2026 08:04:19 GMT\nx-served-by: cache-icn1450096-ICN\nx-cache: HIT\nx-cache-hits: 1\nx-timer: S1793001860.569887,VS0,VE4\nvary: x-fh-requested-host, accept-encoding\nalt-svc: h3=\":443\";ma=86400,h3-29=\":443\";ma=86400,h3-27=\":443\";ma=86400\ncontent-length: 8989268\n\n"
+    },
+    {
+      "path": "flutter_bootstrap.2d95d1f229e33bb6f4b0.js",
+      "sha256": "2d95d1f229e33bb6f4b0c5a89f399d9df581483fac8a9191b2b87b2fa4b588b2",
+      "bytes": 14512,
+      "headers": "HTTP/2 200 \ncache-control: no-cache\ncontent-type: text/javascript; charset=utf-8\netag: \"94a823fb86a68d87ee29498a97476774124f0eab83d1a970dfc1f12321cdd992\"\nlast-modified: Mon, 26 Oct 2026 07:59:29 GMT\nreferrer-policy: strict-origin-when-cross-origin\nstrict-transport-security: max-age=31556926; includeSubDomains; preload\nx-content-type-options: nosniff\nx-robots-tag: noindex, nofollow\naccept-ranges: bytes\ndate: Mon, 26 Oct 2026 08:04:20 GMT\nx-served-by: cache-icn1450046-ICN\nx-cache: MISS\nx-cache-hits: 0\nx-timer: S1793001860.798751,VS0,VE505\nvary: x-fh-requested-host, accept-encoding\nalt-svc: h3=\":443\";ma=86400,h3-29=\":443\";ma=86400,h3-27=\":443\";ma=86400\n\n"
+    }
+  ],
+  "remote_manifest_matches": true,
+  "live_UI_verified": true
+}

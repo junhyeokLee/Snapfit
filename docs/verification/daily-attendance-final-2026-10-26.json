@@ -1,0 +1,88 @@
+{
+  "status": "complete",
+  "date": "2026-10-26",
+  "recorded_at_utc": "2026-10-26T08:09:19.137884+00:00",
+  "scope": "SnapFit daily attendance free point rewards; point marketplace deferred",
+  "reference": "Read-only OBOA attendance reward policy; no expiry copied",
+  "entry_points": [
+    "Private My profile above work gallery",
+    "Points screen on mobile and web",
+    "Authenticated /attendance direct route"
+  ],
+  "timezone": "Asia/Seoul",
+  "weekly_rewards": [
+    10,
+    10,
+    20,
+    10,
+    10,
+    10,
+    30
+  ],
+  "weekly_total": 100,
+  "web": {
+    "url": "https://snapfit-c719d.web.app/attendance",
+    "hosting_version": "09c8fa9231ca4f1d",
+    "remote_hashes_verified": true,
+    "actual_UI_first_claim": "500P -> 510P",
+    "month_count_and_points": "1 day / 10P",
+    "refresh_and_reentry": "510P; completed; claim disabled",
+    "my_entry_and_points_entry": true,
+    "ledger": "출석체크 적립 +10P",
+    "signed_out_and_private_route_gated": true
+  },
+  "native": {
+    "artifact": "/Users/devsheep/SnapFit/SnapFit/output/native-photo-refresh/SnapFit-attendance-debug.apk",
+    "sha256": "0c9f6702c34e64ab2de8ce4b33deb810d8c6444fc7dfd021198a95473da0b49f",
+    "signature_verified": true,
+    "zip_crc_and_kernel_verified": true,
+    "phone_install_attempted": false,
+    "limitation": "Physical phone unavailable per user instruction; device installation/runtime not verified"
+  },
+  "source": {
+    "web_native_current_all_match": true,
+    "sha256": "0e364e7b2b2d37ee70353d3b0163b13588958d74909058988c5e9b916d3f629b",
+    "files": 1819
+  },
+  "automated_checks": {
+    "unique_flutter": 170,
+    "unique_sql": 68,
+    "ordinary_JWT_live_API": 25
+  },
+  "live_concurrency": {
+    "A_20_first_claims": "exactly 1 credited 10P; 19 awarded 0P",
+    "B_first_claim": "actual deployed GUI credited 10P",
+    "B_20_followup_claims": "all 20 awarded 0P"
+  },
+  "customer_financial_fingerprints_unchanged": true,
+  "existing_purchase_signup_refund_functions_unchanged": true,
+  "synthetic_cleanup": {
+    "accounts_removed": true,
+    "sessions": 0,
+    "attendance": 0,
+    "residual_uuid_scopes_checked": 178,
+    "residual_rows": 0,
+    "private_credentials_and_helper_removed": true
+  },
+  "security_advisors": {
+    "new_warning_count": 0,
+    "unchanged_warnings": {
+      "function_search_path_mutable": 2,
+      "anon_security_definer_function_executable": 8,
+      "authenticated_security_definer_function_executable": 13,
+      "auth_leaked_password_protection": 1
+    },
+    "info_rls_no_policy_before": 40,
+    "info_rls_no_policy_after": 41,
+    "info_delta_triage": "attendance_private.daily_attendance intentionally denies all direct client access: RLS enabled, no client table grants or policies. Validated private function performs controlled writes."
+  },
+  "evidence_files": [
+    "docs/verification/daily-attendance-live-2026-10-26.json",
+    "docs/verification/daily-attendance-native-2026-10-26.json",
+    "docs/verification/daily-attendance-release-policy-2026-10-26.json",
+    "docs/verification/daily-attendance-server-2026-10-26.json",
+    "docs/verification/daily-attendance-ui-2026-10-26.json",
+    "docs/verification/daily-attendance-web-2026-10-26.json"
+  ],
+  "GUI_evidence": "output/attendance-live-20261026/"
+}

@@ -88,7 +88,7 @@ void main() {
     for (final volume in approvedConceptVolumes.where(
       (v) => v != ConceptVolume.sharedSeasons,
     )) {
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         final baseline =
             jsonDecode(
                   File(
@@ -138,7 +138,7 @@ void main() {
   );
 
   for (final volume in ConceptVolume.values) {
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       testWidgets(
         '${volume.id}/${aspect.name}: 25 editable pages, typography, assets and visual export',
         (tester) async {

@@ -91,6 +91,41 @@ void main() {
   });
 
   test(
+    'browser invitation survives an OAuth restart in its separate store',
+    () async {
+      final store = _Store();
+      final before = ProviderContainer(
+        overrides: [pendingAlbumInviteStoreProvider.overrideWithValue(store)],
+      );
+      final incoming = Uri.parse(
+        'https://snapfit-c719d.web.app/#/invite/browser-one',
+      );
+      expect(
+        before.read(pendingAlbumInviteProvider.notifier).receive(incoming),
+        isTrue,
+      );
+      await Future<void>.delayed(Duration.zero);
+      final saved = store.writes.single!;
+      before.dispose();
+      store.onRead = () async => saved;
+      final after = ProviderContainer(
+        overrides: [pendingAlbumInviteStoreProvider.overrideWithValue(store)],
+      );
+      addTearDown(after.dispose);
+      final controller = after.read(pendingAlbumInviteProvider.notifier);
+      await controller.restore();
+      expect(after.read(pendingAlbumInviteProvider)?.token, 'browser-one');
+      expect(
+        controller.receive(Uri.parse('https://external.example/invite/other')),
+        isFalse,
+      );
+      expect(after.read(pendingAlbumInviteProvider)?.token, 'browser-one');
+      controller.clearIfCurrent(after.read(pendingAlbumInviteProvider)!);
+      expect(after.read(pendingAlbumInviteProvider), isNull);
+    },
+  );
+
+  test(
     'link received while restoring wins; old completion cannot clear new request',
     () async {
       final restored = Completer<PendingAlbumInvite?>();

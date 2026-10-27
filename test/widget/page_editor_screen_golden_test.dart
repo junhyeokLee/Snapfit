@@ -13,9 +13,11 @@ import 'package:snap_fit/features/album/data/api/album_provider.dart';
 import 'package:snap_fit/features/album/data/api/storage_service.dart';
 import 'package:snap_fit/features/album/data/dto/request/create_album_request.dart';
 import 'package:snap_fit/features/album/domain/entities/layer.dart';
+import 'package:snap_fit/features/album/domain/entities/album.dart';
 import 'package:snap_fit/features/album/domain/repositories/album_repository.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
 import 'package:snap_fit/features/album/presentation/views/page_editor_screen.dart';
+import 'package:snap_fit/features/album/presentation/widgets/editor/editor_context_dock.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/editor_bottom_menu.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/edit_cover.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/layer_manager_panel.dart';
@@ -36,6 +38,7 @@ class FakeStorageService implements StorageService {
   Future<UploadedUrls> uploadImageVariants(
     AssetEntity asset, {
     int previewMaxDimension = 1600,
+    int? albumId,
   }) async => const UploadedUrls();
 
   @override
@@ -43,6 +46,7 @@ class FakeStorageService implements StorageService {
     Uint8List pngBytes, {
     int originalMaxDimension = 4096,
     int previewMaxDimension = 1024,
+    int? albumId,
   }) async => const UploadedUrls();
 
   @override
@@ -54,12 +58,24 @@ class FakeStorageService implements StorageService {
 
   @override
   Future<void> deleteAiAlbumPreviews(Iterable<String> paths) async {}
+  @override
+  Future<void> removeUnreferencedAlbumUploads(
+    Iterable<String> references, {
+    required String expectedOwner,
+  }) async {}
 }
 
 class FakeAlbumPersistenceService implements AlbumPersistenceService {
   @override
-  Future<void> performBackgroundUpload({
+  Future<Album> performBackgroundUpload({
     required int albumId,
+    required String expectedUpdatedAt,
+    required String expectedUserId,
+    required String requestId,
+    bool Function()? canContinue,
+    void Function(CreateAlbumRequest)? onPrepared,
+    void Function(LayerModel before, LayerModel after)? onLayerUploaded,
+    void Function(UploadedUrls)? onUploaded,
     required Size canvasSize,
     required List<LayerModel> currentLayers,
     required Uint8List? coverImageBytes,
@@ -68,9 +84,10 @@ class FakeAlbumPersistenceService implements AlbumPersistenceService {
     required double coverRatio,
     required int targetPages,
     Map<String, dynamic>? printProduct,
+    String? sourceTemplateProductKey,
     bool swallowErrors = true,
     void Function(int completed, int total)? onProgress,
-  }) async {}
+  }) async => Album(id: albumId, updatedAt: expectedUpdatedAt);
 
   @override
   Future<bool> pollAlbumCreation(int albumId) async => false;
@@ -236,12 +253,12 @@ void main() {
       await _pumpEditor(tester);
 
       expect(find.byType(EditCover), findsOneWidget);
-      expect(find.byType(EditorBottomMenu), findsOneWidget);
+      expect(find.byType(EditorContextDock), findsOneWidget);
       expect(find.text('템플릿'), findsOneWidget);
-      expect(find.text('레이어'), findsOneWidget);
+      expect(find.text('재배치'), findsOneWidget);
 
       final canvasBottom = tester.getBottomLeft(find.byType(EditCover)).dy;
-      final dockTop = tester.getTopLeft(find.byType(EditorBottomMenu)).dy;
+      final dockTop = tester.getTopLeft(find.byType(EditorContextDock)).dy;
       expect(canvasBottom, lessThanOrEqualTo(dockTop));
     },
   );
@@ -326,16 +343,16 @@ void main() {
     (tester) async {
       await _pumpEditor(tester);
 
-      await tester.ensureVisible(find.byTooltip('레이어'));
+      await tester.ensureVisible(find.byTooltip('재배치'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('레이어'));
+      await tester.tap(find.byTooltip('재배치'));
       await tester.pump(const Duration(milliseconds: 180));
 
       expect(find.byType(LayerManagerPanel), findsOneWidget);
-      expect(find.byType(EditorBottomMenu), findsOneWidget);
+      expect(find.byType(EditorContextDock), findsOneWidget);
       expect(find.byType(BottomSheet), findsOneWidget);
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('레이어 닫기'));
+      await tester.tap(find.byTooltip('재배치 닫기'));
       await tester.pumpAndSettle();
       expect(find.byType(PageEditorScreen), findsOneWidget);
       expect(find.byType(LayerManagerPanel), findsNothing);
@@ -375,9 +392,9 @@ void main() {
         matchesGoldenFile('goldens/page_editor_workspace_390x844.png'),
       );
 
-      await tester.ensureVisible(find.byTooltip('레이어'));
+      await tester.ensureVisible(find.byTooltip('재배치'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('레이어'));
+      await tester.tap(find.byTooltip('재배치'));
       await tester.pumpAndSettle();
 
       expect(find.byType(LayerManagerPanel), findsOneWidget);

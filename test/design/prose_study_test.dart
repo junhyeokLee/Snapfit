@@ -54,7 +54,7 @@ void main() {
     expect(templateDocumentPages(doc).length, 7);
     expect(proseStudyStyles.toSet().length, 6);
   });
-  for (final aspect in CollectionAspect.values) {
+  for (final aspect in CollectionAspect.printable) {
     test(
       '${aspect.name}: type fits, no collisions, binding and editable roundtrip',
       () {
@@ -244,7 +244,7 @@ void main() {
   });
   test('revised copy and photo constructions are distinct and editable', () {
     expect(proseStudyTitle, '함께여서 좋은 날');
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       final pages = proseStudyPages(aspect);
       final text = pages.expand((p) => p).map((l) => l.text ?? '').join('\n');
       expect(text, isNot(contains('우리라는 문장')));
@@ -272,7 +272,7 @@ void main() {
   test(
     'comparison uses the same photo pool and leaves both source documents untouched',
     () {
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         final freeBefore = jsonEncode(buildProseAlbum(aspect));
         final studyBefore = jsonEncode(buildLuminousEdition(aspect));
         for (

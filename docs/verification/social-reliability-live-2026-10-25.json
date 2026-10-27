@@ -1,0 +1,1253 @@
+{
+  "project_ref": "rrbhxdtriummqpztpjrk",
+  "run_id": "b62e43699949",
+  "verified_at_utc": "2026-10-25T08:52:53.742141+00:00",
+  "scope": "Synthetic QA accounts only. No actual user account, private album, profile, wallet or ledger was modified.",
+  "status": "complete_api_sql_browser_qa_and_exact_fixture_cleanup",
+  "skills": [
+    "supabase:supabase",
+    "supabase:supabase-postgres-best-practices"
+  ],
+  "official_references": [
+    "https://supabase.com/changelog.md",
+    "https://supabase.com/docs/guides/database/functions",
+    "https://supabase.com/docs/guides/auth/row-level-security",
+    "https://supabase.com/kb/troubleshooting/high-cpu-and-infinite-transaction-retries-when-using-custom-error-codes-in-rpc-functions"
+  ],
+  "changes": [
+    {
+      "migration": "20261025082024_social_idempotent_reaction_state.sql",
+      "sha256": "48d77f03fd6ac810bef273b43274f4808baed8743cfeffeb40d2a69f9d28a94e",
+      "production_applied_by": "root",
+      "remote_version": "20261025082024"
+    },
+    {
+      "migration": "20261025082810_social_idempotent_comments.sql",
+      "sha256": "85a2680ca713125c1bcc239ed1804452976c69d72f7f9bed3b30202a99833cee",
+      "production_applied_by": "root",
+      "remote_version": "20261025082810"
+    },
+    {
+      "migration": "20261025083353_social_publication_conflict_http_status.sql",
+      "sha256": "5211fd6646a382911d3ba1cd42b1f49679094e0169c3c830b7ddf08c7f561d57",
+      "production_applied_by": "root",
+      "remote_version": "20261025083353"
+    }
+  ],
+  "compatibility": {
+    "toggleLike_and_toggleSave_retained": true,
+    "legacy_addComment_missing_or_null_requestId_preserved": true,
+    "work_visibility_and_bilateral_block_checks_precede_mutations": true,
+    "no_sale_or_point_charge_implementation": true
+  },
+  "server_sql_tests": {
+    "passed": 31,
+    "failed": 0,
+    "pglite_version": "0.3.14",
+    "command": "PGLITE_MODULE=/tmp/snapfit-social-sql-test/node_modules/@electric-sql/pglite/dist/index.js node --test test/server/social_publication_sql.test.mjs",
+    "checks_include": "RLS/direct writes, owner/source isolation, immutable storage/photos, canonical11+legacy topics, desired reaction/follow strict boolean state, comment key collisions, PT409 begin/finalize conflicts"
+  },
+  "advisors": {
+    "production_before_and_after_unchanged_verified_by": "root",
+    "security_known_group_counts": {
+      "rls_enabled_no_policy": 37,
+      "function_search_path_mutable": 2,
+      "anon_security_definer_function_executable": 9,
+      "authenticated_security_definer_function_executable": 14,
+      "auth_leaked_password_protection": 1
+    },
+    "new_warnings": 0,
+    "unrelated_existing_advisories_preserved": true
+  },
+  "api": {
+    "passed": 154,
+    "failed": 0,
+    "auth_mode": "Ordinary JWTs with authenticated role for all social requests; anon for public/unauthorized checks.",
+    "admin_usage": "Only ephemeral confirmed-user creation and scoped cleanup. No administrative RLS bypass used as feature evidence.",
+    "emails_sent": 0,
+    "groups": {
+      "following_and_relations": {
+        "checks": [
+          {
+            "check": "fresh_accounts_have_no_relations",
+            "passed": true
+          },
+          {
+            "check": "fresh_following_feed_empty",
+            "passed": true
+          },
+          {
+            "check": "anon_cannot_follow",
+            "passed": true
+          },
+          {
+            "check": "self_follow_rejected",
+            "passed": true
+          },
+          {
+            "check": "follow_missing_profile_rejected",
+            "passed": true
+          },
+          {
+            "check": "A_follow_B_returns_true",
+            "passed": true
+          },
+          {
+            "check": "following_state_is_actor_specific",
+            "passed": true
+          },
+          {
+            "check": "A_following_and_B_follower_counts_increment",
+            "passed": true
+          },
+          {
+            "check": "A_following_list_B_and_B_followers_A",
+            "passed": true
+          },
+          {
+            "check": "public_relation_lists_match",
+            "passed": true
+          },
+          {
+            "check": "following_feed_contains_only_followed_author",
+            "passed": true
+          },
+          {
+            "check": "following_feed_retains_topic_filter",
+            "passed": true
+          },
+          {
+            "check": "B_follows_A_for_mutual_relation",
+            "passed": true
+          },
+          {
+            "check": "mutual_counts_are_one_each",
+            "passed": true
+          },
+          {
+            "check": "remove_follower_preserves_outgoing_follow",
+            "passed": true
+          },
+          {
+            "check": "remove_follower_updates_only_correct_counts",
+            "passed": true
+          },
+          {
+            "check": "remove_follower_lists_and_following_feed_match",
+            "passed": true
+          },
+          {
+            "check": "removed_follower_can_follow_again",
+            "passed": true
+          },
+          {
+            "check": "blocking_hides_profiles_both_directions",
+            "passed": true
+          },
+          {
+            "check": "blocking_removes_both_relationship_counts",
+            "passed": true
+          },
+          {
+            "check": "blocking_hides_lists_and_following_feeds",
+            "passed": true
+          },
+          {
+            "check": "blocking_hides_work_detail_both_directions",
+            "passed": true
+          },
+          {
+            "check": "blocker_has_private_unblock_list_only",
+            "passed": true
+          },
+          {
+            "check": "blocked_user_follow_is_rejected",
+            "passed": true
+          },
+          {
+            "check": "unblock_restores_visibility_without_refollow",
+            "passed": true
+          },
+          {
+            "check": "unblock_counts_lists_and_feed_remain_empty",
+            "passed": true
+          },
+          {
+            "check": "normal_follow_still_works_after_unblock",
+            "passed": true
+          },
+          {
+            "check": "explicit_second_toggle_unfollows",
+            "passed": true
+          },
+          {
+            "check": "unfollow_counts_lists_and_feed_reset",
+            "passed": true
+          },
+          {
+            "check": "fixtures_are_left_neutral_for_screen_qa",
+            "passed": true
+          }
+        ],
+        "passed": 30,
+        "failed": 0
+      },
+      "reliability_core": {
+        "checks": [
+          {
+            "check": "setLiked_sequential_true_0",
+            "passed": true
+          },
+          {
+            "check": "setLiked_sequential_true_1",
+            "passed": true
+          },
+          {
+            "check": "setLiked_sequential_true_2",
+            "passed": true
+          },
+          {
+            "check": "setSaved_sequential_true_0",
+            "passed": true
+          },
+          {
+            "check": "setSaved_sequential_true_1",
+            "passed": true
+          },
+          {
+            "check": "setSaved_sequential_true_2",
+            "passed": true
+          },
+          {
+            "check": "sequential_retries_create_exactly_one_like_and_save",
+            "passed": true
+          },
+          {
+            "check": "other_actor_does_not_inherit_like_or_save",
+            "passed": true
+          },
+          {
+            "check": "setLiked_concurrent_true_returns_true",
+            "passed": true
+          },
+          {
+            "check": "setSaved_concurrent_true_returns_true",
+            "passed": true
+          },
+          {
+            "check": "concurrent_same_state_does_not_duplicate_rows",
+            "passed": true
+          },
+          {
+            "check": "setLiked_concurrent_false_returns_false",
+            "passed": true
+          },
+          {
+            "check": "setSaved_concurrent_false_returns_false",
+            "passed": true
+          },
+          {
+            "check": "false_only_removes_current_actor_edge",
+            "passed": true
+          },
+          {
+            "check": "setLiked_rejects_null",
+            "passed": true
+          },
+          {
+            "check": "setLiked_rejects_string",
+            "passed": true
+          },
+          {
+            "check": "setLiked_rejects_number",
+            "passed": true
+          },
+          {
+            "check": "setLiked_rejects_array",
+            "passed": true
+          },
+          {
+            "check": "setLiked_rejects_object",
+            "passed": true
+          },
+          {
+            "check": "setLiked_rejects_missing_boolean",
+            "passed": true
+          },
+          {
+            "check": "setLiked_guest_write_denied",
+            "passed": true
+          },
+          {
+            "check": "setSaved_rejects_null",
+            "passed": true
+          },
+          {
+            "check": "setSaved_rejects_string",
+            "passed": true
+          },
+          {
+            "check": "setSaved_rejects_number",
+            "passed": true
+          },
+          {
+            "check": "setSaved_rejects_array",
+            "passed": true
+          },
+          {
+            "check": "setSaved_rejects_object",
+            "passed": true
+          },
+          {
+            "check": "setSaved_rejects_missing_boolean",
+            "passed": true
+          },
+          {
+            "check": "setSaved_guest_write_denied",
+            "passed": true
+          },
+          {
+            "check": "concurrent_follow_true_is_idempotent",
+            "passed": true
+          },
+          {
+            "check": "follow_count_and_following_feed_match",
+            "passed": true
+          },
+          {
+            "check": "concurrent_follow_false_is_idempotent",
+            "passed": true
+          },
+          {
+            "check": "follow_feed_empty_after_false",
+            "passed": true
+          },
+          {
+            "check": "saved_collections_isolated_by_actor",
+            "passed": true
+          },
+          {
+            "check": "guest_comment_write_denied",
+            "passed": true
+          },
+          {
+            "check": "comment_author_is_current_actor",
+            "passed": true
+          },
+          {
+            "check": "author_can_delete_comment",
+            "passed": true
+          },
+          {
+            "check": "unrelated_comment_delete_denied",
+            "passed": true
+          },
+          {
+            "check": "work_owner_can_moderate_comment",
+            "passed": true
+          },
+          {
+            "check": "feed_pagination_has_distinct_stable_pages",
+            "passed": true
+          },
+          {
+            "check": "feed_topic_filter_matches",
+            "passed": true
+          },
+          {
+            "check": "public_feed_omits_private_identity_document_and_source",
+            "passed": true
+          },
+          {
+            "check": "foreign_original_album_is_private",
+            "passed": true
+          },
+          {
+            "check": "foreign_publication_source_denied",
+            "passed": true
+          },
+          {
+            "check": "publication_begin_retries_reuse_same_draft",
+            "passed": true
+          },
+          {
+            "check": "draft_hidden_from_guest",
+            "passed": true
+          },
+          {
+            "check": "finalize_requires_complete_assets",
+            "passed": true
+          },
+          {
+            "check": "finalization_idempotent_and_two_pages",
+            "passed": true
+          },
+          {
+            "check": "published_snapshot_remains_immutable",
+            "passed": true
+          },
+          {
+            "check": "finalize_changed_source_returns_fast_http409",
+            "passed": true
+          },
+          {
+            "check": "begin_changed_source_returns_fast_http409",
+            "passed": true
+          },
+          {
+            "check": "owner_can_discard_unfinished_stale_draft",
+            "passed": true
+          },
+          {
+            "check": "setLiked_private_work_denied",
+            "passed": true
+          },
+          {
+            "check": "setSaved_private_work_denied",
+            "passed": true
+          },
+          {
+            "check": "private_work_hidden_from_feed_and_detail",
+            "passed": true
+          },
+          {
+            "check": "republished_work_restores_same_pages",
+            "passed": true
+          },
+          {
+            "check": "setLiked_blocked_state_True_denied",
+            "passed": true
+          },
+          {
+            "check": "setLiked_blocked_state_False_denied",
+            "passed": true
+          },
+          {
+            "check": "setSaved_blocked_state_True_denied",
+            "passed": true
+          },
+          {
+            "check": "setSaved_blocked_state_False_denied",
+            "passed": true
+          },
+          {
+            "check": "block_hides_profiles_and_detail_both_ways",
+            "passed": true
+          },
+          {
+            "check": "core_operations_restore_neutral_state",
+            "passed": true
+          }
+        ],
+        "passed": 61,
+        "failed": 0,
+        "concurrent_same_state_http_requests_per_case": 4,
+        "stale_draft_discarded": true,
+        "relations_and_reactions_neutral": true,
+        "source_conflict_seconds": {
+          "finalize": 0.547,
+          "begin": 0.14
+        },
+        "recovered_from_40001_retry_loop": true
+      },
+      "comment_reliability": {
+        "checks": [
+          {
+            "check": "concurrent_same_comment_key_returns_one_immutable_comment",
+            "passed": true
+          },
+          {
+            "check": "comment_retry_trims_and_preserves_id_timestamp",
+            "passed": true
+          },
+          {
+            "check": "unrelated_actor_cannot_delete_existing_other_comment",
+            "passed": true
+          },
+          {
+            "check": "comment_key_body_collision_rejected",
+            "passed": true
+          },
+          {
+            "check": "comment_key_work_collision_rejected",
+            "passed": true
+          },
+          {
+            "check": "comment_key_actor_collision_rejected",
+            "passed": true
+          },
+          {
+            "check": "conflicts_do_not_change_original_comment",
+            "passed": true
+          },
+          {
+            "check": "concurrent_cross_work_same_key_has_only_one_winner",
+            "passed": true
+          },
+          {
+            "check": "concurrent_cross_actor_same_key_has_only_one_winner",
+            "passed": true
+          },
+          {
+            "check": "legacy_omitted_and_null_keys_keep_fresh_comment_behavior",
+            "passed": true
+          },
+          {
+            "check": "comment_request_key_rejects_boolean",
+            "passed": true
+          },
+          {
+            "check": "comment_request_key_rejects_number",
+            "passed": true
+          },
+          {
+            "check": "comment_request_key_rejects_array",
+            "passed": true
+          },
+          {
+            "check": "comment_request_key_rejects_object",
+            "passed": true
+          },
+          {
+            "check": "comment_request_key_rejects_malformed_uuid",
+            "passed": true
+          },
+          {
+            "check": "comment_retry_checks_visibility_before_existing_key",
+            "passed": true
+          },
+          {
+            "check": "comment_retry_checks_block_before_key_collision",
+            "passed": true
+          },
+          {
+            "check": "comment_retry_regression_leaves_no_comments",
+            "passed": true
+          }
+        ],
+        "passed": 18,
+        "failed": 0,
+        "concurrent_identical_requests": 4,
+        "cross_actor_and_work_races": true,
+        "neutral": true
+      },
+      "bundled_photo_fixtures": {
+        "fixtures": [
+          {
+            "role": "A",
+            "album_id": 84,
+            "work_id": "01de5c72-fc7b-4d5d-80f4-706a783cc1dd",
+            "asset": "assets/templates/original_editorial/images/travel_harbor.png",
+            "width": 1536,
+            "height": 1024,
+            "bytes": 2663168,
+            "sha256": "cf1b7c024ff483905f62105c238551af176318503aff0928717904940119a546"
+          },
+          {
+            "role": "B",
+            "album_id": 85,
+            "work_id": "1e1ffc9f-52df-4178-bbc9-b276a0d8f584",
+            "asset": "assets/templates/original_editorial/images/travel_coast.png",
+            "width": 1536,
+            "height": 1024,
+            "bytes": 3323218,
+            "sha256": "3cf086e5f4447a3f5c963226f92c690990e5d5a4498072e44499f91aa2684a09"
+          },
+          {
+            "role": "A",
+            "album_id": 86,
+            "work_id": "ddc7980c-5332-4a02-92ce-01a168251581",
+            "asset": "assets/templates/original_editorial/images/family_table.png",
+            "width": 1536,
+            "height": 1024,
+            "bytes": 2876038,
+            "sha256": "1a2ad0864a5fc9589d5f782b0b076fe49610c76c5ded9ba27e3b9bcb4c4967eb"
+          }
+        ],
+        "checks": [
+          {
+            "check": "photo_ratio_matches_original_항구",
+            "passed": true
+          },
+          {
+            "check": "photo_bytes_match_bundled_original_항구",
+            "passed": true
+          },
+          {
+            "check": "photo_ratio_matches_original_해안",
+            "passed": true
+          },
+          {
+            "check": "photo_bytes_match_bundled_original_해안",
+            "passed": true
+          },
+          {
+            "check": "photo_ratio_matches_original_식탁",
+            "passed": true
+          },
+          {
+            "check": "photo_bytes_match_bundled_original_식탁",
+            "passed": true
+          }
+        ],
+        "passed": 6,
+        "failed": 0,
+        "image_mutations": "None; exact original PNG bytes uploaded."
+      },
+      "reaction_visibility_edges": {
+        "checks": [
+          {
+            "check": "setLiked_deleted_True_denied",
+            "passed": true
+          },
+          {
+            "check": "setLiked_deleted_False_denied",
+            "passed": true
+          },
+          {
+            "check": "setSaved_deleted_True_denied",
+            "passed": true
+          },
+          {
+            "check": "setSaved_deleted_False_denied",
+            "passed": true
+          },
+          {
+            "check": "deleted_detail_hidden",
+            "passed": true
+          },
+          {
+            "check": "setLiked_missing_True_denied",
+            "passed": true
+          },
+          {
+            "check": "setLiked_missing_False_denied",
+            "passed": true
+          },
+          {
+            "check": "setSaved_missing_True_denied",
+            "passed": true
+          },
+          {
+            "check": "setSaved_missing_False_denied",
+            "passed": true
+          },
+          {
+            "check": "missing_detail_hidden",
+            "passed": true
+          },
+          {
+            "check": "deleted_draft_not_in_search",
+            "passed": true
+          }
+        ],
+        "passed": 11,
+        "failed": 0
+      },
+      "profile_photo_qa": {
+        "checks": [
+          {
+            "check": "pending_photo_private_to_owner_A",
+            "passed": true
+          },
+          {
+            "check": "pending_photo_hidden_from_other_account_A",
+            "passed": true
+          },
+          {
+            "check": "explicit_public_photo_path_only_A",
+            "passed": true
+          },
+          {
+            "check": "name_handle_bio_unchanged_A",
+            "passed": true
+          },
+          {
+            "check": "selected_photo_public_signable_A",
+            "passed": true
+          },
+          {
+            "check": "public_profile_png_unchanged_A",
+            "passed": true
+          },
+          {
+            "check": "profile_signed_url_has_60_second_ttl_A",
+            "passed": true
+          },
+          {
+            "check": "pending_photo_private_to_owner_B",
+            "passed": true
+          },
+          {
+            "check": "pending_photo_hidden_from_other_account_B",
+            "passed": true
+          },
+          {
+            "check": "explicit_public_photo_path_only_B",
+            "passed": true
+          },
+          {
+            "check": "name_handle_bio_unchanged_B",
+            "passed": true
+          },
+          {
+            "check": "selected_photo_public_signable_B",
+            "passed": true
+          },
+          {
+            "check": "public_profile_png_unchanged_B",
+            "passed": true
+          },
+          {
+            "check": "profile_signed_url_has_60_second_ttl_B",
+            "passed": true
+          },
+          {
+            "check": "foreign_photo_pointer_denied",
+            "passed": true
+          },
+          {
+            "check": "external_url_pointer_denied",
+            "passed": true
+          },
+          {
+            "check": "referenced_photo_owner_delete_is_denied",
+            "passed": true
+          },
+          {
+            "check": "foreign_photo_delete_is_denied",
+            "passed": true
+          },
+          {
+            "check": "profile_photo_overwrite_denied",
+            "passed": true
+          },
+          {
+            "check": "replacement_revokes_new_old_photo_signing",
+            "passed": true
+          },
+          {
+            "check": "owner_can_delete_unreferenced_old_photo",
+            "passed": true
+          },
+          {
+            "check": "clear_hides_pointer_and_new_public_signing",
+            "passed": true
+          },
+          {
+            "check": "blocked_profile_photos_cannot_be_newly_signed_both_directions",
+            "passed": true
+          },
+          {
+            "check": "block_is_viewer_specific_for_public_photo",
+            "passed": true
+          },
+          {
+            "check": "unblock_restores_photo_access",
+            "passed": true
+          },
+          {
+            "check": "photo_qa_leaves_relationships_neutral",
+            "passed": true
+          }
+        ],
+        "passed": 26,
+        "failed": 0,
+        "fixtures": [
+          {
+            "role": "A",
+            "path": "a99ec208-22a6-4b06-a073-8d7407e19755/7ba528c5-6965-4b00-9d24-8776ad8ad3f0.png"
+          },
+          {
+            "role": "B",
+            "path": "6b5ae038-4713-422f-b066-54f8b8f100f8/44ce6344-f988-4ad3-a5f4-655d92c9b6e8.png"
+          }
+        ],
+        "bucket": "social-profile-photos",
+        "requested_signed_ttl_seconds": 60,
+        "revocation_limit": "New signing is denied after removal/block; an already issued URL can remain usable until its 60-second expiry."
+      },
+      "visual_fixture_curation": {
+        "published_photo_work_ids": [
+          "01de5c72-fc7b-4d5d-80f4-706a783cc1dd",
+          "1e1ffc9f-52df-4178-bbc9-b276a0d8f584",
+          "ddc7980c-5332-4a02-92ce-01a168251581"
+        ],
+        "hidden_generic_work_ids": [
+          "d3f1c2ef-4306-43b8-8999-9bd3220f6292",
+          "c0b40dee-20de-41af-b3d0-755fb2ef1540",
+          "aca3c3b2-00c5-4258-be90-9fdcf031be97"
+        ],
+        "checks": [
+          {
+            "check": "public_gallery_has_only_sample_photos_A",
+            "passed": true
+          },
+          {
+            "check": "public_gallery_has_only_sample_photos_B",
+            "passed": true
+          }
+        ],
+        "passed": 2,
+        "failed": 0
+      }
+    }
+  },
+  "source_conflict_incident": {
+    "before_fix": {
+      "error": "social_source_changed",
+      "sqlstate": "40001",
+      "observed_postgrest_version": "14.5",
+      "client_timeouts": 2,
+      "synthetic_actor": "a99ec208-22a6-4b06-a073-8d7407e19755",
+      "source_album_id": 82,
+      "stale_draft_id": "24ed2910-23c7-4e42-a071-5c52f75e5851",
+      "source_changed_at_utc": "2026-10-25T08:27:30.049555Z",
+      "process_evidence": [
+        {
+          "pid": 3154752,
+          "session_start_utc": "2026-10-25T08:26:59Z",
+          "first_error_utc": "2026-10-25T08:27:30.215Z",
+          "last_error_utc": "2026-10-25T08:33:54.106Z",
+          "error_count_in_observed_window": 26987
+        },
+        {
+          "pid": 3154819,
+          "session_start_utc": "2026-10-25T08:30:00Z",
+          "first_error_utc": "2026-10-25T08:30:02.416Z",
+          "last_error_utc": "2026-10-25T08:33:54.064Z",
+          "error_count_in_observed_window": 11481
+        }
+      ],
+      "mapping_limit": "Database parameter values were masked. The only two QA stale-finalize requests, exact timing, dispatcher finalize RAISE line205 and the sole stale synthetic draft correlate both sessions.",
+      "cause": "Using transaction serialization SQLSTATE for a domain revision conflict triggered PostgREST14 automatic transaction retry."
+    },
+    "fix": {
+      "remote_version": "20261025083353",
+      "diff": "Exactly two social_source_changed SQLSTATE codes changed 40001 to PT409; no guard/API changes.",
+      "independent_review": "expansion_qa confirmed latest dispatcher body matches except two codes and comments.",
+      "old_process_cleanup": "Root conditional termination query returned zero rows, then pid lookup returned zero. Both old sessions had ended naturally; no backend was actually terminated."
+    },
+    "after_fix": {
+      "http_status": 409,
+      "sqlstate": "PT409",
+      "finalize_seconds": 0.547,
+      "begin_seconds": 0.14,
+      "log_window_start_utc": "2026-10-25T08:34:00Z",
+      "log_window_end_utc": "2026-10-25T08:37:49Z",
+      "PT409_event_count": 2,
+      "40001_event_count": 0,
+      "old_pids_remaining": 0,
+      "stale_draft_discarded_by_owner": true
+    }
+  },
+  "free_action_financial_invariance": {
+    "scope_user_ids": [
+      "a99ec208-22a6-4b06-a073-8d7407e19755",
+      "6b5ae038-4713-422f-b066-54f8b8f100f8"
+    ],
+    "scope": "Only the two synthetic QA users. No global customer before/after assertion.",
+    "baseline_phase": "After signup grants, before the first publication.",
+    "after_phase": "After all API checks and actual browser free publication/render/upload/finalize, view/like/unlike/follow/save/comment/search/visibility QA, immediately before cleanup.",
+    "before": {
+      "ledger_hash": "f9a03ac6663b4bfa18482066797aa79e",
+      "ledger_rows": 2,
+      "wallet_hash": "9ad3c9c5ecb02c88da5546f151c72575",
+      "wallet_rows": 2
+    },
+    "after": {
+      "ledger_hash": "f9a03ac6663b4bfa18482066797aa79e",
+      "ledger_rows": 2,
+      "wallet_hash": "9ad3c9c5ecb02c88da5546f151c72575",
+      "wallet_rows": 2
+    },
+    "equal": true,
+    "observation": "Read-only SQL row counts and deterministic MD5 of full scoped rows; API features were verified with normal user JWT, not admin bypass.",
+    "post_cleanup_wallet_rows": 0,
+    "post_cleanup_ledger_rows": 0,
+    "post_cleanup_note": "Exact synthetic Auth deletion cascaded their signup wallet/ledger. No global-customer hash claim is made."
+  },
+  "fixture_hold": {
+    "public_photo_works": [
+      {
+        "role": "A",
+        "album_id": 84,
+        "work_id": "01de5c72-fc7b-4d5d-80f4-706a783cc1dd",
+        "asset": "assets/templates/original_editorial/images/travel_harbor.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2663168,
+        "sha256": "cf1b7c024ff483905f62105c238551af176318503aff0928717904940119a546"
+      },
+      {
+        "role": "B",
+        "album_id": 85,
+        "work_id": "1e1ffc9f-52df-4178-bbc9-b276a0d8f584",
+        "asset": "assets/templates/original_editorial/images/travel_coast.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3323218,
+        "sha256": "3cf086e5f4447a3f5c963226f92c690990e5d5a4498072e44499f91aa2684a09"
+      },
+      {
+        "role": "A",
+        "album_id": 86,
+        "work_id": "ddc7980c-5332-4a02-92ce-01a168251581",
+        "asset": "assets/templates/original_editorial/images/family_table.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2876038,
+        "sha256": "1a2ad0864a5fc9589d5f782b0b076fe49610c76c5ded9ba27e3b9bcb4c4967eb"
+      }
+    ],
+    "public_profile_photos": [
+      {
+        "role": "A",
+        "path": "a99ec208-22a6-4b06-a073-8d7407e19755/7ba528c5-6965-4b00-9d24-8776ad8ad3f0.png"
+      },
+      {
+        "role": "B",
+        "path": "6b5ae038-4713-422f-b066-54f8b8f100f8/44ce6344-f988-4ad3-a5f4-655d92c9b6e8.png"
+      }
+    ],
+    "visible_work_count": 3,
+    "public_gallery_A": 2,
+    "public_gallery_B": 1,
+    "generic_works_hidden": 3,
+    "all_relations_reactions_comments_blocks_neutral": true,
+    "private_credential_file_permission": "0600",
+    "credential_values_in_report": false,
+    "root_browser_qa_pending": false,
+    "cleanup_pending_root_signal": false,
+    "fixtures_retained": false,
+    "visible_work_count_after_cleanup": 0
+  },
+  "cleanup": {
+    "status": "complete",
+    "scope": "Only run b62e43699949 exact two QA owner UUIDs, their owned albums/works/profile photo and snapshot paths. Actual customer data was not changed.",
+    "completed_at_utc": "2026-10-25T08:52:53.742251+00:00",
+    "pre_cleanup_inventory": {
+      "works": [
+        {
+          "id": "c0b40dee-20de-41af-b3d0-755fb2ef1540",
+          "status": "private",
+          "author_id": "a99ec208-22a6-4b06-a073-8d7407e19755"
+        },
+        {
+          "id": "aca3c3b2-00c5-4258-be90-9fdcf031be97",
+          "status": "private",
+          "author_id": "6b5ae038-4713-422f-b066-54f8b8f100f8"
+        },
+        {
+          "id": "d3f1c2ef-4306-43b8-8999-9bd3220f6292",
+          "status": "private",
+          "author_id": "a99ec208-22a6-4b06-a073-8d7407e19755"
+        },
+        {
+          "id": "24ed2910-23c7-4e42-a071-5c52f75e5851",
+          "status": "deleted",
+          "author_id": "a99ec208-22a6-4b06-a073-8d7407e19755"
+        },
+        {
+          "id": "01de5c72-fc7b-4d5d-80f4-706a783cc1dd",
+          "status": "published",
+          "author_id": "a99ec208-22a6-4b06-a073-8d7407e19755"
+        },
+        {
+          "id": "1e1ffc9f-52df-4178-bbc9-b276a0d8f584",
+          "status": "published",
+          "author_id": "6b5ae038-4713-422f-b066-54f8b8f100f8"
+        },
+        {
+          "id": "ddc7980c-5332-4a02-92ce-01a168251581",
+          "status": "published",
+          "author_id": "a99ec208-22a6-4b06-a073-8d7407e19755"
+        },
+        {
+          "id": "49fafa1f-7ecc-46ce-8b02-82e350cc6fad",
+          "status": "deleted",
+          "author_id": "a99ec208-22a6-4b06-a073-8d7407e19755"
+        },
+        {
+          "id": "a349e736-da18-40ee-b841-301351301cc7",
+          "status": "published",
+          "author_id": "a99ec208-22a6-4b06-a073-8d7407e19755"
+        }
+      ],
+      "album_ids": [
+        82,
+        83,
+        84,
+        85,
+        86
+      ],
+      "public_profiles": 2,
+      "storage_objects": [
+        {
+          "name": "6b5ae038-4713-422f-b066-54f8b8f100f8/44ce6344-f988-4ad3-a5f4-655d92c9b6e8.png",
+          "bucket_id": "social-profile-photos"
+        },
+        {
+          "name": "a99ec208-22a6-4b06-a073-8d7407e19755/7ba528c5-6965-4b00-9d24-8776ad8ad3f0.png",
+          "bucket_id": "social-profile-photos"
+        },
+        {
+          "name": "6b5ae038-4713-422f-b066-54f8b8f100f8/1e1ffc9f-52df-4178-bbc9-b276a0d8f584/0.png",
+          "bucket_id": "social-snapshots"
+        },
+        {
+          "name": "6b5ae038-4713-422f-b066-54f8b8f100f8/aca3c3b2-00c5-4258-be90-9fdcf031be97/0.png",
+          "bucket_id": "social-snapshots"
+        },
+        {
+          "name": "6b5ae038-4713-422f-b066-54f8b8f100f8/aca3c3b2-00c5-4258-be90-9fdcf031be97/1.png",
+          "bucket_id": "social-snapshots"
+        },
+        {
+          "name": "a99ec208-22a6-4b06-a073-8d7407e19755/01de5c72-fc7b-4d5d-80f4-706a783cc1dd/0.png",
+          "bucket_id": "social-snapshots"
+        },
+        {
+          "name": "a99ec208-22a6-4b06-a073-8d7407e19755/24ed2910-23c7-4e42-a071-5c52f75e5851/0.png",
+          "bucket_id": "social-snapshots"
+        },
+        {
+          "name": "a99ec208-22a6-4b06-a073-8d7407e19755/a349e736-da18-40ee-b841-301351301cc7/0.png",
+          "bucket_id": "social-snapshots"
+        },
+        {
+          "name": "a99ec208-22a6-4b06-a073-8d7407e19755/c0b40dee-20de-41af-b3d0-755fb2ef1540/0.png",
+          "bucket_id": "social-snapshots"
+        },
+        {
+          "name": "a99ec208-22a6-4b06-a073-8d7407e19755/c0b40dee-20de-41af-b3d0-755fb2ef1540/1.png",
+          "bucket_id": "social-snapshots"
+        },
+        {
+          "name": "a99ec208-22a6-4b06-a073-8d7407e19755/d3f1c2ef-4306-43b8-8999-9bd3220f6292/0.png",
+          "bucket_id": "social-snapshots"
+        },
+        {
+          "name": "a99ec208-22a6-4b06-a073-8d7407e19755/d3f1c2ef-4306-43b8-8999-9bd3220f6292/1.png",
+          "bucket_id": "social-snapshots"
+        },
+        {
+          "name": "a99ec208-22a6-4b06-a073-8d7407e19755/ddc7980c-5332-4a02-92ce-01a168251581/0.png",
+          "bucket_id": "social-snapshots"
+        }
+      ],
+      "private_profiles": 2,
+      "active_public_photos": 2,
+      "auth_matches_exact_run": 2,
+      "nonfixture_interactions": 0,
+      "nonfixture_album_members": 0
+    },
+    "outside_cascade_references_before_delete": 0,
+    "delete_methods": [
+      "Cleared each synthetic public avatar pointer with the ordinary owner JWT before Storage deletion.",
+      "Freshly enumerated both exact owner prefixes in social-profile-photos, validating UUID PNG paths; removed all currently present objects.",
+      "Freshly enumerated ordinary-owner social works and Storage snapshot folders; removed all snapshot binaries, including the new UI-publication PNG absent from the original manifest.",
+      "Owner deleted synthetic source albums; exact QA AuthAdmin hard deletions cascaded private/public profiles, all9 works including deleted drafts, remaining own albums, auth sessions/identities/refresh tokens, wallet/ledger and other related rows.",
+      "Removed local0600 credentials file and ended QA processes without persisting JWT/key values."
+    ],
+    "removed_counts": {
+      "auth_users": 2,
+      "owned_albums": 5,
+      "all_work_statuses": 9,
+      "profile_photo_objects": 2,
+      "snapshot_objects": 11,
+      "private_profiles": 2,
+      "public_profiles": 2
+    },
+    "receipt": {
+      "project_ref": "rrbhxdtriummqpztpjrk",
+      "run_id": "b62e43699949",
+      "synthetic_accounts_deleted": 2,
+      "synthetic_albums_deleted": 5,
+      "qa_user_ids": [
+        "a99ec208-22a6-4b06-a073-8d7407e19755",
+        "6b5ae038-4713-422f-b066-54f8b8f100f8"
+      ],
+      "original_synthetic_album_ids": [
+        82,
+        83,
+        84,
+        85,
+        86
+      ],
+      "cleanup_completed": true,
+      "profile_photo_cleanup": {
+        "pointer_cleared_before_delete": true,
+        "observed_and_removed_paths": [
+          "a99ec208-22a6-4b06-a073-8d7407e19755/7ba528c5-6965-4b00-9d24-8776ad8ad3f0.png",
+          "6b5ae038-4713-422f-b066-54f8b8f100f8/44ce6344-f988-4ad3-a5f4-655d92c9b6e8.png"
+        ],
+        "newly_discovered_ui_upload_paths": [],
+        "removed_object_count": 2
+      }
+    },
+    "residual_counts": {
+      "likes": 0,
+      "saves": 0,
+      "works": 0,
+      "albums": 0,
+      "blocks": 0,
+      "ledger": 0,
+      "orders": 0,
+      "quotas": 0,
+      "follows": 0,
+      "wallets": 0,
+      "comments": 0,
+      "auth_users": 0,
+      "work_pages": 0,
+      "album_pages": 0,
+      "push_outbox": 0,
+      "push_devices": 0,
+      "album_invites": 0,
+      "album_members": 0,
+      "auth_sessions": 0,
+      "notifications": 0,
+      "subscriptions": 0,
+      "billing_orders": 0,
+      "template_likes": 0,
+      "auth_identities": 0,
+      "public_profiles": 0,
+      "store_purchases": 0,
+      "private_profiles": 0,
+      "push_preferences": 0,
+      "notification_reads": 0,
+      "auth_refresh_tokens": 0,
+      "publication_sources": 0,
+      "point_shop_ownership": 0,
+      "public_avatar_references": 0,
+      "noncascade_user_references": 0,
+      "storage_objects_all_buckets": 0
+    },
+    "verified_residual_categories": 35,
+    "all_residual_counts_zero": true,
+    "anonymous_api_after_cleanup": {
+      "checks": [
+        {
+          "check": "anonymous_public_feed_empty_after_cleanup",
+          "passed": true
+        },
+        {
+          "check": "anonymous_following_feed_empty_after_cleanup",
+          "passed": true
+        },
+        {
+          "check": "deleted_public_profile_hidden_a99ec208-22a6-4b06-a073-8d7407e19755",
+          "passed": true
+        },
+        {
+          "check": "deleted_profile_gallery_empty_a99ec208-22a6-4b06-a073-8d7407e19755",
+          "passed": true
+        },
+        {
+          "check": "deleted_public_profile_hidden_6b5ae038-4713-422f-b066-54f8b8f100f8",
+          "passed": true
+        },
+        {
+          "check": "deleted_profile_gallery_empty_6b5ae038-4713-422f-b066-54f8b8f100f8",
+          "passed": true
+        },
+        {
+          "check": "deleted_work_detail_hidden_01de5c72-fc7b-4d5d-80f4-706a783cc1dd",
+          "passed": true
+        },
+        {
+          "check": "deleted_work_detail_hidden_1e1ffc9f-52df-4178-bbc9-b276a0d8f584",
+          "passed": true
+        },
+        {
+          "check": "deleted_work_detail_hidden_24ed2910-23c7-4e42-a071-5c52f75e5851",
+          "passed": true
+        },
+        {
+          "check": "deleted_work_detail_hidden_49fafa1f-7ecc-46ce-8b02-82e350cc6fad",
+          "passed": true
+        },
+        {
+          "check": "deleted_work_detail_hidden_a349e736-da18-40ee-b841-301351301cc7",
+          "passed": true
+        },
+        {
+          "check": "deleted_work_detail_hidden_aca3c3b2-00c5-4258-be90-9fdcf031be97",
+          "passed": true
+        },
+        {
+          "check": "deleted_work_detail_hidden_c0b40dee-20de-41af-b3d0-755fb2ef1540",
+          "passed": true
+        },
+        {
+          "check": "deleted_work_detail_hidden_d3f1c2ef-4306-43b8-8999-9bd3220f6292",
+          "passed": true
+        },
+        {
+          "check": "deleted_work_detail_hidden_ddc7980c-5332-4a02-92ce-01a168251581",
+          "passed": true
+        },
+        {
+          "check": "anonymous_search_has_no_remaining_QA_works",
+          "passed": true
+        },
+        {
+          "check": "deleted_objects_cannot_be_newly_signed_social-snapshots",
+          "passed": true
+        },
+        {
+          "check": "deleted_objects_cannot_be_newly_signed_social-profile-photos",
+          "passed": true
+        },
+        {
+          "check": "local_credential_file_removed",
+          "passed": true
+        }
+      ],
+      "passed": 19,
+      "failed": 0,
+      "anonymous_feed_work_count": 0
+    },
+    "root_browser_final_reload": {
+      "passed": true,
+      "canonical_url": "https://snapfit-c719d.web.app/#/feed",
+      "system_theme_restored": true,
+      "categories": "11 topics plus all",
+      "public_QA_work_count": 0,
+      "empty_feed_visible": true,
+      "screenshot": "docs/verification/social-community-feed-after-cleanup.png"
+    },
+    "credential_file_removed": true,
+    "credentials_or_tokens_in_report": false
+  },
+  "browser_publication_followup": {
+    "status": "resolved_and_browser_reverified_by_root",
+    "synthetic_actor": "a99ec208-22a6-4b06-a073-8d7407e19755",
+    "source_album_id": 86,
+    "draft_id": "49fafa1f-7ecc-46ce-8b02-82e350cc6fad",
+    "created_at_utc": "2026-10-25T08:38:29.038646Z",
+    "page_indexes": [
+      0
+    ],
+    "original_revision_equal": true,
+    "page_slots": 1,
+    "uploaded_storage_objects": 0,
+    "browser_rpc_statuses": [
+      200,
+      200
+    ],
+    "snapshot_upload_requests": 0,
+    "finding": "Begin succeeded; failure occurred in client raster preparation before upload. Root assigned ImageDescriptor web compatibility investigation to the rendering agent.",
+    "inspection": "Read only; draft/input preserved.",
+    "client_root_cause": "ImageDescriptor.encoded intrinsic dimensions are unsupported in the actual CanvasKit web runtime.",
+    "client_fix": "Root rendering agent replaced dimension inspection with a web-compatible codec path.",
+    "renderer_regressions_reported_by_root": {
+      "actual_Chrome_PNG_JPEG_passed": 2,
+      "native_impact_passed": 16
+    },
+    "failed_draft_discarded_by_browser_owner": true,
+    "final_published_work_id": "a349e736-da18-40ee-b841-301351301cc7",
+    "final_browser_result": "Actual saved photo source album86 → cover1 → family/friends → disclosure consent → free render/upload/finalize → real photo detail passed. My3 tiles and recommended feed4 with new work first, like1→unlike0, light/dark, System restored and logout passed.",
+    "final_work_included_in_cleanup": true
+  }
+}

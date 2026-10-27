@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "unique_flutter_cases": 236,
+  "all_successful": true,
+  "by_file": {
+    "test/unit/referral_link_test.dart": 6,
+    "test/unit/referral_status_test.dart": 9,
+    "test/unit/pending_referral_test.dart": 9,
+    "test/unit/web_app_location_test.dart": 38,
+    "test/unit/referral_repository_test.dart": 15,
+    "test/unit/billing_repository_test.dart": 11,
+    "test/widget/web_app_router_test.dart": 19,
+    "test/widget/referral_screen_test.dart": 24,
+    "test/widget/referral_navigation_test.dart": 5,
+    "test/widget/social_profile_screens_test.dart": 38,
+    "test/widget/billing_responsive_refinement_test.dart": 20,
+    "test/widget/album_invite_journey_test.dart": 24,
+    "test/widget/attendance_screen_test.dart": 18
+  },
+  "logs": [
+    "output/referral-qa-20261026.log",
+    "output/referral-ui-final-20261026.log"
+  ],
+  "resolved_initial_failures": "Invalid L-containing test fixtures and query canonicalization assertion corrected; one simulated lifecycle test corrected to valid paused-hidden-inactive-resumed sequence. Product source unchanged by test corrections.",
+  "new_referral_sql_and_point_regressions_passed": 44,
+  "static_analysis": "No issues found; output/referral-analysis-20261026.log"
+}

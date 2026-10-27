@@ -40,7 +40,7 @@ test('approved activation preserves live prices, purchases and unreviewed items'
   const verification = readFileSync(join(directory, 'verify-activation.sql'), 'utf8')
   assert.equal(manifest.status, 'prepared-not-executed')
   assert.equal(manifest.remoteVerified, false)
-  assert.equal(manifest.previouslyHeldProductKeys.length, 44)
+  assert.equal(manifest.previouslyHeldProductKeys.length, 284)
   const db = await fixture()
   try {
     await seed(db, 'template:velvet-vow-archive', 3210, true)
@@ -64,14 +64,15 @@ test('approved activation preserves live prices, purchases and unreviewed items'
   }
 })
 
-for (const scenario of ['identity-conflict', 'free-price-conflict']) {
+for (const scenario of ['identity-conflict', 'free-price-conflict', 'paid-price-conflict']) {
   test(`activation rolls back every row on ${scenario}`, {skip: !directory}, async () => {
     const db = await fixture()
     try {
       const identityConflict = scenario === 'identity-conflict'
-      await seed(db, identityConflict ? 'frame:storyVowGate' : 'frame:studioGallery', 150, false, identityConflict ? 'sticker' : 'frame')
+      const paidConflict = scenario === 'paid-price-conflict'
+      await seed(db, identityConflict || paidConflict ? 'frame:storyVowGate' : 'frame:studioGallery', paidConflict ? 0 : 150, false, identityConflict ? 'sticker' : 'frame')
       await assert.rejects(db.exec(readFileSync(join(directory, 'activate-products.sql'), 'utf8')),
-        identityConflict ? /catalog_identity_or_active_template_changed/ : /free_catalog_paid_price_conflict/)
+        identityConflict ? /catalog_identity_or_active_template_changed/ : paidConflict ? /paid_catalog_free_price_conflict/ : /free_catalog_paid_price_conflict/)
       await db.exec('rollback')
       assert.equal((await db.query('select count(*)::integer as count from point_shop_products')).rows[0].count, 1)
       assert.equal((await db.query('select is_active from point_shop_products')).rows[0].is_active, false)

@@ -1,0 +1,167 @@
+{
+  "checked_at": "2026-10-26T15:00:41+09:00",
+  "status": "PASS_feed_detail_debug_apk_verified_install_not_performed",
+  "scope": "Photo-first feed and work detail matching the public profile, multi-page full-screen zoom, accessible reaction controls, signed snapshot URL recovery and preservation of selected page and zoom.",
+  "apk_path": "output/native-photo-refresh/SnapFit-large-feed-debug.apk",
+  "apk_sha256": "3c7ee6218d05fae005a613866d7d9ab0da738a3b88218d39836351a550e309ce",
+  "apk_bytes": 861239546,
+  "checks": {
+    "build_exit_zero": true,
+    "expected_apk_size": true,
+    "zip_all_entry_crcs_pass": true,
+    "packaged_current_kernel_matches_build_intermediate": true,
+    "preserved_candidate_matches_original_build_output": true,
+    "new_apk_signature_verified": true,
+    "baseline_signature_verified": true,
+    "certificate_matches_preserved_debug_certificate": true,
+    "packaged_metadata_readable": true,
+    "arm64_flutter_engine_packaged": true,
+    "native_source_unchanged": true,
+    "social_source_unchanged": true,
+    "web_common_source_unchanged": true,
+    "protected_apks_unchanged": true,
+    "packaged_current_ui_and_recovery_markers_present": true
+  },
+  "build": {
+    "status": "build_succeeded",
+    "command": "./gradlew -q <identical Flutter Gradle project properties, dart-defines redacted> :app:packageDebug",
+    "task": ":app:packageDebug",
+    "target_platform": "android-arm64",
+    "jdk_home": "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home",
+    "started_at": "2026-10-26T14:51:24+09:00",
+    "ended_at": "2026-10-26T14:53:37+09:00",
+    "elapsed_seconds": 133.28,
+    "exit_code": 0,
+    "encoded_dart_defines_sha256": "8bc13351fb51b2045e3d4c9f69a2c75592c2a03003739048e9212e451afa0a2a",
+    "dart_define_names": [
+      "FLUTTER_BUILD_NAME",
+      "FLUTTER_BUILD_NUMBER",
+      "FLUTTER_VERSION",
+      "FLUTTER_CHANNEL",
+      "FLUTTER_GIT_URL",
+      "FLUTTER_FRAMEWORK_REVISION",
+      "FLUTTER_ENGINE_REVISION",
+      "FLUTTER_DART_VERSION"
+    ],
+    "existing_sdk_and_pubspec_metadata_exact_match": true,
+    "free_bytes_after_build": 362766336,
+    "build_log": "output/native-photo-refresh/social-feed-my-style-package-debug-build-20261026.log"
+  },
+  "build_preflight": "output/native-photo-refresh/social-feed-my-style-native-preflight-20261026.json",
+  "packaging_note": "Completed :app:packageDebug with the existing identical Flutter Gradle properties and SDK/pubspec metadata, targeting android-arm64. No new build was performed by the final verifier.",
+  "zip_crc_valid": true,
+  "zip_entries": 1700,
+  "android_abi_directories": [
+    "arm64-v8a",
+    "armeabi-v7a",
+    "x86_64"
+  ],
+  "flutter_engine_libraries": [
+    "lib/arm64-v8a/libflutter.so"
+  ],
+  "abi_note": "The Flutter engine is arm64-v8a. Existing plugin libraries retain additional armeabi-v7a/x86_64 directories; this is not an all-ABI Flutter build.",
+  "packaged_metadata": [
+    "package: name='com.devsheep.snap_fit' versionCode='1' versionName='1.0.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+    "sdkVersion:'24'",
+    "targetSdkVersion:'36'",
+    "application-debuggable",
+    "launchable-activity: name='com.devsheep.snap_fit.MainActivity'  label='' icon=''",
+    "native-code: 'arm64-v8a' 'armeabi-v7a' 'x86_64'"
+  ],
+  "signature_verified": true,
+  "certificate_sha256": "a46a0968f62bfe49908e6e9d0b1feda3c269bf721d09a0fc1d7daaa6ecf199c3",
+  "matches_preserved_debug_certificate": true,
+  "packaged_android_manifest_sha256": "2b0436c7849efb70b476851f4e528ab857fb4e6d4e0c2ba88cecd1704204d0a1",
+  "packaged_kernel_sha256": "1fdf20a95bcb1a06ded12d77125e7ba2cc9ed81485c5f0d9a2c9941c05eb6ea5",
+  "packaged_current_source_markers": {
+    "_recoverImage": true,
+    "_automaticRetryUsed": true,
+    "_ArtworkViewer": true,
+    "_updateArtworkViewer": true,
+    "_sameArtworkAssets": true,
+    "확대 감상": true,
+    "이전 확대 페이지": true,
+    "다음 확대 페이지": true,
+    "작품 확대": true,
+    "social-fullscreen-page-count": true,
+    "social-feed-artwork-": true,
+    "_recoverThumbnail": true,
+    "myStorageQuotaProvider": true
+  },
+  "original_build_output": {
+    "path": "build/app/outputs/apk/debug/app-debug.apk",
+    "sha256": "3c7ee6218d05fae005a613866d7d9ab0da738a3b88218d39836351a550e309ce",
+    "matches_candidate": true
+  },
+  "current_kernel_intermediate": {
+    "path": "build/app/intermediates/flutter/debug/flutter_assets/kernel_blob.bin",
+    "sha256": "1fdf20a95bcb1a06ded12d77125e7ba2cc9ed81485c5f0d9a2c9941c05eb6ea5",
+    "matches_packaged": true
+  },
+  "apfs_cow_candidate_copy_reported_by_build_coordinator": true,
+  "protected_apks": {
+    "SnapFit-large-profile-debug.apk": {
+      "before": {
+        "sha256": "e23a6df2f086ea932953ce329b5c2daa8b02b58a348ebf357873ba7a40c9c6f2",
+        "bytes": 861227830
+      },
+      "after": {
+        "sha256": "e23a6df2f086ea932953ce329b5c2daa8b02b58a348ebf357873ba7a40c9c6f2",
+        "bytes": 861227830
+      },
+      "unchanged": true
+    },
+    "SnapFit-large-profile-debug-before-thumbnail-expiry-fix.apk": {
+      "before": {
+        "sha256": "ddf1fd41f9051784882566d06a67131cb601e09b1641d3f35b742ed7288bd782",
+        "bytes": 861220802
+      },
+      "after": {
+        "sha256": "ddf1fd41f9051784882566d06a67131cb601e09b1641d3f35b742ed7288bd782",
+        "bytes": 861220802
+      },
+      "unchanged": true
+    }
+  },
+  "source_manifest_start": "output/native-photo-refresh/source-social-feed-my-style-native-start-20261026.json",
+  "source_manifest_end": "output/native-photo-refresh/source-social-feed-my-style-native-end-20261026.json",
+  "source_sha256_start": "6b476ec3d86a097fa106e0f985349e9fd65bd649ceb7ce5489f53a0ae5fb6a93",
+  "source_sha256_end": "6b476ec3d86a097fa106e0f985349e9fd65bd649ceb7ce5489f53a0ae5fb6a93",
+  "source_file_count": 1813,
+  "social_source_sha256_start": "c695ed3d8ca57b658d7ce8c768b13b50b9433e65a2696a5163093e72999f9f45",
+  "social_source_sha256_end": "c695ed3d8ca57b658d7ce8c768b13b50b9433e65a2696a5163093e72999f9f45",
+  "social_source_file_count": 21,
+  "build_input_changes": {
+    "added": [],
+    "removed": [],
+    "modified": []
+  },
+  "web_source_manifest_path": "docs/verification/social-feed-my-style-expiry-fix-web-source-after-2026-10-26.json",
+  "web_source_manifest_sha256": "1732b296ec6dd50cf4affc54c260c0385d6830248b68eaed2217761f9a0ff6e4",
+  "web_source_file_count": 1788,
+  "web_common_source_file_count": 1765,
+  "web_common_source_hashes_match": true,
+  "web_common_source_differences": [],
+  "web_main_sha256": "b65bf59b1c6ac06c958d9bde35b8db7f8cf17205d07ebf4b2e62133a284e1c74",
+  "web_bootstrap_sha256": "95df0e2f8d7097fd9ec1ae23b21ecef561e1334377c6f2659bb79bc57e79dc25",
+  "web_hosting_version": "projects/snapfit-c719d/sites/snapfit-c719d/versions/c4e3220a0df86c52",
+  "coordinator_verification": {
+    "client_unique_cases_passed": 89,
+    "client_case_breakdown": {
+      "feed_detail_and_related_screens": 44,
+      "profile": 38,
+      "chrome": 2,
+      "publication": 4,
+      "quota_account_switch": 1
+    },
+    "rerun_by_final_native_verifier": false,
+    "evidence_report": "docs/verification/social-feed-my-style-expiry-fix-web-release-2026-10-26.json"
+  },
+  "free_bytes_after_verification": 1852473344,
+  "install_performed": false,
+  "physical_device_qa_performed": false,
+  "source_or_asset_changes_performed_by_final_native_verifier": false,
+  "cleanup_performed_by_final_native_verifier": false,
+  "limitation": "Debug-signed Android APK. Phone unavailable; no USB/ADB action, device install, emulator, SDK download, source/environment change or store submission was performed.",
+  "non_blocking_toolchain_warning": "Existing Firebase/storage/media plugins still apply Kotlin Gradle Plugin; packaging exited successfully."
+}

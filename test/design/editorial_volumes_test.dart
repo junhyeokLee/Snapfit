@@ -43,7 +43,7 @@ void main() {
   test('two independent 24-page collections are free, never paid', () {
     expect(bundledCreationTemplates.length, 42);
     expect(bundledCreationTemplates.every((t) => !t.isPremium), isTrue);
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       final old = [
         ...retiredAuthoredCollections.expand(
           (c) => templateDocumentPages(c.document(aspect)),
@@ -96,7 +96,7 @@ void main() {
         isFalse,
       );
     });
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       test(
         '${volume.route}/${aspect.name}: geometry, typography and editable roundtrip',
         () {

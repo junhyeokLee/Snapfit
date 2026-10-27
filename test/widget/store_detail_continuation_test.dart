@@ -1,3 +1,4 @@
+import '../support/store_detail_loading.dart';
 import '../helpers/creation_draft_fixtures.dart'
     show FakeAuthViewModel, MemoryCreationDraftStore;
 import 'dart:async';
@@ -36,9 +37,9 @@ class _PaintBinding extends AutomatedTestWidgetsFlutterBinding {
   bool get disableShadows => false;
 }
 
-final _template = publishedCreationTemplates.firstWhere(
-  (item) => item.id == -9501,
-);
+final _template = publishedCreationTemplates
+    .firstWhere((item) => item.id == -9501)
+    .copyWith(isPremium: true);
 final _productKey = pointShopTemplateKey(_template);
 
 PointShopProduct _product({int? price = 400, bool active = true}) =>
@@ -111,8 +112,9 @@ void main() {
     if (pending) {
       await tester.pump(const Duration(milliseconds: 350));
     } else {
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
     }
+    await flushStoreDetailDocuments(tester);
     await tester.runAsync(() async {
       for (final element in find.byType(Image).evaluate()) {
         await precacheImage((element.widget as Image).image, element);
@@ -121,7 +123,7 @@ void main() {
     if (pending) {
       await tester.pump(const Duration(milliseconds: 100));
     } else {
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
     }
   }
 
@@ -134,13 +136,13 @@ void main() {
     if (pending) {
       await tester.pump(const Duration(milliseconds: 100));
     } else {
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
     }
     await Scrollable.ensureVisible(tester.element(finder), alignment: .5);
     if (pending) {
       await tester.pump(const Duration(milliseconds: 100));
     } else {
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
     }
     await tester.tap(finder);
     await paint(tester, pending: pending);
@@ -275,7 +277,7 @@ void main() {
 
   Future<void> selectVariant(WidgetTester tester, String text) async {
     await tester.ensureVisible(selector());
-    await tester.pumpAndSettle();
+    await settleStoreDetail(tester);
     await tap(
       tester,
       find.descendant(of: selector(), matching: find.text(text)),
@@ -306,7 +308,7 @@ void main() {
     (size: Size(844, 390), dark: true, state: 'paid'),
   ];
   for (final scenario in cases) {
-    testWidgets(
+    storeDetailTestWidgets(
       'template detail ${scenario.state} restores its inspected spread ${scenario.size} dark=${scenario.dark}',
       (tester) async {
         reset(tester);
@@ -426,7 +428,7 @@ void main() {
     (size: const Size(320, 568), dark: true),
     (size: const Size(648, 320), dark: false),
   ]) {
-    testWidgets(
+    storeDetailTestWidgets(
       'large text keeps template access and returned spread reachable ${scenario.size}',
       (tester) async {
         reset(tester);
@@ -450,7 +452,7 @@ void main() {
     );
   }
 
-  testWidgets(
+  storeDetailTestWidgets(
     'price loading and retry never grant access while ready free paid and owned paths still ask the gate',
     (tester) async {
       reset(tester);
@@ -525,7 +527,7 @@ void main() {
     },
   );
 
-  testWidgets(
+  storeDetailTestWidgets(
     'full preview ignores invalid stale covered and changed-variant callbacks',
     (tester) async {
       reset(tester);
@@ -566,7 +568,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       coveredViewer.onPageChanged!(11);
       navigator.currentState!.pop();
       await paint(tester);

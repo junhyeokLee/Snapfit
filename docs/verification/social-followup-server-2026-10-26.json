@@ -1,0 +1,157 @@
+{
+  "date": "2026-10-26",
+  "scope": "Feed completeness: paginated public/own/saved works, public search, relations and comments",
+  "status": "production_applied_live_verified_all_synthetic_data_cleaned",
+  "production_project": "rrbhxdtriummqpztpjrk",
+  "production_changes_performed": true,
+  "production_fixture_mutations_performed": true,
+  "preflight": {
+    "social_tables_with_rls_enabled": 8,
+    "social_table_direct_client_write_grants_added": false,
+    "social_profile_count": 1,
+    "social_work_count": 0,
+    "social_like_count": 0,
+    "social_follow_count": 0,
+    "social_comment_count": 0,
+    "social_activity_notification_triggers": 0,
+    "social_notification_related_functions": 0,
+    "dispatcher_security_definer": true,
+    "dispatcher_search_path": "",
+    "dispatcher_allowed_roles": [
+      "postgres",
+      "anon",
+      "authenticated"
+    ],
+    "dispatcher_function_md5_before": "e528d6c1aada12627f61a43e6e1b8c4c",
+    "dispatcher_body_md5_before": "73bf3b290243a16f6e39c56442adbb48"
+  },
+  "confirmed_findings": [
+    "Legacy profile/own/saved/search work arrays and profile search expose at most 30 entries; their screens had no way to request further entries.",
+    "Legacy comments expose only the newest 100 comments without an older-page action.",
+    "The final operating dispatcher includes collaboration-history safeguards introduced after the last social-only migration. The paginated migration must retain those protections."
+  ],
+  "additive_migration": {
+    "file": "supabase/migrations/20261026064733_social_paginated_collections.sql",
+    "created_via": "supabase migration new social_paginated_collections",
+    "sha256": "4f5bf5575fa6829bc7154f7887db9402c24137b544597b320ca242ef8d7d2a84",
+    "expected_dispatcher_body_md5_after": "d09449adbb053d7d77919386926d7644",
+    "base_migration": "20261025092245_collaborative_album_publication_history.sql",
+    "base_function_definition_matches_actual_production_md5": true,
+    "legacy_body_unchanged_after_removing_new_read_branch": true,
+    "actions": [
+      "profileWorksPage",
+      "ownWorksPage",
+      "savedWorksPage",
+      "searchPage",
+      "searchProfilesPage",
+      "relationsPage",
+      "commentsPage"
+    ],
+    "response": [
+      "items",
+      "hasMore",
+      "nextOffset"
+    ],
+    "page_limit_default": 12,
+    "page_limit_maximum": 30,
+    "offset_range": [
+      0,
+      10000
+    ],
+    "out_of_range_offset_behavior": "SQLSTATE 22023 social_invalid_page_offset; no silent repeat/clamp",
+    "comment_order": "created_at DESC, id DESC; UI reverses the combined result for chronological display",
+    "legacy_array_actions_preserved": true,
+    "write_actions_and_authorization_preserved": true,
+    "signed_url_ttl_or_storage_policy_changes": false,
+    "prices_wallets_entitlements_or_source_album_changes": false,
+    "own_work_status_filter": {
+      "payload": "status",
+      "default": "all",
+      "accepted": [
+        "all",
+        "public",
+        "private"
+      ],
+      "public_maps_to": "published",
+      "filter_applied_before_offset": true,
+      "invalid_value_error": "22023 social_invalid_work_status_filter"
+    },
+    "operating_ledger_version": "20261026064733",
+    "initial_cli_generated_version": "20261026062022",
+    "version_alignment": "Renamed locally to match apply_migration-assigned production history and avoid a duplicate CLI push; SQL bytes unchanged"
+  },
+  "validation": {
+    "engine": "PGlite 0.3.14 from existing pinned package lock",
+    "command": "npm test --prefix test/server",
+    "local_cases_passed": 41,
+    "local_cases_failed": 0,
+    "coverage": [
+      "31 works reached completely in own/profile/saved/search pages, including equal-timestamp deterministic ordering and legacy compatibility",
+      "68 interleaved public/private own works, 34 per status, filtered before offset; unrelated creator rows excluded; invalid status and guest rejected",
+      "31 creator search results and both relationship directions, with blocked rows filtered before pagination",
+      "101 comments reached completely with equal-timestamp ordering and legacy latest-100 behavior preserved",
+      "Guest, owner/private, stranger, withdrawn/deleted/draft, missing target and bilateral-block visibility",
+      "Comment deletion ownership, safe public projection and invalid page bounds",
+      "Actual operating dispatcher definition fingerprint matches the local collaboration-history base",
+      "Accepted collaboration remembered after leaving/removal: begin/finalize and republish barriers remain after original album deletion",
+      "Existing source revision, publication idempotency, photo ownership/immutability, direct-write denial and desired follow/reaction/comment retry regressions"
+    ]
+  },
+  "not_implemented_by_this_change": [
+    "Social activity notifications, report moderation, editable style import, point sales and creator rewards",
+    "Consented collaborative-album publication; the existing rejection remains intentional"
+  ],
+  "references": [
+    "https://supabase.com/changelog.md",
+    "https://supabase.com/docs/guides/database/postgres/row-level-security",
+    "https://supabase.com/docs/guides/security/product-security",
+    "docs/verification/social-community-release-policy-2026-10-25.json"
+  ],
+  "production_change_scope": "Additive dispatcher migration remains applied. All temporary QA identities/albums/snapshots/social rows were removed.",
+  "production_post_apply": {
+    "verified_at_utc": "2026-10-26T06:48:31.685537+00:00",
+    "dispatcher_body_md5": "d09449adbb053d7d77919386926d7644",
+    "dispatcher_security_definer": true,
+    "dispatcher_search_path": "",
+    "dispatcher_allowed_roles": [
+      "postgres",
+      "anon",
+      "authenticated"
+    ],
+    "body_matches_local_migration": true,
+    "ordinary_jwt_fixture_verification": {
+      "pagination_run_checks_passed": 17,
+      "pagination_work_count": 31,
+      "pagination_comment_count": 101,
+      "pagination_guest_ui_confirmed_by_root": true,
+      "pagination_hold_timeout": "Manual continue signal absent at 300 seconds; automatic withdrawal and cleanup completed, without an API assertion failure",
+      "fresh_follow_block_run_checks_passed": 36,
+      "fresh_follow_block_status": "passed",
+      "combined_cleanup_groups": 93,
+      "combined_residual_rows": 0,
+      "source_and_synthetic_financial_rows_unchanged": "Verified for the fresh minimal follow/block run; first run postcheck was not reached before the UI hold timeout",
+      "private_helper_directories_remaining": 0
+    },
+    "dispatcher_definition_md5": "1c713afb18c4fe913871dd37751d3b5a",
+    "core_counts_after": {
+      "profiles": 1,
+      "works": 0,
+      "pages": 0,
+      "likes": 0,
+      "saves": 0,
+      "follows": 0,
+      "comments": 0,
+      "blocks": 0,
+      "publication_sources": 0,
+      "snapshots": 0
+    },
+    "original_album_assets_metadata_unchanged": {
+      "count_before": 41,
+      "count_after": 41,
+      "metadata_md5_before": "71880641942d4bd62a26e047a89a5200",
+      "metadata_md5_after": "71880641942d4bd62a26e047a89a5200"
+    },
+    "completed_at_utc": "2026-10-26T07:12:37.924730+00:00"
+  },
+  "production_fixture_scope": "Only the two isolated synthetic QA runs; both fully cleaned; customer data unchanged"
+}

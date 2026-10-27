@@ -248,10 +248,13 @@ void main() {
   }
 
   Future<void> openFrames(WidgetTester tester) async {
-    final decorate = find.descendant(
-      of: find.byType(LayerActionPanel).last,
-      matching: find.byTooltip('꾸미기'),
-    );
+    final contextTool = find.byTooltip('사진 꾸미기');
+    final decorate = contextTool.evaluate().isNotEmpty
+        ? contextTool
+        : find.descendant(
+            of: find.byType(LayerActionPanel).last,
+            matching: find.byTooltip('꾸미기'),
+          );
     await tester.ensureVisible(decorate);
     await tester.tap(decorate);
     await _paint(tester);
@@ -259,10 +262,7 @@ void main() {
   }
 
   Future<void> openReplacementGallery(WidgetTester tester) async {
-    final change = find.descendant(
-      of: find.byType(LayerActionPanel).last,
-      matching: find.byTooltip('사진변경'),
-    );
+    final change = find.byTooltip('사진 바꾸기').last;
     await tester.ensureVisible(change);
     await tester.tap(change);
     await _paint(tester);
@@ -390,7 +390,7 @@ void main() {
         gallery: gallery,
       );
       final original = session.vm.layers.single;
-      await tester.tap(find.byTooltip('사진변경'));
+      await tester.tap(find.byTooltip('사진 바꾸기'));
       await tester.pump(const Duration(milliseconds: 400));
       expect(find.byTooltip('사진 선택 닫기'), findsOneWidget);
       expect(gallery.refreshes, 0);
@@ -973,9 +973,9 @@ void main() {
           (tester) async {
             final session = await boot(tester, size, dark, pageIndex);
             final original = session.vm.layers.single;
-            expect(find.byTooltip('사진 구도'), findsOneWidget);
+            expect(find.byTooltip('자르기·구도'), findsOneWidget);
             expect(
-              tester.getSize(find.byTooltip('사진 구도')).height,
+              tester.getSize(find.byTooltip('자르기·구도')).height,
               greaterThanOrEqualTo(44),
             );
             final suffix = '${size.width.toInt()}-${dark ? 'dark' : 'light'}';
@@ -985,7 +985,7 @@ void main() {
                 session.capture,
                 'editor-photo-actions-$suffix',
               );
-            await tester.tap(find.byTooltip('사진 구도'));
+            await tester.tap(find.byTooltip('자르기·구도'));
             await waitForCropPhoto(tester);
             await tester.tap(find.byTooltip('사진 확대'));
             await tester.drag(
@@ -1004,7 +1004,7 @@ void main() {
             await _paint(tester);
             expect(session.vm.layers.single, same(original));
 
-            await tester.tap(find.byTooltip('사진 구도'));
+            await tester.tap(find.byTooltip('자르기·구도'));
             await waitForCropPhoto(tester);
             await tester.tap(find.byTooltip('사진 확대'));
             await tester.drag(
@@ -1043,7 +1043,7 @@ void main() {
   testWidgets('unchanged crop creates no undo entry', (tester) async {
     final session = await boot(tester, const Size(390, 844), false, 1);
     final original = session.vm.layers.single;
-    await tester.tap(find.byTooltip('사진 구도'));
+    await tester.tap(find.byTooltip('자르기·구도'));
     await waitForCropPhoto(tester);
     await tester.tap(find.byKey(const ValueKey('photo-crop-apply')));
     await _paint(tester);
@@ -1057,7 +1057,7 @@ void main() {
     (tester) async {
       final session = await boot(tester, const Size(844, 390), false, 1);
       final original = session.vm.layers.single;
-      await tester.tap(find.byTooltip('사진 구도'));
+      await tester.tap(find.byTooltip('자르기·구도'));
       await waitForCropPhoto(tester);
       await tester.tap(find.byTooltip('사진 확대'));
       session.vm.goToPage(2);
@@ -1142,7 +1142,7 @@ void main() {
     final actionRect = tester.getRect(find.byType(LayerActionPanel));
     final photoButton = tester.getRect(find.byIcon(Icons.photo_outlined));
     expect(actionRect.bottom, lessThanOrEqualTo(photoButton.top));
-    await tester.tap(find.byTooltip('사진 구도'));
+    await tester.tap(find.byTooltip('자르기·구도'));
     await waitForCropPhoto(tester);
     await tester.tap(find.byTooltip('사진 확대'));
     await tester.tap(find.byKey(const ValueKey('photo-crop-apply')));

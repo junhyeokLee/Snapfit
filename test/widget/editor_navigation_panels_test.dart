@@ -46,6 +46,9 @@ class _Photo extends Mock implements AssetEntity {}
 
 class _Interaction extends Mock implements LayerInteractionManager {
   @override
+  List<LayerModel> sortByZ(List<LayerModel> layers) => layers;
+
+  @override
   bool get isPrintPreview => false;
   @override
   bool get isPreviewMode => false;
@@ -255,9 +258,9 @@ void main() {
           expect(delete.width, greaterThanOrEqualTo(44));
           expect(delete.height, greaterThanOrEqualTo(44));
           await _capture(tester, key, 'editor-pages-$suffix');
-          await tester.ensureVisible(find.byTooltip('레이어'));
+          await tester.ensureVisible(find.byTooltip('재배치'));
           await tester.pumpAndSettle();
-          await tester.tap(find.byTooltip('레이어'));
+          await tester.tap(find.byTooltip('재배치'));
           await _paint(tester);
           final panel = find.byType(LayerManagerPanel);
           expect(panel, findsOneWidget);
@@ -278,6 +281,15 @@ void main() {
               isTrue,
             );
           } else {
+            expect(panel, findsOneWidget);
+            expect(
+              tester.widget<Semantics>(caption).properties.selected,
+              isTrue,
+            );
+            await tester.tap(
+              find.byKey(const ValueKey('editor-layer-edit-selected')),
+            );
+            await tester.pumpAndSettle();
             expect(panel, findsNothing);
           }
           expect(vm.currentPageIndex, 17);
@@ -447,9 +459,9 @@ void main() {
         );
         expect(addRect.width, greaterThanOrEqualTo(44));
         expect(addRect.bottom, lessThanOrEqualTo(size.height - 24));
-        await tester.ensureVisible(find.byTooltip('레이어'));
+        await tester.ensureVisible(find.byTooltip('재배치'));
         await tester.pumpAndSettle();
-        await tester.tap(find.byTooltip('레이어'));
+        await tester.tap(find.byTooltip('재배치'));
         await _paint(tester);
         final panel = find.byType(LayerManagerPanel);
         expect(panel, findsOneWidget);

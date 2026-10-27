@@ -1,0 +1,93 @@
+{
+  "date": "2026-10-25",
+  "scope": "Friend invitations and collaborative album editing",
+  "status": "implemented_deployed_and_verified",
+  "production": {
+    "url": "https://snapfit-c719d.web.app/feed#/feed",
+    "hosting_version": "d9ccdcdf424b7523",
+    "main_sha256": "7543c9bb4e2916242078d68fdc47b807faf8eb043190e007446534ff07080ea9",
+    "bootstrap_sha256": "c952ba48499def6ba29362b8bd8497575bb0494d4bb6785dcf072052dbacf2e3",
+    "supabase_project": "rrbhxdtriummqpztpjrk",
+    "migrations": [
+      "20261025092237",
+      "20261025092240",
+      "20261025092245",
+      "20261025093805"
+    ],
+    "edge_functions": {
+      "album-invites": 30,
+      "admin-ops": 40
+    }
+  },
+  "tests": {
+    "flutter_unique_passed": 373,
+    "flutter_failed": 0,
+    "ordinary_actor_and_privileged_boundary_live_checks_passed": 83,
+    "live_failed": 0,
+    "server_reports": [
+      "album-collaboration-editor-and-print-2026-10-25.json",
+      "album-collaboration-live-2026-10-25.json"
+    ],
+    "cleanup_report": "album-collaboration-cleanup-2026-10-25.json",
+    "security_advisors_after_print_match_after_collaboration": true
+  },
+  "browser": {
+    "final_hosting_version_tested": "d9ccdcdf424b7523",
+    "synthetic_accounts_only": true,
+    "passed": [
+      "Owner sign-in and own album library",
+      "Owner opens saved album and generates a single-use HTTPS invite",
+      "Copy button reports success and HTTPS URL is visibly rendered",
+      "Owner member page exposes invite and unused-link cancellation controls",
+      "Logout, anonymous HTTPS invitation preview, login as another account, return to the same invite",
+      "Accept invitation, success state and open the shared album",
+      "Accepted editor can view private saved photos and open the editor",
+      "Add local text, save as another ordinary owner actor, display remote-change notice",
+      "Stale save opens explicit reload confirmation; keeping edits preserves local text",
+      "Permission revocation blocks saving and preserves local text in read-only UI",
+      "Read-only exit requires explicit discard confirmation",
+      "Reload a consumed invitation path with an album hash restores the reader without a new invite overlay",
+      "Fresh viewer reader hides edit and order actions",
+      "Final build: conflict, retain local edits, change role to VIEWER, automatic foreground check enters read-only mode without another save",
+      "Final build: local text remains visible after automatic permission revocation",
+      "Log out and return to anonymous feed"
+    ],
+    "clipboard_content_verification": "The browser automation clipboard bridge returned an empty string. Only the visible HTTPS URL and success feedback are claimed.",
+    "proof_images": [
+      "album-collaboration-conflict-keep-2026-10-25.png",
+      "album-collaboration-final-readonly-2026-10-25.png"
+    ]
+  },
+  "native": {
+    "apk": "output/native-photo-refresh/SnapFit-collaboration-debug.apk",
+    "sha256": "0831570f155d10857a715804cd2bc8564d0d58e1c0019ed5d046dca42e2f9536",
+    "signature_crc_and_source_consistency_verified": true,
+    "common_web_native_source_files_match": 1765,
+    "installed_on_phone": false
+  },
+  "cleanup": {
+    "synthetic_auth_accounts_removed": 4,
+    "synthetic_album_manifest_count": 7,
+    "synthetic_api_works_removed": 2,
+    "album_asset_objects_removed": 5,
+    "snapshot_objects_removed": 4,
+    "residual_check_groups_zero": 33,
+    "original_storage_object_count": 41,
+    "original_storage_metadata_unchanged": true,
+    "credentials_file_deleted": true,
+    "external_invitation_messages_sent": 0,
+    "actual_orders_payments_or_fulfillment_created": 0
+  },
+  "decisions": {
+    "public_album_viewing": "free",
+    "paid_style_import_and_reward_distribution": "not activated",
+    "collaborative_publication": "New or republished collaborative snapshots are blocked until a participant-consent flow exists",
+    "editing": "Whole-document revision checks and 15-second foreground status checks; no implicit overwrite or automatic merge"
+  },
+  "limitations": [
+    "No physical phone was available. The debug APK is built and verified but physical-device installation and operation were not tested.",
+    "Previously issued signed URLs remain usable until expiry; already downloaded images cannot be recalled.",
+    "Accepted collaboration history is retained going forward. Membership removed before this migration cannot be reconstructed.",
+    "Initial album creation still uses the existing INSERT transport. This verification does not certify deduplication when the initial creation response is lost."
+  ]
+}

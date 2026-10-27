@@ -1,0 +1,153 @@
+{
+  "date": "2026-10-26",
+  "status": "production_applied_ordinary_JWT_and_UI_verified_cleanup_complete",
+  "project": "rrbhxdtriummqpztpjrk",
+  "migration": {
+    "file": "supabase/migrations/20261026092426_weekly_photo_moments.sql",
+    "createdVia": "supabase migration new weekly_photo_moments",
+    "sha256": "226277f702f00ef32482105c3f9c17d111aec2005867172bc8df7ec3fdf32704",
+    "appliedToProduction": true,
+    "initialCliVersion": "20261026091003",
+    "operatingVersion": "20261026092426",
+    "sqlBytesUnchanged": true
+  },
+  "contract": {
+    "get_moment_journal": {
+      "parameters": {
+        "p_month": "date, nullable defaults to current server KST month first day"
+      },
+      "result": [
+        "today",
+        "weekStart",
+        "month",
+        "timezone",
+        "records",
+        "weekRecords",
+        "weekPhotoCount",
+        "monthlyAlbumId"
+      ]
+    },
+    "save_weekly_moment": {
+      "parameters": {
+        "p_id": "UUID",
+        "p_record_date": "date <= KST server today",
+        "p_caption": "text <= 200 characters, trimmed",
+        "p_photos": "array 1..3 {id UUID,path,width,height}",
+        "p_expected_revision": "integer; 0 for creation"
+      },
+      "result": "record {id,owner_id,record_date,caption,photos,revision,created_at,updated_at}"
+    },
+    "delete_weekly_moment": {
+      "parameters": {
+        "p_id": "UUID",
+        "p_expected_revision": "integer >=1"
+      },
+      "result": "boolean; absent/already deleted own record returns true"
+    },
+    "create_moment_month_album": {
+      "parameters": {
+        "p_month": "date, first day <= server current month",
+        "p_photo_ids": "UUID[] 1..9 unique",
+        "p_album": "snake_case album document fields; title/ratio/cover_layers_json/target_pages/total_pages required"
+      },
+      "result": "{albumId bigint,created boolean}; repeat opens owned existing album"
+    },
+    "perMonthActiveRecordLimit": 100,
+    "imageTypes": [
+      "jpg",
+      "jpeg",
+      "png",
+      "webp"
+    ],
+    "widthHeightRange": "integer 1..99999",
+    "dateFloor": "1900-01-01",
+    "albumDocumentMaximumBytes": 1048576,
+    "selection": "Owned nondeleted record photo IDs from chosen month only; document storage path set equals exactly selected paths; signed/external/data/blob/relative image URLs rejected; canonical supabase://album-assets/... retained",
+    "monthAlbumDeletion": "Mapping album_id becomes null; next explicit action may recreate from retained records",
+    "recordDeletion": "Photos and caption cleared in tombstone, so stale save cannot resurrect; storage physically retained for album references"
+  },
+  "security": {
+    "privateSchema": true,
+    "RLSBothTables": true,
+    "directClientTableGrants": false,
+    "publicWrappersSecurityInvoker": true,
+    "privateValidatedDefinerEmptySearchPath": true,
+    "permanentActiveActor": true,
+    "clientMetadataNeverAuthoritative": true,
+    "actorRowLockSerializesWrites": true,
+    "ownedObjectPathAndMimeValidation": true,
+    "recordRefStorageGuard": true,
+    "existingAlbumBindingsPreserveAssetsAndCollaboration": true,
+    "existingFunctionsUnchanged": true,
+    "existingPoliciesUnchanged": true,
+    "pointWrites": false,
+    "notifications": false
+  },
+  "validation": {
+    "engine": "PGlite 0.3.14",
+    "momentsCasesPassed": 19,
+    "albumCollaborationCasesPassed": 21,
+    "totalPassed": 40,
+    "totalFailed": 0,
+    "log": "output/moments-album-sql-20261026.log",
+    "command": "PGLITE_MODULE=/tmp/snapfit-moments-sql-test/node_modules/@electric-sql/pglite/dist/index.js node --test --test-concurrency=1 test/server/weekly_moments_sql.test.mjs test/server/album_collaboration_sql.test.mjs",
+    "limits": "PGlite queues on one connection; live ordinary-JWT concurrency and Storage HTTP integration remain root release checks",
+    "gitDiffCheck": "passed"
+  },
+  "productionPreflight": {
+    "report": "docs/verification/moments-production-preflight-2026-10-26.json",
+    "readOnly": true,
+    "actualAlbumAndStorageColumnsConfirmed": true,
+    "privateBucketConfirmed": true,
+    "existingAlbumSyncTriggerConfirmed": true,
+    "existingStorageProfileAndSnapshotGuardsSeparateBucketScopes": true,
+    "cleanupRequirement": "Use Storage API for object deletion; production storage.protect_delete statement trigger intentionally blocks direct SQL DELETE."
+  },
+  "errors": [
+    "MOMENTS_LOGIN_REQUIRED",
+    "MOMENTS_ACCOUNT_REQUIRED",
+    "MOMENTS_INVALID_MONTH",
+    "MOMENTS_INVALID_RECORD",
+    "MOMENTS_INVALID_PHOTOS",
+    "MOMENTS_ACCESS_DENIED",
+    "MOMENTS_RECORD_DELETED",
+    "MOMENTS_REVISION_CONFLICT",
+    "MOMENTS_MONTH_FULL",
+    "MOMENTS_INVALID_PHOTO_PATH",
+    "MOMENTS_PHOTO_UNAVAILABLE",
+    "MOMENTS_DUPLICATE_PHOTO",
+    "MOMENTS_PHOTO_IN_USE",
+    "MOMENTS_INVALID_SELECTION",
+    "MOMENTS_SELECTION_CHANGED",
+    "MOMENTS_INVALID_ALBUM",
+    "MOMENTS_ALBUM_PHOTOS_MISMATCH",
+    "MOMENTS_INVALID_ALBUM_IMAGE"
+  ],
+  "references": [
+    "https://supabase.com/changelog.md",
+    "https://supabase.com/docs/guides/database/functions",
+    "https://supabase.com/docs/guides/database/postgres/row-level-security"
+  ],
+  "recordedAt": "2026-10-26T09:24:21.339Z",
+  "productionPostflightReport": "docs/verification/moments-production-postflight-2026-10-26.json",
+  "liveVerification": {
+    "report": "docs/verification/moments-live-2026-10-26.json",
+    "ordinaryJWTChecksPassed": 39,
+    "actualConcurrentCreateRequests": 20,
+    "actualConcurrentCompetingCASRequests": 20,
+    "actualConcurrentMonthlyCreateRequests": 20,
+    "exactlyOneMonthlyAlbum": true,
+    "APIAccountCleanupUUIDColumnsScanned": 130,
+    "APIAccountRemainingReferences": 0,
+    "APIAccountRemainingRefreshTokens": 0,
+    "UIAccountRetained": false,
+    "allQAAccountsRemoved": true,
+    "privateCredentialsAndHelpersDeleted": true,
+    "finalUUIDColumnsScanned": 130,
+    "finalRemainingReferences": 0,
+    "finalRemainingRefreshTokens": 0,
+    "finalRemainingStorageObjects": 0,
+    "existingCustomerAnd45FunctionHashesExact": true,
+    "cleanupReport": "docs/verification/moments-cleanup-2026-10-26.json"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "date": "2026-10-25",
+  "scope": "Store template cover loading feedback",
+  "changes": [
+    "Add a 1500ms diagonal mint/white light sweep across photo and text placeholder shapes",
+    "Share one animation clock across pending covers in each store screen",
+    "Repaint only placeholder surfaces; keep child widget trees stable during animation",
+    "Cache paths, paint, sweep geometry and gradient shader per placeholder layout/theme",
+    "Pause during either scroll axis, hidden tabs, background, reduced motion or when no placeholders are visible",
+    "Stop when native artwork replaces the last placeholder; release listeners on removal",
+    "Pause existing full loading-grid shimmer during ancestor scrolling",
+    "Preserve static cover skeletons outside the store shimmer scope"
+  ],
+  "review": {
+    "unresolvedFindingsInThisChange": [],
+    "resourceLifetime": "No global clock, image assets or document/cache changes. Scroll positions are reference-counted, clients detach on disposal, lifecycle observer and controller dispose with the store scope.",
+    "scopeNote": "Earlier search-scope and selected-category-chip review findings are separate; this change only addresses loading feedback.",
+    "physicalDeviceFpsOrHeapMeasured": false
+  },
+  "verification": {
+    "testsPassed": 29,
+    "testsFailed": 0,
+    "testFiles": [
+      "test/widget/catalog_skeleton_shimmer_test.dart",
+      "test/widget/home_album_chrome_test.dart",
+      "test/widget/deferred_content_test.dart",
+      "test/widget/catalog_preview_pipeline_test.dart",
+      "test/widget/store_entry_loading_test.dart",
+      "test/widget/store_paging_test.dart",
+      "test/widget/store_editorial_experience_test.dart"
+    ],
+    "checks": [
+      "Native pixel changes in light and dark themes with no extra child builds",
+      "Three placeholders share exactly one animation callback",
+      "Loading completion, unmount, hidden/background and reduced-motion cleanup",
+      "Both scroll axes must be idle; offscreen cached placeholders do not keep the clock running",
+      "Actual StoreScreen cover transitions from animated placeholder to native artwork",
+      "Existing home static placeholders, lazy store entry and paging remain functional"
+    ],
+    "nativePreviewImages": [
+      "output/store-shimmer-qa/light-before.png",
+      "output/store-shimmer-qa/light-sweep.png",
+      "output/store-shimmer-qa/dark-before.png",
+      "output/store-shimmer-qa/dark-sweep.png"
+    ],
+    "staticAnalysis": "No issues found in 5 Dart files",
+    "appBuildPerformed": false
+  }
+}

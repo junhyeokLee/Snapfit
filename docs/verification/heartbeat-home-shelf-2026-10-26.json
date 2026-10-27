@@ -1,0 +1,107 @@
+{
+  "date": "2026-10-26",
+  "automation_id": "snapfit",
+  "trigger_time": "2026-10-26T05:21:24.556Z",
+  "finished_time": "2026-10-26T05:26:08.142436+00:00",
+  "scope": "Main album shelf alignment on distant selection/reordering and rapid re-selection, preserving nearby motion, original artwork and lazy preview/cache ownership.",
+  "previous_reports": [
+    "docs/verification/heartbeat-reader-controller-2026-10-26.json",
+    "docs/verification/heartbeat-reader-thumbnails-2026-10-26.json",
+    "docs/verification/home-store-entry-scroll-performance-2026-10-25.json"
+  ],
+  "findings": [
+    {
+      "id": "home-shelf-distant-scroll-work",
+      "priority": "P2",
+      "status": "fixed",
+      "before": "The focused stage already jumped for distant selection, but the small cover shelf always animated its full distance. A controlled 201-album selection from 0 to 160 mounted intermediate covers: strip IDs 27-31, 52-57, 75-79, 93-98 and more; the grid also mounted intermediate IDs. A refreshed/reordered selected album can also move to a distant index.",
+      "change": "Animate only within 1.5 scroll viewports. Jump directly for distant alignment. Existing layout alignment stays immediate, and fixed list/grid extents and lazy builders are unchanged.",
+      "verified": "Both strip and grid now show album 160 immediately without mounting IDs 20-130 during subsequent frames, retain fewer than 20 mounted cover previews in the fixture, and still animate intermediate offsets for nearby selection."
+    },
+    {
+      "id": "home-shelf-obsolete-animation-on-rapid-return",
+      "priority": "P2",
+      "status": "fixed",
+      "before": "Selecting a nearby album and returning to album 0 before the first animation tick left the old scroll activity running, because the new alignment returned early at distance <1. The strip ended at offset 112 while album 0 was selected; the grid case also failed.",
+      "change": "If alignment is already at the requested position but a scroll activity is still running, jump to the target to stop that obsolete activity before returning.",
+      "verified": "Both strip and grid stay at offset 0 after rapid return, leave the selected album visible and stop the scroll activity. Teardown leaves no transient callbacks."
+    }
+  ],
+  "production_files_changed_this_run": [
+    "lib/features/album/presentation/widgets/home/home_album_shelf.dart"
+  ],
+  "new_test_files": [
+    "test/widget/home_shelf_navigation_performance_test.dart"
+  ],
+  "verification": {
+    "baseline": {
+      "passed": 4,
+      "failed": 4,
+      "log": "output/heartbeat-home-shelf-2026-10-26/baseline-tests.log",
+      "classification": "Intentional pre-fix reproduction; the four failing cases cover far selection and rapid return for strip/grid. Nearby/reduced-motion cases passed before and after."
+    },
+    "intermediate_related": {
+      "passed": 21,
+      "failed": 3,
+      "log": "output/heartbeat-home-shelf-2026-10-26/related-tests.log",
+      "classification": "The shared unit_test_assets directory existed but lacked AssetManifest.bin and Poppins-Regular.otf. --no-test-assets could not reuse the absent bundle. Two artwork tests and one font setup failed; all eight new controlled cases passed. No production code was changed for the missing test assets."
+    },
+    "final_related": {
+      "passed": 97,
+      "failed": 0,
+      "log": "output/heartbeat-home-shelf-2026-10-26/final-tests.log",
+      "single_process": true,
+      "concurrency": 1,
+      "command": "flutter test --no-pub --concurrency=1 --reporter expanded test/widget/home_shelf_navigation_performance_test.dart test/widget/home_album_performance_test.dart test/widget/home_book_depth_test.dart",
+      "asset_handling": "Allowed Flutter to regenerate only the test asset bundle for the final run; no app build or device execution."
+    },
+    "static_analysis": {
+      "items": 2,
+      "issues": 0,
+      "log": "output/heartbeat-home-shelf-2026-10-26/analysis.log"
+    },
+    "scoped_git_diff_check": "passed; additionally checked source/test trailing whitespace and exact delta against the pre-run snapshot",
+    "resources": "Free disk rechecked before tests (~3.9 GiB); no other Flutter test process was observed at the prelaunch checks. Each agent-owned test process ran serially. No other process or user/shared cache was stopped or removed.",
+    "external_effects": "No app build/device run, deployment, operational database access or customer data mutation."
+  },
+  "review": {
+    "remaining_blocking_findings_in_changed_scope": [],
+    "checked": [
+      "No widget tree, layout spacing, text, title, category, sort/filter, item key, image decode budget or cache implementation was changed.",
+      "The only production delta is the distance gate plus cancellation of an obsolete scroll activity; no extra queue, listener, timer, cache or controller was added.",
+      "Existing reduced-motion, TickerMode and mounted/controller attachment checks remain in place.",
+      "Existing main/collection completion criteria, queued large-document work, memory-pressure cleanup, photo preparation/capture, reader navigation, rotation, selection retention after refresh and cover-opening tests pass.",
+      "New teardown assertions verify no remaining transient frame callback; source review confirms the existing owned ScrollController disposal is unchanged.",
+      "Shared workspace changes and all snapshot-protected sources were preserved."
+    ],
+    "protected_sources_unchanged": {
+      "lib/features/album/presentation/widgets/home/home_album_slider.dart": true,
+      "lib/features/album/presentation/widgets/home/home_album_cover_thumbnail.dart": true,
+      "lib/features/album/presentation/utils/album_progress.dart": true,
+      "lib/shared/snapfit_image.dart": true,
+      "lib/features/store/data/api/template_provider.dart": true
+    },
+    "source_assertions": {
+      "only_distance_gate_and_old_activity_cancel_changed": true,
+      "no_new_fields_caches_subscriptions_or_callbacks": true
+    },
+    "source_patch": "output/heartbeat-home-shelf-2026-10-26/source.patch",
+    "final_sha256": {
+      "lib/features/album/presentation/widgets/home/home_album_shelf.dart": "86d35ce76dc1bf2ebfa2707b17e3f6720ba697f8c76bf2896b7311e7dd2b60a9",
+      "test/widget/home_shelf_navigation_performance_test.dart": "933c79fd7501d8faf794853633f09f8afb0098ecd2df83c441ac3bb341b9a829"
+    }
+  },
+  "follow_up": {
+    "automation_remains_useful": true,
+    "next_candidates": [
+      "Review editor material/photo picker async completion after dismissal, account changes and rapid tool switching against the latest completed records.",
+      "Continue main album queued cover/progress visibility and owner checks if a new controlled failure appears; do not repeat the completed shelf/reader alignment fixes.",
+      "Before reusing --no-test-assets, verify AssetManifest.bin and required fixture fonts actually exist; check free disk and active tests before compilation."
+    ]
+  },
+  "limits": [
+    "No physical-device FPS, frame-time, peak process memory or heap snapshot was measured. Skipped intermediate widget construction is proven; numerical FPS or MB savings and a whole-app absence of leaks are not claimed.",
+    "The controlled 201-album fixtures use small layer-free cover documents and count mounted cover widgets, not network requests or native photo allocations. Existing real-artwork/reader fixtures supply the related regressions.",
+    "Already-started image/worker operations remain governed by their existing shared visibility/disposal gates; this change does not cancel network transport or replace cache policies."
+  ]
+}

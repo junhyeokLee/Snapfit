@@ -66,7 +66,7 @@ void main() {
         '커버',
         '레이아웃',
         '템플릿',
-        '레이어',
+        '재배치',
         '꾸미기',
         '배경',
       ]) {
@@ -113,14 +113,14 @@ void main() {
         ),
       );
 
-      for (final label in ['사진', '글', '템플릿', '꾸미기']) {
+      for (final label in ['사진', '재배치']) {
         expect(find.text(label).hitTestable(), findsOneWidget, reason: label);
       }
       expect(
         find.byKey(const ValueKey('editor-advanced-tool-divider')),
         findsOneWidget,
       );
-      for (final label in ['글', '사진', '레이아웃', '템플릿', '레이어', '꾸미기', '배경']) {
+      for (final label in ['글', '사진', '레이아웃', '템플릿', '재배치', '꾸미기', '배경']) {
         await _dragDockUntilVisible(tester, label);
         expect(find.text(label), findsOneWidget, reason: label);
       }
@@ -134,8 +134,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(selected.last, EditorMode.none);
 
-      await _dragDockUntilVisible(tester, '레이어');
-      await tester.tap(find.text('레이어'));
+      await _dragDockUntilVisible(tester, '재배치');
+      await tester.tap(find.text('재배치'));
       await tester.pumpAndSettle();
       expect(selected, contains(EditorMode.layer));
     },

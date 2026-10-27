@@ -1,0 +1,206 @@
+{
+  "task": "Remote home-news controls and four-story carousel",
+  "date": "2026-10-27",
+  "status": "complete",
+  "updatedAt": "2026-10-27T02:41:23.068387+00:00",
+  "changes": {
+    "operations": "Admin settings: enabled, Korean start/end schedule, order; current server app_metadata and JWT admin authorization",
+    "carousel": "All enabled stories share one popup, swipe/page controls, desktop arrows, only current CTA navigates",
+    "eligibleFirst": "Only an unseen targeted story starts an automatic popup; completed benefits and empty records remain manually browsable in their actual state",
+    "monthlyReminder": "Generic recap card does not consume the later actual month-end photo reminder",
+    "quota": "One delivery, regardless of pages viewed. KST 1/day, Monday week 2/week; combines old single-card records with new deliveries",
+    "tracking": "View/click requests retain order without blocking close/navigation",
+    "revalidation": "Server settings enforced in batch claim, swipe recording and before CTA navigation; news list supports refresh",
+    "privacy": "Owner/revision guards and exact modal-route removal retained; only current owner photos appear",
+    "points": "News viewing and remote operations do not change the point ledger"
+  },
+  "verification": {
+    "nativeCore": {
+      "passed": 42,
+      "log": "output/home-news-carousel-core-tests.log"
+    },
+    "nativeData": {
+      "passed": 18,
+      "log": "output/home-news-carousel-data-tests.log"
+    },
+    "nativeCarouselAndCapture": {
+      "passed": 15,
+      "log": "output/home-news-carousel-visual-tests.log"
+    },
+    "nativeFinalNavigation": {
+      "passed": 14,
+      "log": "output/home-news-carousel-navigation-tests.log"
+    },
+    "nativeSettingsAndCatalogRegression": {
+      "passed": 21,
+      "log": "output/home-news-carousel-settings-regression.log"
+    },
+    "chrome": {
+      "passed": 69,
+      "log": "output/home-news-carousel-chrome-tests.log"
+    },
+    "postgres": {
+      "passed": 15,
+      "log": "output/home-news-carousel-all-sql-tests.log"
+    },
+    "staticAnalysis": {
+      "passed": true,
+      "log": "output/home-news-carousel-analysis.log"
+    },
+    "browserFontTestRepair": "Explicit font loading skipped only in Chrome because test setup deadlocked; actual font layout verified in native screenshots",
+    "productionDatabase": [
+      {
+        "verification": {
+          "checks": [
+            "admin and ordinary-account authorization",
+            "remote OFF",
+            "order",
+            "start scheduling",
+            "end scheduling and legacy RPC",
+            "four-card batch",
+            "actual swipe history",
+            "one popup quota",
+            "selected-card interaction",
+            "account isolation",
+            "live OFF during delivery",
+            "generic month intro preserves month-end trigger",
+            "points unchanged"
+          ],
+          "passed": true,
+          "campaigns": [
+            {
+              "kind": "monthReview",
+              "endsAt": null,
+              "enabled": true,
+              "startsAt": null,
+              "sortOrder": 0,
+              "updatedAt": "2026-10-27T02:26:15.292722+00:00"
+            },
+            {
+              "kind": "monthlyDesign",
+              "endsAt": null,
+              "enabled": true,
+              "startsAt": null,
+              "sortOrder": 1,
+              "updatedAt": "2026-10-27T02:26:15.294191+00:00"
+            },
+            {
+              "kind": "attendance",
+              "endsAt": null,
+              "enabled": true,
+              "startsAt": null,
+              "sortOrder": 2,
+              "updatedAt": "2026-10-27T02:26:15.294214+00:00"
+            },
+            {
+              "kind": "referral",
+              "endsAt": null,
+              "enabled": true,
+              "startsAt": null,
+              "sortOrder": 3,
+              "updatedAt": "2026-10-27T02:26:15.29422+00:00"
+            }
+          ],
+          "testAccountsRemaining": 0,
+          "transactionRolledBack": true
+        }
+      }
+    ],
+    "security": {
+      "featureWarnings": [],
+      "intentionalPrivateTableNotices": [
+        {
+          "name": "rls_enabled_no_policy",
+          "level": "INFO",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+          "findings": [
+            {
+              "detail": "Table \\`home_news_private.campaigns\\` has RLS enabled, but no policies exist",
+              "metadata": {
+                "name": "campaigns",
+                "type": "table",
+                "schema": "home_news_private"
+              },
+              "observed_at": "2026-10-27T02:30:39.930Z"
+            },
+            {
+              "detail": "Table \\`home_news_private.deliveries\\` has RLS enabled, but no policies exist",
+              "metadata": {
+                "name": "deliveries",
+                "type": "table",
+                "schema": "home_news_private"
+              },
+              "observed_at": "2026-10-27T02:30:39.930Z"
+            },
+            {
+              "detail": "Table \\`home_news_private.exposures\\` has RLS enabled, but no policies exist",
+              "metadata": {
+                "name": "exposures",
+                "type": "table",
+                "schema": "home_news_private"
+              },
+              "observed_at": "2026-10-27T02:30:39.930Z"
+            }
+          ]
+        }
+      ]
+    },
+    "productionHosting": {
+      "passed": true,
+      "baseUrl": "https://snapfit-c719d.web.app",
+      "build": {
+        "main_sha256": "e1bbd183c972576eb0c8ffc45f0cef88925fec5bcdffa3c107ff6f3fb2cba38b",
+        "main_file": "main.e1bbd183c972576eb0c8.dart.js",
+        "bootstrap_sha256": "170da7efe4afee3d24142aa1d502f76b45e9a4c36bc1fd27ec8c645808e04972",
+        "bootstrap_file": "flutter_bootstrap.170da7efe4afee3d2414.js"
+      },
+      "checks": [
+        {
+          "path": "/albums",
+          "status": 200,
+          "latestBootstrap": true,
+          "noStore": true
+        },
+        {
+          "path": "/notifications",
+          "status": 200,
+          "latestBootstrap": true,
+          "noStore": true
+        },
+        {
+          "path": "/snapfit-web-build.json",
+          "status": 200,
+          "matchesLocal": true
+        },
+        {
+          "path": "/flutter_bootstrap.170da7efe4afee3d2414.js",
+          "status": 200,
+          "sha256": "170da7efe4afee3d24142aa1d502f76b45e9a4c36bc1fd27ec8c645808e04972"
+        },
+        {
+          "path": "/main.e1bbd183c972576eb0c8.dart.js",
+          "status": 200,
+          "sha256": "e1bbd183c972576eb0c8ffc45f0cef88925fec5bcdffa3c107ff6f3fb2cba38b"
+        }
+      ],
+      "deployment": {
+        "status": "success",
+        "result": {
+          "hosting": "projects/360727043538/sites/snapfit-c719d/versions/8d0488a7a1d1cdf1"
+        }
+      }
+    },
+    "productionBrowserSmoke": {
+      "url": "https://snapfit-c719d.web.app/albums#/login",
+      "rendered": true,
+      "note": "Fresh in-app browser rendered the deployed login screen; no signed-in session was available. Private carousel flows were verified by Chrome widgets and production RPC checks."
+    }
+  },
+  "migrations": [
+    "20261027022615_home_news_remote_campaigns_and_deliveries.sql",
+    "20261027022937_preserve_month_review_trigger_after_generic_swipe.sql"
+  ],
+  "screenshots": "output/home-news-20261027 (16 actual production-widget captures; sample covers/private-photo fixtures)",
+  "operationsGuide": "docs/home-news-operations.md",
+  "app": "Shared Flutter source updated. Native package not built or installed; no device connected."
+}

@@ -1,0 +1,39 @@
+{
+  "status": "released_and_live_verified",
+  "rule_version": 1,
+  "reference_project": "/Users/devsheep/oboa_project/oboa_ai",
+  "reference_files": [
+    "supabase/migrations/20260922120000_attendance_streak_rewards.sql",
+    "lib/Screens/Payment/attendance_bonus_card.dart",
+    "lib/Providers/attendance_streak_provider.dart"
+  ],
+  "timezone": "Asia/Seoul",
+  "reset": "Daily 00:00 Korea server time",
+  "weekly_rewards": [
+    10,
+    10,
+    20,
+    10,
+    10,
+    10,
+    30
+  ],
+  "weekly_total": 100,
+  "streak": "Consecutive server dates; missed day resets next claim to day 1; day 8 begins a new 7-day cycle",
+  "claim": "Explicit button; signed-in permanent existing account; one award per user/server date",
+  "credit": "Existing point wallet + DAILY_ATTENDANCE ledger entry, atomic and idempotent",
+  "new_expiration_policy_introduced": false,
+  "scope": "No point marketplace, creator payouts, cashout, direct transfers or OBOA payment schema copied",
+  "entry_points": [
+    "Private My profile above work gallery",
+    "Points screen on mobile and web",
+    "Authenticated /attendance direct route"
+  ],
+  "design": "SnapFit neutral paper and mint stamp card, seven-day strip, current-month calendar, server-confirmed points",
+  "reference_expiration_not_copied": "OBOA has an independently dated expiry policy; SnapFit keeps its existing balance behavior.",
+  "customer_balances_ownership_catalog_and_source_albums_preserved": true,
+  "live_claim_and_cleanup_verified": true,
+  "web_hosting_version": "09c8fa9231ca4f1d",
+  "native_build_verified": true,
+  "phone_install_attempted": false
+}

@@ -67,7 +67,12 @@ void main() {
       final scroll = tester
           .widget<CustomScrollView>(find.byType(CustomScrollView))
           .controller!;
-      scroll.jumpTo(scroll.position.maxScrollExtent);
+      final end = scroll.position.maxScrollExtent;
+      // Multiple scroll updates before a frame share a single page expansion.
+      for (var step = 5; step >= 0; step--) {
+        scroll.jumpTo(end - step);
+      }
+      expect(count(), 12);
       await tester.pumpAndSettle();
       expect(count(), 24);
       scroll.jumpTo(scroll.position.maxScrollExtent);

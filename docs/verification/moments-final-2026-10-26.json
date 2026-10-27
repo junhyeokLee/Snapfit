@@ -1,0 +1,153 @@
+{
+  "date": "2026-10-26",
+  "status": "complete",
+  "scope": "Private weekly photo journal and monthly editable albums for Flutter web and Android",
+  "features": {
+    "record_photos": {
+      "minimum": 1,
+      "maximum": 3
+    },
+    "caption_max_characters": 200,
+    "weekly_photo_goal": 3,
+    "monthly_album_max_photos": 9,
+    "private_by_default": true,
+    "entry_points": [
+      "home_library",
+      "own_profile_private_activity"
+    ],
+    "existing_album_editor": true,
+    "automatic_point_rewards": false
+  },
+  "source": {
+    "sha256": "8fd4f835c09ab6133b9703b102b2afb1f81a94665aab53165f6b55578783088d",
+    "files": 1840,
+    "unchanged_after_web_and_android_build": true
+  },
+  "web": {
+    "url": "https://snapfit-c719d.web.app/moments",
+    "hosting_public": "build/review-web",
+    "deployment": {
+      "status": "success",
+      "result": {
+        "hosting": "projects/360727043538/sites/snapfit-c719d/versions/b557f2cc6159bb2f"
+      }
+    },
+    "build": {
+      "main_sha256": "d1b2229d3a8ba2959843dca53638324b623953e806b232c928477f2cce119e9c",
+      "main_file": "main.d1b2229d3a8ba2959843.dart.js",
+      "bootstrap_sha256": "8e77086c1082c4c2f7c7ded76e446b463a59ef0b218bd0ea9303c404eaa47fb4",
+      "bootstrap_file": "flutter_bootstrap.8e77086c1082c4c2f7c7.js"
+    },
+    "remote_hash_checks": [
+      {
+        "path": "index.html",
+        "status": 200,
+        "cache_control": [
+          "cache-control: no-store"
+        ],
+        "matches_build": true
+      },
+      {
+        "path": "moments",
+        "status": 200,
+        "cache_control": [
+          "cache-control: no-store"
+        ],
+        "matches_build": true
+      },
+      {
+        "path": "main.d1b2229d3a8ba2959843.dart.js",
+        "status": 200,
+        "cache_control": [
+          "cache-control: public,max-age=31536000,immutable"
+        ],
+        "matches_build": true
+      },
+      {
+        "path": "flutter_bootstrap.8e77086c1082c4c2f7c7.js",
+        "status": 200,
+        "cache_control": [
+          "cache-control: no-cache"
+        ],
+        "matches_build": true
+      },
+      {
+        "path": "snapfit-web-build.json",
+        "status": 200,
+        "cache_control": [
+          "cache-control: max-age=3600"
+        ],
+        "matches_build": true
+      }
+    ]
+  },
+  "android": {
+    "path": "/Users/devsheep/SnapFit/SnapFit/output/native-photo-refresh/SnapFit-moments-debug.apk",
+    "bytes": 861472442,
+    "sha256": "ac3b4cd607eff22813adb866fd74176033a61262e4c16a9256eaceb60359d863",
+    "zip_crc_ok": true,
+    "device_installation": "not_performed_phone_unavailable",
+    "signature_verified": true
+  },
+  "tests": {
+    "unique_selected_unit_widget_tests_passed": 154,
+    "final_core_regression_passed": 57,
+    "final_preview_and_image_policy_passed": 29,
+    "overlap_between_final_suites": 21,
+    "postgres_regression_passed": 40,
+    "live_authenticated_api_assertions_passed": 39,
+    "focused_analyzer": "No issues found",
+    "existing_workspace_analyzer_info": "packages/book_page_flip/lib/src/widget_capture.dart:102 deprecated TickerMode.of; pre-existing"
+  },
+  "ui": {
+    "status": "passed",
+    "url": "https://snapfit-c719d.web.app/moments",
+    "checks": {
+      "photo_record_create_3_photos": true,
+      "caption_saved": true,
+      "past_date_record_create": true,
+      "past_month_not_counted_in_current_week": true,
+      "month_navigation": true,
+      "record_edit_add_photos": true,
+      "landscape_photos_no_portrait_padding": true,
+      "monthly_album_created_privately": true,
+      "real_editor_cover_and_3_pages": true,
+      "save_and_reopen_existing_album": true,
+      "direct_page_editor_and_return_to_journal": true,
+      "home_entry": true,
+      "own_profile_private_entry": true,
+      "final_cover_switch_keeps_photo_visible": true,
+      "final_title_change_keeps_photo_visible": true,
+      "new_album_opens_full_editor_directly": true,
+      "reopening_monthly_preview_uses_same_album": true,
+      "ui_logout": true
+    },
+    "screenshots": [
+      "output/moments-live-20261026/monthly-album-editor.png",
+      "output/moments-live-20261026/monthly-album-pages.png",
+      "output/moments-live-20261026/record-edit-photos.png",
+      "output/moments-live-20261026/monthly-preview-final.png",
+      "output/moments-live-20261026/monthly-album-editor-final.png"
+    ]
+  },
+  "database": {
+    "project": "rrbhxdtriummqpztpjrk",
+    "migration": "supabase/migrations/20261026092426_weekly_photo_moments.sql",
+    "server_report": "docs/verification/moments-server-2026-10-26.json",
+    "live_report": "docs/verification/moments-live-2026-10-26.json"
+  },
+  "cleanup": {
+    "status": "complete",
+    "report": "docs/verification/moments-cleanup-2026-10-26.json",
+    "proof": "docs/verification/moments-cleanup-proof-2026-10-26.json",
+    "all_qa_accounts_removed": true,
+    "remaining_qa_references_tokens_and_storage_objects": 0,
+    "private_credentials_and_helpers_deleted": true,
+    "existing_customer_baseline_exact": true,
+    "existing_45_function_hashes_exact": true
+  },
+  "limitations": [
+    "Physical Android device installation and handset verification were not performed because the phone was unavailable.",
+    "This release includes weekly records and monthly albums; reminder notifications and collaborative activity summaries are not part of this release."
+  ]
+}

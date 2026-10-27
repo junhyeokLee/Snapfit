@@ -1,3 +1,4 @@
+import '../support/store_detail_loading.dart';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -77,7 +78,7 @@ void main() {
     ),
   );
 
-  testWidgets(
+  storeDetailTestWidgets(
     'public browsing sends canonical preview and login destinations to the router',
     (tester) async {
       tester.view.physicalSize = const Size(1440, 1000);
@@ -88,7 +89,7 @@ void main() {
       await tester.pumpWidget(
         app(const PublicDiscoveryScreen(catalogOnly: true), requests),
       );
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       await tester.tap(find.byKey(const ValueKey('discovery-login')));
       expect(requests.removeLast(), WebAppLocation.login);
       final template = publishedCreationTemplates.first;
@@ -104,7 +105,7 @@ void main() {
     skip: !kIsWeb,
   );
 
-  testWidgets(
+  storeDetailTestWidgets(
     'guest detail shows the public price and requests login before ownership',
     (tester) async {
       tester.view.physicalSize = const Size(1440, 1000);
@@ -121,7 +122,7 @@ void main() {
           requests,
         ),
       );
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(find.byType(CatalogFavoriteButton), findsNothing);
       expect(find.text('1,800P'), findsWidgets);
       expect(find.text('디자인 이용 안내'), findsOneWidget);
@@ -139,7 +140,7 @@ void main() {
     skip: !kIsWeb,
   );
 
-  testWidgets(
+  storeDetailTestWidgets(
     'guest can continue to login when the public price lookup fails',
     (tester) async {
       tester.view.physicalSize = const Size(1440, 1000);
@@ -157,7 +158,7 @@ void main() {
           failPrices: true,
         ),
       );
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(find.text('가격을 확인하지 못했어요'), findsWidgets);
       expect(find.text('가격 다시 확인'), findsOneWidget);
       final use = find.byKey(const ValueKey('template-detail-use'));
@@ -169,7 +170,7 @@ void main() {
     skip: !kIsWeb,
   );
 
-  testWidgets(
+  storeDetailTestWidgets(
     'guest materials remain public, read only and return to the same template',
     (tester) async {
       tester.view.physicalSize = const Size(1440, 1000);
@@ -205,11 +206,11 @@ void main() {
           requests,
         ),
       );
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       final materials = find.widgetWithText(TextButton, '전체 보기');
       await tester.ensureVisible(materials);
       await tester.tap(materials);
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(
         find.byKey(const ValueKey('template-material-list')),
         findsOneWidget,
@@ -226,7 +227,7 @@ void main() {
       );
       expect(tester.widget<InkWell>(row).onTap, isNull);
       await tester.tap(find.text('템플릿으로'));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(find.byType(TemplateDetailScreen), findsOneWidget);
       expect(
         tester

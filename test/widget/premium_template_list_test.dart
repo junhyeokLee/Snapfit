@@ -95,8 +95,8 @@ void main() {
   ) async {
     final templates = [
       const PremiumTemplate(
-        id: 1,
-        title: '제주의 기록',
+        id: 2000,
+        title: '여행의 장면',
         subTitle: '여행 사진을 한 권의 룩북처럼 정리해요.',
         coverImageUrl: 'https://example.com/cover.png',
         previewImages: [],
@@ -131,8 +131,8 @@ void main() {
 
     final templates = [
       const PremiumTemplate(
-        id: 1,
-        title: '제주의 기록',
+        id: 2000,
+        title: '여행의 장면',
         subTitle: '여행 사진을 한 권의 룩북처럼 정리해요.',
         coverImageUrl: 'https://example.com/cover.png',
         previewImages: [],
@@ -175,7 +175,7 @@ void main() {
 
     final templates = [
       const PremiumTemplate(
-        id: 1,
+        id: 2000,
         title: '제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿',
         subTitle: '부모님과 아이들의 긴 여행 사진을 감성적인 한 권의 룩북처럼 정리해요.',
         coverImageUrl: 'https://example.com/cover.png',
@@ -233,7 +233,7 @@ void main() {
 
     final templates = [
       const PremiumTemplate(
-        id: 1,
+        id: 2000,
         title: '제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿',
         subTitle: '부모님과 아이들의 긴 여행 사진을 감성적인 한 권의 룩북처럼 정리해요.',
         coverImageUrl: 'https://example.com/cover.png',
@@ -257,5 +257,61 @@ void main() {
       find.byType(PremiumTemplateList),
       matchesGoldenFile('goldens/store_lookbook_card_390x844.png'),
     );
+  });
+  testWidgets('compact panels keep enlarged text and actions reachable', (
+    tester,
+  ) async {
+    await _loadGoldenFonts();
+    tester.view.physicalSize = const Size(800, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    const panelKey = ValueKey('compact-lookbook-panel');
+    const template = PremiumTemplate(
+      id: 2000,
+      title: '제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿',
+      subTitle: '부모님과 아이들의 긴 여행 사진을 감성적인 한 권의 룩북처럼 정리해요.',
+      coverImageUrl: 'https://example.com/cover.png',
+      previewImages: [],
+      pageCount: 24,
+      userCount: 1,
+      category: '가족여행프리미엄에디토리얼',
+    );
+    for (final scale in [1.5, 2.0]) {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            mockTemplateList(() async => [template]),
+          ],
+          child: _wrap(
+            Center(
+              child: SizedBox(
+                key: panelKey,
+                width: 320,
+                child: Builder(
+                  builder: (context) => MediaQuery(
+                    data: MediaQuery.of(
+                      context,
+                    ).copyWith(textScaler: TextScaler.linear(scale)),
+                    child: const PremiumTemplateList(),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: 'text scale $scale');
+      final panel = tester.getRect(find.byKey(panelKey));
+      for (final label in ['룩북 보기', '사진 38~52장', '24쪽']) {
+        final bounds = tester.getRect(find.text(label));
+        expect(bounds.left, greaterThanOrEqualTo(panel.left));
+        expect(bounds.right, lessThanOrEqualTo(panel.right));
+      }
+      await tester.ensureVisible(find.text('룩북 보기'));
+      await tester.pumpAndSettle();
+      expect(find.text('룩북 보기').hitTestable(), findsOneWidget);
+    }
   });
 }

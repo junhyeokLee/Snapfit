@@ -83,6 +83,7 @@ Future<ProviderContainer> _pump(
   _Members members, {
   UserInfo? user = _user,
   bool routed = false,
+  bool nestedRouter = false,
   bool splash = false,
   bool dark = false,
   double scale = 1,
@@ -121,8 +122,14 @@ Future<ProviderContainer> _pump(
           home: splash
               ? const SplashScreen()
               : routed
-              ? const AlbumInviteRouter(
-                  child: Scaffold(body: Center(child: Text('기존 작업 화면'))),
+              ? AlbumInviteRouter(
+                  child: nestedRouter
+                      ? const AlbumInviteRouter(
+                          child: Scaffold(
+                            body: Center(child: Text('기존 작업 화면')),
+                          ),
+                        )
+                      : const Scaffold(body: Center(child: Text('기존 작업 화면'))),
                 )
               : AlbumInviteAcceptScreen(
                   invite: container.read(pendingAlbumInviteProvider)!,
@@ -155,6 +162,71 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     FlutterSecureStorage.setMockInitialValues({});
   });
+
+  testWidgets('nested login gates present only one warm invitation', (
+    tester,
+  ) async {
+    final members = _Members();
+    when(() => members.getInviteInfo('one')).thenAnswer((_) async => _info);
+    final container = await _pump(
+      tester,
+      members,
+      routed: true,
+      nestedRouter: true,
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byType(AlbumInviteAcceptScreen, skipOffstage: false),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('초대 닫기'));
+    await tester.pumpAndSettle();
+    expect(container.read(pendingAlbumInviteProvider), isNull);
+    expect(find.text('기존 작업 화면'), findsOneWidget);
+    expect(
+      find.byType(AlbumInviteAcceptScreen, skipOffstage: false),
+      findsNothing,
+    );
+  });
+
+  for (final status in [401, 409, 410]) {
+    testWidgets('late old-account $status cannot override a new acceptance', (
+      tester,
+    ) async {
+      final members = _Members();
+      final old = Completer<InviteAcceptResponse>();
+      final current = Completer<InviteAcceptResponse>();
+      var calls = 0;
+      when(() => members.getInviteInfo('one')).thenAnswer((_) async => _info);
+      when(
+        () => members.acceptInvite('one'),
+      ).thenAnswer((_) => calls++ == 0 ? old.future : current.future);
+      final container = await _pump(tester, members);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(_action));
+      await tester.pump();
+      (container.read(authViewModelProvider.notifier) as _Auth).become(
+        _user.copyWith(id: 'two'),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(_action));
+      await tester.pump();
+      expect(calls, 2);
+      old.completeError(FunctionException(status: status));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.byType(LoginScreen), findsNothing);
+      expect(
+        tester.widget<FilledButton>(find.byKey(_action)).onPressed,
+        isNull,
+      );
+      current.complete(_accepted);
+      await tester.pumpAndSettle();
+      expect(find.text('앨범 열기'), findsOneWidget);
+      expect(container.read(pendingAlbumInviteProvider), isNull);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets(
     'accept is explicit, single-flight, and opens the actual accepted album',
@@ -217,7 +289,7 @@ void main() {
   });
 
   testWidgets(
-    'cold invitation waits for splash replacement and stays above login',
+    'cold invitation survives first-visit introduction and stays above login',
     (tester) async {
       final members = _Members();
       when(() => members.getInviteInfo('one')).thenAnswer((_) async => _info);
@@ -225,6 +297,11 @@ void main() {
       expect(find.byType(SplashScreen), findsOneWidget);
       expect(find.byType(AlbumInviteAcceptScreen), findsNothing);
       await tester.pump(const Duration(milliseconds: 950));
+      await tester.pumpAndSettle();
+      expect(container.read(pendingAlbumInviteProvider)?.token, 'one');
+      // New installations legitimately visit the introduction before AuthGate.
+      // The invite must survive that route and open after the user continues.
+      await tester.tap(find.text('건너뛰기'));
       await tester.pumpAndSettle();
       expect(find.text(_info.albumTitle), findsOneWidget);
       expect(find.byType(AlbumInviteAcceptScreen), findsOneWidget);

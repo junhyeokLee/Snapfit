@@ -1,0 +1,174 @@
+{
+  "created_at_utc": "2026-10-26T05:41:18.103250+00:00",
+  "status": "PASS_final_web_native_and_live_behavior_verified_qa_cleanup_complete",
+  "tested_initial_release": "86e22edd4cf18022",
+  "url": "https://snapfit-c719d.web.app/feed#/feed",
+  "scope": "ordinary synthetic viewer and creator only, actual published public-bundle photos",
+  "mobile_viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "desktop_viewport": {
+    "width": 1280,
+    "height": 900
+  },
+  "desktop_artwork_dom_bounds": {
+    "width": 1088,
+    "height": 725.328125,
+    "ratio": 1.5
+  },
+  "initial_release_cases": [
+    {
+      "case": "reload_keeps_signed_in_viewer_and_follow_relationship",
+      "passed": true
+    },
+    {
+      "case": "topic_sheet_all_plus_eleven_categories",
+      "passed": true
+    },
+    {
+      "case": "travel_filter_matches_landscape_work",
+      "passed": true
+    },
+    {
+      "case": "artwork_photo_opens_matching_detail",
+      "passed": true
+    },
+    {
+      "case": "feed_like_updates_zero_to_one",
+      "passed": true
+    },
+    {
+      "case": "feed_save_updates_unselected_to_selected",
+      "passed": true
+    },
+    {
+      "case": "detail_matches_feed_like_and_save",
+      "passed": true
+    },
+    {
+      "case": "detail_like_cancel_preserves_second_page",
+      "passed": true
+    },
+    {
+      "case": "detail_save_cancel_preserves_second_page",
+      "passed": true
+    },
+    {
+      "case": "fullscreen_starts_on_current_second_page",
+      "passed": true
+    },
+    {
+      "case": "fullscreen_zoom_to_150_percent",
+      "passed": true
+    },
+    {
+      "case": "fullscreen_next_page_resets_zoom_and_disables_last_next",
+      "passed": true
+    },
+    {
+      "case": "fullscreen_close_syncs_third_page_to_detail",
+      "passed": true
+    },
+    {
+      "case": "detail_previous_controls_return_to_first_page",
+      "passed": true
+    },
+    {
+      "case": "return_feed_matches_cancelled_reactions",
+      "passed": true
+    },
+    {
+      "case": "following_feed_contains_creators_three_works",
+      "passed": true
+    },
+    {
+      "case": "unfollow_confirmation_updates_profile_count_and_button",
+      "passed": true
+    },
+    {
+      "case": "unfollow_immediately_empties_following_feed",
+      "passed": true
+    },
+    {
+      "case": "desktop_1280_artwork_width_1088_original_three_to_two_ratio",
+      "passed": true
+    }
+  ],
+  "discovered_issue": {
+    "case": "cached_signed_image_url_expires_while_detail_remains_open",
+    "observed": "third-to-second-to-first page navigation showed image retry; manual retry restored first page",
+    "cause": "Storage InvalidJWT exp claim failure with 60-second signed URLs",
+    "server_or_permissions_changes": false,
+    "followup": "one automatic image recovery until decoded frame, live fullscreen URL refresh retaining page and zoom",
+    "final_deployed_ui_retest": "PASS: expired third-page request automatically re-signed and displayed without manual retry"
+  },
+  "manual_reactions_and_follow_restored_neutral": true,
+  "physical_device_installation": "not attempted; phone unavailable per user instruction",
+  "fixture_cleanup": "complete; two synthetic accounts, three albums, three works, five snapshots, one avatar; 92 residual groups zero",
+  "screenshots_directory": "output/feed-detail-qa-20261026",
+  "final_release": "c4e3220a0df86c52",
+  "final_main_sha256": "b65bf59b1c6ac06c958d9bde35b8db7f8cf17205d07ebf4b2e62133a284e1c74",
+  "final_release_cases": [
+    {
+      "case": "ordinary_user_session_survives_final_deploy",
+      "passed": true
+    },
+    {
+      "case": "detail_like_add_cancel_preserves_second_page_on_final_release",
+      "passed": true
+    },
+    {
+      "case": "final_mobile_light_feed_and_detail_photo_layout",
+      "passed": true
+    },
+    {
+      "case": "final_mobile_dark_detail_photo_layout",
+      "passed": true
+    },
+    {
+      "case": "expired_unvisited_third_page_recovers_without_manual_retry",
+      "passed": true,
+      "clicked_at_utc": "2026-10-26T05:54:35.562Z",
+      "elapsed_since_last_observed_refetch_seconds": 113.397,
+      "evidence": "edge400 -> signing200 -> same image200 within974ms; actual photo visible on page3"
+    },
+    {
+      "case": "expired_unvisited_second_page_recovers_in_open_fullscreen_viewer",
+      "passed": true,
+      "started_at_utc": "2026-10-26T06:03:22.002Z",
+      "zoomed_at_utc": "2026-10-26T06:03:26.752Z",
+      "elapsed_seconds": 120.741,
+      "same_viewer_route": true,
+      "page": "2 / 3",
+      "zoom": "150%",
+      "visible_photo": "coast",
+      "evidence": "image semantic node70 replaced by77 while viewer/page/zoom preserved; edge400 -> signing200 -> same photo200 within1950ms"
+    },
+    {
+      "case": "closing_renewed_fullscreen_syncs_second_page_to_detail",
+      "passed": true
+    },
+    {
+      "case": "test_user_logout_confirmation_returns_to_public_site",
+      "passed": true
+    }
+  ],
+  "flutter_unique_cases_passed": 89,
+  "ordinary_live_api_cases_passed": 29,
+  "native_verification_report": "docs/verification/social-feed-my-style-native-2026-10-26.json",
+  "native_apk": "output/native-photo-refresh/SnapFit-large-feed-debug.apk",
+  "native_apk_sha256": "3c7ee6218d05fae005a613866d7d9ab0da738a3b88218d39836351a550e309ce",
+  "photo_auto_recovery_server_evidence": "docs/verification/feed-detail-live-2026-10-26.json#snapshot_auto_recovery_final_release",
+  "theme_restored_to_system": true,
+  "viewport_override_after_interruption": "none; recreated tab uses normal browser viewport",
+  "browser_qa_user_logged_out": true,
+  "browser_returned_to_canonical_feed": true,
+  "browser_deliverable_marked": true,
+  "credentials_in_repl_after_interruption": "not_loaded",
+  "completed_at_utc": "2026-10-26T06:12:57.782326+00:00",
+  "existing_storage_metadata_preserved": "41 album-assets canonical bucket/name/owner/owner_id/metadata records exact before-after match; historical MD5 formula unavailable and not recalculated",
+  "private_credentials_and_helper_folder_removed": true,
+  "live_manifest_matches_final_web_build": true,
+  "no_schema_security_or_ttl_changes": true
+}

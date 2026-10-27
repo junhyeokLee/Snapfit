@@ -1,0 +1,133 @@
+{
+  "checked_at_utc": "2026-10-25T08:49:51.445163+00:00",
+  "status": "manual_browser_passed_and_fixture_cleanup_verified",
+  "url": "https://snapfit-c719d.web.app/feed#/feed",
+  "browser": "Existing ChatGPT in-app browser, 368px viewport, ordinary synthetic QA A login",
+  "initial_verified_hosting_version": "d7d8f0cb5c736ad3",
+  "manual_checks": [
+    {
+      "flow": "My photo-first profile",
+      "result": "PASS",
+      "evidence": "120px portrait, compact actions, own2 photo works visible, gallery/large toggles work; photo opens fullscreen and closes back to My"
+    },
+    {
+      "flow": "Settings migration",
+      "result": "PASS",
+      "evidence": "My gear opens account/settings with existing albums, designs, point management and notification menus"
+    },
+    {
+      "flow": "All categories",
+      "result": "PASS",
+      "evidence": "All11 canonical topics plus all visible in topic sheet; travel filter shows matching photographs"
+    },
+    {
+      "flow": "Like cross-screen",
+      "result": "PASS",
+      "evidence": "Feed0->1 selected; same work detail1 selected; detail unlike0; feed0"
+    },
+    {
+      "flow": "Save cross-screen",
+      "result": "PASS",
+      "evidence": "Save in detail; feed selected; private saved list includes that work; remove saved leaves empty list"
+    },
+    {
+      "flow": "Comments navigation and submit",
+      "result": "PASS",
+      "evidence": "Feed comment button opens work at comments section without keyboard; one submitted comment appears and count changes0->1"
+    },
+    {
+      "flow": "Follow relations and feed",
+      "result": "PASS",
+      "evidence": "A follows B; B followers1 includes A; A following1 includes B; following feed contains only B photo work; unfollow confirmation restores0 and empty following feed"
+    },
+    {
+      "flow": "User search",
+      "result": "PASS",
+      "evidence": "Search SnapFit QA B; user tab returns B with public work count1"
+    },
+    {
+      "flow": "Existing album publication form",
+      "result": "PASS",
+      "evidence": "My publish selects own saved table album86; saved cover snapshot preview; one page selected; title/caption/topic/privacy consent; explicit free final CTA"
+    },
+    {
+      "flow": "Actual photo publication",
+      "result": "PASS_AFTER_FIX",
+      "before_fix_evidence": "Begin created private draft49fafa1f-7ecc-46ce-8b02-82e350cc6fad; client render failed before upload; input retained; normal recover/discard returned to page selection. Real Chrome codec regression/fix in progress",
+      "evidence": "Final deployed version: own saved table photo album86, selected cover, title/caption/family topic/explicit consent/free CTA -> raster render+upload+finalize -> new work a349e736-da18-40ee-b841-301351301cc7 with actual table photo visible in detail. Like0->1->0; My count3 and new tile; recommended feed displays new work first."
+    },
+    {
+      "flow": "Work visibility and republish",
+      "result": "PASS",
+      "evidence": "My manage: table published->private after confirmation; My count2->1 and table tile absent. Same saved public snapshot republished after confirmation; manage returns published. Original album remains in selection."
+    },
+    {
+      "flow": "Theme and session restoration",
+      "result": "PASS",
+      "evidence": "Final feed checked in light and dark modes; original System preference restored; synthetic account logged out before cleanup; in-memory credential variables cleared."
+    }
+  ],
+  "screenshots": [
+    "social-community-my-gallery.png",
+    "social-community-my-large.png",
+    "social-community-categories.png",
+    "social-community-following-feed.png",
+    "social-community-free-publication.png",
+    "social-community-publication-complete.png",
+    "social-community-feed-light.png",
+    "social-community-feed-dark.png",
+    "social-community-feed-after-cleanup.png"
+  ],
+  "fixture_disclosure": "Bundled sample photos and disposable QA accounts were used. All QA data has been removed; ordinary signed-out browser reload shows zero QA works and the normal first-publication empty state.",
+  "native_limit": "Physical device unavailable per user; no installation or real-device UI check for this build.",
+  "regression_tests": {
+    "social_vm_unique_cases": 98,
+    "integration_before_codec_fix": {
+      "unique_cases": 96,
+      "passed": 95,
+      "test_cleanup_failure": 1,
+      "failure": "SemanticsHandle cleanup in feed account-change test; fixed using try/finally; affected feed suite30 passed"
+    },
+    "final_feed_suite": {
+      "passed": 30,
+      "failed": 0
+    },
+    "final_snapshot_codec_publication_affected_suites": {
+      "passed": 16,
+      "failed": 0,
+      "contents": "Existing snapshot10 + new photo codec2 + publication4"
+    },
+    "real_chrome_photo_snapshot": {
+      "before_fix": {
+        "passed": 0,
+        "failed": 2,
+        "error": "Unsupported operation: ImageDescriptor.width is not supported on web."
+      },
+      "after_fix": {
+        "passed": 2,
+        "failed": 0,
+        "assertions": "PNG/JPEG actual RGB photo pixels, 1440px output, saved page geometry, unchanged original JSON and private source, no original URL embedded in output"
+      }
+    },
+    "analysis": "Social production and owned tests clean; latest renderer+codec test analysis clean",
+    "counts": "98 unique social VM cases; platform reruns and affected-suite reruns are not added again."
+  },
+  "final_verified_hosting_version": "cbc1211056b933f5",
+  "final_main_file": "main.91e2f074dcf58338563c.dart.js",
+  "related_reports": [
+    "social-community-release-policy-2026-10-25.json",
+    "social-reliability-live-2026-10-25.json",
+    "social-publication-photo-web-release-2026-10-25.json",
+    "social-photo-native-deployment-2026-10-25.json"
+  ],
+  "cleanup_browser_verification": {
+    "signed_out": true,
+    "canonical_url": "https://snapfit-c719d.web.app/feed#/feed",
+    "system_theme_restored": true,
+    "qa_work_count": 0,
+    "normal_empty_state_visible": true,
+    "all_eleven_categories_plus_all_available": true,
+    "screenshot": "social-community-feed-after-cleanup.png",
+    "tab_kept_as_deliverable": true
+  }
+}

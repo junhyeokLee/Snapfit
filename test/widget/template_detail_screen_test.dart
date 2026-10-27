@@ -1,3 +1,4 @@
+import '../support/store_detail_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -18,9 +19,9 @@ Widget _wrap(Widget child) {
       pointShopCatalogProvider.overrideWith(
         (_) async => [
           const PointShopProduct(
-            productKey: 'template:server-1',
+            productKey: 'template:server-2000',
             kind: 'template',
-            assetId: 'server-1',
+            assetId: 'server-2000',
             title: '검수용 무료 템플릿',
             pointPrice: 0,
             isActive: true,
@@ -47,7 +48,7 @@ PremiumTemplate _template({
   List<String>? tags,
 }) {
   return PremiumTemplate(
-    id: 1,
+    id: 2000,
     title: title,
     subTitle: subTitle,
     coverImageUrl: 'https://example.com/cover.png',
@@ -71,7 +72,7 @@ PremiumTemplate _template({
 }
 
 void main() {
-  testWidgets('template detail loads repository-backed template', (
+  storeDetailTestWidgets('template detail loads repository-backed template', (
     tester,
   ) async {
     final mockRepo = MockTemplateRepository();
@@ -79,11 +80,11 @@ void main() {
     final likedTemplate = _template(likeCount: 2, isLiked: true);
     var getTemplateCallCount = 0;
 
-    when(() => mockRepo.getTemplate(1)).thenAnswer((invocation) async {
+    when(() => mockRepo.getTemplate(2000)).thenAnswer((invocation) async {
       getTemplateCallCount++;
       return getTemplateCallCount >= 2 ? likedTemplate : template;
     });
-    when(() => mockRepo.likeTemplate(1)).thenAnswer((_) async {});
+    when(() => mockRepo.likeTemplate(2000)).thenAnswer((_) async {});
 
     await mockNetworkImagesFor(() async {
       await tester.pumpWidget(
@@ -94,13 +95,15 @@ void main() {
       );
 
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
+      await settleStoreDetail(tester);
 
       expect(find.byType(TemplateDetailScreen), findsOneWidget);
     });
   });
 
-  testWidgets('template detail renders use flow entry state', (tester) async {
+  storeDetailTestWidgets('template detail renders use flow entry state', (
+    tester,
+  ) async {
     final mockRepo = MockTemplateRepository();
     final template = _template();
 
@@ -115,62 +118,68 @@ void main() {
       );
 
       await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
+      await settleStoreDetail(tester);
 
       expect(find.byType(TemplateDetailScreen), findsOneWidget);
     });
   });
 
-  testWidgets('template detail exposes real artwork and purchase terms', (
-    tester,
-  ) async {
-    final mockRepo = MockTemplateRepository();
-    final template = _template(
-      title: '제주의 기록',
-      subTitle: '여행 사진을 한 권의 룩북처럼 정리해요.',
-      pageCount: 24,
-      category: '여행',
-      tags: const ['여행', '제주', '감성', '프리미엄'],
-    );
-
-    stubGetTemplates(mockRepo, [template]);
-
-    await mockNetworkImagesFor(() async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [templateRepositoryProvider.overrideWithValue(mockRepo)],
-          child: _wrap(TemplateDetailScreen(template: template)),
-        ),
+  storeDetailTestWidgets(
+    'template detail exposes real artwork and purchase terms',
+    (tester) async {
+      final mockRepo = MockTemplateRepository();
+      final template = _template(
+        title: '여행의 장면',
+        subTitle: '여행 사진을 한 권의 룩북처럼 정리해요.',
+        pageCount: 24,
+        category: '여행',
+        tags: const ['여행', '제주', '감성', '프리미엄'],
       );
 
-      await tester.pump();
-      await tester.pump(const Duration(seconds: 3));
+      stubGetTemplates(mockRepo, [template]);
 
-      expect(
-        find.byKey(const ValueKey('template-detail-stage')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('template-spread-pager')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('template-spread-list')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('template-purchase-overview')),
-        findsOneWidget,
-      );
-      expect(find.text('내 사진으로 만드는 앨범'), findsOneWidget);
-      expect(find.text('24쪽'), findsOneWidget);
-      expect(find.text('이 디자인으로 시작'), findsOneWidget);
-      expect(find.text('여행 컬렉션'), findsOneWidget);
-      expect(find.text('프리미엄'), findsNothing);
-    });
-  });
+      await mockNetworkImagesFor(() async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [templateRepositoryProvider.overrideWithValue(mockRepo)],
+            child: _wrap(TemplateDetailScreen(template: template)),
+          ),
+        );
 
-  testWidgets(
+        await tester.pump();
+        await settleStoreDetail(tester);
+
+        expect(
+          find.byKey(const ValueKey('template-detail-stage')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('template-spread-pager')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('template-spread-list')),
+          findsOneWidget,
+        );
+        await tester.ensureVisible(
+          find.byKey(const ValueKey('template-gallery-information')),
+        );
+        await tester.tap(find.text('디자인 구성 · 사진과 글'));
+        await settleStoreDetail(tester);
+        expect(
+          find.byKey(const ValueKey('template-purchase-overview')),
+          findsOneWidget,
+        );
+        expect(find.text('내 사진으로 만드는 앨범'), findsOneWidget);
+        expect(find.text('24쪽'), findsOneWidget);
+        expect(find.text('이 디자인으로 시작'), findsOneWidget);
+        expect(find.text('여행 컬렉션'), findsOneWidget);
+        expect(find.text('프리미엄'), findsNothing);
+      });
+    },
+  );
+
+  storeDetailTestWidgets(
     'template detail keeps artwork title and CTA visible while full metadata scrolls',
     (tester) async {
       tester.view.physicalSize = const Size(390, 844);
@@ -180,7 +189,7 @@ void main() {
 
       final mockRepo = MockTemplateRepository();
       final template = _template(
-        title: '제주의 기록',
+        title: '여행의 장면',
         subTitle: '여행 사진을 한 권의 룩북처럼 정리해요.',
         pageCount: 24,
         category: '여행',
@@ -197,9 +206,9 @@ void main() {
         );
 
         await tester.pump();
-        await tester.pump(const Duration(seconds: 3));
+        await settleStoreDetail(tester);
 
-        final titleRect = tester.getRect(find.text('제주의 기록').first);
+        final titleRect = tester.getRect(find.text('여행의 장면').first);
         final heroMetaRect = tester.getRect(find.text('24쪽'));
         final ctaRect = tester.getRect(
           find.byKey(const ValueKey('template-detail-use')),
@@ -214,7 +223,7 @@ void main() {
         expect(ctaRect.bottom, lessThanOrEqualTo(844));
         expect(ctaRect.top, greaterThan(700));
         await tester.ensureVisible(find.text('24쪽'));
-        await tester.pumpAndSettle();
+        await settleStoreDetail(tester);
         expect(find.text('24쪽').hitTestable(), findsOneWidget);
         expect(
           tester.getRect(find.byKey(const ValueKey('template-detail-use'))),
@@ -224,60 +233,61 @@ void main() {
     },
   );
 
-  testWidgets('template detail handles long Korean title category and tags', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(390, 844);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+  storeDetailTestWidgets(
+    'template detail handles long Korean title category and tags',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    final mockRepo = MockTemplateRepository();
-    final template = _template(
-      title: '제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿',
-      subTitle: '부모님과 아이들의 긴 여행 사진을 감성적인 한 권의 룩북처럼 정리해요.',
-      pageCount: 24,
-      category: '가족여행프리미엄에디토리얼',
-      tags: const ['가족여행프리미엄', '제주감성스냅', '여름방학기록', '긴태그숨김'],
-    );
-    stubGetTemplates(mockRepo, [template]);
-
-    await mockNetworkImagesFor(() async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [templateRepositoryProvider.overrideWithValue(mockRepo)],
-          child: _wrap(TemplateDetailScreen(template: template)),
-        ),
+      final mockRepo = MockTemplateRepository();
+      final template = _template(
+        title: '제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿',
+        subTitle: '부모님과 아이들의 긴 여행 사진을 감성적인 한 권의 룩북처럼 정리해요.',
+        pageCount: 24,
+        category: '가족여행프리미엄에디토리얼',
+        tags: const ['가족여행프리미엄', '제주감성스냅', '여름방학기록', '긴태그숨김'],
       );
+      stubGetTemplates(mockRepo, [template]);
 
-      await tester.pump();
-      await tester.pump(const Duration(seconds: 3));
+      await mockNetworkImagesFor(() async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [templateRepositoryProvider.overrideWithValue(mockRepo)],
+            child: _wrap(TemplateDetailScreen(template: template)),
+          ),
+        );
 
-      expect(tester.takeException(), isNull);
-      expect(find.text('제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿'), findsOneWidget);
-      expect(find.text('가족여행프리미엄에디토리얼 컬렉션'), findsOneWidget);
-      expect(find.text('가족여행프리미엄'), findsNothing);
-      expect(find.text('제주감성스냅'), findsNothing);
-      expect(find.text('여름방학기록'), findsNothing);
-      expect(find.text('긴태그숨김'), findsNothing);
+        await tester.pump();
+        await settleStoreDetail(tester);
 
-      final titleRect = tester.getRect(
-        find.text('제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿').first,
-      );
-      final categoryRect = tester.getRect(find.text('가족여행프리미엄에디토리얼 컬렉션'));
-      final ctaRect = tester.getRect(
-        find.byKey(const ValueKey('template-detail-use')),
-      );
+        expect(tester.takeException(), isNull);
+        expect(find.text('제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿'), findsOneWidget);
+        expect(find.text('가족여행프리미엄에디토리얼 컬렉션'), findsOneWidget);
+        expect(find.text('가족여행프리미엄'), findsNothing);
+        expect(find.text('제주감성스냅'), findsNothing);
+        expect(find.text('여름방학기록'), findsNothing);
+        expect(find.text('긴태그숨김'), findsNothing);
 
-      expect(titleRect.left, greaterThanOrEqualTo(0));
-      expect(titleRect.right, lessThanOrEqualTo(390));
-      expect(titleRect.top, lessThan(600));
-      expect(categoryRect.right, lessThanOrEqualTo(390));
-      expect(ctaRect.bottom, lessThanOrEqualTo(844));
-    });
-  });
+        final titleRect = tester.getRect(
+          find.text('제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿').first,
+        );
+        final categoryRect = tester.getRect(find.text('가족여행프리미엄에디토리얼 컬렉션'));
+        final ctaRect = tester.getRect(
+          find.byKey(const ValueKey('template-detail-use')),
+        );
 
-  testWidgets(
+        expect(titleRect.left, greaterThanOrEqualTo(0));
+        expect(titleRect.right, lessThanOrEqualTo(390));
+        expect(titleRect.top, lessThan(600));
+        expect(categoryRect.right, lessThanOrEqualTo(390));
+        expect(ctaRect.bottom, lessThanOrEqualTo(844));
+      });
+    },
+  );
+
+  storeDetailTestWidgets(
     'template detail stays stable across iPhone and Galaxy viewports',
     (tester) async {
       const viewports = [
@@ -315,7 +325,8 @@ void main() {
           );
 
           await tester.pump();
-          await tester.pump(const Duration(seconds: 3));
+          await settleStoreDetail(tester);
+          await settleStoreDetail(tester);
 
           expect(tester.takeException(), isNull, reason: viewport.$1);
 
@@ -361,7 +372,7 @@ void main() {
     },
   );
 
-  testWidgets(
+  storeDetailTestWidgets(
     'template detail supports larger text scale with long Korean metadata',
     (tester) async {
       tester.view.physicalSize = const Size(390, 844);
@@ -396,7 +407,7 @@ void main() {
         );
 
         await tester.pump();
-        await tester.pump(const Duration(seconds: 3));
+        await settleStoreDetail(tester);
 
         expect(tester.takeException(), isNull);
         expect(find.text('이 디자인으로 시작'), findsOneWidget);

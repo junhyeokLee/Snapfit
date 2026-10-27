@@ -34,17 +34,21 @@ void main() {
           ...atelierStoryPhotoFrames,
         ].map((s) => 'frame:$s'),
         ...atelierWordArts.map((a) => a.productKey),
+        ...storyEditionWordArts.map((a) => a.productKey),
+        ...storyEditionDecorations.map((a) => 'sticker:${a.id}'),
+        ...pendingStoryEditionProducts.map((p) => p.productKey),
         ...pendingPremiumVolumeProducts.map((p) => p.productKey),
         ...pendingConceptVolumeProducts.map((p) => p.productKey),
         ...pendingAtelierEditionProducts.map((p) => p.productKey),
         ...pendingStudioEditionProducts.map((p) => p.productKey),
         ...authoredCollections.map(pointShopAuthoredTemplateKey),
+        ...storyEditions.where((e) => !e.isPremium).map((e) => e.productKey),
       };
-      expect(expected, hasLength(222));
+      expect(expected, hasLength(482));
       expect(pointShopLaunchPrices.keys.toSet(), expected);
       expect(
         pointShopLaunchPrices.values.where((p) => p.points == 0),
-        hasLength(93),
+        hasLength(113),
       );
       for (final e in pointShopLaunchPrices.entries) {
         expect(e.value.reason, isNotEmpty);
@@ -106,7 +110,7 @@ void main() {
     expect(result['changesCustomerAccess'], false);
     expect(result['grantsIncludedMaterials'], false);
     expect(result['marketValidated'], false);
-    expect(result['products'], hasLength(222));
+    expect(result['products'], hasLength(482));
     expect(
       jsonDecode(File('${out.path}/prices.json').readAsStringSync()),
       result,
@@ -122,7 +126,7 @@ void main() {
 
   test('free templates do not require separately paid new materials', () {
     for (final collection in authoredCollections) {
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         for (final key in templateVisualMaterialKeys(
           collection.document(aspect),
         )) {
@@ -138,22 +142,22 @@ void main() {
 
   test('owner application includes delivered premium books', () {
     final rows = pointShopPriceApplicationRows();
-    expect(rows, hasLength(222));
-    expect(rows.map((r) => r['product_key']).toSet(), hasLength(222));
-    expect(rows.where((r) => r['point_price'] == 0), hasLength(93));
-    expect(rows.where((r) => r['is_active'] == true), hasLength(222));
-    expect(ownerApprovedCatalogProductKeys, hasLength(44));
+    expect(rows, hasLength(482));
+    expect(rows.map((r) => r['product_key']).toSet(), hasLength(482));
+    expect(rows.where((r) => r['point_price'] == 0), hasLength(113));
+    expect(rows.where((r) => r['is_active'] == true), hasLength(482));
+    expect(ownerApprovedCatalogProductKeys, hasLength(284));
     expect(
       ownerApprovedCatalogProductKeys.where(
         (key) => key.startsWith('template:'),
       ),
-      hasLength(12),
+      hasLength(72),
     );
     expect(
       ownerApprovedCatalogProductKeys.where(
         (key) => !key.startsWith('template:'),
       ),
-      hasLength(32),
+      hasLength(212),
     );
     for (final key in ownerApprovedCatalogProductKeys) {
       expect(
@@ -188,13 +192,18 @@ void main() {
     expect(activation, isNot(contains('point_shop_ownership')));
     const export = bool.fromEnvironment('EXPORT_PRICE_APPLICATION');
     final out = export
-        ? Directory('output/pricing/catalog-2026-10-18')
+        ? Directory(
+            const String.fromEnvironment(
+              'PRICE_APPLICATION_DIRECTORY',
+              defaultValue: 'output/pricing/catalog-2026-10-25',
+            ),
+          )
         : Directory.systemTemp.createTempSync('snapfit-price-application-');
     if (!export) addTearDown(() => out.deleteSync(recursive: true));
     final data = exportPriceApplication(out);
     expect(data['status'], 'prepared-not-executed');
     expect(data['remoteVerified'], false);
-    expect(data['activeProductCount'], 222);
+    expect(data['activeProductCount'], 482);
     expect(data['ownerApprovalRevision'], pointShopCatalogApprovalRevision);
     expect(data['activationPreservesConfiguredPrices'], true);
     expect(data['changesWallets'], false);

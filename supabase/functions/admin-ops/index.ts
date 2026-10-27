@@ -5,6 +5,7 @@ import { getPrintSnapshot, createPrintUploads, finalizePrintPackage, getPrintDow
 import { OrderPaymentError } from '../_shared/order-types.ts'
 import { calculateContribution } from '../_shared/print-contract.ts'
 import { adminPagination, adminSearch, exactPage, adminIdentifier, adminPointCatalog } from '../_shared/admin-catalog.ts'
+import { assertCurrentStoreTemplate } from '../_shared/retired-store-templates.ts'
 
 async function getOptionalJwtUser(req: Request) {
   const auth = req.headers.get('Authorization') ?? ''
@@ -226,7 +227,9 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'upsertTemplate') {
-      const payload = templatePayload((body.payload ?? {}) as Record<string, unknown>)
+      const input = (body.payload ?? {}) as Record<string, unknown>
+      assertCurrentStoreTemplate(input)
+      const payload = templatePayload(input)
       if (!payload.title) return jsonResponse({ error: 'title_required' }, 400)
       const { data, error } = await supabase.from('templates').upsert(payload).select().single()
       if (error) throw error

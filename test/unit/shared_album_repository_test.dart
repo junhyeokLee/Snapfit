@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -8,6 +9,7 @@ import 'package:snap_fit/core/interceptors/token_storage.dart';
 import 'package:snap_fit/features/album/data/dto/request/create_album_request.dart';
 import 'package:snap_fit/features/album/data/repositories/supabase_album_repository.dart';
 import 'package:snap_fit/features/album/domain/entities/album.dart';
+import 'package:snap_fit/features/album/domain/entities/album_edit_failure.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class _Tokens extends Mock implements TokenStorage {}
@@ -32,6 +34,7 @@ Map<String, dynamic> _row(int id, {String owner = 'other'}) => {
   'id': id,
   'owner_id': owner,
   'title': 'Album $id',
+  'updated_at': '2026-10-25T01:02:03.123456Z',
 };
 
 void main() {
@@ -41,13 +44,18 @@ void main() {
   late List<Map<String, dynamic>> memberships;
   late Object albums;
   late bool memberFailure;
+  late _Auth auth;
+  Map<String, dynamic>? rpcError;
+  Completer<void>? responseGate;
 
   setUp(() {
     requests = [];
     memberships = [];
     albums = [];
     memberFailure = false;
-    final auth = _Auth();
+    auth = _Auth();
+    rpcError = null;
+    responseGate = null;
     when(() => auth.currentUser).thenReturn(
       User(
         id: _userId,
@@ -75,6 +83,16 @@ void main() {
           return http.Response(
             jsonEncode(single ? memberships.firstOrNull : memberships),
             200,
+            request: request,
+            headers: {'content-type': 'application/json'},
+          );
+        }
+        if (responseGate != null) await responseGate!.future;
+        if (request.url.path.endsWith('save_album_document') &&
+            rpcError != null) {
+          return http.Response(
+            jsonEncode(rpcError),
+            409,
             request: request,
             headers: {'content-type': 'application/json'},
           );
@@ -158,7 +176,7 @@ void main() {
   });
 
   test(
-    'shared editor saves use role-checked server RLS, not owner-only restriction',
+    'shared editor saves raw revision, expected actor and immutable request key through CAS RPC',
     () async {
       albums = _row(7);
       memberships = [
@@ -173,12 +191,87 @@ void main() {
           coverImageUrl: '',
           coverThumbnailUrl: '',
         ),
+        expectedUpdatedAt: '2026-10-25T01:02:03.123456Z',
+        requestId: 'request-id',
+        expectedUserId: _userId,
       );
       expect(album.memberRole, 'EDITOR');
-      expect(requests.first.method, 'PATCH');
-      expect(requests.first.url.queryParameters['id'], 'eq.7');
-      expect(requests.first.url.queryParameters['owner_id'], isNull);
-      expect(jsonDecode(requests.first.body)['owner_id'], isNull);
+      expect(requests.first.method, 'POST');
+      expect(requests.first.url.path, endsWith('/rpc/save_album_document'));
+      final payload = jsonDecode(requests.first.body) as Map;
+      expect(payload['p_album_id'], 7);
+      expect(payload['p_expected_updated_at'], '2026-10-25T01:02:03.123456Z');
+      expect(payload['p_expected_actor_id'], _userId);
+      expect(payload['p_request_id'], 'request-id');
+      expect(payload['p_changes']['owner_id'], isNull);
     },
   );
+  const changes = CreateAlbumRequest(
+    ratio: '1',
+    coverLayersJson: '{}',
+    coverImageUrl: '',
+    coverThumbnailUrl: '',
+  );
+  test(
+    'missing base revision refuses saving before any network request',
+    () async {
+      await expectLater(
+        repository.updateAlbum(7, changes),
+        throwsA(isA<AlbumRevisionRequired>()),
+      );
+      expect(requests, isEmpty);
+    },
+  );
+  for (final code in ['PT409', '42501']) {
+    test(
+      'server $code keeps conflict and permission failures distinct',
+      () async {
+        rpcError = {
+          'code': code,
+          'message': code == 'PT409'
+              ? 'album_revision_conflict'
+              : 'album_permission_denied',
+        };
+        await expectLater(
+          repository.updateAlbum(7, changes, expectedUpdatedAt: 'raw-revision'),
+          throwsA(
+            code == 'PT409'
+                ? isA<AlbumRevisionConflict>()
+                : isA<AlbumEditAccessRevoked>(),
+          ),
+        );
+      },
+    );
+  }
+  test(
+    'nonowner legacy OWNER membership never grants editing or management',
+    () async {
+      memberships = [
+        {'album_id': 7, 'role': 'OWNER', 'status': 'ACCEPTED'},
+      ];
+      albums = _row(7);
+      final single = await repository.fetchAlbum('7');
+      expect(single.memberRole, 'VIEWER');
+      expect(single.allowsEditing, isFalse);
+      expect(single.allowsManagement, isFalse);
+      albums = [_row(7)];
+      expect((await repository.fetchMyAlbums()).single.memberRole, 'VIEWER');
+    },
+  );
+  test('replaced account cannot adopt the old save response', () async {
+    albums = _row(7, owner: _userId);
+    responseGate = Completer<void>();
+    final save = repository.updateAlbum(
+      7,
+      changes,
+      expectedUpdatedAt: 'raw-revision',
+      expectedUserId: _userId,
+    );
+    while (requests.isEmpty) {
+      await Future<void>.delayed(Duration.zero);
+    }
+    when(() => auth.currentUser).thenReturn(null);
+    responseGate!.complete();
+    await expectLater(save, throwsA(isA<AlbumEditSessionChanged>()));
+  });
 }

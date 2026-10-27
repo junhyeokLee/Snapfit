@@ -1,0 +1,82 @@
+{
+  "date": "2026-10-25",
+  "scope": "Fresh verification review of the editor dock, additional-tool route handoff and layer arrangement",
+  "production_code_changed": false,
+  "tests_added": "test/review/editor_tools_verification_test.dart",
+  "findings": [
+    {
+      "priority": "P1",
+      "title": "An undo immediately before a reorder commit is overwritten by stale layer records",
+      "file": "lib/features/album/presentation/widgets/editor/layer_manager_panel.dart",
+      "line": 88,
+      "cause": "The target guard checks page/session identity; _commitOrder then replaces all current layer records with the local widget snapshot. A model update before didUpdateWidget is not detected by _orderRevision.",
+      "proof": {
+        "tests": [
+          "a reorder before the next frame must not restore a photo edit that was just undone",
+          "an actual drag finishing after undo must retain the undone photo geometry"
+        ],
+        "photo_width_before_edit": 200,
+        "photo_width_after_edit": 240,
+        "photo_width_after_undo": 200,
+        "photo_width_after_reorder": 240
+      },
+      "recommendation": "Validate the current model revision at commit and apply only order changes against fresh layer records, or reject a stale drag."
+    },
+    {
+      "priority": "P2",
+      "title": "A second dock More tap during dismissal overlaps sheets and discards the selected tool",
+      "file": "lib/features/album/presentation/widgets/editor/editor_context_dock.dart",
+      "line": 46,
+      "cause": "The editor route is current again during the reverse animation. The guard permits another _details call while the first is awaiting route.completed; the first handoff is then discarded because the newer sheet owns the route.",
+      "proof": {
+        "test": "a second More tap during dismissal must not overlap or discard the chosen tool",
+        "gap_milliseconds": 16,
+        "mounted_tool_sheets": 2,
+        "expected_tool": "layout",
+        "dispatched_tools": []
+      },
+      "recommendation": "Keep an editor-owned opening/closing/handoff guard until the outgoing sheet is fully removed and its selected action has been dispatched."
+    },
+    {
+      "priority": "P2",
+      "title": "Pending thumbnail requests are evicted and started again during fast reverse scrolling",
+      "file": "lib/features/album/presentation/widgets/editor/layer_manager_panel.dart",
+      "line": 671,
+      "cause": "The 32-entry LRU counts pending Futures as ordinary completed cache entries; it can forget a still-running thumbnail request and launch another for the same photo.",
+      "proof": {
+        "test": "pending thumbnail requests must coalesce during a fast return scroll",
+        "photo_layers": 72,
+        "requests_started_before_any_completion": 112,
+        "same_top_photo_requests": 2
+      },
+      "recommendation": "Coalesce in-flight requests independently of completed-cache eviction, cap concurrent jobs and discard queued work for closed panels."
+    }
+  ],
+  "verification": {
+    "baseline": {
+      "passed": 131,
+      "failed": 0,
+      "skipped": 1,
+      "log": "/tmp/editor-tools-review-baseline.log"
+    },
+    "new_review_cases": {
+      "passed": 1,
+      "failed": 4,
+      "distinct_confirmed_findings": 3,
+      "log": "/tmp/editor-tools-review-edge-cases.log"
+    },
+    "lifecycle_check": {
+      "visits": 8,
+      "real_photo_bytes_decoded": true,
+      "decode_cache_budget_bytes": 2097152,
+      "controller_has_clients_after_close": false,
+      "live_images_after_close": 0,
+      "pending_images_after_close": 0,
+      "cache_stays_within_budget": true
+    },
+    "analysis_log": "/tmp/editor-tools-review-analysis.log",
+    "app_build_run": false,
+    "device_frame_or_memory_profile_run": false
+  },
+  "limits": "Repeated closing released tested controllers and image listeners; this does not prove absence of all device memory leaks. The slow-thumbnail test demonstrates request duplication and pending work, not a measured device OOM."
+}

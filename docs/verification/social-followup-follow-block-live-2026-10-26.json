@@ -1,0 +1,619 @@
+{
+  "project_ref": "rrbhxdtriummqpztpjrk",
+  "run_id": "0a1591bddbff",
+  "started_at": "2026-10-26T07:10:24.562799+00:00",
+  "status": "passed",
+  "checks": [
+    {
+      "name": "preflight_searchPage",
+      "passed": true
+    },
+    {
+      "name": "preflight_searchProfilesPage",
+      "passed": true
+    },
+    {
+      "name": "preflight_profileWorksPage",
+      "passed": true
+    },
+    {
+      "name": "preflight_relationsPage",
+      "passed": true
+    },
+    {
+      "name": "preflight_commentsPage",
+      "passed": true
+    },
+    {
+      "name": "ordinary_publication_1_private_snapshot",
+      "passed": true
+    },
+    {
+      "name": "comment_retry_has_no_duplicate",
+      "passed": true
+    },
+    {
+      "name": "anonymous_comment_page_can_read_public_comment",
+      "passed": true
+    },
+    {
+      "name": "concurrent_like_save_True",
+      "passed": true
+    },
+    {
+      "name": "concurrent_like_save_False",
+      "passed": true
+    },
+    {
+      "name": "concurrent_follow_True_exact_outgoing_edge",
+      "passed": true
+    },
+    {
+      "name": "guest_relation_page_True",
+      "passed": true
+    },
+    {
+      "name": "following_feed_True",
+      "passed": true
+    },
+    {
+      "name": "concurrent_follow_False_exact_outgoing_edge",
+      "passed": true
+    },
+    {
+      "name": "guest_relation_page_False",
+      "passed": true
+    },
+    {
+      "name": "following_feed_False",
+      "passed": true
+    },
+    {
+      "name": "both_edges_present_before_block",
+      "passed": true
+    },
+    {
+      "name": "block_removes_both_follow_edges",
+      "passed": true
+    },
+    {
+      "name": "bilateral_profile_and_work_hidden",
+      "passed": true
+    },
+    {
+      "name": "blocked_page_visibility",
+      "passed": true
+    },
+    {
+      "name": "blocked_creator_filtered_from_search",
+      "passed": true
+    },
+    {
+      "name": "blocked_author_comments_hidden_from_owner",
+      "passed": true
+    },
+    {
+      "name": "blocked_follow_A",
+      "passed": true
+    },
+    {
+      "name": "blocked_follow_B",
+      "passed": true
+    },
+    {
+      "name": "blocked_like",
+      "passed": true
+    },
+    {
+      "name": "blocked_save",
+      "passed": true
+    },
+    {
+      "name": "blocked_comment",
+      "passed": true
+    },
+    {
+      "name": "unblock_does_not_restore_follows",
+      "passed": true
+    },
+    {
+      "name": "unblock_restores_public_work_and_comment_visibility",
+      "passed": true
+    },
+    {
+      "name": "anonymous_ownWorksPage",
+      "passed": true
+    },
+    {
+      "name": "anonymous_savedWorksPage",
+      "passed": true
+    },
+    {
+      "name": "withdrawn_work_and_comments_hidden_from_guest",
+      "passed": true
+    },
+    {
+      "name": "private_status_filter_and_account_isolation",
+      "passed": true
+    },
+    {
+      "name": "synthetic_A_financial_rows_unchanged",
+      "passed": true
+    },
+    {
+      "name": "synthetic_B_financial_rows_unchanged",
+      "passed": true
+    },
+    {
+      "name": "source_document_and_revision_unchanged",
+      "passed": true
+    }
+  ],
+  "feature_writes": "ordinary JWT only",
+  "real_user_messages_sent": 0,
+  "customer_data_mutations_performed": false,
+  "scope": "fresh_two_accounts_one_album_one_snapshot_follow_block",
+  "previous_pagination_run": "64fa5f147a7b",
+  "public_window_started_at": "2026-10-26T07:10:30.977068+00:00",
+  "public_window_finished_at": "2026-10-26T07:10:38.236705+00:00",
+  "cleanup": {
+    "completed": true,
+    "errors": [],
+    "verified_at": "2026-10-26T07:10:42.408422+00:00",
+    "synthetic_account_ids": [
+      "327ad0ec-799e-4725-bfa8-df472c48853b",
+      "740454a5-ae1c-43d0-b45f-8911ec3926db"
+    ],
+    "synthetic_work_count": 1,
+    "customer_storage_bucket_mutations": 0,
+    "combined_read_only_residual_groups_verified": 93,
+    "combined_residual_rows_total": 0,
+    "read_only_residue_verification": {
+      "groups_checked": 93,
+      "total_remaining": 0,
+      "scope": {
+        "synthetic_account_ids": [
+          "ed6912d7-8019-440b-a735-5d6184070387",
+          "d2692713-1701-4cfa-976a-e36ea0ee1a52",
+          "327ad0ec-799e-4725-bfa8-df472c48853b",
+          "740454a5-ae1c-43d0-b45f-8911ec3926db"
+        ],
+        "first_run_source_album_ids": [
+          100
+        ],
+        "first_run_work_ids": [
+          "288bca85-bd24-4211-bf13-8648703a00b8",
+          "d0e3062b-8a4a-4181-a30a-f3c477e3c82c",
+          "625852d6-6450-451c-a7f0-3c896b6d7d2a",
+          "f7984c24-8e4d-427a-ba72-a698adf84fa0",
+          "87ee22ad-1f9c-41f7-980f-823011110b85",
+          "eb83d9c6-fd2b-487a-a2de-d1b404bd7295",
+          "45b66084-efb2-40f6-9804-52a99843959b",
+          "06527ac2-9700-4720-bb68-5632e5c67315",
+          "2bf6615f-e984-43a5-a3b5-a4656ea69baf",
+          "90a0e46a-5d72-4f39-9c7d-670eeccf1fa3",
+          "1e06e05c-ac12-4425-af16-6ca2dcbed675",
+          "e4b55345-cd2c-4dda-b7d3-b6c4cdf6d9f0",
+          "96e8e0c7-4121-48eb-802d-c0609d6f45a8",
+          "10f7001d-ff10-413c-bfff-2e4013b79ebd",
+          "e6b21ff3-2cd6-42d0-a374-36995ade387a",
+          "2f38a546-aebc-44e2-a195-5fba9557dfd8",
+          "4c5b3ea0-7bec-464f-bb1b-b9afc9adc7dd",
+          "457ea1be-b167-416c-bc17-023d5628fa10",
+          "c68e0000-b64a-4bb0-9846-cbc8dc04434c",
+          "5abc385d-e4f6-4174-878b-2813db640ecd",
+          "1108b4f8-ab4c-46b8-a08d-c5737ec13d3c",
+          "e36b710b-a427-49e4-bf84-9afe5b9b28fb",
+          "812b13c5-8ad0-44ac-bf5a-f2817303095e",
+          "2414d414-6b7a-4ec2-9b57-28bc22f79ef6",
+          "4553f9f1-5c85-4d75-806e-6c5b81e6454a",
+          "d51aa9cb-bb6b-498c-9cff-6a99747abfad",
+          "ffd4f944-e4ba-40fc-9448-8a967a3ccd80",
+          "2b848486-7ce9-4bf3-bfd9-43a886c0a154",
+          "c3bd8ac3-c694-4896-bdde-5a16cc23bc05",
+          "3fc9e67f-cb8c-402d-928b-a1ec41c9e5b6",
+          "20b7ebc5-456b-419c-b28c-d88e9b95b030"
+        ],
+        "minimal_work_and_album_covered_by": "actor ownership checks and global zero works/pages/publication_sources/snapshots"
+      },
+      "groups": [
+        {
+          "remaining": 0,
+          "group_name": "album_private.asset_bindings"
+        },
+        {
+          "remaining": 0,
+          "group_name": "album_private.save_requests"
+        },
+        {
+          "remaining": 0,
+          "group_name": "album_private.shared_history"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.custom_oauth_providers"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.flow_state"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.identities"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.instances"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.mfa_amr_claims"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.mfa_challenges"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.mfa_factors"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.mfa_recovery_code_sets"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.mfa_recovery_codes"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.oauth_authorizations"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.oauth_client_states"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.oauth_clients"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.oauth_consents"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.one_time_tokens"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.refresh_tokens"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.saml_providers"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.saml_relay_states"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.scim_tokens"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.scim_users"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.sessions"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.sso_domains"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.sso_providers"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.users"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.webauthn_challenges"
+        },
+        {
+          "remaining": 0,
+          "group_name": "auth.webauthn_credentials"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.ai_template_free_jobs"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.ai_template_free_runtime"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.ai_template_free_worker_nonces"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.ai_template_generation_intents"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.print_checkout_consents"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.print_checkout_intents"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.print_dev_checkouts"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.print_dev_fulfillment_outbox"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.print_dev_packages"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.print_file_retention"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.print_file_retention_audit"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.print_fulfillment_outbox"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.print_order_requests"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.print_order_scheduler_nonces"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.print_payment_reversals"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.print_payment_test_sessions"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.print_pre_sdk_aborts"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.print_prepayment_packages"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.print_retail_price_audit"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.print_retail_price_overrides"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.print_retail_price_revisions"
+        },
+        {
+          "remaining": 0,
+          "group_name": "private.print_sales_combinations"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.ai_album_draft_usages"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.ai_album_free_draft_claims"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.ai_album_operational_events"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.album_invites"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.album_members"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.album_pages"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.albums"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.billing_orders"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.notification_reads"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.notifications"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.orders"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.point_ledger"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.point_shop_ownership"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.point_wallets"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.profiles"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.push_devices"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.push_outbox"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.push_preferences"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.redprinting_dev_api_gate"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.redprinting_dev_mappings"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.redprinting_dev_settings"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.redprinting_dev_tests"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.social_blocks"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.social_comments"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.social_follows"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.social_likes"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.social_profiles"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.social_saves"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.social_work_pages"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.social_works"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.storage_quotas"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.store_purchases"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.subscriptions"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.support_inquiries"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.template_likes"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.web_point_topup_test_ledger"
+        },
+        {
+          "remaining": 0,
+          "group_name": "public.web_point_topups"
+        },
+        {
+          "remaining": 0,
+          "group_name": "social_private.social_publication_sources"
+        },
+        {
+          "remaining": 0,
+          "group_name": "storage.buckets"
+        },
+        {
+          "remaining": 0,
+          "group_name": "storage.buckets_analytics"
+        },
+        {
+          "remaining": 0,
+          "group_name": "storage.objects"
+        },
+        {
+          "remaining": 0,
+          "group_name": "storage.s3_multipart_uploads"
+        },
+        {
+          "remaining": 0,
+          "group_name": "storage.s3_multipart_uploads_parts"
+        }
+      ]
+    },
+    "core_counts_after": {
+      "profiles": 1,
+      "works": 0,
+      "pages": 0,
+      "likes": 0,
+      "saves": 0,
+      "follows": 0,
+      "comments": 0,
+      "blocks": 0,
+      "publication_sources": 0,
+      "snapshots": 0
+    },
+    "private_helper_directory_deleted": true,
+    "private_helper_directory_deleted_at": "2026-10-26T07:12:37.924730+00:00",
+    "scope_note": "Exact four synthetic actor IDs across both runs, first-run source/work IDs, plus global zero social works/pages/sources/snapshots. Auth audit logs retained as service security audit records."
+  },
+  "finished_at": "2026-10-26T07:10:44.505048+00:00",
+  "original_album_assets": {
+    "count_before": 41,
+    "count_after": 41,
+    "metadata_md5_before": "71880641942d4bd62a26e047a89a5200",
+    "metadata_md5_after": "71880641942d4bd62a26e047a89a5200",
+    "equal": true
+  },
+  "final_dispatcher_body_md5": "d09449adbb053d7d77919386926d7644"
+}

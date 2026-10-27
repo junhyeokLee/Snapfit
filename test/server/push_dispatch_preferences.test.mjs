@@ -9,6 +9,7 @@ const morning = '2026-10-19T23:00:00Z'; // 08:00 KST.
 function fixture(t, {
   preferences = null, category = 'order', createdAt = morning, now = morning,
   offset = 540, platform = 'android', enabled = true,
+  type = 'order_status', momentAllowed = true, momentError = null,
 } = {}) {
   t.mock.timers.enable({ apis: ['Date'], now: Date.parse(now) });
   const requests = [], patches = [], queries = [];
@@ -17,7 +18,7 @@ function fixture(t, {
     requests.push(JSON.parse(options.body));
     return Response.json({ name: 'offline-message' });
   });
-  const notification = { id: 7, user_id: 'offline-owner', type: 'order_status', category,
+  const notification = { id: 7, user_id: 'offline-owner', type, category,
     title: 'Offline fixture', body: 'Offline fixture', created_at: createdAt };
   const handler = createPushDispatchHandler({
     env: name => ({ PUSH_DISPATCH_SECRET: secret, PUSH_DELIVERY_ENABLED: 'true',
@@ -26,7 +27,9 @@ function fixture(t, {
     getAccessToken: async () => 'offline-access-token',
     logError: () => assert.fail('a controlled preference decision must not fail the worker'),
     adminClient: () => ({
-      rpc: async name => ({ data: name === 'claim_push_deliveries'
+      rpc: async name => name === 'is_moment_reminder_delivery_allowed'
+        ? { data: momentAllowed, error: momentError }
+        : ({ data: name === 'claim_push_deliveries'
         ? [{ id: 11, notification_id: 7, user_id: 'offline-owner', token: 'offline-device', attempts: 1, lease_token: 'offline-lease' }]
         : 0, error: null }),
       from: table => {
@@ -79,6 +82,25 @@ test('pending deliveries recheck every latest opt-out before contacting FCM', as
       }
     });
   }
+});
+
+test('weekly reminder rechecks opt-in and recent activity just before sending', async t => {
+  for (const allowed of [true, false, null]) {
+    await t.test(String(allowed), async t => {
+      const delivery = fixture(t, { type: 'moment_reminder', category: 'general', momentAllowed: allowed });
+      const result = await delivery.run();
+      assert.equal(result.sent, allowed === true ? 1 : 0);
+      assert.equal(result.discarded, allowed === true ? 0 : 1);
+      assert.equal(delivery.requests.length, allowed === true ? 1 : 0);
+      if (allowed !== true) assert.equal(delivery.patches[0].last_error, 'moment_reminder_no_longer_due');
+    });
+  }
+});
+
+test('weekly reminder never contacts FCM when the final opt-in check fails', async t => {
+  const delivery = fixture(t, { type: 'moment_reminder', category: 'general', momentError: { message: 'offline' } });
+  assert.equal((await delivery.run()).retry, 1);
+  assert.equal(delivery.requests.length, 0);
 });
 
 test('legacy quiet-hour queue entries stay discarded after a morning worker restart', async t => {

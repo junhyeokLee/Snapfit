@@ -1,0 +1,111 @@
+{
+  "checked_at": "2026-10-25T16:14:12+09:00",
+  "status": "installed_native_read_only_ui_qa_passed_fixture_cleanup_verified",
+  "authorization": "User explicitly authorized production deployment and native builds; existing Galaxy debug install -r workflow selected.",
+  "build": {
+    "command": "flutter build apk --debug --target-platform android-arm64 --no-pub",
+    "variant": "debug",
+    "application_id": "com.devsheep.snap_fit",
+    "version_name": "1.0.0",
+    "version_code": 1,
+    "apk": {
+      "path": "output/native-photo-refresh/previous-app-debug.apk",
+      "bytes": 861069598,
+      "sha256": "9eef1431c1335565b91e2de4418957dcd70ec05111009501a4077c11369ff596",
+      "stable_backup_verified_at": "2026-10-25T17:06:14+09:00"
+    },
+    "zip_crc_valid": true,
+    "zip_entries": 1700,
+    "signature_verified": true,
+    "signer": "Android Debug",
+    "certificate_sha256": "a46a0968f62bfe49908e6e9d0b1feda3c269bf721d09a0fc1d7daaa6ecf199c3",
+    "final_incremental_gradle_seconds": 81.9,
+    "prior_failed_attempts": "Two packageDebug attempts failed only because host disk was full; final build succeeded after generated-output cleanup and verified APFS CoW deduplication.",
+    "packaged_metadata": [
+      "package: name='com.devsheep.snap_fit' versionCode='1' versionName='1.0.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+      "application-debuggable",
+      "native-code: 'arm64-v8a' 'armeabi-v7a' 'x86_64'"
+    ]
+  },
+  "target": {
+    "device": "Samsung Galaxy S23+ (SM-S916N)",
+    "android": "16 / API 36",
+    "architecture": "arm64-v8a",
+    "preflight_connected": true,
+    "preflight_installed_app": "com.devsheep.snap_fit 1.0.0 (versionCode 1), debuggable",
+    "preflight_installed_signature_java_hash": "b704b843",
+    "local_debug_signature_java_hash": "b704b843",
+    "planned_install": "adb install -r; no uninstall, data clear, or logout",
+    "latest_connection_state": "Same Galaxy reconnected; verified APK updated successfully with adb install -r.",
+    "latest_device_entries": 1,
+    "install_result": "Success",
+    "installed_last_update_time": "2026-10-25 16:08:23",
+    "first_install_time_preserved": true,
+    "installed_signature_preserved": true,
+    "installed_signature_java_hash": "b704b843"
+  },
+  "preservation": {
+    "original_user_albums_untouched": true,
+    "existing_app_data_not_cleared": true,
+    "existing_user_not_logged_out": true,
+    "user_albums_not_published": true,
+    "private_screenshots_shared": false,
+    "rollback_apk": "output/native-social-release/previous-app-debug.apk",
+    "rollback_apk_preserved": true,
+    "new_apk_preserved": true,
+    "generated_native_intermediates_removed_after_success": true,
+    "both_output_apks_preserved_as_verified_CoW_copies": true,
+    "existing_authenticated_session_verified_after_update": true,
+    "existing_album_area_accessible_after_update": true
+  },
+  "native_ui_qa": {
+    "status": "passed",
+    "verified_screens": [
+      "Existing album library and five-tab navigation",
+      "Own social profile with edit/manage actions and authenticated session",
+      "Own profile → existing Settings screen with back/account settings controls",
+      "Feed with new synthetic public work",
+      "Work detail, selected page 1/2 QA PAGE TWO → page 2/2 SYNTHETIC ALBUM; last next button disabled",
+      "Synthetic author profile with public work and follow button; settings/profile-edit controls absent for visitor",
+      "Back navigation to feed",
+      "Feed after fixture deletion and refresh: synthetic work/author absent, normal empty feed state"
+    ],
+    "interactions_mutating_user_social_data": false,
+    "real_user_album_publication_performed": false,
+    "selected_public_page_source_indexes": [
+      2,
+      0
+    ],
+    "synthetic_source_album_page_count": 3,
+    "visible_public_page_count": 2,
+    "public_proof": "docs/verification/social-native-live-work-2026-10-25.png",
+    "public_proof_contains_only_synthetic_work_profile": true,
+    "runtime_summary": {
+      "fatal_exception": 0,
+      "unhandled_dart_exception": 0,
+      "render_overflow": 0,
+      "flutter_error_lines": 0
+    },
+    "fixture_cleanup": "QA account, album 76, public work and two PNGs removed by backend QA; related DB/Auth/Storage leftovers verified as zero. Real user account and albums were not deleted or logged out.",
+    "private_capture_cleanup": {
+      "local_private_capture_and_dump_files_deleted": 10,
+      "device_temporary_dump_deleted": true,
+      "shared_artifact_contains_private_account_screens": false
+    },
+    "final_feed_after_refresh": {
+      "feed_tab_selected": true,
+      "synthetic_work_absent": true,
+      "synthetic_author_absent": true,
+      "empty_feed_state_present": true
+    },
+    "app_left_on": "Feed, selected tab; empty feed state displayed after test-work removal"
+  },
+  "store_distribution": {
+    "status": "not_submitted",
+    "reason": "No configured Android release key.properties / Play signing pipeline, no Fastlane/native store release workflow, and no SnapFit iOS distribution signing configuration or App Store credentials. Existing authorized debug-device path was used for the ready APK; no new signing keys or store project were created."
+  },
+  "host_space": {
+    "free_mib_after_cleanup": 3059.3,
+    "scope": "Only this task generated native outputs, verified duplicate APKs, and completed regenerable test/web outputs were cleaned. Repository source, Flutter/Gradle cache originals, user albums, app data, and rollback APK were preserved."
+  }
+}

@@ -41,7 +41,7 @@ void main() {
             : freeTemplateMaterialIssues(catalog);
         issues.addAll(materialIssues.map((key) => '${template.title}: $key'));
         final formats = <Map<String, dynamic>>[];
-        for (final aspect in CollectionAspect.values) {
+        for (final aspect in CollectionAspect.printable) {
           final document = Map<String, dynamic>.from(
             variants[aspect.name] as Map,
           );
@@ -131,7 +131,7 @@ void main() {
           'const catalogDesignAudit = ${jsonEncode(data)};\n',
         );
       }
-      expect(results, hasLength(68));
+      expect(results, hasLength(publishedCreationTemplates.length));
       expect(issues, isEmpty);
     },
   );

@@ -1,0 +1,112 @@
+{
+  "date": "2026-10-26",
+  "automation_id": "snapfit",
+  "trigger_time": "2026-10-26T04:20:52.526Z",
+  "finished_time": "2026-10-26T04:28:22.614855+00:00",
+  "scope": "Reader PageController replacement listener ownership and initial BookPageView offsets. No app build, device run, deployment or customer data changes.",
+  "previous_reports": [
+    "docs/verification/heartbeat-reader-thumbnails-2026-10-26.json",
+    "docs/verification/heartbeat-detail-record-read-2026-10-25.json"
+  ],
+  "findings": [
+    {
+      "severity": "P2",
+      "problem": "BookPageView and AlbumReaderSinglePageView registered a callback on the original externally supplied PageController, but replacement did not move that callback. Dispose then removed it only from the latest controller. A retained old controller kept callbacks referencing the reader state, and the new controller did not drive the custom scroll/focus callback.",
+      "evidence": "Before the fix, controlled widget replacement left _onPageScroll on the old BookPageView controller, both _syncFocusFromSpread and _onPageScroll in ordinary reader mode, and _syncFocusFromSpread in focus mode. All three lifecycle cases failed.",
+      "fix": "Detach the old callback and attach the new callback once in didUpdateWidget when controller identity changes. Rebind before the focusMode early return. Preserve existing focus/request/render state.",
+      "practical_scope": "The main reader currently owns a stable final PageController; this is a reproduced component replacement defect, not a measured cause of ordinary main/store frame drops."
+    },
+    {
+      "severity": "P2",
+      "problem": "An unattached BookPageView controller with nonzero initialPage initialized its render offset to zero.",
+      "evidence": "The initialPage=3 fixture showed page 3 but supplied offset 3.0 instead of 0.0 on its first build.",
+      "fix": "Initialize from current controller page when attached, otherwise initialPage. On replacement keep the existing offset because Flutter Scrollable transfers its position rather than applying the new initialPage."
+    }
+  ],
+  "production_files_changed_this_run": [
+    "lib/features/album/presentation/widgets/reader/book_page_view.dart",
+    "lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart"
+  ],
+  "new_test_files": [
+    "test/widget/reader_controller_lifecycle_test.dart"
+  ],
+  "verification": {
+    "baseline": {
+      "passed": 0,
+      "failed": 4,
+      "log": "output/heartbeat-reader-controller-2026-10-26/baseline-tests.log",
+      "classification": "Intentional before-fix reproduction of the four new controlled cases."
+    },
+    "focused_after_fix": {
+      "passed": 4,
+      "failed": 0,
+      "log": "output/heartbeat-reader-controller-2026-10-26/focused-tests.log"
+    },
+    "intermediate_related": {
+      "passed": 58,
+      "failed": 1,
+      "log": "output/heartbeat-reader-controller-2026-10-26/related-tests.log",
+      "classification": "The expanded focus fixture initially looked for a default focus card key; static spreads use book_flip_album_page_* keys. Corrected the fixture selector; no production change was needed for this mismatch."
+    },
+    "final_related": {
+      "passed": 59,
+      "failed": 0,
+      "log": "output/heartbeat-reader-controller-2026-10-26/final-tests.log",
+      "single_process": true,
+      "concurrency": 1,
+      "command": "flutter test --no-test-assets --no-pub --concurrency=1 --reporter expanded test/widget/reader_controller_lifecycle_test.dart test/widget/reader_paper_motion_test.dart test/widget/reader_image_capture_test.dart test/widget/reader_thumbnail_performance_test.dart test/unit/reader_thumbnail_layout_test.dart test/unit/reader_image_quality_test.dart"
+    },
+    "static_analysis": {
+      "items": 3,
+      "issues": 0,
+      "log": "output/heartbeat-reader-controller-2026-10-26/analysis.log"
+    },
+    "scoped_git_diff_check": "passed",
+    "test_resources": "Free disk was rechecked before compilation (over 8 GiB at start, about 11 GiB at final probe). No other Flutter test process was observed at the prelaunch checks. Reused existing unit_test_assets with --no-test-assets. No shared/user caches were removed.",
+    "external_effects": "No app build/device execution, deployment, operational database access, pricing or saved-album mutation."
+  },
+  "review": {
+    "remaining_blocking_findings_in_changed_scope": [],
+    "checked": [
+      "The same State survives six controller replacements and reuse; replaced controllers have no remaining listeners or attached scroll positions.",
+      "Disposing both ordinary and focus readers leaves all three fixture controllers with no callbacks or positions.",
+      "Book offsets follow new-controller jumps and preserve the previous page even when replacement controllers have different initialPage values.",
+      "The focus reader follows six actual jumps from a replacement external spread navigator and shows the expected live inner page.",
+      "Rebinding creates no timer, post-frame job, extra cache, image decode or per-scroll collection. Same-controller updates do not add listeners.",
+      "Existing rotation, rapid selection, turn cancellation, late network preparation, hidden capture, image quality budgets and thumbnail navigation tests pass.",
+      "Only the four controller-rebind lines were added to the pre-existing single reader changes; all other reader logic is byte-identical to the before snapshot."
+    ],
+    "protected_sources_unchanged": {
+      "lib/features/album/presentation/views/album_reader_screen.dart": true,
+      "lib/features/album/presentation/widgets/reader/album_reader_thumbnail_strip.dart": true,
+      "lib/shared/snapfit_image.dart": true,
+      "lib/shared/photo_preparation.dart": true,
+      "lib/features/store/data/api/template_provider.dart": true
+    },
+    "source_assertions": {
+      "single_page_view_only_controller_rebind": true
+    },
+    "shared_workspace": "Preserved all pre-existing changes. No other task was messaged, interrupted or overwritten.",
+    "evidence_directory": "output/heartbeat-reader-controller-2026-10-26",
+    "source_patch": "output/heartbeat-reader-controller-2026-10-26/source.patch",
+    "final_sha256": {
+      "lib/features/album/presentation/widgets/reader/book_page_view.dart": "79156c507b04a27053b72c0c123469f8bec81b3b0fdd2ff1bd8df11c1fb5ba20",
+      "lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart": "465e2b17ec098a2731b4e4ff0534e8e24f9d0fa627b2da1858193d1b9e986bd9",
+      "test/widget/reader_controller_lifecycle_test.dart": "287da828d4168904a370ab3f91744c8a69709e7a7c99dae1235509b8bab5b03f"
+    }
+  },
+  "follow_up": {
+    "automation_remains_useful": true,
+    "next_candidates": [
+      "Review main album progressive loading and queued cover/progress work on route hiding/account changes against the latest records; add a controlled regression only when new evidence appears.",
+      "Review editor material/photo picker async completion after dismissal and ownership changes, preserving the already fixed more-menu coalescing and thumbnail request sharing.",
+      "Recheck disk and active test processes before further compilation; continue serial scoped tests without deleting shared caches."
+    ]
+  },
+  "limits": [
+    "No physical device FPS, peak process memory or visual profiling was measured; no numeric performance or memory-savings claim is made.",
+    "Listener cleanup is verified through tracked callbacks/scroll positions and widget behavior; no heap snapshot or whole-app leak proof is claimed.",
+    "Multiple simultaneous PageViews sharing a single PageController are outside the existing page getter contract; this fix does not add that capability.",
+    "Existing optional book atlas/image work may finish after a page is closed under its current disposal gates; those algorithms were not changed."
+  ]
+}

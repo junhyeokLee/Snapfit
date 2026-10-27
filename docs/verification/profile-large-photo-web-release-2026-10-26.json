@@ -1,0 +1,383 @@
+{
+  "checked_at_utc": "2026-10-26T04:08:54.264932+00:00",
+  "status": "deployed_artifacts_verified_manual_profile_browser_qa_pending",
+  "url": "https://snapfit-c719d.web.app",
+  "firebase_project": "snapfit-c719d",
+  "firebase_site": "snapfit-c719d",
+  "firebase_channel": "live",
+  "hosting_release": {
+    "name": "projects/snapfit-c719d/sites/snapfit-c719d/channels/live/releases/1792987673077000",
+    "releaseTime": "2026-10-26T04:07:53.077Z",
+    "type": "DEPLOY"
+  },
+  "hosting_version": {
+    "name": "projects/snapfit-c719d/sites/snapfit-c719d/versions/e38a80bd79cde2a9",
+    "status": "FINALIZED"
+  },
+  "previous_hosting_version": "d9ccdcdf424b7523",
+  "previous_release_report": "album-collaboration-conflict-recovery-web-release-2026-10-25.json",
+  "build_command": "python3 tool/build_web.py --output build/review-web",
+  "build_compile_seconds": 20.2,
+  "initial_build_compile_seconds": 76.9,
+  "repeat_build_same_main_and_bootstrap_hash": true,
+  "app_version": "1.0.0+1",
+  "client_configuration": "Existing production defaults reused; no server secrets injected.",
+  "build_manifest": {
+    "main_sha256": "0807ecf67a373d1498763bb87946897ae8f496287a71caf5abc27fde2d3b6124",
+    "main_file": "main.0807ecf67a373d149876.dart.js",
+    "bootstrap_sha256": "67ee28fe48e603e400b41706d34fe32b7db7513f3c2d1f7e900dc9bcd8acdc58",
+    "bootstrap_file": "flutter_bootstrap.67ee28fe48e603e400b4.js"
+  },
+  "source_integrity": {
+    "before_manifest": "profile-large-photo-web-source-before-2026-10-26.json",
+    "after_manifest": "profile-large-photo-web-source-after-2026-10-26.json",
+    "source_file_count": 1788,
+    "before_source_manifest_sha256": "9f99d71ecc730821c891eb331316fe06c824f2220c7c1e59f94b3c1aa7a6c473",
+    "after_source_manifest_sha256": "9f99d71ecc730821c891eb331316fe06c824f2220c7c1e59f94b3c1aa7a6c473",
+    "unchanged_during_build": true,
+    "changed_files": [],
+    "changed_source_since_previous_release": [
+      "lib/features/album/presentation/utils/reader_image_quality.dart",
+      "lib/features/album/presentation/views/album_reader_screen.dart",
+      "lib/features/album/presentation/widgets/reader/album_reader_thumbnail_strip.dart",
+      "lib/features/social/presentation/views/social_profile_screen.dart",
+      "lib/features/social/presentation/widgets/social_profile_widgets.dart",
+      "lib/features/store/presentation/views/template_detail_screen.dart"
+    ],
+    "firebase_json_expected_mutation": "Only retained fingerprinted-bootstrap redirect targets updated; existing site/cache policy unchanged."
+  },
+  "assets": {
+    "main": {
+      "file": "main.0807ecf67a373d149876.dart.js",
+      "headers": {
+        "status": 200,
+        "cache-control": "public,max-age=31536000,immutable",
+        "content-type": "text/javascript; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "sha256": "0807ecf67a373d1498763bb87946897ae8f496287a71caf5abc27fde2d3b6124",
+      "bytes": 8930899,
+      "matches_local": true
+    },
+    "bootstrap": {
+      "file": "flutter_bootstrap.67ee28fe48e603e400b4.js",
+      "headers": {
+        "status": 200,
+        "cache-control": "no-cache",
+        "content-type": "text/javascript; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "sha256": "67ee28fe48e603e400b41706d34fe32b7db7513f3c2d1f7e900dc9bcd8acdc58",
+      "bytes": 14512,
+      "matches_local": true
+    },
+    "index": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "sha256": "6ad30a903a8daba9cef439b73dd67034ca2d17e081d5c01557774cdcd8741076",
+      "bytes": 3023,
+      "matches_local": true
+    }
+  },
+  "http_routes": {
+    "/feed": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    },
+    "/invite/QA_INVALID_INVITE_20261026": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    },
+    "/works/00000000-0000-4000-8000-000000000000": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    },
+    "/users/00000000-0000-4000-8000-000000000000": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    },
+    "/me": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    },
+    "/publish": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    },
+    "/publish/86": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    },
+    "/me/works": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    },
+    "/account": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    },
+    "/albums": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    },
+    "/login": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    }
+  },
+  "http_route_note": "Invalid token and zero UUIDs verify SPA HTML delivery only. Root separately checks authenticated/public profile photos and actual page contents in the browser.",
+  "cached_html_compatibility": {
+    "retained_generation_limit": 3,
+    "retained_release_pairs": [
+      {
+        "main_file": "main.6c28bcc019391951b3fa.dart.js",
+        "bootstrap_file": "flutter_bootstrap.3ee212fc01fcda9c05f3.js"
+      },
+      {
+        "main_file": "main.7543c9bb4e2916242078.dart.js",
+        "bootstrap_file": "flutter_bootstrap.c952ba48499def6ba293.js"
+      },
+      {
+        "main_file": "main.0807ecf67a373d149876.dart.js",
+        "bootstrap_file": "flutter_bootstrap.67ee28fe48e603e400b4.js"
+      }
+    ],
+    "previous_generations": [
+      {
+        "main_file": "main.6c28bcc019391951b3fa.dart.js",
+        "bootstrap_file": "flutter_bootstrap.3ee212fc01fcda9c05f3.js",
+        "main_sha256": "6c28bcc019391951b3fae297448719887a92c5607d7fba775f3fecd32ef0b821",
+        "original_main_preserved": true,
+        "bootstrap_headers": {
+          "status": 302,
+          "cache-control": "no-cache",
+          "location": "/flutter_bootstrap.67ee28fe48e603e400b4.js",
+          "referrer-policy": "strict-origin-when-cross-origin",
+          "x-content-type-options": "nosniff",
+          "x-robots-tag": "noindex, nofollow",
+          "content-type": "text/plain; charset=utf-8"
+        },
+        "resolved_bootstrap_sha256": "67ee28fe48e603e400b41706d34fe32b7db7513f3c2d1f7e900dc9bcd8acdc58"
+      },
+      {
+        "main_file": "main.7543c9bb4e2916242078.dart.js",
+        "bootstrap_file": "flutter_bootstrap.c952ba48499def6ba293.js",
+        "main_sha256": "7543c9bb4e2916242078d68fdc47b807faf8eb043190e007446534ff07080ea9",
+        "original_main_preserved": true,
+        "bootstrap_headers": {
+          "status": 302,
+          "cache-control": "no-cache",
+          "location": "/flutter_bootstrap.67ee28fe48e603e400b4.js",
+          "referrer-policy": "strict-origin-when-cross-origin",
+          "x-content-type-options": "nosniff",
+          "x-robots-tag": "noindex, nofollow",
+          "content-type": "text/plain; charset=utf-8"
+        },
+        "resolved_bootstrap_sha256": "67ee28fe48e603e400b41706d34fe32b7db7513f3c2d1f7e900dc9bcd8acdc58"
+      }
+    ],
+    "history_isolated_by_output_directory": true,
+    "bootstrap_redirects_automatically_retargeted": true
+  },
+  "bootstrap_file_distinction": {
+    "raw_generated_flutter_output": {
+      "file": "flutter_bootstrap.js",
+      "headers": {
+        "status": 200,
+        "cache-control": "no-cache",
+        "content-type": "text/javascript; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "sha256": "a8c9e786130981b2125133b001e25d9bd0bddaac192ab88884c5e24d4a1e4810",
+      "bytes": 12924,
+      "remote_matches_local": true,
+      "referenced_by_index": false,
+      "main_js_path": "main.dart.js",
+      "note": "Original generated file, not an alias or shim."
+    },
+    "active_runtime_entrypoint": {
+      "file": "flutter_bootstrap.67ee28fe48e603e400b4.js",
+      "sha256": "67ee28fe48e603e400b41706d34fe32b7db7513f3c2d1f7e900dc9bcd8acdc58",
+      "remote_matches_local": true,
+      "referenced_by_index": true,
+      "main_js_path": "main.0807ecf67a373d149876.dart.js"
+    },
+    "plain_main_matches_fingerprinted_main": true
+  },
+  "service_worker": {
+    "generated_flutter_worker_bytes": 0,
+    "old_generated_worker_retired_by_bootstrap": true,
+    "firebase_messaging_worker_preserved": true,
+    "firebase_messaging_worker_sha256": "63fbf12cdce4a0917be12d075a25a6cace3ca2e90c12667c979e24ad3f2a1453",
+    "headers": {
+      "status": 200,
+      "cache-control": "no-cache",
+      "content-type": "text/javascript; charset=utf-8",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "x-content-type-options": "nosniff",
+      "x-robots-tag": "noindex, nofollow"
+    }
+  },
+  "profile_design": {
+    "public_portrait_size_by_viewport": {
+      "320": 148,
+      "390": 164,
+      "820": 196,
+      "1440": 196
+    },
+    "portrait_shape": "Rounded square in profile identity; existing other avatar shapes retained.",
+    "default_gallery": "Large photos: one column on phones, two above 700px internal width; a single work uses the full width.",
+    "secondary_gallery_mode": "Compact two/three columns selectable through labeled controls.",
+    "photo_layout": "Original album aspect ratio with contain; independent gallery columns reduce blank row gaps.",
+    "semantics": "Original work index sort keys scoped to gallery; avatar is one labeled expandable target.",
+    "own_actions": "Profile edit and publish remain primary; management and settings are labeled header icons.",
+    "identity_lifetime": "Opening a photo refreshes access; identity changes dispose only that photo route and preserve unrelated dialogs."
+  },
+  "verification": {
+    "profile_widget_cases_passed": 34,
+    "test_command": "flutter test --no-test-assets --no-pub test/widget/social_profile_screens_test.dart --reporter expanded",
+    "test_log": "/tmp/snapfit-large-profile-tests-2026-10-26.log",
+    "selected_analysis": "No issues found for profile screen, profile widgets and profile widget tests.",
+    "responsive_viewports": [
+      320,
+      390,
+      820,
+      1440
+    ],
+    "dark_text_scale": 1.8,
+    "regressions": [
+      "Own/private controls not exposed to other profiles",
+      "Private works excluded",
+      "Large default images and mode switching",
+      "Single desktop work full-width hero and natural ratio",
+      "Independent column positions and original screen-reader order",
+      "Management icon opens actual management screen",
+      "320px dark large text remains scrollable and actionable",
+      "Stale photo resolution cannot restore an old identity",
+      "An open photo closes on identity change while unrelated overlay stays"
+    ]
+  },
+  "local_build_file_count": 1137,
+  "native_build_coordination": "Web Flutter build completed; child received APK GREEN before Firebase deployment. No concurrent Flutter build initiated by the web release task.",
+  "root_manual_browser_qa": {
+    "status": "mobile_profile_visual_passed_desktop_and_remaining_flows_pending",
+    "mobile_width": 390,
+    "screenshots": [
+      "output/profile-qa-20261026/my-mobile-390-light.jpg",
+      "output/profile-qa-20261026/profile-photo-expanded-mobile.jpg",
+      "output/profile-qa-20261026/my-mobile-390-compact.jpg"
+    ],
+    "independent_review": "Default gallery uses the full available width; public portrait is larger with a visible expand affordance; the full-photo viewer preserves the chosen image; compact mode preserves ratios and independent columns. No visual blocker found.",
+    "reviewed_at_utc": "2026-10-26T04:26:53.451782+00:00",
+    "desktop_and_dark_qa": "Pending root final screenshots and interaction results.",
+    "screenshot_format_note": "Actual JPEG bytes; extensions corrected without changing pixels. Before-fix mobile dark and cropped 1440 captures are excluded from passing evidence."
+  },
+  "native_delivery": {
+    "status": "verified_debug_apk_install_not_performed",
+    "report": "profile-large-photo-native-2026-10-26.json",
+    "apk_path": "output/native-photo-refresh/SnapFit-large-profile-debug-before-thumbnail-expiry-fix.apk",
+    "apk_sha256": "ddf1fd41f9051784882566d06a67131cb601e09b1641d3f35b742ed7288bd782",
+    "apk_bytes": 861220802,
+    "zip_crc_valid": true,
+    "signature_verified": true,
+    "matches_preserved_debug_certificate": true,
+    "native_pre_post_source_unchanged": true,
+    "web_common_source_files": 1765,
+    "web_common_source_hashes_match": true,
+    "preserved_original_and_final_apks_unchanged": true,
+    "install_performed": false,
+    "original_apk_path": "output/native-photo-refresh/SnapFit-large-profile-debug.apk",
+    "historical_artifact_note": "Before-thumbnail-expiry-fix APK preserved as an APFS clone; SHA is unchanged. The stable path will be reused only after the final combined fix is verified."
+  },
+  "superseded_by_report": "profile-thumbnail-quota-fix-web-release-2026-10-26.json",
+  "superseded_by_hosting_version": "998ad154dea0fc0d"
+}

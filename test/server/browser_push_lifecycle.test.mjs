@@ -139,6 +139,8 @@ test('a closed web app opens same-origin order, album, and template routes', asy
     [{ orderId: 'order-one' }, '/orders/order-one'],
     [{ orderId: undefined, albumId: '42' }, '/albums/42'],
     [{ orderId: undefined, templateId: '9' }, '/designs/templates/9'],
+    [{ orderId: undefined, screen: 'moments', deeplink: 'snapfit://moments' }, '/moments'],
+    [{ orderId: undefined, screen: 'moments', albumId: '../escape' }, '/notifications'],
     [{ orderId: undefined, albumId: '../escape', deeplink: 'https://other.test/private' }, '/notifications'],
   ]) {
     const f = fixture();

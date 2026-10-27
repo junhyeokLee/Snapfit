@@ -1,0 +1,40 @@
+{
+  "status": "released_and_live_verified",
+  "reference_project": "/Users/devsheep/oboa_project/oboa_ai",
+  "inviter_points": 100,
+  "invitee_points": 100,
+  "new_member_registration_window_days": 7,
+  "per_account_registration": "one permanent active confirmed account, one registration; email authentication completes normal signup, no additional waiting period",
+  "inviter_reward_limit_per_KST_calendar_month": 20,
+  "monthly_cap_policy": "At cap, registration is rejected for both users without consuming invitee eligibility; the screen explains it.",
+  "explicit_redemption": true,
+  "conversation_or_24hour_wait": false,
+  "cash_purchase_or_creator_marketplace": false,
+  "new_expiration_or_device_tracking": false,
+  "entry_points": [
+    "Own My profile",
+    "Points screen mobile/web",
+    "Public /friends and /friends/CODE"
+  ],
+  "share": [
+    "HTTPS link finishes on web without app installation",
+    "Native share sheet; code/link copy",
+    "Native snapfit://friends?code=CODE; no claim of universal links/deferred install attribution"
+  ],
+  "code_storage": "Separate secure pending code, expires after 7 client days; server independently checks account age",
+  "basic_abuse_controls": [
+    "self invite denied",
+    "reciprocal invite denied",
+    "one per UID",
+    "active confirmed accounts",
+    "monthly cap20",
+    "server atomic/idempotent two-wallet rewards"
+  ],
+  "person_level_identity_deduplication": false,
+  "existing_wallets_products_ownership_albums_preserved": true,
+  "web_hosting_version": "a3b0013a7cefe8d4",
+  "native_build_verified": true,
+  "actual_UI_and_two_wallet_rewards_verified": true,
+  "synthetic_cleanup_complete": true,
+  "physical_device_install_attempted": false
+}

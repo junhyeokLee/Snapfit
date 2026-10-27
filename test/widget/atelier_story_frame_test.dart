@@ -50,7 +50,7 @@ void main() {
         contains(productKey),
       );
     }
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       final wedding = templateVisualMaterialKeys(
         StudioEdition.velvetVowArchive.document(aspect),
       );

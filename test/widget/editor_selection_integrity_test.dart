@@ -5,9 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/features/album/data/api/album_provider.dart';
 import 'package:snap_fit/features/album/domain/entities/layer.dart';
+import 'package:snap_fit/features/album/domain/entities/layer_export_mapper.dart';
 import 'package:snap_fit/features/album/presentation/controllers/layer_interaction_manager.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/layer_manager_panel.dart';
+import 'package:snap_fit/features/album/presentation/widgets/editor/editor_overlap_picker.dart';
 import 'package:snap_fit/features/album/service/album_editor_service.dart';
 
 import '../helpers/mock_repositories.dart';
@@ -63,14 +65,20 @@ List<LayerModel> _artwork() => [
 ];
 
 class _Canvas extends ConsumerStatefulWidget {
-  const _Canvas({super.key, required this.webTransforms});
+  const _Canvas({
+    super.key,
+    required this.webTransforms,
+    this.overlapSelection = false,
+  });
   final bool webTransforms;
+  final bool overlapSelection;
 
   @override
   ConsumerState<_Canvas> createState() => _CanvasState();
 }
 
 class _CanvasState extends ConsumerState<_Canvas> {
+  int textEdits = 0;
   final canvasKey = GlobalKey();
   late final LayerInteractionManager manager;
 
@@ -82,9 +90,10 @@ class _CanvasState extends ConsumerState<_Canvas> {
       coverKey: canvasKey,
       setState: setState,
       getCoverSize: () => _canvasSize,
-      onEditText: (_) {},
-      showSelectionControls: false,
+      onEditText: (_) => textEdits++,
+      showSelectionControls: widget.overlapSelection,
       enableWebTransforms: widget.webTransforms,
+      enableOverlapSelection: widget.overlapSelection,
     );
   }
 
@@ -103,6 +112,9 @@ class _CanvasState extends ConsumerState<_Canvas> {
   Widget build(BuildContext context) {
     final layers = ref.watch(albumEditorViewModelProvider).value!.layers;
     return Scaffold(
+      bottomNavigationBar: widget.overlapSelection
+          ? EditorOverlapPicker(layers: layers, interaction: manager)
+          : null,
       body: Align(
         alignment: Alignment.topLeft,
         child: Row(
@@ -116,26 +128,33 @@ class _CanvasState extends ConsumerState<_Canvas> {
                 width: 500,
                 height: 500,
                 child: Stack(
-                  key: const ValueKey('selection-artwork'),
+                  fit: StackFit.expand,
                   children: [
-                    for (final layer in manager.sortByZ(layers))
-                      manager.buildInteractiveLayer(
-                        layer: layer,
-                        baseWidth: layer.width,
-                        baseHeight: layer.height,
-                        child: ColoredBox(
-                          key: ValueKey('paint-${layer.id}'),
-                          color: switch (layer.id) {
-                            _background => const Color(0xFFF0E9DA),
-                            _title => const Color(0xFF263C39),
-                            _firstPhoto => const Color(0xFF487B72),
-                            _ => const Color(0xFF8B7056),
-                          },
-                          child: layer.type == LayerType.text
-                              ? Center(child: Text(layer.text!))
-                              : null,
-                        ),
-                      ),
+                    Stack(
+                      key: const ValueKey('selection-artwork'),
+                      children: [
+                        for (final layer in manager.sortByZ(layers))
+                          manager.buildInteractiveLayer(
+                            layer: layer,
+                            baseWidth: layer.width,
+                            baseHeight: layer.height,
+                            child: ColoredBox(
+                              key: ValueKey('paint-${layer.id}'),
+                              color: switch (layer.id) {
+                                _background => const Color(0xFFF0E9DA),
+                                _title => const Color(0xFF263C39),
+                                _firstPhoto => const Color(0xFF487B72),
+                                _ => const Color(0xFF8B7056),
+                              },
+                              child: layer.type == LayerType.text
+                                  ? Center(child: Text(layer.text!))
+                                  : null,
+                            ),
+                          ),
+                      ],
+                    ),
+                    if (widget.overlapSelection)
+                      manager.buildSelectionOverlay(layers),
                   ],
                 ),
               ),
@@ -176,6 +195,7 @@ class _CanvasState extends ConsumerState<_Canvas> {
 Future<({AlbumEditorViewModel vm, _CanvasState host})> _mount(
   WidgetTester tester, {
   required bool webTransforms,
+  bool overlapSelection = false,
 }) async {
   tester.view.physicalSize = const Size(900, 700);
   tester.view.devicePixelRatio = 1;
@@ -201,7 +221,11 @@ Future<({AlbumEditorViewModel vm, _CanvasState host})> _mount(
     UncontrolledProviderScope(
       container: container,
       child: MaterialApp(
-        home: _Canvas(key: host, webTransforms: webTransforms),
+        home: _Canvas(
+          key: host,
+          webTransforms: webTransforms,
+          overlapSelection: overlapSelection,
+        ),
       ),
     ),
   );
@@ -264,6 +288,212 @@ Future<void> _drag(
 }
 
 void main() {
+  testWidgets(
+    'an old chooser cannot target a reused id on another page before view reset',
+    (tester) async {
+      final s = await _mount(
+        tester,
+        webTransforms: false,
+        overlapSelection: true,
+      );
+      await _tap(tester, const Offset(160, 180), PointerDeviceKind.touch);
+      await tester.tap(find.byTooltip('겹친 요소 선택'));
+      await tester.pumpAndSettle();
+      s.vm.goToPage(1);
+      final replacement = _artwork()[1].copyWith(
+        position: const Offset(200, 200),
+      );
+      s.vm.updatePageLayers([replacement], recordHistory: false);
+      // No reset/pump between changing the document and receiving the old menu's
+      // result: the source page identity must be checked by the command itself.
+      await tester.tap(
+        find.byWidgetPredicate(
+          (w) => w is PopupMenuItem && w.value == _firstPhoto,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(s.host.manager.selectedLayerId, isNot(_firstPhoto));
+      expect(s.vm.layers.single, same(replacement));
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('touch selection overlay preserves double tap text editing', (
+    tester,
+  ) async {
+    final s = await _mount(
+      tester,
+      webTransforms: false,
+      overlapSelection: true,
+    );
+    await _tap(tester, const Offset(160, 180), PointerDeviceKind.touch);
+    await tester.tapAt(const Offset(160, 180));
+    await tester.pump(const Duration(milliseconds: 60));
+    await tester.tapAt(const Offset(160, 180));
+    await tester.pumpAndSettle();
+    expect(s.host.textEdits, 1);
+    expect(s.vm.hasUnsavedChanges, isFalse);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('overlap quick forward is explicit and undoable', (tester) async {
+    final s = await _mount(
+      tester,
+      webTransforms: false,
+      overlapSelection: true,
+    );
+    await _tap(tester, const Offset(160, 180), PointerDeviceKind.touch);
+    s.host.manager.selectOverlappingLayer(_firstPhoto);
+    await tester.pump();
+    await tester.tap(find.byTooltip('겹친 요소 선택'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('앞으로'));
+    await tester.pumpAndSettle();
+    expect(_order(s.vm), [_background, _secondPhoto, _firstPhoto, _title]);
+    s.host.undo();
+    await tester.pumpAndSettle();
+    expect(_order(s.vm), [_background, _firstPhoto, _secondPhoto, _title]);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets(
+    'overlap chooser selects covered content without changing history and rejects a stale menu',
+    (tester) async {
+      final s = await _mount(
+        tester,
+        webTransforms: false,
+        overlapSelection: true,
+      );
+      await _tap(tester, const Offset(160, 180), PointerDeviceKind.touch);
+      final order = _order(s.vm);
+      await tester.tap(find.byTooltip('겹친 요소 선택'));
+      await tester.pumpAndSettle();
+      final item = find.byWidgetPredicate(
+        (w) => w is PopupMenuItem && w.value == _firstPhoto,
+      );
+      expect(
+        find.descendant(of: item, matching: find.byType(Image)),
+        findsNothing,
+      );
+      await tester.tap(item);
+      await tester.pumpAndSettle();
+      expect(s.host.manager.selectedLayerId, _firstPhoto);
+      expect(_order(s.vm), order);
+      expect(s.vm.hasUnsavedChanges, isFalse);
+      await tester.tap(find.byTooltip('겹친 요소 선택'));
+      await tester.pumpAndSettle();
+      s.host.manager.resetForPageChange();
+      await tester.pump();
+      await tester.tap(
+        find.byWidgetPredicate((w) => w is PopupMenuItem && w.value == _title),
+      );
+      await tester.pumpAndSettle();
+      expect(s.host.manager.selectedLayerId, isNull);
+      expect(_order(s.vm), order);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
+    'covered photo can be selected and dragged without reordering artwork',
+    (tester) async {
+      final session = await _mount(
+        tester,
+        webTransforms: false,
+        overlapSelection: true,
+      );
+      final manager = session.host.manager;
+      final before = List<LayerModel>.of(session.vm.layers);
+      final order = _order(session.vm);
+      await _tap(tester, const Offset(160, 180), PointerDeviceKind.touch);
+      expect(manager.overlapLayerIds, [_title, _firstPhoto]);
+      manager.selectOverlappingLayer(_firstPhoto);
+      await tester.pump();
+      expect(manager.selectedLayerId, _firstPhoto);
+      expect(
+        find.byKey(const ValueKey('touch-selection-selection-first-photo')),
+        findsOneWidget,
+      );
+      expect(session.vm.hasUnsavedChanges, isFalse);
+      expect(_order(session.vm), order);
+      for (var i = 0; i < before.length; i++)
+        expect(session.vm.layers[i], same(before[i]));
+      await _drag(tester, const Offset(160, 180), PointerDeviceKind.touch);
+      expect(
+        session.vm.findLayerById(_firstPhoto)!.position,
+        isNot(before[1].position),
+      );
+      expect(session.vm.findLayerById(_title), same(before.last));
+      expect(_order(session.vm), order);
+      session.host.undo();
+      await tester.pumpAndSettle();
+      expect(
+        session.vm.findLayerById(_firstPhoto)!.position,
+        before[1].position,
+      );
+      expect(manager.overlapLayerIds, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('rotated candidate hits use actual transformed rectangles', (
+    tester,
+  ) async {
+    final session = await _mount(
+      tester,
+      webTransforms: false,
+      overlapSelection: true,
+    );
+    session.vm.updateLayer(
+      session.vm.findLayerById(_secondPhoto)!.copyWith(rotation: 45),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      session.host.manager.layersAt(const Offset(385, 185)).map((l) => l.id),
+      contains(_secondPhoto),
+    );
+    expect(
+      session.host.manager.layersAt(const Offset(290, 90)).map((l) => l.id),
+      isNot(contains(_secondPhoto)),
+    );
+    await _tap(tester, const Offset(160, 180), PointerDeviceKind.touch);
+    final revision = session.host.manager.overlapRevision;
+    session.host.manager.resetForPageChange();
+    session.host.manager.selectOverlappingLayer(_firstPhoto);
+    expect(session.host.manager.selectedLayerId, isNull);
+    expect(session.host.manager.overlapLayerIds, isEmpty);
+    expect(session.host.manager.overlapRevision, greaterThan(revision));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'explicit forward order survives undo redo and interaction cache resets',
+    (tester) async {
+      final session = await _mount(
+        tester,
+        webTransforms: false,
+        overlapSelection: true,
+      );
+      final original = _order(session.vm);
+      session.host.manager.setSelectedLayer(_firstPhoto);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('앞으로'));
+      await tester.pumpAndSettle();
+      final expected = [_background, _secondPhoto, _firstPhoto, _title];
+      expect(_order(session.vm), expected);
+      expect(session.vm.layers.map((l) => l.zIndex), [0, 1, 2, 3]);
+      session.host.undo();
+      await tester.pumpAndSettle();
+      expect(_order(session.vm), original);
+      session.vm.redo();
+      session.host.manager.resetForPageChange();
+      await tester.pumpAndSettle();
+      expect(
+        session.host.manager.sortByZ(session.vm.layers).map((l) => l.id),
+        expected,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   for (final webTransforms in [false, true]) {
     final mode = webTransforms ? 'web controls' : 'native controls';
     for (final kind in [
@@ -445,7 +675,13 @@ void main() {
       );
       expect(session.vm.hasUnsavedChanges, isTrue);
       for (final original in before) {
-        expect(session.vm.findLayerById(original.id), same(original));
+        final updated = session.vm.findLayerById(original.id)!;
+        expect(
+          LayerExportMapper.toJson(updated, canvasSize: _canvasSize)
+            ..remove('zIndex'),
+          LayerExportMapper.toJson(original, canvasSize: _canvasSize)
+            ..remove('zIndex'),
+        );
       }
       session.host.undo();
       await tester.pumpAndSettle();

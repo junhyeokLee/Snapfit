@@ -32,7 +32,10 @@ import 'package:snap_fit/features/point_shop/domain/point_shop_template_key.dart
 import 'package:snap_fit/features/profile/data/order_repository.dart';
 import 'package:snap_fit/features/profile/domain/entities/order_history_item.dart';
 import 'package:snap_fit/features/profile/domain/print_checkout.dart';
-import 'package:snap_fit/features/profile/presentation/views/my_page_screen.dart';
+import 'package:snap_fit/features/social/presentation/views/social_profile_screen.dart';
+import 'package:snap_fit/features/social/domain/social_models.dart';
+import 'package:snap_fit/features/social/presentation/providers/social_providers.dart';
+import 'package:snap_fit/features/moments/presentation/providers/moments_providers.dart';
 import 'package:snap_fit/features/profile/presentation/views/order_history_screen.dart';
 import 'package:snap_fit/features/profile/presentation/views/admin_point_shop_management_screen.dart';
 import 'package:snap_fit/features/profile/presentation/widgets/order_album_artwork.dart';
@@ -107,7 +110,7 @@ void main() {
             userId: i == 5 ? 'friend' : 'qa',
             title: template.title,
             ratio: '${[.75, 1.0, 4 / 3][i % 3]}',
-            targetPages: 24,
+            targetPages: i >= 3 ? 2 : 24,
             totalPages: i >= 3 ? 24 : 2,
             createdAt:
                 '2026-10-${(15 - i).toString().padLeft(2, '0')}T10:00:00',
@@ -118,14 +121,22 @@ void main() {
                     'index': p,
                     'isCover': p == 0,
                     'backgroundColor': 0xFFF4F3ED,
-                    'layers': [
-                      for (final layer in layers[p])
-                        LayerExportMapper.toJson(
-                          layer,
-                          canvasSize: canvas,
-                          isCover: p == 0,
-                        ),
-                    ],
+                    'layers': i >= 3 && p > 0
+                        ? [
+                            {
+                              'type': 'TEXT',
+                              'templateContent': false,
+                              'payload': {'text': '직접 남긴 나의 기록 $p'},
+                            },
+                          ]
+                        : [
+                            for (final layer in layers[p])
+                              LayerExportMapper.toJson(
+                                layer,
+                                canvasSize: canvas,
+                                isCover: p == 0,
+                              ),
+                          ],
                   },
               ],
             }),
@@ -273,6 +284,21 @@ void main() {
               ),
             ),
           ),
+          socialCurrentUserIdProvider.overrideWith((_) => 'qa'),
+          ownSocialProfileProvider.overrideWith(
+            (_) async => const SocialProfile(
+              userId: 'qa',
+              displayName: '스냅핏',
+              handle: 'snapfit.qa',
+            ),
+          ),
+          socialProfileWorksPageProvider(
+            const SocialProfileWorksQuery('qa'),
+          ).overrideWith(
+            (_) async =>
+                const SocialWorkPage(items: [], hasMore: false, nextOffset: 0),
+          ),
+          momentsSessionProvider.overrideWith((_) => Stream.value(null)),
           homeViewModelProvider.overrideWith(() => FakeHomeViewModel(albums)),
           albumRepositoryProvider.overrideWithValue(albumsRepo),
           ownedPointShopKeysProvider.overrideWith(
@@ -415,12 +441,12 @@ void main() {
       ) async {
         reset(tester);
         viewport(tester, size);
-        await mount(tester, const MyPageScreen(), scale: 1, dark: dark);
+        await mount(tester, const SocialProfileScreen(), scale: 1, dark: dark);
         expect(find.byTooltip('뒤로가기'), findsNothing);
         await capture(tester, 'personal-refresh-profile', size, dark);
         await reveal(tester, key('profile-order-shortcut'));
         await capture(tester, 'personal-refresh-account-actions', size, dark);
-        await tap(tester, key('profile-order-shortcut'));
+        await tap(tester, key('profile-shortcut-orders'));
         expect(find.byType(OrderHistoryScreen), findsOneWidget);
         await capture(tester, 'personal-refresh-orders', size, dark);
         await tap(tester, key('personal-order-${orders.first.orderId}'));
@@ -432,7 +458,7 @@ void main() {
         await tap(tester, find.byTooltip('닫기'));
         tester.state<NavigatorState>(find.byType(Navigator)).pop();
         await paint(tester);
-        await tap(tester, find.byTooltip('내 보관함 모두 보기'));
+        await tap(tester, key('profile-shortcut-library'));
         await capture(tester, 'personal-refresh-library', size, dark);
         await tap(tester, key('library-type-템플릿'));
         await capture(tester, 'personal-refresh-templates', size, dark);
@@ -513,7 +539,7 @@ void main() {
         (tester) async {
           reset(tester);
           viewport(tester, size);
-          await mount(tester, const MyPageScreen(), dark: dark);
+          await mount(tester, const SocialProfileScreen(), dark: dark);
           await capture(tester, 'personal-atelier-profile', size, dark);
           await reveal(tester, key('profile-design-collection'));
           await paint(tester);
@@ -724,7 +750,7 @@ void main() {
     ) async {
       reset(tester);
       viewport(tester, size);
-      await mount(tester, const MyPageScreen(), scale: 1.8, dark: true);
+      await mount(tester, const SocialProfileScreen(), scale: 1.8, dark: true);
       expect(tester.takeException(), isNull);
       final charge = key('my-point-charge');
       await reveal(tester, charge);
@@ -743,7 +769,7 @@ void main() {
       viewport(tester, const Size(390, 844));
       await mount(
         tester,
-        const MyPageScreen(),
+        const SocialProfileScreen(),
         owned: {'frame:materialLinenOval'},
       );
       await reveal(tester, key('profile-design-collection'));
@@ -771,7 +797,7 @@ void main() {
     viewport(tester, const Size(390, 844));
     await mount(
       tester,
-      const MyPageScreen(),
+      const SocialProfileScreen(),
       owned: {'sticker:studioCottonRag'},
     );
     await reveal(tester, key('profile-design-collection'));

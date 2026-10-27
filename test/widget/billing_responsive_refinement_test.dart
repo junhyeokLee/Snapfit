@@ -139,6 +139,7 @@ void main() {
     bool dark = false,
     double scale = 1.3,
     bool ai = false,
+    int initialPointsTabIndex = 0,
     Future<int> Function()? balance,
     Future<List<PointLedgerEntry>> Function()? ledger,
   }) async {
@@ -165,7 +166,10 @@ void main() {
             ).copyWith(textScaler: TextScaler.linear(scale)),
             child: RepaintBoundary(key: captureKey, child: child!),
           ),
-          home: BillingManagementScreen(returnToAiDraftFlow: ai),
+          home: BillingManagementScreen(
+            returnToAiDraftFlow: ai,
+            initialPointsTabIndex: initialPointsTabIndex,
+          ),
         ),
       ),
     );
@@ -241,6 +245,8 @@ void main() {
           metrics(tester, size);
           await mount(tester, dark: dark);
           await capture(tester, 'points-charge', size, dark);
+          expect(find.byKey(const ValueKey('attendance-entry')), findsNothing);
+          expect(find.byKey(const ValueKey('referral-entry')), findsNothing);
           expect(tester.widget<FilledButton>(action()).onPressed, isNull);
           await tap(tester, option(sku));
           expect(store.buys, 0);
@@ -272,6 +278,23 @@ void main() {
       );
     }
   }
+
+  testWidgets(
+    'My point history shortcut starts in history and can return to charge',
+    (tester) async {
+      resetMetrics(tester);
+      metrics(tester, const Size(390, 844));
+      await mount(tester, initialPointsTabIndex: 1);
+      expect(find.byKey(const ValueKey('points-ledger-5')), findsOneWidget);
+      expect(action(), findsNothing);
+      expect(find.byKey(const ValueKey('attendance-entry')), findsNothing);
+      expect(find.byKey(const ValueKey('referral-entry')), findsNothing);
+      await tap(tester, find.text('충전'));
+      expect(action(), findsOneWidget);
+      expect(store.buys, 0);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'selection and history filter survive rotations without starting a purchase',

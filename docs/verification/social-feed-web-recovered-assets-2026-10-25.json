@@ -1,0 +1,30 @@
+{
+  "recovered": [
+    {
+      "file": "flutter_bootstrap.a6fef7e62d901831a27e.js",
+      "sha256": "a6fef7e62d901831a27e820b8bfd63a268471a22e3f50b27072851a2222d2288",
+      "bytes": 14512,
+      "sourceVersion": "67bd963dc23df805"
+    },
+    {
+      "file": "main.23b0ecbf83130cc2af46.dart.js",
+      "sha256": "23b0ecbf83130cc2af46edb7f3002f1025576ef78e0a821619c42749c4302a2e",
+      "bytes": 8814345,
+      "sourceVersion": "67bd963dc23df805"
+    },
+    {
+      "file": "flutter_bootstrap.0643387200a65274ded7.js",
+      "sha256": "0643387200a65274ded71e9e3f495eeec3970405e1a5c1a80192f9933f13d38f",
+      "bytes": 14512,
+      "sourceVersion": "69383986d71a40f6"
+    },
+    {
+      "file": "main.09f6123c675e853fa56d.dart.js",
+      "sha256": "09f6123c675e853fa56d9f90c067d74dab199006c200c0c7b910f917ceb0c3b0",
+      "bytes": 8624053,
+      "sourceVersion": "69383986d71a40f6"
+    }
+  ],
+  "temporaryRecoveryChannelDeleted": true,
+  "authDomainsChanged": false
+}

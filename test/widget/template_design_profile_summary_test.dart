@@ -1,3 +1,4 @@
+import '../support/store_detail_loading.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -102,7 +103,7 @@ void _setViewport(WidgetTester tester, Size size) {
 }
 
 void main() {
-  testWidgets(
+  storeDetailTestWidgets(
     'summary reports current contents and explains cover photo slots',
     (tester) async {
       final template = _template(source: _document());
@@ -122,7 +123,7 @@ void main() {
     },
   );
 
-  testWidgets(
+  storeDetailTestWidgets(
     'missing document remains unknown at narrow width and large text',
     (tester) async {
       _setViewport(tester, const Size(256, 600));
@@ -151,73 +152,77 @@ void main() {
     const Size(844, 320),
     const Size(390, 400),
   ]) {
-    testWidgets('creation inspection keeps facts and action usable at $size', (
-      tester,
-    ) async {
-      _setViewport(tester, size);
-      var uses = 0;
-      await tester.pumpWidget(
-        _wrap(
-          CreationTemplatePreview(
-            title: '긴 제목이 있는 가족 여행 디자인',
-            isPremium: false,
-            pages: const <List<LayerModel>>[[], [], []],
-            canvas: const Size(500, 500),
-            profileSummary: TemplateDesignProfileSummary(
-              profile: TemplateDesignProfile.of(_template(source: _document())),
+    storeDetailTestWidgets(
+      'creation inspection keeps facts and action usable at $size',
+      (tester) async {
+        _setViewport(tester, size);
+        var uses = 0;
+        await tester.pumpWidget(
+          _wrap(
+            CreationTemplatePreview(
+              title: '긴 제목이 있는 가족 여행 디자인',
+              isPremium: false,
+              pages: const <List<LayerModel>>[[], [], []],
+              canvas: const Size(500, 500),
+              profileSummary: TemplateDesignProfileSummary(
+                profile: TemplateDesignProfile.of(
+                  _template(source: _document()),
+                ),
+              ),
+              onUse: () => uses++,
+              onRetry: () {},
             ),
-            onUse: () => uses++,
-            onRetry: () {},
+            scale: 2,
           ),
-          scale: 2,
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('내지 2쪽 · 사진 넣는 3곳'), findsOneWidget);
-      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
-      await tester.pumpAndSettle();
-      expect(
-        tester
-            .widget<Text>(
-              find.byKey(const ValueKey('creation_document_position')),
-            )
-            .data,
-        isNot('표지'),
-      );
-      final use = find.widgetWithText(FilledButton, '이 디자인 선택');
-      final action = tester.getRect(use);
-      expect(action.top, greaterThanOrEqualTo(0));
-      expect(action.bottom, lessThanOrEqualTo(size.height));
-      await tester.tap(use);
-      expect(uses, 1);
-      expect(tester.takeException(), isNull);
-    });
+        );
+        await settleStoreDetail(tester);
+        expect(find.text('내지 2쪽 · 사진 넣는 3곳'), findsOneWidget);
+        await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+        await settleStoreDetail(tester);
+        expect(
+          tester
+              .widget<Text>(
+                find.byKey(const ValueKey('creation_document_position')),
+              )
+              .data,
+          isNot('표지'),
+        );
+        final use = find.widgetWithText(FilledButton, '이 디자인 선택');
+        final action = tester.getRect(use);
+        expect(action.top, greaterThanOrEqualTo(0));
+        expect(action.bottom, lessThanOrEqualTo(size.height));
+        await tester.tap(use);
+        expect(uses, 1);
+        expect(tester.takeException(), isNull);
+      },
+    );
   }
 
-  testWidgets('native creation detail receives the edition actually supplied', (
-    tester,
-  ) async {
-    _setViewport(tester, const Size(390, 844));
-    await tester.pumpWidget(
-      _wrap(
-        TemplateDetailScreen(
-          template: _template(source: _document(innerPages: 4)),
-          selectForCreation: true,
-          guestPreview: true,
+  storeDetailTestWidgets(
+    'native creation detail receives the edition actually supplied',
+    (tester) async {
+      _setViewport(tester, const Size(390, 844));
+      await tester.pumpWidget(
+        _wrap(
+          TemplateDetailScreen(
+            template: _template(source: _document(innerPages: 4)),
+            selectForCreation: true,
+            guestPreview: true,
+          ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(
-      find.byKey(const ValueKey('creation-template-profile')),
-      findsOneWidget,
-    );
-    expect(find.text('내지 4쪽 · 사진 넣는 5곳'), findsOneWidget);
-    expect(find.text('글쓰기 4쪽 · 본문이 있는 내지 기준'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+      );
+      await settleStoreDetail(tester);
+      expect(
+        find.byKey(const ValueKey('creation-template-profile')),
+        findsOneWidget,
+      );
+      expect(find.text('내지 4쪽 · 사진 넣는 5곳'), findsOneWidget);
+      expect(find.text('글쓰기 4쪽 · 본문이 있는 내지 기준'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
-  testWidgets(
+  storeDetailTestWidgets(
     'creation catalog reads a profile only after inspecting one design',
     (tester) async {
       _setViewport(tester, const Size(390, 844));
@@ -238,7 +243,6 @@ void main() {
         _wrap(
           Scaffold(
             body: AiAlbumStartStep(
-              onAiStart: () {},
               onManualStart: () {},
               templates: AsyncData(templates),
               onTemplateSelected: (value) => selected = value,
@@ -246,17 +250,17 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(
         find.byKey(const ValueKey('creation-inspected-profile')),
         findsNothing,
       );
       final first = find.byKey(const ValueKey('creation-template-1000'));
       await tester.ensureVisible(first);
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       final before = [...reads];
       await tester.tap(first);
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(selected, same(templates.first));
       expect(
         find.byKey(const ValueKey('creation-inspected-profile')),

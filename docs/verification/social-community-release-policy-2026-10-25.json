@@ -1,0 +1,47 @@
+{
+  "decided_at_utc": "2026-10-25T08:26:05.484832+00:00",
+  "decision_owner": "Delegated by user; product decision made during feed/profile implementation",
+  "active_release": {
+    "mode": "free_showcase",
+    "publication_points": 0,
+    "viewing_points": 0,
+    "like_follow_or_save_rewards": 0,
+    "point_sales_enabled": false,
+    "style_import_enabled": false,
+    "creator_can_set_price": false,
+    "ui": "The publishing flow explicitly says publication and viewing are free. It publishes selected visual pages, not editable source albums."
+  },
+  "future_style_market_decision": {
+    "status": "planned_only_not_implemented_or_activated",
+    "sale_object": "Reusable, editable, creator-owned layout/style without private photos or personal writing",
+    "price_model": "Platform fixed introductory price, with creator choice of free or paid",
+    "fixed_introductory_price_points": 300,
+    "arbitrary_creator_prices": false,
+    "price_basis": "Initial product judgement, not validated demand or a claimed market average. Below official story templates at 1800P, comparable to individual materials at 100-400P.",
+    "reward_basis": "Verified paid usage after cancellation/refund reconciliation; no rewards for raw likes, follows, free imports or self-purchases",
+    "creator_reward_amount": "Not activated or fixed in this release; unit costs and reversal rules must be verified before introducing rewards",
+    "launch_requirements": [
+      "Actual editable reusable style with matching preview",
+      "Ownership and redistribution permission for all included assets",
+      "One entitlement per purchaser/style, idempotent purchase and atomic balance handling",
+      "Cancellation/refund and reward reversal",
+      "Source attribution and basic abuse controls"
+    ]
+  },
+  "reasons": [
+    "Free discovery reduces friction when the community is still establishing works and followers.",
+    "Current public work files are viewing images, so charging for reuse would promise a product that does not yet exist.",
+    "A fixed introductory style price is easy to compare and avoids arbitrary price competition before there is demand data."
+  ],
+  "design_references": [
+    {
+      "url": "https://www.behance.net/blog/top-creative-trends-2025",
+      "applied_direction": "Photography first, clear portfolio flow, concise profile identity"
+    },
+    {
+      "url": "https://newsroom.pinterest.com/en-sg/news/introducing-new-visual-search-features/",
+      "applied_direction": "Images and visible refinement controls support discovery"
+    }
+  ],
+  "scope_protection": "Existing official catalog prices, point products, customer wallets, entitlements and saved albums are unchanged."
+}

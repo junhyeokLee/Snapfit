@@ -1,0 +1,150 @@
+{
+  "project_ref": "rrbhxdtriummqpztpjrk",
+  "run_id": "64fa5f147a7b",
+  "started_at": "2026-10-26T07:00:47.639563+00:00",
+  "status": "core_pagination_passed_cleanup_complete_ui_hold_timeout",
+  "checks": [
+    {
+      "name": "preflight_searchPage",
+      "passed": true
+    },
+    {
+      "name": "preflight_searchProfilesPage",
+      "passed": true
+    },
+    {
+      "name": "preflight_profileWorksPage",
+      "passed": true
+    },
+    {
+      "name": "preflight_relationsPage",
+      "passed": true
+    },
+    {
+      "name": "preflight_commentsPage",
+      "passed": true
+    },
+    {
+      "name": "ordinary_publication_31_private_snapshots",
+      "passed": true
+    },
+    {
+      "name": "comment_request_retry_returns_same_id",
+      "passed": true
+    },
+    {
+      "name": "ordinary_comments_101_exact_once",
+      "passed": true
+    },
+    {
+      "name": "anonymous_comments_101_visible",
+      "passed": true
+    },
+    {
+      "name": "stranger_comment_delete_denied",
+      "passed": true
+    },
+    {
+      "name": "repeated_like_save_create_one_state",
+      "passed": true
+    },
+    {
+      "name": "repeated_like_save_undo",
+      "passed": true
+    },
+    {
+      "name": "profile_page_reaches_31",
+      "passed": true
+    },
+    {
+      "name": "search_page_reaches_31",
+      "passed": true
+    },
+    {
+      "name": "saved_page_reaches_31",
+      "passed": true
+    },
+    {
+      "name": "own_page_reaches_31",
+      "passed": true
+    },
+    {
+      "name": "search_profiles_page_exact_synthetic_actors",
+      "passed": true
+    }
+  ],
+  "feature_writes": "ordinary JWT only",
+  "real_user_messages_sent": 0,
+  "customer_data_mutations_performed": false,
+  "full_public_window_started_at": "2026-10-26T07:01:56.717423+00:00",
+  "guest_ui_fixture": {
+    "profile_id": "ed6912d7-8019-440b-a735-5d6184070387",
+    "work_id": "20b7ebc5-456b-419c-b28c-d88e9b95b030",
+    "handle": "qa_64fa5f147a7b_a",
+    "work_count": 31,
+    "comment_count": 101,
+    "feed_url": "https://snapfit-c719d.web.app/feed#/feed",
+    "profile_url": "https://snapfit-c719d.web.app/users/ed6912d7-8019-440b-a735-5d6184070387",
+    "work_url": "https://snapfit-c719d.web.app/works/20b7ebc5-456b-419c-b28c-d88e9b95b030",
+    "continue_signal": "/Users/devsheep/SnapFit/.social-followup-qa-private-20261026-93e186ed29/ui-continue.signal",
+    "hold_max_seconds": 300,
+    "ready_at": "2026-10-26T07:01:59.766816+00:00",
+    "credentials_or_tokens_included": false
+  },
+  "full_public_window_finished_at": "2026-10-26T07:07:01.586533+00:00",
+  "failure_type": "TimeoutError",
+  "failure_check": "Guest UI hold expired; withdrawing and cleaning all fixtures",
+  "cleanup": {
+    "completed": true,
+    "errors": [],
+    "verified_at": "2026-10-26T07:07:16.717122+00:00",
+    "synthetic_account_ids": [
+      "ed6912d7-8019-440b-a735-5d6184070387",
+      "d2692713-1701-4cfa-976a-e36ea0ee1a52"
+    ],
+    "synthetic_work_count": 31,
+    "customer_storage_bucket_mutations": 0,
+    "read_only_residual_groups_verified": 93,
+    "residual_rows_total": 0,
+    "private_helper_directory_deleted": true,
+    "private_helper_directory_deleted_at": "2026-10-26T07:09:51.481206+00:00",
+    "final_combined_residual_rows_total": 0,
+    "final_core_counts_after": {
+      "profiles": 1,
+      "works": 0,
+      "pages": 0,
+      "likes": 0,
+      "saves": 0,
+      "follows": 0,
+      "comments": 0,
+      "blocks": 0,
+      "publication_sources": 0,
+      "snapshots": 0
+    }
+  },
+  "finished_at": "2026-10-26T07:07:19.134316+00:00",
+  "runner_status": "failed",
+  "timeout_scope": "Manual guest UI hold expired at 300 seconds; no API assertion failed. The later follow/block scenario is verified in a separate fresh minimal run.",
+  "root_guest_ui_confirmation": {
+    "profile_31_load_and_end": true,
+    "detail_comment_count_101": true,
+    "comment_page_12_to_24": true,
+    "profile_and_detail_large_photo_screenshots_saved": true
+  },
+  "source_and_synthetic_financial_postcheck": "Not reached before UI hold timeout; not claimed for this first run",
+  "original_album_assets": {
+    "count_before": 41,
+    "count_after": 41,
+    "metadata_md5_before": "71880641942d4bd62a26e047a89a5200",
+    "metadata_md5_after": "71880641942d4bd62a26e047a89a5200",
+    "equal": true,
+    "hash_scope": "Canonical jsonb array of bucket_id/name/owner/owner_id/metadata ordered by bucket_id,name; image bytes not read"
+  },
+  "follow_block_live_verification": {
+    "status": "passed",
+    "fresh_run_id": "0a1591bddbff",
+    "report": "docs/verification/social-followup-follow-block-live-2026-10-26.json",
+    "checks_passed": 36,
+    "cleanup_complete": true
+  }
+}

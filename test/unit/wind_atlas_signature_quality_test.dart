@@ -167,9 +167,11 @@ void main() {
       final catalog = jsonDecode(template.templateJson!) as Map;
       expect(
         (catalog['variants'] as Map).keys,
-        unorderedEquals(CollectionAspect.values.map((aspect) => aspect.name)),
+        unorderedEquals(
+          CollectionAspect.printable.map((aspect) => aspect.name),
+        ),
       );
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         final document = buildWindAtlas(aspect);
         expect(document['id'], 'snapfit_premium_wind_atlas_${aspect.name}');
         expect(document['collectionId'], 'wind-atlas');
@@ -192,7 +194,7 @@ void main() {
   );
 
   test('journal keeps source paragraphs and wraps complete Korean words', () {
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       final raw = templateDocumentPages(buildWindAtlas(aspect))[14];
       final journal = (raw['layers'] as List).cast<Map>().singleWhere(
         (layer) => (layer['id'] as String).endsWith('_archive_journal'),
@@ -224,24 +226,26 @@ void main() {
     }
   });
 
-  for (final aspect in CollectionAspect.values) {
-    test(
-      '${aspect.name}: unchanged 26 pages and two alternate covers retain their original document content',
-      () {
+  test(
+    'archived signature factory geometry retains its fixed fingerprints',
+    () {
+      for (final aspect in CollectionAspect.archived) {
         final current = _fingerprints(aspect);
         final original = _originalFingerprints[aspect.name]!;
         for (final key in ['protectedInner', 'botanical', 'photographic']) {
-          expect(
-            current[key],
-            original[key],
-            reason: '${aspect.name}/$key changed outside the signature scope',
-          );
+          expect(current[key], original[key], reason: '${aspect.name}/$key');
         }
         expect(
           current['originalSignature'],
           isNot(original['originalSignature']),
-          reason: 'The selected artwork must contain the new signature design.',
         );
+      }
+    },
+  );
+  for (final aspect in CollectionAspect.printable) {
+    test(
+      '${aspect.name}: all 26 surrounding pages are retained in the print edition',
+      () {
         final pages = templateDocumentPages(buildWindAtlas(aspect));
         expect([
           for (var i = 1; i < pages.length; i++)

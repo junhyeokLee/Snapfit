@@ -9,13 +9,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:snap_fit/core/constants/cover_size.dart';
+import 'package:snap_fit/core/constants/design_templates.dart';
 import 'package:snap_fit/core/constants/page_templates.dart';
+import 'package:snap_fit/core/templates/studio_word_art_catalog.dart';
 import 'package:snap_fit/features/album/data/api/album_provider.dart';
 import 'package:snap_fit/features/album/data/api/storage_service.dart';
 import 'package:snap_fit/features/album/data/dto/request/create_album_request.dart';
 import 'package:snap_fit/features/album/domain/entities/layer.dart';
+import 'package:snap_fit/features/album/domain/entities/album.dart';
+import 'package:snap_fit/features/album/presentation/providers/album_edit_session_provider.dart';
+import 'package:snap_fit/features/album/domain/entities/layer_export_mapper.dart';
 import 'package:snap_fit/features/album/domain/entities/album_page.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
+import 'package:snap_fit/features/album/presentation/utils/album_progress_document.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/page_list_selector.dart';
 import 'package:snap_fit/shared/widgets/snapfit_motion.dart';
 import 'package:snap_fit/features/album/service/album_persistence_service.dart';
@@ -35,6 +41,7 @@ class FakeStorageService implements StorageService {
   Future<UploadedUrls> uploadImageVariants(
     AssetEntity asset, {
     int previewMaxDimension = 1600,
+    int? albumId,
   }) async => const UploadedUrls();
 
   @override
@@ -42,6 +49,7 @@ class FakeStorageService implements StorageService {
     Uint8List pngBytes, {
     int originalMaxDimension = 4096,
     int previewMaxDimension = 1024,
+    int? albumId,
   }) async => const UploadedUrls();
 
   @override
@@ -53,12 +61,25 @@ class FakeStorageService implements StorageService {
 
   @override
   Future<void> deleteAiAlbumPreviews(Iterable<String> paths) async {}
+
+  @override
+  Future<void> removeUnreferencedAlbumUploads(
+    Iterable<String> references, {
+    required String expectedOwner,
+  }) async {}
 }
 
 class FakeAlbumPersistenceService implements AlbumPersistenceService {
   @override
-  Future<void> performBackgroundUpload({
+  Future<Album> performBackgroundUpload({
     required int albumId,
+    required String expectedUpdatedAt,
+    required String expectedUserId,
+    required String requestId,
+    bool Function()? canContinue,
+    void Function(CreateAlbumRequest)? onPrepared,
+    void Function(LayerModel before, LayerModel after)? onLayerUploaded,
+    void Function(UploadedUrls)? onUploaded,
     required Size canvasSize,
     required List<LayerModel> currentLayers,
     required Uint8List? coverImageBytes,
@@ -67,9 +88,10 @@ class FakeAlbumPersistenceService implements AlbumPersistenceService {
     required double coverRatio,
     required int targetPages,
     Map<String, dynamic>? printProduct,
+    String? sourceTemplateProductKey,
     bool swallowErrors = true,
     void Function(int completed, int total)? onProgress,
-  }) async {}
+  }) async => fakeAlbum(id: albumId).copyWith(updatedAt: expectedUpdatedAt);
 
   @override
   Future<bool> pollAlbumCreation(int albumId) async => false;
@@ -77,8 +99,15 @@ class FakeAlbumPersistenceService implements AlbumPersistenceService {
 
 class QuotaFailAlbumPersistenceService implements AlbumPersistenceService {
   @override
-  Future<void> performBackgroundUpload({
+  Future<Album> performBackgroundUpload({
     required int albumId,
+    required String expectedUpdatedAt,
+    required String expectedUserId,
+    required String requestId,
+    bool Function()? canContinue,
+    void Function(CreateAlbumRequest)? onPrepared,
+    void Function(LayerModel before, LayerModel after)? onLayerUploaded,
+    void Function(UploadedUrls)? onUploaded,
     required Size canvasSize,
     required List<LayerModel> currentLayers,
     required Uint8List? coverImageBytes,
@@ -87,6 +116,7 @@ class QuotaFailAlbumPersistenceService implements AlbumPersistenceService {
     required double coverRatio,
     required int targetPages,
     Map<String, dynamic>? printProduct,
+    String? sourceTemplateProductKey,
     bool swallowErrors = true,
     void Function(int completed, int total)? onProgress,
   }) async {
@@ -108,6 +138,7 @@ class MockAssetEntity extends Mock implements AssetEntity {}
 Future<ProviderContainer> _pagePolicyContainer() async {
   final container = ProviderContainer(
     overrides: [
+      albumEditorOwnerReaderProvider.overrideWithValue(() => 'fixture-owner'),
       albumRepositoryProvider.overrideWithValue(MockAlbumRepository()),
       albumEditorServiceProvider.overrideWithValue(const AlbumEditorService()),
       albumPersistenceServiceProvider.overrideWithValue(
@@ -192,6 +223,299 @@ void main() {
       ),
     );
   });
+
+  test(
+    'official template identity survives cover full export and editor draft restoration',
+    () async {
+      final vm = await _pagePolicyEditor();
+      vm.resetForCreate(sourceTemplateProductKey: 'template:summer-memory');
+      final cover = jsonDecode(vm.exportCoverLayersJson(const Size(500, 500)));
+      expect(cover['sourceTemplate'], {'productKey': 'template:summer-memory'});
+      final checkpoint = vm.captureCreationEditorCheckpoint();
+      expect(checkpoint.sourceTemplateProductKey, 'template:summer-memory');
+      vm.resetForCreate();
+      expect(
+        jsonDecode(vm.exportFullAlbumLayersJson(null))['sourceTemplate'],
+        isNull,
+      );
+      vm.restoreCreatedEditorDraft(
+        albumId: 99,
+        albumTitle: '다시 펼친 책',
+        cover: coverSizes.first,
+        checkpoint: checkpoint,
+      );
+      expect(jsonDecode(vm.exportFullAlbumLayersJson(null))['sourceTemplate'], {
+        'productKey': 'template:summer-memory',
+      });
+    },
+  );
+
+  test(
+    'reopening preserves stored identity and a new unrelated design clears it',
+    () async {
+      final vm = await _pagePolicyEditor();
+      await vm.prepareAlbumForEdit(
+        const Album(
+          id: 99,
+          userId: 'fixture-owner',
+          ratio: '1',
+          coverLayersJson:
+              '{"sourceTemplate":{"productKey":"template:summer-memory"},"layers":[]}',
+        ),
+      );
+      vm.loadPendingEditAlbumIfNeeded(const Size(500, 500));
+      expect(jsonDecode(vm.exportFullAlbumLayersJson(null))['sourceTemplate'], {
+        'productKey': 'template:summer-memory',
+      });
+      final checkpoint = vm.captureEditCheckpoint();
+      vm.applyTemplatePagesToCurrentAlbum([
+        [],
+        [],
+      ], sourceTemplateProductKey: 'template:new-design');
+      vm.restoreEditCheckpoint(checkpoint);
+      expect(jsonDecode(vm.exportFullAlbumLayersJson(null))['sourceTemplate'], {
+        'productKey': 'template:summer-memory',
+      });
+      vm.startLocalTemplateAlbum(albumTitle: 'AI 디자인', pages: [[], []]);
+      expect(
+        jsonDecode(vm.exportFullAlbumLayersJson(null))['sourceTemplate'],
+        isNull,
+      );
+      vm.resetForCreate(sourceTemplateProductKey: 'template:another-design');
+      vm.loadAlbum({'coverLayersJson': '{"layers":[]}'}, const Size(500, 500));
+      expect(
+        jsonDecode(vm.exportFullAlbumLayersJson(null))['sourceTemplate'],
+        isNull,
+      );
+    },
+  );
+
+  test('every built-in layout starts unfinished', () async {
+    final vm = await _pagePolicyEditor();
+    for (final layout in pageTemplates) {
+      vm.resetForCreate();
+      vm.goToPage(1);
+      vm.applyTemplateToCurrentPage(layout, const Size(500, 500));
+      expect(
+        vm.layers.every((layer) => layer.isTemplateContent == true),
+        isTrue,
+      );
+      expect(
+        countCompletedAlbumPages(vm.exportFullAlbumLayersJson(null)),
+        0,
+        reason: layout.name,
+      );
+    }
+  });
+
+  test('captions and one photo cannot complete a two-photo layout', () async {
+    final vm = await _pagePolicyEditor();
+    vm.resetForCreate();
+    vm.goToPage(1);
+    vm.applyTemplateToCurrentPage(
+      const PageTemplate(
+        id: 'two-photos-caption',
+        name: 'Two photos',
+        slots: [
+          PageTemplateSlot(
+            type: 'image',
+            left: .1,
+            top: .1,
+            width: .3,
+            height: .5,
+          ),
+          PageTemplateSlot(
+            type: 'image',
+            left: .6,
+            top: .1,
+            width: .3,
+            height: .5,
+          ),
+          PageTemplateSlot(
+            type: 'text',
+            left: .1,
+            top: .7,
+            width: .8,
+            height: .1,
+            defaultText: 'Our days',
+          ),
+        ],
+      ),
+      const Size(500, 500),
+    );
+    int completed() =>
+        countCompletedAlbumPages(vm.exportFullAlbumLayersJson(null));
+    final caption = vm.layers.singleWhere(
+      (layer) => layer.type == LayerType.text,
+    );
+    vm.updateLayer(caption.copyWith(text: '내가 쓴 여행 기록'));
+    expect(completed(), 0);
+    for (var index = 0; index < 2; index++) {
+      final slot = vm.layers
+          .where((layer) => layer.type == LayerType.image)
+          .elementAt(index);
+      vm.updateLayer(
+        slot.copyWith(previewUrl: 'https://uploads.example/$index.jpg'),
+      );
+      expect(completed(), index == 0 ? 0 : 1);
+    }
+    final slot = vm.layers.firstWhere((layer) => layer.type == LayerType.image);
+    vm.updateLayer(slot.copyWith(clearImage: true));
+    expect(completed(), 0);
+    vm.undo();
+    expect(completed(), 1);
+    vm.redo();
+    expect(completed(), 0);
+  });
+
+  test(
+    'ready-made word art needs an actual text edit to complete a page',
+    () async {
+      final vm = await _pagePolicyEditor();
+      for (final art in studioWordArts) {
+        vm.resetForCreate();
+        vm.goToPage(1);
+        vm.addWordArt(art, const Size(500, 500));
+        int completed() =>
+            countCompletedAlbumPages(vm.exportFullAlbumLayersJson(null));
+        expect(completed(), 0, reason: art.id);
+        final text = vm.layers.firstWhere(
+          (layer) => layer.type == LayerType.text,
+        );
+        vm.updateLayer(text.copyWith(textStyle: const TextStyle(fontSize: 24)));
+        expect(completed(), 0);
+        vm.updateLayer(
+          vm.findLayerById(text.id)!.copyWith(text: '내가 직접 남긴 기록'),
+        );
+        expect(completed(), 1);
+        vm.undo();
+        expect(completed(), 0);
+        vm.redo();
+        expect(completed(), 1);
+      }
+    },
+  );
+
+  test(
+    'legacy captions stay unverified through loading, saving and undo',
+    () async {
+      final vm = await _pagePolicyEditor();
+      vm.resetForCreate();
+      var saved = jsonEncode({
+        'pages': [
+          {'index': 0, 'isCover': true, 'layers': []},
+          {
+            'index': 1,
+            'isCover': false,
+            'layers': [
+              LayerExportMapper.toJson(
+                _pageText('Our days'),
+                canvasSize: const Size(500, 500),
+              )..remove('templateContent'),
+            ],
+          },
+        ],
+      });
+      int completed() =>
+          countCompletedAlbumPages(vm.exportFullAlbumLayersJson(null));
+      for (var cycle = 0; cycle < 3; cycle++) {
+        vm.loadAlbum({'coverLayersJson': saved}, const Size(500, 500));
+        vm.goToPage(1);
+        expect(vm.layers.single.isTemplateContent, isNull);
+        vm.updatePageLayers([
+          vm.layers.single.copyWith(
+            text: 'Our days',
+            position: const Offset(40, 40),
+          ),
+        ]);
+        saved = vm.exportFullAlbumLayersJson(null);
+        expect(completed(), 0);
+      }
+      vm.updatePageLayers([vm.layers.single.copyWith(text: '직접 남긴 기록')]);
+      expect(vm.layers.single.isTemplateContent, isFalse);
+      expect(completed(), 1);
+      vm.undo();
+      expect(vm.layers.single.isTemplateContent, isNull);
+      expect(completed(), 0);
+      vm.redo();
+      expect(vm.layers.single.isTemplateContent, isFalse);
+      expect(completed(), 1);
+    },
+  );
+
+  test(
+    'page template defaults remain examples until actually edited',
+    () async {
+      final vm = await _pagePolicyEditor();
+      vm.resetForCreate();
+      vm.goToPage(1);
+      const template = PageTemplate(
+        id: 'example-caption',
+        name: 'Example caption',
+        slots: [
+          PageTemplateSlot(
+            type: 'text',
+            left: .1,
+            top: .1,
+            width: .5,
+            height: .2,
+            defaultText: 'Our days',
+          ),
+        ],
+      );
+      int completed() =>
+          countCompletedAlbumPages(vm.exportFullAlbumLayersJson(null));
+      vm.applyTemplateToCurrentPage(template, const Size(500, 500));
+      expect(vm.layers.single.isTemplateContent, isTrue);
+      expect(completed(), 0);
+      vm.updatePageLayers([vm.layers.single.copyWith(text: '내가 남긴 기록')]);
+      expect(completed(), 1);
+      vm.applyTemplateToCurrentPage(template, const Size(500, 500));
+      expect(completed(), 0);
+      expect(vm.addPageFromTemplate(template, const Size(500, 500)), isTrue);
+      expect(vm.layers.single.isTemplateContent, isTrue);
+      expect(completed(), 0);
+    },
+  );
+
+  test(
+    'template provenance survives export and undo after personal text edits',
+    () async {
+      final container = await _pagePolicyContainer();
+      final vm = container.read(albumEditorViewModelProvider.notifier);
+      vm.resetForCreate();
+      vm.goToPage(1);
+      vm.applyDesignTemplateToCurrentPage(
+        DesignTemplate(
+          id: 'completion-provenance',
+          name: 'Example',
+          recommendedPhotoCount: 0,
+          buildLayers: (_) => [
+            LayerModel(
+              id: 'example-text',
+              type: LayerType.text,
+              position: const Offset(40, 40),
+              width: 200,
+              height: 80,
+              text: '예시 문구',
+            ),
+          ],
+        ),
+        const Size(500, 500),
+      );
+      int completed() =>
+          countCompletedAlbumPages(vm.exportFullAlbumLayersJson(null));
+      expect(vm.layers.single.isTemplateContent, isTrue);
+      expect(completed(), 0);
+      vm.updatePageLayers([vm.layers.single.copyWith(text: '내가 직접 쓴 기록')]);
+      expect(completed(), 1);
+      vm.undo();
+      expect(vm.layers.single.isTemplateContent, isTrue);
+      expect(completed(), 0);
+      vm.redo();
+      expect(completed(), 1);
+    },
+  );
 
   group('printable editor page policy', () {
     testWidgets('20-page selector hides deletion and adds two pages', (
@@ -447,6 +771,9 @@ void main() {
     test('saves and restores physical product ${size.productId}', () async {
       final container = ProviderContainer(
         overrides: [
+          albumEditorOwnerReaderProvider.overrideWithValue(
+            () => 'fixture-owner',
+          ),
           albumRepositoryProvider.overrideWithValue(MockAlbumRepository()),
           albumEditorServiceProvider.overrideWithValue(
             const AlbumEditorService(),
@@ -487,6 +814,9 @@ void main() {
     () async {
       final container = ProviderContainer(
         overrides: [
+          albumEditorOwnerReaderProvider.overrideWithValue(
+            () => 'fixture-owner',
+          ),
           albumRepositoryProvider.overrideWithValue(MockAlbumRepository()),
           albumEditorServiceProvider.overrideWithValue(
             const AlbumEditorService(),
@@ -523,6 +853,7 @@ void main() {
     final mockRepo = MockAlbumRepository();
     final container = ProviderContainer(
       overrides: [
+        albumEditorOwnerReaderProvider.overrideWithValue(() => 'fixture-owner'),
         albumRepositoryProvider.overrideWithValue(mockRepo),
         albumEditorServiceProvider.overrideWithValue(
           const AlbumEditorService(),
@@ -552,6 +883,7 @@ void main() {
     final mockRepo = MockAlbumRepository();
     final container = ProviderContainer(
       overrides: [
+        albumEditorOwnerReaderProvider.overrideWithValue(() => 'fixture-owner'),
         albumRepositoryProvider.overrideWithValue(mockRepo),
         albumEditorServiceProvider.overrideWithValue(
           const AlbumEditorService(),
@@ -581,6 +913,7 @@ void main() {
     final mockRepo = MockAlbumRepository();
     final container = ProviderContainer(
       overrides: [
+        albumEditorOwnerReaderProvider.overrideWithValue(() => 'fixture-owner'),
         albumRepositoryProvider.overrideWithValue(mockRepo),
         albumEditorServiceProvider.overrideWithValue(
           const AlbumEditorService(),
@@ -607,6 +940,7 @@ void main() {
     final mockRepo = MockAlbumRepository();
     final container = ProviderContainer(
       overrides: [
+        albumEditorOwnerReaderProvider.overrideWithValue(() => 'fixture-owner'),
         albumRepositoryProvider.overrideWithValue(mockRepo),
         albumEditorServiceProvider.overrideWithValue(
           const AlbumEditorService(),
@@ -662,7 +996,15 @@ void main() {
       when(
         () => mockRepo.fetchAlbum('7'),
       ).thenAnswer((_) async => editingAlbum);
-      when(() => mockRepo.updateAlbum(7, any())).thenAnswer((invocation) async {
+      when(
+        () => mockRepo.updateAlbum(
+          7,
+          any(),
+          expectedUpdatedAt: any(named: 'expectedUpdatedAt'),
+          requestId: any(named: 'requestId'),
+          expectedUserId: any(named: 'expectedUserId'),
+        ),
+      ).thenAnswer((invocation) async {
         final request = invocation.positionalArguments[1] as CreateAlbumRequest;
         capturedRequest = request;
         return fakeAlbum(
@@ -676,6 +1018,9 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
+          albumEditorOwnerReaderProvider.overrideWithValue(
+            () => 'fixture-owner',
+          ),
           albumRepositoryProvider.overrideWithValue(mockRepo),
           albumEditorServiceProvider.overrideWithValue(
             const AlbumEditorService(),
@@ -723,6 +1068,9 @@ void main() {
       final mockRepo = MockAlbumRepository();
       final container = ProviderContainer(
         overrides: [
+          albumEditorOwnerReaderProvider.overrideWithValue(
+            () => 'fixture-owner',
+          ),
           albumRepositoryProvider.overrideWithValue(mockRepo),
           albumEditorServiceProvider.overrideWithValue(
             const AlbumEditorService(),
@@ -893,6 +1241,9 @@ void main() {
       final mockRepo = MockAlbumRepository();
       final container = ProviderContainer(
         overrides: [
+          albumEditorOwnerReaderProvider.overrideWithValue(
+            () => 'fixture-owner',
+          ),
           albumRepositoryProvider.overrideWithValue(mockRepo),
           albumEditorServiceProvider.overrideWithValue(
             const AlbumEditorService(),
@@ -929,6 +1280,79 @@ void main() {
   );
 
   test(
+    'initial creation background upload and full save retain one official source',
+    () async {
+      final repo = MockAlbumRepository();
+      final created = <CreateAlbumRequest>[];
+      final updates = <CreateAlbumRequest>[];
+      when(() => repo.createAlbum(any())).thenAnswer((call) async {
+        final request = call.positionalArguments[0] as CreateAlbumRequest;
+        created.add(request);
+        return fakeAlbum(id: 99, coverLayersJson: request.coverLayersJson);
+      });
+      when(
+        () => repo.updateAlbum(
+          any(),
+          any(),
+          expectedUpdatedAt: any(named: 'expectedUpdatedAt'),
+          requestId: any(named: 'requestId'),
+          expectedUserId: any(named: 'expectedUserId'),
+        ),
+      ).thenAnswer((call) async {
+        final request = call.positionalArguments[1] as CreateAlbumRequest;
+        updates.add(request);
+        return fakeAlbum(
+          id: 99,
+          coverLayersJson: request.coverLayersJson,
+        ).copyWith(
+              title: request.title,
+          ratio: request.ratio,
+          coverTheme: request.coverTheme,
+        );
+      });
+      final storage = FakeStorageService();
+      final container = ProviderContainer(
+        overrides: [
+          albumEditorOwnerReaderProvider.overrideWithValue(
+            () => 'fixture-owner',
+          ),
+          albumRepositoryProvider.overrideWithValue(repo),
+          albumEditorServiceProvider.overrideWithValue(
+            const AlbumEditorService(),
+          ),
+          albumPersistenceServiceProvider.overrideWithValue(
+            AlbumPersistenceService(storage, repo),
+          ),
+          storageServiceProvider.overrideWithValue(storage),
+        ],
+      );
+      addTearDown(container.dispose);
+      await container.read(albumEditorViewModelProvider.future);
+      final vm = container.read(albumEditorViewModelProvider.notifier);
+      vm.resetForCreate(sourceTemplateProductKey: 'template:summer-memory');
+      expect(
+        await vm.saveAlbumToBackend(const Size(500, 500), title: '여름'),
+        99,
+      );
+      vm.beginCreatedAlbumForEdit(
+        albumId: 99,
+        albumTitle: '여름',
+        sourceTemplateProductKey: 'template:summer-memory',
+      );
+      vm.goToPage(1);
+      vm.updatePageLayers([_pageText('우리의 여름')]);
+      expect(await vm.saveFullAlbum(), isTrue);
+      expect(created, hasLength(1));
+      expect(updates, hasLength(2));
+      for (final request in [...created, ...updates]) {
+        expect(jsonDecode(request.coverLayersJson)['sourceTemplate'], {
+          'productKey': 'template:summer-memory',
+        });
+      }
+    },
+  );
+
+  test(
     'saveAlbumToBackend surfaces fatal upload errors during new album creation',
     () async {
       final mockRepo = MockAlbumRepository();
@@ -945,6 +1369,9 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
+          albumEditorOwnerReaderProvider.overrideWithValue(
+            () => 'fixture-owner',
+          ),
           albumRepositoryProvider.overrideWithValue(mockRepo),
           albumEditorServiceProvider.overrideWithValue(
             const AlbumEditorService(),
@@ -980,6 +1407,9 @@ void main() {
       final mockRepo = MockAlbumRepository();
       final container = ProviderContainer(
         overrides: [
+          albumEditorOwnerReaderProvider.overrideWithValue(
+            () => 'fixture-owner',
+          ),
           albumRepositoryProvider.overrideWithValue(mockRepo),
           albumEditorServiceProvider.overrideWithValue(
             const AlbumEditorService(),
@@ -1015,6 +1445,9 @@ void main() {
       final mockRepo = MockAlbumRepository();
       final container = ProviderContainer(
         overrides: [
+          albumEditorOwnerReaderProvider.overrideWithValue(
+            () => 'fixture-owner',
+          ),
           albumRepositoryProvider.overrideWithValue(mockRepo),
           albumEditorServiceProvider.overrideWithValue(
             const AlbumEditorService(),
@@ -1079,6 +1512,9 @@ void main() {
     () async {
       final container = ProviderContainer(
         overrides: [
+          albumEditorOwnerReaderProvider.overrideWithValue(
+            () => 'fixture-owner',
+          ),
           albumRepositoryProvider.overrideWithValue(MockAlbumRepository()),
           albumEditorServiceProvider.overrideWithValue(
             const AlbumEditorService(),
@@ -1123,6 +1559,9 @@ void main() {
       final mockRepo = MockAlbumRepository();
       final container = ProviderContainer(
         overrides: [
+          albumEditorOwnerReaderProvider.overrideWithValue(
+            () => 'fixture-owner',
+          ),
           albumRepositoryProvider.overrideWithValue(mockRepo),
           albumEditorServiceProvider.overrideWithValue(
             const AlbumEditorService(),
@@ -1194,6 +1633,9 @@ void main() {
       final mockRepo = MockAlbumRepository();
       final container = ProviderContainer(
         overrides: [
+          albumEditorOwnerReaderProvider.overrideWithValue(
+            () => 'fixture-owner',
+          ),
           albumRepositoryProvider.overrideWithValue(mockRepo),
           albumEditorServiceProvider.overrideWithValue(
             const AlbumEditorService(),

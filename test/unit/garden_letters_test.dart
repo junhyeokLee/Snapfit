@@ -13,7 +13,7 @@ void main() {
   test(
     'garden letters has 24 complete pages with readable type in every size',
     () {
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         final doc = buildGardenLetters(aspect);
         final pages = templateDocumentPages(doc);
         expect(pages, hasLength(25));

@@ -328,7 +328,7 @@ void main() {
             findsOneWidget,
           );
           await tester.tap(
-            find.descendant(of: navigation, matching: find.text('스토어')),
+            find.descendant(of: navigation, matching: find.byTooltip('스토어')),
           );
           await _paint(tester);
           expect(find.byType(StoreHubScreen), findsOneWidget);
@@ -347,6 +347,7 @@ void main() {
           );
           expect(icons.map((icon) => icon.name), [
             'BookOpen',
+            'Compass',
             'Layers2',
             'Bookmark',
             'UserRound',
@@ -450,7 +451,7 @@ void main() {
           await _capture(tester, boundary, 'browse-$suffix');
           expect(tester.takeException(), isNull);
           await tester.tap(
-            find.descendant(of: navigation, matching: find.text('내 앨범')),
+            find.descendant(of: navigation, matching: find.byTooltip('내 앨범')),
           );
           await _paint(tester);
           expect(albumRequests, 1);

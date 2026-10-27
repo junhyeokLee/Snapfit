@@ -10,6 +10,49 @@ void main() {
   final now = DateTime.utc(2026, 10, 19);
 
   test(
+    'weekly reminder opens private journal without accepting an external destination',
+    () {
+      const moments = NotificationContentTarget(
+        NotificationContentKind.moments,
+        0,
+      );
+      expect(
+        NotificationContentTarget.fromUri(Uri.parse('snapfit://moments')),
+        moments,
+      );
+      expect(
+        NotificationContentTarget.fromPayload({'screen': 'moments'}),
+        moments,
+      );
+      expect(
+        NotificationContentTarget.fromPayload({
+          'deeplink': 'snapfit://moments',
+        }),
+        moments,
+      );
+      for (final link in [
+        'snapfit://moments?userId=other',
+        'snapfit://moments/delete',
+        'https://moments',
+        'snapfit://moments#private',
+      ]) {
+        expect(NotificationContentTarget.fromUri(Uri.parse(link)), isNull);
+      }
+      expect(
+        NotificationContentTarget.fromPayload({
+          'screen': 'moments',
+          'albumId': '../bad',
+        }),
+        isNull,
+      );
+      final pending = NotificationContentNavigation()
+        ..receive(moments, ownerId: 'owner');
+      pending.observeOwner('other');
+      expect(pending.hasPending, false);
+    },
+  );
+
+  test(
     'native external links and push payloads normalize to the same target',
     () {
       for (final entry in {

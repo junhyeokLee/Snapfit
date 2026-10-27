@@ -1,3 +1,4 @@
+import '../support/store_detail_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,7 +23,7 @@ void main() {
   tearDown(() => CatalogFavorites.instance.dispose());
 
   for (final count in [24, 32]) {
-    testWidgets(
+    storeDetailTestWidgets(
       'paid wedding delivers selected $count pages and the same purchase key',
       (tester) async {
         tester.view.physicalSize = const Size(390, 844);
@@ -41,7 +42,9 @@ void main() {
                     context,
                     MaterialPageRoute(
                       builder: (_) => TemplateDetailScreen(
-                        template: publishedPremiumTemplates.first,
+                        template: publishedPremiumTemplates.first.copyWith(
+                          isPremium: true,
+                        ),
                         selectForCreation: true,
                       ),
                     ),
@@ -63,7 +66,7 @@ void main() {
             await precacheImage((element.widget as Image).image, element);
           }
         });
-        await tester.pumpAndSettle();
+        await settleStoreDetail(tester);
         expect(keys, isEmpty);
         await tester.tap(find.widgetWithText(FilledButton, '이 디자인 선택'));
         // Previewing an edition never performs a purchase or confirms selection.
@@ -86,7 +89,7 @@ void main() {
         await tester.tap(
           find.byKey(const ValueKey('template-edition-continue')),
         );
-        await tester.pumpAndSettle();
+        await settleStoreDetail(tester);
         expect(keys, ['template:vow-keepsake']);
         expect(selected!.isPremium, true);
         expect(selected!.preserveTypography, true);
@@ -100,7 +103,7 @@ void main() {
     );
   }
 
-  testWidgets(
+  storeDetailTestWidgets(
     'preview never buys; denied selection stays open and granted retry uses the same authored key',
     (tester) async {
       var granted = false;
@@ -142,17 +145,17 @@ void main() {
         ),
       );
       await tester.tap(find.text('템플릿 보기'));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(find.text('650P'), findsOneWidget);
       expect(keys, isEmpty);
       await tester.tap(find.widgetWithText(FilledButton, '이 디자인 선택'));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(keys, ['template:lightbound']);
       expect(selected, isNull);
       expect(find.byType(TemplateDetailScreen), findsOneWidget);
       granted = true;
       await tester.tap(find.widgetWithText(FilledButton, '이 디자인 선택'));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(keys, ['template:lightbound', 'template:lightbound']);
       expect(selected, isNotNull);
       expect(selected!.pages, isNotEmpty);

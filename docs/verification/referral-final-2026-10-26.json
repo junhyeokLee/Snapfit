@@ -1,0 +1,114 @@
+{
+  "status": "complete",
+  "recorded_at_utc": "2026-10-26T08:58:33.054652+00:00",
+  "feature": "Simple friend referral rewards; distinct from album collaboration",
+  "policy": {
+    "each_user_points": 100,
+    "signup_window_days": 7,
+    "one_redemption_per_account": true,
+    "monthly_inviter_limit_KST": 20,
+    "chat_or_24hour_wait": false,
+    "explicit_code_registration": true
+  },
+  "web": {
+    "url": "https://snapfit-c719d.web.app/friends",
+    "hosting_version": "a3b0013a7cefe8d4",
+    "remote_main_bootstrap_index_manifest_match": true,
+    "direct_path_and_code_link_served": true,
+    "final_UI_verified": true
+  },
+  "native": {
+    "artifact": "/Users/devsheep/SnapFit/SnapFit/output/native-photo-refresh/SnapFit-referral-final-debug.apk",
+    "sha256": "033c3a2f3783f8e0e9fa781eabf4f2b02eb9a17820c93cf594bca01c921bf36b",
+    "signature_and_zip_verified": true,
+    "physical_device_install_attempted": false
+  },
+  "source": {
+    "web_native_final_current_all_match": true,
+    "sha256": "2abb7c0c8dd07935d52d70ff1ba0cd1e60a2fd5125f8a7260bbf8a34ff4c43c3",
+    "files": 1828
+  },
+  "checks": {
+    "unique_Flutter_cases": 236,
+    "SQL_including_attendance_signup_checkout_and_refund": 44,
+    "ordinary_JWT_live_API": 34,
+    "static_analysis": "No issues found"
+  },
+  "GUI": {
+    "passed": true,
+    "explicit_first_claim": "500P to 600P",
+    "code_preserved_through_login": true,
+    "my_and_points_entry": true,
+    "ledger": "+100P 초대 코드 등록 적립",
+    "copy_code_and_link": true,
+    "final_web_reopened_600P": true,
+    "icon_verified": true,
+    "UI_signed_out": true,
+    "hosting_version": "a3b0013a7cefe8d4",
+    "screenshots": [
+      "output/referral-live-20261026/referral-complete.jpg",
+      "output/referral-live-20261026/referral-ledger.jpg"
+    ]
+  },
+  "concurrency": {
+    "two_different_codes_20_initial_requests": "Exactly one invitee +100P and one corresponding inviter +100P",
+    "20_requests_after_UI_claim": "All zero additional reward"
+  },
+  "customer_rows_and_existing_six_function_hashes_unchanged": true,
+  "synthetic_cleanup": {
+    "uuid_columns_scanned": 122,
+    "residual_rows": [],
+    "complete": true,
+    "original_customer_rows_and_function_hashes_unchanged": true,
+    "private_credentials_directory_deleted": true,
+    "remaining_explicit_auth_and_referral_counts": {
+      "authUsers": 0,
+      "sessions": 0,
+      "refreshTokens": 0,
+      "codes": 0,
+      "redemptions": 0
+    },
+    "uuid_scan_schemas": [
+      "auth",
+      "public",
+      "attendance_private",
+      "referral_private"
+    ],
+    "no_production_helper_functions_created": true,
+    "local_qa_helper_sha256_before_removal": "0b58a4b3ace0b9e3a2952ea2b82bbd2afce80f34db22739a306f1dbb58ea1ceb",
+    "local_qa_source_and_bytecode_removed": true,
+    "removed_own_bytecode_files": [
+      "output/__pycache__/referral-live-20261026.cpython-311.pyc"
+    ]
+  },
+  "security_advisors": {
+    "original_financial_and_attendance_row_hashes_unchanged": true,
+    "existing_six_point_and_attendance_function_fingerprints_unchanged": true,
+    "public_rpc_security_invoker_empty_search_path_authenticated_execute_only": true,
+    "private_tables_RLS_enabled_and_all_client_grants_revoked": true,
+    "migration_ledger_version": "20261026084050",
+    "security_advisor_counts": {
+      "INFO:rls_enabled_no_policy": 43,
+      "WARN:function_search_path_mutable": 2,
+      "WARN:anon_security_definer_function_executable": 8,
+      "WARN:authenticated_security_definer_function_executable": 13,
+      "WARN:auth_leaked_password_protection": 1
+    },
+    "new_WARN_count": 0,
+    "new_INFO": "Two intentionally default-deny, private RLS tables with no client table grants"
+  },
+  "visual_followup": "Reused existing people_outline icon glyph after old browser icon-font cache displayed two new glyphs blank. Final live screenshot confirms icons rendered. Reward/auth/server behavior unchanged.",
+  "limitations": [
+    "Phone unavailable; physical install/runtime not verified",
+    "HTTPS invitation completes on web; universal/deferred-install app links not claimed",
+    "Per-account abuse controls do not identify the same person across new accounts"
+  ],
+  "reports": [
+    "docs/verification/referral-live-2026-10-26.json",
+    "docs/verification/referral-native-2026-10-26.json",
+    "docs/verification/referral-release-policy-2026-10-26.json",
+    "docs/verification/referral-server-2026-10-26.json",
+    "docs/verification/referral-ui-2026-10-26.json",
+    "docs/verification/referral-web-2026-10-26.json"
+  ]
+}

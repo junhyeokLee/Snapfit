@@ -45,11 +45,7 @@ void main() {
     await CatalogFavorites.instance.toggle(CatalogFavoriteKeys.template(2));
     await tester.pumpWidget(
       wrapCreation(
-        AiAlbumStartStep(
-          onManualStart: () {},
-          onAiStart: () {},
-          templates: AsyncData(templates),
-        ),
+        AiAlbumStartStep(onManualStart: () {}, templates: AsyncData(templates)),
         shopProducts: const [
           PointShopProduct(
             productKey: 'template:server-2',
@@ -231,7 +227,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      for (final action in ['글', '사진', '레이아웃', '템플릿', '레이어', '꾸미기', '배경']) {
+      for (final action in ['글', '사진', '레이아웃', '템플릿', '재배치', '꾸미기', '배경']) {
         await tester.ensureVisible(find.text(action));
         await tester.pumpAndSettle();
         await tester.tap(find.text(action));

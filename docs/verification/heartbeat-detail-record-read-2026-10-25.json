@@ -1,0 +1,127 @@
+{
+  "date": "2026-10-25",
+  "automation_id": "snapfit",
+  "trigger_time": "2026-10-25T11:06:17.821Z",
+  "finished_time": "2026-10-25T11:13:35.050271+00:00",
+  "scope": "Bound template-detail like reconciliation to the confirmed server record",
+  "previous_report": "docs/verification/heartbeat-template-detail-like-2026-10-25.json",
+  "finding": {
+    "id": "detail-like-full-catalog-reconciliation",
+    "priority": "P2",
+    "status": "fixed",
+    "code_evidence": "After a successful likeTemplate(target.id), _syncLikeStateAfterToggle called the full-catalog/title-matching helper, retrieving every active template and its document even though the exact server ID had just been confirmed.",
+    "baseline_control": {
+      "fixture_catalog_size": 256,
+      "confirmed_toggles": 5,
+      "full_catalog_reads": 6,
+      "single_record_reads": 0,
+      "returned_rows_calculated_from_fixture": 1536,
+      "log": "output/heartbeat-detail-record-read-2026-10-25/before-tests.log"
+    },
+    "change": [
+      "Pass the exact ID used by the successful mutation into its follow-up.",
+      "Use the existing repository.getTemplate(id) single-record query, leaving initial legacy title matching unchanged.",
+      "Retain the operation/account/repository guard before the read and after completion. Reject a mismatched ID or retired record.",
+      "Keep confirmed optimistic state on read failure, with no full-catalog fallback or retry loop."
+    ],
+    "after_control": {
+      "fixture_catalog_size": 256,
+      "confirmed_toggles": 5,
+      "full_catalog_reads": 1,
+      "single_record_reads": 5,
+      "returned_rows_asserted_by_fixture": 261,
+      "unrelated_document_builder_calls": 0,
+      "description": "The initial catalog hydration is unchanged; each subsequent like reconciliation reads one row."
+    }
+  },
+  "production_files_changed_this_run": [
+    "lib/features/store/presentation/views/template_detail_screen.dart"
+  ],
+  "updated_test_files": [
+    "test/widget/template_detail_like_lifecycle_test.dart"
+  ],
+  "new_cases": 4,
+  "test_changes": [
+    "Add a 256-record/five-toggle bound on full versus individual reads and lazy unrelated document generation.",
+    "Add failed-read, retired-record and wrong-ID cases that preserve confirmed likes without expanding to a catalog query.",
+    "Move existing controlled late responses to the single-record API without removing the stale operation, account switch, close/reopen, initial hydration or rollback assertions.",
+    "Strengthen close/account-change/slow-storage tests with explicit assertions that no single-record follow-up starts after their view/owner is no longer current."
+  ],
+  "review": {
+    "remaining_blocking_findings_in_changed_scope": [],
+    "checked": [
+      "The confirmed mutation ID is used instead of mutable widget identity after awaits.",
+      "Late older operations and previous-account replies cannot change UI, persistence or list invalidations.",
+      "A closed view or changed owner does not begin a follow-up; a previously started read is ignored at completion.",
+      "Retired and mismatched records cannot replace the valid local artwork or confirmed like snapshot.",
+      "Initial remote title matching, document preparation, edition previews, gallery movement, purchase keys and pricing guards remain unchanged.",
+      "No new cache, history, subscription, polling, decoding work per frame or extra document generation was introduced.",
+      "The summary-sharing repository, preference write queue, store screen, category strip and prior gallery fixture are byte-for-byte unchanged."
+    ],
+    "protected_sources_unchanged": {
+      "lib/features/store/data/api/template_provider.dart": true,
+      "lib/features/store/data/repositories/supabase_template_repository.dart": true,
+      "lib/features/store/presentation/views/store_screen.dart": true,
+      "lib/features/store/presentation/widgets/store_topic_shelf.dart": true,
+      "test/widget/store_gallery_review_regressions_test.dart": true
+    },
+    "shared_workspace": "Captured source/test snapshots before editing. Did not swap, revert or clean any shared file. Only the listed source, test and this new verification record were modified for this run."
+  },
+  "verification": {
+    "before": {
+      "passed": 0,
+      "failed": 1,
+      "log": "output/heartbeat-detail-record-read-2026-10-25/before-tests.log",
+      "observed_failure": "Expected one initial full-catalog read, actual six."
+    },
+    "focused_after": {
+      "passed": 12,
+      "failed": 0,
+      "log": "output/heartbeat-detail-record-read-2026-10-25/fix-tests.log",
+      "includes_previous_11_regressions": true
+    },
+    "final_related_suite": {
+      "files": 12,
+      "passed": 118,
+      "failed": 0,
+      "log": "output/heartbeat-detail-record-read-2026-10-25/final-tests.log",
+      "concurrent_test_processes": 1,
+      "includes_existing_sdk_active_row_and_retired_record_contract_tests": true
+    },
+    "analysis": {
+      "items": 2,
+      "issues": 0,
+      "log": "output/heartbeat-detail-record-read-2026-10-25/final-analysis.log"
+    },
+    "git_diff_check": {
+      "passed": true,
+      "scope": [
+        "lib/features/store/presentation/views/template_detail_screen.dart",
+        "test/widget/template_detail_like_lifecycle_test.dart"
+      ]
+    },
+    "scoped_patch": "output/heartbeat-detail-record-read-2026-10-25/scoped.patch",
+    "final_sha256": {
+      "lib/features/store/presentation/views/template_detail_screen.dart": "7923251c22085fd56044ae4f481fe3d26dcd92da6be76d26ba9075c6d75d088b",
+      "test/widget/template_detail_like_lifecycle_test.dart": "e1c64f901a004eb444c777e254425315e59f33738b1fc94f6c0972ec1e03763d"
+    },
+    "app_build_run": false,
+    "device_run_or_frame_memory_profile_run": false,
+    "live_backend_or_user_data_changed": false
+  },
+  "follow_up": {
+    "automation_remains_useful": true,
+    "completed_previous_candidate": "Single-record reconciliation after successful template likes.",
+    "next_candidates": [
+      "Inspect main album and reader hidden/resume image preparation and subscription/cache disposal against newer verification records.",
+      "Review idle detail account changes and same-account re-login separately if a reproducible path is found.",
+      "The one-record API still includes that book document; consider a metadata-only API only if supported by a demonstrated remaining cost and without weakening retirement checks."
+    ]
+  },
+  "limits": [
+    "The measured bounds are controlled repository/widget test counts, not production latency, network bytes or native memory measurements.",
+    "An already-started read is not physically cancelled. Existing operation/owner guards discard obsolete completions.",
+    "Initial legacy hydration still uses the full catalog, and the single-record API still returns one full template document. This change removes the repeated all-catalog reads after confirmed likes.",
+    "Real-device frame timing and memory were not profiled. App builds, device execution, deployments and customer data changes were not performed."
+  ]
+}

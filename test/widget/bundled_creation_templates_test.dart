@@ -1,3 +1,4 @@
+import '../support/store_detail_loading.dart';
 import 'dart:io';
 import 'package:snap_fit/core/templates/studio_photo_frame_catalog.dart';
 
@@ -28,7 +29,7 @@ void main() {
   setUpAll(loadCreationFonts);
 
   test(
-    'creation catalog retains published free and paid products after remote refresh',
+    'creation catalog retains published availability after remote refresh',
     () async {
       final remote = bundledCreationTemplates.first.copyWith(
         id: 786,
@@ -60,7 +61,10 @@ void main() {
       expect(events.length, greaterThanOrEqualTo(2));
       expect(events.last.any((t) => t.id == 786), false);
       expect(events.last.any((t) => !t.isPremium), true);
-      expect(events.last.any((t) => t.isPremium), true);
+      expect(
+        events.last.map((t) => t.isPremium),
+        publishedCreationTemplates.map((t) => t.isPremium),
+      );
       for (final items in events) {
         expect(
           items.map((t) => t.id),
@@ -72,7 +76,7 @@ void main() {
 
   for (final template in bundledCreationTemplates) {
     for (final size in [const Size(390, 844), const Size(844, 390)]) {
-      testWidgets(
+      storeDetailTestWidgets(
         '${template.title} at $size: offline preview selects all five physical sizes',
         (tester) async {
           tester.view.physicalSize = size;
@@ -103,7 +107,7 @@ void main() {
             ),
           );
           await tester.tap(find.text('Open'));
-          await tester.pumpAndSettle();
+          await settleStoreDetail(tester);
           expect(
             find.descendant(
               of: find.byType(AppBar),
@@ -112,7 +116,7 @@ void main() {
             findsOneWidget,
           );
           await tester.tap(find.text('이 디자인 선택'));
-          await tester.pumpAndSettle();
+          await settleStoreDetail(tester);
           expect(tester.takeException(), isNull);
           expect(result, isNotNull);
           expect(result!.isPremium, false);
@@ -199,7 +203,7 @@ void main() {
   }
 
   for (final collection in authoredCollections) {
-    testWidgets(
+    storeDetailTestWidgets(
       '${collection.title}: actual photo picker preserves mask, ornaments and geometry',
       (tester) async {
         const aspect = CollectionAspect.square;
@@ -247,7 +251,7 @@ void main() {
           ),
         );
         await tester.tap(find.text('사진 추가'));
-        await tester.pumpAndSettle();
+        await settleStoreDetail(tester);
         final filled = pages[photoPage].singleWhere((l) => l.id == slot.id);
         expect(filled.asset, same(photo));
         expect(filled.imageBackground, slot.imageBackground);
@@ -260,7 +264,7 @@ void main() {
             expect(pages[photoPage][i], same(originals[i]));
         }
         tester.view.physicalSize = const Size(844, 390);
-        await tester.pumpAndSettle();
+        await settleStoreDetail(tester);
         expect(tester.takeException(), isNull);
         expect(
           pages[photoPage].singleWhere((l) => l.id == slot.id).asset,

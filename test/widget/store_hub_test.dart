@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
+import 'package:snap_fit/features/album/presentation/widgets/create_flow/creation_catalog_cover.dart';
 import 'package:snap_fit/features/point_shop/data/point_shop_provider.dart';
 import 'package:snap_fit/features/point_shop/domain/point_shop_launch_pricing.dart';
 import 'package:snap_fit/features/point_shop/domain/point_shop_product.dart';
@@ -18,6 +19,7 @@ import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
 import 'package:snap_fit/shared/widgets/experience_style.dart';
 import 'ai_album_start_step_test.dart' show wrapCreation, loadCreationFonts;
 import '../support/store_catalog_navigation.dart';
+import '../support/catalog_preview_loading.dart';
 
 Future<void> captureHub(
   WidgetTester tester,
@@ -25,6 +27,11 @@ Future<void> captureHub(
   String name,
 ) async {
   if (!const bool.fromEnvironment('STORE_HUB_QA')) return;
+  for (final cover in tester.widgetList<CreationCatalogCover>(
+    find.byType(CreationCatalogCover),
+  )) {
+    await loadCatalogPreview(tester, cover.template);
+  }
   await tester.runAsync(() async {
     for (final widget in tester.widgetList<Image>(find.byType(Image))) {
       await precacheImage(widget.image, boundary.currentContext!);

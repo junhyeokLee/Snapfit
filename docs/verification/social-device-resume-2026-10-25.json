@@ -1,0 +1,167 @@
+{
+  "project_ref": "rrbhxdtriummqpztpjrk",
+  "run_id": "76b7b16a5916",
+  "prepared_at_utc": "2026-10-25T07:08:51.385334+00:00",
+  "purpose": "Connected Galaxy feed/detail/author read verification; all content is synthetic.",
+  "fixture": {
+    "author_id": "547aef25-cffa-4a0a-bb00-8f9c299571a7",
+    "album_id": 76,
+    "work_id": "c3537b70-37b3-49e1-8d9c-0f405f4f8360",
+    "public_title": "갤럭시 배포 검증용 합성 작품",
+    "source_page_count": 3,
+    "selected_source_indexes": [
+      2,
+      0
+    ],
+    "public_page_count": 2,
+    "original_unchanged": true,
+    "page_labels_in_order": [
+      "QA PAGE TWO",
+      "SYNTHETIC ALBUM"
+    ]
+  },
+  "checks": [
+    {
+      "check": "selected_source_positions_preserved_2_then_0",
+      "passed": true
+    },
+    {
+      "check": "draft_invisible_to_anon",
+      "passed": true
+    },
+    {
+      "check": "allocated_snapshot_owned_slot_0",
+      "passed": true
+    },
+    {
+      "check": "allocated_snapshot_owned_slot_1",
+      "passed": true
+    },
+    {
+      "check": "published_exactly_two_pages",
+      "passed": true
+    },
+    {
+      "check": "public_response_has_no_source_document_or_private_identity",
+      "passed": true
+    },
+    {
+      "check": "original_three_pages_and_revision_unchanged",
+      "passed": true
+    },
+    {
+      "check": "private_original_invisible_to_anon",
+      "passed": true
+    },
+    {
+      "check": "both_selected_pages_can_be_signed",
+      "passed": true
+    },
+    {
+      "check": "anon_png_order_and_content_match_0",
+      "passed": true
+    },
+    {
+      "check": "anon_png_order_and_content_match_1",
+      "passed": true
+    }
+  ],
+  "passed": 11,
+  "failed": 0,
+  "ordinary_jwt_role": "authenticated",
+  "emails_sent": 0,
+  "fixtures_retained_for_device_qa": false,
+  "device_qa_result": {
+    "status": "passed",
+    "confirmed_by": "root and expansion_qa live Galaxy QA",
+    "observations": [
+      "Detail page 1 of 2 QA PAGE TWO, then page 2 of 2 SYNTHETIC ALBUM.",
+      "Author profile was readable.",
+      "Visitor did not receive the author private account menus."
+    ]
+  },
+  "cleanup": {
+    "project_ref": "rrbhxdtriummqpztpjrk",
+    "run_id": "76b7b16a5916",
+    "synthetic_accounts_deleted": 1,
+    "synthetic_albums_deleted": 1,
+    "qa_user_ids": [
+      "547aef25-cffa-4a0a-bb00-8f9c299571a7"
+    ],
+    "original_synthetic_album_ids": [
+      76
+    ],
+    "cleanup_completed": true,
+    "pre_cleanup_inventory": {
+      "album_ids": [
+        76
+      ],
+      "work_count": 1,
+      "storage_by_bucket": {
+        "social-snapshots": 2
+      },
+      "noncascade_references": 0,
+      "auth_matches_exact_qa_run": 1,
+      "nonfixture_social_interactions": 0
+    },
+    "post_cleanup_residual_counts": {
+      "likes": 0,
+      "saves": 0,
+      "works": 0,
+      "albums": 0,
+      "blocks": 0,
+      "ledger": 0,
+      "orders": 0,
+      "quotas": 0,
+      "follows": 0,
+      "wallets": 0,
+      "comments": 0,
+      "auth_users": 0,
+      "work_pages": 0,
+      "push_outbox": 0,
+      "push_devices": 0,
+      "album_members": 0,
+      "auth_sessions": 0,
+      "notifications": 0,
+      "subscriptions": 0,
+      "billing_orders": 0,
+      "auth_identities": 0,
+      "public_profiles": 0,
+      "storage_objects": 0,
+      "store_purchases": 0,
+      "private_profiles": 0,
+      "push_preferences": 0,
+      "notification_reads": 0,
+      "auth_refresh_tokens": 0,
+      "publication_sources": 0,
+      "point_shop_ownership": 0
+    },
+    "verified_residual_categories": 30,
+    "cleanup_scope": "Exact ephemeral fixture UUID, owned album 76, work UUID, and owner snapshot prefix only. The existing Galaxy user and their public profile were not changed.",
+    "api_readback_checks": [
+      {
+        "check": "anon_work_absent",
+        "passed": true
+      },
+      {
+        "check": "anon_author_profile_absent",
+        "passed": true
+      },
+      {
+        "check": "anon_feed_excludes_fixture",
+        "passed": true
+      },
+      {
+        "check": "removed_pngs_cannot_receive_new_signed_urls",
+        "passed": true
+      },
+      {
+        "check": "local_credential_file_removed",
+        "passed": true
+      }
+    ],
+    "api_readback_passed": 5,
+    "verified_at_utc": "2026-10-25T07:13:56.125685+00:00",
+    "local_credential_file_removed": true
+  }
+}

@@ -1,3 +1,4 @@
+import '../support/store_detail_loading.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -61,14 +62,14 @@ final _reusablePaidMaterials = {
 };
 
 // Current editorial books contain independent paper and sticker materials.
-// Select a published paid book and a real reusable paid material it includes.
-final _template = publishedCreationTemplates.firstWhere(
-  (template) =>
-      template.isPremium &&
-      templateVisualMaterialKeys(
+// Model a priced published book with a real reusable paid material it includes.
+final _template = publishedCreationTemplates
+    .firstWhere(
+      (template) => templateVisualMaterialKeys(
         jsonDecode(template.templateJson!),
       ).any(_reusablePaidMaterials.contains),
-);
+    )
+    .copyWith(isPremium: true);
 final _material = templateVisualMaterialKeys(
   jsonDecode(_template.templateJson!),
 ).firstWhere(_reusablePaidMaterials.contains);
@@ -80,7 +81,7 @@ final _title = _materialSpec.label;
 final _albumTemplates = [
   _template,
   ...publishedCreationTemplates
-      .where((item) => item.isPremium && item.id != _template.id)
+      .where((item) => item.id != _template.id)
       .take(2),
 ];
 
@@ -219,6 +220,7 @@ Future<void> _paint(WidgetTester tester) async {
   // The detail CTA stays busy while its selection sheet is open.
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 800));
+  await flushStoreDetailDocuments(tester);
   await tester.runAsync(() async {
     for (final element in find.byType(Image).evaluate()) {
       await precacheImage((element.widget as Image).image, element);
@@ -292,146 +294,153 @@ void main() {
   ]) {
     for (final dark in [false, true]) {
       final suffix = '${size.width.toInt()}-${dark ? 'dark' : 'light'}';
-      testWidgets('real album and page sheets retain safe areas $suffix', (
-        tester,
-      ) async {
-        _size(tester, size);
-        final key = GlobalKey(), repository = MockAlbumRepository();
-        await tester.pumpWidget(
-          _app(_detail(), dark: dark, captureKey: key, repository: repository),
-        );
-        await _paint(tester);
-        await tester.tap(find.text('사용할 앨범 선택'));
-        await _paint(tester);
-        expect(find.text('1 / 2'), findsOneWidget);
-        expect(find.byTooltip('닫기').hitTestable(), findsOneWidget);
-        final list = tester.getRect(
-          find.descendant(
-            of: find.byType(MaterialAlbumPicker),
-            matching: find.byType(ListView),
-          ),
-        );
-        expect(list.bottom, lessThanOrEqualTo(size.height - 24));
-        await _capture(tester, key, 'albums-$suffix');
-        await tester.tap(find.text(_albumTemplates.first.title));
-        await _paint(tester);
-        expect(find.text('2 / 2'), findsOneWidget);
-        expect(
-          find.textContaining('${_albumTemplates.first.title} · 표지'),
-          findsOneWidget,
-        );
-        final cover = tester.getSize(
-          find.byKey(const ValueKey('material-page-art-0')),
-        );
-        expect(cover.aspectRatio, closeTo(.75, .0001));
-        final page = tester.getSize(
-          find.byKey(const ValueKey('material-page-art-1')),
-        );
-        expect(page.aspectRatio, closeTo(.75, .0001));
-        expect(
-          tester
-              .widget<TemplatePageRenderer>(
-                find.byType(TemplatePageRenderer).first,
-              )
-              .showCanvasChrome,
-          isFalse,
-        );
-        await _capture(tester, key, 'pages-$suffix');
-        await tester.scrollUntilVisible(
-          find.byKey(const ValueKey('material-page-11')),
-          160,
-          scrollable: find
-              .descendant(
-                of: find.byType(MaterialPagePicker),
-                matching: find.byType(Scrollable),
-              )
-              .last,
-        );
-        await Scrollable.ensureVisible(
-          tester.element(find.byKey(const ValueKey('material-page-11'))),
-          alignment: .5,
-        );
-        await _paint(tester);
-        expect(
-          find.byKey(const ValueKey('material-page-11')).hitTestable(),
-          findsOneWidget,
-        );
-        await tester.tap(find.byTooltip('닫기'));
-        await tester.pumpAndSettle();
-        verify(() => repository.unlockAlbum(1)).called(1);
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('purchase, receipt and recharge stay reachable $suffix', (
-        tester,
-      ) async {
-        _size(tester, size);
-        for (final state in ['purchase', 'receipt', 'insufficient']) {
-          final key = GlobalKey();
-          final access = PointShopAccess(
-            productKey: _material,
-            title: _title,
-            pointPrice: 300,
-            available: true,
-            isFree: false,
-            owned: false,
-            remainingBalance: state == 'insufficient' ? 100 : 800,
-          );
+      storeDetailTestWidgets(
+        'real album and page sheets retain safe areas $suffix',
+        (tester) async {
+          _size(tester, size);
+          final key = GlobalKey(), repository = MockAlbumRepository();
           await tester.pumpWidget(
             _app(
-              Scaffold(
-                body: Builder(
-                  builder: (context) => Center(
-                    child: FilledButton(
-                      onPressed: () => state == 'receipt'
-                          ? showPointShopPurchaseReceipt(
-                              context,
-                              access: access,
-                              title: _title,
-                              purchase: PointShopPurchase(
-                                productKey: _material,
-                                owned: true,
-                                isFree: false,
-                                chargedPoints: 300,
-                                remainingBalance: 500,
-                                alreadyOwned: false,
+              _detail(),
+              dark: dark,
+              captureKey: key,
+              repository: repository,
+            ),
+          );
+          await _paint(tester);
+          await tester.tap(find.text('사용할 앨범 선택'));
+          await _paint(tester);
+          expect(find.text('1 / 2'), findsOneWidget);
+          expect(find.byTooltip('닫기').hitTestable(), findsOneWidget);
+          final list = tester.getRect(
+            find.descendant(
+              of: find.byType(MaterialAlbumPicker),
+              matching: find.byType(ListView),
+            ),
+          );
+          expect(list.bottom, lessThanOrEqualTo(size.height - 24));
+          await _capture(tester, key, 'albums-$suffix');
+          await tester.tap(find.text(_albumTemplates.first.title));
+          await _paint(tester);
+          expect(find.text('2 / 2'), findsOneWidget);
+          expect(
+            find.textContaining('${_albumTemplates.first.title} · 표지'),
+            findsOneWidget,
+          );
+          final cover = tester.getSize(
+            find.byKey(const ValueKey('material-page-art-0')),
+          );
+          expect(cover.aspectRatio, closeTo(.75, .0001));
+          final page = tester.getSize(
+            find.byKey(const ValueKey('material-page-art-1')),
+          );
+          expect(page.aspectRatio, closeTo(.75, .0001));
+          expect(
+            tester
+                .widget<TemplatePageRenderer>(
+                  find.byType(TemplatePageRenderer).first,
+                )
+                .showCanvasChrome,
+            isFalse,
+          );
+          await _capture(tester, key, 'pages-$suffix');
+          await tester.scrollUntilVisible(
+            find.byKey(const ValueKey('material-page-11')),
+            160,
+            scrollable: find
+                .descendant(
+                  of: find.byType(MaterialPagePicker),
+                  matching: find.byType(Scrollable),
+                )
+                .last,
+          );
+          await Scrollable.ensureVisible(
+            tester.element(find.byKey(const ValueKey('material-page-11'))),
+            alignment: .5,
+          );
+          await _paint(tester);
+          expect(
+            find.byKey(const ValueKey('material-page-11')).hitTestable(),
+            findsOneWidget,
+          );
+          await tester.tap(find.byTooltip('닫기'));
+          await settleStoreDetail(tester);
+          verify(() => repository.unlockAlbum(1)).called(1);
+          expect(tester.takeException(), isNull);
+        },
+      );
+
+      storeDetailTestWidgets(
+        'purchase, receipt and recharge stay reachable $suffix',
+        (tester) async {
+          _size(tester, size);
+          for (final state in ['purchase', 'receipt', 'insufficient']) {
+            final key = GlobalKey();
+            final access = PointShopAccess(
+              productKey: _material,
+              title: _title,
+              pointPrice: 300,
+              available: true,
+              isFree: false,
+              owned: false,
+              remainingBalance: state == 'insufficient' ? 100 : 800,
+            );
+            await tester.pumpWidget(
+              _app(
+                Scaffold(
+                  body: Builder(
+                    builder: (context) => Center(
+                      child: FilledButton(
+                        onPressed: () => state == 'receipt'
+                            ? showPointShopPurchaseReceipt(
+                                context,
+                                access: access,
+                                title: _title,
+                                purchase: PointShopPurchase(
+                                  productKey: _material,
+                                  owned: true,
+                                  isFree: false,
+                                  chargedPoints: 300,
+                                  remainingBalance: 500,
+                                  alreadyOwned: false,
+                                ),
+                              )
+                            : showPointShopPurchaseSheet(
+                                context,
+                                access: access,
+                                title: _title,
                               ),
-                            )
-                          : showPointShopPurchaseSheet(
-                              context,
-                              access: access,
-                              title: _title,
-                            ),
-                      child: const Text('구매 확인'),
+                        child: const Text('구매 확인'),
+                      ),
                     ),
                   ),
                 ),
+                dark: dark,
+                captureKey: key,
               ),
-              dark: dark,
-              captureKey: key,
-            ),
-          );
-          await tester.tap(find.text('구매 확인'));
-          await _paint(tester);
-          final label = state == 'receipt'
-              ? '소재 사용하기'
-              : state == 'insufficient'
-              ? '포인트 충전'
-              : '300P로 구매';
-          expect(find.text(label).hitTestable(), findsOneWidget);
-          expect(
-            tester.getRect(find.text(label)).bottom,
-            lessThan(size.height - 24),
-          );
-          expect(find.text('사용 범위'), findsOneWidget);
-          await _capture(tester, key, '$state-$suffix');
-          await tester.tap(find.byTooltip('닫기'));
-          await tester.pumpAndSettle();
-          expect(tester.takeException(), isNull);
-        }
-      });
+            );
+            await tester.tap(find.text('구매 확인'));
+            await _paint(tester);
+            final label = state == 'receipt'
+                ? '소재 사용하기'
+                : state == 'insufficient'
+                ? '포인트 충전'
+                : '300P로 구매';
+            expect(find.text(label).hitTestable(), findsOneWidget);
+            expect(
+              tester.getRect(find.text(label)).bottom,
+              lessThan(size.height - 24),
+            );
+            expect(find.text('사용 범위'), findsOneWidget);
+            await _capture(tester, key, '$state-$suffix');
+            await tester.tap(find.byTooltip('닫기'));
+            await settleStoreDetail(tester);
+            expect(tester.takeException(), isNull);
+          }
+        },
+      );
 
-      testWidgets(
+      storeDetailTestWidgets(
         'template materials include real paid artwork and lazy list $suffix',
         (tester) async {
           _size(tester, size);
@@ -444,6 +453,12 @@ void main() {
             ),
           );
           await _paint(tester);
+          final materialsSection = find.byKey(
+            const ValueKey('template-gallery-materials'),
+          );
+          await tester.ensureVisible(materialsSection);
+          await tester.tap(find.text('함께 사용한 꾸밈 소재'));
+          await settleStoreDetail(tester);
           final materialPreviews = find.byWidgetPredicate(
             (widget) =>
                 widget.key is ValueKey<String> &&
@@ -461,7 +476,7 @@ void main() {
             ),
           );
           await tester.ensureVisible(material);
-          await tester.pumpAndSettle();
+          await settleStoreDetail(tester);
           expect(material, findsOneWidget);
           await _capture(tester, key, 'included-$suffix');
           await tester.tap(material);
@@ -487,7 +502,7 @@ void main() {
             ),
           );
           // Price/ownership labels can relayout the last lazily built row.
-          await tester.pumpAndSettle();
+          await settleStoreDetail(tester);
           expect(
             find
                 .byKey(ValueKey('template-material-row-${keys.last}'))
@@ -500,7 +515,7 @@ void main() {
     }
   }
 
-  testWidgets(
+  storeDetailTestWidgets(
     'page artwork preserves square, portrait, landscape and original backgrounds',
     (tester) async {
       _size(tester, const Size(390, 844));
@@ -532,55 +547,56 @@ void main() {
     },
   );
 
-  testWidgets('large text, empty album list and long titles remain usable', (
-    tester,
-  ) async {
-    _size(tester, const Size(320, 568));
-    await tester.pumpWidget(
-      _app(
-        Scaffold(
-          body: MaterialAlbumPicker(productKey: _material, title: _title),
-        ),
-        dark: true,
-        albums: [],
-      ),
-    );
-    await _paint(tester);
-    expect(find.text('사용할 앨범이 아직 없어요.'), findsOneWidget);
-    for (final child in [
-      MaterialPagePicker(
-        title: '매우 긴 이름의 리넨 자수 타원 프레임과 꾸밈 소재',
-        productKey: _material,
-        albumTitle: '오래도록 간직하고 싶은 우리의 아주 소중한 여행 기록',
-        pages: _pages(1),
-        ratio: 1,
-      ),
-      PointShopPurchaseSheet(
-        title: '매우 긴 이름의 리넨 자수 타원 프레임과 꾸밈 소재',
-        access: PointShopAccess(
-          productKey: _material,
-          pointPrice: 300,
-          available: true,
-          isFree: false,
-          owned: false,
-          remainingBalance: 100,
-        ),
-      ),
-    ]) {
+  storeDetailTestWidgets(
+    'large text, empty album list and long titles remain usable',
+    (tester) async {
+      _size(tester, const Size(320, 568));
       await tester.pumpWidget(
         _app(
           Scaffold(
-            body: Align(alignment: Alignment.bottomCenter, child: child),
+            body: MaterialAlbumPicker(productKey: _material, title: _title),
           ),
           dark: true,
-          textScale: 1.7,
+          albums: [],
         ),
       );
       await _paint(tester);
-      expect(find.byTooltip('닫기').hitTestable(), findsOneWidget);
-      if (child is PointShopPurchaseSheet)
-        expect(find.text('포인트 충전').hitTestable(), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    }
-  });
+      expect(find.text('사용할 앨범이 아직 없어요.'), findsOneWidget);
+      for (final child in [
+        MaterialPagePicker(
+          title: '매우 긴 이름의 리넨 자수 타원 프레임과 꾸밈 소재',
+          productKey: _material,
+          albumTitle: '오래도록 간직하고 싶은 우리의 아주 소중한 여행 기록',
+          pages: _pages(1),
+          ratio: 1,
+        ),
+        PointShopPurchaseSheet(
+          title: '매우 긴 이름의 리넨 자수 타원 프레임과 꾸밈 소재',
+          access: PointShopAccess(
+            productKey: _material,
+            pointPrice: 300,
+            available: true,
+            isFree: false,
+            owned: false,
+            remainingBalance: 100,
+          ),
+        ),
+      ]) {
+        await tester.pumpWidget(
+          _app(
+            Scaffold(
+              body: Align(alignment: Alignment.bottomCenter, child: child),
+            ),
+            dark: true,
+            textScale: 1.7,
+          ),
+        );
+        await _paint(tester);
+        expect(find.byTooltip('닫기').hitTestable(), findsOneWidget);
+        if (child is PointShopPurchaseSheet)
+          expect(find.text('포인트 충전').hitTestable(), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      }
+    },
+  );
 }

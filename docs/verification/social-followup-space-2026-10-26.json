@@ -1,0 +1,27 @@
+{
+  "scope": "Only two idle, regeneratable Android asset intermediates",
+  "retained_raw_files": 1091,
+  "merged_files_exact_sha256_match": true,
+  "bytes_reclaimed": 1723494544,
+  "active_build_or_open_files": false,
+  "raw_source_assets_and_delivered_apks_untouched": true,
+  "after_tests_generated_copies_removed": [
+    {
+      "path": "build/unit_test_assets",
+      "bytes": 804511798,
+      "reason": "idle regeneratable test asset copy"
+    },
+    {
+      "path": "build/app/outputs/apk/debug/app-debug.apk",
+      "bytes": 861239546,
+      "reason": "byte-identical generated duplicate of retained delivered APK",
+      "sha256": "3c7ee6218d05fae005a613866d7d9ab0da738a3b88218d39836351a550e309ce"
+    }
+  ],
+  "final_build_generated_copies_reclaimed": {
+    "files_exact_sha256_match": 1091,
+    "bytes_reclaimed": 1723722442,
+    "active_build_or_open_files": false,
+    "retained_raw_assets_and_all_delivered_apks_unchanged": true
+  }
+}

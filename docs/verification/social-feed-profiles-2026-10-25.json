@@ -1,0 +1,439 @@
+{
+  "date": "2026-10-25",
+  "scope": "Shared Flutter app/web implementation of social feed, public profiles and publication from existing albums",
+  "implemented": [
+    "Recommended/following feed, topic filters, pagination, refresh, error and empty states",
+    "Public work detail with isolated page images, author navigation, likes, private saves and comments",
+    "Public/own profiles, editable public identity, followers/following, follow/unfollow, directional follower removal and block",
+    "Existing saved album selection, partial/full page selection up to 20, ordering, title/caption and explicit public preview confirmation",
+    "Private draft upload followed by atomic publication, immutable raster snapshot, idempotent retries and source revision checks",
+    "Own publication management: withdraw, republish the same snapshot and delete without modifying source albums",
+    "Search for public works/users and private saved works",
+    "My tab routes to own public profile; existing private My menus remain under Settings with administrator checks preserved",
+    "Native album reader and web library cards/reader link to publication",
+    "Web public URLs /feed, /works/:id, /users/:id; authenticated /me, /account, /publish, /publish/:albumId, /me/works",
+    "Login returns to original public target without automatically replaying mutations"
+  ],
+  "privacy": {
+    "public_identity_is_separate_from_private_account": true,
+    "private_source_album_ids_documents_urls_and_email_excluded_from_public_payload": true,
+    "only_selected_flattened_pages_uploaded": true,
+    "snapshot_bucket": "social-snapshots (private)",
+    "client_signed_url_ttl_seconds": 60,
+    "withdrawal": "New reads are denied. Previously downloaded public copies cannot be recalled.",
+    "collaborative_album_publication": "Server rejected until a member-consent flow is implemented",
+    "client_service_role_key": false
+  },
+  "validation": {
+    "flutter_tests_passed": 131,
+    "flutter_groups": {
+      "navigation_and_public_login_return": 71,
+      "snapshot_parse_and_real_png_render": 10,
+      "existing_home_and_settings_regression": 20,
+      "repository_transport_and_session": 7,
+      "profiles_and_relations": 6,
+      "feed_detail_search_saved_management_and_accessibility": 13,
+      "publication_flow_and_retry": 4
+    },
+    "sql_rls_cases_passed": 15,
+    "sql_engine": "PGlite 0.3.14 executing the actual migration, roles, RLS and dispatcher",
+    "newly_reviewed_fixes": [
+      "stale source revision before begin and during finalization",
+      "legacy cover-only saved document support",
+      "automatic public handle collision recovery",
+      "lost begin response followed by edited retry",
+      "reordering during publication",
+      "320px and large-text reaction/empty/search layout"
+    ],
+    "targeted_dart_analysis": "No issues found",
+    "existing_tracked_changes_whitespace_check": "passed",
+    "independent_reviews": "SQL authorization, publication/UI state, and direct-path startup/history reviews completed.",
+    "production_read_only_preflight": "Confirmed operating source table column types, existing bucket-scoped Storage policies, no conflicting social tables or API; migration applied with explicit RLS/grants.",
+    "limits": [
+      "Connected Android was updated with the existing signed debug-device workflow. Play/App Store/TestFlight submission was not performed because store release signing and credentials/pipeline are not configured.",
+      "Create/finalize publication was exercised live through the web client and ordinary JWT APIs. Native live UI QA was read-only to preserve the existing account and personal albums; no real user album was published."
+    ],
+    "live_api": {
+      "project_ref": "rrbhxdtriummqpztpjrk",
+      "run_id": "f02c1e83e76d",
+      "checks": [
+        {
+          "check": "foreign_album_owner_enforced",
+          "passed": true
+        },
+        {
+          "check": "foreign_private_album_invisible",
+          "passed": true
+        },
+        {
+          "check": "selected_positions_preserved",
+          "passed": true
+        },
+        {
+          "check": "begin_idempotent",
+          "passed": true
+        },
+        {
+          "check": "draft_hidden_anon",
+          "passed": true
+        },
+        {
+          "check": "incomplete_not_publishable",
+          "passed": true
+        },
+        {
+          "check": "snapshot_path_has_no_album_id_0",
+          "passed": true
+        },
+        {
+          "check": "slot_retry_detects_upload_0",
+          "passed": true
+        },
+        {
+          "check": "snapshot_path_has_no_album_id_1",
+          "passed": true
+        },
+        {
+          "check": "slot_retry_detects_upload_1",
+          "passed": true
+        },
+        {
+          "check": "finalize_published_two_images",
+          "passed": true
+        },
+        {
+          "check": "finalize_idempotent",
+          "passed": true
+        },
+        {
+          "check": "public_profile_no_private_email",
+          "passed": true
+        },
+        {
+          "check": "public_projection_no_source_document_urls_or_private_email",
+          "passed": true
+        },
+        {
+          "check": "public_feed_includes_qa_work",
+          "passed": true
+        },
+        {
+          "check": "published_snapshot_overwrite_denied",
+          "passed": true
+        },
+        {
+          "check": "anon_signs_both_snapshots",
+          "passed": true
+        },
+        {
+          "check": "signed_png_download_0",
+          "passed": true
+        },
+        {
+          "check": "signed_png_download_1",
+          "passed": true
+        },
+        {
+          "check": "ordinary_jwt_follow",
+          "passed": true
+        },
+        {
+          "check": "following_feed",
+          "passed": true
+        },
+        {
+          "check": "ordinary_jwt_like",
+          "passed": true
+        },
+        {
+          "check": "ordinary_jwt_save",
+          "passed": true
+        },
+        {
+          "check": "saved_list",
+          "passed": true
+        },
+        {
+          "check": "ordinary_jwt_comment",
+          "passed": true
+        },
+        {
+          "check": "block_hides_work_from_signed_user",
+          "passed": true
+        },
+        {
+          "check": "block_hides_saved",
+          "passed": true
+        },
+        {
+          "check": "block_removes_follow",
+          "passed": true
+        },
+        {
+          "check": "withdrawn_work_hidden_anon",
+          "passed": true
+        },
+        {
+          "check": "withdrawn_snapshots_new_sign_denied",
+          "passed": true
+        },
+        {
+          "check": "withdrawn_feed_hidden",
+          "passed": true
+        },
+        {
+          "check": "own_private_management_preserved",
+          "passed": true
+        },
+        {
+          "check": "public_fixture_restored_for_ui_qa",
+          "passed": true
+        },
+        {
+          "check": "live_private_account_profile_rls",
+          "passed": true
+        },
+        {
+          "check": "live_legacy_empty_pages_cover_fallback",
+          "passed": true
+        },
+        {
+          "check": "live_legacy_rejects_nonexistent_inner_page",
+          "passed": true
+        },
+        {
+          "check": "live_legacy_draft_cleanup",
+          "passed": true
+        },
+        {
+          "check": "live_signed_url_60_second_expiry",
+          "passed": true
+        },
+        {
+          "check": "web_ui_original_three_pages_preserved",
+          "passed": true
+        },
+        {
+          "check": "web_ui_original_revision_matches_before_publication",
+          "passed": true
+        },
+        {
+          "check": "web_ui_publication_two_rasters",
+          "passed": true
+        },
+        {
+          "check": "web_ui_png_0",
+          "passed": true
+        },
+        {
+          "check": "web_ui_png_1",
+          "passed": true
+        },
+        {
+          "check": "web_ui_raster_portrait_aspect_ratio",
+          "passed": true
+        },
+        {
+          "check": "web_ui_published_overwrite_denied",
+          "passed": true
+        },
+        {
+          "check": "web_ui_published_png_unchanged",
+          "passed": true
+        },
+        {
+          "check": "web_ui_private_binding_selected_order_2_0",
+          "passed": true,
+          "method": "read_only_sql"
+        },
+        {
+          "check": "web_ui_private_binding_original_revision_and_three_pages_intact",
+          "passed": true,
+          "method": "read_only_sql"
+        },
+        {
+          "check": "web_ui_private_binding_exactly_two_snapshot_rows",
+          "passed": true,
+          "method": "read_only_sql"
+        },
+        {
+          "check": "web_ui_first_png_visually_contains_QA_PAGE_TWO",
+          "passed": true,
+          "method": "visual_inspection"
+        },
+        {
+          "check": "web_ui_second_png_visually_contains_SYNTHETIC_ALBUM",
+          "passed": true,
+          "method": "visual_inspection"
+        }
+      ],
+      "passed": 51,
+      "failed": 0,
+      "jwt_role": "authenticated",
+      "fixtures_retained_for_browser_qa": false,
+      "public_test_work_withdrawn_then_restored": true,
+      "web_ui_publication": {
+        "id": "b8085629-f291-48a8-a500-0be5321639f7",
+        "selected_page_indexes": [
+          2,
+          0
+        ],
+        "original_page_count": 3,
+        "source_revision_unchanged": true,
+        "snapshot_dimensions": [
+          1080,
+          1440
+        ]
+      },
+      "fixtures_cleaned_after_verification": true
+    },
+    "live_web_ui": {
+      "host": "https://snapfit-c719d.web.app",
+      "ordinary_email_login_and_public_feed_return": true,
+      "existing_album_selection_and_card_publication_entry": true,
+      "selected_two_of_three_pages_and_reordered": [
+        2,
+        0
+      ],
+      "client_png_render_upload_finalize_and_work_navigation": true,
+      "published_page_pager_and_author_profile": true,
+      "own_profile_two_publications_and_settings_existing_menus": true,
+      "proof": "docs/verification/social-web-live-publication-2026-10-25.png",
+      "direct_path_startup_fix_redeployment_pending": false,
+      "current_main_file": "main.8131b49848b49e89dde1.dart.js",
+      "current_bootstrap_file": "flutter_bootstrap.c6b344eb04edde3ef727.js",
+      "direct_routes_verified": [
+        "/feed",
+        "/works/:id",
+        "/users/:id",
+        "/me",
+        "/publish/:albumId",
+        "/account"
+      ],
+      "cached_old_html_recovers_latest_main_and_feed": true,
+      "anonymous_profile_excludes_email_private_activity_and_own_actions": true,
+      "test_account_logged_out_before_cleanup": true,
+      "feed_empty_state_verified_after_fixture_cleanup": true,
+      "profile_proof": "docs/verification/social-web-live-profile-2026-10-25.png",
+      "cleanup_proof": "docs/verification/social-web-live-feed-after-cleanup-2026-10-25.png"
+    },
+    "deployment_navigation_regression_tests_passed": 78,
+    "deployment_navigation_analysis": "No issues found",
+    "deployment_whitespace_check": "passed",
+    "web_build_compatibility_tests_passed": 6,
+    "native_real_device_ui": {
+      "status": "passed",
+      "verified_screens": [
+        "Existing album library and five-tab navigation",
+        "Own social profile with edit/manage actions and authenticated session",
+        "Own profile → existing Settings screen with back/account settings controls",
+        "Feed with new synthetic public work",
+        "Work detail, selected page 1/2 QA PAGE TWO → page 2/2 SYNTHETIC ALBUM; last next button disabled",
+        "Synthetic author profile with public work and follow button; settings/profile-edit controls absent for visitor",
+        "Back navigation to feed",
+        "Feed after fixture deletion and refresh: synthetic work/author absent, normal empty feed state"
+      ],
+      "interactions_mutating_user_social_data": false,
+      "real_user_album_publication_performed": false,
+      "selected_public_page_source_indexes": [
+        2,
+        0
+      ],
+      "synthetic_source_album_page_count": 3,
+      "visible_public_page_count": 2,
+      "public_proof": "docs/verification/social-native-live-work-2026-10-25.png",
+      "public_proof_contains_only_synthetic_work_profile": true,
+      "runtime_summary": {
+        "fatal_exception": 0,
+        "unhandled_dart_exception": 0,
+        "render_overflow": 0,
+        "flutter_error_lines": 0
+      },
+      "fixture_cleanup": "QA account, album 76, public work and two PNGs removed by backend QA; related DB/Auth/Storage leftovers verified as zero. Real user account and albums were not deleted or logged out.",
+      "private_capture_cleanup": {
+        "local_private_capture_and_dump_files_deleted": 10,
+        "device_temporary_dump_deleted": true,
+        "shared_artifact_contains_private_account_screens": false
+      },
+      "final_feed_after_refresh": {
+        "feed_tab_selected": true,
+        "synthetic_work_absent": true,
+        "synthetic_author_absent": true,
+        "empty_feed_state_present": true
+      },
+      "app_left_on": "Feed, selected tab; empty feed state displayed after test-work removal"
+    },
+    "native_resume_api_checks_passed": 11,
+    "native_resume_cleanup_categories_verified_zero": 30,
+    "native_resume_cleanup_api_readback_passed": 5
+  },
+  "server_test_reproduction": {
+    "directory": "test/server",
+    "install": "npm ci --ignore-scripts",
+    "run": "npm test",
+    "dependency": "@electric-sql/pglite pinned to 0.3.14 with lockfile"
+  },
+  "migration": "supabase/migrations/20261025062446_social_publication_and_profiles.sql",
+  "production_migration_applied": true,
+  "client_build_or_deploy_performed": true,
+  "not_activated_in_this_first_implementation": [
+    "Reusable style import and referral-point issuance",
+    "Collaborative publication consent",
+    "Public avatar uploads; private account avatar remains in Settings"
+  ],
+  "production": {
+    "supabase_project_ref": "rrbhxdtriummqpztpjrk",
+    "applied_migrations": [
+      "20261025062446_social_publication_and_profiles.sql",
+      "20261025062938_social_legacy_empty_pages_fallback.sql"
+    ],
+    "post_apply": "feed RPC, eight RLS-protected public social tables, private PNG bucket and private source-binding denial verified",
+    "security_advisor_new_warnings": 0,
+    "security_advisor_new_info": "RLS-enabled social_private.social_publication_sources intentionally has no client policies.",
+    "migrations": [
+      {
+        "version": "20261025062446",
+        "name": "social_publication_and_profiles",
+        "sha256": "c7b7d8291c68ece381e86fbe68ce9ca12871f37986f1949b9bcc0de094b6976a"
+      },
+      {
+        "version": "20261025062938",
+        "name": "social_legacy_empty_pages_fallback",
+        "sha256": "eb1455418c06f1081a8624f5915f12140edd7a3c3048f31cffe24e9438636c6e"
+      }
+    ],
+    "migration_file_names_match_remote_history": true
+  },
+  "native_deployment_report": "docs/verification/social-native-deployment-2026-10-25.json",
+  "native_build_succeeded": true,
+  "native_install_and_live_qa": "Verified existing APK hash/signature; updated the same Galaxy S23+ with adb install -r. Existing authenticated session, first-install time, app data and albums preserved. Feed/detail/selected-page pager/author profile/own profile/settings/back navigation and post-cleanup feed refresh passed.",
+  "status": "production_database_web_deployed_android_debug_device_verified",
+  "web_deployment": {
+    "report": "docs/verification/social-feed-web-release-2026-10-25.json",
+    "url": "https://snapfit-c719d.web.app/feed",
+    "hosting_version": "projects/snapfit-c719d/sites/snapfit-c719d/versions/b348cee42173c875",
+    "release_time": "2026-10-25T06:56:26.945Z",
+    "main_sha256": "8131b49848b49e89dde18aee6af21438e0ad3cc49159a0d9e67d3aaf3160bad0",
+    "bootstrap_sha256": "c6b344eb04edde3ef727c41739cfed10dc6aa5342b52a437250792bf2a872e2d"
+  },
+  "fixture_cleanup": {
+    "report": "docs/verification/social-live-cleanup-2026-10-25.json",
+    "completed": true,
+    "remaining_fixture_rows_and_objects": 0,
+    "credentials_file_removed": true,
+    "real_user_albums_not_published_or_modified": true
+  },
+  "native_install_performed": true,
+  "native_real_device_qa_performed": true,
+  "rollout_completed": [
+    "Production migrations applied and recorded with matching local filenames",
+    "Operating Auth/PostgREST/Storage/RLS publication and privacy verified",
+    "Web release built and deployed to existing Firebase site",
+    "Final browser publication, direct routes, cache recovery and cleanup verified",
+    "Android APK built, integrity/signature verified, installed on the reconnected existing Galaxy with data preserved, and live UI/cleanup verified"
+  ],
+  "rollout_remaining": [],
+  "native_device_resume_report": "docs/verification/social-device-resume-2026-10-25.json",
+  "native_proof": "docs/verification/social-native-live-work-2026-10-25.png",
+  "native_fixture_cleanup_completed": true
+}

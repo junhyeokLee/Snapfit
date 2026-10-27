@@ -36,7 +36,7 @@ void main() {
           .intersection(editionPhotoFrames),
       containsAll(editionPhotoFrames),
     );
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       final size = aspect.canvas;
       for (final style in studyPhotoFrames) {
         final inset = StudyPhotoFrame.photoInsets(style, size);
@@ -75,7 +75,7 @@ void main() {
           matches(RegExp(r'^[가-힣 ]+$')),
         );
       }
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         final used = retiredAuthoredCollections
             .expand((c) => templateDocumentPages(c.document(aspect)))
             .expand((page) => page['layers'] as List)
@@ -86,7 +86,7 @@ void main() {
     },
   );
 
-  for (final aspect in CollectionAspect.values) {
+  for (final aspect in CollectionAspect.printable) {
     final size = aspect.canvas;
     test(
       '${aspect.name}: paths fit saved bounds and scale without changing contour',

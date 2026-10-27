@@ -1,3 +1,4 @@
+import '../support/store_detail_loading.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -30,6 +31,7 @@ import 'package:snap_fit/features/store/presentation/views/material_detail_scree
 import 'package:snap_fit/features/store/presentation/views/store_screen.dart';
 import 'package:snap_fit/features/store/presentation/views/template_detail_screen.dart';
 import 'package:snap_fit/features/store/presentation/views/template_full_screen_view.dart';
+import 'package:snap_fit/features/store/presentation/widgets/store_detail_gallery.dart';
 import 'package:snap_fit/features/store/presentation/widgets/material_application_preview.dart';
 import 'package:snap_fit/shared/widgets/catalog_artwork_hero.dart';
 import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
@@ -92,7 +94,7 @@ Future<void> capture(WidgetTester tester, GlobalKey key, String name) async {
       await precacheImage((element.widget as Image).image, element);
     }
   });
-  await tester.pumpAndSettle();
+  await settleStoreDetail(tester);
   await tester.runAsync(() async {
     final image =
         await (key.currentContext!.findRenderObject() as RenderRepaintBoundary)
@@ -132,7 +134,7 @@ void main() {
     const Size(390, 844),
     const Size(844, 390),
   ]) {
-    testWidgets('detail and library layouts $size', (tester) async {
+    storeDetailTestWidgets('detail and library layouts $size', (tester) async {
       tester.view.physicalSize = size;
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
@@ -153,7 +155,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(
         find.byKey(const ValueKey('material-access')).hitTestable(),
         findsOneWidget,
@@ -162,7 +164,7 @@ void main() {
       await capture(tester, key, 'material-${size.width.toInt()}');
       await tester.ensureVisible(find.text('앨범 적용 예시'));
       await tester.tap(find.text('앨범 적용 예시'));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(find.byType(MaterialApplicationPreview), findsOneWidget);
       final photoBefore = tester
           .widget<MaterialApplicationPreview>(
@@ -171,7 +173,7 @@ void main() {
           .photoIndex;
       await tester.ensureVisible(find.byTooltip('다른 사진으로 보기'));
       await tester.tap(find.byTooltip('다른 사진으로 보기'));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(
         tester
             .widget<MaterialApplicationPreview>(
@@ -184,10 +186,10 @@ void main() {
       await capture(tester, key, 'material-applied-${size.width.toInt()}');
       await tester.ensureVisible(find.byTooltip('소재 크게 보기'));
       await tester.tap(find.byTooltip('소재 크게 보기'));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(find.byType(InteractiveViewer), findsOneWidget);
       await tester.tap(find.byTooltip('닫기'));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
 
       final favorite = studioDecorations[1];
       await CatalogFavorites.instance.toggle(
@@ -202,7 +204,7 @@ void main() {
           owned: {'sticker:${spec.id}'},
         ),
       );
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(
         find.byKey(ValueKey('material-item-sticker:${spec.id}')),
         findsOneWidget,
@@ -219,7 +221,7 @@ void main() {
       await tester.ensureVisible(favoriteAction);
       expect(favoriteAction.hitTestable(), findsOneWidget);
       await tester.tap(favoriteAction);
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(
         find.byKey(ValueKey('material-item-sticker:${favorite.id}')),
         findsNothing,
@@ -241,31 +243,47 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       await capture(tester, key, 'template-${size.width.toInt()}');
+      expect(find.byType(StoreGallerySurface), findsOneWidget);
+      final galleryTabs = find.byKey(const ValueKey('template-gallery-mode'));
+      expect(tester.widget<StoreGalleryTabs>(galleryTabs).selected, 0);
+      await tester.ensureVisible(galleryTabs);
+      await tester.tap(
+        find.descendant(of: galleryTabs, matching: find.text('내지')),
+      );
+      await settleStoreDetail(tester);
+      expect(tester.widget<StoreGalleryTabs>(galleryTabs).selected, 1);
+      await tester.tap(
+        find.descendant(of: galleryTabs, matching: find.text('표지')),
+      );
+      await settleStoreDetail(tester);
+      expect(tester.widget<StoreGalleryTabs>(galleryTabs).selected, 0);
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('template-gallery-information')),
+      );
+      await tester.tap(find.text('디자인 구성 · 사진과 글'));
+      await settleStoreDetail(tester);
       expect(find.text('무료 템플릿 안내'), findsOneWidget);
       expect(find.text('템플릿 구매 안내'), findsNothing);
       expect(find.textContaining('프레임·스티커·문구를 별도로 구매할 필요 없이'), findsOneWidget);
       expect(find.text('한 권의 흐름'), findsNothing);
       await tester.ensureVisible(find.byTooltip('다음 펼침면'));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       await tester.tap(find.byTooltip('다음 펼침면'));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(find.text('1–2쪽'), findsOneWidget);
       await tester.ensureVisible(
         find.byKey(const ValueKey('template-size-selector')),
       );
-      await tester.tap(
-        find.descendant(
-          of: find.byKey(const ValueKey('template-size-selector')),
-          matching: find.text('가로형'),
-        ),
-      );
+      await tester.tap(find.byKey(const ValueKey('template-size-selector')));
       await tester.pumpAndSettle();
+      await tester.tap(find.text('가로형 20 × 15cm').last);
+      await settleStoreDetail(tester);
       expect(find.text('1–2쪽'), findsOneWidget);
       await tester.ensureVisible(find.byTooltip('전체 미리보기'));
       await tester.tap(find.byTooltip('전체 미리보기'));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       final fullScreen = tester.widget<TemplateFullScreenView>(
         find.byType(TemplateFullScreenView),
       );
@@ -276,12 +294,22 @@ void main() {
         greaterThan(fullScreen.designCanvasSize.height),
       );
       Navigator.of(tester.element(find.byType(TemplateFullScreenView))).pop();
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       await tester.ensureVisible(
         find.byKey(const ValueKey('template-spread-thumb-2')),
       );
       await tester.tap(find.byKey(const ValueKey('template-spread-thumb-2')));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
+      expect(find.text('3–4쪽'), findsOneWidget);
+      await tester.ensureVisible(galleryTabs);
+      await tester.tap(
+        find.descendant(of: galleryTabs, matching: find.text('표지')),
+      );
+      await settleStoreDetail(tester);
+      await tester.tap(
+        find.descendant(of: galleryTabs, matching: find.text('내지')),
+      );
+      await settleStoreDetail(tester);
       expect(find.text('3–4쪽'), findsOneWidget);
       await tester.ensureVisible(
         find.byKey(const ValueKey('template-spread-pager')),
@@ -290,11 +318,11 @@ void main() {
         find.byKey(const ValueKey('template-spread-pager')),
         const Offset(280, 0),
       );
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(find.text('1–2쪽'), findsOneWidget);
       await tester.ensureVisible(find.byTooltip('이전 펼침면'));
       await tester.tap(find.byTooltip('이전 펼침면'));
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       expect(
         tester
             .widget<IconButton>(
@@ -310,18 +338,19 @@ void main() {
       await tester.pumpWidget(
         reviewApp(RepaintBoundary(key: key, child: const MyPageScreen())),
       );
-      await tester.pumpAndSettle();
-      expect(find.text('2,400 P'), findsOneWidget);
+      await settleStoreDetail(tester);
+      expect(find.text('설정 및 도움말'), findsOneWidget);
+      expect(find.text('2,400 P'), findsNothing);
       expect(
         find.byKey(const ValueKey('profile-album-collection')),
-        findsOneWidget,
+        findsNothing,
       );
       expect(
         find.byKey(const ValueKey('profile-design-collection')),
-        findsOneWidget,
+        findsNothing,
       );
       expect(tester.takeException(), isNull);
-      await capture(tester, key, 'my-${size.width.toInt()}');
+      await capture(tester, key, 'settings-${size.width.toInt()}');
     });
   }
 
@@ -341,7 +370,9 @@ void main() {
     (price: 250, active: true, owned: true, label: '사용할 앨범 선택', enabled: true),
     (price: 250, active: false, owned: false, label: '판매 준비 중', enabled: false),
   ]) {
-    testWidgets('material action matches ${state.label}', (tester) async {
+    storeDetailTestWidgets('material action matches ${state.label}', (
+      tester,
+    ) async {
       var calls = 0;
       await tester.pumpWidget(
         reviewApp(
@@ -363,7 +394,7 @@ void main() {
           },
         ),
       );
-      await tester.pumpAndSettle();
+      await settleStoreDetail(tester);
       final action = find.byKey(const ValueKey('material-access'));
       expect(
         find.descendant(of: action, matching: find.text(state.label)),
@@ -383,65 +414,71 @@ void main() {
         expect(find.text('사용할 앨범'), findsOneWidget);
         expect(find.text('사용할 앨범이 아직 없어요.'), findsOneWidget);
         await tester.tap(find.byTooltip('닫기'));
-        await tester.pumpAndSettle();
+        await settleStoreDetail(tester);
       }
       expect(tester.takeException(), isNull);
     });
   }
 
-  testWidgets('material price errors can retry without requesting access', (
+  storeDetailTestWidgets(
+    'material price errors can retry without requesting access',
+    (tester) async {
+      var requests = 0;
+      var accessCalls = 0;
+      await tester.pumpWidget(
+        reviewApp(
+          materialDetail(),
+          catalog: () async {
+            if (++requests == 1) throw StateError('offline');
+            return [];
+          },
+          gate: (context, ref, {required productKey, required title}) async {
+            accessCalls++;
+            return false;
+          },
+        ),
+      );
+      await settleStoreDetail(tester);
+      expect(find.text('가격 다시 확인'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('material-access')));
+      await settleStoreDetail(tester);
+      expect(find.text('무료로 이용하기'), findsOneWidget);
+      expect(accessCalls, 0);
+      expect(requests, 2);
+    },
+  );
+
+  storeDetailTestWidgets(
+    'material navigation shares artwork and returns to the library',
+    (tester) async {
+      final spec = studioDecorations.first;
+      await tester.pumpWidget(
+        reviewApp(
+          const MaterialCatalogScreen(library: true),
+          owned: {'sticker:${spec.id}'},
+        ),
+      );
+      await settleStoreDetail(tester);
+      final tag = tester.widget<Hero>(find.byType(Hero)).tag;
+      await tester.tap(
+        find.byKey(ValueKey('material-item-sticker:${spec.id}')),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 120));
+      expect(tester.takeException(), isNull);
+      await settleStoreDetail(tester);
+      expect(find.byType(MaterialDetailScreen), findsOneWidget);
+      expect(tester.widget<Hero>(find.byType(Hero)).tag, tag);
+      await tester.tap(find.byTooltip('뒤로가기'));
+      await settleStoreDetail(tester);
+      expect(find.byType(MaterialCatalogScreen), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  storeDetailTestWidgets('reduced motion disables artwork flight', (
     tester,
   ) async {
-    var requests = 0;
-    var accessCalls = 0;
-    await tester.pumpWidget(
-      reviewApp(
-        materialDetail(),
-        catalog: () async {
-          if (++requests == 1) throw StateError('offline');
-          return [];
-        },
-        gate: (context, ref, {required productKey, required title}) async {
-          accessCalls++;
-          return false;
-        },
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('가격 다시 확인'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('material-access')));
-    await tester.pumpAndSettle();
-    expect(find.text('무료로 이용하기'), findsOneWidget);
-    expect(accessCalls, 0);
-    expect(requests, 2);
-  });
-
-  testWidgets('material navigation shares artwork and returns to the library', (
-    tester,
-  ) async {
-    final spec = studioDecorations.first;
-    await tester.pumpWidget(
-      reviewApp(
-        const MaterialCatalogScreen(library: true),
-        owned: {'sticker:${spec.id}'},
-      ),
-    );
-    await tester.pumpAndSettle();
-    final tag = tester.widget<Hero>(find.byType(Hero)).tag;
-    await tester.tap(find.byKey(ValueKey('material-item-sticker:${spec.id}')));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 120));
-    expect(tester.takeException(), isNull);
-    await tester.pumpAndSettle();
-    expect(find.byType(MaterialDetailScreen), findsOneWidget);
-    expect(tester.widget<Hero>(find.byType(Hero)).tag, tag);
-    await tester.tap(find.byTooltip('뒤로가기'));
-    await tester.pumpAndSettle();
-    expect(find.byType(MaterialCatalogScreen), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('reduced motion disables artwork flight', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: MediaQuery(
@@ -453,100 +490,103 @@ void main() {
     expect(find.byType(Hero), findsNothing);
   });
 
-  testWidgets('floating store cover can fly to its detail and back', (
-    tester,
-  ) async {
-    await tester.pumpWidget(reviewApp(const StoreScreen(embedded: true)));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-    final tile = find
-        .byWidgetPredicate(
-          (widget) =>
-              widget is Semantics &&
-              widget.key.toString().contains('store-template-'),
-        )
-        .first;
-    await tester.ensureVisible(tile);
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.tap(tile);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 150));
-    expect(tester.takeException(), isNull);
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(find.byType(TemplateDetailScreen), findsOneWidget);
-    expect(find.byType(Hero), findsOneWidget);
-    await tester.tap(find.byTooltip('뒤로가기'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(find.byType(StoreScreen), findsOneWidget);
-    expect(tester.takeException(), isNull);
-    await tester.pumpWidget(const SizedBox());
-  });
+  storeDetailTestWidgets(
+    'floating store cover can fly to its detail and back',
+    (tester) async {
+      await tester.pumpWidget(reviewApp(const StoreScreen(embedded: true)));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      final tile = find
+          .byWidgetPredicate(
+            (widget) =>
+                widget is Semantics &&
+                widget.key.toString().contains('store-template-'),
+          )
+          .first;
+      await tester.ensureVisible(tile);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(tile);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+      expect(tester.takeException(), isNull);
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.byType(TemplateDetailScreen), findsOneWidget);
+      expect(find.byType(Hero), findsOneWidget);
+      await tester.tap(find.byTooltip('뒤로가기'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.byType(StoreScreen), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
 
-  testWidgets('material action waits for an initial price response', (
-    tester,
-  ) async {
-    final catalog = Completer<List<PointShopProduct>>();
-    await tester.pumpWidget(
-      reviewApp(materialDetail(), catalog: () => catalog.future),
-    );
-    await tester.pump();
-    final action = find.byKey(const ValueKey('material-access'));
-    expect(tester.widget<FilledButton>(action).onPressed, isNull);
-    catalog.complete([]);
-    await tester.pumpAndSettle();
-    expect(tester.widget<FilledButton>(action).onPressed, isNotNull);
-  });
+  storeDetailTestWidgets(
+    'material action waits for an initial price response',
+    (tester) async {
+      final catalog = Completer<List<PointShopProduct>>();
+      await tester.pumpWidget(
+        reviewApp(materialDetail(), catalog: () => catalog.future),
+      );
+      await tester.pump();
+      final action = find.byKey(const ValueKey('material-access'));
+      expect(tester.widget<FilledButton>(action).onPressed, isNull);
+      catalog.complete([]);
+      await settleStoreDetail(tester);
+      expect(tester.widget<FilledButton>(action).onPressed, isNotNull);
+    },
+  );
 
-  testWidgets('material access is explicit and blocked while pending', (
-    tester,
-  ) async {
-    final decision = Completer<bool>();
-    var calls = 0;
-    await tester.pumpWidget(
-      reviewApp(
-        MaterialDetailScreen(
-          productKey: 'sticker:qa',
-          favoriteKey: 'qa',
-          title: '테스트 소재',
-          type: '스티커',
-          preview: (_) => const SizedBox(),
-        ),
-        catalog: () async => const [
-          PointShopProduct(
+  storeDetailTestWidgets(
+    'material access is explicit and blocked while pending',
+    (tester) async {
+      final decision = Completer<bool>();
+      var calls = 0;
+      await tester.pumpWidget(
+        reviewApp(
+          MaterialDetailScreen(
             productKey: 'sticker:qa',
-            kind: 'sticker',
-            assetId: 'qa',
+            favoriteKey: 'qa',
             title: '테스트 소재',
-            pointPrice: 300,
-            isActive: true,
+            type: '스티커',
+            preview: (_) => const SizedBox(),
           ),
-        ],
-        gate: (context, ref, {required productKey, required title}) {
-          calls++;
-          return decision.future;
-        },
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(calls, 0);
-    await tester.tap(find.byKey(const ValueKey('material-access')));
-    await tester.pump();
-    expect(calls, 1);
-    expect(
-      tester
-          .widget<FilledButton>(find.byKey(const ValueKey('material-access')))
-          .onPressed,
-      isNull,
-    );
-    decision.complete(false);
-    await tester.pumpAndSettle();
-    expect(
-      tester
-          .widget<FilledButton>(find.byKey(const ValueKey('material-access')))
-          .onPressed,
-      isNotNull,
-    );
-    expect(find.text('사용 가능한 소재입니다. 앨범 편집의 꾸미기에서 선택해 주세요.'), findsNothing);
-  });
+          catalog: () async => const [
+            PointShopProduct(
+              productKey: 'sticker:qa',
+              kind: 'sticker',
+              assetId: 'qa',
+              title: '테스트 소재',
+              pointPrice: 300,
+              isActive: true,
+            ),
+          ],
+          gate: (context, ref, {required productKey, required title}) {
+            calls++;
+            return decision.future;
+          },
+        ),
+      );
+      await settleStoreDetail(tester);
+      expect(calls, 0);
+      await tester.tap(find.byKey(const ValueKey('material-access')));
+      await tester.pump();
+      expect(calls, 1);
+      expect(
+        tester
+            .widget<FilledButton>(find.byKey(const ValueKey('material-access')))
+            .onPressed,
+        isNull,
+      );
+      decision.complete(false);
+      await settleStoreDetail(tester);
+      expect(
+        tester
+            .widget<FilledButton>(find.byKey(const ValueKey('material-access')))
+            .onPressed,
+        isNotNull,
+      );
+      expect(find.text('사용 가능한 소재입니다. 앨범 편집의 꾸미기에서 선택해 주세요.'), findsNothing);
+    },
+  );
 }

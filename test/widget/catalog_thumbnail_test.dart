@@ -13,6 +13,7 @@ import 'package:snap_fit/features/album/presentation/widgets/home/home_cover_fra
 import 'package:snap_fit/features/store/domain/entities/premium_template.dart';
 import 'package:snap_fit/features/store/presentation/widgets/template_page_renderer.dart';
 import 'package:snap_fit/shared/widgets/image_frame_style_picker.dart';
+import '../support/catalog_preview_loading.dart';
 
 class _CountedTemplate extends PremiumTemplate {
   _CountedTemplate(PremiumTemplate original)
@@ -67,6 +68,7 @@ void main() {
         ),
       ),
     );
+    await loadCatalogPreview(tester, t);
     final renderer = tester.widget<TemplatePageRenderer>(
       find.byType(TemplatePageRenderer),
     );
@@ -103,6 +105,7 @@ void main() {
         ),
       ),
     );
+    await loadCatalogPreview(tester, template);
     final renderers = tester.widgetList<TemplatePageRenderer>(
       find.byType(TemplatePageRenderer),
     );
@@ -113,7 +116,7 @@ void main() {
       expect(renderer.imageDecodeWidth, inInclusiveRange(128, 1024));
       expect(renderer.preserveTypography, isTrue);
     }
-    expect(template.documentReads, 1);
+    expect(template.documentReads, 0);
     expect(find.byType(AlbumSpineImage), findsOneWidget);
     final frame = tester.widget<HomeCoverFrame>(find.byType(HomeCoverFrame));
     expect(frame.bindingArtwork, isNotNull);
@@ -171,6 +174,7 @@ void main() {
           ),
         ),
       );
+      await loadCatalogPreview(tester, template);
       await tester.pumpAndSettle();
       final frame = tester.widget<HomeCoverFrame>(find.byType(HomeCoverFrame));
       expect(

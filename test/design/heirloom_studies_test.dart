@@ -71,7 +71,7 @@ void main() {
   );
   test('approved baseline artwork is immutable and full edition is gated', () {
     for (final entry in premiumStudyEntries) {
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         final approved =
             jsonDecode(
                   File(
@@ -91,7 +91,7 @@ void main() {
         expect(current['approvalStatus'], 'approved-design-study');
       }
     }
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       final baseline = templateDocumentPages(
         HeirloomStudy.wedding.document(aspect),
       );
@@ -156,7 +156,7 @@ void main() {
         () => volume.document(CollectionAspect.square, innerPages: 22),
         throwsArgumentError,
       );
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         final base = volume == PremiumVolume.travel
             ? buildLuminousEdition(aspect)
             : volume == PremiumVolume.wedding
@@ -243,7 +243,7 @@ void main() {
         ),
   ]) {
     final editionId = edition.id;
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       testWidgets(
         '$editionId/${aspect.name}: composition, text, slots and export',
         (tester) async {

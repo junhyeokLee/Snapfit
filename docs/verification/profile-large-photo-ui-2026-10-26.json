@@ -1,0 +1,124 @@
+{
+  "date_kst": "2026-10-26",
+  "status": "PASS_live_profile_feed_publication_reactions_settings_and_fixture_cleanup",
+  "checks": [
+    {
+      "case": "ordinary_account_login_to_my",
+      "pass": true
+    },
+    {
+      "case": "public_work_management_header_route",
+      "pass": true
+    },
+    {
+      "case": "profile_edit_controls",
+      "pass": true
+    },
+    {
+      "case": "followers_following_tabs_and_empty_state",
+      "pass": true
+    },
+    {
+      "case": "settings_retains_previous_my_menus",
+      "pass": true
+    },
+    {
+      "case": "user_search_follow_and_reload_persistence",
+      "pass": true
+    },
+    {
+      "case": "unfollow_confirmation_and_count_restored_to_zero",
+      "pass": true
+    },
+    {
+      "case": "other_profile_hides_private_actions",
+      "pass": true
+    },
+    {
+      "case": "390_light_large_profile_photo_and_fullscreen_expand_close",
+      "pass": true
+    },
+    {
+      "case": "390_gallery_toggle_preserves_original_photo_ratios",
+      "pass": true
+    },
+    {
+      "case": "existing_album96_select_inner_page_free_publication_live",
+      "pass": true,
+      "work_id": "2dd6613f-7911-4307-b3ea-77e5ea9040f0"
+    },
+    {
+      "case": "1440_layout_and_1280_complete_desktop_large_gallery",
+      "pass": true
+    },
+    {
+      "case": "viewer_like_selected_count1_and_save_selected",
+      "pass": true
+    },
+    {
+      "case": "feed_detail_reactions_synchronize_after_refresh",
+      "pass": true
+    },
+    {
+      "case": "saved_works_private_list_contains_selected_work",
+      "pass": true
+    },
+    {
+      "case": "saved_works_remove_updates_private_list",
+      "pass": true
+    },
+    {
+      "case": "viewer_unlike_and_unsave_restore_zero",
+      "pass": true
+    },
+    {
+      "case": "live_signed_avatar_expiry_71s_then_196_to_164_resizes_recovers_photo",
+      "pass": true,
+      "elapsed_seconds": 71.594,
+      "release": "d09458460e607b80"
+    },
+    {
+      "case": "final_combo_account_A_to_B_quota_refetches_without_retry",
+      "pass": true,
+      "release": "998ad154dea0fc0d"
+    },
+    {
+      "case": "anonymous_feed_after_fixture_cleanup_has_no_synthetic_works",
+      "pass": true
+    }
+  ],
+  "screenshots_directory": "output/profile-qa-20261026",
+  "initial_release": "e38a80bd79cde2a9",
+  "avatar_expiry": {
+    "observed": true,
+    "trigger": "expired private avatar URL followed by desktop-to-phone decode-size change",
+    "fixed_in_source": true,
+    "final_live_recheck": {
+      "pass": true,
+      "idle_seconds": 71.594,
+      "from_portrait_px": 196,
+      "to_portrait_px": 164,
+      "evidence": "my-mobile-390-dark-after-expiry-fix.jpg"
+    }
+  },
+  "real_device_installed": false,
+  "synthetic_fixture_cleanup": {
+    "completed": true,
+    "residue_groups_verified_zero": 64,
+    "report": "profile-ui-live-2026-10-26.json",
+    "existing_album_asset_metadata_rows_preserved": 41,
+    "private_credentials_and_helper_directory_removed": true
+  },
+  "secrets_in_report": false,
+  "final_release": "998ad154dea0fc0d",
+  "final_main_sha256": "e95d2be729c0e58fb40a5b0bfe42becb71a285879ea2491d29230e7101da3ba9",
+  "tests_passed": 39,
+  "final_screenshots": [
+    "my-mobile-390-final.jpg",
+    "my-desktop-1280-final.jpg",
+    "account-switch-quota-final.jpg"
+  ],
+  "browser_signed_out": true,
+  "local_credential_variable_cleared": true,
+  "viewport_restored": true
+}

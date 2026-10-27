@@ -1,0 +1,206 @@
+{
+  "date": "2026-10-26",
+  "status": "production_applied_live_jwt_and_ui_verified_cleanup_complete",
+  "production_project": "rrbhxdtriummqpztpjrk",
+  "migration": {
+    "file": "supabase/migrations/20261026075526_daily_attendance_rewards.sql",
+    "created_via": "supabase migration new daily_attendance_rewards",
+    "sha256": "96540225b5af6d00ee45d714fc025b0036c386cd52e8fe4850b462c85610b896",
+    "initial_cli_generated_version": "20261026073551",
+    "operating_ledger_version": "20261026075526",
+    "version_alignment": "Local filename aligned with apply_migration production history; SQL bytes unchanged"
+  },
+  "production_changes_performed": true,
+  "production_fixtures_created": true,
+  "financial_rows_before_production_apply": {
+    "ledger": {
+      "count": 9,
+      "rows_md5": "505e87fd5bf66f94baa12eb0900211b4"
+    },
+    "wallets": {
+      "count": 1,
+      "rows_md5": "730f29d93b16ef7617427674765a47f1"
+    },
+    "products": {
+      "count": 482,
+      "rows_md5": "8eb322bcfa5d68286dd44238de20898d"
+    },
+    "ownership": {
+      "count": 3,
+      "rows_md5": "e47b13aee1fd72350a72df3e0bdf322f"
+    },
+    "captured_at": "2026-10-26T07:50:34.496329+00:00"
+  },
+  "preflight": {
+    "existing_attendance_objects": false,
+    "point_wallet_negative_balance_allowed": true,
+    "point_ledger_refund_reason_missing_confirmed": true,
+    "authenticated_legacy_ledger_insert_update_delete_grants_present": true,
+    "existing_point_functions_md5": {
+      "grant_signup_bonus": "472a91fa5b8d74160a93202767e8112d",
+      "purchase_point_shop_product": "a70c9f212e88b85b8d21c83a38a8603a",
+      "revoke_verified_point_purchase": "eab1036539058cedb6107ad567a1526f",
+      "grant_verified_point_purchase": "96d28f04dc802555b31ed2fab1c4e2cb"
+    }
+  },
+  "contract": {
+    "public_rpc": [
+      "get_attendance_status()",
+      "claim_daily_attendance()"
+    ],
+    "client_user_date_time_reward_parameters": false,
+    "timezone": "Asia/Seoul",
+    "weekly_rewards": [
+      10,
+      10,
+      20,
+      10,
+      10,
+      10,
+      30
+    ],
+    "claim_frequency": "one per permanent existing authenticated user per KST server date",
+    "streak": "gap resets; cycle repeats after seven; yesterday continuity visible before claiming",
+    "history": "current KST calendar month only",
+    "separate_expiry_introduced": false,
+    "free_credit_destination": "existing net point balance including refund debt"
+  },
+  "safety": {
+    "private_schema_definer_with_empty_search_path": true,
+    "public_rpc_security_invoker_and_authenticated_only": true,
+    "anonymous_missing_banned_soft_deleted_account_denied": true,
+    "wallet_row_lock_before_date_and_credit": true,
+    "attendance_unique_user_date_and_unique_ledger_link": true,
+    "ledger_idempotency_namespace": "daily_attendance:<user UUID>:<KST server date>",
+    "legacy_reason_constraint_union_preserved_refund_reason_restored": true,
+    "restrictive_ledger_insert_policy_for_reason_and_namespace": true,
+    "attendance_and_ledger_immutable_except_auth_user_cascade": true,
+    "prices_ownership_source_albums_and_existing_point_functions_modified": false
+  },
+  "validation": {
+    "engine": "PGlite 0.3.14 with actual attendance/signup/AI-point/shop SQL and real local roles",
+    "attendance_cases_passed": 13,
+    "attendance_shop_and_full_iap_refund_integration_cases_passed": 27,
+    "command": "node --test test/server/daily_attendance_sql.test.mjs test/server/digital_point_shop_sql.test.mjs test/server/combined_payments_push_sql.test.mjs",
+    "boundaries": [
+      "KST midnight and client timezone/header/metadata tampering",
+      "clock reevaluation after wallet lock",
+      "day 8 cycle and skipped-day reset",
+      "KST month rollover and leap day",
+      "account isolation and nonexisting/anonymous/banned/deleted user",
+      "reserved-prefix and direct ledger/table write denial",
+      "signup bonus and restored refund reason with unknown legacy reasons preserved",
+      "refund debt, atomic overflow rollback, original catalog/ownership/wallet/ledger row preservation",
+      "account-deletion cascades and deleted-account JWT denial"
+    ],
+    "concurrency_limit": "PGlite serializes a single connection; queued 20-request idempotency is verified but does not replace live ordinary-JWT multi-session concurrency validation",
+    "attendance_cases_rerun_after_migration_filename_alignment": 13,
+    "unique_SQL_regression_cases_passed": 68,
+    "full_suite_confirmation": "Root independently confirmed 68 unique SQL cases; attendance-only 13 rerun after filename alignment"
+  },
+  "references": [
+    "https://supabase.com/changelog.md",
+    "https://supabase.com/docs/guides/database/postgres/row-level-security",
+    "https://supabase.com/docs/guides/auth/auth-anonymous",
+    "https://www.postgresql.org/docs/current/explicit-locking.html"
+  ],
+  "recorded_at_utc": "2026-10-26T08:08:12.863274+00:00",
+  "production_change_scope": "attendance DDL only; no fixtures yet",
+  "production_postflight": {
+    "ledger": {
+      "count": 9,
+      "rows_md5": "505e87fd5bf66f94baa12eb0900211b4"
+    },
+    "wallets": {
+      "count": 1,
+      "rows_md5": "730f29d93b16ef7617427674765a47f1"
+    },
+    "products": {
+      "count": 482,
+      "rows_md5": "8eb322bcfa5d68286dd44238de20898d"
+    },
+    "ownership": {
+      "count": 3,
+      "rows_md5": "e47b13aee1fd72350a72df3e0bdf322f"
+    },
+    "public_rpc": [
+      {
+        "acl": [
+          "postgres=X/postgres",
+          "authenticated=X/postgres"
+        ],
+        "args": "",
+        "name": "claim_daily_attendance",
+        "config": [
+          "search_path=\"\""
+        ],
+        "definer": false
+      },
+      {
+        "acl": [
+          "postgres=X/postgres",
+          "authenticated=X/postgres"
+        ],
+        "args": "",
+        "name": "get_attendance_status",
+        "config": [
+          "search_path=\"\""
+        ],
+        "definer": false
+      }
+    ],
+    "captured_at": "2026-10-26T07:56:43.612937+00:00",
+    "reason_constraint": "CHECK (((reason = ANY (ARRAY['AI_ALBUM_DRAFT_FREE'::text, 'AI_ALBUM_DRAFT_CHARGE'::text, 'ADMIN_ADJUSTMENT'::text, 'POINT_PURCHASE'::text, 'DIGITAL_ITEM_PURCHASE'::text, 'SIGNUP_BONUS'::text])) OR (reason = ANY (ARRAY['POINT_PURCHASE_REFUND'::text, 'DAILY_ATTENDANCE'::text]))))",
+    "existing_functions": {
+      "grant_signup_bonus": "472a91fa5b8d74160a93202767e8112d",
+      "purchase_point_shop_product": "a70c9f212e88b85b8d21c83a38a8603a",
+      "grant_verified_point_purchase": "96d28f04dc802555b31ed2fab1c4e2cb",
+      "revoke_verified_point_purchase": "eab1036539058cedb6107ad567a1526f"
+    },
+    "read_only_internal_contract_sample": {
+      "month": "2026-10",
+      "balance": 0,
+      "claimed": false,
+      "history": [],
+      "cycleDay": 1,
+      "timezone": "Asia/Seoul",
+      "serverDate": "2026-10-26",
+      "serverTime": "2026-10-26T07:56:43.653732+00:00",
+      "monthPoints": 0,
+      "nextResetAt": "2026-10-26T15:00:00+00:00",
+      "todayReward": 10,
+      "awardedPoints": 0,
+      "currentStreak": 0,
+      "weeklyRewards": [
+        10,
+        10,
+        20,
+        10,
+        10,
+        10,
+        30
+      ],
+      "checkedInToday": false,
+      "monthAttendanceCount": 0
+    },
+    "original_financial_row_hashes_unchanged": true,
+    "existing_four_point_function_fingerprints_unchanged": true
+  },
+  "production_fixtures_cleaned": true,
+  "live_verification": {
+    "report": "docs/verification/daily-attendance-live-2026-10-26.json",
+    "ordinary_jwt_api_checks_passed": 25,
+    "actual_concurrent_HTTP_claims": 20,
+    "first_claim_awards_once": true,
+    "post_UI_concurrent_duplicates_award_zero": true,
+    "UI_verified_by_parent": true,
+    "exact_cleanup": true,
+    "UUID_column_scopes_checked": 178,
+    "matching_QA_rows": 0,
+    "sessions": 0,
+    "attendance_rows": 0,
+    "original_financial_row_sha256_unchanged": true,
+    "existing_four_point_function_definition_md5_unchanged": true,
+    "private_directory_deleted": true
+  }
+}

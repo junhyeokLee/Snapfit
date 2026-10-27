@@ -14,6 +14,20 @@ void main() {
       '-9403',
     ),
     '/albums': WebAppLocation.albums,
+    '/feed': WebAppLocation.feed,
+    '/works/work_123': const WebAppLocation(WebAppPage.socialWork, 'work_123'),
+    '/users/user_123': const WebAppLocation(
+      WebAppPage.socialProfile,
+      'user_123',
+    ),
+    '/me': WebAppLocation.myProfile,
+    '/attendance': WebAppLocation.attendance,
+    '/moments': WebAppLocation.moments,
+    '/friends': WebAppLocation.referral,
+    '/friends/ABCD2345XY': WebAppLocation(WebAppPage.referral, 'ABCD2345XY'),
+    '/me/works': WebAppLocation.socialManage,
+    '/publish': WebAppLocation.socialPublish,
+    '/publish/69': const WebAppLocation(WebAppPage.socialPublish, '69'),
     '/create': WebAppLocation.create,
     '/albums/69': const WebAppLocation(WebAppPage.album, '69'),
     '/albums/69/edit': const WebAppLocation(WebAppPage.editor, '69'),
@@ -52,6 +66,24 @@ void main() {
     );
   }
 
+  test(
+    'friend query and lowercase codes canonicalize to the public code path',
+    () {
+      for (final value in [
+        '/friends?code=abcd2345xy',
+        '/friends/abcd2345xy',
+        'https://snapfit-c719d.web.app/#/friends?code=abcd2345xy',
+      ]) {
+        final location = WebAppLocation.parse(Uri.parse(value));
+        expect(
+          location,
+          const WebAppLocation(WebAppPage.referral, 'ABCD2345XY'),
+        );
+        expect(location.uri.toString(), '/friends/ABCD2345XY');
+      }
+    },
+  );
+
   test('hash based browser routes produce the same clean public location', () {
     final uri = Uri.parse(
       'https://snapfit.example/#/albums/69/edit?phone=01000000000&token=private',
@@ -64,6 +96,19 @@ void main() {
     expect(location.uri.hasAuthority, isFalse);
   });
 
+  test('invitation capabilities stay outside normal page locations', () {
+    for (final value in [
+      'https://snapfit-c719d.web.app/invite/private-capability',
+      'https://snapfit-c719d.web.app/#/invite/private-capability',
+      '/invite/private-capability',
+    ]) {
+      final location = WebAppLocation.parse(Uri.parse(value));
+      expect(location, WebAppLocation.home);
+      expect(location.uri.toString(), '/');
+      expect(location.uri.toString(), isNot(contains('private-capability')));
+    }
+  });
+
   test('malformed album IDs and unsupported paths return home', () {
     for (final value in [
       '/albums/0',
@@ -74,6 +119,20 @@ void main() {
       '/albums/99999999999999999999999999',
       '/albums/69/delete',
       '/albums/69/edit/more',
+      '/works/a%2Fb',
+      '/users/person%40example.com',
+      '/works/${'a' * 201}',
+      '/feed/private',
+      '/me/works/extra',
+      '/attendance/extra',
+      '/friends/INVALID',
+      '/friends/ABCD2345XY/extra',
+      '/friends?code=ABCD2345XY&code=ABCD2345XY',
+      '/friends/ABCD2345XY?code=ABCD2345XY',
+      '/publish/0',
+      '/publish/-1',
+      '/publish/9007199254740992',
+      '/publish/69/extra',
       '/unknown',
       '/policies/unknown',
       '/policies/terms/private',
@@ -178,6 +237,10 @@ void main() {
       (page) => ![
         WebAppPage.home,
         WebAppPage.login,
+        WebAppPage.feed,
+        WebAppPage.socialWork,
+        WebAppPage.socialProfile,
+        WebAppPage.referral,
         WebAppPage.designs,
         WebAppPage.template,
         WebAppPage.printProducts,
@@ -187,6 +250,19 @@ void main() {
       expect(WebAppLocation(page, '69').isPublic, isFalse);
     }
     expect(WebAppLocation.designs.isPublic, isTrue);
+    expect(WebAppLocation.feed.isPublic, isTrue);
+    expect(
+      const WebAppLocation(WebAppPage.socialWork, 'work_123').isPublic,
+      isTrue,
+    );
+    expect(
+      const WebAppLocation(WebAppPage.socialProfile, 'user_123').isPublic,
+      isTrue,
+    );
+    expect(WebAppLocation.myProfile.isPublic, isFalse);
+    expect(WebAppLocation.referral.isPublic, isTrue);
+    expect(WebAppLocation.socialPublish.isPublic, isFalse);
+    expect(WebAppLocation.socialManage.isPublic, isFalse);
     expect(WebAppLocation.login.isPublic, isTrue);
     expect(const WebAppLocation(WebAppPage.template, '-9403').isPublic, isTrue);
   });

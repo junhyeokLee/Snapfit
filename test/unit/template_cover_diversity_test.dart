@@ -49,12 +49,17 @@ void main() {
     }
   });
 
-  for (final aspect in CollectionAspect.values) {
+  for (final aspect in CollectionAspect.printable) {
     test(
-      'all 68 covers have exclusive photographs and fitting text: ${aspect.name}',
+      'all published covers have exclusive photographs and fitting text: ${aspect.name}',
       () {
         final owners = <String, String>{};
-        expect(publishedCreationTemplates, hasLength(68));
+        expect(
+          publishedCreationTemplates,
+          hasLength(
+            bundledCreationTemplates.length + publishedPremiumTemplates.length,
+          ),
+        );
         for (final template in publishedCreationTemplates) {
           final catalog =
               jsonDecode(template.templateJson!) as Map<String, dynamic>;
@@ -79,7 +84,7 @@ void main() {
             owners[path] = template.title;
             expect(File(path.substring(6)).existsSync(), true);
           }
-          if (!template.isPremium)
+          if (bundledCreationTemplates.any((free) => free.id == template.id))
             expect(freeTemplateMaterialIssues(doc), isEmpty);
           final layers = DataTemplateEngine.buildLayersFromJson(
             cover,
@@ -190,7 +195,7 @@ void main() {
     'premium cover refinement changes no interior, identity, price or archived artwork',
     () {
       for (final volume in PremiumVolume.values) {
-        for (final aspect in CollectionAspect.values) {
+        for (final aspect in CollectionAspect.printable) {
           for (final count in volume.pageCounts) {
             final before = volume.document(
               aspect,
@@ -229,7 +234,7 @@ void main() {
       names: '민지와 수현',
       date: '2027. 07. 09',
     );
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       final document = PremiumVolume.travel.document(aspect, travelCopy: copy);
       final texts = (document['cover']['layers'] as List)
           .where((l) => l['type'] == 'text')
@@ -243,7 +248,7 @@ void main() {
   test(
     'evening wedding cover type leaves the photographed faces clear in every ratio',
     () {
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         final doc = authoredCollections
             .singleWhere(
               (collection) => collection.id == FreeCollectionVolume.cinema.id,
@@ -286,7 +291,7 @@ void main() {
   test(
     'birthday photographic crop retains the baby face in every jacket ratio',
     () {
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         final doc = authoredCollections
             .singleWhere(
               (collection) => collection.id == FreeCollectionVolume.birthday.id,
@@ -322,8 +327,8 @@ void main() {
     },
   );
 
-  test('wide pet jackets place their titles below the photographed heads', () {
-    for (final id in ['a-day-with-you', 'our-walking-promise']) {
+  test('pet jacket lettering stays clear of the photographed heads', () {
+    for (final id in ['a-day-with-you']) {
       final aspect = CollectionAspect.landscape;
       final doc = authoredCollections
           .singleWhere((c) => c.id == id)
@@ -333,10 +338,38 @@ void main() {
       );
       expect((title['y'] as num).toDouble(), greaterThan(.5), reason: id);
     }
+    // The walking title now uses the open tree canopy on the upper right.
+    // Map both real heads through each actual photo crop, rather than requiring
+    // the old bottom-title layout regardless of the photograph's negative space.
+    for (final aspect in CollectionAspect.printable) {
+      final doc = authoredCollections
+          .singleWhere((c) => c.id == 'our-walking-promise')
+          .document(aspect);
+      final layers = DataTemplateEngine.buildLayersFromJson(
+        doc['cover'],
+        aspect.canvas,
+      );
+      final photo = layers.singleWhere((l) => l.type == LayerType.image);
+      for (final sourceHead in const [
+        Rect.fromLTWH(.28 * 1.5, .29, .08 * 1.5, .12),
+        Rect.fromLTWH(.395 * 1.5, .565, .07 * 1.5, .12),
+      ]) {
+        final head = _sourceZone(photo, sourceHead, const Size(1.5, 1));
+        expect(_rect(photo).contains(head.topLeft), isTrue);
+        expect(_rect(photo).contains(head.bottomRight), isTrue);
+        for (final text in layers.where((l) => l.type == LayerType.text)) {
+          expect(
+            _rect(text).deflate(.5).overlaps(head.deflate(.5)),
+            isFalse,
+            reason: '${aspect.name}: ${text.id} must leave both faces clear',
+          );
+        }
+      }
+    }
   });
 
   test('dates-of-us keeps place, author and date in separate cover fields', () {
-    for (final aspect in CollectionAspect.values) {
+    for (final aspect in CollectionAspect.printable) {
       final document = authoredCollections
           .singleWhere((collection) => collection.id == 'dates-of-us')
           .document(aspect);
@@ -387,7 +420,7 @@ void main() {
     'photographic catalog jackets retain draft and saved-album source versions',
     () {
       for (final collection in baselineAuthoredCollections) {
-        for (final aspect in CollectionAspect.values) {
+        for (final aspect in CollectionAspect.printable) {
           Map<String, dynamic> source() => switch (collection.id) {
             'lightbound' => buildLightboundWeddingDraft(aspect),
             'journey' => EditorialVolume.journey.document(aspect),

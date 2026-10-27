@@ -35,14 +35,17 @@ import 'package:snap_fit/features/store/data/api/template_provider.dart';
 import 'package:snap_fit/features/store/presentation/views/material_detail_screen.dart';
 import 'package:snap_fit/features/store/presentation/views/store_screen.dart';
 import 'package:snap_fit/features/store/presentation/views/template_detail_screen.dart';
+import 'package:snap_fit/features/store/presentation/widgets/template_page_renderer.dart';
 import 'package:snap_fit/shared/widgets/album_stage_style.dart';
 import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
+import 'package:snap_fit/shared/widgets/catalog_cover_skeleton.dart';
 import 'package:snap_fit/shared/widgets/experience_form_style.dart';
 import 'package:snap_fit/shared/widgets/studio_decoration.dart';
 
 import '../helpers/fake_album.dart';
 import 'ai_album_start_step_test.dart' show loadCreationFonts;
 import '../support/store_catalog_navigation.dart';
+import '../support/catalog_preview_loading.dart';
 import 'auth_gate_test.dart' show FakeHomeViewModel;
 import 'my_page_screen_test.dart' show FakeAuthViewModel;
 import 'page_editor_screen_golden_test.dart'
@@ -276,7 +279,7 @@ void main() {
         await tester.tap(
           find.descendant(
             of: find.byType(HomeBottomNavigationBar),
-            matching: find.text('스토어'),
+            matching: find.byTooltip('스토어'),
           ),
         );
         await _paint(tester);
@@ -415,7 +418,7 @@ void main() {
       await tester.tap(
         find.descendant(
           of: find.byType(HomeBottomNavigationBar),
-          matching: find.text('스토어'),
+          matching: find.byTooltip('스토어'),
         ),
       );
       await _paint(tester);
@@ -471,7 +474,7 @@ void main() {
               find.byKey(const ValueKey('home-navigation-surface')),
             )
             .color,
-        SnapFitColors.deepCharcoal.withValues(alpha: .82),
+        SnapFitColors.deepCharcoal,
       );
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
@@ -481,6 +484,11 @@ void main() {
   testWidgets(
     'cover photograph and print colours are identical in both themes',
     (tester) async {
+      final template = publishedCreationTemplates.first;
+      // Native preview workers use real time. A fake-clock delay can capture
+      // a themed skeleton before the actual artwork reaches the widget tree.
+      final preview = await loadCatalogPreview(tester, template);
+      preview!.prepareParts(cover: true);
       final dark = ValueNotifier(false);
       addTearDown(dark.dispose);
       final key = GlobalKey();
@@ -494,7 +502,7 @@ void main() {
                   width: 200,
                   height: 250,
                   child: CreationCatalogCover(
-                    template: publishedCreationTemplates.first,
+                    template: template,
                     useThumbnail: true,
                   ),
                 ),
@@ -505,6 +513,8 @@ void main() {
         ),
       );
       await _paint(tester);
+      expect(find.byType(CatalogCoverSkeleton), findsNothing);
+      expect(find.byType(TemplatePageRenderer), findsOneWidget);
       Future<List<int>> pixels() async => (await tester.runAsync(() async {
         final image =
             await (key.currentContext!.findRenderObject()!

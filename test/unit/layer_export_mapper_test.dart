@@ -31,6 +31,78 @@ LayerModel _textLayer({
 void main() {
   const canvasSize = Size(400, 300);
 
+  test(
+    'example flags survive reopening and saving without becoming personal',
+    () {
+      for (final flag in ['isSample', 'isPlaceholder']) {
+        for (final inPayload in [true, false]) {
+          final json = LayerExportMapper.toJson(
+            _textLayer(),
+            canvasSize: canvasSize,
+          );
+          (inPayload ? json['payload'] as Map : json)[flag] = true;
+          final restored = LayerExportMapper.fromJson(
+            json,
+            canvasSize: canvasSize,
+          );
+          expect(restored.isTemplateContent, isTrue);
+          final saved = LayerExportMapper.toJson(
+            restored,
+            canvasSize: canvasSize,
+          );
+          expect(saved['templateContent'], isTrue);
+          expect(
+            LayerExportMapper.fromJson(
+              saved,
+              canvasSize: canvasSize,
+            ).isTemplateContent,
+            isTrue,
+          );
+          expect(
+            restored.copyWith(text: '직접 작성한 기록').isTemplateContent,
+            isFalse,
+          );
+        }
+      }
+    },
+  );
+
+  test('template, personal and unverified provenance survives round trips', () {
+    for (final marker in [true, false, null]) {
+      final source = LayerModel(
+        id: 'provenance',
+        type: LayerType.text,
+        position: Offset.zero,
+        text: '문구',
+        isTemplateContent: marker,
+      );
+      final json = LayerExportMapper.toJson(source, canvasSize: canvasSize);
+      expect(json.containsKey('templateContent'), marker != null);
+      expect(json['templateContent'], marker);
+      final restored = LayerExportMapper.fromJson(json, canvasSize: canvasSize);
+      expect(restored.isTemplateContent, marker);
+      expect(restored.copyWith(width: 200).isTemplateContent, marker);
+    }
+  });
+
+  test('malformed legacy markers are never silently converted to personal', () {
+    for (final marker in [null, 'false', 0, [], {}]) {
+      final json = LayerExportMapper.toJson(
+        _textLayer(),
+        canvasSize: canvasSize,
+      )..['templateContent'] = marker;
+      final restored = LayerExportMapper.fromJson(json, canvasSize: canvasSize);
+      expect(restored.isTemplateContent, isNull);
+      expect(
+        LayerExportMapper.toJson(
+          restored,
+          canvasSize: canvasSize,
+        ).containsKey('templateContent'),
+        isFalse,
+      );
+    }
+  });
+
   group('LayerExportMapper.toJson', () {
     test('텍스트 레이어를 상대 좌표 JSON으로 변환', () {
       final layer = _textLayer(

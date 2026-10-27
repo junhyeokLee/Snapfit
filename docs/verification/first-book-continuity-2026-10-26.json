@@ -1,0 +1,71 @@
+{
+  "status": "complete",
+  "date": "2026-10-26",
+  "scope": [
+    "Account-scoped local drafts for unsubmitted personal Moments",
+    "Resume drafts from the record journal and album home on app and web",
+    "One next-action card prioritizing local record, album creation draft, unfinished book, then record entry",
+    "Freshly load the saved book and open its first incomplete interior"
+  ],
+  "excluded": ["Friend photo collection"],
+  "storage": {
+    "native": "Atomic binary files with process queue, OS lock and compare-and-swap versions",
+    "web": "IndexedDB atomic metadata index and separate original-photo payloads",
+    "scope": "Current account on this device/browser only",
+    "photo_preservation": "Newly selected originals are stored as bytes; already submitted photos retain their server references",
+    "limits": {"drafts_per_account": 10, "bytes_per_account": 268435456, "bytes_per_photo": 20971520},
+    "eviction": "None; failed capacity/quota writes preserve older committed drafts",
+    "cloud_upload": "Only after explicit record save",
+    "clear": "Matching version only, after confirmed submission or explicit discard",
+    "device_storage_clearing": "Removing app/browser data removes these local drafts"
+  },
+  "safety": [
+    "Caption debounce, immediate photo/date/removal persistence, background flush and browser unsaved-work guard",
+    "Queued edits while writes are pending; truthful saving/error states",
+    "Account switching hides previous content and invalidates late navigation",
+    "Cross-tab stale writers and stale deletion cannot replace newer drafts",
+    "Original record revision retained; changed/deleted server record cannot be overwritten",
+    "Empty new drafts removed without erasing edit-removal intent",
+    "Fresh editing permission check and duplicate preparation prevention",
+    "First incomplete page uses existing personal-content completion rules, excluding cover/template content",
+    "Legacy hidden photos retain zero opacity when restored",
+    "Web restored byte views copied once at the renderer/upload boundary"
+  ],
+  "verification": {
+    "native_unique_cases": 205,
+    "native_evidence": {
+      "broad_suite": "output/first-book-native-final.log: 202 passed, 2 entry-fixture failures subsequently resolved",
+      "final_affected_screens": "output/first-book-native-hotfix-final.log: 51 passed, including the two resolved cases and one additional photo decode case"
+    },
+    "chrome_cases": 14,
+    "chrome_evidence": {
+      "indexeddb": "output/first-book-browser-storage-fixed.log: 5 passed",
+      "shared_web_shell": "output/first-book-browser-ui-recheck.log: 5 web_customer_consistency cases passed",
+      "final_record_flows": "output/first-book-browser-ui-final.log: 4 passed"
+    },
+    "actual_browser_photo_proof": "Restored RawImage has 2x2 decoded pixels; prepareMomentPhoto on restored UI bytes succeeds with matching dimensions",
+    "analysis": "output/first-book-final-analyze.log: no issues in changed sources/tests",
+    "diff_whitespace": "passed",
+    "visuals": [
+      "output/first-book-20261026/journey-light.png",
+      "output/first-book-20261026/journey-dark.png",
+      "output/first-book-20261026/compose-recovered-light.png",
+      "output/first-book-20261026/compose-recovered-dark.png",
+      "output/first-book-20261026/compose-recovered-light-caption.png",
+      "output/first-book-20261026/compose-recovered-dark-caption.png"
+    ]
+  },
+  "deployment": {
+    "url": "https://snapfit-c719d.web.app/feed",
+    "hosting_version": "c691a39188ce72ea",
+    "main_file": "main.c7c1359327edf7ad2f81.dart.js",
+    "main_sha256": "c7c1359327edf7ad2f81f1ce45e3723ae3756af36791f1375516b1efbc368d6d",
+    "bootstrap": "flutter_bootstrap.d75af1a8bde1ad681d2b.js",
+    "http_and_hash_check": "output/first-book-20261026/deployment-check.json: index/main HTTP 200, exact release hash",
+    "browser_smoke": "New release loaded, shared feed navigation rendered; private records route required login; returned to original feed",
+    "browser_screenshot": "output/first-book-20261026/deployed-feed.png"
+  },
+  "production_database_changes": "None required or performed",
+  "qa_accounts_created": 0,
+  "native_build_and_install": "Not performed; native source and widget validation complete, device unavailable"
+}

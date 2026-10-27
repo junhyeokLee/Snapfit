@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:snap_fit/core/supabase/supabase_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
 import 'package:snap_fit/features/album/domain/entities/album.dart';
@@ -29,6 +31,7 @@ import 'package:snap_fit/features/profile/domain/print_checkout.dart';
 import 'package:snap_fit/features/profile/presentation/views/account_settings_screen.dart';
 import 'package:snap_fit/features/profile/presentation/views/admin_point_shop_management_screen.dart';
 import 'package:snap_fit/features/profile/presentation/views/my_page_screen.dart';
+import 'package:snap_fit/features/profile/presentation/views/billing_management_screen.dart';
 import 'package:snap_fit/features/profile/presentation/views/order_history_screen.dart';
 import 'package:snap_fit/shared/web/web_design.dart';
 
@@ -82,6 +85,10 @@ class _Home extends HomeViewModel {
 }
 
 class _Orders extends Mock implements OrderRepository {}
+
+class _Client extends Mock implements SupabaseClient {}
+
+class _SdkAuth extends Mock implements GoTrueClient {}
 
 const _summary = OrderSummaryResult(
   paymentPending: 0,
@@ -159,6 +166,18 @@ Future<void> _mount(
   bool dark = false,
 }) async {
   SharedPreferences.setMockInitialValues({});
+  final client = _Client();
+  final sdkAuth = _SdkAuth();
+  when(() => client.auth).thenReturn(sdkAuth);
+  when(() => sdkAuth.currentUser).thenReturn(
+    User(
+      id: _owner,
+      appMetadata: const {},
+      userMetadata: const {},
+      aud: 'authenticated',
+      createdAt: '2026-10-01T00:00:00Z',
+    ),
+  );
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
@@ -167,11 +186,13 @@ Future<void> _mount(
     ProviderScope(
       overrides: [
         authViewModelProvider.overrideWith(() => auth),
+        supabaseClientProvider.overrideWithValue(client),
         orderSessionOwnerProvider.overrideWith(_Session.new),
         homeViewModelProvider.overrideWith(_Home.new),
         orderRepositoryProvider.overrideWithValue(orders),
         myOrderSummaryProvider.overrideWith((_) async => _summary),
         myPointBalanceProvider.overrideWith((_) async => 12000),
+        myPointLedgerProvider.overrideWith((_) async => const []),
         myStorageQuotaProvider.overrideWith(
           (_) async => const StorageQuotaStatus(
             userId: _owner,
@@ -397,7 +418,7 @@ void main() {
         size: size,
         textScale: size.width == 320 ? 1.3 : 1,
       );
-      expect(find.text('프로필과 보안'), findsOneWidget);
+      expect(find.text('로그인과 보안'), findsOneWidget);
       expect(find.text('local.owner@example.com'), findsOneWidget);
       await tester.ensureVisible(find.text('프로필 사진 변경'));
       await tester.tap(find.text('프로필 사진 변경'));
@@ -441,7 +462,7 @@ void main() {
 
   for (final size in const [Size(1440, 900), Size(390, 500)]) {
     _routeTest(
-      'actual account overview reaches settings and grouped tools at $size',
+      'settings keeps private collections on My and opens account settings at $size',
       (tester) async {
         await _mount(
           tester,
@@ -451,15 +472,16 @@ void main() {
           size: size,
           dark: size.width == 390,
         );
-        expect(find.text('테스트 고객님'), findsOneWidget);
-        expect(find.text('디자인 보관함'), findsOneWidget);
-        await tester.ensureVisible(find.text('내 저장 공간'));
-        expect(find.text('내 저장 공간').hitTestable(), findsOneWidget);
-        await tester.ensureVisible(find.text('프로필 및 로그인 정보'));
-        await tester.tap(find.text('프로필 및 로그인 정보'));
+        expect(find.text('설정 및 도움말'), findsOneWidget);
+        expect(find.text('테스트 고객님'), findsNothing);
+        expect(find.text('디자인 보관함'), findsNothing);
+        expect(find.text('내 저장 공간'), findsNothing);
+        expect(find.text('인쇄 주문 내역'), findsNothing);
+        await tester.ensureVisible(find.text('계정 설정'));
+        await tester.tap(find.text('계정 설정'));
         await tester.pumpAndSettle();
         expect(find.byType(AccountSettingsScreen), findsOneWidget);
-        expect(find.text('프로필과 보안'), findsOneWidget);
+        expect(find.text('로그인과 보안'), findsOneWidget);
         expect(auth.logoutCalls + auth.deleteCalls + auth.resetCalls, 0);
         _noRouteException(tester, 'completed route assertions');
         await _dispose(tester);
@@ -467,6 +489,40 @@ void main() {
       skip: !kIsWeb,
     );
   }
+
+  _routeTest(
+    'point history entry opens history and topup has no reward shortcuts',
+    (tester) async {
+      await _mount(
+        tester,
+        const BillingManagementScreen(initialPointsTabIndex: 1),
+        orders: orders,
+        auth: auth,
+        size: const Size(1440, 900),
+      );
+      expect(
+        find.byKey(const ValueKey('points-ledger-filter')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('web-point-topup-local-web-owner')),
+        findsNothing,
+      );
+      expect(find.byKey(const ValueKey('attendance-entry')), findsNothing);
+      expect(find.byKey(const ValueKey('referral-entry')), findsNothing);
+      await tester.tap(find.text('포인트 충전'));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('web-point-topup-local-web-owner')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('attendance-entry')), findsNothing);
+      expect(find.byKey(const ValueKey('referral-entry')), findsNothing);
+      _noRouteException(tester, 'point history and topup navigation');
+      await _dispose(tester);
+    },
+    skip: !kIsWeb,
+  );
 
   _routeTest(
     'actual short order history opens owned detail and shipment facts',

@@ -526,7 +526,6 @@ void main() {
       final screens = <String, Widget>{
         'start': AiAlbumStartStep(
           onManualStart: () {},
-          onAiStart: () {},
           templates: AsyncData(publishedCreationTemplates.take(6).toList()),
         ),
         'setup': AlbumCreateStep1(

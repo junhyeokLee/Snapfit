@@ -119,7 +119,7 @@ void main() {
       expect(contentConstraints!.maxWidth, 1120);
       expect(contentConstraints!.maxHeight, greaterThan(650));
       expect(find.text('앨범 편집 도구'), findsOneWidget);
-      for (final label in ['레이어', '레이아웃', '템플릿', '꾸미기', '배경']) {
+      for (final label in ['재배치', '레이아웃', '템플릿', '꾸미기', '배경']) {
         expect(find.text(label), findsOneWidget);
       }
       expect(tester.takeException(), isNull);

@@ -1,0 +1,453 @@
+{
+  "checked_at_utc": "2026-10-26T04:47:06.369489+00:00",
+  "status": "PASS_web_deployed_live_browser_verified_and_native_debug_apk_verified",
+  "url": "https://snapfit-c719d.web.app",
+  "firebase_project": "snapfit-c719d",
+  "firebase_site": "snapfit-c719d",
+  "firebase_channel": "live",
+  "hosting_release": {
+    "name": "projects/snapfit-c719d/sites/snapfit-c719d/channels/live/releases/1792989998442000",
+    "releaseTime": "2026-10-26T04:46:38.442Z",
+    "type": "DEPLOY"
+  },
+  "hosting_version": {
+    "name": "projects/snapfit-c719d/sites/snapfit-c719d/versions/998ad154dea0fc0d",
+    "status": "FINALIZED"
+  },
+  "previous_hosting_version": "d09458460e607b80",
+  "previous_release_report": "profile-thumbnail-expiry-fix-web-release-2026-10-26.json",
+  "build_command": "python3 tool/build_web.py --output build/review-web",
+  "build_compile_seconds": 60.8,
+  "app_version": "1.0.0+1",
+  "client_configuration": "Existing production defaults reused; no server secrets injected.",
+  "build_manifest": {
+    "main_sha256": "e95d2be729c0e58fb40a5b0bfe42becb71a285879ea2491d29230e7101da3ba9",
+    "main_file": "main.e95d2be729c0e58fb40a.dart.js",
+    "bootstrap_sha256": "97defe41097818e8167a50100c94a8308a3c5159e395fd348a0d81711369425d",
+    "bootstrap_file": "flutter_bootstrap.97defe41097818e8167a.js"
+  },
+  "source_integrity": {
+    "before_manifest": "profile-thumbnail-quota-fix-web-source-before-2026-10-26.json",
+    "after_manifest": "profile-thumbnail-quota-fix-web-source-after-2026-10-26.json",
+    "source_file_count": 1788,
+    "before_source_manifest_sha256": "f77ea21b2590ea7c00a8d5479fa06ea31b736ef9a372398c7fec20910627421a",
+    "after_source_manifest_sha256": "f77ea21b2590ea7c00a8d5479fa06ea31b736ef9a372398c7fec20910627421a",
+    "unchanged_during_build": true,
+    "changed_files": [],
+    "changed_source_since_previous_release": [
+      "lib/features/billing/data/billing_provider.dart"
+    ],
+    "firebase_json_expected_mutation": "Only retained fingerprinted-bootstrap redirect targets updated; existing site/cache policy unchanged.",
+    "file_delta_during_build": {
+      "added": [],
+      "removed": [],
+      "modified": []
+    },
+    "build_wall_seconds": 62.58
+  },
+  "assets": {
+    "main": {
+      "file": "main.e95d2be729c0e58fb40a.dart.js",
+      "headers": {
+        "status": 200,
+        "cache-control": "public,max-age=31536000,immutable",
+        "content-type": "text/javascript; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "sha256": "e95d2be729c0e58fb40a5b0bfe42becb71a285879ea2491d29230e7101da3ba9",
+      "bytes": 8932355,
+      "matches_local": true
+    },
+    "bootstrap": {
+      "file": "flutter_bootstrap.97defe41097818e8167a.js",
+      "headers": {
+        "status": 200,
+        "cache-control": "no-cache",
+        "content-type": "text/javascript; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "sha256": "97defe41097818e8167a50100c94a8308a3c5159e395fd348a0d81711369425d",
+      "bytes": 14512,
+      "matches_local": true
+    },
+    "index": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "sha256": "3e29069cff480e251c558406e98dd571d9fb0d63b25e1879c6350c81b9f3c352",
+      "bytes": 3023,
+      "matches_local": true
+    }
+  },
+  "http_routes": {
+    "/feed": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    },
+    "/invite/QA_INVALID_INVITE_20261026": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    },
+    "/works/00000000-0000-4000-8000-000000000000": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    },
+    "/users/00000000-0000-4000-8000-000000000000": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    },
+    "/me": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    },
+    "/publish": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    },
+    "/publish/86": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    },
+    "/me/works": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    },
+    "/account": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    },
+    "/albums": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    },
+    "/login": {
+      "headers": {
+        "status": 200,
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "matches_current_app_html": true
+    }
+  },
+  "http_route_note": "Invalid token and zero UUIDs verify SPA HTML delivery only. Root separately checks authenticated/public profile photos and actual page contents in the browser.",
+  "cached_html_compatibility": {
+    "retained_generation_limit": 3,
+    "retained_release_pairs": [
+      {
+        "main_file": "main.0807ecf67a373d149876.dart.js",
+        "bootstrap_file": "flutter_bootstrap.67ee28fe48e603e400b4.js"
+      },
+      {
+        "main_file": "main.ec7929f388df4c7b9608.dart.js",
+        "bootstrap_file": "flutter_bootstrap.82348130520f007d08d8.js"
+      },
+      {
+        "main_file": "main.e95d2be729c0e58fb40a.dart.js",
+        "bootstrap_file": "flutter_bootstrap.97defe41097818e8167a.js"
+      }
+    ],
+    "previous_generations": [
+      {
+        "main_file": "main.0807ecf67a373d149876.dart.js",
+        "bootstrap_file": "flutter_bootstrap.67ee28fe48e603e400b4.js",
+        "main_sha256": "0807ecf67a373d1498763bb87946897ae8f496287a71caf5abc27fde2d3b6124",
+        "original_main_preserved": true,
+        "bootstrap_headers": {
+          "status": 302,
+          "cache-control": "no-cache",
+          "location": "/flutter_bootstrap.97defe41097818e8167a.js",
+          "referrer-policy": "strict-origin-when-cross-origin",
+          "x-content-type-options": "nosniff",
+          "x-robots-tag": "noindex, nofollow",
+          "content-type": "text/plain; charset=utf-8"
+        },
+        "resolved_bootstrap_sha256": "97defe41097818e8167a50100c94a8308a3c5159e395fd348a0d81711369425d"
+      },
+      {
+        "main_file": "main.ec7929f388df4c7b9608.dart.js",
+        "bootstrap_file": "flutter_bootstrap.82348130520f007d08d8.js",
+        "main_sha256": "ec7929f388df4c7b960813b0b61bd89642c524d2a4275762aae62f5b3e64229d",
+        "original_main_preserved": true,
+        "bootstrap_headers": {
+          "status": 302,
+          "cache-control": "no-cache",
+          "location": "/flutter_bootstrap.97defe41097818e8167a.js",
+          "referrer-policy": "strict-origin-when-cross-origin",
+          "x-content-type-options": "nosniff",
+          "x-robots-tag": "noindex, nofollow",
+          "content-type": "text/plain; charset=utf-8"
+        },
+        "resolved_bootstrap_sha256": "97defe41097818e8167a50100c94a8308a3c5159e395fd348a0d81711369425d"
+      }
+    ],
+    "history_isolated_by_output_directory": true,
+    "bootstrap_redirects_automatically_retargeted": true
+  },
+  "bootstrap_file_distinction": {
+    "raw_generated_flutter_output": {
+      "file": "flutter_bootstrap.js",
+      "headers": {
+        "status": 200,
+        "cache-control": "no-cache",
+        "content-type": "text/javascript; charset=utf-8",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-robots-tag": "noindex, nofollow"
+      },
+      "sha256": "a8c9e786130981b2125133b001e25d9bd0bddaac192ab88884c5e24d4a1e4810",
+      "bytes": 12924,
+      "remote_matches_local": true,
+      "referenced_by_index": false,
+      "main_js_path": "main.dart.js",
+      "note": "Original generated file, not an alias or shim."
+    },
+    "active_runtime_entrypoint": {
+      "file": "flutter_bootstrap.97defe41097818e8167a.js",
+      "sha256": "97defe41097818e8167a50100c94a8308a3c5159e395fd348a0d81711369425d",
+      "remote_matches_local": true,
+      "referenced_by_index": true,
+      "main_js_path": "main.e95d2be729c0e58fb40a.dart.js"
+    },
+    "plain_main_matches_fingerprinted_main": true
+  },
+  "service_worker": {
+    "generated_flutter_worker_bytes": 0,
+    "old_generated_worker_retired_by_bootstrap": true,
+    "firebase_messaging_worker_preserved": true,
+    "firebase_messaging_worker_sha256": "63fbf12cdce4a0917be12d075a25a6cace3ca2e90c12667c979e24ad3f2a1453",
+    "headers": {
+      "status": 200,
+      "cache-control": "no-cache",
+      "content-type": "text/javascript; charset=utf-8",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "x-content-type-options": "nosniff",
+      "x-robots-tag": "noindex, nofollow"
+    }
+  },
+  "profile_design": {
+    "public_portrait_size_by_viewport": {
+      "320": 148,
+      "390": 164,
+      "820": 196,
+      "1440": 196
+    },
+    "portrait_shape": "Rounded square in profile identity; existing other avatar shapes retained.",
+    "default_gallery": "Large photos: one column on phones, two above 700px internal width; a single work uses the full width.",
+    "secondary_gallery_mode": "Compact two/three columns selectable through labeled controls.",
+    "photo_layout": "Original album aspect ratio with contain; independent gallery columns reduce blank row gaps.",
+    "semantics": "Original work index sort keys scoped to gallery; avatar is one labeled expandable target.",
+    "own_actions": "Profile edit and publish remain primary; management and settings are labeled header icons.",
+    "identity_lifetime": "Opening a photo refreshes access; identity changes dispose only that photo route and preserve unrelated dialogs."
+  },
+  "verification": {
+    "profile_widget_cases_passed": 38,
+    "test_command": "flutter test --no-test-assets --no-pub test/widget/social_profile_screens_test.dart test/unit/storage_quota_session_test.dart --reporter expanded",
+    "test_log": "/tmp/snapfit-profile-thumbnail-quota-combo-tests-2026-10-26.log",
+    "selected_analysis": "No issues found for profile screen, profile widgets and profile widget tests.",
+    "responsive_viewports": [
+      320,
+      390,
+      820,
+      1440
+    ],
+    "dark_text_scale": 1.8,
+    "regressions": [
+      "Own/private controls not exposed to other profiles",
+      "Private works excluded",
+      "Large default images and mode switching",
+      "Single desktop work full-width hero and natural ratio",
+      "Independent column positions and original screen-reader order",
+      "Management icon opens actual management screen",
+      "320px dark large text remains scrollable and actionable",
+      "Stale photo resolution cannot restore an old identity",
+      "An open photo closes on identity change while unrelated overlay stays",
+      "A 196px decoded thumbnail then 164px HTTP 401/403 fetch recovers via a fresh URL and real decoded frame",
+      "Changing identity during renewal discards the stale URL",
+      "Null/error/failed fresh thumbnail does not loop on further resizes",
+      "A decoded renewed thumbnail may recover once again after a subsequent expiry"
+    ],
+    "test_harness": "NoSplash is used only in the widget test app to avoid unrelated GPU shader assets with --no-test-assets. Application splash behavior is unchanged.",
+    "combined_regression_cases_passed": 39
+  },
+  "local_build_file_count": 1137,
+  "native_build_coordination": "Web Flutter build completed; native build starts only after its explicit completion signal, using the same frozen source. Earlier photo-only deployment was completed while native stayed on hold.",
+  "root_manual_browser_qa": {
+    "status": "PASS",
+    "scope": "After final deploy, keep a public avatar open past its 60-second signed URL lifetime, resize desktop to 390px and confirm the actual photo remains; verify mobile dark and photo expansion.",
+    "passing_evidence_exclusions": [
+      "Before-fix dark initials failure screenshot",
+      "Cropped 1440 captures"
+    ],
+    "verified_layout_baseline": "Complete 1280 light and 390 light/compact/expanded JPEG captures reviewed separately; final expiry repair awaits root browser QA.",
+    "baseline_layout_screenshots": [
+      "output/profile-qa-20261026/my-mobile-390-light.jpg",
+      "output/profile-qa-20261026/profile-photo-expanded-mobile.jpg",
+      "output/profile-qa-20261026/my-mobile-390-compact.jpg",
+      "output/profile-qa-20261026/my-desktop-1280-light.jpg"
+    ],
+    "expiry_reproduction_baseline": "output/profile-qa-20261026/my-desktop-photo-expiry-baseline.jpg",
+    "version_under_expiry_test": "d09458460e607b80",
+    "version_comparison": "Avatar/widget code is identical to final 998ad154dea0fc0d; only storage-quota auth subscription changed between these releases.",
+    "source": "Root live browser QA plus independent static screenshot review.",
+    "expiry_wait_seconds": 71.594,
+    "expiry_viewport_transition": {
+      "from_width": 1280,
+      "from_avatar_width": 196,
+      "to_width": 390,
+      "to_avatar_width": 164
+    },
+    "expiry_photo_recovered": true,
+    "expiry_passing_screenshot": "output/profile-qa-20261026/my-mobile-390-dark-after-expiry-fix.jpg",
+    "final_combo_reload_and_theme_resize_passed": true,
+    "final_combo_screenshots": [
+      "output/profile-qa-20261026/my-mobile-390-final.jpg",
+      "output/profile-qa-20261026/my-desktop-1280-final.jpg"
+    ],
+    "independent_screenshot_review": "At 390px dark after expiry, the real portrait remains visible with its expand affordance. Final 390px light keeps a full-width gallery image; final 1280px keeps the 196px portrait and large two-column photographs. No clipping or visual blocker observed in these complete captures.",
+    "reviewed_at_utc": "2026-10-26T04:49:29.706701+00:00",
+    "quota_account_switch_passed": true,
+    "original_system_theme_restored": true,
+    "record_updated_at_utc": "2026-10-26T04:51:28.589297+00:00",
+    "fixture_cleanup": {
+      "completed": true,
+      "residue_groups_verified_zero": 64,
+      "report": "profile-ui-live-2026-10-26.json",
+      "existing_album_asset_metadata_rows_preserved": 41,
+      "private_credentials_and_helper_directory_removed": true
+    },
+    "full_ui_report": "profile-large-photo-ui-2026-10-26.json"
+  },
+  "thumbnail_expiry_fix": {
+    "source": "lib/features/social/presentation/widgets/social_profile_widgets.dart",
+    "reproduced_before_fix": "A signed public-avatar URL expired, then desktop-to-phone cacheWidth change fetched it again and showed initials instead of the photo.",
+    "recovery": "A thumbnail image failure schedules one access revalidation after the frame, then uses the fresh URL and a new image key.",
+    "retry_budget": "Only a decoded successful image permits a future expiry recovery; null, exceptions and consecutive failed renewal images do not loop.",
+    "identity_safety": "Input/identity revision and mounted checks discard stale renewal results; size and theme changes do not reset the retry guard.",
+    "before_fix_failure_evidence": "output/profile-qa-20261026/my-mobile-390-dark.jpg"
+  },
+  "quota_session_fix": {
+    "source": "lib/features/billing/data/billing_provider.dart",
+    "behavior": "Storage quota watches the authenticated user ID; changing accounts refetches quota and discards late previous-user responses.",
+    "targeted_regression_passed": 1,
+    "actual_browser_qa": {
+      "status": "PASS",
+      "hosting_version": "998ad154dea0fc0d",
+      "flow": "Load account A settings quota to populate its cache, log out and log in as B without a full page reload, then open settings. A fresh loading state resolves to B quota without the previous account-mismatch retry.",
+      "displayed_quota": "0.0MB",
+      "screenshot": "output/profile-qa-20261026/account-switch-quota-final.jpg",
+      "reported_by": "Root actual authenticated browser QA."
+    }
+  },
+  "prior_release_reports": [
+    "profile-large-photo-web-release-2026-10-26.json",
+    "profile-thumbnail-expiry-fix-web-release-2026-10-26.json"
+  ],
+  "native_delivery": {
+    "status": "verified_debug_apk_install_not_performed",
+    "report": "profile-thumbnail-quota-fix-native-2026-10-26.json",
+    "apk_path": "output/native-photo-refresh/SnapFit-large-profile-debug.apk",
+    "apk_sha256": "e23a6df2f086ea932953ce329b5c2daa8b02b58a348ebf357873ba7a40c9c6f2",
+    "apk_bytes": 861227830,
+    "zip_crc_valid": true,
+    "zip_entries": 1700,
+    "signature_verified": true,
+    "certificate_sha256": "a46a0968f62bfe49908e6e9d0b1feda3c269bf721d09a0fc1d7daaa6ecf199c3",
+    "matches_preserved_debug_certificate": true,
+    "native_pre_post_source_unchanged": true,
+    "native_source_manifest_sha256": "f9705e5113d0ae319722dd353829d3c13b209f5e55e500f7d63d300f4d391b52",
+    "native_source_file_count": 1813,
+    "web_common_source_files": 1765,
+    "web_common_source_hashes_match": true,
+    "previous_profile_apk_preserved_path": "output/native-photo-refresh/SnapFit-large-profile-debug-before-thumbnail-expiry-fix.apk",
+    "previous_profile_apk_preserved_sha256": "ddf1fd41f9051784882566d06a67131cb601e09b1641d3f35b742ed7288bd782",
+    "historical_older_apk_path_observations_recorded": true,
+    "install_performed": false,
+    "physical_device_qa_performed": false
+  },
+  "completed_at_utc": "2026-10-26T04:52:14.000078+00:00",
+  "superseded_by_report": "social-feed-my-style-web-release-2026-10-26.json",
+  "superseded_by_hosting_version": "86e22edd4cf18022",
+  "baseline_native_artifact_preserved_for_new_design_release": true
+}

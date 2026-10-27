@@ -5385,6 +5385,17 @@ Map<String, dynamic> get _baseline =>
           )
           as Map,
     );
+// Catalog copy, discovery tags and prices evolved after the original design
+// audit. Freeze that current metadata separately; the original page/source
+// recording above is never replaced by the new print geometry.
+final _currentCatalogMetadata = Map<String, dynamic>.from(
+  jsonDecode(
+        File(
+          'test/fixtures/paid_catalog_metadata_2026_10_25.json',
+        ).readAsStringSync(),
+      )
+      as Map,
+);
 final _fontFamilies = <String>{};
 final _layoutCounts = <String, int>{};
 var _verifiedPages = 0;
@@ -5464,21 +5475,25 @@ class PaidEditorialBook {
   String get productKey => pointShopTemplateKey(template);
   String get key => '${template.id}/$count/${aspect.name}';
   Map<String, dynamic> _build() {
-    final volume = publishedPremiumVolume(template.id);
-    final catalog = volume == null
-        ? Map<String, dynamic>.from(jsonDecode(template.templateJson!) as Map)
-        : premiumCatalogDocument(volume, innerPages: count);
-    return Map<String, dynamic>.from(
-      (catalog['variants'] as Map)[aspect.name] as Map,
+    final raw = _rawDocument(this);
+    return refinePaidCatalogDocument(
+      raw['collectionId'] as String,
+      aspect,
+      raw,
     );
   }
 }
 
-Iterable<PaidEditorialBook> paidEditorialBooks() sync* {
-  for (final template in publishedPremiumTemplates) {
+Iterable<PaidEditorialBook> paidEditorialBooks({bool printable = false}) sync* {
+  for (final template in publishedPremiumTemplates.where(
+    (t) => (_baseline['catalogs'] as Map).containsKey(t.id.toString()),
+  )) {
     final volume = publishedPremiumVolume(template.id);
     for (final count in volume?.pageCounts ?? [template.pageCount]) {
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect
+          in printable
+              ? CollectionAspect.printable
+              : CollectionAspect.archived) {
         yield PaidEditorialBook(template, count, aspect);
       }
     }
@@ -5593,7 +5608,7 @@ Map<String, dynamic> _rawBooks() => {
       volume.id: {
         for (final count in volume.pageCounts)
           count.toString(): {
-            for (final aspect in CollectionAspect.values)
+            for (final aspect in CollectionAspect.archived)
               aspect.name: volume.document(aspect, innerPages: count),
           },
       },
@@ -5601,21 +5616,21 @@ Map<String, dynamic> _rawBooks() => {
   'concept': {
     for (final volume in ConceptVolume.values)
       volume.id: {
-        for (final aspect in CollectionAspect.values)
+        for (final aspect in CollectionAspect.archived)
           aspect.name: volume.document(aspect),
       },
   },
   'atelier': {
     for (final edition in AtelierEdition.values)
       edition.id: {
-        for (final aspect in CollectionAspect.values)
+        for (final aspect in CollectionAspect.archived)
           aspect.name: edition.document(aspect),
       },
   },
   'studio': {
     for (final edition in StudioEdition.values.where((e) => e.premium))
       edition.id: {
-        for (final aspect in CollectionAspect.values)
+        for (final aspect in CollectionAspect.archived)
           aspect.name: edition.document(aspect),
       },
   },
@@ -5628,7 +5643,7 @@ String _freeDigest() => _digest({
       'points': pointShopLaunchPrices[pointShopAuthoredTemplateKey(collection)]!
           .points,
       'variants': {
-        for (final aspect in CollectionAspect.values)
+        for (final aspect in CollectionAspect.archived)
           aspect.name: collection.document(aspect),
       },
     },
@@ -6058,12 +6073,31 @@ void _inspectPage(
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(loadPaidEditorialFonts);
+  if (const bool.fromEnvironment('RECORD_PAID_CATALOG_METADATA')) {
+    test(
+      'freeze current catalog metadata without changing source baselines',
+      () {
+        final file = File(
+          'test/fixtures/paid_catalog_metadata_2026_10_25.json',
+        );
+        if (file.existsSync())
+          throw StateError('Refusing to overwrite metadata');
+        file.writeAsStringSync(
+          const JsonEncoder.withIndent('  ').convert({
+            for (final book in paidEditorialBooks())
+              book.key: _digest(_identity(book)),
+          }),
+        );
+      },
+    );
+    return;
+  }
   if (_record) {
     test(
       'record all paid editions and the unchanged free catalog before refinement',
       () {
-        expect(publishedPremiumTemplates, hasLength(26));
-        expect(authoredCollections, hasLength(42));
+        expect((_baseline['catalogs'] as Map).keys, hasLength(26));
+        expect(authoredCollections.length, greaterThanOrEqualTo(42));
         if (File(_baselinePath).existsSync())
           throw StateError('Refusing to overwrite $_baselinePath');
         final baseline = _recordBaseline();
@@ -6082,8 +6116,8 @@ void main() {
     'raw paid factories and all 42 free product identities and prices stay fixed',
     () {
       expect(_digest(_rawBooks()), _baseline['rawPaid']);
-      expect(publishedPremiumTemplates, hasLength(26));
-      expect(authoredCollections, hasLength(42));
+      expect((_baseline['catalogs'] as Map).keys, hasLength(26));
+      expect(authoredCollections.length, greaterThanOrEqualTo(42));
       // The user authorized all 68 covers to change. The companion free
       // editorial quality suite retains its existing per-inner-page baseline;
       // do not re-record that fixture or replace it with the new cover hash.
@@ -6132,11 +6166,15 @@ void main() {
         -9475: 'template:little-day-discoveries',
       };
       expect({
-        for (final collection in authoredCollections)
+        for (final collection in authoredCollections.where(
+          (c) => freeProducts.containsKey(c.bundledId),
+        ))
           collection.bundledId: pointShopAuthoredTemplateKey(collection),
       }, freeProducts);
-      expect(bundledCreationTemplates, hasLength(freeProducts.length));
-      for (final template in bundledCreationTemplates) {
+      expect(freeProducts, hasLength(42));
+      for (final template in bundledCreationTemplates.where(
+        (t) => freeProducts.containsKey(t.id),
+      )) {
         final productKey = pointShopTemplateKey(template);
         expect(productKey, freeProducts[template.id]);
         expect(template.isPremium, isFalse);
@@ -6275,7 +6313,11 @@ void main() {
       '${book.key}: every paid page preserves content and passes visual preflight',
       () {
         final before = (_baseline['books'] as Map)[book.key] as Map;
-        expect(_digest(_identity(book)), before['identity'], reason: book.key);
+        expect(
+          _digest(_identity(book)),
+          _currentCatalogMetadata[book.key],
+          reason: book.key,
+        );
         expect(book.template.isPremium, isTrue);
         final pages = templateDocumentPages(book.document);
         final sourcePages = templateDocumentPages(_rawDocument(book));
@@ -6320,7 +6362,9 @@ void main() {
     () {
       expect(paidEditorialBooks().length, 93);
       expect(_verifiedPages, 2757);
-      for (final template in publishedPremiumTemplates) {
+      for (final template in publishedPremiumTemplates.where(
+        (t) => (_baseline['catalogs'] as Map).containsKey(t.id.toString()),
+      )) {
         expect(
           _digest(jsonDecode(template.templateJson!)),
           isNot((_baseline['catalogs'] as Map)[template.id.toString()]),
@@ -6337,4 +6381,40 @@ void main() {
       );
     },
   );
+  for (final book in paidEditorialBooks(
+    printable: true,
+  ).where((b) => b.aspect != CollectionAspect.square)) {
+    test(
+      '${book.key}: exact print reflow preserves paid sources and passes preflight',
+      () {
+        final before =
+            (_baseline['books']
+                    as Map)['${book.template.id}/${book.count}/landscape']
+                as Map;
+        final original = before['pages'] as List;
+        final pages = templateDocumentPages(book.document);
+        final sourcePages = templateDocumentPages(_rawDocument(book));
+        expect(pages, hasLength(original.length));
+        for (final (index, page) in pages.indexed) {
+          final normalized = Map<String, dynamic>.from(
+            jsonDecode(
+                  jsonEncode(page).replaceAll(book.aspect.name, 'landscape'),
+                )
+                as Map,
+          );
+          expect(
+            _sourceDigest(normalized),
+            (original[index] as List)[2],
+            reason: '${book.key}/$index',
+          );
+          expect(
+            _photoOrder(normalized),
+            (original[index] as List)[3],
+            reason: '${book.key}/$index: photograph order',
+          );
+          _inspectPage(book, page, sourcePages[index], index);
+        }
+      },
+    );
+  }
 }
