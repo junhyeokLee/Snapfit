@@ -29,7 +29,7 @@ List<List<LayerModel>> windAtlasPreviewPages(
     .toList();
 
 bool windAtlasCopyFits(EditorialCopy copy) {
-  for (final aspect in CollectionAspect.values) {
+  for (final aspect in CollectionAspect.printable) {
     for (final cover in WindAtlasCover.values) {
       for (final l in windAtlasPreviewPages(
         aspect,

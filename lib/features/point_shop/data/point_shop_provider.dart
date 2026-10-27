@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/supabase/supabase_provider.dart';
 import '../../billing/data/billing_provider.dart';
+import '../../profile/domain/order_visibility_owner.dart';
 import 'point_shop_repository.dart';
 
 final pointShopRepositoryProvider = Provider<PointShopRepository>(
@@ -18,9 +19,17 @@ final pointShopCatalogProvider = FutureProvider<List<PointShopProduct>>(
   (ref) => ref.watch(pointShopRepositoryProvider).loadCatalog(),
 );
 
-final ownedPointShopKeysProvider = FutureProvider<Set<String>>((ref) {
+final ownedPointShopKeysProvider = FutureProvider<Set<String>>((ref) async {
   ref.watch(pointShopSessionProvider);
-  return ref.watch(pointShopRepositoryProvider).loadOwnedKeys();
+  final owner = ref.watch(visibleOrderOwnerProvider);
+  final repository = ref.watch(pointShopRepositoryProvider);
+  if (owner == null || repository.currentUserId != owner) return const {};
+  final keys = await repository.loadOwnedKeys();
+  return ref.mounted &&
+          ref.read(visibleOrderOwnerProvider) == owner &&
+          repository.currentUserId == owner
+      ? keys
+      : const {};
 });
 
 void refreshPointShop(WidgetRef ref) {

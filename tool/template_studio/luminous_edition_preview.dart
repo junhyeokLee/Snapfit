@@ -39,7 +39,7 @@ List<List<LayerModel>> luminousPages(
 bool luminousCopyFits(LuminousCopy copy, {int? innerPages}) {
   if ([copy.first, copy.second, copy.third].any((v) => v.trim().isEmpty))
     return false;
-  for (final aspect in CollectionAspect.values) {
+  for (final aspect in CollectionAspect.printable) {
     for (final l in luminousPages(
       aspect,
       copy: copy,

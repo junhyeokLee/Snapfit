@@ -2,18 +2,18 @@
 set -euo pipefail
 
 # Usage:
-#   ./scripts/template_release_pipeline.sh #     --store-json=assets/templates/generated/store_latest.json #     --supabase-url=https://rrbhxdtriummqpztpjrk.supabase.co #     --admin-key=xxxx
+#   ./scripts/template_release_pipeline.sh #     --store-json=/path/to/current-template-export.json #     --supabase-url=https://rrbhxdtriummqpztpjrk.supabase.co #     --admin-key=xxxx
 #
 # Required:
+#   --store-json=PATH
 #   --admin-key or SNAPFIT_ADMIN_KEY
 #
 # Optional:
 #   --supabase-url or SUPABASE_URL (defaults to the SnapFit Supabase project)
-#   --store-json (default: assets/templates/generated/store_latest.json)
 #   --cdn-manifest=PATH
 #   --dry-run
 
-STORE_JSON="assets/templates/generated/store_latest.json"
+STORE_JSON=""
 CDN_MANIFEST=""
 SUPABASE_URL="${SUPABASE_URL:-https://rrbhxdtriummqpztpjrk.supabase.co}"
 ADMIN_KEY="${SNAPFIT_ADMIN_KEY:-}"
@@ -29,6 +29,11 @@ for arg in "$@"; do
     *) echo "Unknown option: $arg" >&2; exit 2 ;;
   esac
 done
+
+if [[ -z "${STORE_JSON}" || ! -f "${STORE_JSON}" ]]; then
+  echo "Provide --store-json=PATH for an existing current template export." >&2
+  exit 2
+fi
 
 if [[ -z "${ADMIN_KEY}" ]]; then
   echo "Missing admin key. Use --admin-key or SNAPFIT_ADMIN_KEY" >&2

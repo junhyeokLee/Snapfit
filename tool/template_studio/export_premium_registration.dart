@@ -41,7 +41,7 @@ Map<String, dynamic> exportPremiumRegistration(Directory output) {
     final fonts = <String>{};
     final materialKeys = <String>{};
     for (final count in volume.pageCounts) {
-      for (final aspect in CollectionAspect.values) {
+      for (final aspect in CollectionAspect.printable) {
         final document = volume.document(aspect, innerPages: count);
         materialKeys.addAll(templateVisualMaterialKeys(document));
         final pages = templateDocumentPages(document);

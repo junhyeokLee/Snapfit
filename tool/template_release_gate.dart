@@ -5,6 +5,8 @@ import 'dart:math' as math;
 
 import 'package:snap_fit/features/store/domain/entities/premium_template.dart';
 
+import 'package:snap_fit/core/templates/retired_store_templates.dart';
+
 Future<int> _checkUrl(String url) async {
   try {
     final client = HttpClient()..connectionTimeout = const Duration(seconds: 6);
@@ -354,12 +356,11 @@ String? _validateTextStylePayload(Map<String, dynamic> layer) {
 
 Future<void> main(List<String> args) async {
   final storeJsonPath = _arg(args, '--store-json');
-
-  final templates = _loadTemplatesFromJsonFile(
-    (storeJsonPath != null && storeJsonPath.trim().isNotEmpty)
-        ? storeJsonPath.trim()
-        : 'assets/templates/generated/store_latest.json',
-  );
+  if (storeJsonPath == null || storeJsonPath.trim().isEmpty) {
+    stderr.writeln('Provide --store-json=<current-template-export.json>.');
+    exit(2);
+  }
+  final templates = _loadTemplatesFromJsonFile(storeJsonPath.trim());
   final hardFails = <String>[];
   final softWarnings = <String>[];
   final parityRules = _loadParityRules();
@@ -368,6 +369,14 @@ Future<void> main(List<String> args) async {
 
   for (final t in templates) {
     final prefix = '[${t.id} ${t.title}]';
+    if (RetiredStoreTemplates.matches(
+      id: t.id,
+      title: t.title,
+      templateJson: t.templateJson,
+    )) {
+      hardFails.add('$prefix retired store template cannot be published');
+      continue;
+    }
     final root = _decodeTemplateJson(t.templateJson);
     if (root == null) {
       hardFails.add('$prefix templateJson parse failed');

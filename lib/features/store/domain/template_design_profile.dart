@@ -86,6 +86,15 @@ class TemplateDesignProfile {
     try {
       final decoded = jsonDecode(source);
       if (decoded is! Map<String, dynamic>) return _unknown;
+      return TemplateDesignProfile.fromDocument(decoded);
+    } on FormatException {
+      return _unknown;
+    }
+  }
+
+  /// Reuse a document already decoded by a detail screen or background worker.
+  factory TemplateDesignProfile.fromDocument(Map<String, dynamic> decoded) {
+    try {
       final rawPages = decoded['pages'];
       if (rawPages is! List || rawPages.any((page) => page is! Map)) {
         return _unknown;
@@ -121,8 +130,6 @@ class TemplateDesignProfile {
         photoPageCount: photoPages,
         recordPageCount: recordPages,
       );
-    } on FormatException {
-      return _unknown;
     } on TypeError {
       return _unknown;
     }

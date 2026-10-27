@@ -90,7 +90,7 @@ class _ProseComparisonState extends State<ProseComparison> {
           initialValue: _aspect,
           onSelected: (v) => setState(() => _aspect = v),
           itemBuilder: (_) => [
-            for (final a in CollectionAspect.values)
+            for (final a in CollectionAspect.printable)
               PopupMenuItem(value: a, child: Text(a.cover.name)),
           ],
         ),

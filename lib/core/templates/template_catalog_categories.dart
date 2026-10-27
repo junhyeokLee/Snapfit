@@ -7,6 +7,9 @@ const templateTopicOrder = [
   '가족·친구',
   '커플·기념일',
   '반려동물',
+  '스포츠·도전',
+  '졸업·새출발',
+  '동아리',
 ];
 
 List<String> orderedTemplateTopics(Iterable<String> topics) {

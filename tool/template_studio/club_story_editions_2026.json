@@ -1,0 +1,854 @@
+{
+  "batch": "2026-10-25-club-stories-10",
+  "tool": "built-in image_gen",
+  "peoplePolicy": "Ordinary adults and average varied bodies. Candid documentary, no beauty retouch, celebrity, model or idol styling.",
+  "photoPolicy": "Five original photographs per edition, never reused across templates, including interiors.",
+  "books": [
+    {
+      "id": "story-club-photowalk",
+      "title": "우리의 시선",
+      "englishTitle": "a walk,\nfive stories",
+      "subtitle": "서로 다른 눈높이로 모은 사진 동아리의 하루",
+      "premium": false,
+      "catalogId": -9721,
+      "coverStyle": 10,
+      "paperLabel": "산책 촬영 메모",
+      "motifLabel": "작은 뷰파인더",
+      "tags": [
+        "동아리",
+        "사진",
+        "출사",
+        "포토워크"
+      ],
+      "chapters": [
+        "오늘 만날 골목",
+        "카메라를 챙기고",
+        "우리의 출발점",
+        "같은 길 다른 시선",
+        "빛을 기다리는 시간",
+        "잠깐 쉬는 자리",
+        "서로의 사진 보기",
+        "다시 걷는 오후",
+        "좋아하는 한 컷",
+        "함께 남긴 단체 사진",
+        "다음 출사를 정하며",
+        "우리의 시선은 계속"
+      ],
+      "context": "A small neighborhood photography club in an ordinary Korean town: three everyday adult friends, two women and a man aged 25 to 45, one member with simple round glasses. Average builds, individual plain casual clothes: faded blue jeans, oatmeal cardigan, charcoal hoodie, dull mint tote. Modest cameras, ordinary alley and small local cafe, unpolished lived-in places, calm daylight.",
+      "scenes": [
+        "Wide candid group photograph of the three ordinary club members walking and chatting along a quiet neighborhood alley, one holding a small camera. Natural unposed expressions, no one looking at the camera, whole people inside the central area.",
+        "Close-up of an ordinary adult's hands checking a simple unbranded camera beside a blank field notebook on a worn cafe table, oatmeal sleeve and dull mint tote corner, natural hands and realistic equipment.",
+        "A candid side view of the three club members comparing a camera's screen together at a neighborhood corner, screen dark and unreadable. Everyday faces with glasses and unretouched skin, interested rather than posed.",
+        "Quiet alley with utility poles, simple neutral storefronts without readable signage, afternoon shadows and a small potted plant beside an old doorway. Ordinary place seen attentively.",
+        "Three small plain cameras, a blank contact-sheet notebook, cafe cups and a folded mint cloth on a scuffed wooden table after a photo walk, relaxed unstyled arrangement."
+      ]
+    },
+    {
+      "id": "story-club-book-circle",
+      "title": "책 사이의 대화",
+      "englishTitle": "between\nthe pages",
+      "subtitle": "읽은 책과 나눈 말을 천천히 모으는 독서 모임",
+      "premium": false,
+      "catalogId": -9722,
+      "coverStyle": 11,
+      "paperLabel": "한 문장 독서 카드",
+      "motifLabel": "펼친 책과 쉼표",
+      "tags": [
+        "동아리",
+        "독서",
+        "북클럽",
+        "독서모임"
+      ],
+      "chapters": [
+        "이번 달의 한 권",
+        "모임을 준비하는 손",
+        "창가에 둘러앉아",
+        "각자의 첫인상",
+        "멈추어 읽은 문장",
+        "다른 생각을 듣고",
+        "잠시의 차 한 잔",
+        "질문이 이어지는 시간",
+        "함께 적은 메모",
+        "책을 덮은 뒤에도",
+        "다음 책을 고르며",
+        "우리의 다음 페이지"
+      ],
+      "context": "An ordinary Korean neighborhood adult reading club of three adults aged 30 to 50, one woman with short hair and simple glasses, one woman with a plain ponytail, one man with a soft average build. Simple sweaters and worn cardigans, no styling. Modest community library meeting room, inexpensive oak table, ivory walls, everyday cups, books with completely blank covers, diffused window light.",
+      "scenes": [
+        "Wide candid view of the three ordinary adults at a small library table reading and talking with blank-cover books, natural slightly asymmetrical faces and average bodies, no beauty posing, cozy real meeting.",
+        "Close-up of a hand placing an unmarked paper bookmark into a blank-cover book on a scratched oak table, simple ceramic cup and ordinary pencil nearby, realistic paper and skin.",
+        "Side view of one bespectacled short-haired ordinary woman listening while another member talks, three members around the table, relaxed posture and casual cardigans, no frontal portrait posing.",
+        "Quiet unoccupied corner of a modest community library, plain shelves with neutral indistinct book spines, inexpensive chairs and soft daylight, no readable titles.",
+        "A small stack of blank-cover books, ordinary spectacles, a pencil and loose ivory reading cards on the meeting table, tea cup rings and a pale mint fabric bag, natural documentary still life."
+      ]
+    },
+    {
+      "id": "story-club-weekend-trail",
+      "title": "함께 오른 주말",
+      "englishTitle": "take the\nslow way",
+      "subtitle": "정상보다 함께 걷는 시간이 좋은 산행 동아리 북",
+      "premium": false,
+      "catalogId": -9723,
+      "coverStyle": 12,
+      "paperLabel": "주말 산행 기록지",
+      "motifLabel": "이어지는 능선",
+      "tags": [
+        "동아리",
+        "등산",
+        "산악회",
+        "트레킹"
+      ],
+      "chapters": [
+        "만나기로 한 아침",
+        "가벼운 준비물",
+        "숲길의 시작",
+        "서로의 보폭으로",
+        "첫 번째 쉼터",
+        "길 위에서 나눈 말",
+        "나무 사이의 빛",
+        "같이 오른 마지막 길",
+        "정상에서 잠깐",
+        "내려오는 발걸음",
+        "오늘의 길을 접고",
+        "다음 주말의 약속"
+      ],
+      "context": "An ordinary Korean weekend hiking club of three adults aged 30 to 55, mixed genders and average builds, one member with glasses. Affordable worn outdoor clothes in charcoal, oatmeal and muted moss green, plain small daypacks, no outdoor fashion advertising. Easy wooded suburban hill trail in Korea, overcast morning and soft forest light.",
+      "scenes": [
+        "Wide candid photograph of the three ordinary adult hikers walking together on a gentle forest trail seen from rear and side, relaxed chatting, complete bodies and natural walking positions, ordinary worn gear.",
+        "Close-up of hands sharing tangerines at a small rest-stop bench, everyday backpacks and a plain stainless thermos, forest light, natural adult hands, unstyled.",
+        "Three everyday club members taking a seated break on a low hillside bench, slightly tired genuine smiles and ordinary faces, average body proportions, one with glasses, quiet natural woods.",
+        "A simple forest footpath curving between native trees toward a low ridge, no dramatic alpine scenery, ordinary local trail, soft light and earthy muted tones.",
+        "Plain daypacks, folded paper route map with no writing, a steel thermos and a few tangerines on a wooden rest table under trees, naturally used objects, no branding."
+      ]
+    },
+    {
+      "id": "story-club-rehearsal-room",
+      "title": "작은 합주실",
+      "englishTitle": "one more\ntime together",
+      "subtitle": "서툰 첫 소리부터 합이 맞는 순간까지의 밴드 기록",
+      "premium": false,
+      "catalogId": -9724,
+      "coverStyle": 13,
+      "paperLabel": "합주 순서 메모",
+      "motifLabel": "작은 리듬 네 박",
+      "tags": [
+        "동아리",
+        "밴드",
+        "음악",
+        "합주"
+      ],
+      "chapters": [
+        "문을 여는 소리",
+        "케이블을 꺼내고",
+        "오늘의 첫 박자",
+        "한 소절씩 맞추며",
+        "다른 소리를 듣고",
+        "잠깐 멈춘 테이크",
+        "같이 세는 네 박",
+        "처음 끝까지 해낸 곡",
+        "다시 한 번 연주",
+        "연습 뒤의 이야기",
+        "장비를 정리하며",
+        "다음 주 같은 시간"
+      ],
+      "context": "An ordinary Korean amateur band club: three adult friends in their twenties and thirties, average bodies and everyday non-model faces; one man with black rectangular glasses and an old charcoal sweatshirt, one woman with short plain hair in an oatmeal knit, another man in a faded denim shirt. Small affordable basement rehearsal room with dark gray acoustic panels and warm ordinary ceiling lights, plain mint tape on cables, unbranded guitar, simple keyboard and compact drum kit.",
+      "scenes": [
+        "Wide candid photograph of three ordinary adult friends practicing guitar, keyboard and drums together in a modest rehearsal room, relaxed concentration, practical everyday clothes and imperfect normal skin, no stage glamour.",
+        "Close-up of ordinary adult hands plugging a guitar cable into a small unbranded amplifier, worn charcoal sweatshirt sleeve, coiled cable and mint tape on floor, mechanically correct connection.",
+        "Candid side view of three ordinary adult band members laughing during a pause, rectangular glasses and ordinary casual hair, instruments resting safely nearby, small real rehearsal room.",
+        "Empty rehearsal room after practice, compact drum kit, simple keyboard, guitar on stand, worn stools and gray acoustic panels, no concert lights, warm practical ceiling light.",
+        "Unbranded guitar picks, plain earplugs, coiled instrument cable with mint tape and an empty ivory rehearsal notebook on a scuffed stool, documentary detail."
+      ]
+    },
+    {
+      "id": "story-club-kind-saturday",
+      "title": "다정한 토요일",
+      "englishTitle": "small acts,\ngood company",
+      "subtitle": "서로 돕고 함께 웃은 봉사 동아리의 활동 기록",
+      "premium": false,
+      "catalogId": -9725,
+      "coverStyle": 14,
+      "paperLabel": "토요일 활동 노트",
+      "motifLabel": "나란한 두 손",
+      "tags": [
+        "동아리",
+        "봉사",
+        "자원봉사",
+        "커뮤니티"
+      ],
+      "chapters": [
+        "오늘의 작은 약속",
+        "앞치마를 나누고",
+        "함께 준비하는 손",
+        "역할을 정하는 시간",
+        "조심히 담아 보며",
+        "서로 도운 순간",
+        "잠깐 쉬어 가기",
+        "함께한 사람들의 말",
+        "마지막 상자를 닫고",
+        "주변을 정리하며",
+        "오늘을 돌아보고",
+        "다음 토요일에도"
+      ],
+      "context": "A small neighborhood volunteer club in a modest Korean community-center kitchen: three ordinary adult volunteers aged 25 to 60, mixed genders, average builds, one wearing glasses. Plain practical clothes and simple ivory aprons with muted mint disposable gloves, no matching uniforms or logos. Preparing simple packed meals for community delivery, no recipients or vulnerable people shown, documentary daylight, everyday equipment.",
+      "scenes": [
+        "Wide candid view of three ordinary adult volunteers preparing simple packed lunch boxes side by side in a modest community kitchen, realistic ordinary faces and average bodies, caring focused activity rather than promotional posing.",
+        "Close-up of gloved adult hands folding plain lunch boxes with rice and vegetables on a clean practical kitchen table, ivory apron corner, natural everyday setting, no labels.",
+        "Candid side view of the ordinary volunteers passing a plain kraft delivery box to each other, gentle normal expressions and practical slightly rumpled clothes, no staged heroism.",
+        "A tidy community-center preparation table after the work, a few closed plain meal boxes and folded ivory aprons, soft neutral daylight and ordinary tile wall.",
+        "Plain closed kraft meal boxes, reusable bags, a small unmarked ivory activity notebook and clean folded kitchen towels on a community table, warm quiet documentary still life."
+      ]
+    },
+    {
+      "id": "story-club-year-in-frames",
+      "title": "한 해의 시선",
+      "englishTitle": "the way\nwe saw it",
+      "subtitle": "출사와 전시 준비를 한 권의 사진 동아리 연감으로",
+      "premium": true,
+      "catalogId": -9731,
+      "coverStyle": 15,
+      "paperLabel": "전시 작품 인덱스",
+      "motifLabel": "세 장의 전시 프레임",
+      "tags": [
+        "동아리",
+        "사진전",
+        "전시",
+        "연감"
+      ],
+      "chapters": [
+        "같은 질문에서",
+        "한 해의 첫 출사",
+        "장면을 모으는 사람들",
+        "사진을 고르는 오후",
+        "작은 작업 테이블",
+        "인화지를 펼치고",
+        "벽 앞에서 고민한 것",
+        "제목을 붙이는 시간",
+        "전시의 첫 아침",
+        "함께 서는 작품 앞",
+        "철수 뒤의 빈 벽",
+        "다음 시선을 향해"
+      ],
+      "context": "An ordinary Korean adult amateur photography club preparing a small community exhibition, three everyday members aged 25 to 50 with average bodies, one woman with round glasses and a simple bob, one middle-aged man in faded navy shirt, another woman in a plain oatmeal top. A modest ivory-walled neighborhood gallery, inexpensive light oak frames, simple prints showing generic nature, matte paper, no logos or readable exhibition text. Neutral daylight, no glamour.",
+      "scenes": [
+        "Wide candid photograph of the three ordinary club members arranging a small framed-photo exhibition on an ivory gallery wall, natural unposed work, everyday faces and clothes, warm light oak frames with landscape images, large calm wall space.",
+        "Close-up of adult hands wearing simple cotton gloves aligning a matte landscape print and oak frame on an ordinary work table, framing tools, blank ivory labels, natural real skin.",
+        "Candid mid-distance view of the same modest club exhibit, two ordinary adult members discussing the spacing of framed photos while a third holds a small spirit level, glasses and everyday appearance, no posed portraits.",
+        "Quiet small community gallery corner with three modest oak-framed landscape photographs and a simple bench, no labels or readable text, soft window light.",
+        "A small stack of matte landscape prints, cotton gloves, plain mounting tape and blank ivory title cards on a scuffed oak gallery work table after installation."
+      ]
+    },
+    {
+      "id": "story-club-before-curtain",
+      "title": "막이 오르기 전",
+      "englishTitle": "before\nthe curtain",
+      "subtitle": "연습·백스테이지·공연을 함께 담는 연극 동아리 연감",
+      "premium": true,
+      "catalogId": -9732,
+      "coverStyle": 16,
+      "paperLabel": "공연 큐시트 폴리오",
+      "motifLabel": "열리는 작은 커튼",
+      "tags": [
+        "동아리",
+        "연극",
+        "공연",
+        "백스테이지"
+      ],
+      "chapters": [
+        "처음 모인 대본 리딩",
+        "우리의 배역",
+        "하나의 장면을 만들고",
+        "무대 위 동선을 따라",
+        "소품을 고르는 손",
+        "조명이 켜진 연습",
+        "리허설의 작은 실수",
+        "서로에게 건넨 응원",
+        "막이 오르기 직전",
+        "함께 만든 무대",
+        "인사를 마친 뒤",
+        "다음 이야기를 기다리며"
+      ],
+      "context": "An ordinary Korean amateur theater club of three adults aged 20 to 45, everyday average faces and body types, one woman with simple glasses, a man with a broad ordinary face and relaxed build, another woman with a plain ponytail. Modest black-box community theater, charcoal curtains, ordinary scuffed wooden stage, practical ivory rehearsal shirts and jeans, no theatrical beauty makeup, simple chairs and blank script pages, restrained warm stage work lights.",
+      "scenes": [
+        "Wide candid documentary photo of three ordinary adult theater-club members rehearsing with simple chairs on a small scuffed stage, charcoal curtain and warm work lights, natural gestures and unstyled faces, no glamour.",
+        "Close-up of ordinary adult hands holding plain script pages with no readable writing, a simple stage pencil and strips of muted mint floor tape, realistic working rehearsal details.",
+        "Side-back candid photograph of the everyday amateur actors quietly encouraging each other behind a charcoal curtain before a performance, casual rehearsal clothes and normal faces, no beauty retouch.",
+        "An empty small black-box theater stage with two plain chairs and a partly drawn charcoal curtain, warm side work light and simple mint stage marks on floor, atmospheric but real.",
+        "A plain script notebook without writing, a worn pencil, simple fabric prop scarf and a roll of mint stage-marking tape on a backstage wooden chair, naturally arranged."
+      ]
+    },
+    {
+      "id": "story-club-same-beat",
+      "title": "같은 박자의 우리",
+      "englishTitle": "in our\nown rhythm",
+      "subtitle": "연습실에서 무대까지 움직임을 모으는 댄스 동아리 북",
+      "premium": true,
+      "catalogId": -9733,
+      "coverStyle": 17,
+      "paperLabel": "연습 카운트 기록지",
+      "motifLabel": "서로 다른 네 박",
+      "tags": [
+        "동아리",
+        "댄스",
+        "춤",
+        "연습",
+        "공연"
+      ],
+      "chapters": [
+        "음악을 고른 날",
+        "각자의 첫 동작",
+        "카운트를 맞추며",
+        "거울 앞의 우리",
+        "같은 구간을 다시",
+        "잠시 숨을 고르고",
+        "달라진 작은 디테일",
+        "동선을 그리는 시간",
+        "무대 전 마지막 연습",
+        "같은 박자의 순간",
+        "인사 뒤의 웃음",
+        "다음 곡의 첫 박자"
+      ],
+      "context": "An ordinary Korean amateur adult dance club of three friends in their twenties and thirties with visibly varied average body types, including a slightly stocky person and a person wearing simple glasses. Plain loose charcoal T-shirts, gray sweatpants and ordinary worn trainers; practical non-styled hair, no beauty makeup, no athletic-model or idol styling. Modest community dance practice room, pale oak floor, plain ivory wall, one mirror edge, soft ceiling and window light.",
+      "scenes": [
+        "Wide candid documentary photo of three ordinary amateur adults practicing a simple dance sequence together, relaxed non-perfect synchronization, average varied body shapes in loose T-shirts and sweatpants, natural faces, whole bodies fully inside frame, modest practice room.",
+        "Close-up at floor level of three pairs of ordinary worn trainers near pale mint floor position markers on an oak dance floor, natural feet positions, no bodies cropped into awkward poses.",
+        "Candid side view of the ordinary club members taking a seated water break against an ivory practice-room wall, natural slight sweat and tired smiles, glasses and average body types, no idol beauty.",
+        "Empty modest dance studio with pale oak floor, quiet mirror edge and a few mint position markers, plain practical light and calm negative space, no neon or promotional banners.",
+        "Plain unbranded portable speaker, loosely folded charcoal practice shirts, water bottles and a blank ivory rehearsal notebook on a modest studio bench, lived-in documentary still life."
+      ]
+    },
+    {
+      "id": "story-club-campfire-names",
+      "title": "모닥불 곁의 이름들",
+      "englishTitle": "under\nthe same sky",
+      "subtitle": "준비부터 마지막 철수까지 함께 엮는 캠핑 동아리 북",
+      "premium": true,
+      "catalogId": -9734,
+      "coverStyle": 18,
+      "paperLabel": "캠프 준비 체크 폴더",
+      "motifLabel": "텐트와 작은 별",
+      "tags": [
+        "동아리",
+        "캠핑",
+        "아웃도어",
+        "캠프"
+      ],
+      "chapters": [
+        "함께 정한 주말",
+        "장비를 나누고",
+        "오늘의 캠프 자리",
+        "천천히 세우는 텐트",
+        "서툰 한 끼의 준비",
+        "같이 앉는 저녁",
+        "작은 불을 바라보며",
+        "밤에 나눈 이야기",
+        "먼저 깬 아침",
+        "한 잔의 따뜻한 물",
+        "흔적 없이 정리하고",
+        "다음 하늘 아래서"
+      ],
+      "context": "An ordinary adult camping club of three Korean friends aged 30 to 50, average bodies and everyday faces with simple glasses on one member, practical old sweatshirts, faded jeans and affordable jackets in oatmeal, charcoal and muted moss. Modest legal campground under ordinary trees, a small unbranded beige tent, plain folding chairs and safe contained fire pit. Authentic non-luxury camping, no curated influencer gear, natural afternoon and warm dusk light.",
+      "scenes": [
+        "Wide candid photograph of three ordinary adults sitting casually in folding chairs around a small contained fire pit at a modest tree-lined campground beside a simple beige tent, everyday normal faces, no beauty posing, soft early dusk.",
+        "Close-up of ordinary adult hands fastening a simple beige tent guyline and peg into earth at a campground, affordable practical jacket sleeve, realistic gear mechanics and natural skin.",
+        "Candid mid-distance side view of the ordinary friends cooking a simple pot meal together on a stable low camp table, modest gear, slightly rumpled practical clothes and relaxed normal expressions.",
+        "Quiet morning photograph of the small beige tent beneath trees, simple folding chairs, pale mist and a plain metal kettle on a safe camp table, no people.",
+        "A few plain enamel mugs, a folded blank camp checklist, cotton gloves and a packed fabric tent bag on a modest folding camp table, natural morning light."
+      ]
+    },
+    {
+      "id": "story-club-shared-hands",
+      "title": "손끝이 모이는 자리",
+      "englishTitle": "made\nin good company",
+      "subtitle": "함께 배우고 완성한 작업을 담는 공예 동아리 작품집",
+      "premium": true,
+      "catalogId": -9735,
+      "coverStyle": 19,
+      "paperLabel": "작품 제작 기록 카드",
+      "motifLabel": "실과 작은 바늘",
+      "tags": [
+        "동아리",
+        "공예",
+        "뜨개",
+        "수예",
+        "작품집"
+      ],
+      "chapters": [
+        "오늘의 재료들",
+        "함께 고른 색",
+        "첫 코를 만들고",
+        "서툰 손을 도우며",
+        "각자의 작은 변화",
+        "테이블 위의 대화",
+        "잠시 쉬는 손끝",
+        "하나씩 모양을 갖추고",
+        "완성한 것을 펼치며",
+        "작품에 이름을 붙이고",
+        "남은 실을 정리하며",
+        "다음에 만들 이야기"
+      ],
+      "context": "An ordinary Korean adult neighborhood handcraft and knitting club of three women aged 30 to 60 with visibly ordinary varied faces and average body types, one with short practical hair and glasses, one with natural graying hair, another with a simple ponytail. Plain slightly worn cardigans and cotton shirts, no makeup styling. Modest community room, an inexpensive oak table, ivory and muted mint yarn, simple wooden knitting needles, handmade small pouches, soft everyday window light.",
+      "scenes": [
+        "Wide candid photograph of the three ordinary adult women knitting small simple pouches and chatting together at an inexpensive community table, everyday varied faces and body shapes, natural graying hair and glasses visible, no beauty retouch or coordinated outfits.",
+        "Close-up of ordinary slightly aged adult hands knitting with ivory yarn and simple wooden needles beside a muted mint yarn ball on an oak table, anatomically believable hands, natural skin texture.",
+        "Candid side view of one ordinary bespectacled club member helping another learn a stitch, simple worn cardigans, everyday faces and posture, no posed model smiles.",
+        "A quiet community craft table with several small handmade ivory and mint knitted pouches laid out to dry, plain chairs and an ivory wall in soft daylight, no people or text.",
+        "Simple finished knitted pouches, leftover ivory and mint yarn, wooden needles and blank ivory project cards on the ordinary work table, tactile and naturally imperfect handmade detail."
+      ]
+    }
+  ],
+  "jobs": [
+    {
+      "editionId": "story-club-photowalk",
+      "file": "story-club-photowalk/01.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: A small neighborhood photography club in an ordinary Korean town: three everyday adult friends, two women and a man aged 25 to 45, one member with simple round glasses. Average builds, individual plain casual clothes: faded blue jeans, oatmeal cardigan, charcoal hoodie, dull mint tote. Modest cameras, ordinary alley and small local cafe, unpolished lived-in places, calm daylight.\nPhotograph: Wide candid group photograph of the three ordinary club members walking and chatting along a quiet neighborhood alley, one holding a small camera. Natural unposed expressions, no one looking at the camera, whole people inside the central area.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-355e8c05-2750-4fc0-8429-3f74bfe31ab1.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-photowalk/01.jpg",
+      "sha256": "ea9a8fd2e3e0b97be3ae326406a3ebca7774e33b7df7c802e647adaea8851bae",
+      "bytes": 632464
+    },
+    {
+      "editionId": "story-club-photowalk",
+      "file": "story-club-photowalk/02.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: A small neighborhood photography club in an ordinary Korean town: three everyday adult friends, two women and a man aged 25 to 45, one member with simple round glasses. Average builds, individual plain casual clothes: faded blue jeans, oatmeal cardigan, charcoal hoodie, dull mint tote. Modest cameras, ordinary alley and small local cafe, unpolished lived-in places, calm daylight.\nPhotograph: Close-up of an ordinary adult's hands checking a simple unbranded camera beside a blank field notebook on a worn cafe table, oatmeal sleeve and dull mint tote corner, natural hands and realistic equipment.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-ffa0e22c-6e9f-4689-a012-f4334acf150f.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-photowalk/02.jpg",
+      "sha256": "1da2704909c586d0720458bc5167f7f49cb0cade304c697ccc8c8c0b93d0c50f",
+      "bytes": 513064
+    },
+    {
+      "editionId": "story-club-photowalk",
+      "file": "story-club-photowalk/03.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: A small neighborhood photography club in an ordinary Korean town: three everyday adult friends, two women and a man aged 25 to 45, one member with simple round glasses. Average builds, individual plain casual clothes: faded blue jeans, oatmeal cardigan, charcoal hoodie, dull mint tote. Modest cameras, ordinary alley and small local cafe, unpolished lived-in places, calm daylight.\nPhotograph: A candid side view of the three club members comparing a camera's screen together at a neighborhood corner, screen dark and unreadable. Everyday faces with glasses and unretouched skin, interested rather than posed.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-f685e52d-4189-46ba-84d3-c6987a26bc96.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-photowalk/03.jpg",
+      "sha256": "15da49edf190a9bbc145f256d3027a3cedf0af251e8cbaed7f8b4a4095aaed88",
+      "bytes": 431997
+    },
+    {
+      "editionId": "story-club-photowalk",
+      "file": "story-club-photowalk/04.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: A small neighborhood photography club in an ordinary Korean town: three everyday adult friends, two women and a man aged 25 to 45, one member with simple round glasses. Average builds, individual plain casual clothes: faded blue jeans, oatmeal cardigan, charcoal hoodie, dull mint tote. Modest cameras, ordinary alley and small local cafe, unpolished lived-in places, calm daylight.\nPhotograph: Quiet alley with utility poles, simple neutral storefronts without readable signage, afternoon shadows and a small potted plant beside an old doorway. Ordinary place seen attentively.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-c0a6733c-41de-419d-8437-15c52121a91d.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-photowalk/04.jpg",
+      "sha256": "e6fcbcee2f3ffcb099dce251550d6e05ab092be5a2aaad50204bee627e191bca",
+      "bytes": 573572
+    },
+    {
+      "editionId": "story-club-photowalk",
+      "file": "story-club-photowalk/05.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: A small neighborhood photography club in an ordinary Korean town: three everyday adult friends, two women and a man aged 25 to 45, one member with simple round glasses. Average builds, individual plain casual clothes: faded blue jeans, oatmeal cardigan, charcoal hoodie, dull mint tote. Modest cameras, ordinary alley and small local cafe, unpolished lived-in places, calm daylight.\nPhotograph: Three small plain cameras, a blank contact-sheet notebook, cafe cups and a folded mint cloth on a scuffed wooden table after a photo walk, relaxed unstyled arrangement.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-aa77e082-8281-4755-83b8-f7ad4d49a5db.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-photowalk/05.jpg",
+      "sha256": "6b16bc54f4b582c18b920c1b095340cc467b38a0cc441ede80f95891b8791d57",
+      "bytes": 611295
+    },
+    {
+      "editionId": "story-club-book-circle",
+      "file": "story-club-book-circle/01.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean neighborhood adult reading club of three adults aged 30 to 50, one woman with short hair and simple glasses, one woman with a plain ponytail, one man with a soft average build. Simple sweaters and worn cardigans, no styling. Modest community library meeting room, inexpensive oak table, ivory walls, everyday cups, books with completely blank covers, diffused window light.\nPhotograph: Wide candid view of the three ordinary adults at a small library table reading and talking with blank-cover books, natural slightly asymmetrical faces and average bodies, no beauty posing, cozy real meeting.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-48d9153d-82c1-475e-80dc-bf6de42173f2.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-book-circle/01.jpg",
+      "sha256": "05da72f5dba6c5e6cc46d98d91a530ce94f24c08de07e47edc7f5cfc3a6baefa",
+      "bytes": 389439
+    },
+    {
+      "editionId": "story-club-book-circle",
+      "file": "story-club-book-circle/02.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean neighborhood adult reading club of three adults aged 30 to 50, one woman with short hair and simple glasses, one woman with a plain ponytail, one man with a soft average build. Simple sweaters and worn cardigans, no styling. Modest community library meeting room, inexpensive oak table, ivory walls, everyday cups, books with completely blank covers, diffused window light.\nPhotograph: Close-up of a hand placing an unmarked paper bookmark into a blank-cover book on a scratched oak table, simple ceramic cup and ordinary pencil nearby, realistic paper and skin.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-32edfbcd-2745-47d6-91ec-3ddfecb131cb.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-book-circle/02.jpg",
+      "sha256": "2a73dd0fd3e42f0ad4812bfc894c9dcd52501fcc50f6308b52a8ce34ddd991ab",
+      "bytes": 415835
+    },
+    {
+      "editionId": "story-club-book-circle",
+      "file": "story-club-book-circle/03.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean neighborhood adult reading club of three adults aged 30 to 50, one woman with short hair and simple glasses, one woman with a plain ponytail, one man with a soft average build. Simple sweaters and worn cardigans, no styling. Modest community library meeting room, inexpensive oak table, ivory walls, everyday cups, books with completely blank covers, diffused window light.\nPhotograph: Side view of one bespectacled short-haired ordinary woman listening while another member talks, three members around the table, relaxed posture and casual cardigans, no frontal portrait posing.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-4500aeef-fae4-4808-aab9-d295e946104a.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-book-circle/03.jpg",
+      "sha256": "9483eaec8c3c50b536c08eba0fbd43431900c15f30f92d91661a27a3f496199f",
+      "bytes": 368750
+    },
+    {
+      "editionId": "story-club-book-circle",
+      "file": "story-club-book-circle/04.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean neighborhood adult reading club of three adults aged 30 to 50, one woman with short hair and simple glasses, one woman with a plain ponytail, one man with a soft average build. Simple sweaters and worn cardigans, no styling. Modest community library meeting room, inexpensive oak table, ivory walls, everyday cups, books with completely blank covers, diffused window light.\nPhotograph: Quiet unoccupied corner of a modest community library, plain shelves with neutral indistinct book spines, inexpensive chairs and soft daylight, no readable titles.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-0e01d001-282c-4b03-926e-676e78090499.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-book-circle/04.jpg",
+      "sha256": "5524a1658f3dcbcf344e4815639f42b21ba83bb38fb5b8b5ff5dae18188ce831",
+      "bytes": 429147
+    },
+    {
+      "editionId": "story-club-book-circle",
+      "file": "story-club-book-circle/05.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean neighborhood adult reading club of three adults aged 30 to 50, one woman with short hair and simple glasses, one woman with a plain ponytail, one man with a soft average build. Simple sweaters and worn cardigans, no styling. Modest community library meeting room, inexpensive oak table, ivory walls, everyday cups, books with completely blank covers, diffused window light.\nPhotograph: A small stack of blank-cover books, ordinary spectacles, a pencil and loose ivory reading cards on the meeting table, tea cup rings and a pale mint fabric bag, natural documentary still life.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-26746ae8-fa81-4c7d-ab2a-29498569fb0d.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-book-circle/05.jpg",
+      "sha256": "84fd86fb3d2dbf31d0736f0e1ec6ba2f2e4b87aed82cebc5e26a0fcda654b84e",
+      "bytes": 458926
+    },
+    {
+      "editionId": "story-club-weekend-trail",
+      "file": "story-club-weekend-trail/01.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean weekend hiking club of three adults aged 30 to 55, mixed genders and average builds, one member with glasses. Affordable worn outdoor clothes in charcoal, oatmeal and muted moss green, plain small daypacks, no outdoor fashion advertising. Easy wooded suburban hill trail in Korea, overcast morning and soft forest light.\nPhotograph: Wide candid photograph of the three ordinary adult hikers walking together on a gentle forest trail seen from rear and side, relaxed chatting, complete bodies and natural walking positions, ordinary worn gear.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-b369fdf1-f46e-4869-84c8-4c13ac1719f7.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-weekend-trail/01.jpg",
+      "sha256": "bab4f7f23fa636dfe1bbd3511fe100d3b80ad8c9f42d764b16e5239573ae5adf",
+      "bytes": 739679
+    },
+    {
+      "editionId": "story-club-weekend-trail",
+      "file": "story-club-weekend-trail/02.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean weekend hiking club of three adults aged 30 to 55, mixed genders and average builds, one member with glasses. Affordable worn outdoor clothes in charcoal, oatmeal and muted moss green, plain small daypacks, no outdoor fashion advertising. Easy wooded suburban hill trail in Korea, overcast morning and soft forest light.\nPhotograph: Close-up of hands sharing tangerines at a small rest-stop bench, everyday backpacks and a plain stainless thermos, forest light, natural adult hands, unstyled.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-a5f51ad1-2a83-46cd-baf3-afb517a663bb.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-weekend-trail/02.jpg",
+      "sha256": "87e8c8af837085076957bf402c21eb1dcdc3e4ffb205057337df2c076770cd11",
+      "bytes": 513163
+    },
+    {
+      "editionId": "story-club-weekend-trail",
+      "file": "story-club-weekend-trail/03.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean weekend hiking club of three adults aged 30 to 55, mixed genders and average builds, one member with glasses. Affordable worn outdoor clothes in charcoal, oatmeal and muted moss green, plain small daypacks, no outdoor fashion advertising. Easy wooded suburban hill trail in Korea, overcast morning and soft forest light.\nPhotograph: Three everyday club members taking a seated break on a low hillside bench, slightly tired genuine smiles and ordinary faces, average body proportions, one with glasses, quiet natural woods.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-235ea0c0-54f5-4b85-b611-23f9935292d6.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-weekend-trail/03.jpg",
+      "sha256": "a2aee389df3517c2145082afd4fe5f7edd0480e5c2eba4fd71d71c11e093d4fa",
+      "bytes": 585724
+    },
+    {
+      "editionId": "story-club-weekend-trail",
+      "file": "story-club-weekend-trail/04.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean weekend hiking club of three adults aged 30 to 55, mixed genders and average builds, one member with glasses. Affordable worn outdoor clothes in charcoal, oatmeal and muted moss green, plain small daypacks, no outdoor fashion advertising. Easy wooded suburban hill trail in Korea, overcast morning and soft forest light.\nPhotograph: A simple forest footpath curving between native trees toward a low ridge, no dramatic alpine scenery, ordinary local trail, soft light and earthy muted tones.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-5140206c-8e2a-4d0e-8041-95d211b6c199.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-weekend-trail/04.jpg",
+      "sha256": "45b46778d74a5cbbea3e2aa9371a5fa608b32d5d06975a5a9c9186c458ae7d02",
+      "bytes": 652071
+    },
+    {
+      "editionId": "story-club-weekend-trail",
+      "file": "story-club-weekend-trail/05.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean weekend hiking club of three adults aged 30 to 55, mixed genders and average builds, one member with glasses. Affordable worn outdoor clothes in charcoal, oatmeal and muted moss green, plain small daypacks, no outdoor fashion advertising. Easy wooded suburban hill trail in Korea, overcast morning and soft forest light.\nPhotograph: Plain daypacks, folded paper route map with no writing, a steel thermos and a few tangerines on a wooden rest table under trees, naturally used objects, no branding.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-d68420fb-d676-44c3-aa6b-fe4e6318af1a.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-weekend-trail/05.jpg",
+      "sha256": "23d8d603a12346123aafd53011b63d2e86c294eb889ec661408df4714a62a197",
+      "bytes": 575850
+    },
+    {
+      "editionId": "story-club-rehearsal-room",
+      "file": "story-club-rehearsal-room/01.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean amateur band club: three adult friends in their twenties and thirties, average bodies and everyday non-model faces; one man with black rectangular glasses and an old charcoal sweatshirt, one woman with short plain hair in an oatmeal knit, another man in a faded denim shirt. Small affordable basement rehearsal room with dark gray acoustic panels and warm ordinary ceiling lights, plain mint tape on cables, unbranded guitar, simple keyboard and compact drum kit.\nPhotograph: Wide candid photograph of three ordinary adult friends practicing guitar, keyboard and drums together in a modest rehearsal room, relaxed concentration, practical everyday clothes and imperfect normal skin, no stage glamour.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-b097113e-d1e3-45f7-b5ee-e7e957220771.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-rehearsal-room/01.jpg",
+      "sha256": "12b8e12d27a0918392fee199644ebbf3404a78f6cbfb97abbc121739a21dcc5d",
+      "bytes": 458592
+    },
+    {
+      "editionId": "story-club-rehearsal-room",
+      "file": "story-club-rehearsal-room/02.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean amateur band club: three adult friends in their twenties and thirties, average bodies and everyday non-model faces; one man with black rectangular glasses and an old charcoal sweatshirt, one woman with short plain hair in an oatmeal knit, another man in a faded denim shirt. Small affordable basement rehearsal room with dark gray acoustic panels and warm ordinary ceiling lights, plain mint tape on cables, unbranded guitar, simple keyboard and compact drum kit.\nPhotograph: Close-up of ordinary adult hands plugging a guitar cable into a small unbranded amplifier, worn charcoal sweatshirt sleeve, coiled cable and mint tape on floor, mechanically correct connection.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-985da6e7-934f-45dc-b35e-a49f18d0bde2.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-rehearsal-room/02.jpg",
+      "sha256": "fa7157f63315562f4f96fe8f8e9b1d7369ad9fd81715edeb56ac9445e3d6ff2a",
+      "bytes": 496657
+    },
+    {
+      "editionId": "story-club-rehearsal-room",
+      "file": "story-club-rehearsal-room/03.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean amateur band club: three adult friends in their twenties and thirties, average bodies and everyday non-model faces; one man with black rectangular glasses and an old charcoal sweatshirt, one woman with short plain hair in an oatmeal knit, another man in a faded denim shirt. Small affordable basement rehearsal room with dark gray acoustic panels and warm ordinary ceiling lights, plain mint tape on cables, unbranded guitar, simple keyboard and compact drum kit.\nPhotograph: Candid side view of three ordinary adult band members laughing during a pause, rectangular glasses and ordinary casual hair, instruments resting safely nearby, small real rehearsal room.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-729feb84-6432-4340-b876-97dfeef5744c.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-rehearsal-room/03.jpg",
+      "sha256": "6549a78b05964fbf8a74df8ac20e473cc2107eb5ace0bc68db1a48e27783217a",
+      "bytes": 449728
+    },
+    {
+      "editionId": "story-club-rehearsal-room",
+      "file": "story-club-rehearsal-room/04.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean amateur band club: three adult friends in their twenties and thirties, average bodies and everyday non-model faces; one man with black rectangular glasses and an old charcoal sweatshirt, one woman with short plain hair in an oatmeal knit, another man in a faded denim shirt. Small affordable basement rehearsal room with dark gray acoustic panels and warm ordinary ceiling lights, plain mint tape on cables, unbranded guitar, simple keyboard and compact drum kit.\nPhotograph: Empty rehearsal room after practice, compact drum kit, simple keyboard, guitar on stand, worn stools and gray acoustic panels, no concert lights, warm practical ceiling light.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-bb6daca6-eef2-48e5-8e68-6d94aa247a23.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-rehearsal-room/04.jpg",
+      "sha256": "9248a8c1a4831714cb96fbed181b924a942b1374616c683ca6a53fbc84aa19f5",
+      "bytes": 601488
+    },
+    {
+      "editionId": "story-club-rehearsal-room",
+      "file": "story-club-rehearsal-room/05.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean amateur band club: three adult friends in their twenties and thirties, average bodies and everyday non-model faces; one man with black rectangular glasses and an old charcoal sweatshirt, one woman with short plain hair in an oatmeal knit, another man in a faded denim shirt. Small affordable basement rehearsal room with dark gray acoustic panels and warm ordinary ceiling lights, plain mint tape on cables, unbranded guitar, simple keyboard and compact drum kit.\nPhotograph: Unbranded guitar picks, plain earplugs, coiled instrument cable with mint tape and an empty ivory rehearsal notebook on a scuffed stool, documentary detail.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-47d8125f-18d4-4172-b987-57cca3d691ed.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-rehearsal-room/05.jpg",
+      "sha256": "06a3d62905b8de31665d26363179f6e32acddfc7e89baa73b6d91358649b25d7",
+      "bytes": 429065
+    },
+    {
+      "editionId": "story-club-kind-saturday",
+      "file": "story-club-kind-saturday/01.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: A small neighborhood volunteer club in a modest Korean community-center kitchen: three ordinary adult volunteers aged 25 to 60, mixed genders, average builds, one wearing glasses. Plain practical clothes and simple ivory aprons with muted mint disposable gloves, no matching uniforms or logos. Preparing simple packed meals for community delivery, no recipients or vulnerable people shown, documentary daylight, everyday equipment.\nPhotograph: Wide candid view of three ordinary adult volunteers preparing simple packed lunch boxes side by side in a modest community kitchen, realistic ordinary faces and average bodies, caring focused activity rather than promotional posing.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-7ce27582-f401-452f-9d54-a4a39dafe26c.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-kind-saturday/01.jpg",
+      "sha256": "80d64aa77280c948fc7749fe30c6c4f9aab817d879ac9d05faf029bc499bc3df",
+      "bytes": 471967
+    },
+    {
+      "editionId": "story-club-kind-saturday",
+      "file": "story-club-kind-saturday/02.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: A small neighborhood volunteer club in a modest Korean community-center kitchen: three ordinary adult volunteers aged 25 to 60, mixed genders, average builds, one wearing glasses. Plain practical clothes and simple ivory aprons with muted mint disposable gloves, no matching uniforms or logos. Preparing simple packed meals for community delivery, no recipients or vulnerable people shown, documentary daylight, everyday equipment.\nPhotograph: Close-up of gloved adult hands folding plain lunch boxes with rice and vegetables on a clean practical kitchen table, ivory apron corner, natural everyday setting, no labels.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-a11f2f01-3a19-4eca-a9ab-d40b0b7525b2.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-kind-saturday/02.jpg",
+      "sha256": "8fa41d0ec11a4200761a41d2a67eff94cdf909ab8526b77f0e27710956027f4b",
+      "bytes": 451447
+    },
+    {
+      "editionId": "story-club-kind-saturday",
+      "file": "story-club-kind-saturday/03.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: A small neighborhood volunteer club in a modest Korean community-center kitchen: three ordinary adult volunteers aged 25 to 60, mixed genders, average builds, one wearing glasses. Plain practical clothes and simple ivory aprons with muted mint disposable gloves, no matching uniforms or logos. Preparing simple packed meals for community delivery, no recipients or vulnerable people shown, documentary daylight, everyday equipment.\nPhotograph: Candid side view of the ordinary volunteers passing a plain kraft delivery box to each other, gentle normal expressions and practical slightly rumpled clothes, no staged heroism.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-3e09455e-13a6-45c6-afa4-8f04a3217004.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-kind-saturday/03.jpg",
+      "sha256": "9de0dd0c51738691d898855d42d03fea158ede98b625517b563d23ea7a286ca0",
+      "bytes": 379715
+    },
+    {
+      "editionId": "story-club-kind-saturday",
+      "file": "story-club-kind-saturday/04.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: A small neighborhood volunteer club in a modest Korean community-center kitchen: three ordinary adult volunteers aged 25 to 60, mixed genders, average builds, one wearing glasses. Plain practical clothes and simple ivory aprons with muted mint disposable gloves, no matching uniforms or logos. Preparing simple packed meals for community delivery, no recipients or vulnerable people shown, documentary daylight, everyday equipment.\nPhotograph: A tidy community-center preparation table after the work, a few closed plain meal boxes and folded ivory aprons, soft neutral daylight and ordinary tile wall.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-8c185bf7-7125-4dc3-a9d9-bf8492a081a6.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-kind-saturday/04.jpg",
+      "sha256": "b518b12cba4cd181b998be781eb6c962ca7afb840d4c78c4f872ece8a03a5b29",
+      "bytes": 410054
+    },
+    {
+      "editionId": "story-club-kind-saturday",
+      "file": "story-club-kind-saturday/05.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: A small neighborhood volunteer club in a modest Korean community-center kitchen: three ordinary adult volunteers aged 25 to 60, mixed genders, average builds, one wearing glasses. Plain practical clothes and simple ivory aprons with muted mint disposable gloves, no matching uniforms or logos. Preparing simple packed meals for community delivery, no recipients or vulnerable people shown, documentary daylight, everyday equipment.\nPhotograph: Plain closed kraft meal boxes, reusable bags, a small unmarked ivory activity notebook and clean folded kitchen towels on a community table, warm quiet documentary still life.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-0ae911d5-8e8b-4aeb-aaf3-44fe19bc515b.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-kind-saturday/05.jpg",
+      "sha256": "fd8fc7927968dbb5c5dd5ab0efa564383d3e7eb762e1066685d21c2d8b8537c5",
+      "bytes": 430145
+    },
+    {
+      "editionId": "story-club-year-in-frames",
+      "file": "story-club-year-in-frames/01.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean adult amateur photography club preparing a small community exhibition, three everyday members aged 25 to 50 with average bodies, one woman with round glasses and a simple bob, one middle-aged man in faded navy shirt, another woman in a plain oatmeal top. A modest ivory-walled neighborhood gallery, inexpensive light oak frames, simple prints showing generic nature, matte paper, no logos or readable exhibition text. Neutral daylight, no glamour.\nPhotograph: Wide candid photograph of the three ordinary club members arranging a small framed-photo exhibition on an ivory gallery wall, natural unposed work, everyday faces and clothes, warm light oak frames with landscape images, large calm wall space.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-ef3432fa-ebdc-4985-8351-973355f0289b.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-year-in-frames/01.jpg",
+      "sha256": "4e1f92d9b172d30eebd3370a9057bdf2aec6825834a4d9b3eaf187e2609d4772",
+      "bytes": 380454
+    },
+    {
+      "editionId": "story-club-year-in-frames",
+      "file": "story-club-year-in-frames/02.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean adult amateur photography club preparing a small community exhibition, three everyday members aged 25 to 50 with average bodies, one woman with round glasses and a simple bob, one middle-aged man in faded navy shirt, another woman in a plain oatmeal top. A modest ivory-walled neighborhood gallery, inexpensive light oak frames, simple prints showing generic nature, matte paper, no logos or readable exhibition text. Neutral daylight, no glamour.\nPhotograph: Close-up of adult hands wearing simple cotton gloves aligning a matte landscape print and oak frame on an ordinary work table, framing tools, blank ivory labels, natural real skin.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-7629d248-cbae-43db-bce8-630072d84619.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-year-in-frames/02.jpg",
+      "sha256": "db5b06c692f9f2227f487f4c76f52030956ca0a7964f62f7f9d7a4c161b75852",
+      "bytes": 450547
+    },
+    {
+      "editionId": "story-club-year-in-frames",
+      "file": "story-club-year-in-frames/03.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean adult amateur photography club preparing a small community exhibition, three everyday members aged 25 to 50 with average bodies, one woman with round glasses and a simple bob, one middle-aged man in faded navy shirt, another woman in a plain oatmeal top. A modest ivory-walled neighborhood gallery, inexpensive light oak frames, simple prints showing generic nature, matte paper, no logos or readable exhibition text. Neutral daylight, no glamour.\nPhotograph: Candid mid-distance view of the same modest club exhibit, two ordinary adult members discussing the spacing of framed photos while a third holds a small spirit level, glasses and everyday appearance, no posed portraits.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-ea6e0104-a273-4519-97c9-8eae872b341b.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-year-in-frames/03.jpg",
+      "sha256": "d9428c78ce2e527cd098ddbd8c41c60487f9da2839cb9af5e7b731618e9d6f86",
+      "bytes": 368525
+    },
+    {
+      "editionId": "story-club-year-in-frames",
+      "file": "story-club-year-in-frames/04.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean adult amateur photography club preparing a small community exhibition, three everyday members aged 25 to 50 with average bodies, one woman with round glasses and a simple bob, one middle-aged man in faded navy shirt, another woman in a plain oatmeal top. A modest ivory-walled neighborhood gallery, inexpensive light oak frames, simple prints showing generic nature, matte paper, no logos or readable exhibition text. Neutral daylight, no glamour.\nPhotograph: Quiet small community gallery corner with three modest oak-framed landscape photographs and a simple bench, no labels or readable text, soft window light.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-72d8d8ec-67a4-4644-bea2-ae8b47224dea.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-year-in-frames/04.jpg",
+      "sha256": "640f6fa534fc717e3e2ea6d892a5c416b12874677fca12806d6c7048d415881c",
+      "bytes": 417452
+    },
+    {
+      "editionId": "story-club-year-in-frames",
+      "file": "story-club-year-in-frames/05.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean adult amateur photography club preparing a small community exhibition, three everyday members aged 25 to 50 with average bodies, one woman with round glasses and a simple bob, one middle-aged man in faded navy shirt, another woman in a plain oatmeal top. A modest ivory-walled neighborhood gallery, inexpensive light oak frames, simple prints showing generic nature, matte paper, no logos or readable exhibition text. Neutral daylight, no glamour.\nPhotograph: A small stack of matte landscape prints, cotton gloves, plain mounting tape and blank ivory title cards on a scuffed oak gallery work table after installation.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-4784e37a-cbaf-4231-879a-8d853825f276.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-year-in-frames/05.jpg",
+      "sha256": "315e800502f9121b765159b586e799b586c9c49642eff63f1d79676c0dfb27f9",
+      "bytes": 491139
+    },
+    {
+      "editionId": "story-club-before-curtain",
+      "file": "story-club-before-curtain/01.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean amateur theater club of three adults aged 20 to 45, everyday average faces and body types, one woman with simple glasses, a man with a broad ordinary face and relaxed build, another woman with a plain ponytail. Modest black-box community theater, charcoal curtains, ordinary scuffed wooden stage, practical ivory rehearsal shirts and jeans, no theatrical beauty makeup, simple chairs and blank script pages, restrained warm stage work lights.\nPhotograph: Wide candid documentary photo of three ordinary adult theater-club members rehearsing with simple chairs on a small scuffed stage, charcoal curtain and warm work lights, natural gestures and unstyled faces, no glamour.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-e832eb29-017f-4e26-945c-b1256bdcc300.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-before-curtain/01.jpg",
+      "sha256": "caeda525a275b7fef55407e6c91df4c59a4cf36f0e385b3aad53cac0d8c5aa4d",
+      "bytes": 525813
+    },
+    {
+      "editionId": "story-club-before-curtain",
+      "file": "story-club-before-curtain/02.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean amateur theater club of three adults aged 20 to 45, everyday average faces and body types, one woman with simple glasses, a man with a broad ordinary face and relaxed build, another woman with a plain ponytail. Modest black-box community theater, charcoal curtains, ordinary scuffed wooden stage, practical ivory rehearsal shirts and jeans, no theatrical beauty makeup, simple chairs and blank script pages, restrained warm stage work lights.\nPhotograph: Close-up of ordinary adult hands holding plain script pages with no readable writing, a simple stage pencil and strips of muted mint floor tape, realistic working rehearsal details.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-74ec29be-c93e-4217-9b3e-4138af82e35d.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-before-curtain/02.jpg",
+      "sha256": "3d4ea7863e022f474e07890a216512b9290725b1e8ee4b78209951b0d582ad11",
+      "bytes": 441053
+    },
+    {
+      "editionId": "story-club-before-curtain",
+      "file": "story-club-before-curtain/03.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean amateur theater club of three adults aged 20 to 45, everyday average faces and body types, one woman with simple glasses, a man with a broad ordinary face and relaxed build, another woman with a plain ponytail. Modest black-box community theater, charcoal curtains, ordinary scuffed wooden stage, practical ivory rehearsal shirts and jeans, no theatrical beauty makeup, simple chairs and blank script pages, restrained warm stage work lights.\nPhotograph: Side-back candid photograph of the everyday amateur actors quietly encouraging each other behind a charcoal curtain before a performance, casual rehearsal clothes and normal faces, no beauty retouch.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-69708dee-e71e-49be-99a4-5f5d2588afeb.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-before-curtain/03.jpg",
+      "sha256": "800f8834f393d342f2a13fdbdb4aaf381ee9bc674b3224c89d8c268d913c6130",
+      "bytes": 390495
+    },
+    {
+      "editionId": "story-club-before-curtain",
+      "file": "story-club-before-curtain/04.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean amateur theater club of three adults aged 20 to 45, everyday average faces and body types, one woman with simple glasses, a man with a broad ordinary face and relaxed build, another woman with a plain ponytail. Modest black-box community theater, charcoal curtains, ordinary scuffed wooden stage, practical ivory rehearsal shirts and jeans, no theatrical beauty makeup, simple chairs and blank script pages, restrained warm stage work lights.\nPhotograph: An empty small black-box theater stage with two plain chairs and a partly drawn charcoal curtain, warm side work light and simple mint stage marks on floor, atmospheric but real.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-69e5cadc-e4e2-4b19-b59d-1a7451e4d17f.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-before-curtain/04.jpg",
+      "sha256": "a3b661ac8dcf1608caca00eb4eb97c423963adcfc19688193494315789c62adc",
+      "bytes": 446074
+    },
+    {
+      "editionId": "story-club-before-curtain",
+      "file": "story-club-before-curtain/05.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean amateur theater club of three adults aged 20 to 45, everyday average faces and body types, one woman with simple glasses, a man with a broad ordinary face and relaxed build, another woman with a plain ponytail. Modest black-box community theater, charcoal curtains, ordinary scuffed wooden stage, practical ivory rehearsal shirts and jeans, no theatrical beauty makeup, simple chairs and blank script pages, restrained warm stage work lights.\nPhotograph: A plain script notebook without writing, a worn pencil, simple fabric prop scarf and a roll of mint stage-marking tape on a backstage wooden chair, naturally arranged.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-940d9731-878d-416a-8068-f729a57ad421.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-before-curtain/05.jpg",
+      "sha256": "4f57db292698e1429ec66ee91c213d7c07412757230bb9e19291a4facd137608",
+      "bytes": 473723
+    },
+    {
+      "editionId": "story-club-same-beat",
+      "file": "story-club-same-beat/01.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean amateur adult dance club of three friends in their twenties and thirties with visibly varied average body types, including a slightly stocky person and a person wearing simple glasses. Plain loose charcoal T-shirts, gray sweatpants and ordinary worn trainers; practical non-styled hair, no beauty makeup, no athletic-model or idol styling. Modest community dance practice room, pale oak floor, plain ivory wall, one mirror edge, soft ceiling and window light.\nPhotograph: Wide candid documentary photo of three ordinary amateur adults practicing a simple dance sequence together, relaxed non-perfect synchronization, average varied body shapes in loose T-shirts and sweatpants, natural faces, whole bodies fully inside frame, modest practice room.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-9c0f412d-3359-44f5-8a7b-de0e2fe43b96.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-same-beat/01.jpg",
+      "sha256": "a760593166450545d6a9f594f03d32ac12ff237f57d5c71b23217ce029762850",
+      "bytes": 342351
+    },
+    {
+      "editionId": "story-club-same-beat",
+      "file": "story-club-same-beat/02.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean amateur adult dance club of three friends in their twenties and thirties with visibly varied average body types, including a slightly stocky person and a person wearing simple glasses. Plain loose charcoal T-shirts, gray sweatpants and ordinary worn trainers; practical non-styled hair, no beauty makeup, no athletic-model or idol styling. Modest community dance practice room, pale oak floor, plain ivory wall, one mirror edge, soft ceiling and window light.\nPhotograph: Close-up at floor level of three pairs of ordinary worn trainers near pale mint floor position markers on an oak dance floor, natural feet positions, no bodies cropped into awkward poses.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-370c47d3-b302-4ac1-991e-a83879d41a5f.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-same-beat/02.jpg",
+      "sha256": "d62077efe10ef5f38be4cd37fbc621d48e2f28f5bb0031485c97f291cf4c207c",
+      "bytes": 428068
+    },
+    {
+      "editionId": "story-club-same-beat",
+      "file": "story-club-same-beat/03.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean amateur adult dance club of three friends in their twenties and thirties with visibly varied average body types, including a slightly stocky person and a person wearing simple glasses. Plain loose charcoal T-shirts, gray sweatpants and ordinary worn trainers; practical non-styled hair, no beauty makeup, no athletic-model or idol styling. Modest community dance practice room, pale oak floor, plain ivory wall, one mirror edge, soft ceiling and window light.\nPhotograph: Candid side view of the ordinary club members taking a seated water break against an ivory practice-room wall, natural slight sweat and tired smiles, glasses and average body types, no idol beauty.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-ddaa4bb4-5e4a-44ce-ad06-9c5ec04e13eb.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-same-beat/03.jpg",
+      "sha256": "f7dca1e0220355443e5742255cd4bd5cc305b249cbfa4caa6c253f597e8f68bf",
+      "bytes": 375903
+    },
+    {
+      "editionId": "story-club-same-beat",
+      "file": "story-club-same-beat/04.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean amateur adult dance club of three friends in their twenties and thirties with visibly varied average body types, including a slightly stocky person and a person wearing simple glasses. Plain loose charcoal T-shirts, gray sweatpants and ordinary worn trainers; practical non-styled hair, no beauty makeup, no athletic-model or idol styling. Modest community dance practice room, pale oak floor, plain ivory wall, one mirror edge, soft ceiling and window light.\nPhotograph: Empty modest dance studio with pale oak floor, quiet mirror edge and a few mint position markers, plain practical light and calm negative space, no neon or promotional banners.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-de6f94ae-efae-4fb3-91c6-c844135af42c.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-same-beat/04.jpg",
+      "sha256": "fdba2dbee733e6c037ed4160f04821556d72f79b7159eaeb0d38d8a770f22020",
+      "bytes": 395215
+    },
+    {
+      "editionId": "story-club-same-beat",
+      "file": "story-club-same-beat/05.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean amateur adult dance club of three friends in their twenties and thirties with visibly varied average body types, including a slightly stocky person and a person wearing simple glasses. Plain loose charcoal T-shirts, gray sweatpants and ordinary worn trainers; practical non-styled hair, no beauty makeup, no athletic-model or idol styling. Modest community dance practice room, pale oak floor, plain ivory wall, one mirror edge, soft ceiling and window light.\nPhotograph: Plain unbranded portable speaker, loosely folded charcoal practice shirts, water bottles and a blank ivory rehearsal notebook on a modest studio bench, lived-in documentary still life.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-2cfd05a9-8bf1-40d4-a15f-90b19f76291a.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-same-beat/05.jpg",
+      "sha256": "d9c806216c20647612d2e480d1485ab18e3eedae8c1debf69181a9010515c1ff",
+      "bytes": 395914
+    },
+    {
+      "editionId": "story-club-campfire-names",
+      "file": "story-club-campfire-names/01.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary adult camping club of three Korean friends aged 30 to 50, average bodies and everyday faces with simple glasses on one member, practical old sweatshirts, faded jeans and affordable jackets in oatmeal, charcoal and muted moss. Modest legal campground under ordinary trees, a small unbranded beige tent, plain folding chairs and safe contained fire pit. Authentic non-luxury camping, no curated influencer gear, natural afternoon and warm dusk light.\nPhotograph: Wide candid photograph of three ordinary adults sitting casually in folding chairs around a small contained fire pit at a modest tree-lined campground beside a simple beige tent, everyday normal faces, no beauty posing, soft early dusk.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-91d9249b-e408-4dd2-a54e-bee2f813b7f6.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-campfire-names/01.jpg",
+      "sha256": "d2c5a20b0d485f0f9baa1d7e5140ddf2122302b3d36bbb52adffe9d6f989528e",
+      "bytes": 681846
+    },
+    {
+      "editionId": "story-club-campfire-names",
+      "file": "story-club-campfire-names/02.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary adult camping club of three Korean friends aged 30 to 50, average bodies and everyday faces with simple glasses on one member, practical old sweatshirts, faded jeans and affordable jackets in oatmeal, charcoal and muted moss. Modest legal campground under ordinary trees, a small unbranded beige tent, plain folding chairs and safe contained fire pit. Authentic non-luxury camping, no curated influencer gear, natural afternoon and warm dusk light.\nPhotograph: Close-up of ordinary adult hands fastening a simple beige tent guyline and peg into earth at a campground, affordable practical jacket sleeve, realistic gear mechanics and natural skin.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-c3079919-cd07-42b7-b55a-fd361913f188.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-campfire-names/02.jpg",
+      "sha256": "8082be05409d5519a1edbf089389db01a30021bf0f97f69b51feafea9ba3bf9e",
+      "bytes": 649041
+    },
+    {
+      "editionId": "story-club-campfire-names",
+      "file": "story-club-campfire-names/03.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary adult camping club of three Korean friends aged 30 to 50, average bodies and everyday faces with simple glasses on one member, practical old sweatshirts, faded jeans and affordable jackets in oatmeal, charcoal and muted moss. Modest legal campground under ordinary trees, a small unbranded beige tent, plain folding chairs and safe contained fire pit. Authentic non-luxury camping, no curated influencer gear, natural afternoon and warm dusk light.\nPhotograph: Candid mid-distance side view of the ordinary friends cooking a simple pot meal together on a stable low camp table, modest gear, slightly rumpled practical clothes and relaxed normal expressions.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-c515d63c-3fd3-4440-a0a8-b8b1bd4ce336.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-campfire-names/03.jpg",
+      "sha256": "530ae5d7124c634a978497a7536b7e1960ae7171f1fae8db894e454f4bfe7c60",
+      "bytes": 569625
+    },
+    {
+      "editionId": "story-club-campfire-names",
+      "file": "story-club-campfire-names/04.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary adult camping club of three Korean friends aged 30 to 50, average bodies and everyday faces with simple glasses on one member, practical old sweatshirts, faded jeans and affordable jackets in oatmeal, charcoal and muted moss. Modest legal campground under ordinary trees, a small unbranded beige tent, plain folding chairs and safe contained fire pit. Authentic non-luxury camping, no curated influencer gear, natural afternoon and warm dusk light.\nPhotograph: Quiet morning photograph of the small beige tent beneath trees, simple folding chairs, pale mist and a plain metal kettle on a safe camp table, no people.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-caf53123-fc8f-41d3-a718-63d664265555.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-campfire-names/04.jpg",
+      "sha256": "6bb97c3f3215888256e9045100cca8c676c97de9ba9df4192a7333291de725c0",
+      "bytes": 803241
+    },
+    {
+      "editionId": "story-club-campfire-names",
+      "file": "story-club-campfire-names/05.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary adult camping club of three Korean friends aged 30 to 50, average bodies and everyday faces with simple glasses on one member, practical old sweatshirts, faded jeans and affordable jackets in oatmeal, charcoal and muted moss. Modest legal campground under ordinary trees, a small unbranded beige tent, plain folding chairs and safe contained fire pit. Authentic non-luxury camping, no curated influencer gear, natural afternoon and warm dusk light.\nPhotograph: A few plain enamel mugs, a folded blank camp checklist, cotton gloves and a packed fabric tent bag on a modest folding camp table, natural morning light.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-773975fa-8684-4df6-93ff-7f96374763f6.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-campfire-names/05.jpg",
+      "sha256": "4f2efc2ef2c182852842966bfb1d8817ce20c56bb10e12dafeb5858b667ed092",
+      "bytes": 653785
+    },
+    {
+      "editionId": "story-club-shared-hands",
+      "file": "story-club-shared-hands/01.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean adult neighborhood handcraft and knitting club of three women aged 30 to 60 with visibly ordinary varied faces and average body types, one with short practical hair and glasses, one with natural graying hair, another with a simple ponytail. Plain slightly worn cardigans and cotton shirts, no makeup styling. Modest community room, an inexpensive oak table, ivory and muted mint yarn, simple wooden knitting needles, handmade small pouches, soft everyday window light.\nPhotograph: Wide candid photograph of the three ordinary adult women knitting small simple pouches and chatting together at an inexpensive community table, everyday varied faces and body shapes, natural graying hair and glasses visible, no beauty retouch or coordinated outfits.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-1e829916-7f92-4320-8d49-9eb97b3b6ad9.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-shared-hands/01.jpg",
+      "sha256": "fe8f5051213b4b82fcd0e5c64a03739ac90dfd807ed659e7f93dae5b9d126caf",
+      "bytes": 511970
+    },
+    {
+      "editionId": "story-club-shared-hands",
+      "file": "story-club-shared-hands/02.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean adult neighborhood handcraft and knitting club of three women aged 30 to 60 with visibly ordinary varied faces and average body types, one with short practical hair and glasses, one with natural graying hair, another with a simple ponytail. Plain slightly worn cardigans and cotton shirts, no makeup styling. Modest community room, an inexpensive oak table, ivory and muted mint yarn, simple wooden knitting needles, handmade small pouches, soft everyday window light.\nPhotograph: Close-up of ordinary slightly aged adult hands knitting with ivory yarn and simple wooden needles beside a muted mint yarn ball on an oak table, anatomically believable hands, natural skin texture.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-d8734c1a-c7d9-4d6f-90ba-48877484311a.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-shared-hands/02.jpg",
+      "sha256": "c66d45a63e9bdc09c177af1f2c9327355bef76275ac679b1f8569900f4b897d6",
+      "bytes": 437262
+    },
+    {
+      "editionId": "story-club-shared-hands",
+      "file": "story-club-shared-hands/03.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean adult neighborhood handcraft and knitting club of three women aged 30 to 60 with visibly ordinary varied faces and average body types, one with short practical hair and glasses, one with natural graying hair, another with a simple ponytail. Plain slightly worn cardigans and cotton shirts, no makeup styling. Modest community room, an inexpensive oak table, ivory and muted mint yarn, simple wooden knitting needles, handmade small pouches, soft everyday window light.\nPhotograph: Candid side view of one ordinary bespectacled club member helping another learn a stitch, simple worn cardigans, everyday faces and posture, no posed model smiles.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-1ee63045-329b-4413-8e46-30c79ffceee6.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-shared-hands/03.jpg",
+      "sha256": "63fc8ba28848c499539805f8dfc2523a46debb6ed680c218bacb94e85584de84",
+      "bytes": 459608
+    },
+    {
+      "editionId": "story-club-shared-hands",
+      "file": "story-club-shared-hands/04.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean adult neighborhood handcraft and knitting club of three women aged 30 to 60 with visibly ordinary varied faces and average body types, one with short practical hair and glasses, one with natural graying hair, another with a simple ponytail. Plain slightly worn cardigans and cotton shirts, no makeup styling. Modest community room, an inexpensive oak table, ivory and muted mint yarn, simple wooden knitting needles, handmade small pouches, soft everyday window light.\nPhotograph: A quiet community craft table with several small handmade ivory and mint knitted pouches laid out to dry, plain chairs and an ivory wall in soft daylight, no people or text.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-be36c2cd-4f09-437e-a1f4-6addfe99f633.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-shared-hands/04.jpg",
+      "sha256": "8a95aad839d59fcc0ae5108b879d3647e6fa5a3f017b74bc5c0f714ce631e841",
+      "bytes": 531989
+    },
+    {
+      "editionId": "story-club-shared-hands",
+      "file": "story-club-shared-hands/05.jpg",
+      "prompt": "Use case: photorealistic-natural. Generate ONE original square 1:1 full-bleed documentary photograph for an exclusive club album. Human appearance MUST be thoroughly ordinary, like a candid snapshot of real neighbors: everyday non-model faces, normal facial proportions and mild asymmetry, visible natural pores, a few small blemishes or fine lines where age appropriate, practical unstyled hair, average varied body shapes, simple ordinary clothes with normal wrinkles, occasional inexpensive glasses. Do NOT glamorize: no celebrities, idols, influencers, fashion models, flawless smooth skin, beauty retouch, perfect symmetrical faces, dramatic jawlines, makeup campaign looks, fashion editorial posing or gym-model physiques. People are adults only. Warm natural color, real ordinary places, authentic unposed interaction and quiet competent photography. The design polish should come from thoughtful framing and light, NOT idealized people. Primary subjects complete within central 75% for portrait/landscape crops. Realistic hands and functional equipment. No text, logos, watermarks, borders, graphic layouts, collages or album mockups.\nSetting: An ordinary Korean adult neighborhood handcraft and knitting club of three women aged 30 to 60 with visibly ordinary varied faces and average body types, one with short practical hair and glasses, one with natural graying hair, another with a simple ponytail. Plain slightly worn cardigans and cotton shirts, no makeup styling. Modest community room, an inexpensive oak table, ivory and muted mint yarn, simple wooden knitting needles, handmade small pouches, soft everyday window light.\nPhotograph: Simple finished knitted pouches, leftover ivory and mint yarn, wooden needles and blank ivory project cards on the ordinary work table, tactile and naturally imperfect handmade detail.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-eba4ccc0-71df-4f4f-8a42-6020b7f6f1b6.png",
+      "assetPath": "assets/templates/club_editions_2026/story-club-shared-hands/05.jpg",
+      "sha256": "47769b1e8aace04215665a9895027573467f9be2b5c5f9bbb5e944704e49ceaf",
+      "bytes": 497219
+    }
+  ],
+  "encoding": "JPEG quality 90, no resize or content edits; original generated PNG retained",
+  "sharedPhotographyDirection": "tool/template_studio/photography_direction.json"
+}

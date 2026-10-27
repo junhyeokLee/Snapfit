@@ -24,7 +24,7 @@ List<List<LayerModel>> editorialPreviewPages(
     .toList();
 
 bool editorialCopyFits(EditorialVolume volume, EditorialCopy copy) {
-  for (final aspect in CollectionAspect.values) {
+  for (final aspect in CollectionAspect.printable) {
     for (final layer in editorialPreviewPages(
       volume,
       aspect,

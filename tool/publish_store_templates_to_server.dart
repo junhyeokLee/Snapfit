@@ -1,9 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'retired_store_catalog_guard.dart';
+
 Future<void> main(List<String> args) async {
-  final input =
-      _arg(args, '--input') ?? 'assets/templates/generated/store_latest.json';
+  final input = _arg(args, '--input');
+  if (input == null || input.trim().isEmpty) {
+    stderr.writeln('Provide --input=<current-template-export.json>.');
+    exit(2);
+  }
   final supabaseUrl =
       _arg(args, '--supabase-url') ??
       Platform.environment['SUPABASE_URL'] ??
@@ -36,6 +41,17 @@ Future<void> main(List<String> args) async {
     return;
   }
 
+  final retired = templates.where(isRetiredStoreCatalogRow).toList();
+  if (retired.isNotEmpty) {
+    stderr.writeln(
+      'Publish blocked: retired store templates cannot be restored.',
+    );
+    for (final item in retired) {
+      stderr.writeln('- ${item['title'] ?? item['id']}');
+    }
+    exit(2);
+  }
+
   final assetIssues = <String>[];
   for (final item in templates) {
     final title = (item['title'] ?? '').toString().trim();
@@ -62,7 +78,12 @@ Future<void> main(List<String> args) async {
     final existingId = existingTemplates[key];
 
     final payload = _buildUpsertPayload(item);
-    if (existingId != null) {
+    final inputId = int.tryParse('${item['id']}');
+    if (inputId != null && inputId < 0) {
+      // Published bundled exports have a stable negative identity. A title
+      // lookup must never turn that identity into a new or unrelated DB ID.
+      payload['id'] = inputId;
+    } else if (existingId != null) {
       payload['id'] = existingId;
     }
 

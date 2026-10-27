@@ -180,7 +180,7 @@ enum StudioEdition {
           )
         : document(CollectionAspect.square)),
     'variants': {
-      for (final a in CollectionAspect.values)
+      for (final a in CollectionAspect.printable)
         a.name: premium
             ? refinePaidCatalogDocument(id, a, document(a))
             : document(a),

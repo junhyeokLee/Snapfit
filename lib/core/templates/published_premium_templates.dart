@@ -25,21 +25,23 @@ final atelierEditionCatalogIds = {
   for (final edition in AtelierEdition.values) edition: edition.catalogId,
 };
 
-String? publishedPremiumProductKey(int catalogId) {
-  for (final edition in StudioEdition.values.where((e) => e.premium)) {
-    if (edition.catalogId == catalogId) return edition.productKey;
-  }
-  for (final edition in AtelierEdition.values) {
-    if (edition.catalogId == catalogId) return edition.productKey;
-  }
-  for (final entry in premiumVolumeCatalogIds.entries) {
-    if (entry.value == catalogId) return 'template:${entry.key.id}';
-  }
-  for (final entry in conceptVolumeCatalogIds.entries) {
-    if (entry.value == catalogId) return 'template:${entry.key.id}';
-  }
-  return null;
-}
+// Metadata only: indexing must never evaluate a template's lazy document.
+// These IDs are fixed and unique across the published catalog.
+final _premiumProductKeys = <int, String>{
+  for (final edition in storyEditions.where((e) => e.isPremium))
+    edition.catalogId: edition.productKey,
+  for (final edition in StudioEdition.values.where((e) => e.premium))
+    edition.catalogId: edition.productKey,
+  for (final edition in AtelierEdition.values)
+    edition.catalogId: edition.productKey,
+  for (final entry in premiumVolumeCatalogIds.entries)
+    entry.value: 'template:${entry.key.id}',
+  for (final entry in conceptVolumeCatalogIds.entries)
+    entry.value: 'template:${entry.key.id}',
+};
+
+String? publishedPremiumProductKey(int catalogId) =>
+    _premiumProductKeys[catalogId];
 
 PremiumVolume? publishedPremiumVolume(int catalogId) => premiumVolumeCatalogIds
     .entries
@@ -57,7 +59,7 @@ Map<String, dynamic> premiumCatalogDocument(
     volume.document(CollectionAspect.square, innerPages: innerPages),
   ),
   'variants': {
-    for (final aspect in CollectionAspect.values)
+    for (final aspect in CollectionAspect.printable)
       aspect.name: refinePaidCatalogDocument(
         volume.id,
         aspect,
@@ -73,7 +75,7 @@ Map<String, dynamic> conceptCatalogDocument(ConceptVolume volume) => {
     volume.document(CollectionAspect.square),
   ),
   'variants': {
-    for (final aspect in CollectionAspect.values)
+    for (final aspect in CollectionAspect.printable)
       aspect.name: refinePaidCatalogDocument(
         volume.id,
         aspect,

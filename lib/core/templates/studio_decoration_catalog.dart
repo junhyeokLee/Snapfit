@@ -6,6 +6,7 @@ part 'keepsake_material_catalog.dart';
 part 'atelier_composition_catalog.dart';
 part 'concept_wave_material_catalog.dart';
 part 'atelier_edition_material_catalog.dart';
+part 'story_edition_material_catalog.dart';
 
 /// Basic photo legibility effects, not independently purchasable materials.
 const photoCoverShadeStyles = {'photoCoverShadeTop', 'photoCoverShadeBottom'};
@@ -52,6 +53,7 @@ class StudioDecorationSpec {
 
 /// Stable keys are stored in album documents. Keep old decorations untouched.
 const studioDecorations = [
+  ...storyEditionDecorations,
   ...atelierEditionDecorations,
   ...conceptWaveDecorations,
   ...keepsakeDecorations,
@@ -623,8 +625,14 @@ const zineDecorations = [
   ),
 ];
 
+// Metadata only; growing the catalog must not grow a linear scan in every
+// thumbnail, editor layer and printed page. No images/documents are cached.
+final _studioDecorationsById = Map<String, StudioDecorationSpec>.unmodifiable({
+  for (final item in studioDecorations) item.id: item,
+});
+
 StudioDecorationSpec? studioDecorationById(String? id) =>
-    studioDecorations.where((item) => item.id == id).firstOrNull;
+    _studioDecorationsById[id];
 
 StudioDecorationSpec? studioDecorationByAsset(String? path) => path == null
     ? null

@@ -5,6 +5,7 @@ import '../../profile/presentation/views/billing_management_screen.dart';
 import '../data/point_shop_provider.dart';
 import '../domain/point_shop_product.dart';
 import 'point_shop_purchase_sheet.dart';
+import '../../../shared/widgets/snapfit_motion.dart';
 
 typedef PointShopAccessGate =
     Future<bool> Function(
@@ -33,9 +34,9 @@ Future<bool> ensurePointShopAccess(
 typedef PointShopTopUp = Future<void> Function(BuildContext context);
 final pointShopTopUpProvider = Provider<PointShopTopUp>(
   (ref) => (context) async {
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute(builder: (_) => const BillingManagementScreen()),
-    );
+    await Navigator.of(
+      context,
+    ).push<void>(snapFitRoute(page: const BillingManagementScreen()));
   },
 );
 

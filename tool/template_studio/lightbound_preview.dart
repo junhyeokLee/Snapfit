@@ -24,7 +24,7 @@ List<List<LayerModel>> lightboundPreviewPages(
     .toList();
 
 bool lightboundCopyFits(LightboundWeddingCopy copy) {
-  for (final aspect in CollectionAspect.values) {
+  for (final aspect in CollectionAspect.printable) {
     for (final layer in lightboundPreviewPages(aspect, copy).expand((p) => p)) {
       if (layer.type != LayerType.text) continue;
       final painter = TextPainter(
@@ -247,7 +247,7 @@ class _AuthoredDraftPreviewState<T> extends State<AuthoredDraftPreview<T>> {
             _load();
           }),
           itemBuilder: (_) => [
-            for (final aspect in CollectionAspect.values)
+            for (final aspect in CollectionAspect.printable)
               PopupMenuItem(value: aspect, child: Text(aspect.cover.name)),
           ],
         ),

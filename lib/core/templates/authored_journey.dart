@@ -13,7 +13,7 @@ Map<String, dynamic> _journeyDraft(
   const train = '${_editorial}journey_train.png';
   const market = '${_editorial}journey_market.png';
   final book = _EditorialBook(EditorialVolume.journey, aspect, paper, ink);
-  final wide = aspect == CollectionAspect.landscape;
+  final wide = aspect.isLandscape;
   final tall = aspect == CollectionAspect.portrait;
   void label(
     _Sheet p,

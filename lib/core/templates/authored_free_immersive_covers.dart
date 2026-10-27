@@ -73,7 +73,7 @@ class _ImmersiveFreeJacket {
   late final Color ink;
   double get w => aspect.canvas.width;
   double get h => aspect.canvas.height;
-  bool get wide => aspect == CollectionAspect.landscape;
+  bool get wide => aspect.isLandscape;
   double get margin => wide ? 23 : 27;
   double get inner => w - margin * 2;
 

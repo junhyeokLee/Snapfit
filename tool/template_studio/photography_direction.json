@@ -1,0 +1,22 @@
+{
+  "revision": "2026-10-25-ordinary-people-exclusive-photos",
+  "appliesTo": "All newly authored template sample photography. Preserve existing and saved artwork unless separately requested.",
+  "sources": {
+    "ownership": "Every template owns its sample photo set, including all interiors and all aspect variants.",
+    "reuse": "Never reuse another template's photograph, including renamed, resized or reencoded copies.",
+    "provenance": "Save the full prompt, generated original path, final workspace asset path and SHA-256 for every photograph."
+  },
+  "people": {
+    "direction": "Ordinary people in plausible everyday situations, with natural unposed expressions and typical varied body types.",
+    "appearance": "Natural skin texture and age-appropriate details, practical hair, ordinary clothing and glasses where appropriate.",
+    "avoid": ["celebrity or idol styling", "fashion-model casting", "beauty retouch", "flawless symmetric faces", "idealized athletic bodies", "coordinated promotional posing"],
+    "principle": "Visual quality comes from framing, storytelling, light and layout, rather than idealizing people's appearance."
+  },
+  "layoutReview": {
+    "aspectRatios": ["portrait", "square", "landscape"],
+    "groupPhotos": "Retain all group members. Recompose the layout when a full-height crop would remove someone.",
+    "type": "Inspect real bundled-font rendering, including mixed Korean/English labels, for missing glyphs, clipping and overlap.",
+    "materials": "Use subtle photo-compatible stationery; keep strong printed rules away from captions.",
+    "performance": "Keep current lazy preparation, decode-size limits and bounded caches. Do not preload a whole collection."
+  }
+}

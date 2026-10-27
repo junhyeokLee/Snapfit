@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT_DIR"
 
-HANDOFF_JSON="assets/templates/save_the_date_handoff.json"
+HANDOFF_JSON=""
 STORE_JSON="assets/templates/generated/store_latest.json"
 CDN_MANIFEST=""
 PAGES="12"
@@ -16,10 +16,10 @@ COUNT_FOR_NOTIFY="1"
 usage() {
   cat <<'EOF'
 Usage:
-  ./scripts/run_figma_template_pipeline.sh [options]
+  ./scripts/run_figma_template_pipeline.sh --handoff=PATH [options]
 
 Options:
-  --handoff=PATH            Handoff JSON path
+  --handoff=PATH            Required, explicitly selected new handoff JSON
   --store=PATH              Generated store template JSON output path
   --pages=N                 Page count (12~24)
   --cdn-manifest=PATH       Optional manifest to rewrite asset URLs to CDN URLs
@@ -49,6 +49,11 @@ for arg in "$@"; do
     *) echo "Unknown option: $arg"; usage; exit 2 ;;
   esac
 done
+
+if [[ -z "$HANDOFF_JSON" ]]; then
+  echo "--handoff=PATH is required; no retired template is selected by default." >&2
+  exit 2
+fi
 
 echo "== Figma Template Pipeline =="
 echo "handoff:      $HANDOFF_JSON"

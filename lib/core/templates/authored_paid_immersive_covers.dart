@@ -389,7 +389,7 @@ class _PaidPhotographicJacket {
   late final Map<String, dynamic> photo;
   double get w => aspect.canvas.width;
   double get h => aspect.canvas.height;
-  bool get wide => aspect == CollectionAspect.landscape;
+  bool get wide => aspect.isLandscape;
   double get margin => wide ? 25 : 31;
   double get inner => w - margin * 2;
   _PaidJacketAnchor get anchor =>

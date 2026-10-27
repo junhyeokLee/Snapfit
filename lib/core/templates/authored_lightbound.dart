@@ -53,7 +53,7 @@ Map<String, dynamic> buildLightboundWeddingDraft(
   const fruit = '${_editorial}daily_fruit.png';
   final pages = <Map<String, dynamic>>[];
   final portrait = aspect == CollectionAspect.portrait;
-  final wide = aspect == CollectionAspect.landscape;
+  final wide = aspect.isLandscape;
   _Sheet sheet([String background = paper, String textInk = ink]) =>
       _Sheet('lightbound', aspect, pages.length, background, ink: textInk);
   void finish(_Sheet page, String name, String role) {

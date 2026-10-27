@@ -18,7 +18,9 @@ const pointShopPricingRevision = pointShopCatalogApprovalRevision;
 
 bool isPendingAtelierMaterialProduct(String key) =>
     !ownerApprovedCatalogProductKeys.contains(key) &&
-    ((key.startsWith('sticker:') &&
+    !freeTemplateMaterialProductKeys.contains(key) &&
+    (storyEditionMaterialKeys.contains(key) ||
+        (key.startsWith('sticker:') &&
             (atelierEditionMaterialPrices[key.substring(8)] ?? 0) > 0) ||
         (key.startsWith('frame:') &&
             (atelierSignaturePhotoFrames.contains(key.substring(6)) ||
@@ -26,11 +28,32 @@ bool isPendingAtelierMaterialProduct(String key) =>
 
 bool pointShopRequiresFreePrice(String productKey) =>
     freeTemplateMaterialProductKeys.contains(productKey) ||
+    storyEditions.any((e) => !e.isPremium && e.productKey == productKey) ||
     authoredCollections.any(
       (collection) => pointShopAuthoredTemplateKey(collection) == productKey,
     );
 
 final pointShopLaunchPrices = Map<String, PointShopLaunchPrice>.unmodifiable({
+  for (final edition in storyEditions) ...{
+    edition.productKey: PointShopLaunchPrice(
+      edition.isPremium ? 1800 : 0,
+      edition.isPremium
+          ? '전용 표지·24쪽 내지와 인쇄 5가지 크기의 스토리 에디션 책정가'
+          : '무료 동아리 완성 템플릿 · 인쇄 5가지 크기과 기본 소재 포함',
+    ),
+    'sticker:${edition.paperId}': PointShopLaunchPrice(
+      edition.isPremium ? 100 : 0,
+      '사진 받침 여백·접지·색인 구조가 있는 편집용 종이',
+    ),
+    'sticker:${edition.motifId}': PointShopLaunchPrice(
+      edition.isPremium ? 200 : 0,
+      '주제별 독립 선화와 투명 여백을 보존한 장식',
+    ),
+    edition.phraseKey: PointShopLaunchPrice(
+      edition.isPremium ? 300 : 0,
+      '영문·한글 제목과 구분선을 개별 수정하는 타이틀 조합',
+    ),
+  },
   for (final frame in atelierStoryPhotoFrames)
     'frame:$frame': PointShopLaunchPrice(
       frame.startsWith('storyVow') ? 400 : 300,
@@ -43,7 +66,7 @@ final pointShopLaunchPrices = Map<String, PointShopLaunchPrice>.unmodifiable({
   for (final collection in authoredCollections)
     pointShopAuthoredTemplateKey(collection): const PointShopLaunchPrice(
       0,
-      '기존 무료 완성 템플릿 기준 유지 · 세 규격 포함',
+      '기존 무료 완성 템플릿 기준 유지 · 인쇄 5가지 크기 포함',
     ),
   for (final entry in atelierEditionMaterialPrices.entries)
     'sticker:${entry.key}': PointShopLaunchPrice(
@@ -217,24 +240,24 @@ final pointShopLaunchPrices = Map<String, PointShopLaunchPrice>.unmodifiable({
   for (final product in pendingPremiumVolumeProducts)
     product.productKey: const PointShopLaunchPrice(
       premiumVolumeLaunchPointPrice,
-      '기본판·확장판과 세 규격을 묶은 컬렉션 출시 가격',
+      '기본판·확장판과 인쇄 5가지 크기을 묶은 컬렉션 출시 가격',
     ),
   for (final product in pendingConceptVolumeProducts)
     product.productKey: const PointShopLaunchPrice(
       conceptVolumeLaunchPointPrice,
-      '컨셉별 24쪽 조판과 세 규격을 묶은 단일 에디션 출시 가격',
+      '컨셉별 24쪽 조판과 인쇄 5가지 크기을 묶은 단일 에디션 출시 가격',
     ),
   for (final product in pendingAtelierEditionProducts)
     product.productKey: const PointShopLaunchPrice(
       atelierEditionProposedPointPrice,
-      '신규 표지 사진·32쪽 조판·세 규격을 묶은 출시 가격',
+      '신규 표지 사진·32쪽 조판·인쇄 5가지 크기을 묶은 출시 가격',
     ),
   for (final product in pendingStudioEditionProducts)
     product.productKey: PointShopLaunchPrice(2800, switch (product.assetId) {
-      'velvet-vow-archive' => '웨딩 접지·서약문·압인 사진 창 · 내지 32쪽 · 세 규격',
-      'little-explorer-book' => '발견 기록·그림책형 조판·전용 사진 창 · 내지 32쪽 · 세 규격',
-      'companion-journal' => '반려생활 매거진 조판 · 내지 32쪽 · 세 규격',
-      'summer-keepsake-box' => '여름 전용 직조·접지·겹침 조판 · 내지 32쪽 · 세 규격',
-      _ => '도시 전용 포토저널 조판 · 내지 32쪽 · 세 규격',
+      'velvet-vow-archive' => '웨딩 접지·서약문·압인 사진 창 · 내지 32쪽 · 인쇄 5가지 크기',
+      'little-explorer-book' => '발견 기록·그림책형 조판·전용 사진 창 · 내지 32쪽 · 인쇄 5가지 크기',
+      'companion-journal' => '반려생활 매거진 조판 · 내지 32쪽 · 인쇄 5가지 크기',
+      'summer-keepsake-box' => '여름 전용 직조·접지·겹침 조판 · 내지 32쪽 · 인쇄 5가지 크기',
+      _ => '도시 전용 포토저널 조판 · 내지 32쪽 · 인쇄 5가지 크기',
     }),
 });

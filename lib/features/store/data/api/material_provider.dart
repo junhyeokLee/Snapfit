@@ -6,6 +6,7 @@ import '../../../../core/supabase/supabase_provider.dart';
 import '../../../../core/templates/studio_decoration_catalog.dart';
 import '../../../../core/templates/studio_phrase_catalog.dart';
 import '../../../../core/templates/studio_word_art_catalog.dart';
+import '../../../../core/templates/story_edition_catalog.dart';
 import '../../../../shared/widgets/image_frame_style_picker.dart'
     show imageFrameStyles;
 import '../../domain/entities/catalog_material.dart';
@@ -26,6 +27,7 @@ List<CatalogMaterial> get bundledMaterials => [
       label: spec.label,
       type: spec.category == StudioDecorationCategory.paper ? '종이' : '스티커',
       collection: spec.collection,
+      isPremium: storyMaterialsById[spec.id]?.isPremium ?? false,
     ),
   for (final frame in imageFrameStyles.where((f) => f.key.isNotEmpty))
     CatalogMaterial(
@@ -42,7 +44,13 @@ List<CatalogMaterial> get bundledMaterials => [
       collection: phrase.category,
     ),
   for (final art in studioWordArts)
-    CatalogMaterial(productKey: art.productKey, label: art.label, type: '문구'),
+    CatalogMaterial(
+      productKey: art.productKey,
+      label: art.label,
+      type: '문구',
+      collection: storyEditionsById[art.id]?.title,
+      isPremium: storyEditionsById[art.id]?.isPremium ?? false,
+    ),
 ];
 
 /// Three-phase material catalog load:
@@ -127,7 +135,7 @@ class _MaterialCatalogNotifier extends AsyncNotifier<List<CatalogMaterial>> {
               likeCount: s.likeCount,
               userCount: s.userCount,
               weeklyScore: s.weeklyScore,
-              isPremium: s.isPremium,
+              isPremium: b.isPremium || s.isPremium,
               isLiked: s.isLiked,
             );
           }(),

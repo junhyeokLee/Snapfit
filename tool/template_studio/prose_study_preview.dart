@@ -43,7 +43,7 @@ List<List<LayerModel>> proseStudyPages(
 
 bool proseStudyCopyFits(ProseStudyCopy copy) {
   if (copy.heading.trim().isEmpty || copy.keyword.trim().isEmpty) return false;
-  for (final aspect in CollectionAspect.values) {
+  for (final aspect in CollectionAspect.printable) {
     for (final l in proseStudyPages(
       aspect,
       copy: copy,

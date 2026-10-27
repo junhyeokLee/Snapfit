@@ -52,7 +52,7 @@ bool heirloomCopyFits(
     copy.note,
   ].any((s) => s.trim().isEmpty))
     return false;
-  for (final aspect in CollectionAspect.values) {
+  for (final aspect in CollectionAspect.printable) {
     for (final l in heirloomPages(
       study,
       aspect,

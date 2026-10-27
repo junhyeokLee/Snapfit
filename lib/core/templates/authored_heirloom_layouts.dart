@@ -399,7 +399,7 @@ void _heirloomBaby(_HeirloomBook b) {
 
   p = b.page('#DFE8E7');
   b.text(p, 'growing_title', '조금씩 자라는 중', .07, .055, .86, .087, size: .043);
-  final wideTimeline = b.aspect == CollectionAspect.landscape;
+  final wideTimeline = b.aspect.isLandscape;
   if (wideTimeline) {
     p.box('timeline', .11, .66, .77, .003, '#98B1A4');
   } else {
@@ -735,7 +735,7 @@ void _heirloomCouple(_HeirloomBook b) {
 
   p = b.page('#DBDEE0');
   p.box('cinema_rail', .06, .09, .88, .665, '#3D3C3E');
-  if (b.aspect == CollectionAspect.landscape) {
+  if (b.aspect.isLandscape) {
     b.groupPhoto(
       p,
       'walking_frame',

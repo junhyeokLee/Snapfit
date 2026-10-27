@@ -324,7 +324,7 @@ class _FreeSignatureJacket {
   Size get canvas => book.aspect.canvas;
   double get width => canvas.width;
   double get height => canvas.height;
-  bool get wide => book.aspect == CollectionAspect.landscape;
+  bool get wide => book.aspect.isLandscape;
   double get margin => wide ? 25 : 32;
   double get gap => 14;
   double get innerWidth => width - margin * 2;

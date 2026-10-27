@@ -257,7 +257,7 @@ class _PaidInteriorPage {
   final furniture = <Map<String, dynamic>>[];
   final types = <String, _PaidInteriorType>{};
   Size get canvas => aspect.canvas;
-  bool get wide => aspect == CollectionAspect.landscape;
+  bool get wide => aspect.isLandscape;
   bool get left => number.isOdd;
   int get spread => (number - 1) ~/ 2;
   Rect get safe => Rect.fromLTRB(

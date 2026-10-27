@@ -4,6 +4,17 @@ import '../constants/cover_size.dart';
 import 'studio_decoration_catalog.dart';
 import 'free_template_material_policy.dart';
 import 'template_catalog_categories.dart';
+import 'story_edition_catalog.dart';
+import 'studio_word_art_catalog.dart';
+import '../../features/album/domain/entities/layer_export_mapper.dart';
+import '../../shared/widgets/studio_material.dart' show StudioMaterial;
+export 'story_edition_catalog.dart';
+
+part 'authored_story_editions.dart';
+part 'authored_story_materials.dart';
+part 'authored_exclusive_story_editions.dart';
+part 'authored_club_story_editions.dart';
+part 'authored_activity_story_editions.dart';
 
 part 'authored_petal.dart';
 part 'authored_wander.dart';
@@ -22,6 +33,7 @@ part 'authored_free_immersive_covers.dart';
 part 'authored_free_editorial_interiors.dart';
 part 'authored_paid_immersive_covers.dart';
 part 'authored_paid_editorial_interiors.dart';
+part 'authored_catalog_quality_refresh.dart';
 part 'authored_free_quality_spreads.dart';
 part 'authored_life_collections.dart';
 part 'authored_life_layouts.dart';
@@ -70,10 +82,26 @@ part 'authored_studio_discoveries.dart';
 enum CollectionAspect {
   portrait,
   square,
-  landscape;
+  landscape,
+  landscape4x3,
+  landscape5x4;
 
-  // Authored source geometry is independent of the selectable print catalog.
-  CoverSize get cover => legacyCoverSizes[index];
+  /// Original factory identities are retained for archives and saved albums.
+  static const archived = [portrait, square, landscape];
+
+  /// The five PHBKMYB products share these three exact trim ratios.
+  static const printable = [square, landscape4x3, landscape5x4];
+
+  bool get isLandscape =>
+      this == landscape || this == landscape4x3 || this == landscape5x4;
+
+  CoverSize get cover => switch (this) {
+    portrait => legacyCoverSizes[0],
+    square => defaultCoverSize,
+    landscape => legacyCoverSizes[2],
+    landscape4x3 => coverSizes[1],
+    landscape5x4 => coverSizes[2],
+  };
   Size get canvas => Size(500, 500 / cover.realSize.aspectRatio);
 }
 
@@ -83,10 +111,18 @@ Map<String, dynamic> refinePaidCatalogDocument(
   String id,
   CollectionAspect aspect,
   Map<String, dynamic> document,
-) => _refinePaidEditorialInteriors(
+) => _refineCatalogQualityCover(
   id,
   aspect,
-  _refinePaidImmersiveCover(id, aspect, document),
+  _refinePaidMaterialPresence(
+    id,
+    aspect,
+    _refinePaidEditorialInteriors(
+      id,
+      aspect,
+      _refinePaidImmersiveCover(id, aspect, document),
+    ),
+  ),
 );
 
 class AuthoredCollection {
@@ -99,6 +135,10 @@ class AuthoredCollection {
   });
   final String id, title, subtitle, category;
   final int bundledId;
+
+  /// Current storefront naming is separate from original/saved book sources.
+  String get catalogTitle =>
+      id == 'our-walking-promise' ? walkingCatalogTitle : title;
 
   List<String> get styleTags => collectionStyleTags[id] ?? const [];
 
@@ -137,10 +177,14 @@ class AuthoredCollection {
         aspect,
         _refineBaselineCatalogCover(id, aspect, current),
       );
-      final published = _refineFreeEditorialInteriors(
+      final published = _refineCatalogQualityCover(
         id,
         aspect,
-        _refineFreeImmersiveCover(id, aspect, jackets),
+        _refineFreeEditorialInteriors(
+          id,
+          aspect,
+          _refineFreeImmersiveCover(id, aspect, jackets),
+        ),
       );
       validateFreeTemplateMaterials(published);
       return {
@@ -175,7 +219,9 @@ class AuthoredCollection {
 
   Map<String, dynamic> catalogDocument() => {
     ...document(CollectionAspect.square),
-    'variants': {for (final a in CollectionAspect.values) a.name: document(a)},
+    'variants': {
+      for (final a in CollectionAspect.printable) a.name: document(a),
+    },
   };
 }
 
@@ -313,7 +359,7 @@ class _Sheet {
   final layers = <Map<String, dynamic>>[];
   double get unit => math.min(aspect.canvas.width, aspect.canvas.height);
   double get ratio => aspect.canvas.aspectRatio;
-  bool get wide => aspect == CollectionAspect.landscape;
+  bool get wide => aspect.isLandscape;
 
   void _add(
     String id,

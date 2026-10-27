@@ -3002,7 +3002,7 @@ List<LayerModel> _buildPaperNotePortrait(Size canvas) {
       null,
       8.2,
       align: TextAlign.center,
-      color: Colors.white.withOpacity(0.9),
+      color: Colors.white.withValues(alpha: 0.9),
       fontFamily: 'Cormorant',
       letterSpacing: 1.4,
       z: 30,
@@ -3393,6 +3393,7 @@ List<LayerModel> injectTemplatePreviewImages(
     if (hasImage) continue;
     final url = urls[i % urls.length];
     next[idx] = layer.copyWith(
+      isTemplateContent: true,
       previewUrl: url,
       imageUrl: fillPersistentUrls ? url : layer.imageUrl,
       originalUrl: fillPersistentUrls ? url : layer.originalUrl,

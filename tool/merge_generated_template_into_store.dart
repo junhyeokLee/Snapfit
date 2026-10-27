@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'retired_store_catalog_guard.dart';
+
 void main(List<String> args) {
   final input =
       _arg(args, '--input') ??
@@ -24,6 +26,13 @@ void main(List<String> args) {
       .toList(growable: false);
   if (incoming.isEmpty) {
     stderr.writeln('No templates found in input: $input');
+    exit(2);
+  }
+
+  if (incoming.any(isRetiredStoreCatalogRow)) {
+    stderr.writeln(
+      'Merge blocked: retired store templates cannot be restored.',
+    );
     exit(2);
   }
 
@@ -58,6 +67,7 @@ void main(List<String> args) {
   }
 
   for (final item in existing) {
+    if (isRetiredStoreCatalogRow(item)) continue;
     final templateId = (item['templateId'] ?? '').toString().trim();
     if (templateId.isNotEmpty &&
         lockedTemplateIds.contains(templateId) &&

@@ -1,8 +1,11 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../features/album/domain/entities/layer.dart';
+import 'story_edition_catalog.dart';
 
 part 'atelier_word_art_catalog.dart';
+part 'story_edition_word_art_catalog.dart';
+part 'story_edition_word_art_layers.dart';
 
 /// Text and stationery remain separate editable layers, not a flattened image.
 class StudioWordArt {
@@ -35,6 +38,8 @@ class StudioWordArt {
     );
     return _sourceLayers().map((layer) {
       var result = layer.copyWith(
+        // Inserting a ready-made phrase is design selection, not authored text.
+        isTemplateContent: true,
         position: origin + layer.position * scale,
         width: layer.width * scale,
         height: layer.height * scale,
@@ -42,14 +47,15 @@ class StudioWordArt {
           fontSize: layer.textStyle!.fontSize! * scale,
         ),
       );
-      if (id.startsWith('atelier-') && layer.type == LayerType.text) {
+      if ((id.startsWith('atelier-') || id.startsWith('story-')) &&
+          layer.type == LayerType.text) {
         // Font hinting rounds line metrics at the inserted size, not the source size.
         final measure = TextPainter(
           text: TextSpan(text: result.text, style: result.textStyle),
           textDirection: TextDirection.ltr,
           textAlign: result.textAlign ?? TextAlign.center,
         )..layout(maxWidth: result.width);
-        final height = measure.height;
+        final height = measure.height + (id.startsWith('story-') ? 1 : 0);
         measure.dispose();
         result = result.copyWith(
           position: result.position + Offset(0, (result.height - height) / 2),
@@ -63,6 +69,7 @@ class StudioWordArt {
   List<LayerModel> previewLayers() => _sourceLayers();
 
   List<LayerModel> _sourceLayers() {
+    if (id.startsWith('story-')) return _storyEditionWordArtLayers(this);
     if (id.startsWith('atelier-')) return _atelierWordArtLayers(this);
     LayerModel paper(String key, Rect rect) => LayerModel(
       id: '$id-paper',
@@ -171,6 +178,7 @@ class StudioWordArt {
 }
 
 const studioWordArts = [
+  ...storyEditionWordArts,
   StudioWordArt('bold-cut', '볼드 컷아웃', '같이 찍자!'),
   StudioWordArt('ticket-label', '티켓 라벨', '오늘의 기분 : 맑음'),
   StudioWordArt('hand-note', '손글씨 밑줄', '다음 장도 함께'),

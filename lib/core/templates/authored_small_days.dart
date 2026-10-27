@@ -14,7 +14,7 @@ Map<String, dynamic> _smallDaysDraft(
   const fruit = '${_editorial}daily_fruit.png';
   const reading = '${_editorial}daily_book.png';
   final book = _EditorialBook(EditorialVolume.smallDays, aspect, paper, ink);
-  final wide = aspect == CollectionAspect.landscape;
+  final wide = aspect.isLandscape;
   final tall = aspect == CollectionAspect.portrait;
   void label(
     _Sheet p,

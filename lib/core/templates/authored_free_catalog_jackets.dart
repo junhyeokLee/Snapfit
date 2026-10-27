@@ -57,7 +57,7 @@ class _AdditionalFreeJacket {
   late final _Sheet p;
   double get w => aspect.canvas.width;
   double get h => aspect.canvas.height;
-  bool get wide => aspect == CollectionAspect.landscape;
+  bool get wide => aspect.isLandscape;
   double get margin => wide ? 26 : 32;
   double get inner => w - margin * 2;
   List<Map<String, dynamic>> get originalText => (before['layers'] as List)

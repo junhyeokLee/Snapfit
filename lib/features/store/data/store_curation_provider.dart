@@ -40,10 +40,12 @@ class StoreCuration {
     title: '오래 간직하고 싶은 장면들',
     subtitle: '사진이 한 권의 이야기가 되는 디자인',
     productKeys: [
-      'template:shore-days',
-      'template:silk-vows',
-      'template:lightbound',
-      'template:reading-room',
+      'template:alley-afternoon',
+      'template:story-coast-address',
+      'template:our-family-year',
+      'template:story-club-run-together',
+      'template:a-day-with-you',
+      'template:story-evening-for-two',
     ],
   );
   static const materials = StoreCuration(

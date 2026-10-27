@@ -58,6 +58,21 @@ const freeTemplateMaterialProductKeys = {
   'sticker:atelierGridLeaf',
   'sticker:atelierColorSlips',
   'sticker:atelierCornerBrackets',
+  'sticker:story-club-photowalk-paper',
+  'sticker:story-club-photowalk-motif',
+  'phrase:collage-story-club-photowalk',
+  'sticker:story-club-book-circle-paper',
+  'sticker:story-club-book-circle-motif',
+  'phrase:collage-story-club-book-circle',
+  'sticker:story-club-weekend-trail-paper',
+  'sticker:story-club-weekend-trail-motif',
+  'phrase:collage-story-club-weekend-trail',
+  'sticker:story-club-rehearsal-room-paper',
+  'sticker:story-club-rehearsal-room-motif',
+  'phrase:collage-story-club-rehearsal-room',
+  'sticker:story-club-kind-saturday-paper',
+  'sticker:story-club-kind-saturday-motif',
+  'phrase:collage-story-club-kind-saturday',
 };
 
 // Free collection artwork that is not sold as an independent shop product.

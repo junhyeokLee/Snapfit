@@ -60,7 +60,7 @@ Map<String, dynamic> buildWindAtlas(
   const train = '${_editorial}journey_train.png';
   const people = '${_editorial}couple_walk.png';
   const fruit = '${_editorial}daily_fruit.png';
-  final wide = aspect == CollectionAspect.landscape;
+  final wide = aspect.isLandscape;
   final pages = <Map<String, dynamic>>[];
   final ids = <String>[];
 

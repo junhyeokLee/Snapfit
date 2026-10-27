@@ -193,7 +193,7 @@ class _VolumeAuthor {
   late _Sheet p;
   late String role;
   double get ratio => aspect.canvas.aspectRatio;
-  bool get wide => aspect == CollectionAspect.landscape;
+  bool get wide => aspect.isLandscape;
   void spread(
     String title,
     int after,

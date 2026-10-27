@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../constants/design_templates.dart';
 import '../../features/album/domain/entities/layer.dart';
+import '../../features/album/domain/entities/layer_content_provenance.dart';
 import '../utils/text_shadow_codec.dart';
 
 /// Data-driven template engine (Phase 1)
@@ -355,6 +356,9 @@ class DataTemplateEngine {
     if (id.isEmpty) return null;
 
     final type = _parseLayerType((merged['type'] ?? 'image').toString());
+    // Compiling a template is not a user edit. Preserve saved provenance and
+    // keep unmarked examples unverified instead of using new-layer defaults.
+    final isTemplateContent = layerTemplateContentFromJson(merged, payload);
     final x = _toDouble(merged['x'], 0);
     final y = _toDouble(merged['y'], 0);
     final w = _toDouble(merged['w'] ?? merged['width'], 1);
@@ -479,6 +483,7 @@ class DataTemplateEngine {
       return LayerModel(
         id: id,
         type: LayerType.text,
+        isTemplateContent: isTemplateContent,
         position: Offset(transformed.left, transformed.top),
         width: transformed.width,
         height: transformed.height,
@@ -549,6 +554,7 @@ class DataTemplateEngine {
     return LayerModel(
       id: id,
       type: type,
+      isTemplateContent: isTemplateContent,
       position: Offset(transformed.left, transformed.top),
       width: transformed.width,
       height: transformed.height,
@@ -726,6 +732,8 @@ class DataTemplateEngine {
       case 'square':
         return TemplateAspect.square;
       case 'landscape':
+      case 'landscape4x3':
+      case 'landscape5x4':
         return TemplateAspect.landscape;
       default:
         return TemplateAspect.any;
@@ -867,6 +875,8 @@ class DataTemplateEngine {
       case 'square':
         return 1440.0;
       case 'landscape':
+      case 'landscape4x3':
+      case 'landscape5x4':
         return 1440.0;
       case 'portrait':
       default:
@@ -880,7 +890,10 @@ class DataTemplateEngine {
       case 'square':
         return 1440.0;
       case 'landscape':
+      case 'landscape4x3':
         return 1080.0;
+      case 'landscape5x4':
+        return 1152.0;
       case 'portrait':
       default:
         return 1440.0;

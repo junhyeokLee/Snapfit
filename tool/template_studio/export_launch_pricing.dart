@@ -21,7 +21,7 @@ Map<String, dynamic> exportLaunchPricing(Directory output) {
   }
   final data = <String, dynamic>{
     'revision': pointShopPricingRevision,
-    'scope': '42-free-26-approved-premium-154-materials',
+    'scope': '47-free-86-approved-premium-349-materials',
     'marketValidated': false,
     'changesCustomerAccess': false,
     'grantsIncludedMaterials': false,
@@ -47,9 +47,11 @@ Map<String, dynamic> exportLaunchPricing(Directory output) {
       '| ${row['title']} | ${kinds[row['kind']]} | ${row['launchPointPrice']}P | ${row['reason']} |',
     );
   }
-  book.writeln('\n무료 42종은 0P, 완성 볼륨 7종은 2,500P, 컨셉형 7종은 1,800P다.');
+  book.writeln('\n무료 47종은 0P, 완성 볼륨 7종은 2,500P, 컨셉형 7종은 1,800P다.');
   book.writeln('신규 아틀리에 7종과 스튜디오 유료 5종은 각 2,800P로 등록 승인됐다.');
   book.writeln('가족·친구와 반려동물 무료 에디션은 0P를 유지한다.');
+  book.writeln('스토리 유료 60종은 1,800P, 동아리 무료 5종은 0P다.');
+  book.writeln('스토리 전용 종이 100P · 장식 200P · 문구 300P, 무료 동아리 소재 15종은 0P다.');
   book.writeln(
     '웨딩·성장 신규 4종: 무료 각 24쪽, 유료 각 32쪽 2,800P. 전용 프레임은 웨딩 각 400P, 성장 각 300P다.',
   );
@@ -59,7 +61,7 @@ Map<String, dynamic> exportLaunchPricing(Directory output) {
     '아틀리에 소재 28종은 기본 종이 7종 0P, 장식 띠 7종 100P, 포토 매트 7종 200P, 투명 오브젝트 7종 300P로 등록 승인됐다.',
   );
   book.writeln(
-    '전체 222종을 활성화하는 적용 자료다. 등록 승인은 원격 실행 완료를 뜻하지 않는다. 실제 판매 상태는 서버 적용 및 검증 기록을 따르며, 이 파일은 구매 권한을 지급하지 않는다.',
+    '전체 482종의 가격 책정 자료다. 등록 승인은 원격 실행 완료를 뜻하지 않는다. 실제 판매 상태는 서버 적용 및 검증 기록을 따르며, 이 파일은 구매 권한을 지급하지 않는다.',
   );
   File('${output.path}/PRICES.md').writeAsStringSync(book.toString());
   return data;

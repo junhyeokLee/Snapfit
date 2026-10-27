@@ -246,7 +246,7 @@ enum AtelierEdition {
       document(CollectionAspect.square),
     ),
     'variants': {
-      for (final aspect in CollectionAspect.values)
+      for (final aspect in CollectionAspect.printable)
         aspect.name: refinePaidCatalogDocument(id, aspect, document(aspect)),
     },
   };

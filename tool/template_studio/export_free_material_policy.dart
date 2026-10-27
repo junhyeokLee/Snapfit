@@ -33,6 +33,19 @@ Map<String, dynamic> exportFreeMaterialPolicy(Directory output) {
           collection.catalogDocument(),
         ).toList(),
       },
+    for (final edition in storyEditions.where((e) => !e.isPremium))
+      {
+        'id': edition.id,
+        'title': edition.title,
+        'category': edition.category,
+        'coverTreatment': 'club-documentary',
+        'materialKeys': templateVisualMaterialKeys(
+          storyEditionCatalogDocument(edition),
+        ).toList()..sort(),
+        'issues': freeTemplateMaterialIssues(
+          storyEditionCatalogDocument(edition),
+        ).toList(),
+      },
   ];
   if (collections.any((book) => (book['issues'] as List).isNotEmpty)) {
     throw StateError('free_material_release_validation_failed');

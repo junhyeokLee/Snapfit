@@ -9,6 +9,18 @@ const premiumVolumeLaunchPointPrice = 2500;
 const conceptVolumeLaunchPointPrice = 1800;
 const atelierEditionProposedPointPrice = 2800;
 
+final pendingStoryEditionProducts = List<PointShopProduct>.unmodifiable([
+  for (final e in storyEditions.where((e) => e.isPremium))
+    PointShopProduct(
+      productKey: e.productKey,
+      kind: 'template',
+      assetId: e.id,
+      title: e.title,
+      pointPrice: null,
+      isActive: false,
+    ),
+]);
+
 final pendingStudioEditionProducts = List<PointShopProduct>.unmodifiable([
   for (final edition in StudioEdition.values.where((e) => e.premium))
     PointShopProduct(
@@ -71,7 +83,8 @@ final pendingConceptVolumeProducts = List<PointShopProduct>.unmodifiable([
 
 bool isPendingTemplateProduct(String key) =>
     !ownerApprovedCatalogProductKeys.contains(key) &&
-    (StudioEdition.values.any((e) => e.premium && e.productKey == key) ||
+    (storyEditions.any((e) => e.isPremium && e.productKey == key) ||
+        StudioEdition.values.any((e) => e.premium && e.productKey == key) ||
         AtelierEdition.values.any((e) => e.productKey == key) ||
         (pendingPremiumVolumeForKey(key) != null ||
                 pendingConceptVolumeForKey(key) != null) &&
@@ -81,18 +94,21 @@ bool isPendingTemplateProduct(String key) =>
             ].any((id) => publishedPremiumProductKey(id) == key));
 
 String? pendingTemplateContentsLabel(String key) {
+  if (storyEditions.any((e) => e.productKey == key)) {
+    return '내지 24쪽 · 표지 별도 · 정사각·가로 · 인쇄 5가지 크기 · 전용 소재 3종';
+  }
   if (AtelierEdition.values.any((e) => e.productKey == key) ||
       StudioEdition.values.any((e) => e.premium && e.productKey == key)) {
-    return '내지 32쪽 · 표지 별도 · 세로·정사각·가로'
+    return '내지 32쪽 · 표지 별도 · 정사각·가로 · 인쇄 5가지 크기'
         '${isPendingTemplateProduct(key) ? ' · 디자인 검수 중' : ''}';
   }
   final volume = pendingPremiumVolumeForKey(key);
   if (volume != null) return premiumVolumeContentsLabel(volume);
   if (pendingConceptVolumeForKey(key) != null) {
-    return '내지 24쪽 · 표지 별도 · 세로·정사각·가로';
+    return '내지 24쪽 · 표지 별도 · 정사각·가로 · 인쇄 5가지 크기';
   }
   return null;
 }
 
 String premiumVolumeContentsLabel(PremiumVolume volume) =>
-    '내지 ${volume.pageCounts.join('·')}쪽 · 표지 별도 · 세로·정사각·가로';
+    '내지 ${volume.pageCounts.join('·')}쪽 · 표지 별도 · 정사각·가로 · 인쇄 5가지 크기';

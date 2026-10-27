@@ -15,7 +15,7 @@ final pointShopKnownProducts = List<PointShopProduct>.unmodifiable([
       productKey: pointShopAuthoredTemplateKey(collection),
       kind: 'template',
       assetId: collection.id,
-      title: collection.title,
+      title: collection.catalogTitle,
       pointPrice: null,
       isActive: false,
     ),
@@ -23,6 +23,16 @@ final pointShopKnownProducts = List<PointShopProduct>.unmodifiable([
   ...pendingConceptVolumeProducts,
   ...pendingAtelierEditionProducts,
   ...pendingStudioEditionProducts,
+  ...pendingStoryEditionProducts,
+  for (final edition in storyEditions.where((e) => !e.isPremium))
+    PointShopProduct(
+      productKey: edition.productKey,
+      kind: 'template',
+      assetId: edition.id,
+      title: edition.title,
+      pointPrice: null,
+      isActive: false,
+    ),
   for (final decoration in studioDecorations)
     PointShopProduct(
       productKey: 'sticker:${decoration.id}',

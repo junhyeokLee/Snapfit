@@ -24,7 +24,7 @@ List<List<LayerModel>> freeCollectionPreviewPages(
     .toList();
 
 bool freeCollectionCopyFits(FreeCollectionVolume volume, EditorialCopy copy) {
-  for (final aspect in CollectionAspect.values) {
+  for (final aspect in CollectionAspect.printable) {
     for (final layer in freeCollectionPreviewPages(
       volume,
       aspect,

@@ -87,7 +87,7 @@ void _freePhotoCover(_FreeBook b) {
       p.box('vow_line', .08, .63, .13, .002, white);
     case FreeCollectionVolume.cinema:
       shade(top: true, strength: .26);
-      if (b.aspect == CollectionAspect.landscape) {
+      if (b.aspect.isLandscape) {
         label('film_edition', 'OUR FIRST FILM', .065, .055, .30);
         title('영화 같던\n하루', .065, .125, .30, .255, size: .083);
       } else {

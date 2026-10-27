@@ -215,7 +215,7 @@ class _FreeInteriorPage {
   final placedPhotos = <Map<String, dynamic>>[];
   final placedTexts = <Map<String, dynamic>>[];
   Size get canvas => aspect.canvas;
-  bool get wide => aspect == CollectionAspect.landscape;
+  bool get wide => aspect.isLandscape;
   bool get tall => aspect == CollectionAspect.portrait;
   bool get left => number.isOdd;
   int get spread => (number - 1) ~/ 2;

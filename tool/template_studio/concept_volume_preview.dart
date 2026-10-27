@@ -33,7 +33,7 @@ bool conceptCopyFits(ConceptVolume volume, EditorialCopy copy) {
     copy.note,
   ].any((v) => v.trim().isEmpty))
     return false;
-  for (final aspect in CollectionAspect.values) {
+  for (final aspect in CollectionAspect.printable) {
     for (final layer in conceptVolumePages(
       volume,
       aspect,

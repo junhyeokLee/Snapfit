@@ -1,0 +1,42 @@
+{
+  "tool": "built-in image_gen.imagegen",
+  "reason": "Visual review corrected mismatched legacy sample scenes; editable artwork and app AI creation unchanged.",
+  "photos": [
+    {
+      "name": "evening-reception",
+      "prompt": "Photorealistic-natural. Single square documentary photograph, replaceable sample photo for a Korean wedding photo album titled '저녁의 피로연'. An adult Korean bride in a simple ivory satin gown and groom in black formalwear seated together at an intimate evening wedding dinner, candid smiling faces and natural hands, warm amber lamps and candles, dark teal hall beyond, unmistakably after sunset with dark windows, a little ivory floral decoration. Couple's entire heads near the center and the table within central 65 percent width, crop-safe for portrait, square and landscape. Quiet dark upper third for separately editable typography. Crisp faces, authentic skin, satin and paper textures, elegant restrained palette. No printed text, no logo, no watermark, no album mockup, no collage.",
+      "generatedSource": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-fdf99036-97d3-4c85-bd53-19896406d5b8.png",
+      "path": "assets/templates/story_editions_2026/evening-reception.png",
+      "realPhotographyClaim": false
+    },
+    {
+      "name": "sand-footprints",
+      "prompt": "Photorealistic-natural. Single square landscape editorial travel photograph for a photo album titled '모래 위의 발자국'. Two tiny adult hikers walking away across warm pale sand dunes, a distinct trail of footprints crossing diagonal ridges, soft early morning sunlight, gentle haze at far horizon, sky taking the upper third. The material underfoot is clearly sand, not a mountain range or grassy hill. Fine sand ripples visible, warm sand and muted blue-gray distance with natural restrained colors. Entire hikers within the central sixty percent for flexible square, portrait and landscape cropping. No text, no logos, no watermark, no graphic frame, not an album mockup.",
+      "generatedSource": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-1988c444-2a38-4cfa-a9cc-2a367ad806a9.png",
+      "path": "assets/templates/story_editions_2026/sand-footprints.png",
+      "realPhotographyClaim": false
+    },
+    {
+      "name": "family-bench",
+      "prompt": "Photorealistic-natural. Single square candid Korean family photograph for an editable photo album titled '벤치에 나란히'. Four people, adult Korean mother and father, grandmother and young school-aged child, sitting next to one another on an unmistakable wooden park bench with a visible backrest and seat. Relaxed affectionate conversation, heads and shoulders fully visible, hands natural, crisp human detail and leaf-filtered afternoon daylight, quiet greenery background. The family group fits within the central sixty percent of the frame with enough background on both sides for portrait, square and landscape crops. Warm white and muted mint clothing accents with natural skin and foliage. No text, no logo, no watermark, no picnic blanket still life, not an album mockup.",
+      "generatedSource": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-4646a0b7-5ced-4247-bc57-c0bb9eb33cc1.png",
+      "path": "assets/templates/story_editions_2026/family-bench.png",
+      "realPhotographyClaim": false
+    },
+    {
+      "name": "first-home",
+      "prompt": "Photorealistic-natural. Single square lifestyle editorial photograph for an editable Korean couple album titled '우리의 첫 공간'. A bright calm first apartment, large sunlit window with linen curtains, pale sage kitchen cabinets, a warm oak table, small plant, two open moving boxes and a folded mint blanket. Adult Korean couple seen in natural side/back view arranging a framed photograph on the table together, tiny part of story rather than a dominant close-up portrait. Scene must unmistakably show the interior living space and moving-in moment. Entire couple in the central sixty percent and room details visible across frame for portrait/square/landscape crops, gentle daylight, true materials, beautiful restrained warm white and pale mint. No text, no logos, no watermark, no collage, not an album mockup.",
+      "generatedSource": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-aff143fa-051d-4a8b-87dd-d8c5bfb781d3.png",
+      "path": "assets/templates/story_editions_2026/first-home.png",
+      "realPhotographyClaim": false
+    },
+    {
+      "name": "folded-letter",
+      "prompt": "Photorealistic-natural. Single square overhead editorial still life for a Korean couple keepsake photo album titled '오래 접어 둔 마음'. On a warm white linen table lie one folded cream letter with subtle crease, a thin sage cotton ribbon, two small real photographic prints of a smiling adult Korean couple, one dried flower stem and two hands of the adult couple gently holding opposite edges of the folded letter. The composition is quiet and intimate, natural paper fibers and realistic hands, soft daylight, restrained warm white and pale mint with charcoal photographic detail. The meaningful objects fit the central sixty percent and outer edges have calm white negative space for varied crops and separately editable text. No legible writing, no printed words, no logo, no watermark, no wedding party group portrait, not an album mockup.",
+      "generatedSource": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-199107b3-233c-4cf6-94c9-617416b6a67c.png",
+      "path": "assets/templates/story_editions_2026/folded-letter.png",
+      "realPhotographyClaim": false
+    }
+  ],
+  "physicalPrintProofVerified": false
+}

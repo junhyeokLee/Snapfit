@@ -307,7 +307,7 @@ class _AtelierPreviewState extends State<AtelierPreview> {
                             children: [
                               SegmentedButton<CollectionAspect>(
                                 segments: [
-                                  for (final aspect in CollectionAspect.values)
+                                  for (final aspect in CollectionAspect.printable)
                                     ButtonSegment(
                                       value: aspect,
                                       label: SizedBox(

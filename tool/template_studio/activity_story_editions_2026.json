@@ -1,0 +1,1020 @@
+{
+  "batch": "2026-10-25-activity-stories-10",
+  "tool": "built-in image_gen",
+  "peoplePolicy": "Ordinary adults, no beauty retouch or idealized athlete casting",
+  "photoPolicy": "Five edition-exclusive photographs, independently generated, for every book",
+  "books": [
+    {
+      "id": "story-club-run-together",
+      "catalogId": -9741,
+      "title": "같은 속도의 우리",
+      "englishTitle": "together,\nat our pace",
+      "subtitle": "기록보다 사람을 남기는 러닝 크루의 모임 앨범",
+      "activity": "running",
+      "category": "동아리",
+      "premium": true,
+      "coverStyle": 20,
+      "tags": [
+        "러닝",
+        "러닝크루",
+        "달리기",
+        "단체사진",
+        "정기모임"
+      ],
+      "chapters": [
+        "만나기로 한 출발점",
+        "신발끈을 묶고",
+        "함께 뛰는 사람들",
+        "오늘의 코스를 따라",
+        "서로 맞춘 페이스",
+        "잠깐의 물 한 모금",
+        "함께 도착한 곳",
+        "오늘의 모임 기록",
+        "다시 보고 싶은 장면",
+        "각자의 한마디",
+        "다음 러닝 약속",
+        "같은 속도로 또 만나"
+      ],
+      "notes": [
+        "빨리 가는 것보다 함께 출발한 날을 기억한다.",
+        "익숙한 신발끈을 묶으며 서로의 안부를 물었다.",
+        "각자의 속도가 모여 우리 모임의 리듬이 되었다.",
+        "앞선 사람도 뒤의 사람도 같은 길 위에 있었다.",
+        "오늘은 누구도 혼자 남겨 두지 않기로 했다.",
+        "잠깐 쉬는 동안 더 많은 이야기를 나누었다.",
+        "도착한 곳보다 함께 온 사람들이 먼저 보였다.",
+        "날짜와 길, 함께한 이름을 잊기 전에 적는다.",
+        "달리는 장면 사이의 웃음도 남겨 두었다.",
+        "어려웠던 구간과 좋았던 순간을 하나씩 말했다.",
+        "다음에는 조금 다른 길에서 만나기로 했다.",
+        "오늘보다 느려도 좋으니 또 함께 달리자."
+      ],
+      "context": "An ordinary Korean amateur running club of six adults aged 25 to 55, mixed men and women, typical varied average builds, one wears simple glasses. Mismatched plain muted mint, gray and navy practical running clothes. Realistic urban river park at overcast dawn, modest community activity, no professional athletes.",
+      "scenes": [
+        "Wide eye-level candid group photograph of all six members walking and chatting together after an easy run along a broad riverside path, heads and feet fully inside the frame with generous empty borders, whole group within central 75 percent.",
+        "A close documentary detail of ordinary hands tying worn running shoes beside two other pairs of shoes and a plain refillable water bottle on a riverside step. Believable fingers, unbranded shoes, natural skin.",
+        "Wide side view of six amateur runners jogging at an easy conversational pace together, clear separation between bodies and realistic alternating leg positions, full people visible, muted riverside trees, soft daylight.",
+        "Six ordinary club members chatting loosely in a small semicircle beside the river after their run, one with plain glasses, relaxed tired smiles and average bodies, complete heads and feet with room around the group.",
+        "Documentary still life of three plain water bottles, an unmarked folded route notebook, a soft mint towel and worn running shoes on a riverside bench, natural unstyled arrangement, soft overcast light."
+      ],
+      "paperLabel": "크루 출석·코스 카드",
+      "motifLabel": "서로 이어지는 여섯 걸음"
+    },
+    {
+      "id": "story-club-hold-circle",
+      "catalogId": -9742,
+      "title": "서로의 다음 홀드",
+      "englishTitle": "one more,\ntogether",
+      "subtitle": "응원과 시도를 나란히 엮는 클라이밍 모임 기록",
+      "activity": "climbing",
+      "category": "동아리",
+      "premium": true,
+      "coverStyle": 21,
+      "tags": [
+        "클라이밍",
+        "볼더링",
+        "클라이밍모임",
+        "암장",
+        "단체사진"
+      ],
+      "chapters": [
+        "오늘 모인 암장",
+        "초크를 털어 내고",
+        "서로를 소개하며",
+        "같이 읽는 루트",
+        "첫 번째 시도",
+        "바닥에서 건넨 응원",
+        "다시 잡은 홀드",
+        "시도와 발견의 기록",
+        "함께 남긴 장면",
+        "각자의 다음 홀드",
+        "다음 암장을 고르고",
+        "다시 모일 그 벽 앞에서"
+      ],
+      "notes": [
+        "벽의 색보다 먼저 반가운 얼굴을 찾았다.",
+        "준비를 마치는 작은 손길에도 각자의 습관이 있다.",
+        "잘하는 동작보다 서로의 이름부터 기억한다.",
+        "같은 루트도 사람마다 다른 길로 읽혔다.",
+        "올라가는 사람의 속도에 맞춰 조용히 기다렸다.",
+        "무리하지 말라는 말과 응원을 함께 건넸다.",
+        "내려온 뒤에야 다른 방법이 보이기도 했다.",
+        "성공과 실패보다 오늘 배운 것을 먼저 적었다.",
+        "매트 위에 둘러앉은 시간도 모임의 한 장면이다.",
+        "다음에는 시도해 보고 싶은 동작을 하나씩 말했다.",
+        "모두 편하게 올 수 있는 다음 장소를 골랐다.",
+        "높이보다 오래 함께할 수 있는 시간을 남긴다."
+      ],
+      "context": "Five everyday Korean adult amateur boulderers aged 25 to 50, three women and two men, ordinary average varied bodies and short or tied-back practical hair, one with plain glasses. Modest indoor bouldering gym with low colored holds and thick safety mats. Plain loose muted gray, mint and brown clothing, no beauty styling.",
+      "scenes": [
+        "Wide candid view of five ordinary adult club members standing relaxed on a thick bouldering mat near a low practice wall, chatting and pointing out holds, all five full bodies comfortably framed, keep ample space around faces and feet.",
+        "Close documentary photo of ordinary hands dusting a little chalk above an unbranded chalk bag on a gray bouldering mat, worn climbing shoes nearby, realistic fingers and dry chalk texture.",
+        "Wide view of one amateur climber on a low safe bouldering route, only 40 centimeters above a thick mat, with four clubmates standing well clear and observing from below, five complete people visible, no collision or stunts.",
+        "Five ordinary club members sitting comfortably along a gym bench discussing their attempts, one in simple glasses, candid unretouched faces, whole group inside generous horizontal framing.",
+        "A quiet detail of three pairs of worn climbing shoes, a plain chalk bag and a blank route-note card on a gym bench, muted mint towel, believable practical equipment, no brand marks."
+      ],
+      "paperLabel": "함께 푼 루트 기록지",
+      "motifLabel": "함께 잡는 연결 홀드"
+    },
+    {
+      "id": "story-club-fairway-friends",
+      "catalogId": -9743,
+      "title": "우리의 라운드",
+      "englishTitle": "a round\nwith friends",
+      "subtitle": "좋은 샷보다 함께한 표정을 모으는 골프 동호회 앨범",
+      "activity": "golf",
+      "category": "동아리",
+      "premium": true,
+      "coverStyle": 22,
+      "tags": [
+        "골프",
+        "골프동호회",
+        "라운드",
+        "스크린골프",
+        "정기모임"
+      ],
+      "chapters": [
+        "첫 티 앞의 인사",
+        "가방을 내려놓고",
+        "오늘의 동반자",
+        "페어웨이를 따라",
+        "서로의 공을 찾으며",
+        "그늘 아래 쉬는 시간",
+        "퍼팅을 기다리며",
+        "라운드 모임 기록",
+        "다 같이 웃었던 홀",
+        "서로에게 남긴 말",
+        "다음 라운드 약속",
+        "함께 걸어서 좋았어"
+      ],
+      "notes": [
+        "오늘의 날씨보다 반가운 인사를 먼저 남긴다.",
+        "가방을 내려놓는 동안 긴장도 조금 풀렸다.",
+        "함께 걸을 사람들의 이름을 나란히 적었다.",
+        "같은 방향으로 걷는 시간이 오래 기억났다.",
+        "공을 찾는 짧은 시간에도 이야기는 이어졌다.",
+        "그늘 아래서 쉬며 서로의 안부를 더 물었다.",
+        "급하게 재촉하지 않고 한 사람의 시간을 기다렸다.",
+        "점수 대신 함께한 날짜와 장면부터 적었다.",
+        "잘 맞은 샷과 빗나간 샷을 같은 웃음으로 기억한다.",
+        "오늘 즐거웠던 순간을 서로에게 건넸다.",
+        "다음에도 편한 마음으로 만나기로 약속했다.",
+        "우리의 라운드는 함께 걸은 사람들로 남는다."
+      ],
+      "context": "Four ordinary Korean amateur golfers aged 35 to 60, two women and two men with average varied builds and natural unretouched skin, one wears glasses. Modest public golf course, inexpensive plain off-white, muted green and navy clothes with practical caps, everyday small golf bags, no luxury or elite resort aesthetic.",
+      "scenes": [
+        "Wide candid photo of four ordinary adult friends walking together at the edge of a public golf fairway, two carrying small practical golf bags, chatting naturally, every head and foot fully visible and all faces away from image edges.",
+        "Close documentary view of an ordinary golfer fastening a worn plain golf glove beside an unbranded club grip and a white ball on a bench, believable fingers and fabric texture, soft morning light.",
+        "Wide view of four amateur golf club members watching a putting attempt together, one putting and three standing patiently well away, simple public putting green, natural relaxed faces and fully visible people, realistic club and ball.",
+        "Four ordinary friends sitting at a simple outdoor course table chatting after a round, practical caps and windbreakers, cups of water, relaxed unposed expressions, wide group view with generous margins.",
+        "A plain pencil, completely unmarked scorecard, three white golf balls, an ordinary glove and the edge of a muted mint towel on a wooden bench, natural use marks, no readable numbers or logos."
+      ],
+      "paperLabel": "동반자·라운드 접지",
+      "motifLabel": "네 사람의 페어웨이 선"
+    },
+    {
+      "id": "story-club-shuttle-evening",
+      "catalogId": -9744,
+      "title": "셔틀이 오가는 사이",
+      "englishTitle": "a good\nrally, us",
+      "subtitle": "복식 랠리와 저녁 모임의 표정을 남기는 배드민턴 북",
+      "activity": "badminton",
+      "category": "동아리",
+      "premium": true,
+      "coverStyle": 23,
+      "tags": [
+        "배드민턴",
+        "배드민턴동호회",
+        "복식",
+        "생활체육",
+        "체육관"
+      ],
+      "chapters": [
+        "퇴근 뒤 모인 코트",
+        "라켓을 꺼내고",
+        "오늘의 복식 파트너",
+        "첫 랠리의 인사",
+        "셔틀을 따라 한 걸음",
+        "코트 옆의 쉬는 시간",
+        "파트너를 바꾸며",
+        "저녁 모임 기록",
+        "놓치지 않은 웃음",
+        "서로의 베스트 장면",
+        "다음 주에도 같은 시간",
+        "코트 밖에서도 우리"
+      ],
+      "notes": [
+        "하루를 마치고도 함께할 힘이 남아 있었다.",
+        "라켓을 꺼내며 오늘의 컨디션을 나누었다.",
+        "익숙한 파트너도 처음 만난 파트너도 반갑다.",
+        "가볍게 주고받은 첫 셔틀이 분위기를 풀었다.",
+        "한 걸음 더 움직인 덕분에 랠리가 이어졌다.",
+        "쉬는 동안에는 점수보다 이야기가 길어졌다.",
+        "파트너가 바뀌니 새로운 호흡을 배우게 됐다.",
+        "오늘 모인 이름과 게임을 편하게 남겨 둔다.",
+        "공을 놓친 뒤의 웃음까지 우리 모임의 장면이다.",
+        "오늘 좋았던 플레이를 서로에게 하나씩 말했다.",
+        "다음 주에도 무리하지 않고 같은 시간에 만나자.",
+        "코트 밖에서 건넨 인사도 함께 기억한다."
+      ],
+      "context": "Six ordinary Korean recreational badminton club members aged 30 to 60, mixed men and women with average bodies, practical glasses and tied hair. A modest municipal indoor gym, muted green badminton court, plain navy, gray, dull mint shirts and everyday shoes. Natural slightly tired community sports snapshots, no athletic models.",
+      "scenes": [
+        "Wide candid photograph of all six ordinary badminton club members chatting beside a municipal gym court, holding plain rackets low rather than posing with them, all full bodies and heads visible with generous borders, modest overhead gym light.",
+        "Close documentary still life of two plain badminton racket grips, worn white shuttlecocks and an ordinary towel on a bench, one average hand gently adjusting the grip wrap, realistic fingers and materials.",
+        "Wide realistic view of a casual doubles badminton rally with four ordinary adult players, two on each side of the net, relaxed reachable shuttle trajectory, plausible rackets and limbs, full players clearly separated and no one close to the edges.",
+        "Six club members sitting and standing casually around a simple gym bench after games, smiling modestly and sharing water, natural unretouched ordinary faces, wide group composition with all heads and legs visible.",
+        "A small basket with unbranded white shuttlecocks, two used rackets, a blank rotation-note card and a folded muted mint sports towel near a municipal court, practical natural arrangement."
+      ],
+      "paperLabel": "복식 파트너 교대 카드",
+      "motifLabel": "네트 너머의 셔틀"
+    },
+    {
+      "id": "story-club-pedal-company",
+      "catalogId": -9745,
+      "title": "나란히 도는 바퀴",
+      "englishTitle": "the road\nwe share",
+      "subtitle": "속도를 맞추고 풍경을 나누는 자전거 모임 앨범",
+      "activity": "cycling",
+      "category": "동아리",
+      "premium": true,
+      "coverStyle": 24,
+      "tags": [
+        "자전거",
+        "사이클링",
+        "라이딩",
+        "자전거동호회",
+        "단체사진"
+      ],
+      "chapters": [
+        "약속한 강변 쉼터",
+        "헬멧을 고쳐 쓰고",
+        "오늘 함께 탈 사람들",
+        "나란히 이어진 길",
+        "속도를 맞추며",
+        "작은 쉼터의 간식",
+        "다시 출발하는 순간",
+        "라이딩 모임 기록",
+        "풍경보다 반가운 얼굴",
+        "오늘 좋았던 길",
+        "다음 노선을 펴 보고",
+        "함께 돌아온 자리"
+      ],
+      "notes": [
+        "각자 다른 자전거가 한곳에 모인 아침이다.",
+        "장비를 살피고 서로의 준비가 끝나기를 기다렸다.",
+        "오늘 함께 달릴 사람들의 이름을 남겨 둔다.",
+        "줄지어 이어진 길 위에서 서로의 간격을 지켰다.",
+        "빨라지기보다 함께 가는 속도를 먼저 골랐다.",
+        "작은 간식을 나누며 조금 오래 쉬어 갔다.",
+        "다시 출발하기 전 뒤의 사람까지 돌아보았다.",
+        "거리와 길, 쉬었던 자리와 이름을 함께 기록했다.",
+        "좋은 풍경 옆에는 늘 함께한 얼굴이 있었다.",
+        "다음에 다시 와도 좋을 길을 한 곳씩 골랐다.",
+        "모두 편하게 올 수 있는 노선을 함께 펼쳤다.",
+        "처음 모인 자리로 돌아와 다음 인사를 남긴다."
+      ],
+      "context": "Five ordinary Korean recreational cyclists aged 30 to 60, mixed genders, typical varied average bodies. Practical helmets on every rider, ordinary commuter and hybrid bicycles, modest loose muted mint, gray and navy jackets rather than racing team lycra. Safe broad riverside cycle path and simple rest shelter, natural early autumn light.",
+      "scenes": [
+        "Wide candid group photograph of five ordinary club members standing beside their parked ordinary bicycles at a riverside rest point, practical helmets and unposed relaxed expressions, bicycles and complete people with ample margins, no racing advertisement look.",
+        "Close documentary view of ordinary hands fastening a plain practical bicycle helmet strap, unbranded handlebars softly in the background, believable fingers and everyday skin texture.",
+        "Wide side view of five recreational cyclists riding single file slowly on a broad safe marked riverside cycle path, all wearing helmets and maintaining sensible gaps, each complete bicycle and body visible, ordinary bikes and clothes.",
+        "Five ordinary cyclists in helmets resting near a simple riverside shelter, parked bikes safely to one side, sharing a snack and chatting, candid wide group view with every member fully framed.",
+        "An unmarked folded route map, two refillable water bottles, a small bicycle pump and ordinary gloves on a weathered rest-stop table beside a muted mint helmet, natural unstyled documentary still life."
+      ],
+      "paperLabel": "라이딩 코스·쉼터 폴리오",
+      "motifLabel": "함께 굴러가는 바퀴"
+    },
+    {
+      "id": "story-sport-pace-study",
+      "catalogId": -9751,
+      "title": "나의 페이스 노트",
+      "englishTitle": "find\nyour pace",
+      "subtitle": "민트빛 트랙과 작은 숫자로 엮는 개인 러닝 훈련집",
+      "activity": "running",
+      "category": "스포츠·도전",
+      "premium": true,
+      "coverStyle": 25,
+      "tags": [
+        "러닝",
+        "개인기록",
+        "훈련일지",
+        "페이스",
+        "마라톤"
+      ],
+      "chapters": [
+        "나의 출발선",
+        "가볍게 몸을 풀고",
+        "오늘의 목표",
+        "첫 바퀴의 감각",
+        "내 호흡을 찾아",
+        "잠시 멈춘 이유",
+        "다시 이어 달리기",
+        "훈련 기록 한 칸",
+        "작게 달라진 자세",
+        "몸이 알려 준 것",
+        "다음 주의 계획",
+        "오늘의 나에게"
+      ],
+      "notes": [
+        "남의 기록과 비교하지 않고 오늘의 출발을 적는다.",
+        "몸이 준비될 때까지 서두르지 않고 움직였다.",
+        "이룰 수 있는 작은 목표 하나를 골랐다.",
+        "첫 바퀴의 무거움도 오늘의 일부로 남겨 둔다.",
+        "숨과 발걸음이 편해지는 구간을 찾아보았다.",
+        "잠시 멈춘 이유를 기록하면 다음에 도움이 된다.",
+        "다시 뛰기 시작한 선택도 하나의 성취다.",
+        "거리와 시간 옆에 오늘의 기분도 적었다.",
+        "조금 달라진 자세를 사진에서 찾아보았다.",
+        "몸이 보낸 신호를 흘려듣지 않기로 했다.",
+        "무리하지 않고 이어 갈 다음 주를 계획한다.",
+        "잘한 날과 어려운 날을 같은 마음으로 기억하자."
+      ],
+      "context": "One ordinary Korean woman aged around 40 with a typical average soft build, practical short ponytail and naturally uneven unretouched skin, plain navy running shirt and muted mint shorts, unbranded worn shoes. Amateur exercise at a quiet community athletics track in soft cloudy morning light, no fitness model or idealized muscular physique.",
+      "scenes": [
+        "Wide landscape documentary action photograph of one ordinary amateur woman jogging easily alone on a quiet public running track, complete body inside the central 35 percent of frame with generous space around head and feet, realistic running gait and natural skin, track lanes recede diagonally.",
+        "Close documentary view of an ordinary hand pressing the side of a plain unbranded sports watch with a dark unreadable display after a run, mild natural sweat and a worn cotton wristband, anatomically believable hands.",
+        "Side-on medium wide view of an ordinary middle-aged woman doing a relaxed walking recovery on a public track, entire body clearly visible, casual ordinary build and practical clothes, honest cloudy daylight.",
+        "An ordinary amateur woman sitting on the side of the track stretching gently after exercise, realistic modest posture and average body, a small towel nearby, natural candid image with space around subject.",
+        "Plain unmarked training notebook, a pencil, worn running shoes and a muted mint sports towel beside the painted line of a quiet athletics track, realistic used materials, no text or numbers."
+      ],
+      "paperLabel": "페이스·컨디션 훈련지",
+      "motifLabel": "열린 트랙 라인"
+    },
+    {
+      "id": "story-sport-hold-study",
+      "catalogId": -9752,
+      "title": "한 동작 더",
+      "englishTitle": "move\nby move",
+      "subtitle": "다크 잉크와 여백으로 남기는 볼더링 동작 연구 북",
+      "activity": "climbing",
+      "category": "스포츠·도전",
+      "premium": true,
+      "coverStyle": 26,
+      "tags": [
+        "클라이밍",
+        "볼더링",
+        "개인기록",
+        "동작분석",
+        "루트기록"
+      ],
+      "chapters": [
+        "오늘의 벽을 보고",
+        "신발끈을 여미고",
+        "한 가지 목표",
+        "첫 동작을 읽으며",
+        "발의 방향을 바꾸고",
+        "잠깐 내려와 생각하기",
+        "다른 방법의 시도",
+        "오늘의 시도 기록",
+        "달라진 한 동작",
+        "무리하지 않은 선택",
+        "다음 루트를 남기고",
+        "한 동작씩 계속"
+      ],
+      "notes": [
+        "익숙한 벽에서도 오늘 눈에 들어온 루트는 달랐다.",
+        "신발끈과 몸의 긴장을 천천히 살폈다.",
+        "여러 목표보다 한 동작을 이해해 보기로 했다.",
+        "손보다 발의 자리를 먼저 바라보았다.",
+        "발끝 방향 하나가 몸의 느낌을 바꾸었다.",
+        "바닥에서 쉬는 동안 다음 방법을 생각했다.",
+        "맞는 답 하나보다 여러 시도를 남겨 두었다.",
+        "몇 번 했는지보다 무엇을 배웠는지 적었다.",
+        "사진 속 작은 변화가 다음 시도의 힌트가 됐다.",
+        "어려운 날에는 멈추는 것도 좋은 선택이다.",
+        "다음에 돌아와 보고 싶은 루트를 골라 두었다.",
+        "오늘의 한 동작이 내일의 편안함이 되기를 바란다."
+      ],
+      "context": "One ordinary Korean adult man in his late 30s with average build, natural slightly tired face and practical short hair, plain charcoal shirt and loose dull mint climbing trousers. Modest indoor bouldering gym with safe low practice holds and thick mats, thoughtful amateur training, no ripped physique or advertising pose.",
+      "scenes": [
+        "Landscape documentary image of one ordinary amateur man studying a low bouldering wall from the mat, one hand casually pointing to a hold, entire person centered within central 40 percent with ample breathing room, quietly lit real gym, authentic ordinary face.",
+        "Close documentary detail of an ordinary hand resting on a textured low climbing hold, chalk dust on natural skin and practical short nails, realistic five fingers, muted gray and mint wall tones.",
+        "Side view of one amateur male boulderer keeping a careful low body position only a short distance above a thick gym mat, average body and plausible bent legs, all limbs visible, no unsafe height or gymnastic stunt.",
+        "An ordinary climber sitting on a low bench noting a practice attempt in a completely blank notebook, climbing wall in soft background, quiet unretouched documentary profile, realistic pen grip.",
+        "Worn climbing shoes, a plain chalk bag, a small soft brush and an unmarked folded route card on a gray gym mat, natural chalk traces, practical muted mint fabric accent, no logos."
+      ],
+      "paperLabel": "루트·동작 분석 접지",
+      "motifLabel": "낮게 이어지는 홀드 선"
+    },
+    {
+      "id": "story-sport-swing-notes",
+      "catalogId": -9753,
+      "title": "오늘의 스윙 라인",
+      "englishTitle": "a quieter\nswing",
+      "subtitle": "한 장의 스윙과 편집 가능한 기록표로 구성한 골프 연습집",
+      "activity": "golf",
+      "category": "스포츠·도전",
+      "premium": true,
+      "coverStyle": 27,
+      "tags": [
+        "골프",
+        "스윙",
+        "개인연습",
+        "골프연습장",
+        "연습일지"
+      ],
+      "chapters": [
+        "연습장의 아침",
+        "그립을 잡아 보고",
+        "오늘 고칠 한 가지",
+        "어드레스의 균형",
+        "서두르지 않는 백스윙",
+        "다시 숨을 고르고",
+        "같은 동작을 천천히",
+        "연습 기록과 느낌",
+        "사진으로 본 변화",
+        "힘을 덜어 낸 순간",
+        "다음 연습의 메모",
+        "작은 감각을 이어서"
+      ],
+      "notes": [
+        "매번 다른 하루를 같은 자리에서 시작한다.",
+        "손에 힘이 얼마나 들어갔는지 천천히 살폈다.",
+        "한 번의 연습에서는 한 가지만 고쳐 보기로 했다.",
+        "균형이 편안해지는 발의 위치를 찾아보았다.",
+        "동작을 서두르지 않으니 생각할 여유가 생겼다.",
+        "잘 안 맞은 공 뒤에는 잠깐 쉬어 갔다.",
+        "반복한 동작 가운데 조금 다른 느낌을 적었다.",
+        "방향과 느낌 옆에 몸의 상태도 남겨 둔다.",
+        "한 장의 사진에서 어깨의 작은 변화를 보았다.",
+        "힘을 덜어 낸 순간을 다음에도 기억하고 싶다.",
+        "다음에 확인할 감각을 짧게 적어 두었다.",
+        "멀리 보내기보다 오래 즐길 수 있는 연습을 한다."
+      ],
+      "context": "One ordinary Korean woman aged about 50 with average build, practical short hair and natural unretouched skin, plain ivory polo and navy trousers with a modest muted mint visor. Ordinary public outdoor golf driving range with simple green practice mats, practical unbranded clubs, calm daylight, no luxury country club or professional athlete styling.",
+      "scenes": [
+        "Landscape documentary photograph of an ordinary middle-aged female amateur golfer standing in a relaxed balanced setup on a public driving-range mat with one realistic golf club, complete body centered within the central 40 percent of image, ample space around club and feet, not a promotional pose.",
+        "Close documentary view of ordinary hands holding an unbranded golf grip in a comfortable amateur setup, realistic fingers and a worn plain glove, green driving-range mat softly behind, no beauty retouch.",
+        "Full-body side view of one ordinary amateur golfer after a gentle practice swing at a simple driving range, plausible balanced posture with one club and two arms, complete club and feet visible, no dramatic pro-athlete pose.",
+        "An ordinary middle-aged female golfer looking thoughtfully at a practice ball on the mat while taking a short pause, practical plain cap and average body, quiet candid three-quarter view.",
+        "A plain golf glove, an unmarked practice-note sheet, a pencil, two white golf balls and an unbranded club on a worn driving-range bench, soft mint towel and natural daylight."
+      ],
+      "paperLabel": "스윙 감각 기록 카드",
+      "motifLabel": "가벼운 스윙 궤적"
+    },
+    {
+      "id": "story-sport-baseline-notes",
+      "catalogId": -9754,
+      "title": "베이스라인 다이어리",
+      "englishTitle": "stay\nin play",
+      "subtitle": "리듬 있는 사진 분할과 짧은 노트의 테니스 연습집",
+      "activity": "tennis",
+      "category": "스포츠·도전",
+      "premium": true,
+      "coverStyle": 28,
+      "tags": [
+        "테니스",
+        "개인기록",
+        "서브",
+        "풋워크",
+        "연습일지"
+      ],
+      "chapters": [
+        "코트의 첫 선",
+        "그립을 고쳐 잡고",
+        "오늘의 연습 목표",
+        "베이스라인 한 걸음",
+        "공의 높이를 보며",
+        "한 번 쉬어 가기",
+        "다시 이어진 랠리",
+        "연습 기록 한 페이지",
+        "서브를 돌아보고",
+        "가벼워진 발끝",
+        "다음 코트를 약속하며",
+        "오늘도 코트에 남긴 것"
+      ],
+      "notes": [
+        "코트에 들어서는 것만으로도 오늘의 선택은 충분하다.",
+        "손에 편안한 그립을 다시 확인했다.",
+        "여러 기술보다 하나의 감각을 따라가 보기로 했다.",
+        "조금 더 일찍 움직인 한 걸음을 기억한다.",
+        "공의 높이를 바라보며 급한 마음을 늦추었다.",
+        "쉬어 가는 시간도 연습의 한 부분으로 남긴다.",
+        "짧게 끊긴 랠리 뒤에도 다시 공을 건넸다.",
+        "잘된 점과 어려웠던 점을 나란히 적었다.",
+        "사진 속 서브를 보며 다음에 바꿀 것을 찾았다.",
+        "가벼워진 발끝이 공보다 먼저 알려 주었다.",
+        "다음 연습까지 잊지 않을 메모를 한 줄 남긴다.",
+        "점수보다 오래 남을 작은 변화들을 모은다."
+      ],
+      "context": "One ordinary Korean man aged about 45, average slightly stocky build, natural asymmetric unretouched face, practical glasses and short plain hair. Unbranded gray T-shirt, navy shorts and practical shoes, ordinary public outdoor tennis court with faded mint green surface and a simple net, genuine recreational practice, no model styling.",
+      "scenes": [
+        "Landscape documentary full-body photograph of one ordinary middle-aged amateur tennis player preparing calmly near a public court baseline with a racket held low, complete person in central 40 percent, spacious authentic court lines and soft light, average build and natural face.",
+        "Close documentary image of an ordinary hand adjusting a worn plain tennis grip, yellow practice ball and used strings visible, believable fingers and realistic racket geometry, natural sunlight.",
+        "Full-body side view of an ordinary amateur tennis player taking a small controlled forehand practice step, plausible relaxed position with one racket and two arms, whole person and racket comfortably framed, no extreme athletic leap.",
+        "An ordinary middle-aged player sitting at a simple court bench drinking water after practice, plain glasses and slightly tired unretouched face, natural modest candid moment with ample space.",
+        "Two worn yellow tennis balls, one plain racket, a blank practice notebook, pencil and folded pale mint towel beside a faded court line, quiet everyday documentary still life, no logos."
+      ],
+      "paperLabel": "서브·랠리 훈련 노트",
+      "motifLabel": "빈 코트와 바운드 선"
+    },
+    {
+      "id": "story-sport-breath-lanes",
+      "catalogId": -9755,
+      "title": "물결 사이의 호흡",
+      "englishTitle": "one breath\nat a time",
+      "subtitle": "수면의 넓은 여백과 호흡 기록으로 엮은 수영 훈련집",
+      "activity": "swimming",
+      "category": "스포츠·도전",
+      "premium": true,
+      "coverStyle": 29,
+      "tags": [
+        "수영",
+        "자유형",
+        "호흡",
+        "개인기록",
+        "수영일지"
+      ],
+      "chapters": [
+        "물가에 서는 아침",
+        "수경을 고쳐 쓰고",
+        "오늘의 작은 목표",
+        "첫 호흡의 감각",
+        "한 레인을 천천히",
+        "잠깐 물 밖에서",
+        "다시 이어 가는 길이",
+        "거리와 호흡 기록",
+        "몸이 편안해진 순간",
+        "수면 위로 남긴 생각",
+        "다음 입수의 약속",
+        "한 호흡씩 이어서"
+      ],
+      "notes": [
+        "물이 익숙한 날과 낯선 날을 모두 남겨 두고 싶다.",
+        "준비가 끝날 때까지 천천히 몸을 살폈다.",
+        "오늘 편안하게 이어 갈 작은 목표를 정했다.",
+        "첫 호흡의 서툼을 급하게 감추지 않았다.",
+        "남의 속도보다 내 리듬을 먼저 찾아보았다.",
+        "물 밖에서 고른 숨이 다음 길이를 준비했다.",
+        "다시 이어 간 한 레인이 오늘의 작은 변화다.",
+        "거리와 시간 옆에 호흡의 느낌도 적었다.",
+        "몸이 가벼워진 순간을 잊기 전에 기록한다.",
+        "수면을 바라보며 떠오른 생각을 짧게 남겼다.",
+        "다음에도 편한 마음으로 물가에 서기를 바란다.",
+        "한 번의 좋은 호흡을 하나씩 모아 간다."
+      ],
+      "context": "One ordinary Korean adult woman aged around 45 with average non-athletic body and natural skin, modest plain dark navy recreational one-piece swimsuit, simple muted mint swim cap and unbranded goggles. Ordinary clean municipal indoor lap pool with pale turquoise water and standard lane ropes, peaceful everyday amateur practice, no glamour or fitness model.",
+      "scenes": [
+        "Wide landscape documentary photograph of one ordinary middle-aged amateur swimmer resting at the pool wall with arms comfortably on the edge and shoulders above water, muted mint swim cap, realistic normal face without beauty retouch, lots of quiet turquoise water around her, no glamour composition.",
+        "Close documentary view of ordinary hands gently adjusting plain swim goggles beside a muted mint cap on the clean pool edge, realistic fingers, natural wet skin and droplets, practical unbranded equipment.",
+        "Wide slightly elevated documentary view of one ordinary amateur swimmer doing a gentle recreational front crawl in a municipal pool lane, plausible human anatomy and ordinary pace, entire body visible through water, large uncluttered water area and realistic lane ropes.",
+        "An ordinary adult swimmer in a modest navy swimsuit and muted mint cap sitting at the pool edge resting after practice, average body, practical calm posture and unretouched skin, natural municipal pool light, no fashion pose.",
+        "Plain swim goggles, muted mint swim cap, folded cream towel and a completely blank waterproof note card on the textured tile beside a quiet pool, realistic wet material textures and soft light."
+      ],
+      "paperLabel": "거리·호흡 훈련 기록지",
+      "motifLabel": "레인을 잇는 작은 물결"
+    }
+  ],
+  "jobs": [
+    {
+      "id": "story-club-run-together-01",
+      "editionId": "story-club-run-together",
+      "scene": 1,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-run-together/01.jpg",
+      "prompt": "Use case: photorealistic-natural. Project asset for a Korean amateur running club photobook, one single original photograph (not a collage or layout). Landscape 3:2 documentary photograph, 1536x1024 if possible. Scene: six ordinary Korean adults aged 25-55, mixed men and women, average varied builds and slightly tired unretouched faces, one in simple glasses, in mismatched practical muted mint/gray/navy running clothes; chatting and laughing while walking slowly together on a broad riverside path after an easy dawn run. Frame every person head to toe with generous empty margin around the whole group; central 75% of the image, eye-level wide lens, natural relaxed candid posture. Soft overcast dawn, everyday urban Korean river park with subdued trees and river. Genuine community snapshot with editorial photographic quality, believable hands and legs, realistic skin texture. Keep equipment and clothes unbranded. Absolutely no fashion models, idols, chiseled athletic bodies, beauty filters, glamour, coordinated advertising pose, logos, watermark, readable text, numbers or graphic overlays. This photo belongs exclusively to edition activity-club-run-together and may not reuse any previous image.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-478dad66-f899-426b-a35f-74901b6aecf0.png",
+      "sha256": "91c7640d2d6aa2564a539c00d0a25aa1293fe8bb2fce5f9af9ea3916e904372c"
+    },
+    {
+      "id": "story-club-run-together-02",
+      "editionId": "story-club-run-together",
+      "scene": 2,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-run-together/02.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: An ordinary Korean amateur running club of six adults aged 25 to 55, mixed men and women, typical varied average builds, one wears simple glasses. Mismatched plain muted mint, gray and navy practical running clothes. Realistic urban river park at overcast dawn, modest community activity, no professional athletes. Scene: A close documentary detail of ordinary hands tying worn running shoes beside two other pairs of shoes and a plain refillable water bottle on a riverside step. Believable fingers, unbranded shoes, natural skin. Unique new photo for story-club-run-together, scene 2; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-9ca144ee-9b87-4cb9-8af4-4d79c7c3a4dd.png",
+      "sha256": "78967056a3f8af3f25a4bf81118f802a02be278a8a2dc0255d0f183c13a1934d"
+    },
+    {
+      "id": "story-club-run-together-03",
+      "editionId": "story-club-run-together",
+      "scene": 3,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-run-together/03.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: An ordinary Korean amateur running club of six adults aged 25 to 55, mixed men and women, typical varied average builds, one wears simple glasses. Mismatched plain muted mint, gray and navy practical running clothes. Realistic urban river park at overcast dawn, modest community activity, no professional athletes. Scene: Wide side view of six amateur runners jogging at an easy conversational pace together, clear separation between bodies and realistic alternating leg positions, full people visible, muted riverside trees, soft daylight. Unique new photo for story-club-run-together, scene 3; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-a68ff428-0195-42c8-9af3-898024f98b6b.png",
+      "sha256": "cf31e347755e6a3aa76ac840c79080bdab301009d24fe5fe1238e23e70f23c5e"
+    },
+    {
+      "id": "story-club-run-together-04",
+      "editionId": "story-club-run-together",
+      "scene": 4,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-run-together/04.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: An ordinary Korean amateur running club of six adults aged 25 to 55, mixed men and women, typical varied average builds, one wears simple glasses. Mismatched plain muted mint, gray and navy practical running clothes. Realistic urban river park at overcast dawn, modest community activity, no professional athletes. Scene: Six ordinary club members chatting loosely in a small semicircle beside the river after their run, one with plain glasses, relaxed tired smiles and average bodies, complete heads and feet with room around the group. Unique new photo for story-club-run-together, scene 4; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-251459e3-12b1-45ae-8173-c7caaeba289e.png",
+      "sha256": "bbb9102fceb44e37d534fe5fa282976774c7c760a4286a85675b2047fab93dac"
+    },
+    {
+      "id": "story-club-run-together-05",
+      "editionId": "story-club-run-together",
+      "scene": 5,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-run-together/05.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: An ordinary Korean amateur running club of six adults aged 25 to 55, mixed men and women, typical varied average builds, one wears simple glasses. Mismatched plain muted mint, gray and navy practical running clothes. Realistic urban river park at overcast dawn, modest community activity, no professional athletes. Scene: Documentary still life of three plain water bottles, an unmarked folded route notebook, a soft mint towel and worn running shoes on a riverside bench, natural unstyled arrangement, soft overcast light. Unique new photo for story-club-run-together, scene 5; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-271a656b-6d0a-439d-b47c-29a1b9c7d8cc.png",
+      "sha256": "a055dbc4bf5b3f911a3728ecc0818a70ca6f77c7a293be721511eb06d0d90a10"
+    },
+    {
+      "id": "story-club-hold-circle-01",
+      "editionId": "story-club-hold-circle",
+      "scene": 1,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-hold-circle/01.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: Five everyday Korean adult amateur boulderers aged 25 to 50, three women and two men, ordinary average varied bodies and short or tied-back practical hair, one with plain glasses. Modest indoor bouldering gym with low colored holds and thick safety mats. Plain loose muted gray, mint and brown clothing, no beauty styling. Scene: Wide candid view of five ordinary adult club members standing relaxed on a thick bouldering mat near a low practice wall, chatting and pointing out holds, all five full bodies comfortably framed, keep ample space around faces and feet. Unique new photo for story-club-hold-circle, scene 1; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-6f99e0f2-1ab5-4364-81ba-fb7bfee5b090.png",
+      "sha256": "3493f2cf0c177ac788e99564057d467fc205d9a9a8e49b875e3b8f7d43c8e0f7"
+    },
+    {
+      "id": "story-club-hold-circle-02",
+      "editionId": "story-club-hold-circle",
+      "scene": 2,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-hold-circle/02.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: Five everyday Korean adult amateur boulderers aged 25 to 50, three women and two men, ordinary average varied bodies and short or tied-back practical hair, one with plain glasses. Modest indoor bouldering gym with low colored holds and thick safety mats. Plain loose muted gray, mint and brown clothing, no beauty styling. Scene: Close documentary photo of ordinary hands dusting a little chalk above an unbranded chalk bag on a gray bouldering mat, worn climbing shoes nearby, realistic fingers and dry chalk texture. Unique new photo for story-club-hold-circle, scene 2; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-8c25f58b-b57f-4364-a0f2-9c54297edde3.png",
+      "sha256": "72e2255484ed14da4fdb3a129e1152bacdea8137ba15e8f64edda36d58b624b9"
+    },
+    {
+      "id": "story-club-hold-circle-03",
+      "editionId": "story-club-hold-circle",
+      "scene": 3,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-hold-circle/03.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: Five everyday Korean adult amateur boulderers aged 25 to 50, three women and two men, ordinary average varied bodies and short or tied-back practical hair, one with plain glasses. Modest indoor bouldering gym with low colored holds and thick safety mats. Plain loose muted gray, mint and brown clothing, no beauty styling. Scene: Wide view of one amateur climber on a low safe bouldering route, only 40 centimeters above a thick mat, with four clubmates standing well clear and observing from below, five complete people visible, no collision or stunts. Unique new photo for story-club-hold-circle, scene 3; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-6dd6f475-942d-41f1-80ba-6b83d3426e8f.png",
+      "sha256": "74a452501cb405a282079959a49238dc7e9bb65a50c77f65d29d526f5aa9f9f4"
+    },
+    {
+      "id": "story-club-hold-circle-04",
+      "editionId": "story-club-hold-circle",
+      "scene": 4,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-hold-circle/04.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: Five everyday Korean adult amateur boulderers aged 25 to 50, three women and two men, ordinary average varied bodies and short or tied-back practical hair, one with plain glasses. Modest indoor bouldering gym with low colored holds and thick safety mats. Plain loose muted gray, mint and brown clothing, no beauty styling. Scene: Five ordinary club members sitting comfortably along a gym bench discussing their attempts, one in simple glasses, candid unretouched faces, whole group inside generous horizontal framing. Unique new photo for story-club-hold-circle, scene 4; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-20594a29-6d34-4cf5-8590-22ef7b39426d.png",
+      "sha256": "3c9dcd2c7e6e6853bc5f392448818b0a2158af5f12604d7dec71a52272638652"
+    },
+    {
+      "id": "story-club-hold-circle-05",
+      "editionId": "story-club-hold-circle",
+      "scene": 5,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-hold-circle/05.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: Five everyday Korean adult amateur boulderers aged 25 to 50, three women and two men, ordinary average varied bodies and short or tied-back practical hair, one with plain glasses. Modest indoor bouldering gym with low colored holds and thick safety mats. Plain loose muted gray, mint and brown clothing, no beauty styling. Scene: A quiet detail of three pairs of worn climbing shoes, a plain chalk bag and a blank route-note card on a gym bench, muted mint towel, believable practical equipment, no brand marks. Unique new photo for story-club-hold-circle, scene 5; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-afa00e1b-fd8b-455c-a0dc-75c434cd9f77.png",
+      "sha256": "f7595e4b29721c68a53ae04c53e1590d325091a892bc4ed716c3d8a7bf495a9f"
+    },
+    {
+      "id": "story-club-fairway-friends-01",
+      "editionId": "story-club-fairway-friends",
+      "scene": 1,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-fairway-friends/01.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: Four ordinary Korean amateur golfers aged 35 to 60, two women and two men with average varied builds and natural unretouched skin, one wears glasses. Modest public golf course, inexpensive plain off-white, muted green and navy clothes with practical caps, everyday small golf bags, no luxury or elite resort aesthetic. Scene: Wide candid photo of four ordinary adult friends walking together at the edge of a public golf fairway, two carrying small practical golf bags, chatting naturally, every head and foot fully visible and all faces away from image edges. Unique new photo for story-club-fairway-friends, scene 1; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-f726574a-46aa-4214-b872-98a20094da52.png",
+      "sha256": "8f81624fa1c2976cc193cd78b58b5dd8d31ec64d8ab745ee3f25a495bde2e687"
+    },
+    {
+      "id": "story-club-fairway-friends-02",
+      "editionId": "story-club-fairway-friends",
+      "scene": 2,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-fairway-friends/02.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: Four ordinary Korean amateur golfers aged 35 to 60, two women and two men with average varied builds and natural unretouched skin, one wears glasses. Modest public golf course, inexpensive plain off-white, muted green and navy clothes with practical caps, everyday small golf bags, no luxury or elite resort aesthetic. Scene: Close documentary view of an ordinary golfer fastening a worn plain golf glove beside an unbranded club grip and a white ball on a bench, believable fingers and fabric texture, soft morning light. Unique new photo for story-club-fairway-friends, scene 2; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-521b9701-37a7-42c4-a02d-bad2fef8ecce.png",
+      "sha256": "23d43217cbae986cc5ef1ff586e86e7ea580de8062691a909bb0988ceb4ae64e"
+    },
+    {
+      "id": "story-club-fairway-friends-03",
+      "editionId": "story-club-fairway-friends",
+      "scene": 3,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-fairway-friends/03.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: Four ordinary Korean amateur golfers aged 35 to 60, two women and two men with average varied builds and natural unretouched skin, one wears glasses. Modest public golf course, inexpensive plain off-white, muted green and navy clothes with practical caps, everyday small golf bags, no luxury or elite resort aesthetic. Scene: Wide view of four amateur golf club members watching a putting attempt together, one putting and three standing patiently well away, simple public putting green, natural relaxed faces and fully visible people, realistic club and ball. Unique new photo for story-club-fairway-friends, scene 3; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-f9e95fe4-c7b3-402a-a99a-1e0dd2440ce0.png",
+      "sha256": "c6a9cfa07af05383c4e3eee233e80025a0ecd9cd6f4f798c7fdbf7cdd1b05997"
+    },
+    {
+      "id": "story-club-fairway-friends-04",
+      "editionId": "story-club-fairway-friends",
+      "scene": 4,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-fairway-friends/04.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: Four ordinary Korean amateur golfers aged 35 to 60, two women and two men with average varied builds and natural unretouched skin, one wears glasses. Modest public golf course, inexpensive plain off-white, muted green and navy clothes with practical caps, everyday small golf bags, no luxury or elite resort aesthetic. Scene: Four ordinary friends sitting at a simple outdoor course table chatting after a round, practical caps and windbreakers, cups of water, relaxed unposed expressions, wide group view with generous margins. Unique new photo for story-club-fairway-friends, scene 4; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-a9793a92-0047-43e9-b489-5ffa360d66d4.png",
+      "sha256": "8b00cd36d66f83715f196fe713b08af5a6fa884f695fd8df3213a4cb8d99f170"
+    },
+    {
+      "id": "story-club-fairway-friends-05",
+      "editionId": "story-club-fairway-friends",
+      "scene": 5,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-fairway-friends/05.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: Four ordinary Korean amateur golfers aged 35 to 60, two women and two men with average varied builds and natural unretouched skin, one wears glasses. Modest public golf course, inexpensive plain off-white, muted green and navy clothes with practical caps, everyday small golf bags, no luxury or elite resort aesthetic. Scene: A plain pencil, completely unmarked scorecard, three white golf balls, an ordinary glove and the edge of a muted mint towel on a wooden bench, natural use marks, no readable numbers or logos. Unique new photo for story-club-fairway-friends, scene 5; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-892cb423-b3b4-4054-8ae8-6e06293fb666.png",
+      "sha256": "18bd4a84590168bf780ffda5aed0cbff3a96331c9dc2639515b075274f7b0481"
+    },
+    {
+      "id": "story-club-shuttle-evening-01",
+      "editionId": "story-club-shuttle-evening",
+      "scene": 1,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-shuttle-evening/01.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: Six ordinary Korean recreational badminton club members aged 30 to 60, mixed men and women with average bodies, practical glasses and tied hair. A modest municipal indoor gym, muted green badminton court, plain navy, gray, dull mint shirts and everyday shoes. Natural slightly tired community sports snapshots, no athletic models. Scene: Wide candid photograph of all six ordinary badminton club members chatting beside a municipal gym court, holding plain rackets low rather than posing with them, all full bodies and heads visible with generous borders, modest overhead gym light. Unique new photo for story-club-shuttle-evening, scene 1; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-bf1c0919-70cb-4b9e-a64d-3fe0cc7f61b5.png",
+      "sha256": "beee7c575646d25c0a53a4e1aaa40f05639029d51102f211adf5bce92e731644"
+    },
+    {
+      "id": "story-club-shuttle-evening-02",
+      "editionId": "story-club-shuttle-evening",
+      "scene": 2,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-shuttle-evening/02.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: Six ordinary Korean recreational badminton club members aged 30 to 60, mixed men and women with average bodies, practical glasses and tied hair. A modest municipal indoor gym, muted green badminton court, plain navy, gray, dull mint shirts and everyday shoes. Natural slightly tired community sports snapshots, no athletic models. Scene: Close documentary still life of two plain badminton racket grips, worn white shuttlecocks and an ordinary towel on a bench, one average hand gently adjusting the grip wrap, realistic fingers and materials. Unique new photo for story-club-shuttle-evening, scene 2; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-6f14debe-7f14-46df-923f-fe2499d13030.png",
+      "sha256": "a359b29c87d6e3e0cfc27b66d80e20a7353a56929d07a21bc1ac0a6f9fd3c817"
+    },
+    {
+      "id": "story-club-shuttle-evening-03",
+      "editionId": "story-club-shuttle-evening",
+      "scene": 3,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-shuttle-evening/03.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: Six ordinary Korean recreational badminton club members aged 30 to 60, mixed men and women with average bodies, practical glasses and tied hair. A modest municipal indoor gym, muted green badminton court, plain navy, gray, dull mint shirts and everyday shoes. Natural slightly tired community sports snapshots, no athletic models. Scene: Wide realistic view of a casual doubles badminton rally with four ordinary adult players, two on each side of the net, relaxed reachable shuttle trajectory, plausible rackets and limbs, full players clearly separated and no one close to the edges. Unique new photo for story-club-shuttle-evening, scene 3; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-938dffc1-282f-49f3-8d9d-739d07158264.png",
+      "sha256": "1f52866173a7fccd4c3ac329197cd5e3a4c9676155073fe38b8a145e2ed88cc7"
+    },
+    {
+      "id": "story-club-shuttle-evening-04",
+      "editionId": "story-club-shuttle-evening",
+      "scene": 4,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-shuttle-evening/04.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: Six ordinary Korean recreational badminton club members aged 30 to 60, mixed men and women with average bodies, practical glasses and tied hair. A modest municipal indoor gym, muted green badminton court, plain navy, gray, dull mint shirts and everyday shoes. Natural slightly tired community sports snapshots, no athletic models. Scene: Six club members sitting and standing casually around a simple gym bench after games, smiling modestly and sharing water, natural unretouched ordinary faces, wide group composition with all heads and legs visible. Unique new photo for story-club-shuttle-evening, scene 4; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-b05ce1d5-de32-4952-b171-b447f2169329.png",
+      "sha256": "096a4a45db486bc7c35ee9e2c25a23b3022e50417abc5558ecc0cdbce83acbb7"
+    },
+    {
+      "id": "story-club-shuttle-evening-05",
+      "editionId": "story-club-shuttle-evening",
+      "scene": 5,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-shuttle-evening/05.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: Six ordinary Korean recreational badminton club members aged 30 to 60, mixed men and women with average bodies, practical glasses and tied hair. A modest municipal indoor gym, muted green badminton court, plain navy, gray, dull mint shirts and everyday shoes. Natural slightly tired community sports snapshots, no athletic models. Scene: A small basket with unbranded white shuttlecocks, two used rackets, a blank rotation-note card and a folded muted mint sports towel near a municipal court, practical natural arrangement. Unique new photo for story-club-shuttle-evening, scene 5; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-d93a7238-7696-43dd-95c0-d3bfb13562cf.png",
+      "sha256": "5fb722041d8a4e17a9a6d6776b008d6c7e7dafd6471c3fa64296d5ceb00c7bcf"
+    },
+    {
+      "id": "story-club-pedal-company-01",
+      "editionId": "story-club-pedal-company",
+      "scene": 1,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-pedal-company/01.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: Five ordinary Korean recreational cyclists aged 30 to 60, mixed genders, typical varied average bodies. Practical helmets on every rider, ordinary commuter and hybrid bicycles, modest loose muted mint, gray and navy jackets rather than racing team lycra. Safe broad riverside cycle path and simple rest shelter, natural early autumn light. Scene: Wide candid group photograph of five ordinary club members standing beside their parked ordinary bicycles at a riverside rest point, practical helmets and unposed relaxed expressions, bicycles and complete people with ample margins, no racing advertisement look. Unique new photo for story-club-pedal-company, scene 1; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-5eb446c0-e10a-438e-bef5-723b689bddea.png",
+      "sha256": "47d9f79967c1f51dead905f8ed1c7ee56c626f681968fd9349d8defe4815871b"
+    },
+    {
+      "id": "story-club-pedal-company-02",
+      "editionId": "story-club-pedal-company",
+      "scene": 2,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-pedal-company/02.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: Five ordinary Korean recreational cyclists aged 30 to 60, mixed genders, typical varied average bodies. Practical helmets on every rider, ordinary commuter and hybrid bicycles, modest loose muted mint, gray and navy jackets rather than racing team lycra. Safe broad riverside cycle path and simple rest shelter, natural early autumn light. Scene: Close documentary view of ordinary hands fastening a plain practical bicycle helmet strap, unbranded handlebars softly in the background, believable fingers and everyday skin texture. Unique new photo for story-club-pedal-company, scene 2; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-98bd5015-5257-4a17-8887-f708f8d76cfe.png",
+      "sha256": "f03062a231d7d6ba5b9658906dbd1a29ee8c216eefd29a7186452c03159084cb"
+    },
+    {
+      "id": "story-club-pedal-company-03",
+      "editionId": "story-club-pedal-company",
+      "scene": 3,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-pedal-company/03.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: Five ordinary Korean recreational cyclists aged 30 to 60, mixed genders, typical varied average bodies. Practical helmets on every rider, ordinary commuter and hybrid bicycles, modest loose muted mint, gray and navy jackets rather than racing team lycra. Safe broad riverside cycle path and simple rest shelter, natural early autumn light. Scene: Wide side view of five recreational cyclists riding single file slowly on a broad safe marked riverside cycle path, all wearing helmets and maintaining sensible gaps, each complete bicycle and body visible, ordinary bikes and clothes. Unique new photo for story-club-pedal-company, scene 3; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-3e39eae5-ed15-4c88-9d45-26a58a058d4d.png",
+      "sha256": "42fbfc475d8bfa97bccda49d390f0402867c2eaedb828567934d9a71fb234bdf"
+    },
+    {
+      "id": "story-club-pedal-company-04",
+      "editionId": "story-club-pedal-company",
+      "scene": 4,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-pedal-company/04.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: Five ordinary Korean recreational cyclists aged 30 to 60, mixed genders, typical varied average bodies. Practical helmets on every rider, ordinary commuter and hybrid bicycles, modest loose muted mint, gray and navy jackets rather than racing team lycra. Safe broad riverside cycle path and simple rest shelter, natural early autumn light. Scene: Five ordinary cyclists in helmets resting near a simple riverside shelter, parked bikes safely to one side, sharing a snack and chatting, candid wide group view with every member fully framed. Unique new photo for story-club-pedal-company, scene 4; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-6ec27a94-de14-42c8-8671-ac1954fe9360.png",
+      "sha256": "e4d8767a67fccabed9dbd3141b4713d4e0de368ddcee3c78843ac462d4fdce62"
+    },
+    {
+      "id": "story-club-pedal-company-05",
+      "editionId": "story-club-pedal-company",
+      "scene": 5,
+      "assetPath": "assets/templates/activity_editions_2026/story-club-pedal-company/05.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: Five ordinary Korean recreational cyclists aged 30 to 60, mixed genders, typical varied average bodies. Practical helmets on every rider, ordinary commuter and hybrid bicycles, modest loose muted mint, gray and navy jackets rather than racing team lycra. Safe broad riverside cycle path and simple rest shelter, natural early autumn light. Scene: An unmarked folded route map, two refillable water bottles, a small bicycle pump and ordinary gloves on a weathered rest-stop table beside a muted mint helmet, natural unstyled documentary still life. Unique new photo for story-club-pedal-company, scene 5; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-6ab9758e-db9b-4eeb-85c4-4f45ce341a6c.png",
+      "sha256": "7b0437a89f8baf85f5429b752cecc2e1a33dfc276487849a85ba913e149df7d9"
+    },
+    {
+      "id": "story-sport-pace-study-01",
+      "editionId": "story-sport-pace-study",
+      "scene": 1,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-pace-study/01.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean woman aged around 40 with a typical average soft build, practical short ponytail and naturally uneven unretouched skin, plain navy running shirt and muted mint shorts, unbranded worn shoes. Amateur exercise at a quiet community athletics track in soft cloudy morning light, no fitness model or idealized muscular physique. Scene: Wide landscape documentary action photograph of one ordinary amateur woman jogging easily alone on a quiet public running track, complete body inside the central 35 percent of frame with generous space around head and feet, realistic running gait and natural skin, track lanes recede diagonally. Unique new photo for story-sport-pace-study, scene 1; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-9c59eb99-e000-46a5-9f8a-e2cdc1bf94ed.png",
+      "sha256": "bab0b4dd0807e8aff429a39430ec943fcc4d9af19c481febd700b1b2ebae1712"
+    },
+    {
+      "id": "story-sport-pace-study-02",
+      "editionId": "story-sport-pace-study",
+      "scene": 2,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-pace-study/02.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean woman aged around 40 with a typical average soft build, practical short ponytail and naturally uneven unretouched skin, plain navy running shirt and muted mint shorts, unbranded worn shoes. Amateur exercise at a quiet community athletics track in soft cloudy morning light, no fitness model or idealized muscular physique. Scene: Close documentary view of an ordinary hand pressing the side of a plain unbranded sports watch with a dark unreadable display after a run, mild natural sweat and a worn cotton wristband, anatomically believable hands. Unique new photo for story-sport-pace-study, scene 2; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-c1d96892-ff50-4914-99c1-f31ffde4a600.png",
+      "sha256": "367373a4e984b1b099ef03a27c2274627734b1b0b4b07fe3edc7590b4ee5177b"
+    },
+    {
+      "id": "story-sport-pace-study-03",
+      "editionId": "story-sport-pace-study",
+      "scene": 3,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-pace-study/03.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean woman aged around 40 with a typical average soft build, practical short ponytail and naturally uneven unretouched skin, plain navy running shirt and muted mint shorts, unbranded worn shoes. Amateur exercise at a quiet community athletics track in soft cloudy morning light, no fitness model or idealized muscular physique. Scene: Side-on medium wide view of an ordinary middle-aged woman doing a relaxed walking recovery on a public track, entire body clearly visible, casual ordinary build and practical clothes, honest cloudy daylight. Unique new photo for story-sport-pace-study, scene 3; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-2704a0d5-d835-4449-9e47-d7fe5a00b4c2.png",
+      "sha256": "12092d13ed26e9f7aba494279a43c04e7b1796bdb42940b3ee881be1ae4f86d8"
+    },
+    {
+      "id": "story-sport-pace-study-04",
+      "editionId": "story-sport-pace-study",
+      "scene": 4,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-pace-study/04.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean woman aged around 40 with a typical average soft build, practical short ponytail and naturally uneven unretouched skin, plain navy running shirt and muted mint shorts, unbranded worn shoes. Amateur exercise at a quiet community athletics track in soft cloudy morning light, no fitness model or idealized muscular physique. Scene: An ordinary amateur woman sitting on the side of the track stretching gently after exercise, realistic modest posture and average body, a small towel nearby, natural candid image with space around subject. Unique new photo for story-sport-pace-study, scene 4; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-3be03e2e-d71e-452a-93f1-e50342323b72.png",
+      "sha256": "f9eb321371c1a2f8eb7612f8a2ff097b6b8c293a8a5a59e413978bb0e95a9158"
+    },
+    {
+      "id": "story-sport-pace-study-05",
+      "editionId": "story-sport-pace-study",
+      "scene": 5,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-pace-study/05.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean woman aged around 40 with a typical average soft build, practical short ponytail and naturally uneven unretouched skin, plain navy running shirt and muted mint shorts, unbranded worn shoes. Amateur exercise at a quiet community athletics track in soft cloudy morning light, no fitness model or idealized muscular physique. Scene: Plain unmarked training notebook, a pencil, worn running shoes and a muted mint sports towel beside the painted line of a quiet athletics track, realistic used materials, no text or numbers. Unique new photo for story-sport-pace-study, scene 5; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-5332c5c5-4ef7-4dc6-bc45-7a58e568074c.png",
+      "sha256": "4b4b92b73375700c61c477dba1e886a8e71a0348078b78a386fee684f3331af9"
+    },
+    {
+      "id": "story-sport-hold-study-01",
+      "editionId": "story-sport-hold-study",
+      "scene": 1,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-hold-study/01.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean adult man in his late 30s with average build, natural slightly tired face and practical short hair, plain charcoal shirt and loose dull mint climbing trousers. Modest indoor bouldering gym with safe low practice holds and thick mats, thoughtful amateur training, no ripped physique or advertising pose. Scene: Landscape documentary image of one ordinary amateur man studying a low bouldering wall from the mat, one hand casually pointing to a hold, entire person centered within central 40 percent with ample breathing room, quietly lit real gym, authentic ordinary face. Unique new photo for story-sport-hold-study, scene 1; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-1f487767-fe9a-44f2-80c4-02fb95fb4f1a.png",
+      "sha256": "f2ac7256dff11f5f26ca5aa05525727c94e9151d1364de25b1ca5000d5a14b84"
+    },
+    {
+      "id": "story-sport-hold-study-02",
+      "editionId": "story-sport-hold-study",
+      "scene": 2,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-hold-study/02.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean adult man in his late 30s with average build, natural slightly tired face and practical short hair, plain charcoal shirt and loose dull mint climbing trousers. Modest indoor bouldering gym with safe low practice holds and thick mats, thoughtful amateur training, no ripped physique or advertising pose. Scene: Close documentary detail of an ordinary hand resting on a textured low climbing hold, chalk dust on natural skin and practical short nails, realistic five fingers, muted gray and mint wall tones. Unique new photo for story-sport-hold-study, scene 2; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-3e09e529-f79d-4fcd-8c4b-f40945c135fc.png",
+      "sha256": "b71b016d2ef67c3971138cacda15f111ce61cc3e0af37babcb0ed0d69292d6c3"
+    },
+    {
+      "id": "story-sport-hold-study-03",
+      "editionId": "story-sport-hold-study",
+      "scene": 3,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-hold-study/03.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean adult man in his late 30s with average build, natural slightly tired face and practical short hair, plain charcoal shirt and loose dull mint climbing trousers. Modest indoor bouldering gym with safe low practice holds and thick mats, thoughtful amateur training, no ripped physique or advertising pose. Scene: Side view of one amateur male boulderer keeping a careful low body position only a short distance above a thick gym mat, average body and plausible bent legs, all limbs visible, no unsafe height or gymnastic stunt. Unique new photo for story-sport-hold-study, scene 3; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-a359a823-ad70-4c98-a95b-080d5ed61cde.png",
+      "sha256": "b1b7283c63450adea5293a34b7fa4685b6294a1a0a81433b013bb70d38059c86"
+    },
+    {
+      "id": "story-sport-hold-study-04",
+      "editionId": "story-sport-hold-study",
+      "scene": 4,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-hold-study/04.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean adult man in his late 30s with average build, natural slightly tired face and practical short hair, plain charcoal shirt and loose dull mint climbing trousers. Modest indoor bouldering gym with safe low practice holds and thick mats, thoughtful amateur training, no ripped physique or advertising pose. Scene: An ordinary climber sitting on a low bench noting a practice attempt in a completely blank notebook, climbing wall in soft background, quiet unretouched documentary profile, realistic pen grip. Unique new photo for story-sport-hold-study, scene 4; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-51c2d6db-32ca-49cc-ab16-89387cb36c41.png",
+      "sha256": "cbfa034e08e4ff5c68848178303d682599397f09e5384e56160cce20969d92ca"
+    },
+    {
+      "id": "story-sport-hold-study-05",
+      "editionId": "story-sport-hold-study",
+      "scene": 5,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-hold-study/05.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean adult man in his late 30s with average build, natural slightly tired face and practical short hair, plain charcoal shirt and loose dull mint climbing trousers. Modest indoor bouldering gym with safe low practice holds and thick mats, thoughtful amateur training, no ripped physique or advertising pose. Scene: Worn climbing shoes, a plain chalk bag, a small soft brush and an unmarked folded route card on a gray gym mat, natural chalk traces, practical muted mint fabric accent, no logos. Unique new photo for story-sport-hold-study, scene 5; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-4f551025-1377-4dee-bf6f-f2adcaf2fdc9.png",
+      "sha256": "2793bbb9fbbad1379daece2a7ea40932c6265f2dc1a756d7a649b713b08510e7"
+    },
+    {
+      "id": "story-sport-swing-notes-01",
+      "editionId": "story-sport-swing-notes",
+      "scene": 1,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-swing-notes/01.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean woman aged about 50 with average build, practical short hair and natural unretouched skin, plain ivory polo and navy trousers with a modest muted mint visor. Ordinary public outdoor golf driving range with simple green practice mats, practical unbranded clubs, calm daylight, no luxury country club or professional athlete styling. Scene: Landscape documentary photograph of an ordinary middle-aged female amateur golfer standing in a relaxed balanced setup on a public driving-range mat with one realistic golf club, complete body centered within the central 40 percent of image, ample space around club and feet, not a promotional pose. Unique new photo for story-sport-swing-notes, scene 1; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-8a56e8c7-14ae-4ef3-bce8-6c005d35bd65.png",
+      "sha256": "0ee43cc70efe4da0fa68d3fb74d7af66ec034530175f9e8791b0e53d38fc36a3"
+    },
+    {
+      "id": "story-sport-swing-notes-02",
+      "editionId": "story-sport-swing-notes",
+      "scene": 2,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-swing-notes/02.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean woman aged about 50 with average build, practical short hair and natural unretouched skin, plain ivory polo and navy trousers with a modest muted mint visor. Ordinary public outdoor golf driving range with simple green practice mats, practical unbranded clubs, calm daylight, no luxury country club or professional athlete styling. Scene: Close documentary view of ordinary hands holding an unbranded golf grip in a comfortable amateur setup, realistic fingers and a worn plain glove, green driving-range mat softly behind, no beauty retouch. Unique new photo for story-sport-swing-notes, scene 2; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-5f904e5c-1a35-460f-a837-54cf4aee909c.png",
+      "sha256": "e5f24c05102b0e6eb00c98c4f0a9e575144b5382fe8c785efc5324a3a95c7c40"
+    },
+    {
+      "id": "story-sport-swing-notes-03",
+      "editionId": "story-sport-swing-notes",
+      "scene": 3,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-swing-notes/03.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean woman aged about 50 with average build, practical short hair and natural unretouched skin, plain ivory polo and navy trousers with a modest muted mint visor. Ordinary public outdoor golf driving range with simple green practice mats, practical unbranded clubs, calm daylight, no luxury country club or professional athlete styling. Scene: Full-body side view of one ordinary amateur golfer after a gentle practice swing at a simple driving range, plausible balanced posture with one club and two arms, complete club and feet visible, no dramatic pro-athlete pose. Unique new photo for story-sport-swing-notes, scene 3; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-262c00ed-0789-4f65-bec2-b4e9dae7559e.png",
+      "sha256": "9517bd55939d77a02e726f908fe85723d9205121922ae970fa71cb0186e1af4c"
+    },
+    {
+      "id": "story-sport-swing-notes-04",
+      "editionId": "story-sport-swing-notes",
+      "scene": 4,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-swing-notes/04.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean woman aged about 50 with average build, practical short hair and natural unretouched skin, plain ivory polo and navy trousers with a modest muted mint visor. Ordinary public outdoor golf driving range with simple green practice mats, practical unbranded clubs, calm daylight, no luxury country club or professional athlete styling. Scene: An ordinary middle-aged female golfer looking thoughtfully at a practice ball on the mat while taking a short pause, practical plain cap and average body, quiet candid three-quarter view. Unique new photo for story-sport-swing-notes, scene 4; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-86bdd8e3-2d18-4bd2-9983-01317b21938a.png",
+      "sha256": "f56d603abcc274b393edfc7b6cc6c09c918aaa8f5e313db008863eb1e824298c"
+    },
+    {
+      "id": "story-sport-swing-notes-05",
+      "editionId": "story-sport-swing-notes",
+      "scene": 5,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-swing-notes/05.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean woman aged about 50 with average build, practical short hair and natural unretouched skin, plain ivory polo and navy trousers with a modest muted mint visor. Ordinary public outdoor golf driving range with simple green practice mats, practical unbranded clubs, calm daylight, no luxury country club or professional athlete styling. Scene: A plain golf glove, an unmarked practice-note sheet, a pencil, two white golf balls and an unbranded club on a worn driving-range bench, soft mint towel and natural daylight. Unique new photo for story-sport-swing-notes, scene 5; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-742f23d8-fcf7-4a53-b569-b7fc7af32e94.png",
+      "sha256": "85b2e6d694c619b121146a33b72d47930223883e601e325f296dc3cec3ead82b"
+    },
+    {
+      "id": "story-sport-baseline-notes-01",
+      "editionId": "story-sport-baseline-notes",
+      "scene": 1,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-baseline-notes/01.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean man aged about 45, average slightly stocky build, natural asymmetric unretouched face, practical glasses and short plain hair. Unbranded gray T-shirt, navy shorts and practical shoes, ordinary public outdoor tennis court with faded mint green surface and a simple net, genuine recreational practice, no model styling. Scene: Landscape documentary full-body photograph of one ordinary middle-aged amateur tennis player preparing calmly near a public court baseline with a racket held low, complete person in central 40 percent, spacious authentic court lines and soft light, average build and natural face. Unique new photo for story-sport-baseline-notes, scene 1; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-f0bbc52e-35dd-4779-9971-3cf513782583.png",
+      "sha256": "6e2d7db2fe7446f3ee8c7eccc42667bc3c0e81a8d9b7e5290d93843201cb5e1a"
+    },
+    {
+      "id": "story-sport-baseline-notes-02",
+      "editionId": "story-sport-baseline-notes",
+      "scene": 2,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-baseline-notes/02.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean man aged about 45, average slightly stocky build, natural asymmetric unretouched face, practical glasses and short plain hair. Unbranded gray T-shirt, navy shorts and practical shoes, ordinary public outdoor tennis court with faded mint green surface and a simple net, genuine recreational practice, no model styling. Scene: Close documentary image of an ordinary hand adjusting a worn plain tennis grip, yellow practice ball and used strings visible, believable fingers and realistic racket geometry, natural sunlight. Unique new photo for story-sport-baseline-notes, scene 2; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-6eaf2078-3b00-4013-97cd-06ec2d939be1.png",
+      "sha256": "c8994dfd80d25fa46f2dfceb2c498c40eb8e3574ce40a53273aa847f5aa004a4"
+    },
+    {
+      "id": "story-sport-baseline-notes-03",
+      "editionId": "story-sport-baseline-notes",
+      "scene": 3,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-baseline-notes/03.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean man aged about 45, average slightly stocky build, natural asymmetric unretouched face, practical glasses and short plain hair. Unbranded gray T-shirt, navy shorts and practical shoes, ordinary public outdoor tennis court with faded mint green surface and a simple net, genuine recreational practice, no model styling. Scene: Full-body side view of an ordinary amateur tennis player taking a small controlled forehand practice step, plausible relaxed position with one racket and two arms, whole person and racket comfortably framed, no extreme athletic leap. Unique new photo for story-sport-baseline-notes, scene 3; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-95f349c5-33f8-4fa9-927c-4314e6ad0e51.png",
+      "sha256": "35ec193f84ea3df4fb6bc63b8bf4e9233286343bf52002e4afe3e43ca7c24175"
+    },
+    {
+      "id": "story-sport-baseline-notes-04",
+      "editionId": "story-sport-baseline-notes",
+      "scene": 4,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-baseline-notes/04.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean man aged about 45, average slightly stocky build, natural asymmetric unretouched face, practical glasses and short plain hair. Unbranded gray T-shirt, navy shorts and practical shoes, ordinary public outdoor tennis court with faded mint green surface and a simple net, genuine recreational practice, no model styling. Scene: An ordinary middle-aged player sitting at a simple court bench drinking water after practice, plain glasses and slightly tired unretouched face, natural modest candid moment with ample space. Unique new photo for story-sport-baseline-notes, scene 4; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-14ab7128-29ab-44cd-81c0-a48620a5fa4f.png",
+      "sha256": "4e8ba2019d9da4f82000b6db30e0bd858098d67300a7de888508aac23d036d9b"
+    },
+    {
+      "id": "story-sport-baseline-notes-05",
+      "editionId": "story-sport-baseline-notes",
+      "scene": 5,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-baseline-notes/05.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean man aged about 45, average slightly stocky build, natural asymmetric unretouched face, practical glasses and short plain hair. Unbranded gray T-shirt, navy shorts and practical shoes, ordinary public outdoor tennis court with faded mint green surface and a simple net, genuine recreational practice, no model styling. Scene: Two worn yellow tennis balls, one plain racket, a blank practice notebook, pencil and folded pale mint towel beside a faded court line, quiet everyday documentary still life, no logos. Unique new photo for story-sport-baseline-notes, scene 5; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-5c23526b-b34a-4f4d-bf71-1924d1f2c078.png",
+      "sha256": "43978b86ee359a848e5e773d5eef3241b3f67c263f3c57c83279805f035237b7"
+    },
+    {
+      "id": "story-sport-breath-lanes-01",
+      "editionId": "story-sport-breath-lanes",
+      "scene": 1,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-breath-lanes/01.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean adult woman aged around 45 with average non-athletic body and natural skin, modest plain dark navy recreational one-piece swimsuit, simple muted mint swim cap and unbranded goggles. Ordinary clean municipal indoor lap pool with pale turquoise water and standard lane ropes, peaceful everyday amateur practice, no glamour or fitness model. Scene: Wide landscape documentary photograph of one ordinary middle-aged amateur swimmer resting at the pool wall with arms comfortably on the edge and shoulders above water, muted mint swim cap, realistic normal face without beauty retouch, lots of quiet turquoise water around her, no glamour composition. Unique new photo for story-sport-breath-lanes, scene 1; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-deba6ab6-5ab8-42a0-9773-2c84ea56ed8c.png",
+      "sha256": "70616c8fa6745820f3d92c34237b3fc46a2ba3dd58c5543f6598e73efde13ffb"
+    },
+    {
+      "id": "story-sport-breath-lanes-02",
+      "editionId": "story-sport-breath-lanes",
+      "scene": 2,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-breath-lanes/02.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean adult woman aged around 45 with average non-athletic body and natural skin, modest plain dark navy recreational one-piece swimsuit, simple muted mint swim cap and unbranded goggles. Ordinary clean municipal indoor lap pool with pale turquoise water and standard lane ropes, peaceful everyday amateur practice, no glamour or fitness model. Scene: Close documentary view of ordinary hands gently adjusting plain swim goggles beside a muted mint cap on the clean pool edge, realistic fingers, natural wet skin and droplets, practical unbranded equipment. Unique new photo for story-sport-breath-lanes, scene 2; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-a5f87627-24ea-4381-8dff-ebe0bb87602a.png",
+      "sha256": "9a710479a5f3f21ea071333a6f5febbc189bdfab07506bd97d52735d6e558f2d"
+    },
+    {
+      "id": "story-sport-breath-lanes-03",
+      "editionId": "story-sport-breath-lanes",
+      "scene": 3,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-breath-lanes/03.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean adult woman aged around 45 with average non-athletic body and natural skin, modest plain dark navy recreational one-piece swimsuit, simple muted mint swim cap and unbranded goggles. Ordinary clean municipal indoor lap pool with pale turquoise water and standard lane ropes, peaceful everyday amateur practice, no glamour or fitness model. Scene: Wide slightly elevated documentary view of one ordinary amateur swimmer doing a gentle recreational front crawl in a municipal pool lane, plausible human anatomy and ordinary pace, entire body visible through water, large uncluttered water area and realistic lane ropes. Unique new photo for story-sport-breath-lanes, scene 3; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-2f7dea34-af0e-47cb-9763-29a2f974c13d.png",
+      "sha256": "c6e53f7b8ff46af79de0854ef663097961b3196a1bbeb1d4013427bf4d27f22d"
+    },
+    {
+      "id": "story-sport-breath-lanes-04",
+      "editionId": "story-sport-breath-lanes",
+      "scene": 4,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-breath-lanes/04.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean adult woman aged around 45 with average non-athletic body and natural skin, modest plain dark navy recreational one-piece swimsuit, simple muted mint swim cap and unbranded goggles. Ordinary clean municipal indoor lap pool with pale turquoise water and standard lane ropes, peaceful everyday amateur practice, no glamour or fitness model. Scene: An ordinary adult swimmer in a modest navy swimsuit and muted mint cap sitting at the pool edge resting after practice, average body, practical calm posture and unretouched skin, natural municipal pool light, no fashion pose. Unique new photo for story-sport-breath-lanes, scene 4; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-69ed9eb7-21b0-40b8-8276-ddbb9958c2e6.png",
+      "sha256": "295a5bb9d91b5dc3580a624fd4ce45163c7ad6bf69cfdb0b160192d1ec32bbe3"
+    },
+    {
+      "id": "story-sport-breath-lanes-05",
+      "editionId": "story-sport-breath-lanes",
+      "scene": 5,
+      "assetPath": "assets/templates/activity_editions_2026/story-sport-breath-lanes/05.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset: an edition-exclusive sample photograph for an editable printed photobook. Create exactly ONE original landscape 3:2 photograph, 1536x1024; never a collage, contact sheet, layout, split screen or illustration. Candid documentary photography with realistic equipment, believable hands, limbs and objects, ordinary everyday faces, natural skin and varied typical bodies. Quality comes from light and composition. No celebrities, idols, fashion models, beauty retouch, symmetric flawless faces, chiseled idealized bodies or coordinated promotional posing. No readable text, numbers, logos, brands, watermark, labels or graphic overlays. Keep all important people, heads, hands and feet generously inside the frame, never close to edges.  Context: One ordinary Korean adult woman aged around 45 with average non-athletic body and natural skin, modest plain dark navy recreational one-piece swimsuit, simple muted mint swim cap and unbranded goggles. Ordinary clean municipal indoor lap pool with pale turquoise water and standard lane ropes, peaceful everyday amateur practice, no glamour or fitness model. Scene: Plain swim goggles, muted mint swim cap, folded cream towel and a completely blank waterproof note card on the textured tile beside a quiet pool, realistic wet material textures and soft light. Unique new photo for story-sport-breath-lanes, scene 5; do not reuse any photograph from another template.",
+      "sourcePath": "/Users/devsheep/.codex/generated_images/01a165eb-1bae-7ac0-8e27-39b7f920857f/exec-ded1d139-d2cd-48ae-b92e-e7dc1f2b64e8.png",
+      "sha256": "ed6047a87181f126c8b8000f9263a45ed826f1d4b9c5b0dca711e16e3f5d9533"
+    }
+  ]
+}

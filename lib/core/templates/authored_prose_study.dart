@@ -38,7 +38,7 @@ Map<String, dynamic> buildProseStudy(
 }) {
   const paper = '#FAFAF6', red = '#842B3D', blue = '#DCE9ED';
   const ink = '#233D35', muted = '#586A64';
-  final wide = aspect == CollectionAspect.landscape;
+  final wide = aspect.isLandscape;
   final pages = <Map<String, dynamic>>[];
   _Sheet sheet([String bg = paper, String color = ink]) =>
       _Sheet(proseStudyId, aspect, pages.length, bg, ink: color);
