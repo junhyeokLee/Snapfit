@@ -1305,7 +1305,7 @@ void main() {
           id: 99,
           coverLayersJson: request.coverLayersJson,
         ).copyWith(
-              title: request.title,
+          title: request.title,
           ratio: request.ratio,
           coverTheme: request.coverTheme,
         );

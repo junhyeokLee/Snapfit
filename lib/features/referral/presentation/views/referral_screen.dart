@@ -387,9 +387,7 @@ class _ReferralScreenState extends ConsumerState<ReferralScreen>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              _normalize(_code.text).isEmpty
-                  ? '친구와 함께 시작해요'
-                  : '친구가 초대장을 보냈어요',
+              _normalize(_code.text).isEmpty ? '친구와 함께 시작해요' : '친구가 초대장을 보냈어요',
               style: ExperienceFormStyle.text(
                 context,
                 21,
