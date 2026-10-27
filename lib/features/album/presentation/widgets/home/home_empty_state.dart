@@ -3,21 +3,22 @@ import 'package:flutter/material.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../../../shared/widgets/experience_icon.dart';
 import '../../../../../shared/widgets/snapfit_motion.dart';
+import '../../../../onboarding/presentation/widgets/story_album_artwork.dart';
 
 class HomeEmptyState extends StatelessWidget {
-  const HomeEmptyState({super.key, required this.onCreate, this.onResumeDraft});
+  const HomeEmptyState({
+    super.key,
+    required this.onCreate,
+    this.scrollController,
+  });
   final VoidCallback onCreate;
-  final VoidCallback? onResumeDraft;
+  final ScrollController? scrollController;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
       final wide = constraints.maxWidth >= 640;
-      final preview = _FirstAlbumPreview(
-        height: onResumeDraft != null && constraints.maxHeight < 520
-            ? 180
-            : 246,
-      );
+      const preview = _FirstAlbumPreview();
       final content = Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: wide
@@ -51,19 +52,11 @@ class HomeEmptyState extends StatelessWidget {
             ),
             label: const Text('앨범 만들기'),
           ),
-          if (onResumeDraft != null)
-            TextButton.icon(
-              onPressed: onResumeDraft,
-              icon: const Icon(Icons.history_rounded, size: 20),
-              label: const Text('이어 만들기'),
-              style: TextButton.styleFrom(
-                foregroundColor: ExperienceFormStyle.ink(context),
-                minimumSize: const Size(0, 44),
-              ),
-            ),
         ],
       );
       return SingleChildScrollView(
+        controller: scrollController,
+        primary: false,
         padding: const EdgeInsets.all(24),
         child: ConstrainedBox(
           constraints: BoxConstraints(
@@ -99,8 +92,7 @@ class HomeEmptyState extends StatelessWidget {
 }
 
 class _FirstAlbumPreview extends StatelessWidget {
-  const _FirstAlbumPreview({this.height = 246});
-  final double height;
+  const _FirstAlbumPreview();
 
   @override
   Widget build(BuildContext context) => Column(
@@ -108,13 +100,13 @@ class _FirstAlbumPreview extends StatelessWidget {
     children: [
       ExcludeSemantics(
         child: SizedBox(
-          height: height,
+          height: 246,
           width: double.infinity,
           child: FittedBox(
             fit: BoxFit.contain,
             child: SizedBox(
               width: 328,
-              height: 246,
+              height: 280,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -122,17 +114,23 @@ class _FirstAlbumPreview extends StatelessWidget {
                     offset: const Offset(-70, 8),
                     child: Transform.rotate(
                       angle: -.12,
-                      child: const _PreviewCover(id: -9302, size: 148),
+                      child: const SizedBox(
+                        width: 148,
+                        child: StoryAlbumCover(edition: 1),
+                      ),
                     ),
                   ),
                   Transform.translate(
                     offset: const Offset(70, 8),
                     child: Transform.rotate(
                       angle: .12,
-                      child: const _PreviewCover(id: -9303, size: 148),
+                      child: const SizedBox(
+                        width: 148,
+                        child: StoryAlbumCover(edition: 2),
+                      ),
                     ),
                   ),
-                  const _PreviewCover(id: -9301, size: 184),
+                  const SizedBox(width: 184, child: StoryAlbumCover()),
                 ],
               ),
             ),
@@ -140,35 +138,9 @@ class _FirstAlbumPreview extends StatelessWidget {
         ),
       ),
       Text(
-        '템플릿 미리보기',
+        '이렇게 담아보세요',
         style: ExperienceFormStyle.text(context, 12, secondary: true),
       ),
     ],
-  );
-}
-
-class _PreviewCover extends StatelessWidget {
-  const _PreviewCover({required this.id, required this.size});
-  final int id;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) => DecoratedBox(
-    decoration: BoxDecoration(
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: .12),
-          blurRadius: 18,
-          offset: const Offset(0, 10),
-        ),
-      ],
-    ),
-    child: Image.asset(
-      'assets/catalog_thumbnails/template_$id.png',
-      width: size,
-      height: size,
-      fit: BoxFit.contain,
-      cacheWidth: 480,
-    ),
   );
 }

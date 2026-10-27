@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/utils/screen_logger.dart';
 
@@ -18,14 +17,14 @@ class HomeCreateAlbumFab extends StatelessWidget {
       ScreenLogger.widget('HomeCreateAlbumFab', '앨범 만들기 FAB');
     }
     return SizedBox(
-      width: 58.w,
-      height: 58.w,
+      width: 56,
+      height: 56,
       child: DecoratedBox(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: SnapFitColors.accent,
           border: Border.all(
-            color: SnapFitColors.pureWhite.withOpacity(0.28),
+            color: SnapFitColors.pureWhite.withValues(alpha: 0.28),
             width: 1,
           ),
         ),
@@ -35,11 +34,11 @@ class HomeCreateAlbumFab extends StatelessWidget {
           child: InkWell(
             customBorder: const CircleBorder(),
             onTap: onPressed,
-            child: Center(
+            child: const Center(
               child: Icon(
                 Icons.add_rounded,
                 color: SnapFitColors.pureWhite,
-                size: 30.sp,
+                size: 28,
               ),
             ),
           ),

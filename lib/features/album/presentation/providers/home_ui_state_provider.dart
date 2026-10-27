@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class HomeUiState {
   const HomeUiState({this.bottomNavIndex = 0, this.albumTabIndex = 0});
 
+  /// Existing destination values are retained for shortcuts and saved state:
+  /// albums 0/1, store 2/5, notifications 3, profile 4, designs 6, feed 7.
   final int bottomNavIndex;
   final int albumTabIndex;
 

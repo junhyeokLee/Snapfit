@@ -4,11 +4,15 @@ import 'package:flutter/material.dart';
 import '../../../../../core/constants/cover_theme.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../domain/entities/album.dart';
+import '../../utils/album_progress.dart' show calculateAlbumProgress;
 import '../../../domain/entities/layer.dart';
 import '../../../domain/entities/layer_export_mapper.dart';
 import '../../../../../shared/snapfit_image.dart';
 import '../../../../../core/cache/snapfit_cache_manager.dart';
 import '../../../data/gallery/photo_asset_image_provider.dart';
+
+export '../../utils/album_progress.dart'
+    show AlbumProgressInfo, calculateAlbumProgress;
 
 /// 날짜 포맷 (yyyy.MM.dd)
 String formatAlbumDate(String raw, {bool useLocalTime = false}) {
@@ -47,54 +51,12 @@ CoverTheme resolveCoverTheme(String? label) {
   return CoverTheme.classic;
 }
 
-class AlbumProgressInfo {
-  final int completedPages;
-  final int targetPages;
+final _albumCoverTones = Expando<Color>('album cover tone');
 
-  const AlbumProgressInfo({
-    required this.completedPages,
-    required this.targetPages,
-  });
+Color sharedAlbumCoverToneColor(Album album) =>
+    _albumCoverTones[album] ??= _resolveAlbumCoverToneColor(album);
 
-  bool get hasTarget => targetPages > 0;
-
-  double get ratio =>
-      hasTarget ? (completedPages / targetPages).clamp(0.0, 1.0) : 0.0;
-
-  String get percentLabel => hasTarget ? '${(ratio * 100).round()}%' : '목표 없음';
-
-  String get pageProgressLabel => hasTarget
-      ? '$completedPages/$targetPages 페이지 진행 중'
-      : '$completedPages 페이지 진행 중';
-}
-
-AlbumProgressInfo calculateAlbumProgress(Album album) {
-  final int target = album.targetPages > 0 ? album.targetPages : 0;
-
-  final int fallbackCompleted = _countCompletedInnerPagesFromCoverLayersJson(
-    album.coverLayersJson,
-  );
-  // 서버 totalPages가 커버를 포함해 내려오는 경우가 있어(내지 target보다 +1)
-  // 진행률이 100%로 고정되는 문제를 막기 위해 내지 기준으로 보정한다.
-  final int normalizedServerCompleted = target > 0 && album.totalPages > target
-      ? math.max(0, album.totalPages - 1)
-      : math.max(0, album.totalPages);
-
-  // 서버 totalPages와 coverLayersJson 기반 실완성도 중 더 큰 값을 사용한다.
-  // 서버/클라이언트 계산 시점이 어긋나더라도 진행률이 뒤로 물러나지 않게 한다.
-  final int completed = math.max(fallbackCompleted, normalizedServerCompleted);
-
-  final int clampedCompleted = target > 0
-      ? completed.clamp(0, target)
-      : completed;
-
-  return AlbumProgressInfo(
-    completedPages: clampedCompleted,
-    targetPages: target,
-  );
-}
-
-Color sharedAlbumCoverToneColor(Album album) {
+Color _resolveAlbumCoverToneColor(Album album) {
   final fallback = const Color(0xFFE8E2D0);
 
   final theme = (album.coverTheme ?? '').toLowerCase();
@@ -138,6 +100,18 @@ List<LayerModel>? parseCoverLayers(String raw, {required Size canvasSize}) {
   if (raw.isEmpty) return null;
   try {
     final decoded = jsonDecode(raw) as Map<String, dynamic>;
+    return parseCoverLayersFromDocument(decoded, canvasSize: canvasSize);
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Lets cover previews share one decode with their background-color lookup.
+List<LayerModel>? parseCoverLayersFromDocument(
+  Map<String, dynamic> decoded, {
+  required Size canvasSize,
+}) {
+  try {
     final pages = decoded['pages'] as List<dynamic>?;
     final List<dynamic> layerList = (pages != null && pages.isNotEmpty)
         ? ((pages[0] as Map<String, dynamic>)['layers'] as List?) ?? []
@@ -250,7 +224,7 @@ Widget buildStaticText(LayerModel layer) {
 ///
 /// - Draft: 커버/레이어/테마가 전혀 없는 "빈" 앨범이거나 id == 0 인 경우
 /// - Live Editing: 목표 페이지(targetPages)를 아직 채우지 못한 경우
-/// - Completed: targetPages를 모두 채운 경우 (totalPages >= targetPages)
+/// - Completed: 모든 내지에 실제 작성 내용이 있고 빈 사진칸이 없는 경우
 bool isDraftAlbum(Album album) {
   final hasCoverUrl =
       (album.coverThumbnailUrl ?? album.coverPreviewUrl ?? album.coverImageUrl)
@@ -299,29 +273,8 @@ class AlbumStatusInfo {
 }
 
 AlbumStatusInfo getAlbumStatusInfo(Album album, String currentUserId) {
-  // 1. Busy (남이 편집 중)
-  // 1. Busy (남이 편집 중)
-  // lockedById가 있는 경우 ID끼리 비교, 없으면(구버전 호환) lockedBy(이름)와 비교하되 이름이 같을 수 있으므로 주의
-  // 여기서는 lockedById가 있으면 우선 사용
-  if (album.lockedById != null) {
-    if (album.lockedById != currentUserId) {
-      return AlbumStatusInfo(
-        label: '${album.lockedBy ?? "다른 사용자"} 편집 중',
-        backgroundColor: const Color(0xFFFFEAEA),
-        foregroundColor: const Color(0xFFFF4D4D),
-        isLocked: true,
-      );
-    }
-  } else if (album.lockedBy != null && album.lockedBy != currentUserId) {
-    // 하위 호환: lockedById가 없는 경우 기존 로직 (이름 비교) 실패 가능성 있음
-    return AlbumStatusInfo(
-      label: '${album.lockedBy} 편집 중',
-      backgroundColor: const Color(0xFFFFEAEA), // Light Red/Orange
-      foregroundColor: const Color(0xFFFF4D4D), // Red
-      isLocked: true,
-    );
-  }
-
+  // Legacy lock fields have no expiry or live presence signal. They cannot
+  // establish that another member is currently editing; writes use server CAS.
   // 2. Done (완료)
   if (isCompletedAlbum(album)) {
     return AlbumStatusInfo(
@@ -337,53 +290,6 @@ AlbumStatusInfo getAlbumStatusInfo(Album album, String currentUserId) {
     backgroundColor: const Color(0xFF00C2E0), // Cyan background
     foregroundColor: Colors.white, // White text
   );
-}
-
-int _countCompletedInnerPagesFromCoverLayersJson(String raw) {
-  if (raw.isEmpty) return 0;
-  try {
-    final decoded = jsonDecode(raw);
-    if (decoded is! Map<String, dynamic>) return 0;
-
-    final pages = decoded['pages'];
-    if (pages is! List) return 0;
-
-    var completed = 0;
-    for (final page in pages) {
-      if (page is! Map) continue;
-      final isCover = page['isCover'] == true || page['index'] == 0;
-      if (isCover) continue;
-
-      final layers = page['layers'];
-      if (layers is! List) continue;
-
-      final hasMeaningfulLayer = layers.any(_isMeaningfulProgressLayer);
-      if (hasMeaningfulLayer) completed++;
-    }
-    return completed;
-  } catch (_) {
-    return 0;
-  }
-}
-
-bool _isMeaningfulProgressLayer(dynamic rawLayer) {
-  if (rawLayer is! Map) return false;
-  final layer = rawLayer.cast<String, dynamic>();
-
-  final type = (layer['type'] as String? ?? '').toUpperCase();
-  final payload =
-      (layer['payload'] as Map?)?.cast<String, dynamic>() ?? const {};
-
-  if (type == 'TEXT') {
-    final text = payload['text'] as String?;
-    return text != null && text.trim().isNotEmpty;
-  }
-
-  final preview = payload['previewUrl'] as String?;
-  final image = payload['imageUrl'] as String?;
-  final original = payload['originalUrl'] as String?;
-  final url = preview ?? image ?? original;
-  return url != null && url.trim().isNotEmpty;
 }
 
 String? _extractCoverToneKey(String raw) {
@@ -429,7 +335,10 @@ Widget _buildStaticFramedImage(LayerModel layer, Widget child) {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.grey.withOpacity(0.3), width: 1.2),
+          border: Border.all(
+            color: Colors.grey.withValues(alpha: 0.3),
+            width: 1.2,
+          ),
         ),
         child: ClipRRect(borderRadius: BorderRadius.circular(10), child: child),
       );
@@ -777,7 +686,7 @@ Widget _buildStaticStyledText(LayerModel layer) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.06),
+          color: Colors.black.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(999),
         ),
         child: content,
@@ -822,7 +731,7 @@ Widget _buildStaticStyledText(LayerModel layer) {
           borderRadius: BorderRadius.circular(999),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -867,7 +776,7 @@ Widget _buildStaticStyledText(LayerModel layer) {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: _bubbleFillColor(bg) == Colors.white
-                ? Colors.black.withOpacity(0.22)
+                ? Colors.black.withValues(alpha: 0.22)
                 : (Color.lerp(_bubbleFillColor(bg), Colors.black, 0.12) ??
                       Colors.black26),
           ),
@@ -1213,7 +1122,7 @@ Widget _buildStaticStyledText(LayerModel layer) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(
-          color: const Color(0xFFFFEB3B).withOpacity(0.55),
+          color: const Color(0xFFFFEB3B).withValues(alpha: 0.55),
           borderRadius: BorderRadius.zero,
         ),
         child: content,
@@ -1222,7 +1131,7 @@ Widget _buildStaticStyledText(LayerModel layer) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(
-          color: const Color(0xFFB8E986).withOpacity(0.65),
+          color: const Color(0xFFB8E986).withValues(alpha: 0.65),
           borderRadius: BorderRadius.zero,
         ),
         child: content,
@@ -1231,7 +1140,7 @@ Widget _buildStaticStyledText(LayerModel layer) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(
-          color: const Color(0xFFFFB6C1).withOpacity(0.7),
+          color: const Color(0xFFFFB6C1).withValues(alpha: 0.7),
           borderRadius: BorderRadius.zero,
         ),
         child: content,
@@ -1358,7 +1267,7 @@ Widget _buildStaticStyledText(LayerModel layer) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.92),
+          color: Colors.white.withValues(alpha: 0.92),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: Colors.amber.shade700),
         ),
@@ -1371,7 +1280,7 @@ Widget _buildStaticStyledText(LayerModel layer) {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.black.withOpacity(0.22)),
+          border: Border.all(color: Colors.black.withValues(alpha: 0.22)),
         ),
         child: content,
       );

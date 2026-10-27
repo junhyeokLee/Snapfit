@@ -1,14 +1,47 @@
+import 'dart:async';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../album/data/api/album_provider.dart';
 import '../../../album/domain/entities/album.dart';
+import '../providers/album_edit_session_provider.dart';
 
 part 'home_view_model.g.dart';
 
 @riverpod
 class HomeViewModel extends _$HomeViewModel {
+  Future<void>? _refreshFuture;
+  final _deleteRequests = <int, Future<void>>{};
+  int _mutationVersion = 0;
+  int _activeMutations = 0;
+  Completer<void>? _mutationsSettled;
+  int _sessionRevision = 0;
+  String? _sessionOwner;
+  bool _ownerInitialized = false;
+
+  bool _current(int revision, String? owner) =>
+      ref.mounted &&
+      revision == _sessionRevision &&
+      ref.read(albumEditorOwnerReaderProvider)() == owner;
+
   @override
   FutureOr<List<Album>> build() async {
-    return _fetchAlbums();
+    final owner = ref.watch(albumCurrentSessionOwnerProvider);
+    final changed = _ownerInitialized && _sessionOwner != owner;
+    _ownerInitialized = true;
+    _sessionOwner = owner;
+    final revision = ++_sessionRevision;
+    _refreshFuture = null;
+    _deleteRequests.clear();
+    _activeMutations = 0;
+    _mutationVersion++;
+    _mutationsSettled?.complete();
+    _mutationsSettled = null;
+    // AsyncLoading imports previous AsyncValue data. Explicitly empty it first
+    // so a different account never renders the previous owner's private list.
+    if (changed) state = const AsyncData([]);
+    if (owner == null) return const [];
+    final result = await _fetchAlbums();
+    return _current(revision, owner) ? result : const [];
   }
 
   Future<List<Album>> _fetchAlbums() async {
@@ -17,29 +50,109 @@ class HomeViewModel extends _$HomeViewModel {
     return await repository.fetchMyAlbums();
   }
 
-  Future<void> refresh() async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _fetchAlbums());
+  Future<void> refresh() {
+    final existing = _refreshFuture;
+    if (existing != null) return existing;
+    late final Future<void> request;
+    request = _refreshAlbums().whenComplete(() {
+      if (identical(_refreshFuture, request)) _refreshFuture = null;
+    });
+    return _refreshFuture = request;
   }
 
-  Future<void> deleteAlbum(Album album) async {
+  Future<void> _refreshAlbums() async {
+    final session = _sessionRevision;
+    final owner = _sessionOwner;
+    if (owner == null || !_current(session, owner)) return;
+    // Keep the mounted slider and its selection during background refreshes.
+    // A failed refresh should not replace usable albums with an error screen.
+    if (!state.hasValue) state = const AsyncLoading();
+    while (_current(session, owner)) {
+      final pending = _mutationsSettled?.future;
+      if (pending != null) await pending;
+      if (!_current(session, owner)) return;
+      if (_activeMutations > 0) continue;
+
+      final version = _mutationVersion;
+      final result = await AsyncValue.guard(() => _fetchAlbums());
+      if (!_current(session, owner)) return;
+      // A query started before a delete/reorder can still contain old data.
+      // Wait for those writes and query again, without painting that snapshot.
+      if (_activeMutations > 0 || version != _mutationVersion) continue;
+      if (!result.hasError || !state.hasValue) state = result;
+      return;
+    }
+  }
+
+  Future<void> _runMutation(Future<void> Function() write) async {
+    final session = _sessionRevision;
+    final owner = _sessionOwner;
+    if (owner == null || !_current(session, owner)) return;
+    _mutationVersion++;
+    _activeMutations++;
+    _mutationsSettled ??= Completer<void>();
+    try {
+      await write();
+    } finally {
+      // Invalidate queries that started while a write was still outstanding,
+      // including writes whose optimistic change had to be rolled back.
+      if (_current(session, owner)) {
+        _mutationVersion++;
+        if (--_activeMutations == 0) {
+          final settled = _mutationsSettled!;
+          _mutationsSettled = null;
+          settled.complete();
+        }
+      }
+    }
+  }
+
+  Future<void> deleteAlbum(Album album) {
+    // Duplicate taps must share one write and one rollback for this album.
+    final existing = _deleteRequests[album.id];
+    if (existing != null) return existing;
+    late final Future<void> request;
+    request = _deleteAlbum(album).whenComplete(() {
+      if (identical(_deleteRequests[album.id], request)) {
+        _deleteRequests.remove(album.id);
+      }
+    });
+    return _deleteRequests[album.id] = request;
+  }
+
+  Future<void> _deleteAlbum(Album album) async {
+    final session = _sessionRevision;
+    final owner = _sessionOwner;
     // 낙관적 업데이트: 바로 목록에서 제거 후 서버 삭제 시도
     final prev = state.asData?.value;
-    if (prev != null) {
-      state = AsyncData(prev.where((a) => a.id != album.id).toList());
-    }
-
     final repository = ref.read(albumRepositoryProvider);
-    try {
-      await repository.deleteAlbum(album.id);
-    } catch (_) {
-      // 실패 시 목록을 다시 새로고침
-      state = await AsyncValue.guard(() => _fetchAlbums());
-      rethrow;
-    }
+    await _runMutation(() async {
+      if (prev != null) {
+        state = AsyncData(prev.where((a) => a.id != album.id).toList());
+      }
+      try {
+        await repository.deleteAlbum(album.id);
+      } catch (_) {
+        if (_current(session, owner) && prev != null) {
+          final index = prev.indexWhere((item) => item.id == album.id);
+          final current = state.asData?.value;
+          if (index >= 0 &&
+              current != null &&
+              !current.any((item) => item.id == album.id)) {
+            // Restore only this failed deletion, preserving other changes.
+            final restored = List<Album>.from(current);
+            restored.insert(index.clamp(0, restored.length), prev[index]);
+            state = AsyncData(restored);
+          }
+        }
+        rethrow;
+      }
+    });
   }
 
   Future<void> reorder(int oldIndex, int newIndex) async {
+    final session = _sessionRevision;
+    final owner = _sessionOwner;
     final prev = state.asData?.value;
     if (prev == null) return;
 
@@ -57,21 +170,31 @@ class HomeViewModel extends _$HomeViewModel {
       return album.copyWith(orders: index);
     }).toList();
 
-    state = AsyncData(updatedItems);
-
     final repository = ref.read(albumRepositoryProvider);
-    try {
-      // 순서가 변경된 전체 ID 리스트 전송
-      final ids = updatedItems.map((e) => e.id).toList();
-      await repository.reorderAlbums(ids);
-    } catch (_) {
-      // 실패 시 원복
-      state = AsyncData(prev);
-      rethrow;
-    }
+    await _runMutation(() async {
+      state = AsyncData(updatedItems);
+      try {
+        // 순서가 변경된 전체 ID 리스트 전송
+        final ids = updatedItems.map((e) => e.id).toList();
+        await repository.reorderAlbums(ids);
+      } catch (_) {
+        if (_current(session, owner)) {
+          if (identical(state.asData?.value, updatedItems)) {
+            state = AsyncData(prev);
+          } else {
+            // A newer mutation owns the current list. Reconcile only after
+            // all writes finish instead of restoring an obsolete whole list.
+            unawaited(refresh());
+          }
+        }
+        rethrow;
+      }
+    });
   }
 
   Future<void> reorderByCategory(List<Album> categoryAlbums) async {
+    final session = _sessionRevision;
+    final owner = _sessionOwner;
     final prev = state.asData?.value;
     if (prev == null) return;
 
@@ -94,15 +217,22 @@ class HomeViewModel extends _$HomeViewModel {
       return album.copyWith(orders: index);
     }).toList();
 
-    state = AsyncData(updatedItems);
-
     final repository = ref.read(albumRepositoryProvider);
-    try {
-      final ids = updatedItems.map((e) => e.id).toList();
-      await repository.reorderAlbums(ids);
-    } catch (_) {
-      state = AsyncData(prev);
-      rethrow;
-    }
+    await _runMutation(() async {
+      state = AsyncData(updatedItems);
+      try {
+        final ids = updatedItems.map((e) => e.id).toList();
+        await repository.reorderAlbums(ids);
+      } catch (_) {
+        if (_current(session, owner)) {
+          if (identical(state.asData?.value, updatedItems)) {
+            state = AsyncData(prev);
+          } else {
+            unawaited(refresh());
+          }
+        }
+        rethrow;
+      }
+    });
   }
 }

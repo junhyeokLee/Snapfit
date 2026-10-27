@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 
 /// 앨범 삭제 확인 다이얼로그
@@ -22,21 +21,21 @@ class HomeDeleteAlbumDialog extends StatelessWidget {
           );
         },
         child: Container(
-          constraints: BoxConstraints(maxWidth: 320.w),
-          padding: EdgeInsets.all(24.w),
+          constraints: const BoxConstraints(maxWidth: 320),
+          padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: SnapFitColors.surfaceOf(context),
-            borderRadius: BorderRadius.circular(24.r),
-            boxShadow: [
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: const [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 20.r,
-                offset: Offset(0, 10.h),
+                color: Color(0x33000000),
+                blurRadius: 20,
+                offset: Offset(0, 10),
               ),
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 8.r,
-                offset: Offset(0, 4.h),
+                color: Color(0x1A000000),
+                blurRadius: 8,
+                offset: Offset(0, 4),
               ),
             ],
           ),
@@ -45,40 +44,40 @@ class HomeDeleteAlbumDialog extends StatelessWidget {
             children: [
               // 아이콘
               Container(
-                width: 64.w,
-                height: 64.w,
-                decoration: BoxDecoration(
+                width: 64,
+                height: 64,
+                decoration: const BoxDecoration(
                   color: SnapFitColors.errorLight,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.delete_outline_rounded,
-                  size: 32.sp,
+                  size: 32,
                   color: SnapFitColors.error,
                 ),
               ),
-              SizedBox(height: 20.h),
+              const SizedBox(height: 20),
               // 제목
               Text(
                 '앨범 삭제',
                 style: TextStyle(
-                  fontSize: 20.sp,
+                  fontSize: 20,
                   fontWeight: FontWeight.w700,
                   color: SnapFitColors.textPrimaryOf(context),
                 ),
               ),
-              SizedBox(height: 12.h),
+              const SizedBox(height: 12),
               // 내용
               Text(
-                '이 앨범을 삭제하시겠어요?\n복구할 수 없습니다.',
+                '이 앨범을 삭제하시겠어요?\n함께 작업한 친구도 더 이상 접근할 수 없고,\n삭제한 앨범은 복구할 수 없습니다.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 15.sp,
+                  fontSize: 15,
                   color: SnapFitColors.textSecondaryOf(context),
                   height: 1.5,
                 ),
               ),
-              SizedBox(height: 24.h),
+              const SizedBox(height: 24),
               // 버튼들
               Row(
                 children: [
@@ -88,18 +87,18 @@ class HomeDeleteAlbumDialog extends StatelessWidget {
                       color: Colors.transparent,
                       child: InkWell(
                         onTap: () => Navigator.of(context).pop(false),
-                        borderRadius: BorderRadius.circular(12.r),
+                        borderRadius: BorderRadius.circular(12),
                         child: Container(
-                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           decoration: BoxDecoration(
                             color: SnapFitColors.backgroundOf(context),
-                            borderRadius: BorderRadius.circular(12.r),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
                             '취소',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 16.sp,
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: SnapFitColors.textPrimaryOf(context),
                             ),
@@ -108,18 +107,18 @@ class HomeDeleteAlbumDialog extends StatelessWidget {
                       ),
                     ),
                   ),
-                  SizedBox(width: 12.w),
+                  const SizedBox(width: 12),
                   // 삭제 버튼
                   Expanded(
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
                         onTap: () => Navigator.of(context).pop(true),
-                        borderRadius: BorderRadius.circular(12.r),
+                        borderRadius: BorderRadius.circular(12),
                         child: Container(
-                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
+                            gradient: const LinearGradient(
                               colors: [
                                 SnapFitColors.error,
                                 SnapFitColors.errorDark,
@@ -127,22 +126,22 @@ class HomeDeleteAlbumDialog extends StatelessWidget {
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
-                            borderRadius: BorderRadius.circular(12.r),
+                            borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
                                 color: SnapFitColors.error.withValues(
                                   alpha: 0.3,
                                 ),
-                                blurRadius: 8.r,
-                                offset: Offset(0, 4.h),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
                               ),
                             ],
                           ),
-                          child: Text(
+                          child: const Text(
                             '삭제',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 16.sp,
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),

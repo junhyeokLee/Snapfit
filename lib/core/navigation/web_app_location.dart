@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import '../../features/referral/domain/referral_link.dart';
 
 enum WebAppPage {
   home,
@@ -13,6 +14,15 @@ enum WebAppPage {
   order,
   testOrder,
   account,
+  feed,
+  socialWork,
+  socialProfile,
+  myProfile,
+  attendance,
+  referral,
+  moments,
+  socialPublish,
+  socialManage,
   designs,
   materials,
   template,
@@ -24,6 +34,8 @@ enum WebAppPage {
 
 /// Public browser locations contain identifiers only. Access to each object is
 /// checked again by the authenticated repository, never granted by this path.
+/// Album invitation tokens are captured separately before this normalization;
+/// they belong to the pending-invitation store, not restorable page locations.
 class WebAppLocation {
   const WebAppLocation(this.page, [this.id]);
   static const home = WebAppLocation(WebAppPage.home);
@@ -33,6 +45,13 @@ class WebAppLocation {
   static const aiCreate = WebAppLocation(WebAppPage.aiCreate);
   static const orders = WebAppLocation(WebAppPage.orders);
   static const account = WebAppLocation(WebAppPage.account);
+  static const feed = WebAppLocation(WebAppPage.feed);
+  static const myProfile = WebAppLocation(WebAppPage.myProfile);
+  static const attendance = WebAppLocation(WebAppPage.attendance);
+  static const referral = WebAppLocation(WebAppPage.referral);
+  static const moments = WebAppLocation(WebAppPage.moments);
+  static const socialPublish = WebAppLocation(WebAppPage.socialPublish);
+  static const socialManage = WebAppLocation(WebAppPage.socialManage);
   static const designs = WebAppLocation(WebAppPage.designs);
   static const materials = WebAppLocation(WebAppPage.materials);
   static const library = WebAppLocation(WebAppPage.library);
@@ -55,6 +74,10 @@ class WebAppLocation {
   bool get isPublic =>
       page == WebAppPage.home ||
       page == WebAppPage.login ||
+      page == WebAppPage.feed ||
+      page == WebAppPage.socialWork ||
+      page == WebAppPage.socialProfile ||
+      page == WebAppPage.referral ||
       page == WebAppPage.designs ||
       page == WebAppPage.template ||
       page == WebAppPage.printProducts ||
@@ -74,6 +97,15 @@ class WebAppLocation {
       WebAppPage.order => '/orders/$id',
       WebAppPage.testOrder => '/test-orders/$id',
       WebAppPage.account => '/account',
+      WebAppPage.feed => '/feed',
+      WebAppPage.socialWork => '/works/$id',
+      WebAppPage.socialProfile => '/users/$id',
+      WebAppPage.myProfile => '/me',
+      WebAppPage.attendance => '/attendance',
+      WebAppPage.moments => '/moments',
+      WebAppPage.referral => id == null ? '/friends' : '/friends/$id',
+      WebAppPage.socialPublish => id == null ? '/publish' : '/publish/$id',
+      WebAppPage.socialManage => '/me/works',
       WebAppPage.designs => '/designs',
       WebAppPage.materials => '/designs/materials',
       WebAppPage.template => '/designs/templates/$id',
@@ -103,6 +135,42 @@ class WebAppLocation {
       return aiCreate;
     if (parts.length == 1 && parts[0] == 'orders') return orders;
     if (parts.length == 1 && parts[0] == 'account') return account;
+    if (parts.length == 1 && parts[0] == 'feed') return feed;
+    if (parts.length == 1 && parts[0] == 'me') return myProfile;
+    if (parts.length == 1 && parts[0] == 'attendance') return attendance;
+    if (parts.length == 1 && parts[0] == 'moments') return moments;
+    if (parts.isNotEmpty && parts[0] == 'friends') {
+      if (parts.length == 1 && !uri.hasQuery) return referral;
+      final raw = parts.length == 2 && !uri.hasQuery
+          ? parts[1]
+          : parts.length == 1 &&
+                uri.queryParametersAll.length == 1 &&
+                uri.queryParametersAll['code']?.length == 1
+          ? uri.queryParameters['code']
+          : null;
+      final code = raw == null ? null : normalizeReferralCode(raw);
+      return code == null ? home : WebAppLocation(WebAppPage.referral, code);
+    }
+    if (parts.length == 2 && parts[0] == 'me' && parts[1] == 'works') {
+      return socialManage;
+    }
+    if (parts.length == 1 && parts[0] == 'publish') return socialPublish;
+    if (parts.length == 2 && parts[0] == 'publish') {
+      final id = int.tryParse(parts[1]);
+      if (id != null && id > 0 && id <= 9007199254740991) {
+        return WebAppLocation(WebAppPage.socialPublish, '$id');
+      }
+      return home;
+    }
+    if (parts.length == 2 &&
+        RegExp(r'^[A-Za-z0-9_-]{1,200}$').hasMatch(parts[1])) {
+      if (parts[0] == 'works') {
+        return WebAppLocation(WebAppPage.socialWork, parts[1]);
+      }
+      if (parts[0] == 'users') {
+        return WebAppLocation(WebAppPage.socialProfile, parts[1]);
+      }
+    }
     if (parts.length == 1 && parts[0] == 'designs') return designs;
     if (parts.length == 2 && parts[0] == 'designs') {
       if (parts[1] == 'templates') return designs;

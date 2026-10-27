@@ -4,9 +4,15 @@ import 'package:flutter/material.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
 
 class HomeErrorState extends StatelessWidget {
-  const HomeErrorState({super.key, required this.error, required this.onRetry});
+  const HomeErrorState({
+    super.key,
+    required this.error,
+    required this.onRetry,
+    this.scrollController,
+  });
   final Object error;
   final VoidCallback onRetry;
+  final ScrollController? scrollController;
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +23,8 @@ class HomeErrorState extends StatelessWidget {
         type == DioExceptionType.sendTimeout;
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
+        controller: scrollController,
+        primary: false,
         padding: const EdgeInsets.all(24),
         child: ConstrainedBox(
           constraints: BoxConstraints(

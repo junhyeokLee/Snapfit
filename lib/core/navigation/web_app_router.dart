@@ -1,8 +1,87 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
+import '../../features/album/domain/album_invite_link.dart';
 import 'app_root_route_observer.dart';
 import 'web_app_location.dart';
+
+/// Website destinations change their content without sliding the shared header
+/// away. Native routes and focused editor transitions remain independent.
+class WebAppPageRoute<T> extends MaterialPageRoute<T> {
+  WebAppPageRoute({required super.builder, super.settings});
+
+  @override
+  Duration get transitionDuration => Duration.zero;
+
+  @override
+  Duration get reverseTransitionDuration => Duration.zero;
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) => child;
+}
+
+/// Starts from the browser address rather than Flutter's default hash route.
+/// Both direct paths and existing `#/path` links use the same canonical parser;
+/// subsequent browser history updates still come from the platform provider.
+class WebAppRouteInformationProvider extends PlatformRouteInformationProvider {
+  WebAppRouteInformationProvider({required Uri browserUri, this.onAlbumInvite})
+    : _browserUri = browserUri,
+      super(
+        initialRouteInformation: RouteInformation(
+          uri: WebAppLocation.parse(browserUri).uri,
+        ),
+      ) {
+    _receiveAlbumInvite(browserUri);
+  }
+
+  final Uri _browserUri;
+  final ValueChanged<Uri>? onAlbumInvite;
+
+  bool _receiveAlbumInvite(Uri uri) {
+    final resolved = uri.hasScheme ? uri : _browserUri.resolveUri(uri);
+    if (onAlbumInvite == null || albumInviteTokenFromUri(resolved) == null) {
+      return false;
+    }
+    onAlbumInvite!(resolved);
+    return true;
+  }
+
+  @override
+  Future<bool> didPushRouteInformation(RouteInformation routeInformation) {
+    if (_receiveAlbumInvite(routeInformation.uri)) {
+      // An invitation opens above the current work through its own router.
+      // Replace the capability URL without navigating away from that work.
+      routerReportsNewRouteInformation(
+        value,
+        type: RouteInformationReportingType.neglect,
+      );
+      return SynchronousFuture(true);
+    }
+    return super.didPushRouteInformation(routeInformation);
+  }
+
+  bool _reportedInitialRoute = false;
+
+  @override
+  void routerReportsNewRouteInformation(
+    RouteInformation routeInformation, {
+    RouteInformationReportingType type = RouteInformationReportingType.none,
+  }) {
+    // Flutter's engine still starts at `/` for direct paths under the hash
+    // strategy. Replace that entry instead of adding an extra startup entry
+    // whose first browser Back would incorrectly reopen the home page.
+    final reportType = _reportedInitialRoute
+        ? type
+        : RouteInformationReportingType.neglect;
+    _reportedInitialRoute = true;
+    super.routerReportsNewRouteInformation(routeInformation, type: reportType);
+  }
+}
 
 class WebAppRouteParser extends RouteInformationParser<WebAppLocation> {
   const WebAppRouteParser();
@@ -39,6 +118,8 @@ class WebAppRouter extends RouterDelegate<WebAppLocation>
   WebAppLocation get observedLocation => _observer.location;
   bool isDisplayingLocation(WebAppLocation location) =>
       _observer.isDisplaying(location);
+  bool containsLocation(WebAppLocation location) =>
+      _observer.routeFor(location) != null;
 
   /// Called only after the application has checked the requested account and
   /// destination. It never pops through an editor or a modal to reach a list.
@@ -127,6 +208,24 @@ class WebAppRouter extends RouterDelegate<WebAppLocation>
     return true;
   }
 
+  /// Reveals an already mounted destination rather than recreating its search,
+  /// filters and scroll state. The same exit guards apply to every page above
+  /// it; a save prompt must not be mistaken for a successful navigation.
+  Future<bool> returnToLocation(WebAppLocation location) async {
+    final destination = _observer.routeFor(location);
+    final navigator = navigatorKey.currentState;
+    if (destination == null || navigator == null) return false;
+    while (_observer.top != destination && navigator.canPop()) {
+      final previous = _observer.top;
+      await navigator.maybePop();
+      if (_observer.contains(previous)) {
+        restoreObservedLocation();
+        return false;
+      }
+    }
+    return _observer.isDisplaying(location);
+  }
+
   @override
   Widget build(BuildContext context) => Navigator(
     key: navigatorKey,
@@ -165,6 +264,19 @@ class _WebLocationObserver extends NavigatorObserver {
   Route<dynamic>? get top => _routes.lastOrNull;
   bool contains(Route<dynamic>? route) =>
       route != null && _routes.contains(route);
+  Route<dynamic>? routeFor(WebAppLocation target) {
+    for (final route in _routes.reversed) {
+      final settings = route.settings;
+      if (settings is WebAppRouteSettings && settings.location == target) {
+        return route;
+      }
+      if (target == WebAppLocation.home && settings is AppRootRouteSettings) {
+        return route;
+      }
+    }
+    return null;
+  }
+
   bool isDisplaying(WebAppLocation target) {
     final settings = top?.settings;
     if (settings is WebAppRouteSettings) return settings.location == target;

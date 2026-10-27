@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../../shared/widgets/experience_style.dart';
 import '../../../../shared/widgets/album_stage_style.dart';
@@ -6,30 +5,26 @@ import '../../../store/presentation/views/material_catalog_screen.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/utils/screen_logger.dart';
 import '../../../../core/navigation/web_app_location.dart';
 import '../../../../core/constants/snapfit_colors.dart';
-import '../../../auth/presentation/viewmodels/auth_view_model.dart';
-import '../../../profile/presentation/views/my_page_screen.dart';
-import '../../domain/entities/album.dart';
-import '../widgets/home/home_album_slider.dart';
-import '../widgets/home/home_album_tab_screen.dart';
+import '../../../social/presentation/views/social_feed_screen.dart';
+import '../../../social/presentation/views/social_profile_screen.dart';
+import '../widgets/home/home_album_destination.dart';
 import '../widgets/home/home_bottom_navigation_bar.dart';
-import '../widgets/home/home_empty_state.dart';
 import '../viewmodels/home_view_model.dart';
-import '../widgets/home/home_error_state.dart';
 import 'album_create_flow_screen.dart';
 import '../../../notification/presentation/providers/notification_provider.dart';
 import '../../../notification/presentation/views/notification_screen.dart';
 import '../../../store/presentation/views/store_hub_screen.dart';
 import '../providers/home_ui_state_provider.dart';
-import '../utils/home_album_section_builder.dart';
 import '../utils/album_creation_entry.dart';
 import '../../data/album_creation_draft_store.dart';
 import '../../domain/entities/album_creation_draft.dart';
 import '../web/web_album_library_screen.dart';
 import '../../../../shared/widgets/snapfit_shimmer.dart';
+import '../../../../shared/widgets/deferred_content.dart';
+import '../../../home_news/presentation/widgets/home_news_gate.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -39,47 +34,27 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  static const String _favoriteKey = 'album_favorite_ids_v1';
-  Set<int> _favoriteAlbumIds = <int>{};
   late final List<int> _bottomNavHistory;
   final _destinationBodyKey = GlobalKey();
-  bool _albumsVisited = false;
+  final _coverScroll = ScrollController();
+  final _collectionScroll = ScrollController();
+  ScrollController? _fallbackScroll;
   bool _creatingAlbum = false;
+  final _visitedDestinations = <int>{};
 
   @override
   void initState() {
     super.initState();
     _bottomNavHistory = [ref.read(homeUiStateProvider).bottomNavIndex];
     ScreenLogger.enter('HomeScreen', '앨범 · 스토어');
-    _loadFavoriteAlbumIds();
   }
 
-  Future<void> _loadFavoriteAlbumIds() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList(_favoriteKey) ?? const <String>[];
-    final ids = raw.map(int.tryParse).whereType<int>().toSet();
-    if (!mounted) return;
-    setState(() => _favoriteAlbumIds = ids);
-  }
-
-  Future<void> _toggleFavorite(int albumId) async {
-    final next = Set<int>.from(_favoriteAlbumIds);
-    if (next.contains(albumId)) {
-      next.remove(albumId);
-    } else {
-      next.add(albumId);
-    }
-    setState(() => _favoriteAlbumIds = next);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-      _favoriteKey,
-      next.map((e) => e.toString()).toList(),
-    );
-  }
-
-  Future<void> _handlePullToRefresh() async {
-    ref.invalidate(notificationUnreadCountProvider);
-    await ref.read(homeViewModelProvider.notifier).refresh();
+  @override
+  void dispose() {
+    _coverScroll.dispose();
+    _collectionScroll.dispose();
+    _fallbackScroll?.dispose();
+    super.dispose();
   }
 
   Future<void> _resumeDraft(AlbumCreationDraft draft) =>
@@ -146,34 +121,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     if (kIsWeb) return const WebAlbumLibraryScreen();
-    final uiState = ref.watch(homeUiStateProvider);
-    final showingAlbums =
-        uiState.bottomNavIndex == 0 || uiState.bottomNavIndex == 1;
-    // Retain the loaded album provider while browsing other root destinations.
-    _albumsVisited = _albumsVisited || showingAlbums;
-    final albumsAsync = _albumsVisited
-        ? ref.watch(homeViewModelProvider)
-        : const AsyncData<List<Album>>([]);
-    final authAsync = ref.watch(authViewModelProvider);
-    final draft = showingAlbums
-        ? ref.watch(albumCreationDraftProvider).asData?.value
-        : null;
-    final unreadNotificationCount = ref.watch(notificationUnreadCountProvider);
-    final uiStateNotifier = ref.read(homeUiStateProvider.notifier);
-    final isAndroid = defaultTargetPlatform == TargetPlatform.android;
-    final hasUnreadNotification = unreadNotificationCount.maybeWhen(
-      data: (count) => count > 0,
-      orElse: () => false,
+    final bottomNavIndex = ref.watch(
+      homeUiStateProvider.select((state) => state.bottomNavIndex),
     );
+    final isAndroid = defaultTargetPlatform == TargetPlatform.android;
     Future<void> handleCreateAlbum() => _createAlbum();
 
     final baseBackground = SnapFitColors.backgroundOf(context);
-    final homeBackground = uiState.bottomNavIndex == 0
+    final homeBackground = bottomNavIndex == 0
         ? AlbumStageStyle.top(context)
         : baseBackground;
     final homeOverlayStyle = AlbumStageStyle.overlay(context);
+    final albumDestination = bottomNavIndex == 0 || bottomNavIndex == 1;
+    final primaryScroll = bottomNavIndex == 0
+        ? _coverScroll
+        : bottomNavIndex == 1
+        ? _collectionScroll
+        : PrimaryScrollController.maybeOf(context) ??
+              (_fallbackScroll ??= ScrollController());
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
+    final content = AnnotatedRegion<SystemUiOverlayStyle>(
       value: homeOverlayStyle,
       child: PopScope(
         canPop: !isAndroid || _bottomNavHistory.length <= 1,
@@ -188,69 +155,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 constraints.maxWidth > constraints.maxHeight;
             final destination = _buildBottomNavBody(
               context,
-              currentBottomNavIndex: uiState.bottomNavIndex,
-              homeBody: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: uiState.bottomNavIndex == 0
-                      ? AlbumStageStyle.top(context)
-                      : baseBackground,
-                  gradient: uiState.bottomNavIndex == 0
-                      ? AlbumStageStyle.gradient(context)
-                      : null,
-                ),
-                child: SafeArea(
-                  left: !isLandscape,
-                  // SafeArea applied to the whole body
-                  child: albumsAsync.when(
-                    data: (albums) {
-                      final currentUserId =
-                          authAsync.asData?.value?.id.toString() ?? '';
-                      final prepared = buildHomeAlbumsData(
-                        albums: albums,
-                        currentUserId: currentUserId,
-                      );
-                      final sortedBaseAlbums = List<Album>.from(
-                        prepared.baseAlbums,
-                      )..sort(compareAlbumByLatestDesc);
-                      final homeContent = sortedBaseAlbums.isNotEmpty
-                          ? HomeAlbumSlider(
-                              albums: sortedBaseAlbums,
-                              onCreateAlbum: handleCreateAlbum,
-                              onResumeDraft: draft == null
-                                  ? null
-                                  : () => _resumeDraft(draft),
-                              onOpenAlbumTab: () => _handleBottomNavTap(1),
-                            )
-                          : HomeEmptyState(
-                              onCreate: handleCreateAlbum,
-                              onResumeDraft: draft == null
-                                  ? null
-                                  : () => _resumeDraft(draft),
-                            );
-
-                      final albumTabContent = HomeAlbumTabScreen(
-                        allAlbums: prepared.myRecordsAlbums,
-                        currentUserId: currentUserId,
-                        albumTabIndex: uiState.albumTabIndex,
-                        favoriteAlbumIds: _favoriteAlbumIds,
-                        onAlbumTabChanged: uiStateNotifier.setAlbumTabIndex,
-                        onToggleFavorite: _toggleFavorite,
-                        onRefresh: _handlePullToRefresh,
-                      );
-
-                      return uiState.bottomNavIndex == 1
-                          ? albumTabContent
-                          : homeContent;
-                    },
-                    loading: () => const SnapFitShimmerHomeSlider(),
-                    error: (err, stack) {
-                      final state = HomeErrorState(
-                        error: err,
-                        onRetry: _handlePullToRefresh,
-                      );
-                      return state;
-                    },
+              currentBottomNavIndex: bottomNavIndex,
+              homeBody: (context) => DeferredContent(
+                placeholder: SafeArea(
+                  child: SnapFitShimmerHomeSlider(
+                    scrollController: bottomNavIndex == 1
+                        ? _collectionScroll
+                        : _coverScroll,
                   ),
+                ),
+                builder: (_) => HomeAlbumDestination(
+                  showCollection: bottomNavIndex == 1,
+                  insetLeft: !isLandscape,
+                  onCreateAlbum: handleCreateAlbum,
+                  onResumeDraft: _resumeDraft,
+                  onOpenAlbumTab: () => _handleBottomNavTap(1),
+                  onShowAlbumCovers: () => _handleBottomNavTap(0),
+                  coverScrollController: _coverScroll,
+                  collectionScrollController: _collectionScroll,
                 ),
               ),
             );
@@ -260,66 +182,86 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: destination,
             );
 
-            return Scaffold(
-              extendBody: true,
-              backgroundColor: uiState.bottomNavIndex == 0
-                  ? homeBackground
-                  : baseBackground,
-              bottomNavigationBar: isLandscape
-                  ? null
-                  : HomeBottomNavigationBar(
-                      currentIndex: uiState.bottomNavIndex,
-                      hasUnreadNotification: hasUnreadNotification,
-                      onTap: _handleBottomNavTap,
-                    ),
-              body: ExperienceNavigationScope(
-                onNavigate: _handleBottomNavTap,
-                onBack: _handleSystemBack,
-                child: isLandscape
-                    ? Row(
-                        children: [
-                          HomeBottomNavigationBar(
-                            currentIndex: uiState.bottomNavIndex,
-                            hasUnreadNotification: hasUnreadNotification,
-                            onTap: _handleBottomNavTap,
-                            rail: true,
-                          ),
-                          Expanded(child: body),
-                        ],
-                      )
-                    : body,
+            return PrimaryScrollController(
+              controller: primaryScroll,
+              // Explicit controllers below keep hidden views independent.
+              // The active controller is still available to header shortcuts
+              // and Scaffold's iOS scroll-to-top action.
+              automaticallyInheritForPlatforms: albumDestination
+                  ? const {}
+                  : const {
+                      TargetPlatform.android,
+                      TargetPlatform.iOS,
+                      TargetPlatform.fuchsia,
+                    },
+              child: Scaffold(
+                extendBody: true,
+                backgroundColor: bottomNavIndex == 0
+                    ? homeBackground
+                    : baseBackground,
+                bottomNavigationBar: isLandscape
+                    ? null
+                    : HomeBottomNavigationBar(
+                        currentIndex: bottomNavIndex,
+                        onTap: _handleBottomNavTap,
+                      ),
+                body: ExperienceNavigationScope(
+                  onNavigate: _handleBottomNavTap,
+                  onBack: _handleSystemBack,
+                  child: isLandscape
+                      ? Row(
+                          children: [
+                            HomeBottomNavigationBar(
+                              currentIndex: bottomNavIndex,
+                              onTap: _handleBottomNavTap,
+                              rail: true,
+                            ),
+                            Expanded(child: body),
+                          ],
+                        )
+                      : body,
+                ),
               ),
             );
           },
         ),
       ),
     );
+    return HomeNewsGate(active: bottomNavIndex == 0, child: content);
   }
 
   Widget _buildBottomNavBody(
     BuildContext context, {
     required int currentBottomNavIndex,
-    required Widget homeBody,
+    required WidgetBuilder homeBody,
   }) {
-    switch (currentBottomNavIndex) {
-      case 0:
-      case 1:
-        return homeBody;
-      case 2:
-        return const StoreHubScreen(key: ValueKey('store-hub'));
-      case 3:
-        return const NotificationScreen();
-      case 4:
-        return const MyPageScreen();
-      case 5:
-        return const StoreHubScreen(
-          key: ValueKey('store-materials-entry'),
-          initialMaterials: true,
-        );
-      case 6:
-        return const MaterialCatalogScreen(library: true);
-      default:
-        return homeBody;
-    }
+    final index = switch (currentBottomNavIndex) {
+      1 => 0,
+      5 => 2,
+      _ => currentBottomNavIndex,
+    };
+    _visitedDestinations.add(index);
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        for (final destination in _visitedDestinations)
+          RetainedDestination(
+            key: ValueKey('home-destination-$destination'),
+            active: destination == index,
+            builder: (context) => switch (destination) {
+              0 => homeBody(context),
+              2 => StoreHubScreen(
+                key: const ValueKey('store-hub'),
+                initialMaterials: currentBottomNavIndex == 5,
+              ),
+              3 => const NotificationScreen(),
+              4 => const SocialProfileScreen(),
+              6 => const MaterialCatalogScreen(library: true),
+              7 => const SocialFeedScreen(),
+              _ => homeBody(context),
+            },
+          ),
+      ],
+    );
   }
 }

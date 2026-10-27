@@ -12,16 +12,19 @@ import 'home_album_helpers.dart';
 import 'album_open_origin.dart';
 import '../../../../../shared/widgets/album_stage_style.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
-import '../../../../../shared/widgets/experience_icon.dart';
-import '../../../../../shared/widgets/album_navigation_dock.dart';
+import 'home_album_header.dart';
+import 'home_album_progress_builder.dart';
+import '../../utils/album_progress.dart' show albumCompletionCriteria;
 
-/// One floating album with a visual bookshelf for selection.
+/// A focused cover and a lazy bookshelf; artwork stays off the drag path.
 class HomeAlbumSlider extends ConsumerStatefulWidget {
   final List<Album> albums;
   final ValueChanged<Album>? onFocusedAlbumChanged;
   final VoidCallback? onCreateAlbum;
   final VoidCallback? onResumeDraft;
   final VoidCallback? onOpenAlbumTab;
+  final bool showHeader;
+  final ScrollController? scrollController;
 
   const HomeAlbumSlider({
     super.key,
@@ -30,6 +33,8 @@ class HomeAlbumSlider extends ConsumerStatefulWidget {
     this.onCreateAlbum,
     this.onResumeDraft,
     this.onOpenAlbumTab,
+    this.showHeader = true,
+    this.scrollController,
   });
 
   @override
@@ -38,12 +43,16 @@ class HomeAlbumSlider extends ConsumerStatefulWidget {
 
 class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
     with SingleTickerProviderStateMixin {
+  ScrollController? _localScroll;
+  ScrollController get _scroll =>
+      widget.scrollController ?? (_localScroll ??= ScrollController());
   int _focusedIndex = 0;
   final _position = ValueNotifier<double>(0);
   double get _visualPage => _position.value;
   set _visualPage(double value) => _position.value = value;
   int _dragAnchorIndex = 0;
   double _stageWidth = 390;
+  bool _coverFocusVisible = false;
   late final AnimationController _slideController;
   Animation<double>? _slideAnimation;
   final Map<int, GlobalKey> _coverOriginKeys = {};
@@ -54,7 +63,7 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
     _slideController =
         AnimationController(
           vsync: this,
-          duration: const Duration(milliseconds: 520),
+          duration: const Duration(milliseconds: 280),
         )..addListener(() {
           final animation = _slideAnimation;
           if (animation == null || !mounted) return;
@@ -69,6 +78,7 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
 
   @override
   void dispose() {
+    _localScroll?.dispose();
     _slideController.dispose();
     _position.dispose();
     super.dispose();
@@ -77,16 +87,16 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
   @override
   void didUpdateWidget(covariant HomeAlbumSlider oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _coverOriginKeys.removeWhere(
-      (id, _) => !widget.albums.any((album) => album.id == id),
-    );
     if (widget.albums.isEmpty) {
+      _coverOriginKeys.clear();
       _slideController.stop();
       _focusedIndex = 0;
       _visualPage = 0;
       return;
     }
     if (!identical(oldWidget.albums, widget.albums)) {
+      final albumIds = widget.albums.map((album) => album.id).toSet();
+      _coverOriginKeys.removeWhere((id, _) => !albumIds.contains(id));
       final orderChanged = !listEquals(
         oldWidget.albums.map((album) => album.id).toList(),
         widget.albums.map((album) => album.id).toList(),
@@ -135,7 +145,9 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
       begin: from,
       end: to,
     ).chain(CurveTween(curve: Curves.easeOutCubic)).animate(_slideController);
-    if (MediaQuery.disableAnimationsOf(context)) {
+    // Shelf selection can jump across the entire collection. Do not mount
+    // every intermediate cover just to animate through albums not selected.
+    if (MediaQuery.disableAnimationsOf(context) || (to - from).abs() > 1) {
       _slideController.stop();
       _slideAnimation = null;
       _visualPage = to;
@@ -148,15 +160,28 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
     if (widget.albums.isEmpty) return;
     try {
       if (_slideController.isAnimating) {
-        await _slideController.forward().orCancel;
+        // Settle on the selected cover before capturing its opening origin;
+        // a tap should not wait for the remainder of the slide animation.
+        _slideController.stop();
+        _slideAnimation = null;
+        _visualPage = _focusedIndex.toDouble();
+        await WidgetsBinding.instance.endOfFrame;
       }
-      if (!mounted) return;
+      if (!mounted ||
+          widget.albums.isEmpty ||
+          !TickerMode.getValuesNotifier(context).value.enabled)
+        return;
       final index = _clampIndex(_focusedIndex);
       final album = widget.albums[index];
       await HomeAlbumActions.openAlbum(
         context,
         ref,
         album,
+        canContinue: () =>
+            mounted &&
+            widget.albums.isNotEmpty &&
+            TickerMode.getValuesNotifier(context).value.enabled &&
+            widget.albums[_clampIndex(_focusedIndex)].id == album.id,
         coverOrigin: () {
           final key = _coverOriginKeys[album.id];
           return key == null ? null : AlbumOpenOrigin.capture(key);
@@ -173,267 +198,118 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
   }
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) {
-      final landscape = constraints.maxWidth > constraints.maxHeight;
-      final compact = constraints.maxHeight < 580;
-      final showWordmark =
-          widget.albums.isEmpty ||
-          MediaQuery.textScalerOf(context).scale(11) <= 12.1;
-      final focusedAlbum = widget.albums.isEmpty
-          ? null
-          : widget.albums[_clampIndex(_focusedIndex)];
-      final focusedTitle = focusedAlbum == null
-          ? '내 앨범'
-          : focusedAlbum.title.trim().isEmpty
-          ? '제목 없는 앨범'
-          : focusedAlbum.title;
-      final focusedStatus = focusedAlbum == null
-          ? null
-          : _albumStatusLabel(focusedAlbum);
-      final titleStyle = ExperienceFormStyle.text(
-        context,
-        showWordmark ? 11 : 12,
-        secondary: true,
-      );
-      final statusStyle = ExperienceFormStyle.text(
-        context,
-        11,
-        weight: FontWeight.w500,
-      ).copyWith(height: 1.2);
-      final metadataHeight = focusedAlbum == null
-          ? 0.0
-          : (showWordmark
-                    ? MediaQuery.textScalerOf(context).scale(18) * 1.2 + 2
-                    : 0) +
-                _lineHeight(context, focusedTitle, titleStyle) +
-                2 +
-                _lineHeight(context, focusedStatus!, statusStyle);
-      final headerHeight = math.max(
-        landscape || compact ? 48.0 : 56.0,
-        metadataHeight.ceilToDouble(),
-      );
-      final thumbnailSide = ((constraints.maxWidth - 68) / 4).clamp(44.0, 92.0);
-      final shelf = HomeAlbumShelf(
-        albums: widget.albums,
-        selectedIndex: _focusedIndex,
-        onSelected: _animateToIndex,
-        grid: landscape,
-      );
-      final open = _ShelfOpenButton(
-        size: landscape || compact ? 48 : 60,
-        onTap: widget.albums.isEmpty ? null : _openFocusedAlbum,
-      );
-      final navigation = SizedBox(
-        width: landscape ? 220 : 244,
-        child: AlbumNavigationDock(
-          height: landscape || compact ? 48 : 60,
-          primary: open,
-          previousLabel: '이전 앨범',
-          nextLabel: '다음 앨범',
-          onPrevious: _focusedIndex > 0
-              ? () => _animateToIndex(_focusedIndex - 1)
-              : null,
-          onNext: _focusedIndex < widget.albums.length - 1
-              ? () => _animateToIndex(_focusedIndex + 1)
-              : null,
-        ),
-      );
-      return Stack(
+  Widget build(BuildContext context) => PrimaryScrollController(
+    controller: _scroll,
+    automaticallyInheritForPlatforms: const {},
+    child: DecoratedBox(
+      decoration: BoxDecoration(gradient: AlbumStageStyle.gradient(context)),
+      child: Column(
         children: [
-          const Positioned.fill(child: _HomeAlbumStageBackground()),
-          Column(
-            children: [
-              SizedBox(
-                height: headerHeight,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: landscape ? 24 : 16,
-                  ),
-                  child: Stack(
-                    alignment: Alignment.center,
+          if (widget.showHeader)
+            HomeAlbumHeader(
+              collection: false,
+              onToggleView: widget.onOpenAlbumTab,
+              onCreateAlbum: widget.onCreateAlbum,
+              onResumeDraft: widget.onResumeDraft,
+            ),
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, box) {
+                if (widget.albums.isEmpty) return const SizedBox.expand();
+                final album = widget.albums[_clampIndex(_focusedIndex)];
+                final landscape =
+                    box.maxWidth >= 600 && box.maxWidth > box.maxHeight;
+                final shelfHeight = HomeAlbumShelf.stripHeight(context);
+                final shelf = HomeAlbumShelf(
+                  albums: widget.albums,
+                  selectedIndex: _focusedIndex,
+                  onSelected: _animateToIndex,
+                );
+                final details = _FocusedAlbumDetails(
+                  album: album,
+                  onPrevious: _focusedIndex > 0
+                      ? () => _animateToIndex(_focusedIndex - 1)
+                      : null,
+                  onNext: _focusedIndex < widget.albums.length - 1
+                      ? () => _animateToIndex(_focusedIndex + 1)
+                      : null,
+                );
+                final shelfHeading = Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 14, 24, 0),
+                  child: Row(
                     children: [
-                      Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: widget.onResumeDraft == null ? 56 : 100,
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            if (showWordmark)
-                              FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Semantics(
-                                  container: true,
-                                  label: 'snapfit',
-                                  excludeSemantics: true,
-                                  child: Text(
-                                    's n a p f i t',
-                                    key: const ValueKey(
-                                      'home-bookshelf-wordmark',
-                                    ),
-                                    maxLines: 1,
-                                    softWrap: false,
-                                    style: TextStyle(
-                                      fontFamily: 'Poppins',
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 0,
-                                      height: 1.2,
-                                      color: AlbumStageStyle.ink(context),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            if (widget.albums.isNotEmpty) ...[
-                              if (showWordmark) const SizedBox(height: 2),
-                              Tooltip(
-                                message: focusedTitle,
-                                child: Text(
-                                  focusedTitle,
-                                  key: const ValueKey(
-                                    'home-focused-album-title',
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: titleStyle,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Tooltip(
-                                message: focusedStatus!,
-                                excludeFromSemantics: true,
-                                child: Text(
-                                  focusedStatus,
-                                  key: const ValueKey(
-                                    'home-focused-album-status',
-                                  ),
-                                  semanticsLabel: '앨범 상태, $focusedStatus',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: statusStyle,
-                                ),
-                              ),
-                            ],
-                          ],
+                      Expanded(
+                        child: Text(
+                          '나의 책장',
+                          style: ExperienceFormStyle.text(
+                            context,
+                            12,
+                            secondary: true,
+                          ),
                         ),
                       ),
-                      Row(
-                        children: [
-                          _HeaderAction(
-                            icon: 'Menu',
-                            tooltip: '앨범 목록',
-                            onTap: widget.onOpenAlbumTab,
-                          ),
-                          const Spacer(),
-                          if (widget.onResumeDraft != null)
-                            _HeaderAction(
-                              icon: 'History',
-                              tooltip: '이어 만들기',
-                              onTap: widget.onResumeDraft,
-                            ),
-                          _HeaderAction(
-                            icon: 'Plus',
-                            tooltip: '새 앨범',
-                            onTap: widget.onCreateAlbum,
-                          ),
-                        ],
+                      Text(
+                        '${widget.albums.length}권',
+                        style: ExperienceFormStyle.text(
+                          context,
+                          12,
+                          secondary: true,
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ),
-              Expanded(
-                child: landscape
-                    ? Row(
-                        children: [
-                          Expanded(child: _buildAlbumStage()),
-                          SizedBox(
-                            width: (constraints.maxWidth * .34).clamp(
-                              220.0,
-                              300.0,
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                  height: math.max(
-                                    44,
-                                    math.min(
-                                      252,
-                                      constraints.maxHeight - headerHeight - 64,
-                                    ),
-                                  ),
-                                  child: shelf,
-                                ),
-                                SizedBox(
-                                  height: 64,
-                                  child: Center(child: navigation),
-                                ),
-                              ],
-                            ),
+                );
+                if (landscape) {
+                  return Row(
+                    children: [
+                      Expanded(child: _buildAlbumStage()),
+                      SizedBox(
+                        width: (box.maxWidth * .46).clamp(280.0, 440.0),
+                        child: SingleChildScrollView(
+                          controller: _scroll,
+                          primary: false,
+                          key: const PageStorageKey(
+                            'home-cover-landscape-scroll',
                           ),
-                        ],
-                      )
-                    : Column(
-                        children: [
-                          Expanded(child: _buildAlbumStage()),
-                          SizedBox(height: thumbnailSide + 22, child: shelf),
-                          SizedBox(
-                            height: compact ? 64 : 124,
-                            child: Stack(
-                              children: [
-                                Center(child: navigation),
-                                if (!compact &&
-                                    MediaQuery.textScalerOf(
-                                          context,
-                                        ).scale(11) <=
-                                        16)
-                                  Positioned(
-                                    left: 0,
-                                    right: 0,
-                                    bottom: 8,
-                                    child: Text(
-                                      '앨범 보기',
-                                      textAlign: TextAlign.center,
-                                      style: ExperienceFormStyle.text(
-                                        context,
-                                        11,
-                                        secondary: true,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
+                          child: Column(
+                            children: [
+                              details,
+                              shelfHeading,
+                              SizedBox(height: shelfHeight, child: shelf),
+                              const SizedBox(height: 12),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-              ),
-            ],
+                    ],
+                  );
+                }
+                // Cover size follows the viewport width. Metadata and the
+                // shelf scroll below it instead of squeezing the album.
+                return SingleChildScrollView(
+                  key: const PageStorageKey('home-album-cover-scroll'),
+                  controller: _scroll,
+                  primary: false,
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: (box.maxWidth * .94).clamp(280.0, 540.0),
+                        child: _buildAlbumStage(),
+                      ),
+                      details,
+                      shelfHeading,
+                      SizedBox(height: shelfHeight, child: shelf),
+                      const SizedBox(height: 12),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ],
-      );
-    },
+      ),
+    ),
   );
-
-  double _lineHeight(BuildContext context, String text, TextStyle style) {
-    final painter = TextPainter(
-      text: TextSpan(text: text, style: style),
-      textScaler: MediaQuery.textScalerOf(context),
-      textDirection: Directionality.of(context),
-      maxLines: 1,
-    )..layout();
-    final height = painter.height;
-    painter.dispose();
-    return height;
-  }
-
-  String _albumStatusLabel(Album album) => [
-    if (!album.allowsEditing) '보기 전용',
-    isCompletedAlbum(album)
-        ? '완성한 앨범'
-        : calculateAlbumProgress(album).pageProgressLabel,
-  ].join(' · ');
 
   Widget _buildAlbumStage() => LayoutBuilder(
     builder: (context, constraints) {
@@ -447,6 +323,7 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
           album: widget.albums[index],
           index: index,
           currentPage: _focusedIndex.toDouble(),
+          animateIdle: false,
           pagePosition: _position,
           coverOriginKey: _coverOriginKeys.putIfAbsent(
             widget.albums[index].id,
@@ -454,62 +331,109 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
           ),
         ),
       );
-      return Semantics(
-        label: widget.albums.isEmpty
-            ? '앨범'
-            : widget.albums[_clampIndex(_focusedIndex)].title,
-        onIncrease: _focusedIndex < widget.albums.length - 1
-            ? () => _animateToIndex(_focusedIndex + 1)
-            : null,
-        onDecrease: _focusedIndex > 0
-            ? () => _animateToIndex(_focusedIndex - 1)
-            : null,
-        child: GestureDetector(
-          key: const ValueKey('home-bookshelf-swipe'),
-          behavior: HitTestBehavior.opaque,
-          onHorizontalDragStart: (_) {
-            if (widget.albums.isEmpty) return;
-            _slideController.stop();
-            _dragAnchorIndex = _clampIndex(_visualPage.round());
-          },
-          onHorizontalDragUpdate: (details) {
-            if (widget.albums.isEmpty) return;
-            final first = _clampIndex(_dragAnchorIndex - 1).toDouble();
-            final last = _clampIndex(_dragAnchorIndex + 1).toDouble();
-            _visualPage = (_visualPage - details.delta.dx / (_stageWidth + 24))
-                .clamp(first, last);
-          },
-          onHorizontalDragCancel: () => _animateToIndex(_focusedIndex),
-          onHorizontalDragEnd: (details) {
-            final velocity = details.primaryVelocity ?? 0;
-            _animateToIndex(
-              velocity < -180
-                  ? _dragAnchorIndex + 1
-                  : velocity > 180
-                  ? _dragAnchorIndex - 1
-                  : _visualPage.round(),
-            );
-          },
-          child: ClipRect(
-            key: const ValueKey('home-bookshelf-stage'),
-            clipper: const _StageHorizontalClipper(),
-            child: ValueListenableBuilder<double>(
-              valueListenable: _position,
-              builder: (context, page, _) {
-                final visible = [
-                  for (
-                    var i = math.max(0, page.floor() - 1);
-                    i <= math.min(widget.albums.length - 1, page.ceil() + 1);
-                    i++
+      return FocusableActionDetector(
+        mouseCursor: SystemMouseCursors.click,
+        onShowFocusHighlight: (visible) {
+          if (_coverFocusVisible != visible) {
+            setState(() => _coverFocusVisible = visible);
+          }
+        },
+        shortcuts: const {
+          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        },
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) {
+              _openFocusedAlbum();
+              return null;
+            },
+          ),
+        },
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            border: _coverFocusVisible
+                ? Border.all(
+                    color: ExperienceFormStyle.selectionInk(context),
+                    width: 2,
                   )
-                    if ((i - page).abs() <= 1.35) i,
-                ]..sort((a, b) => (b - page).abs().compareTo((a - page).abs()));
-                return Stack(
-                  clipBehavior: Clip.none,
-                  fit: StackFit.expand,
-                  children: [for (final index in visible) card(index)],
+                : null,
+          ),
+          child: Semantics(
+            key: const ValueKey('home-bookshelf-open'),
+            button: true,
+            excludeSemantics: true,
+            onTap: _openFocusedAlbum,
+            label: widget.albums.isEmpty
+                ? '앨범'
+                : '${widget.albums[_clampIndex(_focusedIndex)].title}, 앨범 열기',
+            onIncrease: _focusedIndex < widget.albums.length - 1
+                ? () => _animateToIndex(_focusedIndex + 1)
+                : null,
+            onDecrease: _focusedIndex > 0
+                ? () => _animateToIndex(_focusedIndex - 1)
+                : null,
+            child: GestureDetector(
+              key: const ValueKey('home-bookshelf-swipe'),
+              behavior: HitTestBehavior.opaque,
+              onHorizontalDragStart: (_) {
+                if (widget.albums.isEmpty) return;
+                _slideController.stop();
+                _dragAnchorIndex = _clampIndex(_visualPage.round());
+              },
+              onHorizontalDragUpdate: (details) {
+                if (widget.albums.isEmpty) return;
+                final first = _clampIndex(_dragAnchorIndex - 1).toDouble();
+                final last = _clampIndex(_dragAnchorIndex + 1).toDouble();
+                _visualPage =
+                    (_visualPage - details.delta.dx / (_stageWidth + 24)).clamp(
+                      first,
+                      last,
+                    );
+              },
+              onHorizontalDragCancel: () => _animateToIndex(_focusedIndex),
+              onHorizontalDragEnd: (details) {
+                final velocity = details.primaryVelocity ?? 0;
+                _animateToIndex(
+                  velocity < -180
+                      ? _dragAnchorIndex + 1
+                      : velocity > 180
+                      ? _dragAnchorIndex - 1
+                      : _visualPage.round(),
                 );
               },
+              child: ClipRect(
+                key: const ValueKey('home-bookshelf-stage'),
+                clipper: const _StageHorizontalClipper(),
+                child: ValueListenableBuilder<double>(
+                  valueListenable: _position,
+                  builder: (context, page, _) {
+                    final visible = [
+                      for (
+                        var i = math.max(0, page.floor());
+                        i <= math.min(widget.albums.length - 1, page.ceil());
+                        i++
+                      )
+                        // At rest, neighbours are entirely outside the stage.
+                        // Mount their artwork only when a swipe brings it in.
+                        if ((i - page).abs() < 1) i,
+                    ]..sort((a, b) => (b - page).abs().compareTo((a - page).abs()));
+                    // A drag can reverse or pass multiple indices. Cache only the
+                    // currently mounted cards, not its complete movement history.
+                    cards.removeWhere((index, _) => !visible.contains(index));
+                    _coverOriginKeys.removeWhere(
+                      (id, _) => !visible.any(
+                        (index) => widget.albums[index].id == id,
+                      ),
+                    );
+                    return Stack(
+                      clipBehavior: Clip.none,
+                      fit: StackFit.expand,
+                      children: [for (final index in visible) card(index)],
+                    );
+                  },
+                ),
+              ),
             ),
           ),
         ),
@@ -530,98 +454,93 @@ class _StageHorizontalClipper extends CustomClipper<Rect> {
   bool shouldReclip(covariant _StageHorizontalClipper oldClipper) => false;
 }
 
-class _HomeAlbumStageBackground extends StatelessWidget {
-  const _HomeAlbumStageBackground();
-
-  @override
-  Widget build(BuildContext context) => DecoratedBox(
-    key: const ValueKey('home-album-stage-background'),
-    decoration: BoxDecoration(gradient: AlbumStageStyle.gradient(context)),
-  );
-}
-
-class _HeaderAction extends StatelessWidget {
-  const _HeaderAction({
-    required this.icon,
-    required this.tooltip,
-    required this.onTap,
+class _FocusedAlbumDetails extends StatelessWidget {
+  const _FocusedAlbumDetails({
+    required this.album,
+    required this.onPrevious,
+    required this.onNext,
   });
 
-  final String icon;
-  final String tooltip;
-  final VoidCallback? onTap;
+  final Album album;
+  final VoidCallback? onPrevious, onNext;
 
   @override
-  Widget build(BuildContext context) => IconButton(
-    tooltip: tooltip,
-    onPressed: onTap,
-    constraints: const BoxConstraints.tightFor(width: 44, height: 44),
-    padding: EdgeInsets.zero,
-    icon: ExperienceIcon(icon, size: 25, color: AlbumStageStyle.ink(context)),
-  );
-}
-
-class _ShelfOpenButton extends StatefulWidget {
-  const _ShelfOpenButton({required this.size, required this.onTap});
-
-  final double size;
-  final VoidCallback? onTap;
-
-  @override
-  State<_ShelfOpenButton> createState() => _ShelfOpenButtonState();
-}
-
-class _ShelfOpenButtonState extends State<_ShelfOpenButton> {
-  bool _pressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final enabled = widget.onTap != null;
-    return Tooltip(
-      message: '앨범 열기',
-      child: Semantics(
-        label: '앨범 열기',
-        button: true,
-        enabled: enabled,
-        child: GestureDetector(
-          key: const ValueKey('home-bookshelf-open'),
-          behavior: HitTestBehavior.opaque,
-          onTap: widget.onTap,
-          onTapDown: enabled ? (_) => setState(() => _pressed = true) : null,
-          onTapCancel: enabled ? () => setState(() => _pressed = false) : null,
-          onTapUp: enabled ? (_) => setState(() => _pressed = false) : null,
-          child: AnimatedScale(
-            duration: const Duration(milliseconds: 160),
-            curve: Curves.easeOutCubic,
-            scale: _pressed ? .94 : 1,
-            child: Container(
-              width: widget.size,
-              height: widget.size,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: enabled
-                    ? AlbumStageStyle.controlFill(context)
-                    : Colors.transparent,
-                border: Border.all(
-                  color: AlbumStageStyle.line(context),
-                  width: enabled ? 0 : 1,
+  Widget build(BuildContext context) => HomeAlbumProgressBuilder(
+    album: album,
+    builder: (context, progress) {
+      final completed = !isDraftAlbum(album) && progress?.isCompleted == true;
+      final title = album.title.trim().isEmpty ? '제목 없는 앨범' : album.title;
+      final status = !album.allowsEditing
+          ? '보기 전용'
+          : progress == null
+          ? '상태 확인 중'
+          : completed
+          ? '완성한 앨범'
+          : '만드는 중';
+      final pages = progress == null
+          ? ''
+          : progress.hasTarget
+          ? '${progress.completedPages}/${progress.targetPages}쪽'
+          : '${progress.completedPages}쪽';
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              IconButton(
+                tooltip: '이전 앨범',
+                onPressed: onPrevious,
+                icon: const Icon(Icons.chevron_left_rounded, size: 22),
+              ),
+              Expanded(
+                child: Column(
+                  children: [
+                    Tooltip(
+                      message: title,
+                      child: Text(
+                        title,
+                        key: const ValueKey('home-focused-album-title'),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: ExperienceFormStyle.text(
+                          context,
+                          19,
+                          weight: FontWeight.w600,
+                        ).copyWith(height: 1.4, letterSpacing: -.4),
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Tooltip(
+                      message: albumCompletionCriteria,
+                      child: Text(
+                        progress == null
+                            ? '$status${!album.allowsEditing ? ' · 상태 확인 중' : ''}'
+                            : '$status · $pages',
+                        key: const ValueKey('home-focused-album-status'),
+                        semanticsLabel: progress == null
+                            ? '앨범 상태 확인 중'
+                            : '앨범 상태, $status, ${progress.pageProgressLabel}',
+                        textAlign: TextAlign.center,
+                        style: ExperienceFormStyle.text(
+                          context,
+                          12,
+                          color: ExperienceFormStyle.selectionInk(context),
+                        ).copyWith(height: 1.5),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: Center(
-                child: ExperienceIcon(
-                  'BookOpen',
-                  size: 26,
-                  color: Color.lerp(
-                    AlbumStageStyle.ink(context),
-                    AlbumStageStyle.top(context),
-                    enabled ? .20 : .65,
-                  ),
-                ),
+              IconButton(
+                tooltip: '다음 앨범',
+                onPressed: onNext,
+                icon: const Icon(Icons.chevron_right_rounded, size: 22),
               ),
-            ),
+            ],
           ),
-        ),
-      ),
-    );
-  }
+        ],
+      );
+    },
+  );
 }

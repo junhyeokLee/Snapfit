@@ -2,7 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../shared/widgets/experience_form_style.dart';
+import '../../../../../shared/widgets/snapfit_motion.dart';
 import '../../../domain/entities/album.dart';
 import 'home_album_cover_thumbnail.dart';
 
@@ -20,6 +21,9 @@ class HomeAlbumShelf extends StatefulWidget {
   final int selectedIndex;
   final ValueChanged<int> onSelected;
   final bool grid;
+
+  static double stripHeight(BuildContext context) =>
+      80 + MediaQuery.textScalerOf(context).scale(11) * 1.45;
 
   @override
   State<HomeAlbumShelf> createState() => _HomeAlbumShelfState();
@@ -52,12 +56,20 @@ class _HomeAlbumShelfState extends State<HomeAlbumShelf> {
       final slot = widget.grid
           ? widget.selectedIndex ~/ 2
           : widget.selectedIndex;
-      final target = (16 + (slot + .5) * _extent - _viewport / 2).clamp(
+      final target = (20 + (slot + .5) * _extent - _viewport / 2).clamp(
         0.0,
         _scroll.position.maxScrollExtent,
       );
-      if ((target - _scroll.offset).abs() < 1) return;
-      if (animate) {
+      final distance = (target - _scroll.offset).abs();
+      if (distance < 1) {
+        // A rapid return can precede the first tick of an older animation.
+        if (_scroll.position.isScrollingNotifier.value) _scroll.jumpTo(target);
+        return;
+      }
+      if (animate &&
+          distance <= _scroll.position.viewportDimension * 1.5 &&
+          !SnapFitMotion.reduced(context) &&
+          TickerMode.of(context)) {
         _scroll.animateTo(
           target,
           duration: const Duration(milliseconds: 260),
@@ -72,20 +84,18 @@ class _HomeAlbumShelfState extends State<HomeAlbumShelf> {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      const gap = 12.0;
-      const padding = 16.0;
-      final side = widget.grid
-          ? math
-                .min(
-                  (constraints.maxWidth - padding * 2 - gap) / 2,
-                  (constraints.maxHeight - 72) / 2,
-                )
-                .clamp(44.0, 92.0)
+      const gap = 8.0;
+      const padding = 20.0;
+      final labelHeight = MediaQuery.textScalerOf(context).scale(11) * 1.45;
+      final itemWidth = widget.grid
+          ? ((constraints.maxWidth - padding * 2 - gap) / 2).clamp(60.0, 96.0)
           : ((constraints.maxWidth - padding * 2 - gap * 3) / 4).clamp(
-              44.0,
-              92.0,
+              60.0,
+              96.0,
             );
-      final extent = widget.grid ? side + 26 : side + gap;
+      const coverHeight = 54.0;
+      final itemHeight = coverHeight + labelHeight + 22;
+      final extent = widget.grid ? itemHeight + gap : itemWidth + gap;
       final viewport = widget.grid
           ? constraints.maxHeight
           : constraints.maxWidth;
@@ -98,7 +108,8 @@ class _HomeAlbumShelfState extends State<HomeAlbumShelf> {
       Widget preview(BuildContext context, int index) => _ShelfPreview(
         key: ValueKey('home-shelf-album-${widget.albums[index].id}'),
         album: widget.albums[index],
-        side: side,
+        width: itemWidth,
+        coverHeight: coverHeight,
         trailingGap: widget.grid ? 0 : gap,
         selected: index == widget.selectedIndex,
         onTap: () => widget.onSelected(index),
@@ -109,11 +120,12 @@ class _HomeAlbumShelfState extends State<HomeAlbumShelf> {
               key: const ValueKey('home-bookshelf-grid'),
               controller: _scroll,
               cacheExtent: extent,
+              addAutomaticKeepAlives: false,
               padding: const EdgeInsets.all(padding),
               itemCount: widget.albums.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                mainAxisExtent: side + 14,
+                mainAxisExtent: itemHeight,
                 mainAxisSpacing: gap,
                 crossAxisSpacing: gap,
               ),
@@ -129,6 +141,7 @@ class _HomeAlbumShelfState extends State<HomeAlbumShelf> {
                   key: const ValueKey('home-bookshelf-strip'),
                   controller: _scroll,
                   cacheExtent: extent,
+                  addAutomaticKeepAlives: false,
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.only(
                     left: padding,
@@ -148,14 +161,15 @@ class _ShelfPreview extends StatelessWidget {
   const _ShelfPreview({
     super.key,
     required this.album,
-    required this.side,
+    required this.width,
+    required this.coverHeight,
     required this.trailingGap,
     required this.selected,
     required this.onTap,
   });
 
   final Album album;
-  final double side;
+  final double width, coverHeight;
   final double trailingGap;
   final bool selected;
   final VoidCallback onTap;
@@ -163,10 +177,10 @@ class _ShelfPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = album.title.trim().isEmpty ? '제목 없는 앨범' : album.title;
-    final underlineWidth = side * math.min(1.0, album.physicalCoverSize.ratio);
     return Tooltip(
       message: label,
       child: Semantics(
+        key: ValueKey('home-shelf-selection-${album.id}'),
         label: label,
         button: true,
         selected: selected,
@@ -177,34 +191,48 @@ class _ShelfPreview extends StatelessWidget {
           onTap: onTap,
           child: Padding(
             padding: EdgeInsets.only(right: trailingGap),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: side,
-                  height: side,
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: RepaintBoundary(
-                      child: HomeAlbumCoverThumbnail(
-                        key: ValueKey('home-shelf-cover-${album.id}'),
-                        album: album,
-                        height: side,
-                        maxWidth: side,
-                        showBookDepth: true,
+            child: Container(
+              width: width,
+              padding: const EdgeInsets.fromLTRB(6, 8, 6, 4),
+              decoration: BoxDecoration(
+                color: selected
+                    ? ExperienceFormStyle.selection(context)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: coverHeight,
+                    width: double.infinity,
+                    child: Center(
+                      child: RepaintBoundary(
+                        child: HomeAlbumCoverThumbnail(
+                          key: ValueKey('home-shelf-cover-${album.id}'),
+                          album: album,
+                          height: coverHeight,
+                          maxWidth: width - 12,
+                          showBookDepth: true,
+                          shadowScaleMultiplier: .35,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                AnimatedContainer(
-                  key: ValueKey('home-shelf-selection-${album.id}'),
-                  duration: const Duration(milliseconds: 160),
-                  width: underlineWidth,
-                  height: 2,
-                  color: selected ? SnapFitColors.accent : Colors.transparent,
-                ),
-              ],
+                  const SizedBox(height: 7),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: ExperienceFormStyle.text(
+                      context,
+                      11,
+                      weight: selected ? FontWeight.w500 : FontWeight.w400,
+                      secondary: !selected,
+                    ).copyWith(height: 1.45),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

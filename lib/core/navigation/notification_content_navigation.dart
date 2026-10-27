@@ -1,6 +1,6 @@
 import 'dart:async';
 
-enum NotificationContentKind { album, template }
+enum NotificationContentKind { album, template, moments }
 
 /// Identifiers select a repository read; they never grant access to its result.
 class NotificationContentTarget {
@@ -26,9 +26,15 @@ class NotificationContentTarget {
     final kind = switch (uri.host.toLowerCase()) {
       'album' => NotificationContentKind.album,
       'template' => NotificationContentKind.template,
+      'moments' => NotificationContentKind.moments,
       _ => null,
     };
     if (kind == null) return null;
+    if (kind == NotificationContentKind.moments) {
+      return uri.hasQuery
+          ? null
+          : const NotificationContentTarget(NotificationContentKind.moments, 0);
+    }
     final key = kind == NotificationContentKind.album
         ? 'albumId'
         : 'templateId';
@@ -46,6 +52,12 @@ class NotificationContentTarget {
       if (!data.containsKey(entry.key) || data[entry.key] == null) continue;
       final id = positiveId(data[entry.key]);
       return id == null ? null : NotificationContentTarget(entry.value, id);
+    }
+    if (data['screen'] == 'moments') {
+      return const NotificationContentTarget(
+        NotificationContentKind.moments,
+        0,
+      );
     }
     final uri = Uri.tryParse(data['deeplink']?.toString() ?? '');
     return uri == null ? null : fromUri(uri);

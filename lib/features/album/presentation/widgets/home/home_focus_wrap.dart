@@ -38,8 +38,8 @@ class HomeFocusWrap extends StatelessWidget {
     return [
       BoxShadow(
         color: Color.lerp(
-          Colors.black.withOpacity(0.12),
-          Colors.black.withOpacity(0.12),
+          Colors.black.withValues(alpha: 0.12),
+          Colors.black.withValues(alpha: 0.12),
           focus,
         )!,
         blurRadius: blur1 * scale,
@@ -47,8 +47,8 @@ class HomeFocusWrap extends StatelessWidget {
       ),
       BoxShadow(
         color: Color.lerp(
-          const Color(0xFF5c5d8d).withOpacity(0.12),
-          const Color(0xFF5c5d8d).withOpacity(0.12),
+          const Color(0xFF5c5d8d).withValues(alpha: 0.12),
+          const Color(0xFF5c5d8d).withValues(alpha: 0.12),
           focus,
         )!,
         blurRadius: blur2 * scale,

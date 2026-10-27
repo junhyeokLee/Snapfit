@@ -2,7 +2,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import '../../../../../shared/widgets/experience_icon.dart';
-import '../../../../../shared/widgets/experience_style.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/theme/snapfit_design_tokens.dart';
@@ -39,6 +38,7 @@ class HomeBottomNavigationBar extends StatelessWidget {
         : currentIndex;
     const destinations = [
       (0, '내 앨범', 'BookOpen'),
+      (7, '피드', 'Compass'),
       (2, '스토어', 'Layers2'),
       (6, '내 디자인', 'Bookmark'),
       (4, '마이', 'UserRound'),
@@ -52,75 +52,93 @@ class HomeBottomNavigationBar extends StatelessWidget {
         ? railWidth
         : math.max(1.0, (navigationWidth - 24) / destinations.length);
     var labelHeight = 0.0;
-    for (final (_, label, _) in destinations) {
-      final painter = TextPainter(
-        text: TextSpan(
-          text: label,
-          style: ExperienceStyle.text(12, weight: FontWeight.w600),
-        ),
-        textScaler: MediaQuery.textScalerOf(context),
-        textDirection: Directionality.of(context),
-      )..layout(maxWidth: labelWidth);
-      labelHeight = math.max(labelHeight, painter.height);
-      painter.dispose();
+    if (rail) {
+      for (final (_, label, _) in destinations) {
+        final painter = TextPainter(
+          text: TextSpan(
+            text: label,
+            style: ExperienceFormStyle.text(
+              context,
+              12,
+              weight: FontWeight.w600,
+            ),
+          ),
+          textScaler: MediaQuery.textScalerOf(context),
+          textDirection: Directionality.of(context),
+        )..layout(maxWidth: labelWidth);
+        labelHeight = math.max(labelHeight, painter.height);
+        painter.dispose();
+      }
     }
     final itemHeight = math.max(56.0, (36 + labelHeight).ceilToDouble());
     final duration = SnapFitMotion.duration(context, SnapFitMotion.fast);
     final items = [
       for (final (index, label, icon) in destinations)
         Semantics(
+          key: ValueKey('home-navigation-destination-$index'),
           selected: selectedIndex == index,
           button: true,
           label: label,
           excludeSemantics: true,
           onTap: () => onTap(index),
-          child: InkWell(
-            onTap: () => onTap(index),
-            borderRadius: BorderRadius.circular(SnapFitRadius.md),
-            child: SizedBox(
-              height: itemHeight,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 48,
-                    height: 29,
-                    child: AnimatedContainer(
-                      key: ValueKey('home-navigation-indicator-$index'),
-                      duration: duration,
-                      curve: Curves.easeOutCubic,
-                      decoration: BoxDecoration(
-                        color: selectedIndex == index
-                            ? ExperienceFormStyle.selection(context)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(SnapFitRadius.pill),
-                      ),
-                      child: Center(
-                        child: ExperienceIcon(
-                          icon,
+          child: Tooltip(
+            message: label,
+            excludeFromSemantics: true,
+            child: InkWell(
+              onTap: () => onTap(index),
+              borderRadius: BorderRadius.circular(SnapFitRadius.md),
+              child: SizedBox(
+                height: itemHeight,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 48,
+                      height: rail ? 29 : 38,
+                      child: AnimatedContainer(
+                        key: ValueKey('home-navigation-indicator-$index'),
+                        duration: duration,
+                        curve: Curves.easeOutCubic,
+                        decoration: BoxDecoration(
                           color: selectedIndex == index
-                              ? ExperienceFormStyle.selectionInk(context)
-                              : ExperienceFormStyle.muted(context),
+                              ? SnapFitColors.actionAccent
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(
+                            SnapFitRadius.pill,
+                          ),
+                        ),
+                        child: Center(
+                          child: ExperienceIcon(
+                            icon,
+                            color: selectedIndex == index
+                                ? SnapFitColors.onAccent
+                                : ExperienceFormStyle.muted(context),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 3),
-                  AnimatedDefaultTextStyle(
-                    duration: duration,
-                    curve: Curves.easeOutCubic,
-                    style: ExperienceStyle.text(
-                      12,
-                      weight: selectedIndex == index
-                          ? FontWeight.w600
-                          : FontWeight.w400,
-                      color: selectedIndex == index
-                          ? ExperienceFormStyle.selectionInk(context)
-                          : ExperienceFormStyle.muted(context),
-                    ),
-                    child: Text(label, textAlign: TextAlign.center),
-                  ),
-                ],
+                    if (rail) ...[
+                      const SizedBox(height: 3),
+                      AnimatedDefaultTextStyle(
+                        duration: duration,
+                        curve: Curves.easeOutCubic,
+                        style: ExperienceFormStyle.text(
+                          context,
+                          12,
+                          weight: selectedIndex == index
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                          color: selectedIndex == index
+                              ? SnapFitColors.isDark(context)
+                                    ? SnapFitColors.accentInkDark
+                                    : SnapFitColors.accentInk
+                              : ExperienceFormStyle.muted(context),
+                        ),
+                        child: Text(label, textAlign: TextAlign.center),
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -128,6 +146,9 @@ class HomeBottomNavigationBar extends StatelessWidget {
     ];
     final dark = SnapFitColors.isDark(context);
     final bg = SnapFitColors.backgroundOf(context);
+    // Scrolling catalogs do not need to re-filter the pixels under the bar
+    // every frame. Keep the translucent stage treatment on the album view.
+    final blurBackground = selectedIndex == 0;
     final safeContent = SafeArea(
       top: rail,
       child: rail
@@ -137,6 +158,7 @@ class HomeBottomNavigationBar extends StatelessWidget {
                 builder: (context, constraints) {
                   final compact = constraints.maxHeight < 500;
                   return SingleChildScrollView(
+                    primary: false,
                     child: Column(
                       children: [
                         SizedBox(height: compact ? 8 : 26),
@@ -146,7 +168,8 @@ class HomeBottomNavigationBar extends StatelessWidget {
                             onPressed: () => onTap(2),
                             child: Text(
                               'sf.',
-                              style: ExperienceStyle.text(
+                              style: ExperienceFormStyle.text(
+                                context,
                                 23,
                                 weight: FontWeight.w800,
                                 color: ExperienceFormStyle.selectionInk(
@@ -183,10 +206,11 @@ class HomeBottomNavigationBar extends StatelessWidget {
     );
     return ClipRect(
       child: BackdropFilter(
+        enabled: blurBackground,
         filter: ui.ImageFilter.blur(sigmaX: 22, sigmaY: 22),
         child: Material(
           key: const ValueKey('home-navigation-surface'),
-          color: bg.withValues(alpha: dark ? 0.82 : 0.86),
+          color: blurBackground ? bg.withValues(alpha: dark ? 0.82 : 0.86) : bg,
           child: Container(
             decoration: BoxDecoration(
               border: rail
