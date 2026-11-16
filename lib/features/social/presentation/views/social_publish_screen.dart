@@ -15,6 +15,8 @@ import '../social_actions.dart';
 import '../widgets/social_widgets.dart';
 import '../widgets/social_web_frame.dart';
 import 'social_work_detail_screen.dart';
+import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 final socialPublishAlbumsProvider = FutureProvider.autoDispose<List<Album>>((
   ref,
@@ -55,7 +57,7 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
       _consent = false,
       _sessionChanged = false;
   int _step = 1, _completed = 0;
-  int _pageOffset = 0;
+  int _pageOffset = 0, _reviewPage = 0;
   String _progress = '';
   int _loadRevision = 0;
   DialogRoute<bool>? _confirmation;
@@ -98,7 +100,7 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
           .fetchAlbum('${source.id}');
       if (!current()) return;
       if (fresh.userId != _owner)
-        throw const FormatException('앨범 소유자만 작품을 공개할 수 있어요.');
+        throw const FormatException('앨범 소유자만 앨범을 공개할 수 있어요.');
       final parsed = SocialAlbumSnapshot.fromAlbum(fresh);
       SocialTemplateSource? sourceTemplate;
       var sourceLookupFailed = false;
@@ -135,6 +137,7 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
         _draft = null;
         _requestAttempted = false;
         _pageOffset = 0;
+        _reviewPage = 0;
         _requestId = const Uuid().v4();
       });
     } catch (error) {
@@ -164,7 +167,7 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
       _publishing = true;
       _error = null;
       _completed = 0;
-      _progress = '공개할 작품을 준비하고 있어요.';
+      _progress = '공개할 앨범을 준비하고 있어요.';
     });
     try {
       final repository = ref.read(socialRepositoryProvider);
@@ -223,7 +226,7 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
         setState(() => _completed = position + 1);
       }
       if (!_current) return;
-      setState(() => _progress = '모든 페이지를 확인하고 작품을 공개하고 있어요.');
+      setState(() => _progress = '모든 페이지를 확인하고 앨범을 공개하고 있어요.');
       final work = await repository.finalizePublication(_draft!.id);
       if (_current) _finished(work);
     } catch (error) {
@@ -271,12 +274,9 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
   void _finished(SocialWork work) {
     invalidateSocial(ref, workId: work.id);
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(
-        settings: WebAppRouteSettings(
+      snapFitRoute<void>(page: SocialWorkDetailScreen(workId: work.id), settings: WebAppRouteSettings(
           WebAppLocation(WebAppPage.socialWork, work.id),
-        ),
-        builder: (_) => SocialWorkDetailScreen(workId: work.id),
-      ),
+        )),
     );
   }
 
@@ -414,7 +414,7 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
       (context) => AlertDialog(
         title: const Text('미완료 공개를 정리할까요?'),
         content: const Text(
-          '다른 창에서 준비하던 미완료 공개도 취소돼요. 이미 공개한 작품과 원본 앨범은 그대로 유지돼요.',
+          '다른 창에서 준비하던 미완료 공개도 취소돼요. 이미 공개한 앨범과 원본 앨범은 그대로 유지돼요.',
         ),
         actions: [
           TextButton(
@@ -481,18 +481,18 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
         child: Scaffold(
           backgroundColor: SocialStyle.background(context),
           appBar: AppBar(
-            title: Text(_album == null ? '공개할 앨범 선택' : '작품 공개'),
+            title: Text(_album == null ? '공개할 앨범 선택' : '앨범 공개'),
             leading: IconButton(
               tooltip: '이전 단계',
               onPressed: _publishing && !_sessionChanged ? null : _back,
-              icon: const Icon(Icons.arrow_back),
+              icon: const ExperienceIcon('ArrowLeft'),
             ),
           ),
           body: SocialContent(
             child: _sessionChanged
                 ? const SocialEmpty(
                     title: '계정이 변경됐어요.',
-                    message: '내 앨범에서 공개할 작품을 다시 선택해 주세요.',
+                    message: '내 앨범에서 공개할 앨범을 다시 선택해 주세요.',
                   )
                 : user == null
                 ? SocialEmpty(
@@ -535,7 +535,7 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
           ),
           const SizedBox(height: 14),
           const Text(
-            '전체나 마음에 드는 페이지만 피드에 무료로 공개할 수 있어요.',
+            '전체나 마음에 드는 페이지만 프로필에 공개할 수 있어요.',
             style: TextStyle(height: 1.7),
           ),
           if (_error != null)
@@ -569,7 +569,7 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
                 ),
                 title: Text(album.title),
                 subtitle: const Text('저장된 앨범에서 공개'),
-                trailing: const Icon(Icons.chevron_right),
+                trailing: const ExperienceIcon('ChevronRight'),
                 onTap: () => _load(album),
               ),
             ),
@@ -579,13 +579,14 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
   }
 
   Widget _form() => ListView(
+    key: ValueKey('social-publish-form-$_step'),
     padding: const EdgeInsets.all(22),
     children: [
       Text(
         '$_step / 3 · ${_step == 1
             ? '공개할 페이지'
             : _step == 2
-            ? '작품 소개'
+            ? '앨범 소개'
             : '최종 확인'}',
         style: TextStyle(color: SocialStyle.accent(context)),
       ),
@@ -650,12 +651,15 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
             ? null
             : _step == 3
             ? _publish
-            : () => setState(() => _step++),
+            : () => setState(() {
+                _step++;
+                if (_step == 3) _reviewPage = _selected.first;
+              }),
         child: Text(
           _publishing
-              ? '작품 공개 중…'
+              ? '앨범 공개 중…'
               : _step == 3
-              ? '피드에 무료로 공개'
+              ? '프로필에 앨범 공개'
               : '다음 · ${_selected.length}쪽',
         ),
       ),
@@ -666,7 +670,7 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
         ),
       const SizedBox(height: 20),
       Text(
-        '원본과 인쇄 확정 상태는 바뀌지 않아요. 공개 후 원본을 편집해도 이 작품은 자동으로 바뀌지 않아요.',
+        '원본과 인쇄 확정 상태는 바뀌지 않아요. 공개 후 원본을 편집해도 이 앨범은 자동으로 바뀌지 않아요.',
         style: TextStyle(
           fontSize: 12,
           height: 1.8,
@@ -723,7 +727,7 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
             } else if (_selected.length < 20) {
               _selected.add(index);
             } else {
-              socialError(context, message: '한 작품에 최대 20쪽까지 공개할 수 있어요.');
+              socialError(context, message: '한 앨범에 최대 20쪽까지 공개할 수 있어요.');
             }
           }),
           child: DecoratedBox(
@@ -779,7 +783,7 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
             onPressed: _pageOffset == 0
                 ? null
                 : () => setState(() => _pageOffset -= 6),
-            icon: const Icon(Icons.chevron_left),
+            icon: const ExperienceIcon('ChevronLeft'),
           ),
           Text(
             '${_pageOffset + 1}–${(_pageOffset + 6).clamp(0, _snapshot!.pages.length)} / ${_snapshot!.pages.length}쪽',
@@ -789,7 +793,7 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
             onPressed: _pageOffset + 6 >= _snapshot!.pages.length
                 ? null
                 : () => setState(() => _pageOffset += 6),
-            icon: const Icon(Icons.chevron_right),
+            icon: const ExperienceIcon('ChevronRight'),
           ),
         ],
       ),
@@ -800,7 +804,7 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
       controller: _title,
       maxLength: 80,
       onChanged: (_) => setState(() {}),
-      decoration: const InputDecoration(labelText: '공개 작품 제목'),
+      decoration: const InputDecoration(labelText: '공개 앨범 제목'),
     ),
     const SizedBox(height: 18),
     TextField(
@@ -809,7 +813,7 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
       minLines: 3,
       maxLines: 6,
       decoration: const InputDecoration(
-        labelText: '작품 소개',
+        labelText: '앨범 소개',
         hintText: '이 앨범에 담긴 이야기를 나눠주세요.',
       ),
     ),
@@ -851,7 +855,7 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
           controlAffinity: ListTileControlAffinity.leading,
           title: const Text('사용한 템플릿도 소개하기'),
           subtitle: Text(
-            '${_sourceTemplate!.title}\n작품을 본 사람이 이 공식 템플릿으로 자신의 앨범을 시작할 수 있어요. 내 사진과 글은 가져가지 않아요. 유료 템플릿은 별도 구매가 필요해요.',
+            '${_sourceTemplate!.title}\n앨범을 본 사람이 이 공식 템플릿으로 자신의 앨범을 시작할 수 있어요. 내 사진과 글은 가져가지 않아요. 유료 템플릿은 별도 구매가 필요해요.',
             style: const TextStyle(height: 1.7),
           ),
         ),
@@ -859,7 +863,7 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
       const SizedBox(height: 22),
     ] else if (_sourceLookupFailed) ...[
       const Text(
-        '사용한 템플릿을 확인하지 못했어요. 작품은 그대로 공개할 수 있어요.',
+        '사용한 템플릿을 확인하지 못했어요. 앨범은 그대로 공개할 수 있어요.',
         style: TextStyle(height: 1.7),
       ),
       Align(
@@ -875,84 +879,184 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
       const SizedBox(height: 12),
     ],
     const Text(
-      '작품 공개와 감상은 무료예요. 선택한 사진과 문구가 보이는 감상용 페이지를 공개하며, 편집 가능한 원본은 공유하지 않아요.',
+      '앨범 공개와 감상은 무료예요. 선택한 사진과 문구가 보이는 감상용 페이지를 공개하며, 편집 가능한 원본은 공유하지 않아요.',
       style: TextStyle(height: 1.8),
     ),
   ];
 
-  List<Widget> _review() => [
-    Text(
-      _title.text,
-      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-    ),
-    if (_caption.text.trim().isNotEmpty) ...[
-      const SizedBox(height: 10),
-      Text(_caption.text, style: const TextStyle(height: 1.8)),
-    ],
-    const SizedBox(height: 12),
-    Text('$_topic · ${_selected.length}쪽 공개'),
-    if (_includeSourceTemplate && _sourceTemplate != null) ...[
-      const SizedBox(height: 12),
+  List<Widget> _review() {
+    if (_selected.isEmpty) return const [];
+    final pageIndex = _selected.contains(_reviewPage)
+        ? _reviewPage
+        : _selected.first;
+    final position = _selected.indexOf(pageIndex);
+    final reorderable = !_publishing && !_requestAttempted && _draft == null;
+    return [
       Text(
-        '함께 소개할 템플릿 · ${_sourceTemplate!.title}',
-        key: const ValueKey('social-publish-template-review'),
-        style: TextStyle(color: SocialStyle.accent(context), height: 1.7),
+        _title.text,
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
       ),
-    ],
-    const SizedBox(height: 22),
-    for (final entry in _selected.indexed)
-      Padding(
-        padding: const EdgeInsets.only(bottom: 22),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(entry.$1 == 0 ? '대표 페이지' : '${entry.$1 + 1}번째 공개 페이지'),
-            const SizedBox(height: 10),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 360),
-              child: SocialPublicationPagePreview(
-                page: _snapshot!.pages[entry.$2],
-              ),
-            ),
-            if (_draft == null && !_requestAttempted && !_publishing)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    tooltip: '공개 순서 앞으로',
-                    onPressed: entry.$1 == 0
-                        ? null
-                        : () => _reorder(entry.$1, -1),
-                    icon: const Icon(Icons.arrow_upward),
-                  ),
-                  IconButton(
-                    tooltip: '공개 순서 뒤로',
-                    onPressed: entry.$1 == _selected.length - 1
-                        ? null
-                        : () => _reorder(entry.$1, 1),
-                    icon: const Icon(Icons.arrow_downward),
-                  ),
-                ],
-              ),
-          ],
+      if (_caption.text.trim().isNotEmpty) ...[
+        const SizedBox(height: 10),
+        Text(_caption.text, style: const TextStyle(height: 1.8)),
+      ],
+      const SizedBox(height: 12),
+      Text('$_topic · ${_selected.length}쪽 공개'),
+      if (_includeSourceTemplate && _sourceTemplate != null) ...[
+        const SizedBox(height: 12),
+        Text(
+          '함께 소개할 템플릿 · ${_sourceTemplate!.title}',
+          key: const ValueKey('social-publish-template-review'),
+          style: TextStyle(color: SocialStyle.accent(context), height: 1.7),
+        ),
+      ],
+      const SizedBox(height: 18),
+      SizedBox(
+        height: (MediaQuery.sizeOf(context).height * .35)
+            .clamp(180.0, 300.0)
+            .toDouble(),
+        child: Center(
+          child: SocialPublicationPagePreview(
+            key: const ValueKey('social-publish-review-stage'),
+            page: _snapshot!.pages[pageIndex],
+          ),
         ),
       ),
-    CheckboxListTile(
-      contentPadding: EdgeInsets.zero,
-      controlAffinity: ListTileControlAffinity.leading,
-      value: _consent,
-      onChanged: _publishing
-          ? null
-          : (value) => setState(() => _consent = value ?? false),
-      title: const Text('선택한 사진과 문구를 누구나 볼 수 있도록 공개하는 내용을 확인했어요.'),
-      subtitle: const Text('개인정보와 함께 등장한 사람의 공개 의사를 확인해 주세요.'),
-    ),
-  ];
+      const SizedBox(height: 8),
+      Row(
+        children: [
+          Expanded(
+            child: Text(
+              '${position == 0 ? '대표 페이지' : '${position + 1}번째 공개 페이지'} · ${pageIndex == 0 ? '표지' : '$pageIndex쪽'}',
+              style: const TextStyle(fontSize: 13),
+            ),
+          ),
+          if (reorderable && _selected.length > 1) ...[
+            const Text('순서', style: TextStyle(fontSize: 11)),
+            const SizedBox(width: 4),
+            IconButton(
+              tooltip: '공개 순서 앞으로',
+              onPressed: position == 0 ? null : () => _reorder(position, -1),
+              icon: const ExperienceIcon('ChevronLeft'),
+            ),
+            IconButton(
+              tooltip: '공개 순서 뒤로',
+              onPressed: position == _selected.length - 1
+                  ? null
+                  : () => _reorder(position, 1),
+              icon: const ExperienceIcon('ChevronRight'),
+            ),
+          ],
+        ],
+      ),
+      if (_selected.length > 1) ...[
+        const SizedBox(height: 8),
+        SizedBox(
+          key: const ValueKey('social-publish-review-pages'),
+          height: 108,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            cacheExtent: 0,
+            itemCount: _selected.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 8),
+            itemBuilder: (context, item) {
+              final index = _selected[item];
+              final focused = index == pageIndex;
+              void selectPage() {
+                if (!_current || _publishing || !_selected.contains(index))
+                  return;
+                setState(() => _reviewPage = index);
+              }
+
+              return Semantics(
+                button: true,
+                selected: focused,
+                onTap: _publishing ? null : selectPage,
+                label:
+                    '${item + 1}번째 공개 페이지, ${index == 0 ? '표지' : '$index쪽'}${item == 0 ? ', 대표 페이지' : ''}',
+                excludeSemantics: true,
+                child: SizedBox(
+                  width: 72,
+                  child: Material(
+                    color: focused
+                        ? SocialStyle.paper(context)
+                        : Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: BorderSide(
+                        color: focused
+                            ? SocialStyle.accent(context)
+                            : SocialStyle.line(context),
+                        width: focused ? 2 : 1,
+                      ),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      key: ValueKey('social-publish-review-page-$index'),
+                      onTap: _publishing ? null : selectPage,
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: Center(
+                                child: SocialPublicationPagePreview(
+                                  page: _snapshot!.pages[index],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              item == 0 ? '대표' : '${item + 1}번째',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: focused
+                                    ? SocialStyle.accent(context)
+                                    : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+      const SizedBox(height: 18),
+      CheckboxListTile(
+        contentPadding: EdgeInsets.zero,
+        controlAffinity: ListTileControlAffinity.leading,
+        value: _consent,
+        onChanged: _publishing
+            ? null
+            : (value) => setState(() => _consent = value ?? false),
+        title: const Text('선택한 사진과 문구를 누구나 볼 수 있도록 공개하는 내용을 확인했어요.'),
+        subtitle: const Text('개인정보와 함께 등장한 사람의 공개 의사를 확인해 주세요.'),
+      ),
+    ];
+  }
+
   void _reorder(int position, int offset) {
-    if (_publishing || _requestAttempted || _draft != null) return;
+    if (!_current ||
+        _publishing ||
+        _requestAttempted ||
+        _draft != null ||
+        position < 0 ||
+        position >= _selected.length ||
+        position + offset < 0 ||
+        position + offset >= _selected.length)
+      return;
     setState(() {
       final item = _selected.removeAt(position);
       _selected.insert(position + offset, item);
+      // 순서와 대표 페이지가 바뀌면 바뀐 공개 내용을 다시 확인한다.
+      _consent = false;
     });
   }
 }

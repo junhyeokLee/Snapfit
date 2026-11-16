@@ -1,0 +1,22 @@
+{
+  "removed": [
+    {
+      "path": "/tmp/snapfit-home-cleanup-before.dill",
+      "bytes": 125216992
+    },
+    {
+      "path": "/tmp/snapfit-home-simplification.dill",
+      "bytes": 126731680
+    },
+    {
+      "path": "/tmp/snapfit-home-simplification-final.dill",
+      "bytes": 126741576
+    },
+    {
+      "path": "/tmp/snapfit-home-simplification-verified.dill",
+      "bytes": 126745528
+    }
+  ],
+  "freed_bytes": 505435776,
+  "available_bytes": 14222176256
+}

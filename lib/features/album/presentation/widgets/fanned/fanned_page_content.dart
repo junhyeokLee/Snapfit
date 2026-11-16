@@ -7,6 +7,7 @@ import '../../../domain/entities/album.dart';
 import '../../../domain/entities/album_page.dart';
 import '../../../domain/entities/layer.dart';
 import '../../../data/gallery/photo_asset_image_provider.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 /// FannedPageStack 내부: 페이지 레이어 또는 커버 이미지 렌더링
 class FannedPageContent extends StatelessWidget {
@@ -125,6 +126,6 @@ class FannedPageContent extends StatelessWidget {
         fit: BoxFit.cover,
       );
     }
-    return const Icon(Icons.image, size: 28, color: Color(0xFFBDBDBD));
+    return const ExperienceIcon('Image', size: 28, color: Color(0xFFBDBDBD));
   }
 }

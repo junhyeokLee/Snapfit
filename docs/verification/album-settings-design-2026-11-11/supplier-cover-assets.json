@@ -1,0 +1,17 @@
+{
+  "source_page": "https://www2.redprinting.co.kr/ko/product/item/PH/PHBKMYB",
+  "verified_date": "2026-11-11",
+  "source": "current product cover-choice image alt labels",
+  "assets": [
+    {
+      "asset": "assets/print/cover_types/supplier_soft.png",
+      "url": "https://d3qehkb69dy9zc.cloudfront.net/assets/images/ordericon/CVR_SFT.png",
+      "sha256": "9a5f43c677f5e2b5a72b073ee250db80b07490e44d1a82e0a4cac77ccc3ba101"
+    },
+    {
+      "asset": "assets/print/cover_types/supplier_hard.png",
+      "url": "https://d3qehkb69dy9zc.cloudfront.net/assets/images/ordericon/CVR_HRD.png",
+      "sha256": "9c226d22c2eab65faeea7c1255a1b406c3356213e0270828acbfcb92db70b54e"
+    }
+  ]
+}

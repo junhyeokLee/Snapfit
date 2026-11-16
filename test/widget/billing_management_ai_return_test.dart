@@ -10,6 +10,7 @@ import 'package:snap_fit/features/billing/data/billing_provider.dart';
 import 'package:snap_fit/features/billing/data/billing_repository.dart';
 import 'package:snap_fit/features/billing/domain/entities/storage_quota.dart';
 import 'package:snap_fit/features/profile/presentation/views/billing_management_screen.dart';
+import '../support/point_ledger_history_fakes.dart';
 import '../support/point_purchase_fakes.dart';
 import 'ai_album_start_step_test.dart' show loadCreationFonts;
 
@@ -44,7 +45,10 @@ void main() {
                 return service;
               }),
               myPointBalanceProvider.overrideWith((_) async => 2500),
-              myPointLedgerProvider.overrideWith((_) async => []),
+              pointLedgerHistoryProvider.overrideWith2(
+                (filter) =>
+                    FixturePointLedgerHistoryController(filter, () async => []),
+              ),
             ],
             child: MaterialApp(
               debugShowCheckedModeBanner: false,
@@ -122,21 +126,24 @@ void main() {
               ),
             ),
             myPointBalanceProvider.overrideWith((_) async => 2500),
-            myPointLedgerProvider.overrideWith(
-              (_) async => [
-                PointLedgerEntry(
-                  id: 11,
-                  createdAt: DateTime(2026, 9, 6, 4),
-                  amountDelta: 2500,
-                  reason: 'POINT_PURCHASE',
-                ),
-                PointLedgerEntry(
-                  id: 10,
-                  createdAt: DateTime(2026, 9, 6, 3),
-                  amountDelta: -700,
-                  reason: 'AI_ALBUM_DRAFT_CHARGE',
-                ),
-              ],
+            pointLedgerHistoryProvider.overrideWith2(
+              (filter) => FixturePointLedgerHistoryController(
+                filter,
+                () async => [
+                  PointLedgerEntry(
+                    id: 11,
+                    createdAt: DateTime(2026, 9, 6, 4),
+                    amountDelta: 2500,
+                    reason: 'POINT_PURCHASE',
+                  ),
+                  PointLedgerEntry(
+                    id: 10,
+                    createdAt: DateTime(2026, 9, 6, 3),
+                    amountDelta: -700,
+                    reason: 'AI_ALBUM_DRAFT_CHARGE',
+                  ),
+                ],
+              ),
             ),
           ],
           child: ScreenUtilInit(
@@ -205,21 +212,24 @@ void main() {
             ),
           ),
           myPointBalanceProvider.overrideWith((_) async => 2500),
-          myPointLedgerProvider.overrideWith(
-            (_) async => [
-              PointLedgerEntry(
-                id: 11,
-                createdAt: DateTime(2026, 9, 6, 4),
-                amountDelta: 2500,
-                reason: 'POINT_PURCHASE',
-              ),
-              PointLedgerEntry(
-                id: 10,
-                createdAt: DateTime(2026, 9, 6, 3),
-                amountDelta: -700,
-                reason: 'AI_ALBUM_DRAFT_CHARGE',
-              ),
-            ],
+          pointLedgerHistoryProvider.overrideWith2(
+            (filter) => FixturePointLedgerHistoryController(
+              filter,
+              () async => [
+                PointLedgerEntry(
+                  id: 11,
+                  createdAt: DateTime(2026, 9, 6, 4),
+                  amountDelta: 2500,
+                  reason: 'POINT_PURCHASE',
+                ),
+                PointLedgerEntry(
+                  id: 10,
+                  createdAt: DateTime(2026, 9, 6, 3),
+                  amountDelta: -700,
+                  reason: 'AI_ALBUM_DRAFT_CHARGE',
+                ),
+              ],
+            ),
           ),
         ],
         child: ScreenUtilInit(
@@ -238,7 +248,7 @@ void main() {
     await tester.tap(find.text('이용 내역'));
     await tester.pumpAndSettle();
 
-    expect(find.text('최근 이용'), findsOneWidget);
+    expect(find.text('이용내역'), findsOneWidget);
     expect(find.text('포인트 충전'), findsWidgets);
     expect(find.textContaining('구독'), findsNothing);
     expect(find.textContaining('SnapFit Pro'), findsNothing);

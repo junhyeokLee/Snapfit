@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/experience_form_style.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 import '../../../../shared/web/web_design.dart'
     show WebPageHeading, WebPageLayout;
 import '../../../../shared/widgets/experience_style.dart';
@@ -12,19 +13,20 @@ import '../../../album/domain/entities/album.dart';
 import '../../../social/presentation/widgets/social_web_frame.dart';
 import '../../../social/presentation/widgets/social_widgets.dart';
 import '../../domain/moment_record.dart';
-import '../../domain/moment_draft.dart';
 import '../../data/moment_engagement_repository.dart';
 import '../providers/moment_engagement_providers.dart';
 import '../providers/moments_providers.dart';
 import '../widgets/moments_widgets.dart';
+import '../widgets/moment_share_sheet.dart';
 import '../widgets/web_moments_journal_layout.dart';
-import '../widgets/moment_draft_recovery_card.dart';
-import '../widgets/moment_book_cover.dart';
+import '../widgets/moment_month_calendar.dart';
+import '../widgets/moment_monthly_album_entry.dart';
+import '../widgets/moment_monthly_reward_summary.dart';
 import 'moment_compose_screen.dart';
 import 'monthly_moment_preview_screen.dart';
 import 'weekly_moment_recap_screen.dart';
 import 'moment_saved_preview_screen.dart';
-import '../widgets/moment_visual_style.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 class MomentsScreen extends ConsumerStatefulWidget {
   const MomentsScreen({
@@ -33,11 +35,14 @@ class MomentsScreen extends ConsumerStatefulWidget {
     this.onAlbumCreated,
     this.onReminderSettings,
     this.initialDraftRecordId,
+    this.initialMonth,
+    this.initialDate,
   });
   final VoidCallback? onBack;
   final VoidCallback? onReminderSettings;
   final Future<void> Function(Album)? onAlbumCreated;
   final String? initialDraftRecordId;
+  final DateTime? initialMonth, initialDate;
 
   @override
   ConsumerState<MomentsScreen> createState() => _MomentsScreenState();
@@ -45,7 +50,15 @@ class MomentsScreen extends ConsumerStatefulWidget {
 
 class _MomentsScreenState extends ConsumerState<MomentsScreen>
     with WidgetsBindingObserver {
-  DateTime _month = momentMonth(momentToday());
+  late DateTime _month;
+  DateTime? _selectedDate;
+  final ScrollController _scroll = ScrollController();
+  final _recordAnchors = <String, GlobalKey>{};
+  StreamSubscription<String?>? _authChanges;
+  String? _observedOwner;
+  bool _sessionSafe = true;
+  bool _initialDatePending = false;
+  int _jumpGeneration = 0;
   Timer? _midnight;
   DateTime? _scheduledToday;
   String? _error;
@@ -57,14 +70,75 @@ class _MomentsScreenState extends ConsumerState<MomentsScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _month = momentMonth(
+      widget.initialMonth ?? widget.initialDate ?? momentToday(),
+    );
+    _selectedDate = widget.initialDate == null
+        ? null
+        : momentDate(widget.initialDate!);
+    _initialDatePending = _selectedDate != null;
+    final repository = ref.read(momentsRepositoryProvider);
+    _observedOwner = repository.currentUserId;
+    _authChanges = repository.authChanges.listen(
+      _observeOwner,
+      onError: (Object _, StackTrace __) {
+        if (!mounted) return;
+        setState(() {
+          _sessionSafe = false;
+          _identity++;
+          _jumpGeneration++;
+          _recordAnchors.clear();
+        });
+      },
+    );
   }
 
   @override
   void dispose() {
     _identity++;
     _midnight?.cancel();
+    _jumpGeneration++;
+    unawaited(_authChanges?.cancel());
+    _scroll.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  void _observeOwner(String? next) {
+    if (!mounted || (_sessionSafe && next == _observedOwner)) return;
+    _observedOwner = next;
+    setState(() {
+      _identity++;
+      _jumpGeneration++;
+      _sessionSafe = true;
+      _month = momentMonth(momentToday());
+      _selectedDate = null;
+      _initialDatePending = false;
+      _recordAnchors.clear();
+      _midnight?.cancel();
+      _scheduledToday = null;
+      _error = null;
+    });
+    ref.invalidate(momentsMonthProvider);
+    if (_scroll.hasClients) _scroll.jumpTo(0);
+  }
+
+  @override
+  void didUpdateWidget(covariant MomentsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialMonth != widget.initialMonth ||
+        oldWidget.initialDate != widget.initialDate) {
+      _month = momentMonth(
+        widget.initialMonth ?? widget.initialDate ?? momentToday(),
+      );
+      _selectedDate = widget.initialDate == null
+          ? null
+          : momentDate(widget.initialDate!);
+      _initialDatePending = _selectedDate != null;
+      _recordAnchors.clear();
+      _jumpGeneration++;
+      if (_scroll.hasClients) _scroll.jumpTo(0);
+    }
   }
 
   @override
@@ -108,19 +182,17 @@ class _MomentsScreenState extends ConsumerState<MomentsScreen>
     MomentJournal? journal, {
     MomentRecord? record,
     String? draftRecordId,
-    bool? editingDraft,
   }) async {
     if (_openingCompose || ref.read(momentsCurrentUserIdProvider) == null)
       return;
     _openingCompose = true;
     final identity = _identity;
     final owner = ref.read(momentsCurrentUserIdProvider)!;
-    var isEditing = record != null || editingDraft == true;
+    var isEditing = record != null;
     Object? result;
     try {
-      if (draftRecordId != null && editingDraft == null) {
-        // Deep entry can happen before the recovery list has loaded. Read only
-        // its small metadata; the composer alone loads the selected originals.
+      if (draftRecordId != null) {
+        // 명시적으로 받은 초안 ID는 메타데이터로 확인하고 원본은 작성 화면에서 읽는다.
         isEditing = true;
         try {
           final summaries = await ref
@@ -138,8 +210,8 @@ class _MomentsScreenState extends ConsumerState<MomentsScreen>
           return;
       }
       result = await Navigator.of(context).push<Object?>(
-        MaterialPageRoute(
-          builder: (_) => MomentComposeScreen(
+        snapFitRoute(
+          page: MomentComposeScreen(
             record: record,
             today: journal?.today,
             draftRecordId: draftRecordId,
@@ -164,6 +236,7 @@ class _MomentsScreenState extends ConsumerState<MomentsScreen>
     await showMomentSavedPreview(
       context,
       record: saved,
+      hasCompleteJournal: journal != null,
       journal:
           journal ??
           MomentJournal(
@@ -182,8 +255,8 @@ class _MomentsScreenState extends ConsumerState<MomentsScreen>
     if (ref.read(momentsCurrentUserIdProvider) == null) return;
     final identity = _identity;
     await Navigator.of(context).push<void>(
-      MaterialPageRoute(
-        builder: (_) => MonthlyMomentPreviewScreen(
+      snapFitRoute(
+        page: MonthlyMomentPreviewScreen(
           month: journal.month,
           records: journal.records,
           today: journal.today,
@@ -209,8 +282,8 @@ class _MomentsScreenState extends ConsumerState<MomentsScreen>
           .then<void>((_) {}),
     );
     await Navigator.of(context).push<void>(
-      MaterialPageRoute(
-        builder: (_) => WeeklyMomentRecapScreen(
+      snapFitRoute(
+        page: WeeklyMomentRecapScreen(
           today: journal.today,
           weekStart: journal.weekStart,
           records: journal.currentWeekRecords,
@@ -224,15 +297,17 @@ class _MomentsScreenState extends ConsumerState<MomentsScreen>
     setState(() {
       _month = DateTime.utc(_month.year, _month.month + delta);
       _error = null;
+      _selectedDate = null;
+      _recordAnchors.clear();
+      _jumpGeneration++;
     });
+    if (_scroll.hasClients) _scroll.jumpTo(0);
   }
 
   @override
   Widget build(BuildContext context) {
-    final owner = ref.watch(momentsCurrentUserIdProvider);
-    final drafts = owner == null
-        ? null
-        : ref.watch(momentDraftSummariesForOwnerProvider(owner));
+    final observedOwner = ref.watch(momentsCurrentUserIdProvider);
+    final owner = _sessionSafe ? observedOwner : null;
     if (!_openedInitialDraft &&
         owner != null &&
         widget.initialDraftRecordId != null) {
@@ -245,25 +320,31 @@ class _MomentsScreenState extends ConsumerState<MomentsScreen>
       });
     }
     ref.listen(momentsCurrentUserIdProvider, (previous, next) {
-      if (previous == next) return;
-      _identity++;
-      _month = momentMonth(momentToday());
-      _midnight?.cancel();
-      _scheduledToday = null;
-      _error = null;
+      if (previous != next) _observeOwner(next);
     });
     final result = owner == null
         ? null
         : ref.watch(momentsMonthProvider(_month));
     final journal = result?.isReloading == true ? null : result?.value;
-    if (journal != null) _scheduleDateRefresh(journal.today);
+    if (journal != null) {
+      _scheduleDateRefresh(journal.today);
+      if (_initialDatePending && _selectedDate != null) {
+        _initialDatePending = false;
+        final date = _selectedDate!;
+        final identity = _identity;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && identity == _identity)
+            unawaited(_jumpToDate(journal, date));
+        });
+      }
+    }
     final headerActions = <Widget>[
       if (owner != null && widget.onReminderSettings != null)
         if (kIsWeb)
           TextButton.icon(
             key: const ValueKey('moments-reminder-settings'),
             onPressed: widget.onReminderSettings,
-            icon: const Icon(Icons.notifications_none_rounded, size: 18),
+            icon: const ExperienceIcon('Bell', size: 18),
             label: const Text('기록 알림'),
           )
         else
@@ -271,14 +352,14 @@ class _MomentsScreenState extends ConsumerState<MomentsScreen>
             key: const ValueKey('moments-reminder-settings'),
             tooltip: '기록 알림 설정',
             onPressed: widget.onReminderSettings,
-            icon: const Icon(Icons.notifications_none_rounded),
+            icon: const ExperienceIcon('Bell', size: 22),
           ),
       if (owner != null)
         IconButton(
           key: const ValueKey('moments-refresh'),
           tooltip: '나의 기록 새로고침',
           onPressed: result?.isLoading == true ? null : () => _refresh(),
-          icon: const Icon(Icons.refresh_rounded),
+          icon: const ExperienceIcon('RefreshCw'),
         ),
     ];
     return SocialWebFrame(
@@ -297,7 +378,7 @@ class _MomentsScreenState extends ConsumerState<MomentsScreen>
             ? const SocialEmpty(
                 title: '나만의 순간을 모아보세요',
                 message: '로그인한 뒤 사진 한 장부터 시작할 수 있어요.',
-                icon: Icons.lock_outline_rounded,
+                icon: ExperienceIcon('Lock', size: 28),
               )
             : SafeArea(
                 top: false,
@@ -306,18 +387,16 @@ class _MomentsScreenState extends ConsumerState<MomentsScreen>
                   child: RefreshIndicator(
                     onRefresh: _refresh,
                     child: kIsWeb
-                        ? _webJournal(result, journal, headerActions, drafts)
+                        ? _webJournal(result, journal, headerActions)
                         : ListView(
+                            controller: _scroll,
+                            cacheExtent: 800,
                             physics: const AlwaysScrollableScrollPhysics(),
                             padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
                             children: [
-                              ..._draftRecovery(drafts, journal),
                               if (journal != null &&
                                   journal.records.isNotEmpty) ...[
-                                MomentWeekCard(
-                                  photoCount: journal.weekPhotoCount,
-                                  onRecord: () => _compose(journal),
-                                ),
+                                _weekCard(journal),
                                 const SizedBox(height: 12),
                               ],
                               _monthNavigation(journal),
@@ -350,38 +429,12 @@ class _MomentsScreenState extends ConsumerState<MomentsScreen>
                                 if (journal.records.isEmpty)
                                   MomentEmptyBook(
                                     month: journal.month,
+                                    today: journal.today,
                                     onRecord: () => _compose(journal),
                                   )
                                 else
-                                  MomentRecordCard(
-                                    key: ValueKey(
-                                      'moment-record-${journal.records.first.id}',
-                                    ),
-                                    record: journal.records.first,
-                                    onEdit: () => _compose(
-                                      journal,
-                                      record: journal.records.first,
-                                    ),
-                                  ),
-                                if (journal.currentWeekRecords.isNotEmpty) ...[
-                                  _recapCard(journal),
-                                  const SizedBox(height: 16),
-                                ],
-                                if (journal.records.isNotEmpty ||
-                                    journal.monthlyAlbumId != null) ...[
-                                  _albumCard(journal),
-                                  const SizedBox(height: 28),
-                                ],
-                                if (journal.records.length > 1)
-                                  for (final record in journal.records.skip(1))
-                                    MomentRecordCard(
-                                      key: ValueKey(
-                                        'moment-record-${record.id}',
-                                      ),
-                                      record: record,
-                                      onEdit: () =>
-                                          _compose(journal, record: record),
-                                    ),
+                                  for (final record in journal.records)
+                                    _recordCard(journal, record),
                                 const SizedBox(height: 20),
                                 const MomentPrivateNote(),
                               ],
@@ -394,34 +447,172 @@ class _MomentsScreenState extends ConsumerState<MomentsScreen>
     );
   }
 
-  Widget _monthNavigation(MomentJournal? journal) => Row(
-    children: [
-      Expanded(
-        child: Text(
-          '${_month.year}년 ${_month.month}월',
-          style: ExperienceFormStyle.text(
-            context,
-            23,
-            weight: FontWeight.w600,
-          ).copyWith(letterSpacing: -.6),
-        ),
-      ),
-      IconButton(
-        key: const ValueKey('moments-previous-month'),
-        tooltip: '이전 달',
-        onPressed: _month.year <= 1900 && _month.month == 1
-            ? null
-            : () => _changeMonth(-1),
-        icon: const Icon(Icons.chevron_left_rounded),
-      ),
-      IconButton(
-        key: const ValueKey('moments-next-month'),
-        tooltip: '다음 달',
-        onPressed: _month.isBefore(momentMonth(journal?.today ?? momentToday()))
-            ? () => _changeMonth(1)
+  Widget _recordCard(
+    MomentJournal journal,
+    MomentRecord record, {
+    bool wide = false,
+  }) {
+    final owner = ref.read(momentsCurrentUserIdProvider);
+    final identity = _identity;
+    return KeyedSubtree(
+      key: _recordAnchors.putIfAbsent(record.id, () => GlobalKey()),
+      child: MomentRecordCard(
+        key: ValueKey('moment-record-${record.id}'),
+        record: record,
+        initiallyExpanded:
+            _selectedDate != null &&
+            momentDate(record.recordDate) == _selectedDate,
+        expandRequest: momentDate(record.recordDate) == _selectedDate
+            ? _jumpGeneration
             : null,
-        icon: const Icon(Icons.chevron_right_rounded),
+        maxPhotoHeight: wide ? 560 : null,
+        onEdit: () => _compose(journal, record: record),
+        onShare: (photo) {
+          if (!mounted ||
+              !_sessionSafe ||
+              owner == null ||
+              identity != _identity ||
+              ref.read(momentsCurrentUserIdProvider) != owner)
+            return;
+          unawaited(
+            showMomentShareSheet(
+              context,
+              record: record,
+              initialPhotoId: photo.id,
+            ),
+          );
+        },
       ),
+    );
+  }
+
+  Future<void> _jumpToDate(MomentJournal journal, DateTime date) async {
+    final target = journal.records.indexWhere(
+      (record) => momentDate(record.recordDate) == momentDate(date),
+    );
+    if (target < 0) return;
+    final owner = ref.read(momentsCurrentUserIdProvider);
+    final identity = _identity;
+    final generation = ++_jumpGeneration;
+    final month = _month;
+    bool current() =>
+        mounted &&
+        _sessionSafe &&
+        identity == _identity &&
+        generation == _jumpGeneration &&
+        month == _month &&
+        owner != null &&
+        ref.read(momentsCurrentUserIdProvider) == owner;
+    setState(() => _selectedDate = momentDate(date));
+    await WidgetsBinding.instance.endOfFrame;
+    double low = 0;
+    double? high;
+    for (var attempt = 0; attempt < 24 && current(); attempt++) {
+      final anchor = _recordAnchors[journal.records[target].id]?.currentContext;
+      if (anchor != null) {
+        await Scrollable.ensureVisible(
+          anchor,
+          duration: MediaQuery.disableAnimationsOf(context)
+              ? Duration.zero
+              : const Duration(milliseconds: 240),
+          alignment: .04,
+        );
+        return;
+      }
+      if (!_scroll.hasClients) return;
+      final visible = <int>[
+        for (var index = 0; index < journal.records.length; index++)
+          if (_recordAnchors[journal.records[index].id]?.currentContext != null)
+            index,
+      ];
+      final position = _scroll.position;
+      if (visible.isNotEmpty && target < visible.first) {
+        high = position.pixels;
+      } else {
+        low = position.pixels;
+      }
+      low = low.clamp(0, position.maxScrollExtent).toDouble();
+      final upper = (high ?? position.maxScrollExtent).clamp(
+        low,
+        position.maxScrollExtent,
+      );
+      var next = low + (upper - low) / 2;
+      if ((next - position.pixels).abs() < 2) {
+        next =
+            (position.pixels +
+                    (visible.isNotEmpty && target < visible.first ? -1 : 1) *
+                        position.viewportDimension *
+                        .8)
+                .clamp(0, position.maxScrollExtent)
+                .toDouble();
+      }
+      _scroll.jumpTo(next.clamp(0, position.maxScrollExtent).toDouble());
+      await WidgetsBinding.instance.endOfFrame;
+    }
+  }
+
+  Widget _monthNavigation(MomentJournal? journal) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Row(
+        children: [
+          Expanded(
+            child: Text(
+              '${_month.year}년 ${_month.month}월',
+              key: const ValueKey('moments-month-title'),
+              style: ExperienceFormStyle.text(
+                context,
+                23,
+                weight: FontWeight.w600,
+              ).copyWith(letterSpacing: -.6),
+            ),
+          ),
+          IconButton(
+            key: const ValueKey('moments-previous-month'),
+            tooltip: '이전 달',
+            onPressed: _month.year <= 1900 && _month.month == 1
+                ? null
+                : () => _changeMonth(-1),
+            icon: const ExperienceIcon('ChevronLeft'),
+          ),
+          IconButton(
+            key: const ValueKey('moments-next-month'),
+            tooltip: '다음 달',
+            onPressed:
+                _month.isBefore(momentMonth(journal?.today ?? momentToday()))
+                ? () => _changeMonth(1)
+                : null,
+            icon: const ExperienceIcon('ChevronRight'),
+          ),
+        ],
+      ),
+      if (journal != null) ...[
+        MomentMonthCalendar(
+          month: _month,
+          records: journal.records,
+          selectedDate: _selectedDate ?? journal.today,
+          today: journal.today,
+          onDateSelected: (date) {
+            final hasPhotos = journal.records.any(
+              (record) =>
+                  momentDate(record.recordDate) == date &&
+                  record.photos.isNotEmpty,
+            );
+            if (date == journal.today && !hasPhotos) {
+              unawaited(_compose(journal));
+            } else {
+              unawaited(_jumpToDate(journal, date));
+            }
+          },
+        ),
+        if (journal.currentWeekRecords.isNotEmpty) _recapCard(journal),
+        if (journal.monthlyReward != null)
+          MomentMonthlyRewardSummary(reward: journal.monthlyReward!),
+        MomentMonthlyAlbumEntry(
+          journal: journal,
+          onPreview: () => _album(journal),
+        ),
+      ],
     ],
   );
 
@@ -429,9 +620,10 @@ class _MomentsScreenState extends ConsumerState<MomentsScreen>
     AsyncValue<MomentJournal>? result,
     MomentJournal? journal,
     List<Widget> headerActions,
-    AsyncValue<List<MomentDraftSummary>>? drafts,
   ) => ListView(
     key: const PageStorageKey('moments-web-scroll'),
+    cacheExtent: 800,
+    controller: _scroll,
     physics: const AlwaysScrollableScrollPhysics(),
     padding: EdgeInsets.fromLTRB(
       WebPageLayout.horizontalInset(MediaQuery.sizeOf(context).width),
@@ -442,11 +634,10 @@ class _MomentsScreenState extends ConsumerState<MomentsScreen>
     children: [
       WebPageHeading(
         title: '나의 기록',
-        description: '오늘의 사진 한 장부터, 나만의 한 달 앨범까지.',
+        description: '사진 한 장과 짧은 한 줄, 하루씩 쌓이는 나의 기록.',
         trailing: Wrap(spacing: 4, children: headerActions),
       ),
       const SizedBox(height: 28),
-      ..._draftRecovery(drafts, journal),
       if (_error != null) ...[
         MomentErrorNotice(message: _error!, onRetry: _refresh),
         const SizedBox(height: 20),
@@ -468,208 +659,39 @@ class _MomentsScreenState extends ConsumerState<MomentsScreen>
             if (journal.records.isEmpty)
               MomentEmptyBook(
                 month: journal.month,
+                today: journal.today,
                 onRecord: () => _compose(journal),
               )
             else
               for (final record in journal.records)
-                MomentRecordCard(
-                  key: ValueKey('moment-record-${record.id}'),
-                  record: record,
-                  maxPhotoHeight: 560,
-                  onEdit: () => _compose(journal, record: record),
-                ),
+                _recordCard(journal, record, wide: true),
           ],
           weekly: journal.records.isEmpty
               ? const SizedBox.shrink()
-              : MomentWeekCard(
-                  photoCount: journal.weekPhotoCount,
-                  onRecord: () => _compose(journal),
-                ),
-          recap: journal.currentWeekRecords.isEmpty
-              ? null
-              : _recapCard(journal),
-          album: journal.records.isEmpty && journal.monthlyAlbumId == null
-              ? null
-              : _albumCard(journal),
+              : _weekCard(journal),
         ),
     ],
   );
 
-  List<Widget> _draftRecovery(
-    AsyncValue<List<MomentDraftSummary>>? state,
-    MomentJournal? journal,
-  ) {
-    if (state?.hasError == true) {
-      return [
-        MomentErrorNotice(
-          message: '이 기기의 임시 기록을 불러오지 못했어요.',
-          onRetry: () async {
-            final owner = ref.read(momentsCurrentUserIdProvider);
-            if (owner != null)
-              ref.invalidate(momentDraftSummariesForOwnerProvider(owner));
-            ref.invalidate(momentDraftsProvider);
-          },
-        ),
-        const SizedBox(height: 16),
-      ];
-    }
-    final drafts = state?.asData?.value ?? const <MomentDraftSummary>[];
-    if (drafts.isEmpty) return const [];
-    return [
-      MomentDraftRecoveryCard(
-        drafts: drafts,
-        onResume: (draft) => _compose(
-          journal,
-          draftRecordId: draft.recordId,
-          editingDraft: draft.isEditing,
-        ),
-      ),
-      const SizedBox(height: 20),
-    ];
-  }
-
-  Widget _recapCard(MomentJournal journal) => Material(
-    color: MomentVisualStyle.paper(context),
-    borderRadius: BorderRadius.circular(18),
-    child: InkWell(
-      key: const ValueKey('moments-week-recap'),
-      borderRadius: BorderRadius.circular(18),
-      onTap: () => _recap(journal),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-        child: Row(
-          children: [
-            Icon(
-              Icons.play_circle_outline_rounded,
-              color: SocialStyle.accent(context),
-              size: 28,
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '이번 주 돌아보기',
-                    style: ExperienceFormStyle.text(
-                      context,
-                      15,
-                      weight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '남겨둔 ${journal.weekPhotoCount}장의 순간을 천천히',
-                    style: ExperienceFormStyle.text(
-                      context,
-                      12,
-                      secondary: true,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Icon(
-              Icons.chevron_right_rounded,
-              color: SocialStyle.accent(context),
-            ),
-          ],
-        ),
-      ),
+  Widget _weekCard(MomentJournal journal) => MomentWeekCard(
+    photoCount: journal.weekPhotoCount,
+    // 다른 달을 보는 중에도 서버가 돌려준 이번 주 기록에서 오늘 여부를 판단한다.
+    hasTodayRecord: journal.currentWeekRecords.any(
+      (record) => momentDate(record.recordDate) == momentDate(journal.today),
     ),
+    onRecord: () => _compose(journal),
   );
 
-  Widget _albumCard(MomentJournal journal) {
-    final count = journal.records.fold<int>(
-      0,
-      (total, record) => total + record.photos.length,
-    );
-    final pending = journal.records
-        .expand((record) => record.photos)
-        .where((photo) => !journal.monthlyAlbumPhotoIds.contains(photo.id))
-        .length;
-    final first = journal.records.expand((record) => record.photos).firstOrNull;
-    return Material(
-      color: MomentVisualStyle.paper(context),
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: MomentVisualStyle.line(context)),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: InkWell(
-        key: const ValueKey('moments-monthly-album'),
-        onTap: () => _album(journal),
-        borderRadius: BorderRadius.circular(18),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: LayoutBuilder(
-            builder: (context, bounds) {
-              final compact =
-                  bounds.maxWidth < 240 ||
-                  MediaQuery.textScalerOf(context).scale(1) > 1.5;
-              final book = SizedBox(
-                key: const ValueKey('moments-monthly-book-cover'),
-                width: bounds.maxWidth >= 330 ? 104 : 88,
-                child: MomentBookCover(month: journal.month, photo: first),
-              );
-              final copy = Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    journal.monthlyAlbumId == null
-                        ? '나의 ${journal.month.month}월, 한 권으로'
-                        : '${journal.month.month}월의 앨범 이어 만들기',
-                    style: ExperienceFormStyle.text(
-                      context,
-                      15,
-                      weight: FontWeight.w600,
-                    ).copyWith(height: 1.5, letterSpacing: -.3),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    journal.monthlyAlbumId == null
-                        ? '사진 $count장으로 만드는 나만의 월간 앨범'
-                        : pending > 0
-                        ? '새 사진 $pending장을 골라서 추가할 수 있어요.'
-                        : '저장한 앨범에서 사진과 이야기를 다듬어요.',
-                    style: ExperienceFormStyle.text(
-                      context,
-                      12,
-                      secondary: true,
-                    ).copyWith(height: 1.6),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    journal.monthlyAlbumId == null
-                        ? '월간 앨범 미리보기  →'
-                        : pending > 0
-                        ? '새 사진 골라 추가하기  →'
-                        : '월간 앨범 이어보기  →',
-                    style: ExperienceFormStyle.text(
-                      context,
-                      12,
-                      weight: FontWeight.w600,
-                      color: SocialStyle.accent(context),
-                    ),
-                  ),
-                ],
-              );
-              return compact
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [book, const SizedBox(height: 18), copy],
-                    )
-                  : Row(
-                      children: [
-                        book,
-                        const SizedBox(width: 16),
-                        Expanded(child: copy),
-                      ],
-                    );
-            },
-          ),
-        ),
-      ),
-    );
-  }
+  Widget _recapCard(MomentJournal journal) => TextButton.icon(
+    key: const ValueKey('moments-week-recap'),
+    style: TextButton.styleFrom(
+      minimumSize: const Size(44, 44),
+      alignment: Alignment.centerLeft,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      textStyle: ExperienceFormStyle.text(context, 13, weight: FontWeight.w600),
+    ),
+    onPressed: () => _recap(journal),
+    icon: const Icon(Icons.auto_awesome_motion_outlined, size: 20),
+    label: const Text('이번 주 돌아보기'),
+  );
 }

@@ -59,6 +59,31 @@ List<LayerModel> _storyEditionWordArtLayers(StudioWordArt art) {
     ),
   );
   final ink = color(e.ink);
+  if (e.qualityRevision == readingEditionRevision) {
+    text(
+      'A ROOM BETWEEN THE PAGES',
+      const Rect.fromLTWH(30, 20, 440, 28),
+      12,
+      'Poppins',
+      color(e.accent),
+    );
+    line(const Rect.fromLTWH(30, 63, 60, 1.3));
+    text(
+      art.text,
+      const Rect.fromLTWH(28, 86, 444, 144),
+      53,
+      'BookMyungjo',
+      ink,
+    );
+    text(
+      '읽고, 머물고, 나의 말로 남기다',
+      const Rect.fromLTWH(30, 272, 440, 28),
+      15,
+      'BookMyungjo',
+      ink,
+    );
+    return result;
+  }
   if (e.activity != null) {
     final club = e.category == '동아리';
     text(

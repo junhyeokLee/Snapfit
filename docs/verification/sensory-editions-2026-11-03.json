@@ -1,0 +1,325 @@
+{
+  "date": "2026-11-03",
+  "scope": "Two new complete books and sixteen new independently editable materials",
+  "books": [
+    {
+      "id": -9761,
+      "key": "template:story-coffee-notebook",
+      "title": "커피가 식기 전에",
+      "price": 0,
+      "pages": 24,
+      "photographs": 5,
+      "materials": 8
+    },
+    {
+      "id": -9762,
+      "key": "template:story-night-city-archive",
+      "title": "밤의 도시 수집",
+      "price": 1800,
+      "pages": 24,
+      "photographs": 5,
+      "materials": 8
+    }
+  ],
+  "materials": {
+    "frames": 6,
+    "freeFrames": 4,
+    "paidFrames": 2,
+    "transparentPhotorealisticObjects": 4,
+    "nativeEditableWordArts": 4,
+    "stationery": 2,
+    "total": 16,
+    "free": 9,
+    "paid": 7
+  },
+  "photography": {
+    "uniqueNewPhotographs": 10,
+    "crossTemplateSampleReuse": false,
+    "generator": "built-in image_gen",
+    "promptSet": "prompt-set.json",
+    "sourceProvenance": "artwork-provenance.json",
+    "sourcePhotosAreSamplesOnly": true
+  },
+  "encoding": {
+    "rasterMaterialSourceBytes": 4903496,
+    "rasterMaterialBundledBytes": 3086572,
+    "exactDecodedRGBAEquality": true,
+    "originalsPreserved": true
+  },
+  "geometry": {
+    "printRatios": [
+      "square",
+      "landscape4x3",
+      "landscape5x4"
+    ],
+    "physicalBookSizes": 5,
+    "wholeSourcePhotoApertureRatio": 1.5,
+    "actualNativeFontFitChecked": true,
+    "nativeFullBookRenderCount": 78,
+    "existing145FullDocumentsUnchanged": true,
+    "all147FullDocumentsFresh": true,
+    "noNewPerScrollDocumentGeneration": true
+  },
+  "checks": [
+    {
+      "log": "release-verification.log",
+      "passed": 45,
+      "failedInitially": 1,
+      "note": "The sole failure was the stale active-product count assertion (486); the other45 checks passed. The assertion was updated to504 and that case then passed in owner-release-final-test.log."
+    },
+    {
+      "log": "owner-release-final-test.log",
+      "passed": 1,
+      "failed": 0,
+      "resolvesInitialFailure": true
+    },
+    {
+      "log": "registration-guard-tests.log",
+      "passed": 3,
+      "failed": 0,
+      "scope": "idempotent exact registration, reject tier conflicts and rollback unrelated trigger mutations"
+    },
+    {
+      "log": "public-browser-release.log",
+      "passed": 1,
+      "failed": 0,
+      "scope": "Real isolated Chrome public catalog and18 get_point_shop_access quotes; no purchase/write"
+    },
+    {
+      "log": "analyze.log",
+      "result": "No issues found",
+      "items": 19
+    }
+  ],
+  "production": {
+    "project": "rrbhxdtriummqpztpjrk",
+    "registered": 18,
+    "free": 10,
+    "paid": 8,
+    "allActive": true,
+    "rows": [
+      {
+        "product_key": "frame:cafeGlassine",
+        "kind": "frame",
+        "asset_id": "cafeGlassine",
+        "title": "글라신 포토 포켓",
+        "point_price": 0,
+        "is_active": true
+      },
+      {
+        "product_key": "frame:cafeLedgerMat",
+        "kind": "frame",
+        "asset_id": "cafeLedgerMat",
+        "title": "카페 제본 매트",
+        "point_price": 0,
+        "is_active": true
+      },
+      {
+        "product_key": "frame:cafeReceiptFold",
+        "kind": "frame",
+        "asset_id": "cafeReceiptFold",
+        "title": "영수증 접지 프레임",
+        "point_price": 0,
+        "is_active": true
+      },
+      {
+        "product_key": "frame:nocturneContact",
+        "kind": "frame",
+        "asset_id": "nocturneContact",
+        "title": "야간 콘택트 시트",
+        "point_price": 0,
+        "is_active": true
+      },
+      {
+        "product_key": "frame:nocturneDuplex",
+        "kind": "frame",
+        "asset_id": "nocturneDuplex",
+        "title": "듀플렉스 아카이브",
+        "point_price": 400,
+        "is_active": true
+      },
+      {
+        "product_key": "frame:nocturneTransit",
+        "kind": "frame",
+        "asset_id": "nocturneTransit",
+        "title": "환승 티켓 마운트",
+        "point_price": 300,
+        "is_active": true
+      },
+      {
+        "product_key": "phrase:collage-sensory-coffee-note",
+        "kind": "phrase",
+        "asset_id": "collage-sensory-coffee-note",
+        "title": "손으로 적는 카페 메모",
+        "point_price": 0,
+        "is_active": true
+      },
+      {
+        "product_key": "phrase:collage-sensory-night-index",
+        "kind": "phrase",
+        "asset_id": "collage-sensory-night-index",
+        "title": "야간 노선 색인 문구",
+        "point_price": 300,
+        "is_active": true
+      },
+      {
+        "product_key": "phrase:collage-story-coffee-notebook",
+        "kind": "phrase",
+        "asset_id": "collage-story-coffee-notebook",
+        "title": "오후 한 잔 타이틀",
+        "point_price": 0,
+        "is_active": true
+      },
+      {
+        "product_key": "phrase:collage-story-night-city-archive",
+        "kind": "phrase",
+        "asset_id": "collage-story-night-city-archive",
+        "title": "도시 수집 타이틀",
+        "point_price": 300,
+        "is_active": true
+      },
+      {
+        "product_key": "sticker:cafeRoastedLeaf",
+        "kind": "sticker",
+        "asset_id": "cafeRoastedLeaf",
+        "title": "커피나무 압화",
+        "point_price": 0,
+        "is_active": true
+      },
+      {
+        "product_key": "sticker:nocturneGlassine",
+        "kind": "sticker",
+        "asset_id": "nocturneGlassine",
+        "title": "접힌 코발트 글라신",
+        "point_price": 200,
+        "is_active": true
+      },
+      {
+        "product_key": "sticker:story-coffee-notebook-motif",
+        "kind": "sticker",
+        "asset_id": "story-coffee-notebook-motif",
+        "title": "황동 클립과 작은 종이",
+        "point_price": 0,
+        "is_active": true
+      },
+      {
+        "product_key": "sticker:story-coffee-notebook-paper",
+        "kind": "sticker",
+        "asset_id": "story-coffee-notebook-paper",
+        "title": "한 잔의 기록지",
+        "point_price": 0,
+        "is_active": true
+      },
+      {
+        "product_key": "sticker:story-night-city-archive-motif",
+        "kind": "sticker",
+        "asset_id": "story-night-city-archive-motif",
+        "title": "은박 궤도 실링",
+        "point_price": 200,
+        "is_active": true
+      },
+      {
+        "product_key": "sticker:story-night-city-archive-paper",
+        "kind": "sticker",
+        "asset_id": "story-night-city-archive-paper",
+        "title": "야간 노선 아카이브 카드",
+        "point_price": 100,
+        "is_active": true
+      },
+      {
+        "product_key": "template:story-coffee-notebook",
+        "kind": "template",
+        "asset_id": "story-coffee-notebook",
+        "title": "커피가 식기 전에",
+        "point_price": 0,
+        "is_active": true
+      },
+      {
+        "product_key": "template:story-night-city-archive",
+        "kind": "template",
+        "asset_id": "story-night-city-archive",
+        "title": "밤의 도시 수집",
+        "point_price": 1800,
+        "is_active": true
+      }
+    ],
+    "otherCatalogRowsPreservedByTransactionFingerprint": true,
+    "customerAlbumWalletOwnershipMutations": false
+  },
+  "web": {
+    "buildLog": "web-build.log",
+    "compiledSeconds": 98.5,
+    "mainFile": "main.a4b2aee0debed652a1ab.dart.js",
+    "mainSha256": "a4b2aee0debed652a1ab08a2a9dba5ac03712f099ddea78ada84258c8ba23a91",
+    "deployment": "success",
+    "hostingVersion": "38e5b18d2dba9a43",
+    "publicFilesVerified": 41,
+    "allPublicFilesMatchBuild": true,
+    "publicFileEvidence": "public-hosting-check.json",
+    "deployedUrl": "https://snapfit-c719d.web.app/designs"
+  },
+  "review": {
+    "performedBy": "primary agent",
+    "coverage": "all24 pages of both books at3 print ratios; source-to-store renderer, editable layers, crop apertures, full-detail and compact caches, release prices, rollback guards",
+    "independentAgentReviewClaimed": false
+  },
+  "limitations": [
+    "No physical print was produced",
+    "No native app build or phone installation was requested or performed",
+    "Paid purchases and point debits were not initiated",
+    "Included material metadata is an artwork inventory; no extra independent-material ownership grant was introduced"
+  ],
+  "evidence": [
+    "new-books.jpg",
+    "new-materials.jpg",
+    "book-9761-all-spreads.jpg",
+    "book-9762-all-spreads.jpg",
+    "production-products.json",
+    "live-free-template.png",
+    "live-paid-template.png",
+    "live-paid-materials-top.png",
+    "public-hosting-check.json"
+  ],
+  "liveUI": {
+    "surface": "ChatGPT in-app browser, anonymous public catalog",
+    "freeTemplateDetail": {
+      "id": -9761,
+      "price": 0,
+      "pages": 24,
+      "materialInventory": 8,
+      "screenshot": "live-free-template.png"
+    },
+    "paidTemplateDetail": {
+      "id": -9762,
+      "price": 1800,
+      "pages": 24,
+      "materialInventory": 8,
+      "screenshot": "live-paid-template.png"
+    },
+    "actualSearch": {
+      "coffeeTitleMatchesOneFreeTemplate": true,
+      "nightTitleMatchesOne1800PointTemplate": true,
+      "resultToDetailNavigation": true,
+      "screenshots": [
+        "live-free-search.png",
+        "live-paid-search.png"
+      ]
+    },
+    "previewPager": {
+      "coverToPages1and2": true,
+      "photoAndBrushTitleVisuallyChecked": true
+    },
+    "includedMaterialList": {
+      "eightItemsVisibleAfterScroll": true,
+      "freeContactFrameAndPaid100to400PricesMatch": true,
+      "templateReturnNavigation": true,
+      "screenshots": [
+        "live-paid-materials-top.png",
+        "live-paid-materials.png"
+      ]
+    },
+    "customerWritesPerformed": false,
+    "authenticatedCreationAndPurchaseClaimed": false
+  },
+  "evidenceBase": "output/sensory-editions-20261103/"
+}

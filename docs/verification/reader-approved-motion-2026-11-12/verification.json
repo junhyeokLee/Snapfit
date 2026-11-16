@@ -1,0 +1,104 @@
+{
+  "date": "2026-11-12",
+  "regressionPassed": 165,
+  "capturePassed": 5,
+  "suites": [
+    {
+      "name": "navigation",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "kind": "regression"
+    },
+    {
+      "name": "motion",
+      "passed": 60,
+      "failed": 0,
+      "skipped": 0,
+      "kind": "regression"
+    },
+    {
+      "name": "lifecycle",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "kind": "regression"
+    },
+    {
+      "name": "thumbnails",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "kind": "regression"
+    },
+    {
+      "name": "imageCapture",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "kind": "regression"
+    },
+    {
+      "name": "imageQuality",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "kind": "regression"
+    },
+    {
+      "name": "thumbnailPerformance",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "kind": "regression"
+    },
+    {
+      "name": "home",
+      "passed": 76,
+      "failed": 0,
+      "skipped": 0,
+      "kind": "regression"
+    },
+    {
+      "name": "readerCapture",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "kind": "capture"
+    }
+  ],
+  "sourceSha256": {
+    "lib/features/album/presentation/views/album_reader_screen.dart": "5e8832f0228721954c0e08a18646b905a7819b8f88eed07df5d111d0dd012f07",
+    "lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart": "34808490791bbb1427c7f18de047b56733a911d3b4a903c5de4debccf352bbb2",
+    "packages/book_page_flip/lib/book_page_flip.dart": "a4a2e23c990e337ee14e999e3e27a78009a2cc6c5c46f21cd039d545a99d08e3",
+    "packages/book_page_flip/lib/src/api.dart": "614a32c1e9b140b2cb5d9d90e52dc532ee19861a75da2f5688cb44e9c84d820b",
+    "packages/book_page_flip/lib/src/geometry.dart": "36fe751cdb26b481a5d803a1f4ef3b07c4261042fe26ab6e41426c4569f6fa81",
+    "packages/book_page_flip/lib/src/rendering.dart": "6dcd3cc719d0297780763cf3299845e6d2b07d3b73322a772e1ac201bb87ce7d",
+    "packages/book_page_flip/lib/src/state.dart": "3b3b89a45917875384fb78a0a7dcf1a9780d8b97767e919e687b7bc7cbbf0753",
+    "test/widget/reader_paper_motion_test.dart": "ab2152faf1ba3eeee757960a48a2fa1e936ac0a693f1316217a5a2ad753ce45f",
+    "test/widget/reader_navigation_continuity_test.dart": "6eeaf832665512e15496d1b424d28c3db45207109fc4bf204b03014aa1f4d5ec",
+    "test/widget/home_book_depth_test.dart": "1013f806704e34801d70a3fccf7b1840e6406a25e9547f07715236945f9f334f",
+    "test/fixtures/approved_album_leaf_vertices.json": "51d0a4c0d6d0984cdcc36dff486f14efcdae5893a64da6fe24bc12daed7eaf86"
+  },
+  "referenceHtmlSha256": "ddd73e1efd7e19f40e3b26256c799cedae657ee7cebc936358d07b6c6dbcb6a9",
+  "referenceMethod": "Execute original JS triangle/leafVertices/drawLeaf; replay recorded Canvas commands against the same atlas cell PNGs in Dart Canvas; compare projected geometry, colored pixels and native frames. This is not a browser screenshot.",
+  "deviceCheck": "Galaxy S23+ SM-S916N, com.devsheep.snap_fit.MainActivity foreground verified over adb; no app reinstall/build performed.",
+  "videos": {
+    "page-turn.mp4": [
+      0,
+      316,
+      780,
+      796
+    ],
+    "cover-open-close.mp4": [
+      0,
+      316,
+      780,
+      796
+    ]
+  },
+  "limitations": [
+    "Full-frame widget captures may omit unchanged UI glyphs; videos show only the paper viewport.",
+    "Reference Canvas clip/affine rasterization and native drawVertices can differ at antialiased strip edges; no claim of byte-identical full-screen UI."
+  ]
+}

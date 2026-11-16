@@ -163,6 +163,7 @@ void main() {
         emitActor(next);
         expect(repository.currentUserId, isNull);
         await expectLater(repository.getExposureState(), throwsStateError);
+        await expectLater(repository.hideForToday(), throwsStateError);
         await expectLater(
           repository.claimExposure('attendance-benefit:v1'),
           throwsStateError,
@@ -229,13 +230,18 @@ void main() {
   test('another owner or an inconsistent claim result is rejected', () async {
     respond = (request) async => jsonResponse(request, _state(owner: _b));
     await expectLater(repository.getExposureState(), throwsFormatException);
-    respond = (request) async =>
-        jsonResponse(request, {..._state(), 'claimed': true});
+    respond = (request) async => jsonResponse(request, {
+      ..._state(),
+      'claimed': true,
+      'hiddenForToday': true,
+      'hiddenUntil': '2026-10-27T15:00:00Z',
+    });
     await expectLater(
       repository.claimExposure('monthly-design:2026-10'),
       throwsFormatException,
     );
-    respond = (request) async => jsonResponse(request, _state(claimed: true));
+    respond = (request) async =>
+        jsonResponse(request, {..._state(), 'claimed': 'true'});
     await expectLater(
       repository.claimExposure('referral-benefit:v1'),
       throwsFormatException,
@@ -290,7 +296,7 @@ void main() {
   );
 
   test(
-    'delivery inputs and unexpected first/allowed/delivery IDs fail closed',
+    'delivery inputs and unexpected allowed/delivery IDs fail closed',
     () async {
       await expectLater(repository.claimDelivery([]), throwsFormatException);
       await expectLater(
@@ -303,10 +309,7 @@ void main() {
           ..._deliveryState(),
           'deliveryId': '55555555-5555-4555-8555-555555555555',
         },
-        {
-          ..._deliveryState(),
-          'allowedCampaignIds': [_campaignIds[1], _campaignIds.first],
-        },
+        {..._deliveryState(), 'allowedCampaignIds': <String>[]},
         {
           ..._deliveryState(),
           'allowedCampaignIds': [_campaignIds.first, 'unrequested'],
@@ -325,4 +328,62 @@ void main() {
       }
     },
   );
+
+  test(
+    'remote filtering can change the first card without reintroducing an unseen or counter gate',
+    () async {
+      respond = (request) async => jsonResponse(request, {
+        ..._deliveryState(),
+        'allowedCampaignIds': [_campaignIds[1], _campaignIds.last],
+        'dailyCount': 6,
+        'weeklyCount': 6,
+        'omittedDailyCount': 5,
+        'omittedWeeklyCount': 5,
+      });
+      final delivery = await repository.claimDelivery(_campaignIds);
+      expect(delivery.claimed, isTrue);
+      expect(delivery.campaignIds.first, _campaignIds[1]);
+    },
+  );
+
+  test(
+    'hide capability uses an authenticated argument-free persistent today-hide RPC',
+    () async {
+      respond = (request) async => jsonResponse(request, {
+        ..._state(),
+        'hiddenForToday': true,
+        'hiddenUntil': '2026-10-27T15:00:00Z',
+      });
+      final HomeNewsRepository base = repository;
+      final hidden = await base.hideForToday();
+      expect(hidden.hiddenForToday, isTrue);
+      expect(hidden.hiddenUntil, DateTime.utc(2026, 10, 27, 15));
+      expect(hidden.canAutoShow, isFalse);
+      expect(requests.single.url.path, '/rest/v1/rpc/hide_home_news_for_today');
+      expect(jsonDecode(requests.single.body), isNull);
+      respond = (request) async => jsonResponse(request, _state());
+      await expectLater(repository.hideForToday(), throwsFormatException);
+    },
+  );
+
+  test('a late hide response cannot apply to another account', () async {
+    final reply = Completer<http.Response>();
+    final started = Completer<http.Request>();
+    respond = (request) {
+      started.complete(request);
+      return reply.future;
+    };
+    final pending = repository.hideForToday();
+    final expectation = expectLater(pending, throwsStateError);
+    final request = await started.future;
+    emitActor(_user(_b));
+    reply.complete(
+      jsonResponse(request, {
+        ..._state(),
+        'hiddenForToday': true,
+        'hiddenUntil': '2026-10-27T15:00:00Z',
+      }),
+    );
+    await expectation;
+  });
 }

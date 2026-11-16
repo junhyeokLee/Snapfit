@@ -3,11 +3,13 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../shared/widgets/album_stage_style.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 import '../../../../../shared/web/web_design.dart';
 
 // ── ... 더보기 바텀시트 ───────────────────────────────────────────
 class AlbumReaderMoreOptionsSheet extends StatelessWidget {
   final VoidCallback onEdit;
+  final String editLabel;
   final VoidCallback onConfirm;
   final VoidCallback? onDelete; // null이면 메뉴에서 숨김 처리
   final VoidCallback? onInvite; // null이면 메뉴에서 숨김 처리
@@ -19,6 +21,7 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
     super.key,
     required this.onEdit,
     required this.onConfirm,
+    this.editLabel = '현재 페이지 편집',
     this.onDelete,
     this.onInvite,
     this.onDetail,
@@ -78,16 +81,16 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
                     IconButton(
                       tooltip: '메뉴 닫기',
                       onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close, size: 18),
+                      icon: const ExperienceIcon('X', size: 18),
                     ),
                   ],
                 ),
               ),
               Divider(height: 1, color: WebPalette.of(context).line),
               if (onDetail != null) action('페이지 상세', Icons.zoom_in, onDetail!),
-              action('앨범 편집', Icons.edit_outlined, onEdit),
+              action(editLabel, Icons.edit_outlined, onEdit),
               if (onPublish != null)
-                action('피드에 작품 공개', Icons.public_outlined, onPublish!),
+                action('프로필에 앨범 공개', Icons.public_outlined, onPublish!),
               if (onInvite != null)
                 action('멤버 초대', Icons.group_add_outlined, onInvite!),
               action('책으로 만들기', Icons.auto_stories_outlined, onConfirm),
@@ -180,7 +183,7 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
               // 수정하기
               _SheetItem(
                 icon: Icons.edit_note_rounded,
-                label: '수정하기',
+                label: editLabel,
                 onTap: onEdit,
                 compact: compact,
               ),
@@ -198,7 +201,7 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
               if (onPublish != null) ...[
                 _SheetItem(
                   icon: Icons.public_outlined,
-                  label: '피드에 작품 공개',
+                  label: '프로필에 앨범 공개',
                   onTap: onPublish!,
                   compact: compact,
                 ),

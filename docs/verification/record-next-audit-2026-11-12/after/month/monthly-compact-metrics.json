@@ -1,0 +1,67 @@
+{
+  "case": "compact",
+  "viewport": {
+    "width": 320.0,
+    "height": 568.0
+  },
+  "fixture": {
+    "days": 18,
+    "photosPerDay": 2,
+    "photoCount": 36,
+    "assets": [
+      "assets/cover/cover1.png",
+      "assets/cover/cover2.png",
+      "assets/cover/cover3.png",
+      "assets/cover/cover4.png",
+      "assets/cover/cover5.png",
+      "assets/cover/cover6.png"
+    ]
+  },
+  "screen": "MonthlyMomentPreviewScreen, new album, actual product widget",
+  "stages": [
+    {
+      "stage": "top",
+      "selectedCount": 9,
+      "scrollPixels": 0.0,
+      "reportedMaxScrollExtentAtStage": 724.909090909091,
+      "scrollViewportHeight": 406.0,
+      "decodedRawImageWidgets": 1,
+      "finalMeasuredMaxScrollExtent": 11126.0,
+      "ctaInScrollableBody": false,
+      "ctaContentTop": 0.0,
+      "ctaHeight": 48.0,
+      "additionalScrollToFullyRevealCta": 0.0,
+      "additionalViewportHeightsToCta": 0.0
+    },
+    {
+      "stage": "middle-selection",
+      "selectedCount": 8,
+      "scrollPixels": 2565.0,
+      "reportedMaxScrollExtentAtStage": 11126.0,
+      "scrollViewportHeight": 406.0,
+      "decodedRawImageWidgets": 36,
+      "finalMeasuredMaxScrollExtent": 11126.0,
+      "ctaInScrollableBody": false,
+      "ctaContentTop": 0.0,
+      "ctaHeight": 48.0,
+      "additionalScrollToFullyRevealCta": 0.0,
+      "additionalViewportHeightsToCta": 0.0
+    },
+    {
+      "stage": "final-cta",
+      "selectedCount": 8,
+      "scrollPixels": 2565.0,
+      "reportedMaxScrollExtentAtStage": 11126.0,
+      "scrollViewportHeight": 406.0,
+      "decodedRawImageWidgets": 36,
+      "finalMeasuredMaxScrollExtent": 11126.0,
+      "ctaInScrollableBody": false,
+      "ctaContentTop": 0.0,
+      "ctaHeight": 48.0,
+      "additionalScrollToFullyRevealCta": 0.0,
+      "additionalViewportHeightsToCta": 0.0
+    }
+  ],
+  "albumWrites": 0,
+  "ctaActivated": false
+}

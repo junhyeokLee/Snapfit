@@ -166,7 +166,8 @@ ProviderContainer _container({
       ),
       momentsMonthProvider.overrideWith(
         (_, month) =>
-            loadJournal?.call(month) ?? Future.value(journal ?? _journal()),
+            loadJournal?.call(month ?? _journal().month) ??
+            Future.value(journal ?? _journal()),
       ),
     ],
   );
@@ -342,38 +343,35 @@ void main() {
     },
   );
 
-  test(
-    'manual catalogue retains dismissed stories despite automatic caps',
-    () async {
-      final state = _state(
-        history: [
-          HomeNewsExposure(
-            id: 'month-review:2026-10',
-            kind: HomeNewsKind.monthReview,
-            month: momentMonth(_today),
-            shownAt: _today.add(const Duration(hours: 2)),
-            dismissedAt: _today.add(const Duration(hours: 2, minutes: 10)),
-          ),
-          HomeNewsExposure(
-            id: 'monthly-design:2026-10',
-            kind: HomeNewsKind.monthlyDesign,
-            month: momentMonth(_today),
-            shownAt: _today.subtract(const Duration(hours: 21)),
-            dismissedAt: _today.subtract(const Duration(hours: 20)),
-          ),
-        ],
-      );
-      expect(state.canAutoShow, isFalse);
-      expect(state.hasSeen('month-review:2026-10'), isTrue);
-      final items = await _container(
-        state: state,
-      ).read(homeNewsCatalogProvider.future);
-      expect(
-        items.map((item) => item.id),
-        containsAll(['month-review:2026-10', 'monthly-design:2026-10']),
-      );
-    },
-  );
+  test('viewed stories remain available on later home entries', () async {
+    final state = _state(
+      history: [
+        HomeNewsExposure(
+          id: 'month-review:2026-10',
+          kind: HomeNewsKind.monthReview,
+          month: momentMonth(_today),
+          shownAt: _today.add(const Duration(hours: 2)),
+          dismissedAt: _today.add(const Duration(hours: 2, minutes: 10)),
+        ),
+        HomeNewsExposure(
+          id: 'monthly-design:2026-10',
+          kind: HomeNewsKind.monthlyDesign,
+          month: momentMonth(_today),
+          shownAt: _today.subtract(const Duration(hours: 21)),
+          dismissedAt: _today.subtract(const Duration(hours: 20)),
+        ),
+      ],
+    );
+    expect(state.canAutoShow, isTrue);
+    expect(state.hasSeen('month-review:2026-10'), isTrue);
+    final items = await _container(
+      state: state,
+    ).read(homeNewsCatalogProvider.future);
+    expect(
+      items.map((item) => item.id),
+      containsAll(['month-review:2026-10', 'monthly-design:2026-10']),
+    );
+  });
 
   test(
     'remote switches and schedules omit stories and skip private source reads',

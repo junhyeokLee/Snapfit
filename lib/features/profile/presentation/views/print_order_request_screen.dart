@@ -19,6 +19,7 @@ import '../widgets/order_request_workspace.dart';
 import '../widgets/inquiry_exit_guard.dart';
 import '../../../../shared/web/web_design.dart';
 import 'support_inquiry_screen.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 Future<String?> openPrintOrderRequest(
   BuildContext context, {
@@ -30,23 +31,19 @@ Future<String?> openPrintOrderRequest(
   if (isPrintOrderRequestOrderId(orderId))
     return Navigator.push<String>(
       context,
-      MaterialPageRoute(
-        builder: (_) => PrintOrderRequestScreen(
+      snapFitRoute(page: PrintOrderRequestScreen(
           target: PrintOrderRequestTarget.order(orderId),
           albumId: albumId,
           albumTitle: albumTitle,
           initialType: initialType,
-        ),
-      ),
+        )),
     );
   await Navigator.push<void>(
     context,
-    MaterialPageRoute(
-      builder: (_) => SupportInquiryScreen(
+    snapFitRoute(page: SupportInquiryScreen(
         initialCategory: 'ORDER',
         initialSubject: '주문 $orderId 문의',
-      ),
-    ),
+      )),
   );
   return null;
 }
@@ -662,7 +659,7 @@ class _PrintOrderRequestScreenState
               child: OutlinedButton.icon(
                 key: const ValueKey('print-order-request-refresh'),
                 onPressed: _loading || _sending ? null : _read,
-                icon: const Icon(Icons.refresh, size: 18),
+                icon: const ExperienceIcon('RefreshCw', size: 18),
                 label: const Text('요청 상태 다시 확인'),
               ),
             ),

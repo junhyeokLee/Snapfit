@@ -2,11 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:snap_fit/core/interceptors/token_storage.dart';
+import 'package:snap_fit/core/supabase/supabase_provider.dart';
 import 'package:snap_fit/features/auth/data/dto/auth_response.dart' as dto;
 import 'package:snap_fit/features/auth/domain/auth_service.dart';
+import 'package:snap_fit/features/auth/domain/web_oauth.dart';
+import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 const _old = '11111111-1111-4111-8111-111111111111';
@@ -21,6 +25,14 @@ class _Tokens extends TokenStorage {
 
   @override
   Future<String?> getUserId() async => owner;
+
+  @override
+  Future<dto.UserInfo?> getUserInfo() async => owner == null
+      ? null
+      : dto.UserInfo(id: owner!, name: 'Fixture', provider: 'KAKAO');
+
+  @override
+  Future<ConsentSnapshot?> getConsent() async => null;
 
   @override
   Future<void> saveAuth(dto.AuthResponse auth) async {
@@ -135,7 +147,12 @@ void main() {
     await client.dispose();
   });
 
-  AuthService service() => AuthService(tokenStorage: tokens, supabase: client);
+  AuthService service({Duration timeout = const Duration(seconds: 25)}) =>
+      AuthService(
+        tokenStorage: tokens,
+        supabase: client,
+        sessionSyncTimeout: timeout,
+      );
 
   for (final rejection in [
     (401, 'session_expired'),
@@ -220,7 +237,16 @@ void main() {
     errorCode = 'user_not_found';
     verificationGate = Completer<void>();
     final pending = service().synchronizeSupabaseSession();
-    final rejected = expectLater(pending, throwsA(isA<AuthException>()));
+    final rejected = expectLater(
+      pending,
+      throwsA(
+        isA<WebOAuthException>().having(
+          (error) => error.code,
+          'code',
+          'web_auth_owner_changed',
+        ),
+      ),
+    );
     await verificationStarted.future;
     await _session(client, _new);
     tokens.owner = _new;
@@ -278,6 +304,147 @@ void main() {
       expect(tokens.owner, _new);
       expect(tokens.clears, 1);
       expect(tokens.saves, 1);
+    },
+  );
+  test(
+    'overlapping verification of the same current session shares one request',
+    () async {
+      await _session(client, _old);
+      verificationGate = Completer<void>();
+      final auth = service();
+      final first = auth.synchronizeSupabaseSession();
+      await verificationStarted.future;
+      final second = auth.synchronizeSupabaseSession();
+      expect(second, same(first));
+      expect(
+        requests.where((r) => r.url.path == '/auth/v1/user'),
+        hasLength(1),
+      );
+      verificationGate!.complete();
+      expect((await first)?.user.id, _old);
+      expect((await second)?.user.id, _old);
+      expect(tokens.saves, 1);
+    },
+  );
+
+  test(
+    'verification has a total deadline and a late successful reply cannot start profile writes',
+    () async {
+      await _session(client, _old);
+      final gate = verificationGate = Completer<void>();
+      final auth = service(timeout: const Duration(milliseconds: 30));
+      await expectLater(
+        auth.synchronizeSupabaseSession(),
+        throwsA(isA<TimeoutException>()),
+      );
+      expect(client.auth.currentSession?.user.id, _old);
+      expect(tokens.clears, 0);
+      gate.complete();
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+      expect(requests.where((r) => r.url.path == '/rest/v1/profiles'), isEmpty);
+      expect(tokens.saves, 0);
+    },
+  );
+
+  test(
+    'A B A with an identical restored token starts fresh verification instead of reusing the invalidated request',
+    () async {
+      await _session(client, _old);
+      final originalSession = jsonEncode(client.auth.currentSession!.toJson());
+      final gate = verificationGate = Completer<void>();
+      final auth = service();
+      final old = auth.synchronizeSupabaseSession();
+      final oldError = expectLater(old, throwsException);
+      await verificationStarted.future;
+      await _session(client, _new);
+      await client.auth.setInitialSession(originalSession);
+      verificationGate = null;
+      final fresh = auth.synchronizeSupabaseSession();
+      expect(fresh, isNot(same(old)));
+      expect((await fresh)?.user.id, _old);
+      status = 403;
+      errorCode = 'user_banned';
+      gate.complete();
+      await oldError;
+      expect(client.auth.currentSession?.user.id, _old);
+      expect(tokens.owner, _old);
+      expect(tokens.saves, 1);
+      expect(tokens.clears, 0);
+      expect(requests.where((r) => r.url.path == '/auth/v1/logout'), isEmpty);
+    },
+  );
+
+  test(
+    'a timed-out rejection cannot discard a newer verified retry with the same token',
+    () async {
+      await _session(client, _old);
+      final gate = verificationGate = Completer<void>();
+      final auth = service(timeout: const Duration(milliseconds: 30));
+      await expectLater(
+        auth.synchronizeSupabaseSession(),
+        throwsA(isA<TimeoutException>()),
+      );
+      verificationGate = null;
+      expect((await auth.synchronizeSupabaseSession())?.user.id, _old);
+      status = 403;
+      errorCode = 'session_not_found';
+      gate.complete();
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+      expect(client.auth.currentSession?.user.id, _old);
+      expect(tokens.owner, _old);
+      expect(tokens.saves, 1);
+      expect(tokens.clears, 0);
+      expect(requests.where((r) => r.url.path == '/auth/v1/logout'), isEmpty);
+    },
+  );
+  test(
+    'an offline refresh stream error cannot hide a same-owner verified account',
+    () async {
+      await _session(client, _old);
+      final auth = service();
+      final scope = ProviderContainer(
+        retry: (_, _) => null,
+        overrides: [
+          supabaseClientProvider.overrideWithValue(client),
+          tokenStorageProvider.overrideWithValue(tokens),
+          authServiceProvider.overrideWithValue(auth),
+        ],
+      );
+      scope.listen(authViewModelProvider, (_, _) {});
+      try {
+        await scope.read(authViewModelProvider.future);
+        expect(scope.read(authViewModelProvider).requireValue?.id, _old);
+        verificationStarted = Completer<void>();
+        final gate = verificationGate = Completer<void>();
+        final pending = scope
+            .read(authViewModelProvider.notifier)
+            .synchronizeSupabaseSession();
+        await verificationStarted.future;
+        expect(scope.read(authViewModelProvider).isLoading, isFalse);
+        // Simulate the SDK's exact public auth-stream failure path. Production
+        // code never calls this SDK-internal event injection method.
+        // ignore: invalid_use_of_internal_member
+        client.auth.notifyException(
+          AuthRetryableFetchException(
+            message: 'temporary token refresh gateway timeout',
+            statusCode: '504',
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+        expect(scope.read(authViewModelProvider).requireValue?.id, _old);
+        gate.complete();
+        await pending;
+        expect(scope.read(authViewModelProvider).requireValue?.id, _old);
+        expect(scope.read(authViewModelProvider).hasError, isFalse);
+        expect(client.auth.currentSession?.user.id, _old);
+        expect(tokens.owner, _old);
+        expect(tokens.clears, 0);
+        expect(requests.where((r) => r.url.path == '/auth/v1/logout'), isEmpty);
+      } finally {
+        scope.dispose();
+      }
     },
   );
 }

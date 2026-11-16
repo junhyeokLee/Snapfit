@@ -472,7 +472,9 @@ void main() {
           size: size,
           dark: size.width == 390,
         );
-        expect(find.text('설정 및 도움말'), findsOneWidget);
+        for (final group in ['계정 및 안전', '앱 설정', '도움말']) {
+          expect(find.text(group), findsOneWidget);
+        }
         expect(find.text('테스트 고객님'), findsNothing);
         expect(find.text('디자인 보관함'), findsNothing);
         expect(find.text('내 저장 공간'), findsNothing);
@@ -562,8 +564,17 @@ void main() {
 
   for (final size in const [Size(1024, 500), Size(390, 500)]) {
     _routeTest(
-      'actual web checkout preserves delivery and keeps payment closed at $size',
+      'actual READY web checkout preserves delivery and requires payment consent at $size',
       (tester) async {
+        when(() => orders.fetchPrintCheckoutReadiness(albumId: 7)).thenAnswer(
+          (_) async => PrintCheckoutReadiness(
+            canPay: true,
+            status: 'READY',
+            reasonCode: '',
+            message: '',
+            quote: _quote(),
+          ),
+        );
         var forbiddenPayCalls = 0;
         await _mount(
           tester,
@@ -600,7 +611,7 @@ void main() {
         final payment = find.byKey(const ValueKey('print-checkout-payment'));
         await _reveal(tester, payment, requireHit: false);
         expect(tester.widget<FilledButton>(payment).onPressed, isNull);
-        expect(find.text('정식 주문 서비스를 준비하고 있어요.'), findsOneWidget);
+        expect(find.text('정식 주문 서비스를 준비하고 있어요.'), findsNothing);
         final agreement = find.byKey(
           const ValueKey('print-checkout-agreement'),
         );
@@ -634,6 +645,15 @@ void main() {
   _routeTest(
     'actual short web checkout reveals its first validation error without losing input',
     (tester) async {
+      when(() => orders.fetchPrintCheckoutReadiness(albumId: 7)).thenAnswer(
+        (_) async => PrintCheckoutReadiness(
+          canPay: true,
+          status: 'READY',
+          reasonCode: '',
+          message: '',
+          quote: _quote(),
+        ),
+      );
       var forbiddenPayCalls = 0;
       await _mount(
         tester,
@@ -752,26 +772,12 @@ void main() {
             auth: auth,
             size: const Size(1024, 600),
           );
-          if (!preview && state == 'FINAL') {
-            for (final field in {
-              'print-recipient-name': '테스트 수령인',
-              'print-recipient-phone': '01000000000',
-              'print-zip-code': '12345',
-              'print-address-line1': '서울 테스트도로 1',
-            }.entries) {
-              final input = find.byKey(ValueKey(field.key));
-              await _reveal(tester, input);
-              await tester.enterText(input, field.value);
-              await tester.pump();
-            }
-            await _reveal(tester, find.text('주문 내용 확인하기'));
-            await tester.tap(find.text('주문 내용 확인하기'));
-            await tester.pumpAndSettle();
-            final payment = find.byKey(
-              const ValueKey('print-checkout-payment'),
+          if (!preview) {
+            expect(
+              find.byKey(const ValueKey('print-recipient-name')),
+              findsNothing,
             );
-            await _reveal(tester, payment, requireHit: false);
-            expect(tester.widget<FilledButton>(payment).onPressed, isNull);
+            expect(find.text('정식 주문 서비스를 준비하고 있어요.'), findsOneWidget);
           }
           final value = state == 'PENDING_SUPPLIER_QUOTE'
               ? '가격 확인 필요'
@@ -789,7 +795,7 @@ void main() {
           expect(find.text('57,900원 예정'), findsNothing);
           expect(
             find.byKey(const ValueKey('print-checkout-payment')),
-            !preview && state == 'FINAL' ? findsOneWidget : findsNothing,
+            findsNothing,
           );
           expect(forbiddenPayCalls, 0);
           _noRouteException(tester, '$state price display with sales closed');
@@ -876,10 +882,10 @@ void main() {
         var quote = _quote(retailPriceStatus: 'PLANNED', version: 'planned-v1');
         when(() => orders.fetchPrintCheckoutReadiness(albumId: 7)).thenAnswer(
           (_) async => PrintCheckoutReadiness(
-            canPay: false,
-            status: 'PREPARING',
-            reasonCode: 'print_sales_not_ready',
-            message: '정식 주문 서비스를 준비하고 있어요.',
+            canPay: true,
+            status: 'READY',
+            reasonCode: '',
+            message: '',
             quote: quote,
             reviewedRevision: printCheckoutRevision(_snapshot()),
             reviewedSpecRevision: printSpecRevision(quote.printSpec),

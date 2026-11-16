@@ -1,0 +1,129 @@
+{
+  "date": "2026-11-12",
+  "regressionPassed": 113,
+  "captureScenariosPassed": 6,
+  "screenshotCount": 8,
+  "suites": [
+    {
+      "name": "data",
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "center",
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "submissions",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "editor",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "help",
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "exitguard",
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "secondary",
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "settings",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "requests",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "captures",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "sourceSha256": {
+    "lib/features/profile/domain/support_inquiry.dart": "580b55d49138c2f1196fa6e3b5c151c1c2e661526f23e200001638d0a85a0257",
+    "lib/features/profile/data/support_inquiry_repository.dart": "2d6c52bfdec95f74d3e277338c852979ca734ea7c5f8f0c4eac353e6f2bad05d",
+    "lib/features/profile/presentation/views/support_center_screen.dart": "403f30f322519ebe54b14cd82799b4817ad86713da6796d963fee8a0b0db10a7",
+    "lib/features/profile/presentation/widgets/support_inquiry_owner_guard.dart": "78686fc5942d8480a8d5fb40657e403bd8e91f9ed73b42a375024e85cd080672",
+    "lib/features/profile/presentation/views/support_inquiry_screen.dart": "b9dccd9c9c4f5a137f8c10768d5e0594b3e1209fb00bb99baa8203d8ae17d6d4",
+    "lib/features/profile/presentation/views/my_page_screen.dart": "cb550ed6949ab5f3699c4a47d3fdc526dd0f736e1d097af3221fc55ae29fe943",
+    "lib/features/album/presentation/views/page_editor_screen.dart": "bd23af1a5691ea07a77a6f0c6aebcc3ad9975eee852a7fd63ea49501d8bdaf6d",
+    "test/unit/support_inquiry_repository_test.dart": "7d5dccbb3d212cea1370dc0108e50071f59a8052517581ab333aecc8cd22ef90",
+    "test/widget/support_center_screen_test.dart": "702d44a48ad4bc591de58b9a7e887493b1a87634d807e9e117288c0d57ca8238",
+    "test/widget/support_center_submission_test.dart": "a6843f1b115ac20be87e562399e6f7e9ce8833646759a2b1f3098339e54378ff",
+    "test/widget/one_page_saved_flow_test.dart": "f6379a6de5dff3cc283e7ee95c6d30aab93eb13b34b5d30068a967c93ed0eeee",
+    "test/widget/secondary_screens_refinement_test.dart": "a1ab7b1d45017df04a5a3f8d54abff842f8e8a2d3cda38aed4d2de4df747207b",
+    "docs/verification/support-center-2026-11-12/probes/native_capture.dart": "d35092b9d4a85bad3e3f9c3f1723f4d855f9a48fb6367ab07f897edddc87423d"
+  },
+  "analysis": {
+    "files": 13,
+    "errors": 0,
+    "warnings": 0,
+    "existingInfo": [
+      {
+        "file": "lib/features/album/presentation/views/page_editor_screen.dart",
+        "line": 231,
+        "rule": "no_logic_in_create_state",
+        "scope": "pre-existing document-font entry; unchanged by this task"
+      }
+    ]
+  },
+  "independentReview": "Offstage-success/system-back refresh finding fixed and reviewed; no remaining blockers.",
+  "captureMethod": "Actual native production widgets, app theme and bundle fonts; memory inquiry fixture, no live submission. Normal390x844, dark320x568 scale1.8, landscape640x320.",
+  "operations": {
+    "databaseChanged": false,
+    "liveInquirySent": false,
+    "appBuiltOrInstalled": false,
+    "productionSchemaReadVerified": false,
+    "productionReadLimitation": "Supabase app requires unavailable link_id; CLI has no access token. Local migration/schema policy and server status sources inspected.",
+    "newReplyOrNotificationDelivery": false
+  },
+  "redEvidence": {
+    "data-red.log": {
+      "passed": 1,
+      "failed": 14
+    },
+    "center-red.log": {
+      "passed": 1,
+      "failed": 12
+    },
+    "editor-red.log": {
+      "passed": 2,
+      "failed": 2
+    },
+    "submissions-boundary.log": {
+      "passed": 3,
+      "failed": 1
+    }
+  },
+  "limits": [
+    "Not a connected-device interaction check or deployment.",
+    "Production schema/grants not directly verified.",
+    "Answer bodies, email replies and reply notifications are not implemented by this change."
+  ]
+}

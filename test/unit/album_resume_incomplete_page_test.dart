@@ -54,6 +54,88 @@ Map<String, dynamic> _savedPage(AlbumPage page) => {
 
 void main() {
   test(
+    'one-page metadata counts only unfilled personal photo slots on the first unfinished interior',
+    () {
+      final result = analyzeAlbumDocument(
+        jsonEncode({
+          'pages': [
+            {'index': 0, 'isCover': true, 'layers': []},
+            {
+              'index': 1,
+              'isCover': false,
+              'layers': [
+                {
+                  'type': 'TEXT',
+                  'templateContent': false,
+                  'payload': {'text': '직접 쓴 첫 쪽'},
+                },
+              ],
+            },
+            {
+              'index': 2,
+              'isCover': false,
+              'layers': [
+                {
+                  'id': 'mine',
+                  'type': 'IMAGE',
+                  'templateContent': false,
+                  'payload': {
+                    'originalUrl': 'https://photos.test/original.jpg',
+                  },
+                },
+                {
+                  'id': 'example',
+                  'type': 'IMAGE',
+                  'templateContent': true,
+                  'payload': {'originalUrl': 'asset:sample.jpg'},
+                },
+                {
+                  'id': 'empty',
+                  'type': 'IMAGE',
+                  'templateContent': false,
+                  'payload': {},
+                },
+                {
+                  'id': 'caption',
+                  'type': 'TEXT',
+                  'templateContent': false,
+                  'payload': {'text': '내 글도 사진칸을 대신하지 않아요'},
+                },
+              ],
+            },
+            {'index': 3, 'isCover': false, 'layers': []},
+          ],
+        }),
+      );
+      expect(result.completedPages, 1);
+      expect(result.firstIncompletePageIndex, 2);
+      expect(result.firstIncompletePageNumber, 2);
+      expect(result.firstIncompletePhotoSlots, 2);
+      expect(result.firstUnfilledPhotoLayerId, 'example');
+    },
+  );
+
+  test(
+    'prepared page uses the same completion and next-slot rules as the home card',
+    () {
+      final page = _page(1, [
+        _photo('personal'),
+        _photo('sample', template: true),
+        _photo('vacant', url: null),
+      ]);
+      final progress = preparedAlbumPageProgress(page);
+      expect(progress.isComplete, isFalse);
+      expect(progress.photoSlots, 3);
+      expect(progress.filledPhotoSlots, 1);
+      expect(progress.firstUnfilledPhotoId, 'sample');
+      expect(
+        preparedAlbumPageProgress(_page(1, [_text('내가 쓴 한 줄')])).isComplete,
+        isTrue,
+      );
+    },
+  );
+
+  test(
     'resume skips the cover and completed pages to the first empty slot',
     () {
       final pages = [

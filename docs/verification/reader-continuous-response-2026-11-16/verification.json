@@ -1,0 +1,96 @@
+{
+  "date": "2026-11-16",
+  "method": "serial real Flutter test engine, software rasterization, no application build",
+  "total_passed": 124,
+  "failed": 0,
+  "skipped": 0,
+  "suites": [
+    {
+      "suite": "reader_first",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0
+    },
+    {
+      "suite": "progressive",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0
+    },
+    {
+      "suite": "reader_lifecycle",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0
+    },
+    {
+      "suite": "reader_navigation",
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0
+    },
+    {
+      "suite": "reader_images",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0
+    },
+    {
+      "suite": "reader_thumbnails",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0
+    },
+    {
+      "suite": "image_quality",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0
+    },
+    {
+      "suite": "thumbnail_layout",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0
+    },
+    {
+      "suite": "paper_motion",
+      "passed": 60,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0
+    }
+  ],
+  "analyzer": "No issues found!",
+  "changed_production_files": [
+    "lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart",
+    "packages/book_page_flip/lib/src/api.dart",
+    "packages/book_page_flip/lib/src/state.dart"
+  ],
+  "modified_test": "test/widget/reader_first_interaction_test.dart",
+  "test_sha256": "ee62d9797bf0bce0f8eafa5068416748ed807da0f8f159db351d140c9cbe8cf9",
+  "new_regressions": 11,
+  "earlier_first_input_regressions": 5,
+  "repeated_input": {
+    "normal_single_turn_duration_ms": 500,
+    "current_settle_duration_on_next_button_input_ms": 80,
+    "same_direction_new_swipe_threshold_at_touch_down": 0.8,
+    "button_following_motion_simulation_budget_ms": 128,
+    "pending_direction_policy": "latest one intent; no long tap backlog"
+  },
+  "review": "read-only review found parent focus echo cancellation; reproduced and fixed; no remaining blocker in final review",
+  "limits": [
+    "No hardware FPS or input-to-photon latency profiling",
+    "No full application build or deployment",
+    "New photos can still require network/decode preparation",
+    "Repeated inputs keep the latest pending direction, rather than replaying a long queue"
+  ]
+}

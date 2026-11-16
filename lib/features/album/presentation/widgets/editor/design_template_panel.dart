@@ -18,6 +18,7 @@ import '../../../../../shared/widgets/snapfit_motion.dart';
 import '../../../../../shared/widgets/catalog_favorite_widgets.dart';
 import '../../../domain/entities/layer.dart';
 import 'template_apply_preview.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 class DesignTemplatePanel extends ConsumerStatefulWidget {
   const DesignTemplatePanel({
@@ -179,7 +180,7 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                       IconButton(
                         onPressed: () => Navigator.pop(context),
                         tooltip: '템플릿 닫기',
-                        icon: const Icon(Icons.close, size: 20),
+                        icon: const ExperienceIcon('X', size: 20),
                       ),
                   ],
                 ),
@@ -480,10 +481,7 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
-                                Icons.check_rounded,
-                                size: 12,
-                                color: kIsWeb
+                              ExperienceIcon('Check', size: 12, color: kIsWeb
                                     ? WebPalette.of(context).onBrand
                                     : Colors.white,
                               ),

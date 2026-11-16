@@ -11,6 +11,7 @@ import 'experience_form_style.dart';
 import 'browser_photo_selection_sheet.dart';
 import 'editor_modal_scope.dart';
 import '../../core/utils/context_extensions.dart';
+import '../../shared/widgets/experience_icon.dart';
 
 class GalleryEmptyOrErrorPanel extends StatelessWidget {
   const GalleryEmptyOrErrorPanel({
@@ -24,18 +25,24 @@ class GalleryEmptyOrErrorPanel extends StatelessWidget {
   final VoidCallback onRetry;
   final VoidCallback onOpenPhotoSettings;
 
-  bool get _isPermissionError {
-    final text = message?.toString() ?? '';
-    return text.contains('권한') || text.toLowerCase().contains('permission');
-  }
+  // 예외 문구에 특정 단어가 들어 있어도 권한 거절이나 빈 앨범으로 추정하지 않는다.
+  bool get _isPermissionError => message == GalleryLoadFailure.permissionDenied;
+  bool get _isEmpty =>
+      message == null || message == GalleryLoadFailure.emptyLibrary;
 
   @override
   Widget build(BuildContext context) {
-    final title = _isPermissionError ? '사진 접근 권한이 필요해요' : '이미지 앨범이 비어 있어요';
+    final title = _isPermissionError
+        ? '사진 접근 권한이 필요해요'
+        : _isEmpty
+        ? '이미지 앨범이 비어 있어요'
+        : '사진을 불러오지 못했어요';
     final body = _isPermissionError
         ? '설정에서 사진을 몇 장 더 허용한 뒤 다시 불러오면 Snapfit이 기기 안에서만 사진을 보여줘요.'
-        : '다른 앨범을 고르거나 사진 접근 범위를 넓힌 뒤 다시 불러와 주세요.';
-    final retryLabel = _isPermissionError ? '다시 시도' : '다시 불러오기';
+        : _isEmpty
+        ? '사진을 추가하거나 접근 범위를 확인해 주세요.'
+        : '잠시 후 다시 시도해 주세요.';
+    final retryLabel = _isEmpty ? '다시 불러오기' : '다시 시도';
 
     return Container(
       decoration: BoxDecoration(
@@ -59,7 +66,9 @@ class GalleryEmptyOrErrorPanel extends StatelessWidget {
                 child: Icon(
                   _isPermissionError
                       ? Icons.photo_library_outlined
-                      : Icons.photo_outlined,
+                      : _isEmpty
+                      ? Icons.photo_outlined
+                      : Icons.error_outline,
                   size: 34,
                   color: SnapFitColors.accent,
                 ),
@@ -93,7 +102,7 @@ class GalleryEmptyOrErrorPanel extends StatelessWidget {
                   height: 48,
                   child: ElevatedButton.icon(
                     onPressed: onOpenPhotoSettings,
-                    icon: Icon(Icons.settings_outlined, size: 18),
+                    icon: ExperienceIcon('Settings2', size: 18),
                     label: const Text('사진 권한 열기'),
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
@@ -114,7 +123,7 @@ class GalleryEmptyOrErrorPanel extends StatelessWidget {
                 height: 46,
                 child: OutlinedButton.icon(
                   onPressed: onRetry,
-                  icon: Icon(Icons.refresh, size: 18),
+                  icon: ExperienceIcon('RefreshCw', size: 18),
                   label: Text(retryLabel),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: SnapFitColors.textPrimaryOf(context),
@@ -430,12 +439,12 @@ class _PhotoSelectionSheetState extends ConsumerState<_PhotoSelectionSheet> {
                             color: _selectedOnly
                                 ? ExperienceFormStyle.selectionInk(context)
                                 : ExperienceFormStyle.ink(context),
-                            icon: const Icon(Icons.checklist_rounded, size: 22),
+                            icon: const ExperienceIcon('List', size: 22),
                           ),
                         IconButton(
                           tooltip: '사진 선택 닫기',
                           onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.close, size: 22),
+                          icon: const ExperienceIcon('X', size: 22),
                         ),
                       ],
                     ),
@@ -481,7 +490,7 @@ class _PhotoSelectionSheetState extends ConsumerState<_PhotoSelectionSheet> {
                                 ),
                               ),
                               if (!_selectedOnly)
-                                const Icon(Icons.expand_more, size: 20),
+                                const ExperienceIcon('ChevronDown', size: 20),
                             ],
                           ),
                         ),
@@ -522,10 +531,7 @@ class _PhotoSelectionSheetState extends ConsumerState<_PhotoSelectionSheet> {
                                 horizontal: 6,
                               ),
                             ),
-                            icon: const Icon(
-                              Icons.date_range_outlined,
-                              size: 19,
-                            ),
+                            icon: const ExperienceIcon('Calendar', size: 19),
                             label: Text(
                               _galleryDateLabel(state.dateRange),
                               maxLines: 1,
@@ -772,7 +778,7 @@ class _PhotoSelectionSheetState extends ConsumerState<_PhotoSelectionSheet> {
                                     onPressed: () => ref
                                         .read(galleryProvider.notifier)
                                         .loadMore(),
-                                    icon: const Icon(Icons.refresh),
+                                    icon: const ExperienceIcon('RefreshCw'),
                                     label: const Text('다시 불러오기'),
                                   ),
                                 ),
@@ -869,7 +875,7 @@ class _GalleryAlbumSelectionSheetState
                     IconButton(
                       tooltip: '사진첩 닫기',
                       onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close, size: 22),
+                      icon: const ExperienceIcon('X', size: 22),
                     ),
                   ],
                 ),
@@ -883,7 +889,7 @@ class _GalleryAlbumSelectionSheetState
                     decoration: ExperienceFormStyle.input(
                       context,
                       hint: '사진첩 검색',
-                    ).copyWith(prefixIcon: const Icon(Icons.search, size: 20)),
+                    ).copyWith(prefixIcon: const ExperienceIcon('Search', size: 20)),
                     onChanged: (value) => setState(() => _query = value),
                   ),
                 ),
@@ -978,10 +984,7 @@ class _GalleryAlbumTileState extends ConsumerState<_GalleryAlbumTile> {
                   color: ExperienceFormStyle.surface(context),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Icon(
-                  Icons.photo_library_outlined,
-                  size: 22,
-                  color: ExperienceFormStyle.muted(context),
+                child: ExperienceIcon('Image', size: 22, color: ExperienceFormStyle.muted(context),
                 ),
               )
             : GalleryThumbTile(
@@ -1011,10 +1014,7 @@ class _GalleryAlbumTileState extends ConsumerState<_GalleryAlbumTile> {
             ),
     ),
     trailing: widget.selected
-        ? Icon(
-            Icons.check,
-            size: 21,
-            color: ExperienceFormStyle.selectionInk(context),
+        ? ExperienceIcon('Check', size: 21, color: ExperienceFormStyle.selectionInk(context),
           )
         : null,
     onTap: () => Navigator.pop(context, widget.album),

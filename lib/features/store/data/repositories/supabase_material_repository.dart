@@ -18,8 +18,6 @@ class SupabaseMaterialRepository implements MaterialRepository {
         collection: row['collection']?.toString(),
         isActive: row['is_active'] != false,
         isPremium: row['is_premium'] == true,
-        isNew: row['is_new'] == true,
-        isBest: row['is_best'] == true,
         weeklyScore: (row['weekly_score'] as num?)?.toInt() ?? 0,
         likeCount: (row['like_count'] as num?)?.toInt() ?? 0,
         userCount: (row['user_count'] as num?)?.toInt() ?? 0,

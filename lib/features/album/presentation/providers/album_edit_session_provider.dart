@@ -18,7 +18,9 @@ final albumEditorOwnerReaderProvider = Provider<AlbumEditorOwnerReader>((ref) {
 final albumEditorOwnerChangesProvider = StreamProvider<String?>((ref) {
   try {
     final client = ref.watch(supabaseClientProvider);
-    return client.auth.onAuthStateChange.map((event) => event.session?.user.id);
+    return client.auth.onAuthStateChange
+        .map((event) => event.session?.user.id)
+        .distinct();
   } catch (_) {
     return const Stream.empty();
   }

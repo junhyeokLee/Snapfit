@@ -145,6 +145,7 @@ WebOAuthException? failedWebAuthCallback(
 
 /// /settings is public Auth configuration. Only provider-enabled booleans are
 /// read. OAuth client secrets stay in Supabase and never enter the app.
+/// Transport failures are unknown availability, never a disabled provider.
 Future<bool> isWebOAuthProviderEnabled(
   OAuthProvider provider, {
   Dio? client,
@@ -154,23 +155,37 @@ Future<bool> isWebOAuthProviderEnabled(
   }
   final ownClient = client == null;
   final http =
-      client ?? Dio(BaseOptions(connectTimeout: const Duration(seconds: 12)));
+      client ?? Dio(BaseOptions(connectTimeout: const Duration(seconds: 3)));
   try {
     final response = await http.get<Object?>(
       Uri.parse(Env.supabaseUrl).resolve('/auth/v1/settings').toString(),
       options: Options(
         headers: {'apikey': Env.supabaseAnonKey},
-        receiveTimeout: const Duration(seconds: 12),
-        sendTimeout: const Duration(seconds: 12),
+        receiveTimeout: const Duration(seconds: 3),
+        sendTimeout: const Duration(seconds: 3),
       ),
     );
     final body = response.data;
-    if (body is! Map || body['external'] is! Map) {
+    if (body is! Map ||
+        body['external'] is! Map ||
+        (body['external'] as Map)[provider.name] is! bool) {
       throw const WebOAuthException('web_auth_configuration_unavailable');
     }
-    return (body['external'] as Map)[provider.name] == true;
+    return (body['external'] as Map)[provider.name] as bool;
   } on WebOAuthException {
     rethrow;
+  } on DioException catch (error) {
+    if (error.response == null &&
+        const {
+          DioExceptionType.connectionTimeout,
+          DioExceptionType.sendTimeout,
+          DioExceptionType.receiveTimeout,
+          DioExceptionType.connectionError,
+        }.contains(error.type)) {
+      throw const WebOAuthException('web_auth_provider_status_unknown');
+    }
+    // HTTP rejection, cancellation, certificate and schema failures stay closed.
+    throw const WebOAuthException('web_auth_configuration_unavailable');
   } catch (_) {
     throw const WebOAuthException('web_auth_configuration_unavailable');
   } finally {
@@ -179,6 +194,9 @@ Future<bool> isWebOAuthProviderEnabled(
 }
 
 String socialAuthErrorMessage(Object error, {String provider = '소셜'}) {
+  if (error is AuthRetryableFetchException) {
+    return '계정 연결이 원활하지 않아요. 잠시 후 다시 확인해주세요.';
+  }
   if (error is TimeoutException) {
     return '계정 확인 응답이 늦어지고 있어요. 인터넷 연결을 확인한 뒤 다시 시도해주세요.';
   }

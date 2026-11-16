@@ -1,0 +1,98 @@
+{
+  "date": "2026-11-16",
+  "review_only": true,
+  "production_code_modified": false,
+  "live_orders_payments_refunds_or_financial_queries_executed": false,
+  "capture_method": "Current Flutter product widgets with isolated memory stores and fake payment SDK/HTTP adapters; real bundled fonts; direct native flutter_tester.",
+  "native_regression": {
+    "checkout": {
+      "passed": 26,
+      "failed": 0,
+      "skipped": 0
+    },
+    "iap": {
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0
+    },
+    "printservice": {
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0
+    },
+    "consent": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
+    "repositories": {
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0
+    },
+    "shop": {
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0
+    },
+    "topup": {
+      "passed": 6,
+      "failed": 0,
+      "skipped": 1
+    }
+  },
+  "native_regression_passed": 101,
+  "server_regression_passed": 106,
+  "total_regression_passed": 207,
+  "confirmed_risk_reproductions": 4,
+  "capture_cases": 7,
+  "screenshots": [
+    "01-delivery.png",
+    "02-invalid-delivery.png",
+    "03-review-start.png",
+    "04-review-consents.png",
+    "05-processing.png",
+    "06-result-unavailable.png",
+    "07-confirmed-progress.png",
+    "08-narrow-review-dark.png",
+    "09-material-confirmation.png",
+    "10-material-owned.png",
+    "11-points-waiting-390-light.png",
+    "12-points-waiting-reopened-390-light.png",
+    "13-paid-but-error.png",
+    "14-paid-retry-enabled.png",
+    "15-points-stale-catalog-390-light.png",
+    "points-redesign-390-light.png",
+    "points-redesign-selected-390-light.png"
+  ],
+  "compile_errors": 0,
+  "findings": {
+    "P1": [
+      "paid_receipt_lost_after_second_read_failure",
+      "native_iap_unknown_attempt_reopens_purchase_gate"
+    ],
+    "P2": [
+      "failed_catalog_refresh_keeps_purchase_enabled",
+      "disabled_checkout_button_lacks_remaining_consent_hint"
+    ],
+    "P3_optional": [
+      "request_size_checked_after_body_read"
+    ]
+  },
+  "native_duplicate_charge_observed": false,
+  "web_live_checkout_audited": false,
+  "web_live_release_gate": false,
+  "source_sha256": {
+    "lib/features/album/presentation/views/print_order_checkout_screen.dart": "2bd10342a0028ca4e94ae93bce0a904c31f130d3e954f7573354c39764880923",
+    "lib/features/album/presentation/views/print_order_complete_screen.dart": "3fb94a59fc72d984de355c5c27941c398934768f0d6858d0055844d9208c5f2a",
+    "lib/features/profile/data/print_payment_service.dart": "11dcb4d8da3eea16753e248b3db63473e5911f34d627bb86076159f801f6a78e",
+    "lib/features/billing/data/point_purchase_service.dart": "394aa8e18c2bf091504f77a53856a5774e31fac16cca862cd17ef1e438550881",
+    "lib/features/profile/presentation/views/billing_management_screen.dart": "e1085fa4aede257a34d702c9ca3557505ecc249d36ed0085dda033ac15d8f3a5",
+    "lib/features/billing/presentation/widgets/web_point_topup_panel.dart": "47e46e493352c09357d03c17921e0c425cc489b515e249490ace4a54c847cd6d",
+    "lib/features/billing/data/web_point_topup_repository.dart": "fff8f960aaf1e4f7c9dbf21c49f9b6205bdb8cb00bf69c1eed5db25ee727f83a",
+    "supabase/functions/_shared/production-print-checkout.ts": "9df1fe726577f1d9850c08ba30fc9dc6a9ad27884f7b2e7388f61802e4e49bd5",
+    "supabase/functions/_shared/web-point-topup-provider.ts": "5c07881fdfd46941dad71a646367123e7da605e51bfb1c50638ce3848ee41037",
+    "supabase/migrations/20261014161833_app_pdf_prepayment_and_supabase_fulfillment.sql": "58c50ab360a7de7ff2a76d3860bf2f3d768ce2dadc48231c9e7b45ff695a25fd"
+  },
+  "server_initial_runner_errors": "2 modules could not load TypeScript parameter properties in Node strip-only mode. The other modules passed 83 tests. Retried only affected modules with documented --experimental-transform-types:23 passed,0 failed; no source edits."
+}

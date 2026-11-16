@@ -11,6 +11,7 @@ import '../../../../core/notifications/browser_push_state.dart';
 import '../../../../shared/web/web_design.dart';
 import '../widgets/customer_web_page.dart';
 import '../../domain/order_visibility_owner.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 class NotificationSettingsScreen extends ConsumerStatefulWidget {
   const NotificationSettingsScreen({super.key});
@@ -69,8 +70,9 @@ class _NotificationSettingsScreenState
       _webOwnerId ??= owner;
       if (!_webOwnerCurrent) return;
     }
+    if (mounted) setState(() => _loading = true);
     try {
-      final settings = await FcmNotificationService.loadSettings();
+      final settings = await FcmNotificationService.loadSettings(refresh: true);
       final browserPush = kIsWeb
           ? await FcmNotificationService.loadBrowserPushState()
           : null;
@@ -106,7 +108,7 @@ class _NotificationSettingsScreenState
   }
 
   Future<void> _toggle(String key, bool value) async {
-    if (kIsWeb && !_webOwnerCurrent) return;
+    if (_loading || _loadFailed || (kIsWeb && !_webOwnerCurrent)) return;
     _loadEpoch++;
     setState(() {
       switch (key) {
@@ -134,14 +136,9 @@ class _NotificationSettingsScreenState
       }
     });
     try {
-      await FcmNotificationService.updateSettings(
-        all: all,
-        order: order,
-        invite: invite,
-        comment: comment,
-        marketing: marketing,
-        newTemplate: newTemplate,
-        nightMute: nightMute,
+      await FcmNotificationService.updateSetting(
+        key,
+        value,
         expectedOwnerId: _settingsOwnerId,
       );
     } catch (error) {
@@ -246,7 +243,7 @@ class _NotificationSettingsScreenState
                               setState(() => _loading = true);
                               _load();
                             },
-                            icon: const Icon(Icons.refresh),
+                            icon: const ExperienceIcon('RefreshCw'),
                             label: const Text('다시 시도'),
                           ),
                         ],
@@ -304,7 +301,7 @@ class _NotificationSettingsScreenState
                       setState(() => _loading = true);
                       _load();
                     },
-                    icon: const Icon(Icons.refresh),
+                    icon: const ExperienceIcon('RefreshCw'),
                     label: const Text('설정 다시 확인'),
                   ),
                 ],
@@ -482,10 +479,18 @@ class NotificationSettingsContent extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            active
-                ? '현재 계정에 연결되어 있어요'
+            environment?.permission == 'denied'
+                ? '브라우저 알림 권한이 차단됐어요'
+                : environment?.supported == false
+                ? '이 브라우저는 알림을 지원하지 않아요'
+                : environment?.configured == false
+                ? '브라우저 알림 연결을 준비하고 있어요'
+                : active
+                ? settings.all
+                      ? '현재 계정에 연결되어 있어요'
+                      : '브라우저 연결됨 · 전체 알림은 꺼져 있어요'
                 : state?.enabled == true
-                ? '연결 상태를 다시 확인해주세요'
+                ? '연결이 완료되지 않았어요'
                 : '아직 연결하지 않았어요',
             style: TextStyle(
               color: active ? palette.brandInk : palette.ink,
@@ -502,7 +507,7 @@ class NotificationSettingsContent extends StatelessWidget {
           if (active || state?.enabled == true)
             OutlinedButton.icon(
               onPressed: browserBusy ? null : onDisableBrowser,
-              icon: const Icon(Icons.notifications_off_outlined, size: 18),
+              icon: const ExperienceIcon('Bell', size: 18),
               label: const Text('이 브라우저 연결 끄기'),
             ),
           if (!active && environment?.canEnable == true) ...[
@@ -513,7 +518,7 @@ class NotificationSettingsContent extends StatelessWidget {
                 backgroundColor: palette.brand,
                 foregroundColor: palette.onBrand,
               ),
-              icon: const Icon(Icons.notifications_none, size: 18),
+              icon: const ExperienceIcon('Bell', size: 18),
               label: Text(state?.enabled == true ? '브라우저 다시 연결' : '브라우저 알림 켜기'),
             ),
           ],
@@ -529,7 +534,7 @@ class NotificationSettingsContent extends StatelessWidget {
                       color: palette.brandInk,
                     ),
                   )
-                : const Icon(Icons.refresh, size: 18),
+                : const ExperienceIcon('RefreshCw', size: 18),
             style: TextButton.styleFrom(foregroundColor: palette.brandInk),
             label: Text(browserBusy ? '연결 확인 중' : '연결 상태 새로 확인'),
           ),
@@ -591,10 +596,7 @@ class NotificationSettingsContent extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(
-              Icons.notifications_off_outlined,
-              size: 20,
-              color: ExperienceFormStyle.muted(context),
+            ExperienceIcon('Bell', size: 20, color: ExperienceFormStyle.muted(context),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -634,7 +636,11 @@ class NotificationSettingsContent extends StatelessWidget {
     '전체 알림',
     settings.all,
     FcmNotificationService.kAll,
-    subtitle: settings.all ? '선택한 소식을 받아요' : '개별 설정은 그대로 보관돼요',
+    subtitle: !settings.all
+        ? '알림 수신을 멈췄어요 · 개별 설정은 보관돼요'
+        : !kIsWeb && !settings.permissionGranted
+        ? '기기 권한을 켜면 선택한 소식을 받아요'
+        : '선택한 소식의 수신을 허용했어요',
     master: true,
   );
 

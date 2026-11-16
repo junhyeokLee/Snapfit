@@ -6,6 +6,7 @@ import '../../core/constants/snapfit_colors.dart';
 import '../../core/theme/snapfit_design_tokens.dart';
 import '../../core/navigation/web_app_location.dart';
 import 'web_theme_controller.dart';
+import '../widgets/experience_icon.dart';
 
 part 'web_shell.dart';
 

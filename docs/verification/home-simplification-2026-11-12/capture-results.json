@@ -1,0 +1,37 @@
+[
+  {
+    "scene": "390x844-True-step1-home",
+    "exit": 0,
+    "result": "RESULT passed=1 failed=0 skipped=0"
+  },
+  {
+    "scene": "320x568-True-step1-home",
+    "exit": 0,
+    "result": "RESULT passed=1 failed=0 skipped=0"
+  },
+  {
+    "scene": "320x568-False-step1-home",
+    "exit": 0,
+    "result": "RESULT passed=1 failed=0 skipped=0"
+  },
+  {
+    "scene": "390x844-True-step4-home",
+    "exit": 0,
+    "result": "RESULT passed=1 failed=0 skipped=0"
+  },
+  {
+    "scene": "390x844-True-step1-create",
+    "exit": 0,
+    "result": "RESULT passed=1 failed=0 skipped=0"
+  },
+  {
+    "scene": "390x844-True-step1-record",
+    "exit": 0,
+    "result": "RESULT passed=1 failed=0 skipped=0"
+  },
+  {
+    "scene": "390x844-True-step1-reward",
+    "exit": 0,
+    "result": "RESULT passed=1 failed=0 skipped=0"
+  }
+]

@@ -23,7 +23,7 @@ class HomeAlbumShelf extends StatefulWidget {
   final bool grid;
 
   static double stripHeight(BuildContext context) =>
-      80 + MediaQuery.textScalerOf(context).scale(11) * 1.45;
+      94 + MediaQuery.textScalerOf(context).scale(11) * 1.45;
 
   @override
   State<HomeAlbumShelf> createState() => _HomeAlbumShelfState();
@@ -93,7 +93,7 @@ class _HomeAlbumShelfState extends State<HomeAlbumShelf> {
               60.0,
               96.0,
             );
-      const coverHeight = 54.0;
+      const coverHeight = 68.0;
       final itemHeight = coverHeight + labelHeight + 22;
       final extent = widget.grid ? itemHeight + gap : itemWidth + gap;
       final viewport = widget.grid

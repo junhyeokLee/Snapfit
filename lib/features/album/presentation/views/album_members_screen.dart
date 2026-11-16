@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 import '../../../../shared/widgets/experience_style.dart';
 import '../../data/api/album_provider.dart';
 import '../../data/dto/album_member_response.dart';
@@ -9,6 +10,7 @@ import '../../domain/entities/album.dart';
 import '../../service/album_collaboration_session.dart';
 import '../viewmodels/home_view_model.dart';
 import 'album_invite_screen.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 final albumMembersProvider = FutureProvider.autoDispose
     .family<List<AlbumMemberResponse>, int>((ref, albumId) async {
@@ -35,6 +37,32 @@ class _AlbumMembersScreenState extends ConsumerState<AlbumMembersScreen> {
       !_sessionChanged &&
       _revision == revision &&
       ref.read(albumCollaborationActorProvider) == actor;
+
+  Future<void> _openInvite() async {
+    if (!mounted || _busy || _sessionChanged) return;
+    final actor = ref.read(albumCollaborationActorProvider);
+    if (actor == null || ModalRoute.of(context)?.isCurrent == false) return;
+    final album = widget.album;
+    final revision = ++_revision;
+    setState(() => _busy = true);
+    try {
+      await Navigator.push<void>(
+        context,
+        snapFitRoute<void>(page: AlbumInviteScreen(
+            albumId: album.id,
+            albumTitle: album.title,
+            album: album,
+          )),
+      );
+      if (_current(actor, revision) &&
+          widget.album.id == album.id &&
+          ModalRoute.of(context)?.isCurrent != false) {
+        ref.invalidate(albumMembersProvider(album.id));
+      }
+    } finally {
+      if (_current(actor, revision)) setState(() => _busy = false);
+    }
+  }
 
   Future<bool> _confirm(String title, String copy, String action) async =>
       await showDialog<bool>(
@@ -200,19 +228,8 @@ class _AlbumMembersScreenState extends ConsumerState<AlbumMembersScreen> {
                         Align(
                           alignment: Alignment.centerLeft,
                           child: FilledButton.icon(
-                            onPressed: _busy
-                                ? null
-                                : () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute<void>(
-                                      builder: (_) => AlbumInviteScreen(
-                                        albumId: widget.album.id,
-                                        albumTitle: widget.album.title,
-                                        album: widget.album,
-                                      ),
-                                    ),
-                                  ),
-                            icon: const Icon(Icons.person_add_alt_1),
+                            onPressed: _busy ? null : _openInvite,
+                            icon: const ExperienceIcon('UserPlus', size: 20),
                             label: const Text('멤버 초대'),
                           ),
                         ),
@@ -224,7 +241,7 @@ class _AlbumMembersScreenState extends ConsumerState<AlbumMembersScreen> {
                             onPressed: _busy
                                 ? null
                                 : () => _change(self, 'revoke'),
-                            icon: const Icon(Icons.link_off),
+                            icon: const ExperienceIcon('Unlink', size: 20),
                             label: const Text('미사용 초대 링크 취소'),
                           ),
                         ),
@@ -281,7 +298,7 @@ class _AlbumMembersScreenState extends ConsumerState<AlbumMembersScreen> {
         children: [
           const Padding(
             padding: EdgeInsets.only(top: 6, right: 14),
-            child: Icon(Icons.person_outline),
+            child: ExperienceIcon('UserRound', size: 24),
           ),
           Expanded(
             child: Column(

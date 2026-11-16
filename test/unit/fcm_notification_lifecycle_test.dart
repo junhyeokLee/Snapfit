@@ -141,6 +141,17 @@ void main() {
               request: request,
             );
           }
+          if (request.url.path.endsWith('/push_preferences') &&
+              request.method == 'PATCH') {
+            return http.Response(
+              jsonEncode({
+                'user_id': Supabase.instance.client.auth.currentUser!.id,
+              }),
+              200,
+              headers: {'content-type': 'application/json'},
+              request: request,
+            );
+          }
           if (request.url.path.endsWith('/register_push_device'))
             return http.Response('', 204, request: request);
           return http.Response(

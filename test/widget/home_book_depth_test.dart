@@ -68,6 +68,21 @@ class _ChangingHome extends FakeHomeViewModel {
   void replaceAlbums(List<Album> albums) => state = AsyncData(albums);
 }
 
+Future<void> _precacheVisibleImages(WidgetTester tester) async {
+  await tester.runAsync(() async {
+    final cache = PaintingBinding.instance.imageCache;
+    for (final element in find.byType(Image).evaluate()) {
+      final provider = (element.widget as Image).image;
+      final key = await provider.obtainKey(
+        createLocalImageConfiguration(element),
+      );
+      // 가상 시간에서 시작한 미완료 디코딩을 실제 시간의 precache가 기다리지 않게 한다.
+      if (cache.statusForKey(key).pending) cache.evict(key);
+      await precacheImage(provider, element);
+    }
+  });
+}
+
 Album _album(
   double ratio,
   String shape, {
@@ -185,13 +200,16 @@ Future<GlobalKey> _boot(
   );
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 200));
-  await tester.runAsync(() async {
-    for (final element in find.byType(Image).evaluate()) {
-      await precacheImage((element.widget as Image).image, element);
-    }
-  });
+  await _precacheVisibleImages(tester);
   await tester.pump();
   await tester.pumpAndSettle();
+  // These scenarios exercise the saved album viewer below the journal. The
+  // separate HomeScreen composition tests keep the true initial offset at zero.
+  final stage = find.byKey(const ValueKey('home-bookshelf-stage'));
+  if (stage.evaluate().isNotEmpty) {
+    await tester.ensureVisible(stage);
+    await tester.pumpAndSettle();
+  }
   return key;
 }
 
@@ -274,8 +292,17 @@ void _expectFrontFacing(AlbumOpenOrigin origin) {
 
 void main() {
   _PaintBinding();
-  setUpAll(loadCreationFonts);
+  setUpAll(() async {
+    await loadCreationFonts();
+    // 테스트별 가상 시간 안에서 시작한 파일 목록 로딩이 다음 검사에 남지 않게 한다.
+    rootBundle.evict('AssetManifest.bin');
+    await AssetManifest.loadFromAssetBundle(rootBundle);
+  });
   setUp(() async {
+    // 이전 테스트에서 끝나지 않은 이미지 스트림을 새 테스트가 재사용하지 않게 한다.
+    PaintingBinding.instance.imageCache
+      ..clear()
+      ..clearLiveImages();
     SharedPreferences.setMockInitialValues({});
     FlutterSecureStorage.setMockInitialValues({});
     CatalogFavorites.instance = CatalogFavorites();
@@ -469,6 +496,13 @@ void main() {
           break;
       }
       final landscape = size.width > size.height;
+      if (!landscape) {
+        expect(
+          find.byKey(const ValueKey('reader-spread-strip')),
+          findsOneWidget,
+        );
+        expect(find.byTooltip('쪽 목록 열기'), findsNothing);
+      }
       final list = find.byKey(
         ValueKey(landscape ? 'reader-spread-rail' : 'reader-spread-strip'),
       );
@@ -571,6 +605,14 @@ void main() {
               .controller!;
           expect(controller.isReady, isTrue);
           final landscape = size.width > size.height;
+          if (!landscape) {
+            expect(
+              find.byKey(const ValueKey('reader-spread-strip')),
+              findsOneWidget,
+            );
+            expect(find.byTooltip('쪽 목록 열기'), findsNothing);
+            expect(find.text('전체 쪽'), findsNothing);
+          }
           final list = find.byKey(
             ValueKey(landscape ? 'reader-spread-rail' : 'reader-spread-strip'),
           );
@@ -607,7 +649,15 @@ void main() {
                   find.byKey(const ValueKey('reader-page-position')),
                 )
                 .data,
-            '23–24쪽 / 24쪽',
+            landscape ? '23–24쪽 / 24쪽' : '23 / 24쪽',
+          );
+          expect(
+            tester
+                .widget<AlbumReaderSinglePageView>(
+                  find.byType(AlbumReaderSinglePageView),
+                )
+                .requestedFocusPageIndex,
+            23,
           );
           await _save(
             tester,
@@ -635,6 +685,14 @@ void main() {
                 .controller!
                 .currentSpread,
             12,
+          );
+          expect(
+            tester
+                .widget<AlbumReaderSinglePageView>(
+                  find.byType(AlbumReaderSinglePageView),
+                )
+                .requestedFocusPageIndex,
+            23,
           );
           expect(tester.takeException(), isNull);
           Navigator.of(tester.element(find.byType(AlbumReaderScreen))).pop();
@@ -1587,6 +1645,7 @@ void main() {
     expect(cover.primary, isFalse);
     expect(coverController.positions, hasLength(1));
     final coverOffset = coverController.offset;
+    final coverExtent = coverController.position.maxScrollExtent;
     final toggle = find.byKey(const ValueKey('home-album-view-toggle'));
     await tester.tap(toggle);
     await tester.pumpAndSettle();
@@ -1629,6 +1688,7 @@ void main() {
     final collectionOffset = collectionController.offset;
     expect(collectionOffset, greaterThan(120));
     expect(coverController.offset, coverOffset);
+    expect(coverController.position.maxScrollExtent, coverExtent);
     await tester.tap(toggle);
     await tester.pumpAndSettle();
     expect(tester.state(find.byType(HomeAlbumSlider)), same(sliderState));
@@ -1789,6 +1849,7 @@ void main() {
         await tester.pumpAndSettle();
         final title = find.byKey(const ValueKey('home-focused-album-title'));
         final status = find.byKey(const ValueKey('home-focused-album-status'));
+        final open = find.byKey(const ValueKey('home-focused-album-open'));
         await tester.ensureVisible(status);
         await tester.pumpAndSettle();
         final statusBounds = tester.getRect(status);
@@ -1815,6 +1876,31 @@ void main() {
         expect(
           tester.getSemantics(status).getSemanticsData().label,
           contains('보기 전용, 0/8 페이지 진행 중'),
+        );
+        await tester.ensureVisible(open);
+        await tester.pumpAndSettle();
+        final openBounds = tester.getRect(open);
+        expect(open.hitTestable(), findsOneWidget);
+        expect(openBounds.height, greaterThanOrEqualTo(44));
+        expect(openBounds.left, greaterThanOrEqualTo(0));
+        expect(openBounds.right, lessThanOrEqualTo(size.width));
+        expect(
+          openBounds.top,
+          greaterThanOrEqualTo(tester.getRect(status).bottom),
+        );
+        final openLabel = find.descendant(
+          of: open,
+          matching: find.text('앨범보기'),
+        );
+        expect(
+          tester.renderObject<RenderParagraph>(openLabel).didExceedMaxLines,
+          isFalse,
+        );
+        final labelBounds = tester.getRect(openLabel);
+        expect(openBounds.inflate(.5).contains(labelBounds.topLeft), isTrue);
+        expect(
+          openBounds.inflate(.5).contains(labelBounds.bottomRight),
+          isTrue,
         );
         expect(tester.takeException(), isNull);
       }
@@ -1851,11 +1937,7 @@ void main() {
           'square',
           catalog: albums,
         );
-        await tester.runAsync(() async {
-          for (final element in find.byType(Image).evaluate()) {
-            await precacheImage((element.widget as Image).image, element);
-          }
-        });
+        await _precacheVisibleImages(tester);
         await tester.pump();
         final cards = tester.widgetList<HomeAlbumSliderCard>(
           find.byType(HomeAlbumSliderCard),
@@ -2043,6 +2125,68 @@ void main() {
     await tester.pump(const Duration(milliseconds: 800));
     await tester.pumpWidget(const SizedBox());
   });
+
+  for (final viewer in [false, true]) {
+    testWidgets(
+      'labelled album entry opens selected ${viewer ? 'viewer' : 'owned'} album once',
+      (tester) async {
+        final selected = _album(.75, 'portrait').copyWith(
+          id: 18,
+          title: '선택한 두 번째 앨범',
+          userId: viewer ? 'another-owner' : 'qa',
+          memberRole: viewer ? 'VIEWER' : 'OWNER',
+        );
+        await _boot(
+          tester,
+          const Size(390, 844),
+          false,
+          1,
+          'square',
+          catalog: [_album(1, 'square'), selected],
+          reduceMotion: true,
+        );
+        await tester.ensureVisible(
+          find.byKey(const ValueKey('home-shelf-album-18')),
+        );
+        await tester.tap(find.byKey(const ValueKey('home-shelf-album-18')));
+        await tester.pumpAndSettle();
+        expect(find.text(selected.title), findsWidgets);
+        final open = find.byKey(const ValueKey('home-focused-album-open'));
+        await tester.ensureVisible(open);
+        await tester.pumpAndSettle();
+        expect(find.text('앨범보기'), findsOneWidget);
+        final button = tester.widget<OutlinedButton>(open);
+        expect(button.onPressed, isNotNull);
+        // A rapid repeated activation must share the existing guarded route.
+        await tester.tap(open);
+        button.onPressed!();
+        for (
+          var i = 0;
+          i < 40 && find.byType(AlbumReaderScreen).evaluate().isEmpty;
+          i++
+        ) {
+          await tester.pump(const Duration(milliseconds: 16));
+        }
+        expect(find.byType(AlbumReaderScreen), findsOneWidget);
+        final container = ProviderScope.containerOf(
+          tester.element(find.byType(AlbumReaderScreen)),
+        );
+        final loaded = container.read(albumEditorViewModelProvider.notifier);
+        expect(loaded.editingAlbumId, selected.id);
+        expect(loaded.album?.userId, selected.userId);
+        expect(loaded.album?.memberRole, selected.memberRole);
+        expect(loaded.album?.allowsEditing, !viewer);
+        expect(loaded.pages, isNotEmpty);
+        expect(tester.takeException(), isNull);
+        Navigator.of(tester.element(find.byType(AlbumReaderScreen))).pop();
+        await tester.pumpAndSettle();
+        await HomeAlbumActions.waitForReaderToClose();
+        expect(find.byType(AlbumReaderScreen), findsNothing);
+        expect(find.byType(HomeAlbumSlider), findsOneWidget);
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+  }
 
   test(
     'opening interpolation preserves perspective and both exact endpoints',
@@ -2342,13 +2486,18 @@ void main() {
               findsOneWidget,
             );
             final edit = find.text('편집');
-            final editSurface = tester.widget<Material>(
-              find.ancestor(of: edit, matching: find.byType(Material)).first,
-            );
-            expect(
-              editSurface.color,
-              AlbumStageStyle.controlFill(tester.element(edit)),
-            );
+            if (size.width > size.height) {
+              final editSurface = tester.widget<Material>(
+                find.ancestor(of: edit, matching: find.byType(Material)).first,
+              );
+              expect(
+                editSurface.color,
+                AlbumStageStyle.controlFill(tester.element(edit)),
+              );
+            } else {
+              expect(edit, findsNothing);
+              expect(find.byTooltip('앨범 메뉴').hitTestable(), findsOneWidget);
+            }
             expect(find.byType(BookFlip, skipOffstage: false), findsOneWidget);
             expect(tester.takeException(), isNull);
             Navigator.of(tester.element(find.byType(AlbumReaderScreen))).pop();

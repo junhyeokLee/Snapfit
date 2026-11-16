@@ -51,7 +51,7 @@ void main() {
                   favoritesOnly: false,
                   onFavoritesChanged: () {},
                   resultLabel: '120개의 템플릿',
-                  sort: '추천순',
+                  sort: '최신순',
                   onSortChanged: (_) {},
                   filtersActive: true,
                   onReset: () {},
@@ -85,7 +85,7 @@ void main() {
     (tester) async {
       final controller = TextEditingController();
       addTearDown(controller.dispose);
-      String category = '전체', price = '전체', sort = '추천순', query = '';
+      String category = '전체', price = '전체', sort = '최신순', query = '';
       bool favorite = false;
       var resets = 0;
       await tester.pumpWidget(
@@ -113,7 +113,7 @@ void main() {
                   category = '전체';
                   price = '전체';
                   favorite = false;
-                  sort = '추천순';
+                  sort = '최신순';
                   resets++;
                 }),
               ),
@@ -136,14 +136,16 @@ void main() {
       expect(price, '보유');
       await tester.tap(find.byKey(const ValueKey('web-catalog-sort')));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('이름순').last);
+      expect(find.text('이름순'), findsNothing);
+      expect(find.text('추천순'), findsNothing);
+      await tester.tap(find.text('인기순').last);
       await tester.pumpAndSettle();
-      expect(sort, '이름순');
+      expect(sort, '인기순');
       await tester.tap(find.byKey(const ValueKey('web-catalog-reset')));
       await tester.pumpAndSettle();
       expect(
         [controller.text, query, category, price, sort],
-        ['', '', '전체', '전체', '추천순'],
+        ['', '', '전체', '전체', '최신순'],
       );
       expect(favorite, isFalse);
       expect(resets, 1);

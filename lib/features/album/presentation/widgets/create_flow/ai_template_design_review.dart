@@ -10,6 +10,7 @@ import '../../../ai_album/domain/ai_template_paper_tone.dart';
 import '../../../domain/entities/layer.dart';
 import 'creation_document_preview.dart';
 import 'ai_template_text_edit_dialog.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 class AiTemplateDesignReview extends StatefulWidget {
   const AiTemplateDesignReview({
@@ -236,7 +237,7 @@ class _AiTemplateDesignReviewState extends State<AiTemplateDesignReview> {
                   IconButton(
                     tooltip: '디자인 정보 닫기',
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close_rounded),
+                    icon: const ExperienceIcon('X'),
                   ),
                 ],
               ),
@@ -451,7 +452,7 @@ class _AiTemplateDesignReviewState extends State<AiTemplateDesignReview> {
                     IconButton(
                       tooltip: '디자인 정보',
                       onPressed: _showDirection,
-                      icon: const Icon(Icons.info_outline_rounded, size: 21),
+                      icon: const ExperienceIcon('Info', size: 21),
                     ),
                     if (!widget.readOnly &&
                         !_showPrevious &&
@@ -459,7 +460,7 @@ class _AiTemplateDesignReviewState extends State<AiTemplateDesignReview> {
                       IconButton(
                         tooltip: '종이 톤 조절',
                         onPressed: widget.isAccepting ? null : _showPaperTones,
-                        icon: const Icon(Icons.palette_outlined, size: 21),
+                        icon: const ExperienceIcon('PaintBucket', size: 21),
                       ),
                     if (!widget.readOnly &&
                         !_showPrevious &&
@@ -473,7 +474,7 @@ class _AiTemplateDesignReviewState extends State<AiTemplateDesignReview> {
                       IconButton(
                         tooltip: '문구 수정',
                         onPressed: widget.isAccepting ? null : _showTextEditor,
-                        icon: const Icon(Icons.edit_note_rounded, size: 21),
+                        icon: const ExperienceIcon('PenLine', size: 21),
                       ),
                     IconButton(
                       tooltip: widget.readOnly ? '비교 닫기' : '디자인 요청 수정',
@@ -505,10 +506,7 @@ class _AiTemplateDesignReviewState extends State<AiTemplateDesignReview> {
                           onPressed: widget.isAccepting
                               ? null
                               : _toggleComparison,
-                          icon: const Icon(
-                            Icons.compare_arrows_rounded,
-                            size: 18,
-                          ),
+                          icon: const ExperienceIcon('ArrowLeftRight', size: 18),
                           label: Text(_showPrevious ? '현재 결과 보기' : '이전 결과와 비교'),
                         ),
                       if (_showPrevious || widget.readOnly)

@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url'
 import { printCheckoutConsent } from '../../supabase/functions/_shared/print-checkout-consent.ts'
 const { PGlite }=await import(process.env.PGLITE_MODULE?pathToFileURL(process.env.PGLITE_MODULE).href:'@electric-sql/pglite')
 const migration=readFileSync(new URL('../../supabase/migrations/20261018183536_print_public_catalog_and_order_consent.sql',import.meta.url),'utf8')
+const policyUpgrade=readFileSync(new URL('../../supabase/migrations/20261030090711_print_commerce_registered_seller_point_policy.sql',import.meta.url),'utf8')
 const owner='11111111-1111-4111-8111-111111111111',other='22222222-2222-4222-8222-222222222222',id='33333333-3333-4333-8333-333333333333'
 async function fixture(){const db=new PGlite();await db.exec(`
  create role anon;create role authenticated;create role service_role bypassrls;create schema private;
@@ -29,7 +30,7 @@ async function fixture(){const db=new PGlite();await db.exec(`
  insert into private.fixture_prices values('REDP_200_SOFT',20,49900,true),('REDP_300_HARD',80,159900,true),('REDP_200_SOFT',22,59900,false);
  insert into public.redprinting_dev_codes values('private-code','Y');
  insert into public.redprinting_dev_mappings values('REDP_300_HARD',80,'private-code',true,'Y','Y');
- `);await db.exec(migration);return db}
+ `);await db.exec(migration);await db.exec(policyUpgrade);return db}
 const record=(db,actor=owner,consent=printCheckoutConsent)=>db.query('select public.record_print_checkout_consent($1,$2,$3)',[actor,`SFP_${id}`,JSON.stringify(consent)])
 test('public projection follows exact source prices, includes only confirmed quotes and reveals no supplier costs/code',async()=>{
  const db=await fixture();try{

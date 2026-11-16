@@ -1,0 +1,162 @@
+{
+  "date": "2026-11-03",
+  "scope": "Quality-first operational curation and one new free reading journal",
+  "curation": {
+    "productionApplied": true,
+    "version": 4,
+    "previousBooks": 8,
+    "books": 12,
+    "topics": 10,
+    "free": 5,
+    "paid": 7,
+    "keys": [
+      "template:story-coffee-notebook",
+      "template:story-night-city-archive",
+      "template:story-sport-pace-study",
+      "template:our-walking-promise",
+      "template:dates-of-us",
+      "template:story-club-run-together",
+      "template:story-morning-vow",
+      "template:story-last-classroom",
+      "template:story-little-forest",
+      "template:our-good-company",
+      "template:taste-archive",
+      "template:story-coast-address"
+    ],
+    "anonymousHTTPAndAllAccessQuotesVerified": true,
+    "offlineSelectionMatchesLive": true
+  },
+  "newBook": {
+    "id": -9771,
+    "productKey": "template:story-reading-room",
+    "title": "책장 사이의 오후",
+    "category": "취미·기록",
+    "price": 0,
+    "innerPages": 24,
+    "exclusiveNewPhotographs": 5,
+    "independentlyEditableNewMaterials": 3,
+    "actualIncludedMaterials": 5,
+    "printRatios": [
+      "square",
+      "landscape4x3",
+      "landscape5x4"
+    ],
+    "currentAppCatalogTopics": 11,
+    "currentAppCatalogBooks": 136,
+    "freeBooks": 49,
+    "paidBooks": 87
+  },
+  "artwork": {
+    "generator": "built-in image_gen",
+    "promptSet": "prompt-set.json",
+    "provenance": "artwork-provenance.json",
+    "originalsPreserved": true,
+    "newPhotoDimensions": [
+      1536,
+      1024
+    ],
+    "sampleReuseBetweenBooks": false,
+    "nativeWholeBookProofs": 39,
+    "allPagesVisuallyReviewed": true,
+    "wholeSourcePhotoApertureRatio": 1.5,
+    "nativeFontFitAndTextPhotoOverlapTestsPassed": true,
+    "readingCardTextFitsActualPaperInAllRatios": true,
+    "editorSaveRestoreLayerChecksPassed": true,
+    "usedMaterialsMatchInventory": true,
+    "independentCodeReview": true
+  },
+  "preservation": {
+    "previousFiles": 150,
+    "allPreviousExactBytesPreserved": true,
+    "currentDocuments": 148,
+    "updatedDocumentIds": [
+      "-9771"
+    ],
+    "newArtworkRevision": "f5e2b01ca70a8d75"
+  },
+  "exports": {
+    "compactPreviews": "preview-export.log",
+    "fullDetail": "detail-export.log",
+    "metadata": "catalog-metadata.log",
+    "coverAndMaterials": "thumbnail-export.log",
+    "correctedCover": "cover-export-recheck.log",
+    "representativeSpread": "editorial-export.log",
+    "loadingSkeletonExportBugFixed": true,
+    "coverFingerprint": "e6cb649e928132d360d38240b4cbc07a068aa77784a9cf7a0cd3631312a22558"
+  },
+  "checks": [
+    {
+      "log": "curation-tests.log",
+      "passed": 13,
+      "failed": 0
+    },
+    {
+      "log": "reading-release-tests.log",
+      "passed": 219,
+      "failed": 0,
+      "scope": "reading layout, catalog tiers, prices, legacy story books, publication badge policy and exact free release rows"
+    },
+    {
+      "log": "render-review.log",
+      "passed": 1,
+      "failed": 0,
+      "nativeOutputViews": 39
+    },
+    {
+      "log": "final-ui-tests.log",
+      "passed": 36,
+      "failedInitially": 7,
+      "note": "All reading save/restore and all24 store-main checks passed. Seven stale UI assumptions were corrected and rechecked in the following logs."
+    },
+    {
+      "log": "ui-regression-recheck.log",
+      "passed": 13,
+      "failedInitially": 2,
+      "scope": "all10 recommendation UI cases passed; two editorial cases then fixed in final recheck"
+    },
+    {
+      "log": "editorial-final-recheck.log",
+      "passed": 15,
+      "failed": 0,
+      "scope": "all5 editorial UI cases plus10 curation/recommendation unit cases"
+    },
+    {
+      "log": "analyze.log",
+      "result": "No issues found",
+      "items": 15
+    },
+    {
+      "log": "exporter-analyze.log",
+      "result": "No issues found",
+      "items": 1
+    }
+  ],
+  "production": {
+    "project": "rrbhxdtriummqpztpjrk",
+    "newProductRows": 4,
+    "allFreeAndActive": true,
+    "anonymousCatalogAndAccessQuotesVerified": true,
+    "unrelatedProductRowsPreservedByTransactionFingerprint": true,
+    "customerAlbumWalletOwnershipWrites": false,
+    "firstPublicationRowsCreated": 0,
+    "appCatalogPubliclyDeployed": false
+  },
+  "limitations": [
+    "No application build or deployment was run, following AGENTS.md. The new book, category and quality recommendation code become visible with the next application release. The12 existing-book live curation changes are already active.",
+    "The new products have active0P operating rows; operating registration is not claimed as customer-facing app publication. First-publication and NEW metadata must be added only after actual app exposure.",
+    "Browser automation timed out; live verification used anonymous public HTTPS catalog and read-only access quotes, not a successful live UI session.",
+    "No physical print or paid purchase was made."
+  ],
+  "evidenceBase": "output/reading-edition-20261103/",
+  "evidence": [
+    "reading-room-preview.jpg",
+    "full-book-square.jpg",
+    "full-book-landscape4x3.jpg",
+    "full-book-landscape5x4.jpg",
+    "photography-proof.jpg",
+    "production-verification.json",
+    "public-curation-verification.json",
+    "public-reading-registration-verification.json",
+    "asset-preservation.json"
+  ]
+}

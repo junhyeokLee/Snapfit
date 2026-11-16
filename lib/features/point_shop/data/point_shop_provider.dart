@@ -16,7 +16,12 @@ final pointShopSessionProvider = StreamProvider<String?>((ref) async* {
 });
 
 final pointShopCatalogProvider = FutureProvider<List<PointShopProduct>>(
-  (ref) => ref.watch(pointShopRepositoryProvider).loadCatalog(),
+  (ref) => ref
+      .watch(pointShopRepositoryProvider)
+      .loadCatalog()
+      .timeout(const Duration(seconds: 12)),
+  // The bounded read must reveal the catalog's explicit retry action.
+  retry: (_, _) => null,
 );
 
 final ownedPointShopKeysProvider = FutureProvider<Set<String>>((ref) async {
@@ -24,7 +29,9 @@ final ownedPointShopKeysProvider = FutureProvider<Set<String>>((ref) async {
   final owner = ref.watch(visibleOrderOwnerProvider);
   final repository = ref.watch(pointShopRepositoryProvider);
   if (owner == null || repository.currentUserId != owner) return const {};
-  final keys = await repository.loadOwnedKeys();
+  final keys = await repository.loadOwnedKeys().timeout(
+    const Duration(seconds: 12),
+  );
   return ref.mounted &&
           ref.read(visibleOrderOwnerProvider) == owner &&
           repository.currentUserId == owner
@@ -37,6 +44,7 @@ void refreshPointShop(WidgetRef ref) {
   ref.invalidate(ownedPointShopKeysProvider);
   ref.invalidate(myPointBalanceProvider);
   ref.invalidate(myPointLedgerProvider);
+  ref.invalidate(pointLedgerHistoryProvider);
 }
 
 class PointShopPurchaseCoordinator {

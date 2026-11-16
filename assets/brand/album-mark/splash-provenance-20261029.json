@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-29",
+  "mode": "built-in image_gen image editing; no CLI or fallback API",
+  "concept": "일상의 사진이 한 권의 앨범으로 모이는 장면",
+  "generationBrief": "Full-bleed SnapFit splash on logo cyan #0AB5D1, exact white open-book + lowercase snapfit lockup, tangible ivory photo album with cyan cloth cover, people-free seaside/cat/cafe/nature photo layouts, soft editorial daylight and generous breathing room. No people, couple, UI, extra words or decorative clutter.",
+  "inputBrandReference": "Existing white lockup in the old assets/splash.png; backed up in output/splash-redesign-20261029/originals/assets/splash.png. The superseded green wordmark-white.png was not used.",
+  "selectedAssets": [
+    {
+      "path": "assets/splash.png",
+      "generatedSource": "/Users/devsheep/.codex/generated_images/01a16f1a-9f3a-7a83-8359-1fa96e7f30e3/exec-6459468d-22b2-44bf-825a-6179543e292d.png",
+      "beforeBytes": 2214670,
+      "afterBytes": 1822590,
+      "width": 941,
+      "height": 1672,
+      "sha256": "4fe95df8a7a5cb09826d4ca1b5325c518eadb689063d6df39c571da0a503c16f"
+    },
+    {
+      "path": "assets/brand/album-mark/splash-portrait.png",
+      "generatedSource": "/Users/devsheep/.codex/generated_images/01a16f1a-9f3a-7a83-8359-1fa96e7f30e3/exec-6459468d-22b2-44bf-825a-6179543e292d.png",
+      "beforeBytes": 2214670,
+      "afterBytes": 1822590,
+      "width": 941,
+      "height": 1672,
+      "sha256": "4fe95df8a7a5cb09826d4ca1b5325c518eadb689063d6df39c571da0a503c16f"
+    },
+    {
+      "path": "assets/brand/album-mark/splash-landscape.png",
+      "generatedSource": "/Users/devsheep/.codex/generated_images/01a16f1a-9f3a-7a83-8359-1fa96e7f30e3/exec-f631c674-0d15-49ca-91d0-aca52a4f4564.png",
+      "beforeBytes": 2489366,
+      "afterBytes": 1668560,
+      "width": 1672,
+      "height": 941,
+      "sha256": "a643059dfcb874e925b74c5462062dfc7a1dd04da79352ef86c55ad02ac2464a"
+    }
+  ],
+  "finalEditPrompts": [
+    {
+      "target": "portrait",
+      "input": "exec-3d700fec-8998-488e-bd49-b49e730b4705.png",
+      "output": "exec-6459468d-22b2-44bf-825a-6179543e292d.png",
+      "prompt": "Edit this portrait SnapFit splash with ONE composition correction. Preserve the exact white open-book + lowercase snapfit logo, its position, scale, shape and typography completely unchanged. Preserve the cyan color identity, premium real printed-paper album, same cat/cafe/nature photos, light direction and refined material quality. Scale the ENTIRE lower album-and-loose-photo ensemble down to about 72% of its current total width, then move the ensemble upward slightly. Everything in this ensemble, INCLUDING all loose prints and book corners, must fit wholly between x=14% and x=86%, and between y=36% and y=71% of the full portrait canvas. The book must still be large and readable, with all covers and corners in frame. Extend the calm cyan surface naturally around it; do not add anything. This is essential for narrow phone center crops and portrait tablets: the entire book and the white logo must survive those crops. Keep the final portrait dimensions and visual style. No additional text, people, hands, graphics, devices, shadows from new objects, frames, gradients or decorations. Exactly one full-bleed final splash."
+    },
+    {
+      "target": "landscape",
+      "input": "exec-a0854162-c052-4772-99a2-31acd6fa00b3.png",
+      "output": "exec-f631c674-0d15-49ca-91d0-aca52a4f4564.png",
+      "prompt": "Make only a small crop-safety layout adjustment to this finished 1672x941 landscape SnapFit splash. Keep all colors, style, photo content and the exact white logo lettering/emblem intact. Keep the same aspect and overall composition.\n1) The white logo must be a LITTLE SMALLER and shifted right: target total logo width 23% of full canvas, center x=26%, y=49%. Every logo pixel must be between x=14.5% and x=37.5%. It must not touch the book. This fixes clipping of the left white book emblem on 4:3 tablets.\n2) Scale the entire album + ALL loose photo prints as ONE group to about 90% of its current size, centered near x=63%, y=51%. Make every corner, including the loose print at the top and the lower right album corner, fit inside x=39%..86%, y=14%..84%. Add nothing and remove no photos. Extend the same cyan backdrop around the shifted group naturally.\nResult should look almost the same but survive a central 4:3 crop and a very wide 20:9 crop without cutting the logo or book. Do not change the album material, image details, layout inside its pages or lighting. No people, new text, new graphics or extra elements. Exactly one finished image."
+    }
+  ],
+  "integration": {
+    "flutter": "Existing 900ms native full artwork screen; orientation-specific images, cyan fallback background. Existing auth/introduction/deep-link behavior retained.",
+    "system": "Existing white book logo centered on cyan on Android and iOS. Android 12 icon bytes unchanged.",
+    "web": "No full-screen photographic splash is added; immediate-entry policy retained."
+  },
+  "notes": [
+    "All pictured album photos are AI-generated app branding artwork, not customer album photos.",
+    "Selected PNG files are copied without creative post-processing or metadata re-encoding.",
+    "Original replaced splash files are backed up under output/splash-redesign-20261029/originals."
+  ]
+}

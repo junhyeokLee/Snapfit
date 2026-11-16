@@ -44,6 +44,7 @@ class HomeAlbumTabScreen extends ConsumerStatefulWidget {
     this.onShowCovers,
     this.onCreateAlbum,
     this.onResumeDraft,
+    this.footer,
   });
   final List<Album> allAlbums;
   final String currentUserId;
@@ -54,6 +55,7 @@ class HomeAlbumTabScreen extends ConsumerStatefulWidget {
   final bool showHeader;
   final ScrollController? scrollController;
   final VoidCallback? onShowCovers, onCreateAlbum, onResumeDraft;
+  final Widget? footer;
 
   @override
   ConsumerState<HomeAlbumTabScreen> createState() => _HomeAlbumTabScreenState();
@@ -303,7 +305,7 @@ class _HomeAlbumTabScreenState extends ConsumerState<HomeAlbumTabScreen>
                       ),
                     ),
                   ),
-                if (_visibleAlbums.isEmpty)
+                if (_visibleAlbums.isEmpty && widget.footer == null)
                   SliverFillRemaining(
                     hasScrollBody: false,
                     child: Center(
@@ -321,6 +323,25 @@ class _HomeAlbumTabScreenState extends ConsumerState<HomeAlbumTabScreen>
                             14,
                             secondary: true,
                           ),
+                        ),
+                      ),
+                    ),
+                  )
+                else if (_visibleAlbums.isEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(28),
+                      child: Text(
+                        _filtering
+                            ? '앨범 상태를 확인하고 있어요.'
+                            : _filter == _AlbumFilter.all
+                            ? '아직 이곳에 모인 앨범이 없어요.'
+                            : '이 상태의 앨범이 아직 없어요.',
+                        textAlign: TextAlign.center,
+                        style: ExperienceFormStyle.text(
+                          context,
+                          14,
+                          secondary: true,
                         ),
                       ),
                     ),
@@ -395,6 +416,8 @@ class _HomeAlbumTabScreenState extends ConsumerState<HomeAlbumTabScreen>
                       },
                     ),
                   ),
+                if (widget.footer != null)
+                  SliverToBoxAdapter(child: widget.footer),
               ],
             ),
           ),
@@ -465,7 +488,7 @@ class _HomeAlbumTabScreenState extends ConsumerState<HomeAlbumTabScreen>
                       key: const ValueKey('home-collection-view-list'),
                       selected: _listView,
                       label: '목록으로 보기',
-                      icon: const Icon(Icons.view_list_outlined, size: 21),
+                      icon: const ExperienceIcon('List', size: 21),
                       onTap: () => _setListView(true),
                     ),
                   ],

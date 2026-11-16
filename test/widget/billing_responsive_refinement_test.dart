@@ -12,7 +12,9 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
 import 'package:snap_fit/features/billing/data/billing_provider.dart';
 import 'package:snap_fit/features/billing/data/billing_repository.dart';
+import 'package:snap_fit/features/billing/data/point_purchase_service.dart';
 import 'package:snap_fit/features/profile/presentation/views/billing_management_screen.dart';
+import '../support/point_ledger_history_fakes.dart';
 import '../support/point_purchase_fakes.dart';
 
 class _PaintBinding extends AutomatedTestWidgetsFlutterBinding {
@@ -26,16 +28,16 @@ final _products = [
     id: 'snapfit_points_8000',
     title: '8,000P',
     description: '',
-    price: '₩6,900',
-    rawPrice: 6900,
+    price: '₩5,900',
+    rawPrice: 5900,
     currencyCode: 'KRW',
   ),
   ProductDetails(
     id: 'snapfit_points_18000',
     title: '18,000P',
     description: '',
-    price: '₩14,900',
-    rawPrice: 14900,
+    price: '₩11,900',
+    rawPrice: 11900,
     currencyCode: 'KRW',
   ),
 ];
@@ -140,6 +142,7 @@ void main() {
     double scale = 1.3,
     bool ai = false,
     int initialPointsTabIndex = 0,
+    PointPurchaseService? purchases,
     Future<int> Function()? balance,
     Future<List<PointLedgerEntry>> Function()? ledger,
   }) async {
@@ -147,15 +150,18 @@ void main() {
       ProviderScope(
         overrides: [
           pointPurchaseServiceProvider.overrideWith((ref) {
-            final service = fakePointPurchaseService(store: store);
+            final service = purchases ?? fakePointPurchaseService(store: store);
             ref.onDispose(service.dispose);
             return service;
           }),
           myPointBalanceProvider.overrideWith(
             (_) => balance?.call() ?? Future.value(12450),
           ),
-          myPointLedgerProvider.overrideWith(
-            (_) => ledger?.call() ?? Future.value(_entries),
+          pointLedgerHistoryProvider.overrideWith2(
+            (filter) => FixturePointLedgerHistoryController(
+              filter,
+              () => ledger?.call() ?? Future.value(_entries),
+            ),
           ),
         ],
         child: MaterialApp(
@@ -230,6 +236,56 @@ void main() {
     });
   }
 
+  testWidgets(
+    'delayed native payment keeps charge disabled and exposes recovery',
+    (tester) async {
+      resetMetrics(tester);
+      metrics(tester, const Size(390, 844));
+      await mount(tester);
+      await tap(tester, option(sku));
+      await tap(tester, action());
+      expect(store.buys, 1);
+      await tester.pump(const Duration(minutes: 2, seconds: 1));
+      await tester.pumpAndSettle();
+      expect(tester.widget<FilledButton>(action()).onPressed, isNull);
+      expect(find.text('결제 확인이 지연되고 있어요'), findsOneWidget);
+      expect(find.byKey(const ValueKey('points-payment-help')), findsOneWidget);
+      final recover = find.byKey(const ValueKey('points-purchase-recover'));
+      expect(tester.widget<TextButton>(recover).onPressed, isNotNull);
+      await tap(tester, recover);
+      expect(tester.widget<FilledButton>(action()).onPressed, isNull);
+      expect(store.buys, 1);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
+    'failed refreshed catalog disables charging and stale callbacks',
+    (tester) async {
+      resetMetrics(tester);
+      metrics(tester, const Size(390, 844));
+      await mount(tester);
+      await tap(tester, option(sku));
+      final oldCharge = tester.widget<FilledButton>(action()).onPressed!;
+      store.failQuery = true;
+      await tester.tap(find.byTooltip('포인트 새로고침'));
+      await tester.pumpAndSettle();
+      expect(tester.widget<FilledButton>(action()).onPressed, isNull);
+      expect(find.text('충전 상품 확인 필요'), findsWidgets);
+      oldCharge();
+      await tester.pumpAndSettle();
+      expect(store.buys, 0);
+      final retry = find.byKey(const ValueKey('points-catalog-retry'));
+      store.failQuery = false;
+      await tap(tester, retry);
+      expect(tester.widget<FilledButton>(action()).onPressed, isNotNull);
+      expect(
+        find.byKey(const ValueKey('points-purchase-status')),
+        findsNothing,
+      );
+      expect(store.buys, 0);
+    },
+  );
+
   for (final size in [
     const Size(320, 568),
     const Size(390, 844),
@@ -280,6 +336,134 @@ void main() {
   }
 
   testWidgets(
+    'checkout separates point amount from store price before payment',
+    (tester) async {
+      resetMetrics(tester);
+      metrics(tester, const Size(390, 844));
+      await mount(tester);
+      await tap(tester, option(sku));
+      expect(find.text('충전 포인트'), findsOneWidget);
+      expect(find.text('₩2,200 · 2,500 P 충전하기'), findsOneWidget);
+      expect(tester.widget<FilledButton>(action()).onPressed, isNotNull);
+      expect(find.text('2,500 P'), findsWidgets);
+      expect(find.text('₩2,200'), findsOneWidget);
+      expect(
+        tester.widget<Text>(find.text('₩2,200')).semanticsLabel,
+        '결제 금액 ₩2,200',
+      );
+      expect(store.buys, 0);
+      await capture(
+        tester,
+        'points-checkout-summary',
+        const Size(390, 844),
+        false,
+      );
+    },
+  );
+
+  for (final dark in [false, true]) {
+    testWidgets('points redesign at regular text size dark=$dark', (
+      tester,
+    ) async {
+      const size = Size(390, 844);
+      resetMetrics(tester);
+      metrics(tester, size);
+      await mount(tester, dark: dark, scale: 1);
+      expect(find.text('12,450 P'), findsWidgets);
+      expect(tester.widget<FilledButton>(action()).onPressed, isNull);
+      await capture(tester, 'points-redesign', size, dark);
+      await tap(tester, option(sku));
+      expect(find.text('₩2,200 · 2,500 P 충전하기'), findsOneWidget);
+      expect(store.buys, 0);
+      await capture(tester, 'points-redesign-selected', size, dark);
+      await tester.pumpWidget(const SizedBox());
+    });
+  }
+
+  testWidgets(
+    'verification waiting and failure never announce a successful grant',
+    (tester) async {
+      resetMetrics(tester);
+      metrics(tester, const Size(390, 844));
+      final verified = Completer<StorePointPurchaseResult>();
+      var started = false;
+      final purchases = PointPurchaseService(
+        store: store,
+        storage: MemoryReceipts(),
+        currentUserId: () => 'owner',
+        ensureServerAvailable: () async {},
+        verify: (_) {
+          started = true;
+          return verified.future;
+        },
+        onBalanceChanged: () {},
+      );
+      await mount(tester, purchases: purchases);
+      await tap(tester, option(sku));
+      await tester.tap(action());
+      await tester.pumpAndSettle();
+      store.controller.add([purchase(nativeOwner: 'owner')]);
+      for (var i = 0; i < 20 && !started; i++) {
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      expect(started, true);
+      expect(purchases.busy, true);
+      await visible(
+        tester,
+        find.byKey(const ValueKey('points-purchase-status')),
+      );
+      expect(find.text('결제·지급 확인 중'), findsWidgets);
+      expect(find.textContaining('지급 완료'), findsNothing);
+      expect(tester.widget<FilledButton>(action()).onPressed, isNull);
+      expect(
+        ProviderScope.containerOf(
+          tester.element(find.byType(BillingManagementScreen)),
+        ).read(myPointBalanceProvider).requireValue,
+        12450,
+      );
+      await capture(
+        tester,
+        'points-verification-waiting',
+        const Size(390, 844),
+        false,
+      );
+      verified.completeError(StateError('fixture verification unavailable'));
+      await tester.pumpAndSettle();
+      expect(purchases.message, isNotNull);
+      expect(find.text('결제 확인이 지연되고 있어요'), findsOneWidget);
+      expect(tester.widget<FilledButton>(action()).onPressed, isNull);
+      // 예상 잔액 카드 아래의 복구 액션은 스크롤로 접근한다.
+      await visible(
+        tester,
+        find.byKey(const ValueKey('points-purchase-recover')),
+      );
+      expect(
+        tester
+            .widget<TextButton>(
+              find.byKey(const ValueKey('points-purchase-recover')),
+            )
+            .onPressed,
+        isNotNull,
+      );
+      expect(find.textContaining('지급 완료'), findsNothing);
+      expect(
+        ProviderScope.containerOf(
+          tester.element(find.byType(BillingManagementScreen)),
+        ).read(myPointBalanceProvider).requireValue,
+        12450,
+      );
+      await capture(
+        tester,
+        'points-verification-retry',
+        const Size(390, 844),
+        false,
+      );
+      expect(store.buys, 1);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
     'My point history shortcut starts in history and can return to charge',
     (tester) async {
       resetMetrics(tester);
@@ -305,7 +489,7 @@ void main() {
       await tap(tester, option('snapfit_points_8000'));
       metrics(tester, const Size(648, 320));
       await tester.pumpAndSettle();
-      expect(find.text('₩6,900 · 8,000 P 충전하기'), findsOneWidget);
+      expect(find.text('₩5,900 · 8,000 P 충전하기'), findsOneWidget);
       await history(tester);
       await tap(tester, find.text('차감'));
       metrics(tester, const Size(390, 844));
@@ -313,7 +497,7 @@ void main() {
       expect(action(), findsNothing);
       expect(find.byKey(const ValueKey('points-ledger-4')), findsNothing);
       await tap(tester, find.text('충전'));
-      expect(find.text('₩6,900 · 8,000 P 충전하기'), findsOneWidget);
+      expect(find.text('₩5,900 · 8,000 P 충전하기'), findsOneWidget);
       expect(store.buys, 0);
       expect(store.queries, 1);
       expect(tester.takeException(), isNull);
@@ -480,7 +664,7 @@ void main() {
       expect(store.buys, 0);
       await tap(tester, find.text('잔액 다시 확인'));
       expect(find.text('-600 P'), findsOneWidget);
-      expect(find.textContaining('먼저 정산됩니다'), findsOneWidget);
+      expect(find.textContaining('먼저 정산돼요'), findsOneWidget);
       await capture(tester, 'points-negative-balance', size, true);
       await tester.pumpWidget(const SizedBox());
       store.pending = null;

@@ -2,6 +2,22 @@ part of 'studio_decoration_catalog.dart';
 
 const storyEditionDecorations = [
   StudioDecorationSpec(
+    'story-reading-room-paper',
+    '독서 카드와 갈피',
+    StudioDecorationCategory.paper,
+    1.22,
+    .7,
+    collection: '책장 사이의 오후',
+  ),
+  StudioDecorationSpec(
+    'story-reading-room-motif',
+    '펼친 책과 책갈피',
+    StudioDecorationCategory.sticker,
+    1,
+    .23,
+    collection: '책장 사이의 오후',
+  ),
+  StudioDecorationSpec(
     'story-morning-vow-paper',
     "얇은 예식 순서지",
     StudioDecorationCategory.paper,

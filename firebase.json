@@ -117,6 +117,51 @@
         ]
       },
       {
+        "source": "/assets/FontManifest.json",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      },
+      {
+        "source": "/assets/StartupFontManifest.*.json",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public,max-age=31536000,immutable"
+          }
+        ]
+      },
+      {
+        "source": "/assets/web_fonts/*.woff2",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public,max-age=31536000,immutable"
+          }
+        ]
+      },
+      {
+        "source": "/assets/web_fonts/*.ttf",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public,max-age=31536000,immutable"
+          }
+        ]
+      },
+      {
+        "source": "/assets/web_fonts/*.otf",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public,max-age=31536000,immutable"
+          }
+        ]
+      },
+      {
         "source": "/firebase-messaging-sw.js",
         "headers": [
           {
@@ -128,13 +173,13 @@
     ],
     "redirects": [
       {
-        "source": "/flutter_bootstrap.16239fd2c005956a311b.js",
-        "destination": "/flutter_bootstrap.170da7efe4afee3d2414.js",
+        "source": "/flutter_bootstrap.21cc65263474eb166be0.js",
+        "destination": "/flutter_bootstrap.9cd8ef0b975d7f0d6ded.js",
         "type": 302
       },
       {
-        "source": "/flutter_bootstrap.79a24d8530afa835b749.js",
-        "destination": "/flutter_bootstrap.170da7efe4afee3d2414.js",
+        "source": "/flutter_bootstrap.80d9e944b3a7974bf877.js",
+        "destination": "/flutter_bootstrap.9cd8ef0b975d7f0d6ded.js",
         "type": 302
       }
     ]

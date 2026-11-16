@@ -1,0 +1,306 @@
+{
+  "date": "2026-11-12",
+  "status": "audited_recommendations_only",
+  "product_code_changed": false,
+  "priority_order": [
+    "checkout_first_invalid_field_reveal_on_compact_or_large_text",
+    "members_refresh_after_returning_from_invite"
+  ],
+  "reproduction_scenarios": {
+    "passed": 5,
+    "failed": 0,
+    "meaning": "observed behavior reproduced; no product fix has been made"
+  },
+  "checkout_observations": [
+    {
+      "scenario": "normal",
+      "width": 390.0,
+      "height": 844.0,
+      "textScale": 1.0,
+      "beforeScrollOffset": 196.0,
+      "afterScrollOffset": 196.0,
+      "viewportRect": [
+        0.0,
+        60.0,
+        390.0,
+        844.0
+      ],
+      "beforeButtonRect": [
+        24.0,
+        740.0,
+        366.0,
+        788.0
+      ],
+      "nameErrorRect": [
+        42.0,
+        124.0,
+        185.8799285888672,
+        141.0
+      ],
+      "nameErrorCenterVisible": true,
+      "nameErrorIntersectsViewport": true,
+      "nameHasFocus": false,
+      "candidateReproduced": false,
+      "paymentAttempts": 0
+    },
+    {
+      "scenario": "compact",
+      "width": 320.0,
+      "height": 568.0,
+      "textScale": 1.0,
+      "beforeScrollOffset": 512.0,
+      "afterScrollOffset": 512.0,
+      "viewportRect": [
+        0.0,
+        60.0,
+        320.0,
+        568.0
+      ],
+      "beforeButtonRect": [
+        24.0,
+        444.0,
+        296.0,
+        492.0
+      ],
+      "nameErrorRect": [
+        42.0,
+        -192.0,
+        185.8799285888672,
+        -175.0
+      ],
+      "nameErrorCenterVisible": false,
+      "nameErrorIntersectsViewport": false,
+      "nameHasFocus": false,
+      "candidateReproduced": true,
+      "paymentAttempts": 0
+    },
+    {
+      "scenario": "large",
+      "width": 390.0,
+      "height": 844.0,
+      "textScale": 1.6,
+      "beforeScrollOffset": 592.0,
+      "afterScrollOffset": 592.0,
+      "viewportRect": [
+        0.0,
+        60.0,
+        390.0,
+        844.0
+      ],
+      "beforeButtonRect": [
+        24.0,
+        685.0,
+        366.0,
+        744.0
+      ],
+      "nameErrorRect": [
+        42.0,
+        -116.0,
+        272.2080078125,
+        -89.0
+      ],
+      "nameErrorCenterVisible": false,
+      "nameErrorIntersectsViewport": false,
+      "nameHasFocus": false,
+      "candidateReproduced": true,
+      "paymentAttempts": 0
+    }
+  ],
+  "member_observations": [
+    "MEMBERS_AUDIT stage=short-initial platform=android maxScrollExtent=0.0 pixels=0.0 fetchCount=1 inviteCount=0 fakeServerRows=2",
+    "MEMBERS_AUDIT stage=short-after-drag platform=android maxScrollExtent=0.0 pixels=0.0 fetchCount=2 inviteCount=0 fakeServerRows=2",
+    "MEMBERS_AUDIT stage=short-after-invite-return platform=android maxScrollExtent=0.0 pixels=0.0 fetchCount=2 inviteCount=1 fakeServerRows=3",
+    "MEMBERS_AUDIT stage=short-after-manual-recovery platform=android maxScrollExtent=0.0 pixels=0.0 fetchCount=3 inviteCount=1 fakeServerRows=3",
+    "MEMBERS_AUDIT stage=long-initial platform=android maxScrollExtent=869.8947368421052 pixels=0.0 fetchCount=1 inviteCount=0 fakeServerRows=20",
+    "MEMBERS_AUDIT stage=long-after-drag platform=android maxScrollExtent=869.8947368421052 pixels=0.0 fetchCount=2 inviteCount=0 fakeServerRows=20"
+  ],
+  "rejected_candidates": [
+    "Short member lists cannot refresh: actual drag refreshed successfully with maxScrollExtent=0",
+    "Normal 390x844 checkout error is offscreen: error was visible at y124..141"
+  ],
+  "analysis": {
+    "files": 3,
+    "result": "No issues found!"
+  },
+  "screens": [
+    {
+      "path": "screens/04-checkout-filled-name-empty.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "fcb215ba34b417fd6d08f7965e72e06425699962cf376f4666f492e5190babfa",
+      "inspected": true
+    },
+    {
+      "path": "screens/05-checkout-before-continue.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "fcb215ba34b417fd6d08f7965e72e06425699962cf376f4666f492e5190babfa",
+      "inspected": true
+    },
+    {
+      "path": "screens/06-checkout-after-continue.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "9d37e0427dd61ad62f10a8ee189fb6d6ca0b35fa2440317f282fd17480932368",
+      "inspected": true
+    },
+    {
+      "path": "screens/07-checkout-name-error-revealed.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "e28ef00c0b0b1a99378333d8e1a0195e15b374f1c3a041b02f7ee8946cc59725",
+      "inspected": true
+    },
+    {
+      "path": "screens/compact/04-checkout-filled-name-empty.png",
+      "size": [
+        640,
+        1136
+      ],
+      "sha256": "21dc8ef77769b6f8855e05fda49f62fc48e6f58279a58b52a41d233ee94da0f5",
+      "inspected": true
+    },
+    {
+      "path": "screens/compact/05-checkout-before-continue.png",
+      "size": [
+        640,
+        1136
+      ],
+      "sha256": "f44fcddbea3ac84eeb99b7e5c7d43d76cb897a73006017da33e1d3d063d5aa43",
+      "inspected": true
+    },
+    {
+      "path": "screens/compact/06-checkout-after-continue.png",
+      "size": [
+        640,
+        1136
+      ],
+      "sha256": "36c3c113f0dfd4f1dc425c5d94f348a03e25e228eb34a443335348965dc5fad0",
+      "inspected": true
+    },
+    {
+      "path": "screens/compact/07-checkout-name-error-revealed.png",
+      "size": [
+        640,
+        1136
+      ],
+      "sha256": "928c6d7fbecf5a5b3e2bcbe082041883704c9dc5e97447fadcc224918a8d5772",
+      "inspected": true
+    },
+    {
+      "path": "screens/large/04-checkout-filled-name-empty.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "8825c6fada493678843c3600be82b6504b851dfc44eaa69f7e64ba7bd5e576f8",
+      "inspected": true
+    },
+    {
+      "path": "screens/large/05-checkout-before-continue.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "15e705b000d77901dbddf189d792c0c9ddf96e78a9127f67f47635d95e5c5dfe",
+      "inspected": true
+    },
+    {
+      "path": "screens/large/06-checkout-after-continue.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "2f8ba85cddc1d615e00b5c405e35d2075f667fb787f2932045cfe7a3d26c4b0c",
+      "inspected": true
+    },
+    {
+      "path": "screens/large/07-checkout-name-error-revealed.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "d612e90753ec364eb90161e8bdf22c9d176ff61e2f7ed81c500bbc83cfe64868",
+      "inspected": true
+    },
+    {
+      "path": "screens/members/01-two-members-initial.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "f8df4e26029215ada5188f79813a6ab23b4ecbb5376ddad5f16db2a9a7fc7348",
+      "inspected": true
+    },
+    {
+      "path": "screens/members/02-after-short-list-drag.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "f8df4e26029215ada5188f79813a6ab23b4ecbb5376ddad5f16db2a9a7fc7348",
+      "inspected": true
+    },
+    {
+      "path": "screens/members/03-after-invite-return.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "f8df4e26029215ada5188f79813a6ab23b4ecbb5376ddad5f16db2a9a7fc7348",
+      "inspected": true
+    },
+    {
+      "path": "screens/members/04-long-list-before-drag.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "44cf22fa01cb999047d1fe8e74aae14d7831f70c2da44e1cf1bc2ea99b0c4977",
+      "inspected": true
+    },
+    {
+      "path": "screens/members/05-long-list-after-drag.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "6717a3dbc446ffbf49fbc0a9e6567be6f43bb76e3980fde35273d733283559fe",
+      "inspected": true
+    },
+    {
+      "path": "screens/members/06-after-manual-refresh-recovery.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "b049719a9bcfdfb10c841f8f83c6bef582eca11f073f4f24e997393a148ddf7e",
+      "inspected": true
+    }
+  ],
+  "product_source_sha256": {
+    "lib/features/album/presentation/views/album_members_screen.dart": "d65e430c08bf7c6850acd5df30fbf93356426030f7d5c0b77726a19413521c24",
+    "lib/features/album/presentation/views/album_invite_screen.dart": "a35d01d70199412bdd6aa09934a21cee4f1ae8359ea0bcff6be708d2025f2ffe",
+    "lib/features/album/presentation/views/print_order_checkout_screen.dart": "b86c8a143616953e8ec448de101ac9e3a816605259ee79002a10c6c0049de63f"
+  },
+  "probe_sha256": {
+    "probes/checkout_probe.dart": "4e94b4c6c9d79886c62ae01a5610b264716274d505ee9107c5d447cbd2f8970b",
+    "probes/test_runner.dart": "1fd26c62d4d85b751091911100501e3ccb2d29751492f6c383cef384c607846c",
+    "probes/members_probe.dart": "0c892bda918d418bd98ac8fec4085bac2c3604c2f9b0309212c96c8174c07e97",
+    "probes/audit_support.dart": "d25ebfcfddaff8ceeac2aafd29b0219994a4bdadb3fddde66a429d1485499dd1"
+  },
+  "limits": [
+    "Native actual widgets with Android theme; repositories, account and order readiness supplied by memory fixtures",
+    "No real invite, member join, message, checkout payment, upload or operating database request",
+    "No physical device, OS keyboard or screen-reader validation; error visibility measured after keyboard dismissed",
+    "Initial hypothetical short-list failure was disproved and removed; initial log retained"
+  ]
+}

@@ -7,6 +7,8 @@ import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/commerce/commerce_policy.dart';
 import '../../../../shared/web/web_design.dart';
 import '../widgets/customer_web_page.dart';
+import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 class TermsPolicyScreen extends StatelessWidget {
   const TermsPolicyScreen({super.key, this.initialDocType});
@@ -50,9 +52,7 @@ class TermsPolicyScreen extends StatelessWidget {
                     subtitle: doc.summary,
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => _TermsDetailScreen(doc: doc),
-                      ),
+                      snapFitRoute(page: _TermsDetailScreen(doc: doc)),
                     ),
                   ),
               ],
@@ -81,9 +81,7 @@ class TermsPolicyScreen extends StatelessWidget {
           InkWell(
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute<void>(
-                builder: (_) => _TermsDetailScreen(doc: _docs[index]),
-              ),
+              snapFitRoute<void>(page: _TermsDetailScreen(doc: _docs[index])),
             ),
             borderRadius: BorderRadius.circular(12),
             child: Padding(
@@ -91,10 +89,7 @@ class TermsPolicyScreen extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.description_outlined,
-                    size: 26,
-                    color: WebPalette.of(context).brandInk,
+                  ExperienceIcon('FileText', size: 26, color: WebPalette.of(context).brandInk,
                   ),
                   const SizedBox(width: 20),
                   Expanded(
@@ -130,10 +125,7 @@ class TermsPolicyScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  Icon(
-                    Icons.arrow_forward,
-                    size: 20,
-                    color: WebPalette.of(context).muted,
+                  ExperienceIcon('ArrowRight', size: 20, color: WebPalette.of(context).muted,
                   ),
                 ],
               ),

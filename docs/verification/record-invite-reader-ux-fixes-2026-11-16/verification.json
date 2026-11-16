@@ -1,0 +1,170 @@
+{
+  "verified_at_utc": "2026-11-16T05:40:20.311518+00:00",
+  "date": "2026-11-16",
+  "related_tests_passed": 173,
+  "capture_scenarios_passed": 4,
+  "screen_count": 10,
+  "product_files_changed": [
+    "lib/features/album/presentation/views/album_invite_accept_screen.dart",
+    "lib/features/album/presentation/views/album_reader_inner_detail_screen.dart",
+    "lib/features/album/presentation/views/album_reader_screen.dart",
+    "lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart",
+    "lib/features/album/service/album_invite_failure.dart",
+    "lib/features/moments/presentation/views/moment_compose_screen.dart"
+  ],
+  "source_files_analyzed": 9,
+  "analysis_issues": 0,
+  "verified_source_hashes_match": true,
+  "tests": {
+    "removal": {
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    "invite": {
+      "passed": 54,
+      "failed": 0,
+      "skipped": 0
+    },
+    "invite_journey": {
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0
+    },
+    "invite_unit": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "reader": {
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0
+    },
+    "reader_lifecycle": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    "daily": {
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    "photo_design": {
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    "draft_entry": {
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0
+    },
+    "draft_store": {
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0
+    },
+    "preview": {
+      "passed": 27,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_record": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_invite": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_reader": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "additional_incomplete_suite": {
+    "suite": "moments",
+    "file": "test/widget/moments_screens_test.dart",
+    "timeout_seconds": 150,
+    "completed_before_timeout": 3,
+    "last_started_test": "journal shows the monthly reward and one album entry for its selected month",
+    "not_counted_as_passed_suite": true,
+    "cause": "Exact blocking stage not established; changed MomentComposeScreen is not constructed by this test."
+  },
+  "reviews": {
+    "record": "Date-response inversion discovered, reproduced failing, then fixed and passed. No additional findings in rereview.",
+    "invite": "Independent source/contract review: no substantive findings.",
+    "reader": "Independent caller/route/session review: no substantive findings."
+  },
+  "limitations": [
+    "Local Flutter VM/widget verification with repository and auth-state doubles.",
+    "No physical-device/browser run, live invite acceptance, live payment, full app build, or deployment.",
+    "Pretendard capture name uses bundled NotoSansKR as a substitute.",
+    "Additional monthly-screen suite did not finish within 150 seconds."
+  ],
+  "live_server_changes": false,
+  "artifacts": {
+    "logs/analyze-product.log": "1c8a535da3adaf9c7ef83e4fb86be93388dc90ddd489758dc97cf1c9db80a64c",
+    "logs/cap_invite.log": "f4cfb8ee5c337208b4c7120b412ae6a90b7f404bec3dd2c3e61083f6c45b5fe6",
+    "logs/cap_reader.log": "623a0c1780a9547aee44ee6a49cb6ab93f70e960524357613475a6c0e9402b42",
+    "logs/cap_record.log": "a936afbefe1b7fe311aee60b4b2a1c13984bdc7029c83478ee1022009a74efc8",
+    "logs/daily.log": "5412489f5133c131dd227ecd8df7df70312f4bc93709cfd7280351ceca703a3b",
+    "logs/draft_entry.log": "b5e0b2999df8491138c6338d0c13f2e2166b3febd971bdb18336617f6b94e745",
+    "logs/draft_store.log": "67412758a5da5393eeb1050f0e3a405b830f935c722f4e63151cb7915bc8dad4",
+    "logs/final-compile.log": "d5906b23b91c3ae89e7794f41e5e44f4e11fc89881f05241b6f2f41fc6a25ac3",
+    "logs/first-green-invite.log": "c9a1207ae894a3d1990847ffebe59381a585353c3da85087f714d6080068cb1f",
+    "logs/first-green-reader.log": "dc0cf5fd4e3747d14278c4d33ebb856bcf64286afad8474b3c5299291ac60f8f",
+    "logs/first-green-removal.log": "604fd19964971a488c7ef2a5facb2145bf3cd0846cca9a29e841fdf5b999e79f",
+    "logs/format-final-test.log": "201363ae23832375357c5580f6a07ce89f48c2a27211bd100d74e34f26295c71",
+    "logs/format.log": "a2a63efe933b6a32465d5c57c9bb1b2036367be27d42ef223b889ea42df13f03",
+    "logs/green-compile.log": "2a3caebae0849549451f46f8dd5d1be177a01be92a6a1dc54d1a9950ea933c27",
+    "logs/invite.log": "334fba804d57e25035bbe33d5f57db3b026f9bac6cdeda41f89695b9f0a5d69d",
+    "logs/invite_journey.log": "497424def8fc0d0e80eb93834dbe2f408022b5b8875a7358efdff154f6f3db66",
+    "logs/invite_unit.log": "397cd4c703e511d348f9de1e33f0f822da52939691d4ba0a0a6323649d28b2b9",
+    "logs/moments.log": "68a09f86f815f76c0fd4fc26f901c2d4217c661cb865dd09aea342fc9bc71296",
+    "logs/photo_design.log": "f80d935a80c6f6b474f404bd6a804b9ce624875ea80fa89114e181e5c3f95774",
+    "logs/preview.log": "abd6ead1a3dc99538cdd0aa76151b16beeb745df7f718a1f2f562ef891477999",
+    "logs/reader.log": "862f773cb7f3488f1ca4e63b951d7583244d508b3bb59228fe5ba22dfd8ebc5a",
+    "logs/reader_lifecycle.log": "0085e772618f63956172443834b14ab3a2981f03a9480f43ebcb18d49639c788",
+    "logs/red-compile.log": "7b4591a154b2d44b862e12c87347de8b3d4038a2abf9a34375714d4a7778f60b",
+    "logs/red-invite.log": "890df26326319e98525a095e1f165f5368b8c8b132d489c377febd37393252ca",
+    "logs/red-reader.log": "744fa3bc8d06c8af8eb0a53efc07fdd43844b5b102f4f27c939d2754fc8bb205",
+    "logs/red-removal.log": "f9dc8064249841b19fe974bfd332b4e08b0ea1accd8a5e3a97e3f0319de0d746",
+    "logs/removal.log": "314181e53956f9df1369a19f66d8fedc4bd6d19af13783169e6593c70976e7c1",
+    "probes/cap_invite.dart": "6c767b12733440c17992c916c1522684907f71df156947263685732bc6868402",
+    "probes/cap_reader.dart": "0e4abfdd5d5a292a6f8d2b1b53773c1984bcb179069ab046ff6cef762517565b",
+    "probes/cap_record.dart": "434a2cd8f2075eda5025abfecd337f52feb7cb2a936f048a902f4a76b174ece8",
+    "probes/capture_support.dart": "ab5196e1b3c03b493694735d7fe720c14f6e33a5cfe830009dacf1f6633e99c3",
+    "probes/run.py": "ad62000f5f909330cbc1eeb2d673e4b70816b2bb2dbc50292a252d1ffdb4f698",
+    "probes/runner.dart": "eadcf8fb34064c9c95abb73c91415605692b83077e1698adff1d30ed70f17328",
+    "screens/01-record-date-check-blocks-repeat.png": "989172723e92c50a67e3637ee42b47c8d19a1716d56312af448379912f6f6849",
+    "screens/02-record-removed-with-undo.png": "434f2b9823393ce6be3d467b054ef6d9ef6d68f0f2a51ffaa53e977755f4ec5b",
+    "screens/03-record-undo-restores-all-photos.png": "cbb5c62a4362191ae5ebf23024fbf5edd60a17417b6d3aeb25173dce91d3a8cf",
+    "screens/04-invite-used-offers-login-recheck.png": "2c28966a7206a8381d0b38715347aa604864930bfdd4da73297684706cb210a2",
+    "screens/05-invite-authenticated-rechecked-details.png": "c5b69b900d469ac24fda3db7a707549e94a22f8fc904e7e4a8e2db6c3190be01",
+    "screens/06-invite-delayed-recheck-and-leave.png": "029151827e56d72ef55a5eab3190956020439fb0925a9824a74a44735787c366",
+    "screens/07-invite-participation-confirmed.png": "8db5e25ef90076f4c2bee5d77cce3880abd857b86d0e18021a2c94cde2e39f86",
+    "screens/07-reader-detail-before-book-action.png": "542150e7c1d0f3ae19ee38de2711e47d6ebf1924f155959c45891aab58202954",
+    "screens/08-reader-detail-book-menu.png": "1c9cb91c8da39a906394043b59c7abd74f33d6b7c72ee4a1f8e20ba3ca01dad4",
+    "screens/09-reader-continues-to-print-confirmation.png": "e62b23f661198e4a98e27c89dc4116c86dd4027de19059e5cb36cf8b449cac1d",
+    "source-after.json": "0e8c00e508130934f06232c1fd2f97d065dab6d1bf0e27d93f60a829c8ca03aa",
+    "source-before.json": "714da9a95ae52bb280ce9a1380da94d9417663b6a850bb6efe2cde75c1424257",
+    "source-snapshots/lib/features/album/presentation/views/album_invite_accept_screen.dart": "10911a5496aefb486b71a46ac0b4d054d4dafb9f12f5c88646806c02192a7efe",
+    "source-snapshots/lib/features/album/presentation/views/album_reader_inner_detail_screen.dart": "f140dee3624138075cdf75dcc0170715a778444f139a3c14c2dcc28b56191d90",
+    "source-snapshots/lib/features/album/presentation/views/album_reader_screen.dart": "ebd07bd2d58683ff1e5e5252ec4e446f6145ad1b12161bad1f169cac9f69e7d3",
+    "source-snapshots/lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart": "d6633b62b34a61a69f78c6b8fd0b9ec84c5fcf398f9968c1466d46fc7eb9b482",
+    "source-snapshots/lib/features/album/service/album_invite_failure.dart": "9b7eef5b605101ab07a7499cfb41b8c035b147299856b33f6f5fee35a2f1b619",
+    "source-snapshots/lib/features/moments/presentation/views/moment_compose_screen.dart": "58bea51d4c39dd0b5d8585472cb91427255c3e4c4c4d4e05ff5f45cfa39b66e9",
+    "test-snapshots/test/widget/album_invite_accept_test.dart": "cb857e800e38bec0e0b337ffe98ebfb462e982deecb149815cfc685406ba346e",
+    "test-snapshots/test/widget/moment_photo_removal_recovery_test.dart": "239b30e5a713e82d8b9e247c521b639746532c4e42ac9d420327ea99c20a75ad",
+    "test-snapshots/test/widget/reader_navigation_continuity_test.dart": "610753056e75ed6caf93eb715624d03b4163b2e48f9c2a4745001257676b3449",
+    "verified-source.json": "38d4832f1924d8f8d234b6c72ee205abafc6f0b30ac6f9ce0489e53588980a0d",
+    "적용_결과.md": "ae60f91da66a014babe42c0d24a5a30c6271e14cf952ec7cdbc5035e24652da4",
+    "적용_화면.png": "b6cb94bccb9567b607cf7642ab958c72e8443d52b46ea750444be6c88b4dc09c"
+  }
+}

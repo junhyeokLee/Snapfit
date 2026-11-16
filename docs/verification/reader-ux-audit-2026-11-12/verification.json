@@ -1,0 +1,16 @@
+{
+  "capture_tests_passed": 3,
+  "images_inspected": [
+    "screens/02-spread.png",
+    "screens/03-menu.png",
+    "screens/05-page-detail.png",
+    "screens/04-landscape.png"
+  ],
+  "product_modified": false,
+  "app_build": false,
+  "source_sha256": {
+    "lib/features/album/presentation/views/album_reader_screen.dart": "bfdf97606f09718343d40a3f533150b951b18927589ab9d14b5e3707e20ba2cd",
+    "lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart": "aebcf234f870345ad94911c804e26832fde27a8b20a9a7dff613a209c63effb2",
+    "lib/features/album/presentation/widgets/reader/album_reader_more_options_sheet.dart": "95c9cb662cc919663ee8b05d632ae1a331092d91c9ee591dda21bae70944cae1"
+  }
+}

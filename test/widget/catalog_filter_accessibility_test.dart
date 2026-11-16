@@ -44,7 +44,7 @@ void main() {
         final semantics = tester.ensureSemantics();
         try {
           var price = '전체';
-          var sort = '추천순';
+          var sort = '최신순';
           var favorite = false;
           var priceChanges = 0;
           var sortChanges = 0;
@@ -96,14 +96,16 @@ void main() {
           expect(tester.getSize(sorting).height, greaterThanOrEqualTo(48));
           await tester.tap(sorting);
           await tester.pumpAndSettle();
-          await tester.tap(find.text('이름순').last);
+          expect(find.text('이름순'), findsNothing);
+          expect(find.text('추천순'), findsNothing);
+          await tester.tap(find.text('인기순').last);
           await tester.pumpAndSettle();
-          expect(sort, '이름순');
+          expect(sort, '인기순');
           expect(sortChanges, 1);
           // Re-selecting the same option must not trigger catalog work again.
           await tester.tap(sorting);
           await tester.pumpAndSettle();
-          await tester.tap(find.text('이름순').last);
+          await tester.tap(find.text('인기순').last);
           await tester.pumpAndSettle();
           expect(sortChanges, 1);
           final bookmark = find.byTooltip('즐겨찾기만 보기');

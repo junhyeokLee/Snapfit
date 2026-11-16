@@ -9,10 +9,15 @@ import '../../features/point_shop/presentation/point_shop_access.dart';
 
 import '../../core/constants/snapfit_colors.dart';
 import '../../core/templates/frame_preview_photos.dart';
+import '../../core/templates/premium_quartet_frame_catalog.dart';
 import '../../core/templates/studio_photo_frame_catalog.dart'
     show atelierSignaturePhotoFrames, atelierStoryPhotoFrames;
 import 'studio_material.dart';
+import 'premium_quartet_frame.dart';
 import 'catalog_favorite_widgets.dart';
+import '../../shared/widgets/experience_icon.dart';
+
+part 'premium_quartet_frame_styles.g.dart';
 
 /// 이미지 프레임 스타일 정의
 class ImageFrameStyle {
@@ -31,7 +36,128 @@ class ImageFrameStyle {
 
 /// 사용 가능한 이미지 프레임 스타일 목록
 const List<ImageFrameStyle> imageFrameStyles = [
+  ...premiumQuartetFrameStyles,
   ImageFrameStyle(key: '', label: '기본', subtitle: '원본 그대로', category: 'basic'),
+  ImageFrameStyle(
+    key: 'clayContour',
+    label: '점토 윤곽 매트',
+    subtitle: '구운 점토의 결을 닮은 비정형 여백',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'leafHerbarium',
+    label: '허브 표본 슬리브',
+    subtitle: '표본 접지와 식물 관찰용 색인',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
+    key: 'filmContactRail',
+    label: '세로 필름 콘택트 레일',
+    subtitle: '세로 필름 홀과 네거티브 번호 띠',
+    category: 'vintage',
+  ),
+  ImageFrameStyle(
+    key: 'bakeRecipe',
+    label: '체크 레시피 포켓',
+    subtitle: '체크 가장자리와 레시피 기록 여백',
+    category: 'pastel',
+  ),
+  ImageFrameStyle(
+    key: 'knitStitch',
+    label: '스티치 스캘럽 매트',
+    subtitle: '한 코씩 이어진 바느질과 물결 절개',
+    category: 'pastel',
+  ),
+  ImageFrameStyle(
+    key: 'musicSleeve',
+    label: '음반 슬리브 마운트',
+    subtitle: '레코드 포켓과 재생 표시의 조합',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'paperNotch',
+    label: '접힌 종이 노치 프레임',
+    subtitle: '종이 접힘과 콜라주를 위한 절개',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'galleryRegistration',
+    label: '전시 등록 마운트',
+    subtitle: '전시 등록 표식과 정돈된 매트',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
+    key: 'campMap',
+    label: '아일릿 지도 포켓',
+    subtitle: '야외 지도 포켓과 금속 아일릿',
+    category: 'vintage',
+  ),
+  ImageFrameStyle(
+    key: 'milestoneConfettiMat',
+    label: '종이꽃 졸업 매트',
+    subtitle: '작은 졸업을 축하하는 색종이와 절취선',
+    category: 'pastel',
+  ),
+  ImageFrameStyle(
+    key: 'milestoneBlueprintMount',
+    label: '첫집 도면 마운트',
+    subtitle: '첫 공간을 기록하는 눈금과 도면 여백',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'milestonePortfolioTab',
+    label: '재도전 포트폴리오 탭',
+    subtitle: '금속 제본과 과정 색인의 작업용 매트',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'milestoneLinenMedal',
+    label: '올리브 리넨 메달',
+    subtitle: '직조 테두리와 오래 함께한 날의 메달',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
+    key: 'milestoneGalleryLabel',
+    label: '첫전시 작품 라벨',
+    subtitle: '전시 작품의 캡션을 닮은 하단 여백',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
+    key: 'cafeLedgerMat',
+    label: '카페 제본 매트',
+    subtitle: '코튼 여백과 황동 제본',
+    category: 'vintage',
+  ),
+  ImageFrameStyle(
+    key: 'cafeReceiptFold',
+    label: '영수증 접지 프레임',
+    subtitle: '절취선과 넓은 캡션 공간',
+    category: 'vintage',
+  ),
+  ImageFrameStyle(
+    key: 'cafeGlassine',
+    label: '글라신 포토 포켓',
+    subtitle: '겹친 반투명 종이와 모서리 봉합',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
+    key: 'nocturneContact',
+    label: '야간 콘택트 시트',
+    subtitle: '필름 홀과 은빛 색인',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'nocturneTransit',
+    label: '환승 티켓 마운트',
+    subtitle: '펀칭 절개와 코발트 승차 띠',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'nocturneDuplex',
+    label: '듀플렉스 아카이브',
+    subtitle: '떠 있는 사진 창과 이중 청색 매트',
+    category: 'artistic',
+  ),
   ...atelierSignatureFrameStyles,
   ImageFrameStyle(
     key: 'storyVowGate',
@@ -934,7 +1060,7 @@ class _ImageFrameStylePickerState extends ConsumerState<ImageFrameStylePicker> {
                           IconButton(
                             key: const ValueKey('frame-picker-close'),
                             tooltip: '닫기',
-                            icon: const Icon(Icons.close_rounded, size: 22),
+                            icon: const ExperienceIcon('X', size: 22),
                             onPressed: _close,
                           ),
                         ],
@@ -1007,13 +1133,22 @@ class ImageFramePreview extends StatelessWidget {
   final ImageFrameStyle style;
   final Widget child;
   @override
-  Widget build(BuildContext context) => _FrameStyleItem(
-    style: style,
-    isSelected: false,
-    onTap: () {},
-    photoBuilder: (_) => child,
-    photoAspectRatio: 1,
-  )._buildFramePreview(style.key);
+  Widget build(BuildContext context) {
+    final preview = _FrameStyleItem(
+      style: style,
+      isSelected: false,
+      onTap: () {},
+      photoBuilder: (_) => child,
+      photoAspectRatio: 1,
+    )._buildFramePreview(style.key);
+    if (!premiumQuartetFramesById.containsKey(style.key)) return preview;
+    return Center(
+      child: AspectRatio(
+        aspectRatio: PremiumQuartetFrame.previewAspectRatio(style.key),
+        child: preview,
+      ),
+    );
+  }
 }
 
 class _FrameStyleItem extends StatelessWidget {
@@ -1614,7 +1749,7 @@ class _FrameStyleItem extends StatelessWidget {
         color: bg,
         border: Border.all(color: const Color(0xFF808080)),
       ),
-      child: Icon(Icons.close, size: 8, color: Colors.black87),
+      child: ExperienceIcon('X', size: 8, color: Colors.black87),
     );
   }
 

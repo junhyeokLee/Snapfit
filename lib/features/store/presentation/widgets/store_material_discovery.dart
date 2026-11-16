@@ -7,11 +7,14 @@ import '../../../../core/templates/studio_decoration_catalog.dart';
 import '../../../../core/templates/studio_word_art_catalog.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../shared/widgets/catalog_artwork_visibility.dart';
 import '../../../point_shop/data/point_shop_provider.dart';
 import '../../../point_shop/domain/point_shop_known_products.dart';
 import '../../../point_shop/presentation/point_shop_artwork.dart';
 import '../../data/store_curation_provider.dart';
 import '../views/material_detail_screen.dart';
+import 'material_catalog_tile.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 class StoreMaterialDiscovery extends ConsumerWidget {
   const StoreMaterialDiscovery({super.key, required this.onBrowse});
@@ -38,10 +41,12 @@ class StoreMaterialDiscovery extends ConsumerWidget {
           }),
           (p) => p.productKey,
         )
-        .take(4)
         .toList();
     if (items.isEmpty) return const SizedBox.shrink();
     final scaler = MediaQuery.textScalerOf(context);
+    const artworkExtent = 164.0;
+    final titleHeight = scaler.scale(12) * 2.8;
+    final typeHeight = scaler.scale(10) * 1.5;
     return Padding(
       key: const ValueKey('store-material-discovery'),
       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -73,8 +78,9 @@ class StoreMaterialDiscovery extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               SizedBox(
-                height: 154 + scaler.scale(12) * 2.9 + scaler.scale(10) * 1.5,
+                height: artworkExtent + 12 + titleHeight + 4 + typeHeight,
                 child: ListView.separated(
+                  key: const ValueKey('store-material-discovery-shelf'),
                   scrollDirection: Axis.horizontal,
                   itemCount: items.length,
                   separatorBuilder: (_, _) => const SizedBox(width: 12),
@@ -100,16 +106,16 @@ class StoreMaterialDiscovery extends ConsumerWidget {
                         : '스티커';
                     final asset = catalogPreviewAssets[item.productKey];
                     return SizedBox(
-                      width: 148,
+                      width: artworkExtent,
                       child: Material(
                         color: Colors.transparent,
                         child: InkWell(
                           key: ValueKey(
                             'discovery-material-${item.productKey}',
                           ),
+                          borderRadius: BorderRadius.circular(18),
                           onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (_) => MaterialDetailScreen(
+                            snapFitRoute<void>(page: MaterialDetailScreen(
                                 productKey: item.productKey,
                                 favoriteKey: favoriteKey,
                                 title: item.title,
@@ -117,52 +123,59 @@ class StoreMaterialDiscovery extends ConsumerWidget {
                                 preview: (_) => PointShopArtwork(
                                   productKey: item.productKey,
                                 ),
-                              ),
-                            ),
+                              )),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              SizedBox(
-                                height: 138,
-                                width: 148,
-                                child: RepaintBoundary(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(6),
-                                    child: asset == null
-                                        ? PointShopArtwork(
-                                            productKey: item.productKey,
-                                          )
-                                        : Image.asset(
-                                            asset,
-                                            fit: BoxFit.contain,
-                                            cacheWidth: 320,
-                                            errorBuilder: (_, _, _) =>
-                                                PointShopArtwork(
-                                                  productKey: item.productKey,
-                                                ),
-                                          ),
+                              SizedBox.square(
+                                dimension: artworkExtent,
+                                child: MaterialArtworkStage(
+                                  productKey: item.productKey,
+                                  child: CatalogArtworkVisibility(
+                                    child: RepaintBoundary(
+                                      child: asset == null
+                                          ? PointShopArtwork(
+                                              productKey: item.productKey,
+                                            )
+                                          : Image.asset(
+                                              asset,
+                                              fit: BoxFit.contain,
+                                              cacheWidth: 320,
+                                              errorBuilder: (_, _, _) =>
+                                                  PointShopArtwork(
+                                                    productKey: item.productKey,
+                                                  ),
+                                            ),
+                                    ),
                                   ),
                                 ),
                               ),
                               const SizedBox(height: 12),
-                              Text(
-                                item.title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: ExperienceFormStyle.text(
-                                  context,
-                                  12,
-                                  weight: FontWeight.w500,
-                                ).copyWith(height: 1.4),
+                              SizedBox(
+                                height: titleHeight,
+                                child: Text(
+                                  item.title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: ExperienceFormStyle.text(
+                                    context,
+                                    12,
+                                    weight: FontWeight.w500,
+                                  ).copyWith(height: 1.4),
+                                ),
                               ),
                               const SizedBox(height: 4),
-                              Text(
-                                type,
-                                style: ExperienceFormStyle.text(
-                                  context,
-                                  10,
-                                  secondary: true,
+                              SizedBox(
+                                height: typeHeight,
+                                child: Text(
+                                  type,
+                                  maxLines: 1,
+                                  style: ExperienceFormStyle.text(
+                                    context,
+                                    10,
+                                    secondary: true,
+                                  ).copyWith(height: 1.5),
                                 ),
                               ),
                             ],

@@ -1,0 +1,120 @@
+{
+  "verifiedAt": "2026-10-28T12:18:18.321136+00:00",
+  "status": "verified_and_deployed",
+  "request": "Clarify one-record semantics and keep My/public profile monthly instead of accumulating individual full-size feed posts.",
+  "semantics": {
+    "oneRecord": "One saved journal record can publish one explicitly selected photo and its caption. Several records on the same calendar day are permitted.",
+    "feed": "Individual public records remain individual feed posts.",
+    "profile": "One cover per record-date calendar month. Opening the cover shows only that month, grouped by date. The profile initially requests six months and requires an explicit action for older months.",
+    "privacy": "Monthly covers and counts come exclusively from current public moment snapshots. Owner requests do not add private/draft records. Original/private monthly albums and manual published albums remain separate.",
+    "persistence": "Monthly grouping is read-only. It does not create a new editable album for every record or change saved customer album documents."
+  },
+  "verification": {
+    "native": {
+      "passed": 235,
+      "failures": 0,
+      "logs": [
+        "output/monthly-books-focused-native.log",
+        "output/monthly-books-regression-native.log"
+      ]
+    },
+    "chrome": {
+      "passed": 14,
+      "failures": 0,
+      "log": "output/monthly-books-chrome.log"
+    },
+    "server": {
+      "passed": 18,
+      "failures": 0,
+      "log": "output/monthly-books-server-final.log",
+      "note": "Includes the 12 publication tests with the new monthly wrapper installed, plus six monthly aggregation/authorization cases."
+    },
+    "captures": {
+      "passed": 3,
+      "failures": 0,
+      "log": "output/monthly-books-captures.log"
+    },
+    "sourceAnalysis": "output/monthly-books-final-analysis.log",
+    "diffCheckPassed": true,
+    "nativePackageBuilt": false,
+    "phoneInstallVerified": false,
+    "coverage": [
+      "31 records in one cover",
+      "Complete monthly count before 12-record pagination",
+      "Same month in different years",
+      "Duplicate-page entries",
+      "Withdrawing last public record removes month",
+      "Private/draft/blocked/other-owner exclusion",
+      "Record-date month instead of publication month",
+      "Like/save/detail/signed-image retry",
+      "Owner A-B-A and replacement user/month stale responses",
+      "320px large text and 1440px dark mode",
+      "Public month deep-link normalization and invalid month rejection"
+    ]
+  },
+  "database": {
+    "project": "rrbhxdtriummqpztpjrk",
+    "migration": "20261028120622_public_moment_month_collections.sql",
+    "applied": true,
+    "countsPreserved": {
+      "albums": 18,
+      "records": 1,
+      "works": 1
+    },
+    "legacyDispatcherBypassDenied": true,
+    "evidence": "output/monthly-books-database-check.json"
+  },
+  "webDeployment": {
+    "status": "verified",
+    "url": "https://snapfit-c719d.web.app/me",
+    "release": "projects/360727043538/sites/snapfit-c719d/versions/a0f92ca773af21c1",
+    "build": {
+      "main_sha256": "123f15f83796428ee56172142e72fa8c1aa390ad5a696c38af9473ade30f16e6",
+      "main_file": "main.123f15f83796428ee561.dart.js",
+      "bootstrap_sha256": "dd87770cf36a1864d5d4bea8fe84aeabfa19e45c76f11160b90a1768ed0a3186",
+      "bootstrap_file": "flutter_bootstrap.dd87770cf36a1864d5d4.js"
+    },
+    "httpChecks": [
+      {
+        "path": "/feed",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      },
+      {
+        "path": "/me",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      },
+      {
+        "path": "/snapfit-web-build.json",
+        "status": 200,
+        "matchesLocal": true
+      },
+      {
+        "path": "/flutter_bootstrap.dd87770cf36a1864d5d4.js",
+        "status": 200,
+        "sha256": "dd87770cf36a1864d5d4bea8fe84aeabfa19e45c76f11160b90a1768ed0a3186"
+      },
+      {
+        "path": "/main.123f15f83796428ee561.dart.js",
+        "status": 200,
+        "sha256": "123f15f83796428ee56172142e72fa8c1aa390ad5a696c38af9473ade30f16e6"
+      },
+      {
+        "path": "/users/00000000-0000-4000-8000-000000000001/months/2026-10",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      }
+    ],
+    "evidence": "output/monthly-books-deployment-check.json"
+  },
+  "screenshots": {
+    "note": "Actual production widgets with isolated fake accounts and bundled example photos. No test records were published to production.",
+    "my": "output/monthly-books-20261028/my-profile.png",
+    "darkMy": "output/monthly-books-20261028/my-profile-dark.png",
+    "monthDetail": "output/monthly-books-20261028/monthly-records.png"
+  }
+}

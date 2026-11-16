@@ -1,0 +1,106 @@
+{
+  "verifiedAt": "2026-10-28T10:57:03.485245+00:00",
+  "request": "Implement priorities 1–4: photo-first My, unified feed/search/detail with feed paging, safe batch photo fill, separate shelf name/cover copy and monthly append preview.",
+  "changes": [
+    {
+      "priority": 1,
+      "result": "Owner My uses compact identity, adaptive balance/charge/history summary and two preserved compact album/library shortcuts. Original-ratio public work photos appear within the initial mobile viewport. Public visitor privacy/large identity and header orders/notifications/settings remain protected."
+    },
+    {
+      "priority": 2,
+      "result": "Feed/search/work detail share a 60px local toolbar. Mobile browser feed removes stacked page description/actions. Feed uses lazy snapshot paging, page counter, desktop/keyboard/accessibility controls and preserves page on signed URL renewal and reaction refresh. Tapped page continues in detail. Work title and image remain accessible detail links."
+    },
+    {
+      "priority": 3,
+      "result": "Opt-in ordinary templates can fill only empty photo slots using pending selection order. All image sources are verified before actual page preview; applying is explicit and one undo/redo transaction restores files, queue, selection and document. Existing artwork/crops are preserved. Cancel, unreadable source and stale owner/document/size do not partially apply."
+    },
+    {
+      "priority": 4,
+      "result": "Shelf name and actual cover text are separate. Cover copy editor previews real layers, applies only text changes across size variants and keeps draft/photo session state in sync. Monthly append preview combines saved pages with actual pending pages and uses the same target-canvas builder as the save payload, preserving existing JSON, authorization, idempotency and CAS."
+    }
+  ],
+  "verification": {
+    "native": {
+      "passed": 291,
+      "failures": 0,
+      "log": "output/ux-phase2-native-final.log"
+    },
+    "chrome": {
+      "passed": 39,
+      "skippedNativeOnly": 5,
+      "failures": 0,
+      "log": "output/ux-phase2-chrome-verified.log",
+      "note": "The five native file-source cases are covered by the passing native suite. Browser tests use valid memory image bytes; native captures retain bundled photographs."
+    },
+    "sourceStaticAnalysis": "output/ux-phase2-final-analyze.log",
+    "testStaticAnalysis": "output/ux-phase2-final-tests-analyze.log",
+    "nativePackageBuilt": false,
+    "phoneInstallVerified": false,
+    "nativeFixtureRecheck": {
+      "passed": 31,
+      "failures": 0,
+      "log": "output/ux-phase2-native-harness-final.log"
+    },
+    "totalPrimaryChecks": 330,
+    "browserFixtureStaticAnalysis": "output/ux-phase2-browser-fixtures-analyze.log",
+    "staticAnalysisPassed": true,
+    "diffCheckPassed": true
+  },
+  "screenshots": {
+    "note": "Actual production Flutter widgets with isolated fixture photos and fake account data. Images are examples, not real user account data.",
+    "my": "output/ux-phase2-20261028/my-profile.png",
+    "feed": "output/ux-phase2-20261028/feed-app.png",
+    "detail": "output/ux-phase2-20261028/work-detail.png",
+    "batchPhotoPreview": "output/ux-phase2-20261028/photo-fill-preview-native.png",
+    "coverCopyEditor": "output/ux-phase2-20261028/cover-copy-editor.png",
+    "monthlyAppendPreview": "output/ux-phase2-20261028/monthly-append-preview.png"
+  },
+  "database": {
+    "schemaChanged": false,
+    "rpcContractsChanged": false,
+    "pricesOrOwnershipChanged": false,
+    "verification": "Monthly repository tests cover exact canvas-aware append RPC payload and existing authorization/idempotency/CAS behavior."
+  },
+  "webDeployment": {
+    "status": "verified",
+    "url": "https://snapfit-c719d.web.app/feed",
+    "profileUrl": "https://snapfit-c719d.web.app/me",
+    "release": "projects/360727043538/sites/snapfit-c719d/versions/b81921a189c07401",
+    "build": {
+      "main_sha256": "7bf39b5e11e41e22005c0a14c268c8561a66d81791775ddfc762ca9b95d287e6",
+      "main_file": "main.7bf39b5e11e41e22005c.dart.js",
+      "bootstrap_sha256": "a6d73a00b968cf9467f5b0c70070787089ec3aa5673a7743a639f46e03a3fb21",
+      "bootstrap_file": "flutter_bootstrap.a6d73a00b968cf9467f5.js"
+    },
+    "httpChecks": [
+      {
+        "path": "/feed",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      },
+      {
+        "path": "/me",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      },
+      {
+        "path": "/snapfit-web-build.json",
+        "status": 200,
+        "matchesLocal": true
+      },
+      {
+        "path": "/flutter_bootstrap.a6d73a00b968cf9467f5.js",
+        "status": 200,
+        "sha256": "a6d73a00b968cf9467f5b0c70070787089ec3aa5673a7743a639f46e03a3fb21"
+      },
+      {
+        "path": "/main.7bf39b5e11e41e22005c.dart.js",
+        "status": 200,
+        "sha256": "7bf39b5e11e41e22005c0a14c268c8561a66d81791775ddfc762ca9b95d287e6"
+      }
+    ],
+    "evidence": "output/ux-phase2-deployment-check.json"
+  }
+}

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/widgets/experience_form_style.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 import '../../../social/presentation/widgets/social_widgets.dart';
 import '../../domain/moment_draft.dart';
 
@@ -40,7 +41,7 @@ class MomentDraftRecoveryCard extends StatelessWidget {
               ),
               for (final draft in drafts)
                 ListTile(
-                  leading: const Icon(Icons.edit_note_rounded),
+                  leading: const ExperienceIcon('PenLine', size: 24),
                   title: Text(
                     draft.caption.trim().isEmpty
                         ? '${draft.recordDate.month}월 ${draft.recordDate.day}일의 순간'
@@ -52,7 +53,7 @@ class MomentDraftRecoveryCard extends StatelessWidget {
                     '${draft.photoCount}장 · '
                     '${draft.isEditing ? '수정하던 기록' : '새 기록'}',
                   ),
-                  trailing: const Icon(Icons.chevron_right_rounded),
+                  trailing: const ExperienceIcon('ChevronRight', size: 24),
                   onTap: () => Navigator.pop(context, draft),
                 ),
             ],
@@ -92,9 +93,7 @@ class MomentDraftRecoveryCard extends StatelessWidget {
                       color: SocialStyle.accent(context).withValues(alpha: .08),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(
-                      Icons.edit_note_rounded,
-                      color: SocialStyle.accent(context),
+                    child: ExperienceIcon('PenLine', color: SocialStyle.accent(context),
                       size: 30,
                     ),
                   ),
@@ -126,9 +125,7 @@ class MomentDraftRecoveryCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Icon(
-                    Icons.arrow_forward_rounded,
-                    color: SocialStyle.accent(context),
+                  ExperienceIcon('ArrowRight', color: SocialStyle.accent(context),
                     size: 20,
                   ),
                 ],

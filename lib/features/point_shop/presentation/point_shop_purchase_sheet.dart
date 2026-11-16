@@ -8,6 +8,7 @@ import '../domain/point_shop_product.dart';
 import 'point_shop_artwork.dart';
 import '../../../shared/widgets/album_stage_style.dart';
 import '../../store/presentation/widgets/material_original_preview.dart';
+import '../../../shared/widgets/experience_icon.dart';
 
 enum PointShopPurchaseAction { buy, topUp }
 
@@ -191,10 +192,7 @@ class PointShopPurchaseSheet extends StatelessWidget {
                 child: Row(
                   children: [
                     if (complete) ...[
-                      Icon(
-                        Icons.check_circle_outline,
-                        size: 22,
-                        color: ExperienceFormStyle.selectionInk(context),
+                      ExperienceIcon('CheckCircle2', size: 22, color: ExperienceFormStyle.selectionInk(context),
                       ),
                       const SizedBox(width: 10),
                     ],
@@ -211,7 +209,7 @@ class PointShopPurchaseSheet extends StatelessWidget {
                     IconButton(
                       tooltip: '닫기',
                       onPressed: () => Navigator.pop(context),
-                      icon: Icon(Icons.close, size: 22, color: ink),
+                      icon: ExperienceIcon('X', size: 22, color: ink),
                     ),
                   ],
                 ),

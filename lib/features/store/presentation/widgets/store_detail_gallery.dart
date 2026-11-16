@@ -4,6 +4,7 @@ import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../shared/widgets/album_stage_style.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/widgets/snapfit_motion.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 abstract final class StoreGalleryStyle {
   static ButtonStyle primary(BuildContext context) =>
@@ -99,7 +100,7 @@ class StoreGalleryTabs extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         if (selected == index) ...[
-                          const Icon(Icons.check_rounded, size: 16),
+                          const ExperienceIcon('Check', size: 16),
                           const SizedBox(width: 6),
                         ],
                         Flexible(
@@ -154,10 +155,7 @@ class StoreGallerySurface extends StatelessWidget {
                 minimumSize: const Size(48, 48),
                 visualDensity: VisualDensity.standard,
               ),
-              icon: Icon(
-                Icons.open_in_full,
-                size: 18,
-                color: ExperienceFormStyle.ink(context),
+              icon: ExperienceIcon('Maximize2', size: 18, color: ExperienceFormStyle.ink(context),
               ),
             ),
           ),

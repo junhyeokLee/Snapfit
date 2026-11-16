@@ -12,6 +12,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
 import 'package:snap_fit/features/album/data/api/album_provider.dart';
+import 'package:snap_fit/features/album/data/dto/album_member_response.dart';
 import 'package:snap_fit/features/album/data/dto/response/invite_accept_response.dart';
 import 'package:snap_fit/features/album/data/dto/response/invite_info_response.dart';
 import 'package:snap_fit/features/album/domain/entities/album.dart';
@@ -287,6 +288,225 @@ void main() {
     expect(find.text('초대 수락하기'), findsOneWidget);
     verifyNever(() => members.acceptInvite(any()));
   });
+
+  testWidgets('used anonymous invite keeps token for authenticated recheck', (
+    tester,
+  ) async {
+    final members = _Members();
+    const used = FunctionException(
+      status: 409,
+      details: {'error': 'invite_used'},
+    );
+    var reads = 0;
+    when(() => members.getInviteInfo('one')).thenAnswer((_) async {
+      if (++reads == 1) throw used;
+      return _info.copyWith(role: 'VIEWER');
+    });
+    when(
+      () => members.acceptInvite('one'),
+    ).thenAnswer((_) async => _accepted.copyWith(role: 'VIEWER'));
+    final container = await _pump(tester, members, user: null, routed: true);
+    await tester.pumpAndSettle();
+    expect(find.text(_info.albumTitle), findsNothing);
+    expect(find.textContaining('다른 사람이'), findsNothing);
+    expect(find.text('로그인하고 확인하기'), findsOneWidget);
+    await tester.tap(find.byKey(_action));
+    await tester.pumpAndSettle();
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(container.read(pendingAlbumInviteProvider)?.token, 'one');
+
+    (container.read(authViewModelProvider.notifier) as _Auth).become(_user);
+    await tester.pumpAndSettle();
+    expect(reads, greaterThanOrEqualTo(2));
+    expect(find.text(_info.albumTitle), findsOneWidget);
+    expect(find.textContaining('편집 권한은 포함되지'), findsOneWidget);
+    verifyNever(() => members.acceptInvite(any()));
+    await tester.tap(find.byKey(_action));
+    await tester.pumpAndSettle();
+    expect(find.text('앨범 열기'), findsOneWidget);
+    expect(container.read(pendingAlbumInviteProvider), isNull);
+    verify(() => members.acceptInvite('one')).called(1);
+  });
+
+  testWidgets('used invite rejected after login remains close-only', (
+    tester,
+  ) async {
+    final members = _Members();
+    when(() => members.getInviteInfo('one')).thenThrow(
+      const FunctionException(status: 409, details: {'error': 'invite_used'}),
+    );
+    final container = await _pump(tester, members, user: null, routed: true);
+    await tester.pumpAndSettle();
+    expect(find.text('로그인하고 확인하기'), findsOneWidget);
+    await tester.tap(find.byKey(_action));
+    await tester.pumpAndSettle();
+    (container.read(authViewModelProvider.notifier) as _Auth).become(_user);
+    await tester.pumpAndSettle();
+    expect(find.byType(LoginScreen), findsNothing);
+    expect(find.text('이미 사용된 초대예요'), findsOneWidget);
+    expect(find.text('로그인하고 확인하기'), findsNothing);
+    expect(find.text('초대 닫기'), findsOneWidget);
+    expect(find.text(_info.albumTitle), findsNothing);
+    verifyNever(() => members.acceptInvite(any()));
+  });
+
+  testWidgets('delayed acceptance rechecks membership without resubmitting', (
+    tester,
+  ) async {
+    final members = _Members();
+    final accepted = Completer<InviteAcceptResponse>();
+    final checked = Completer<InviteInfoResponse>();
+    var reads = 0;
+    when(() => members.getInviteInfo('one')).thenAnswer((_) {
+      return ++reads == 1 ? Future.value(_info) : checked.future;
+    });
+    when(() => members.acceptInvite('one')).thenAnswer((_) => accepted.future);
+    when(() => members.fetchMembers(7)).thenAnswer(
+      (_) async => const [
+        AlbumMemberResponse(
+          id: 1,
+          userId: 1,
+          userUuid: 'one',
+          role: 'VIEWER',
+          status: 'ACCEPTED',
+        ),
+      ],
+    );
+    final container = await _pump(tester, members, routed: true);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(_action));
+    await tester.pump(const Duration(seconds: 31));
+    await tester.pump();
+    expect(find.text('참여 확인이 늦어지고 있어요'), findsOneWidget);
+    expect(find.text('참여 상태 다시 확인'), findsOneWidget);
+    expect(find.byKey(const ValueKey('inviteAcceptDismiss')), findsOneWidget);
+    await tester.tap(find.byKey(_action));
+    await tester.pump();
+    await tester.tap(find.byKey(_action));
+    await tester.pump();
+    expect(reads, 2);
+    checked.complete(_info.copyWith(role: 'VIEWER'));
+    await tester.pumpAndSettle();
+    expect(find.text('앨범 열기'), findsOneWidget);
+    expect(find.textContaining('편집 권한은 포함되지'), findsOneWidget);
+    expect(container.read(pendingAlbumInviteProvider), isNull);
+    accepted.complete(_accepted);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('편집 권한은 포함되지'), findsOneWidget);
+    verify(() => members.acceptInvite('one')).called(1);
+    verify(() => members.fetchMembers(7)).called(1);
+  });
+
+  testWidgets(
+    'leaving delayed acceptance ignores a late success and stays closed',
+    (tester) async {
+      final members = _Members();
+      final accepted = Completer<InviteAcceptResponse>();
+      when(() => members.getInviteInfo('one')).thenAnswer((_) async => _info);
+      when(
+        () => members.acceptInvite('one'),
+      ).thenAnswer((_) => accepted.future);
+      final container = await _pump(tester, members, routed: true);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(_action));
+      await tester.pump(const Duration(seconds: 31));
+      await tester.pump();
+      expect(find.byKey(const ValueKey('inviteAcceptDismiss')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('inviteAcceptDismiss')));
+      await tester.pump();
+      accepted.complete(_accepted);
+      await tester.pumpAndSettle();
+      expect(container.read(pendingAlbumInviteProvider), isNull);
+      expect(find.text('기존 작업 화면'), findsOneWidget);
+      expect(find.byType(AlbumInviteAcceptScreen), findsNothing);
+      verify(() => members.acceptInvite('one')).called(1);
+    },
+  );
+
+  testWidgets(
+    'failed delayed recheck keeps recovery actions without accepting again',
+    (tester) async {
+      final members = _Members();
+      final accepted = Completer<InviteAcceptResponse>();
+      var reads = 0;
+      when(() => members.getInviteInfo('one')).thenAnswer((_) async {
+        if (++reads > 1) throw Exception('fixture connection');
+        return _info;
+      });
+      when(
+        () => members.acceptInvite('one'),
+      ).thenAnswer((_) => accepted.future);
+      await _pump(tester, members, routed: true);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(_action));
+      await tester.pump(const Duration(seconds: 31));
+      await tester.pump();
+      expect(find.text('참여 상태 다시 확인'), findsOneWidget);
+      await tester.tap(find.byKey(_action));
+      await tester.pumpAndSettle();
+      expect(find.text('참여 상태 다시 확인'), findsOneWidget);
+      expect(find.byKey(const ValueKey('inviteAcceptDismiss')), findsOneWidget);
+      expect(find.text('초대 수락하기'), findsNothing);
+      verify(() => members.acceptInvite('one')).called(1);
+      accepted.completeError(Exception('fixture connection'));
+      await tester.pumpAndSettle();
+    },
+  );
+
+  testWidgets('account change discards a delayed membership check', (
+    tester,
+  ) async {
+    final members = _Members();
+    final accepted = Completer<InviteAcceptResponse>();
+    final checked = Completer<List<AlbumMemberResponse>>();
+    when(() => members.getInviteInfo('one')).thenAnswer((_) async => _info);
+    when(() => members.acceptInvite('one')).thenAnswer((_) => accepted.future);
+    when(() => members.fetchMembers(7)).thenAnswer((_) => checked.future);
+    final container = await _pump(tester, members);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(_action));
+    await tester.pump(const Duration(seconds: 31));
+    await tester.pump();
+    expect(find.text('참여 상태 다시 확인'), findsOneWidget);
+    await tester.tap(find.byKey(_action));
+    await tester.pump();
+    (container.read(authViewModelProvider.notifier) as _Auth).become(
+      _user.copyWith(id: 'two'),
+    );
+    checked.complete(const [
+      AlbumMemberResponse(
+        id: 1,
+        userId: 1,
+        userUuid: 'one',
+        role: 'EDITOR',
+        status: 'ACCEPTED',
+      ),
+    ]);
+    accepted.complete(_accepted);
+    await tester.pumpAndSettle();
+    expect(find.text('앨범 열기'), findsNothing);
+    expect(container.read(pendingAlbumInviteProvider)?.token, 'one');
+    verify(() => members.acceptInvite('one')).called(1);
+  });
+
+  testWidgets(
+    'acceptance timeout requires a state check before another acceptance',
+    (tester) async {
+      final members = _Members();
+      when(() => members.getInviteInfo('one')).thenAnswer((_) async => _info);
+      when(
+        () => members.acceptInvite('one'),
+      ).thenThrow(TimeoutException('fixture'));
+      await _pump(tester, members, routed: true);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(_action));
+      await tester.pumpAndSettle();
+      expect(find.text('참여 상태 다시 확인'), findsOneWidget);
+      expect(find.text('초대 수락하기'), findsNothing);
+      expect(find.byKey(const ValueKey('inviteAcceptDismiss')), findsOneWidget);
+      verify(() => members.acceptInvite('one')).called(1);
+    },
+  );
 
   testWidgets(
     'cold invitation survives first-visit introduction and stays above login',

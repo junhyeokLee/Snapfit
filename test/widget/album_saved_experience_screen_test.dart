@@ -6,74 +6,89 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
+import 'package:snap_fit/features/album/data/api/album_provider.dart';
 import 'package:snap_fit/features/album/domain/entities/album.dart';
 import 'package:snap_fit/features/album/presentation/providers/album_edit_session_provider.dart';
+import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
 import 'package:snap_fit/features/album/presentation/utils/saved_album_experience.dart';
 import 'package:snap_fit/features/album/presentation/views/album_saved_experience_screen.dart';
+import 'package:snap_fit/features/album/presentation/views/page_editor_screen.dart';
 import 'package:snap_fit/features/album/printing/print_album_document.dart';
+import 'package:snap_fit/features/album/service/album_collaboration_session.dart';
+import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
+import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
 import '../helpers/load_moment_capture_fonts.dart';
+import '../helpers/mock_repositories.dart';
+import '../unit/album_editor_view_model_test.dart'
+    show FakeAlbumPersistenceService, FakeStorageService;
+import 'home_screen_test.dart' show FakeAuthViewModel;
 
-Album savedAlbum({String revision = 'revision-1', bool complete = false}) =>
-    Album(
-      id: 45,
-      userId: 'owner',
-      title: '오래 기억할 여름',
-      ratio: '1',
-      updatedAt: revision,
-      targetPages: 2,
-      totalPages: 2,
-      coverLayersJson: jsonEncode({
-        'pages': [
-          for (var index = 0; index < 3; index++)
-            {
-              'index': index,
-              'isCover': index == 0,
-              'backgroundColor': index == 0 ? 0xffe9e6df : 0xfffffdf8,
-              'layers': [
-                if (index == 0)
-                  {
-                    'id': 'cover-photo',
-                    'type': 'IMAGE',
-                    'x': .04,
-                    'y': .04,
-                    'width': .92,
-                    'height': .92,
-                    'scale': 1,
-                    'zIndex': 0,
-                    'payload': {
-                      'originalUrl': 'asset:assets/snapfit_home_square.jpg',
-                    },
+Album savedAlbum({
+  String revision = 'revision-1',
+  bool complete = false,
+  int firstIncomplete = 2,
+}) => Album(
+  id: 45,
+  userId: 'owner',
+  title: '오래 기억할 여름',
+  ratio: '1',
+  updatedAt: revision,
+  targetPages: 2,
+  totalPages: 2,
+  coverLayersJson: jsonEncode({
+    'pages': [
+      for (var index = 0; index < 3; index++)
+        {
+          'index': index,
+          'isCover': index == 0,
+          'backgroundColor': index == 0 ? 0xffe9e6df : 0xfffffdf8,
+          'layers': [
+            if (index == 0)
+              {
+                'id': 'cover-photo',
+                'type': 'IMAGE',
+                'x': .04,
+                'y': .04,
+                'width': .92,
+                'height': .92,
+                'scale': 1,
+                'rotation': 0,
+                'zIndex': 0,
+                'payload': {
+                  'originalUrl': 'asset:assets/snapfit_home_square.jpg',
+                },
+              },
+            if (index != firstIncomplete || complete)
+              {
+                'id': 'page-$index',
+                'type': 'TEXT',
+                'templateContent': false,
+                'x': .12,
+                'y': .15,
+                'width': .75,
+                'height': .5,
+                'scale': 1,
+                'rotation': 0,
+                'zIndex': 1,
+                'payload': {
+                  'text': index == 0 ? 'OUR\nSUMMER' : '다시 꺼내 보고 싶은\n우리의 작은 날들',
+                  'textStyle': {
+                    'fontFamily': 'NotoSans',
+                    'fontSizeRatio': .06,
+                    'color': index == 0 ? '#FFFFFFFF' : '#FF263D35',
                   },
-                if (index != 2 || complete)
-                  {
-                    'id': 'page-$index',
-                    'type': 'TEXT',
-                    'templateContent': false,
-                    'x': .12,
-                    'y': .15,
-                    'width': .75,
-                    'height': .5,
-                    'scale': 1,
-                    'zIndex': 1,
-                    'payload': {
-                      'text': index == 0
-                          ? 'OUR\nSUMMER'
-                          : '다시 꺼내 보고 싶은\n우리의 작은 날들',
-                      'textStyle': {
-                        'fontFamily': 'NotoSans',
-                        'fontSizeRatio': .06,
-                        'color': index == 0 ? '#FFFFFFFF' : '#FF263D35',
-                      },
-                    },
-                  },
-              ],
-            },
-        ],
-      }),
-    );
+                },
+              },
+          ],
+        },
+    ],
+  }),
+);
 
 Future<void> settle(WidgetTester tester) async {
   for (var i = 0; i < 16; i++) {
@@ -98,6 +113,8 @@ void main() {
     ThemeMode theme = ThemeMode.light,
     GlobalKey? captureKey,
     double textScale = 1,
+    MockAlbumRepository? repository,
+    GlobalKey<NavigatorState>? navigator,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -110,27 +127,47 @@ void main() {
             owner ?? () => 'owner',
           ),
           albumEditorOwnerChangesProvider.overrideWith((ref) => changes),
+          if (repository != null) ...[
+            albumRepositoryProvider.overrideWithValue(repository),
+            albumPersistenceServiceProvider.overrideWithValue(
+              FakeAlbumPersistenceService(),
+            ),
+            storageServiceProvider.overrideWithValue(FakeStorageService()),
+            albumCollaborationActorProvider.overrideWith((ref) {
+              ref.watch(albumEditorOwnerChangesProvider);
+              return (owner ?? () => 'owner')();
+            }),
+            authViewModelProvider.overrideWith(
+              () => FakeAuthViewModel(
+                const UserInfo(id: 'owner', name: '테스트', provider: 'email'),
+              ),
+            ),
+          ],
           savedAlbumLoaderProvider.overrideWithValue(load),
           if (render != null)
             savedAlbumPageRendererProvider.overrideWithValue(render),
           if (write != null)
             savedAlbumImageWriterProvider.overrideWithValue(write),
         ],
-        child: MaterialApp(
-          theme: SnapFitTheme.light(),
-          darkTheme: SnapFitTheme.dark(),
-          themeMode: theme,
-          builder: (context, child) => MediaQuery(
-            data: MediaQuery.of(
-              context,
-            ).copyWith(textScaler: TextScaler.linear(textScale)),
-            child: child!,
-          ),
-          home: RepaintBoundary(
-            key: captureKey,
-            child: const AlbumSavedExperienceScreen(
-              albumId: 45,
-              ownerId: 'owner',
+        child: ScreenUtilInit(
+          designSize: const Size(390, 844),
+          builder: (_, __) => MaterialApp(
+            navigatorKey: navigator,
+            theme: SnapFitTheme.light(),
+            darkTheme: SnapFitTheme.dark(),
+            themeMode: theme,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: TextScaler.linear(textScale)),
+              child: child!,
+            ),
+            home: RepaintBoundary(
+              key: captureKey,
+              child: const AlbumSavedExperienceScreen(
+                albumId: 45,
+                ownerId: 'owner',
+              ),
             ),
           ),
         ),
@@ -160,7 +197,7 @@ void main() {
           names.add(name);
         },
       );
-      expect(find.text('1/2쪽 작성 · 언제든 이어 만들 수 있어요'), findsOneWidget);
+      expect(find.text('1/2쪽 작성'), findsOneWidget);
       await tester.ensureVisible(
         find.byKey(const ValueKey('saved-album-thumbnail-1')),
       );
@@ -174,6 +211,137 @@ void main() {
       expect(rendered.map((p) => p.index), [1]);
       expect(names, ['snapfit-album-45-page-1.png']);
       expect(reads, 3); // open, before render, after render
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('continue editing appears only for an unfinished editable goal', (
+    tester,
+  ) async {
+    for (final entry in <(Album, bool)>[
+      (savedAlbum(), true),
+      (savedAlbum(complete: true), false),
+      (savedAlbum().copyWith(memberRole: 'VIEWER'), false),
+      // Legacy records recover the goal from their actual interior pages.
+      (savedAlbum().copyWith(targetPages: 0), true),
+    ]) {
+      await launch(tester, load: (_) async => entry.$1);
+      expect(
+        find.byKey(const ValueKey('saved-album-edit')),
+        entry.$2 ? findsOneWidget : findsNothing,
+      );
+      expect(find.text('이어서 편집'), entry.$2 ? findsOneWidget : findsNothing);
+      await tester.pumpWidget(const SizedBox.shrink());
+    }
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'continue editing opens the fresh unfinished page and reloads after returning',
+    (tester) async {
+      final repository = MockAlbumRepository();
+      final navigator = GlobalKey<NavigatorState>();
+      final fresh = savedAlbum(
+        revision: 'revision-2',
+        firstIncomplete: 1,
+      ).copyWith(title: '새로 불러온 여름');
+      when(() => repository.fetchAlbum('45')).thenAnswer((_) async => fresh);
+      var reads = 0;
+      var saved = savedAlbum();
+      await launch(
+        tester,
+        load: (_) async {
+          reads++;
+          return saved;
+        },
+        repository: repository,
+        navigator: navigator,
+      );
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('saved-album-edit')),
+      );
+      await tester.tap(find.byKey(const ValueKey('saved-album-edit')));
+      await settle(tester);
+      final editor = tester.widget<PageEditorScreen>(
+        find.byType(PageEditorScreen),
+      );
+      expect(editor.initialPageIndex, 1);
+      expect(editor.returnToPreviousOnSave, isTrue);
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(PageEditorScreen)),
+      );
+      expect(
+        container.read(albumEditorViewModelProvider.notifier).album,
+        equals(fresh),
+      );
+      verify(() => repository.fetchAlbum('45')).called(greaterThanOrEqualTo(1));
+
+      // Returning may follow a save or cancellation; always read persisted state again.
+      saved = savedAlbum(complete: true, revision: 'revision-3');
+      navigator.currentState!.pop();
+      await settle(tester);
+      expect(reads, 2);
+      expect(find.text('2쪽 완성'), findsOneWidget);
+      expect(find.byKey(const ValueKey('saved-album-edit')), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'account change during edit preparation never opens the old album',
+    (tester) async {
+      final repository = MockAlbumRepository();
+      final pending = Completer<Album>();
+      final changes = StreamController<String?>();
+      addTearDown(changes.close);
+      String? owner = 'owner';
+      when(() => repository.fetchAlbum('45')).thenAnswer((_) => pending.future);
+      await launch(
+        tester,
+        load: (_) async => savedAlbum(),
+        repository: repository,
+        changes: changes.stream,
+        owner: () => owner,
+      );
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('saved-album-edit')),
+      );
+      await tester.tap(find.byKey(const ValueKey('saved-album-edit')));
+      await settle(tester);
+      verify(() => repository.fetchAlbum('45')).called(1);
+      owner = null;
+      changes.add(owner);
+      await settle(tester);
+      pending.complete(savedAlbum());
+      await settle(tester);
+      expect(find.byType(PageEditorScreen), findsNothing);
+      expect(find.text('오래 기억할 여름'), findsNothing);
+      expect(find.textContaining('계정이 변경되었어요'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'freshly revoked editing permission blocks a pending edit entry',
+    (tester) async {
+      final repository = MockAlbumRepository();
+      final pending = Completer<Album>();
+      when(() => repository.fetchAlbum('45')).thenAnswer((_) => pending.future);
+      await launch(
+        tester,
+        load: (_) async => savedAlbum(),
+        repository: repository,
+      );
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('saved-album-edit')),
+      );
+      await tester.tap(find.byKey(const ValueKey('saved-album-edit')));
+      await settle(tester);
+      verify(() => repository.fetchAlbum('45')).called(1);
+      pending.complete(savedAlbum().copyWith(memberRole: 'VIEWER'));
+      await settle(tester);
+      expect(find.byType(PageEditorScreen), findsNothing);
+      expect(find.text('보기 전용 앨범이에요. 편집 권한을 요청해 주세요.'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
@@ -322,7 +490,8 @@ void main() {
         theme: entry.$3,
         captureKey: key,
       );
-      expect(find.text('한 권의 기록, 완성'), findsOneWidget);
+      expect(find.text('앨범을 저장했어요'), findsOneWidget);
+      expect(find.text('2쪽 완성'), findsOneWidget);
       expect(find.byKey(const ValueKey('saved-album-gallery')), findsOneWidget);
       expect(
         find.byKey(const ValueKey('saved-album-open')).hitTestable(),

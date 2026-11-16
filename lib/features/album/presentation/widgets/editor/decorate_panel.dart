@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../../shared/web/web_design.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/entities/layer.dart';
@@ -16,14 +17,44 @@ enum DecorateSheetMode { sticker, backgroundColor }
 class DecoratePanel extends ConsumerStatefulWidget {
   final VoidCallback? onClose;
   final DecorateSheetMode mode;
+  final Size? canvasSize;
+  final bool Function(String)? isStickerAvailable;
+  final ValueGetter<bool>? canApply;
+  final ValueChanged<LayerModel>? onInserted;
+  final String? availabilityNotice;
 
-  const DecoratePanel({super.key, this.onClose, required this.mode});
+  const DecoratePanel({
+    super.key,
+    this.onClose,
+    required this.mode,
+    this.canvasSize,
+    this.isStickerAvailable,
+    this.canApply,
+    this.onInserted,
+    this.availabilityNotice,
+  });
 
   @override
   ConsumerState<DecoratePanel> createState() => _DecoratePanelState();
 }
 
 class _DecoratePanelState extends ConsumerState<DecoratePanel> {
+  ValueGetter<bool> _captureStickerTargetGuard() {
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
+    final session = vm.editSessionIdentity;
+    final pageId = vm.currentPage?.id;
+    final albumId = vm.editingAlbumId;
+    return () {
+      if (!mounted) return false;
+      final current = ref.read(albumEditorViewModelProvider.notifier);
+      return identical(current, vm) &&
+          widget.canApply?.call() != false &&
+          identical(current.editSessionIdentity, session) &&
+          current.currentPage?.id == pageId &&
+          current.editingAlbumId == albumId;
+    };
+  }
+
   void _closeSheet() {
     widget.onClose?.call();
     if (widget.onClose == null && mounted) {
@@ -35,6 +66,7 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> {
     required AlbumEditorViewModel editorVm,
     required AlbumEditorState? stateVal,
   }) {
+    if (widget.canvasSize case final size?) return size;
     final double physicalAspect = editorVm.selectedCover.ratio > 0
         ? editorVm.selectedCover.ratio
         : (3 / 4);
@@ -59,7 +91,11 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> {
     final content = widget.mode == DecorateSheetMode.sticker
         ? DecorateStickerTab(
             surfaceColor: surfaceColor,
+            isStickerAvailable: widget.isStickerAvailable,
+            availabilityNotice: widget.availabilityNotice,
+            captureApplyGuard: _captureStickerTargetGuard,
             onStickerTap: (sticker) {
+              if (widget.canApply?.call() == false) return;
               final editorVm = ref.read(albumEditorViewModelProvider.notifier);
               final stateVal = ref.read(albumEditorViewModelProvider).value;
               final canvasSize = _effectiveLogicalCanvasSize(
@@ -91,12 +127,16 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> {
                   canvasSize: canvasSize,
                 );
               }
+              if (editorVm.layers.isNotEmpty) {
+                widget.onInserted?.call(editorVm.layers.last);
+              }
               _closeSheet();
             },
           )
         : DecorateColorTab(
             surfaceColor: surfaceColor,
             onColorTap: (colorValue) {
+              if (widget.canApply?.call() == false) return;
               final editorVm = ref.read(albumEditorViewModelProvider.notifier);
               if (colorValue == -1) {
                 editorVm.clearPageBackgroundColor();
@@ -126,7 +166,7 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> {
                 trailing: IconButton(
                   onPressed: _closeSheet,
                   tooltip: '닫기',
-                  icon: const Icon(Icons.close, size: 20),
+                  icon: const ExperienceIcon('X', size: 20),
                 ),
               ),
               Divider(height: 1, color: WebPalette.of(context).line),

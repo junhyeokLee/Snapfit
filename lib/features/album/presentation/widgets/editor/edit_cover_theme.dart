@@ -9,6 +9,7 @@ import '../../viewmodels/album_editor_view_model.dart';
 import '../../viewmodels/cover_view_model.dart';
 
 import './edit_cover_theme_item.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 class EditCoverTheme extends ConsumerStatefulWidget {
   const EditCoverTheme({super.key});
@@ -101,7 +102,7 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
             trailing: IconButton(
               onPressed: () => Navigator.pop(context),
               tooltip: '표지 테마 닫기',
-              icon: const Icon(Icons.close, size: 20),
+              icon: const ExperienceIcon('X', size: 20),
             ),
           ),
           Divider(height: 1, color: WebPalette.of(context).line),
@@ -170,10 +171,7 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
                                   ),
                                 ),
                                 if (selected)
-                                  Icon(
-                                    Icons.check_circle_outline,
-                                    size: 18,
-                                    color: WebPalette.of(context).brandInk,
+                                  ExperienceIcon('CheckCircle2', size: 18, color: WebPalette.of(context).brandInk,
                                   ),
                               ],
                             ),

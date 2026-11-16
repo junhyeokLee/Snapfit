@@ -1,11 +1,16 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../album/data/api/album_provider.dart';
 import '../../../album/domain/entities/album.dart';
 import '../providers/album_edit_session_provider.dart';
 
 part 'home_view_model.g.dart';
+
+final homeAlbumReadTimeoutProvider = Provider<Duration>(
+  (ref) => const Duration(seconds: 25),
+);
 
 @riverpod
 class HomeViewModel extends _$HomeViewModel {
@@ -36,9 +41,17 @@ class HomeViewModel extends _$HomeViewModel {
     _mutationVersion++;
     _mutationsSettled?.complete();
     _mutationsSettled = null;
-    // AsyncLoading imports previous AsyncValue data. Explicitly empty it first
-    // so a different account never renders the previous owner's private list.
-    if (changed) state = const AsyncData([]);
+    // 이전 계정의 자료를 지우되, 새 계정의 조회가 끝나기 전에는 로딩 상태와
+    // 미완료 future를 유지한다. 임시 []를 성공한 빈 목록으로 처리하지 않는다.
+    if (changed) {
+      // Riverpod 3에는 공개 원자적 초기화 API가 없다. 이 호출의 호환성은
+      // 실제 계정 교체·대기·실패·재시도 테스트로 검증한다.
+      // ignore: invalid_use_of_internal_member
+      state = const AsyncLoading<List<Album>>().copyWithPrevious(
+        const AsyncData<List<Album>>([]),
+        isRefresh: false,
+      );
+    }
     if (owner == null) return const [];
     final result = await _fetchAlbums();
     return _current(revision, owner) ? result : const [];
@@ -47,7 +60,9 @@ class HomeViewModel extends _$HomeViewModel {
   Future<List<Album>> _fetchAlbums() async {
     // 기존에 정의된 albumRepositoryProvider를 사용합니다.
     final repository = ref.read(albumRepositoryProvider);
-    return await repository.fetchMyAlbums();
+    return await repository.fetchMyAlbums().timeout(
+      ref.read(homeAlbumReadTimeoutProvider),
+    );
   }
 
   Future<void> refresh() {

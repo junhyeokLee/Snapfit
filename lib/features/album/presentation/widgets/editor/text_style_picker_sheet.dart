@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../shared/widgets/catalog_favorite_widgets.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 Widget _styleProof(Widget child) => Padding(
   padding: const EdgeInsets.all(8),
@@ -1187,7 +1188,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
                             key: const ValueKey('text-style-close'),
                             tooltip: '문구 장식 닫기',
                             onPressed: _close,
-                            icon: const Icon(Icons.close, size: 22),
+                            icon: const ExperienceIcon('X', size: 22),
                           ),
                         ],
                       ),
@@ -2249,13 +2250,13 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         return _previewNoteCream();
       default:
         // 바텀시트 프리뷰 아이콘은 라이트/다크 모드 모두 회색 계열로 고정
-        return Icon(Icons.text_fields, size: 28, color: Colors.black45);
+        return ExperienceIcon('Type', size: 28, color: Colors.black45);
     }
   }
 
   /// 기본 없음 – 테두리/색 없음
   Widget _previewNone() {
-    return Icon(Icons.text_fields, size: 28, color: Colors.black45);
+    return ExperienceIcon('Type', size: 28, color: Colors.black45);
   }
 
   /// 라운드 – 흰색 pill (바텀시트 디자인)
@@ -3189,7 +3190,7 @@ class _TextStyleFullViewScreen extends StatelessWidget {
           ? IconButton(
               onPressed: () => Navigator.pop(context),
               tooltip: '전체 보기 닫기',
-              icon: const Icon(Icons.close, size: 20),
+              icon: const ExperienceIcon('X', size: 20),
             )
           : null,
       title: Text(title, style: const TextStyle(fontSize: 18)),

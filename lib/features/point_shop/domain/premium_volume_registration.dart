@@ -94,6 +94,12 @@ bool isPendingTemplateProduct(String key) =>
             ].any((id) => publishedPremiumProductKey(id) == key));
 
 String? pendingTemplateContentsLabel(String key) {
+  final quartet = premiumQuartetEditions
+      .where((e) => e.productKey == key)
+      .firstOrNull;
+  if (quartet != null) {
+    return '내지 ${quartet.innerPages}쪽 · 표지 별도 · 정사각·가로 · 인쇄 5가지 크기 · 전용 소재 ${quartet.includedMaterialKeys.length}종';
+  }
   if (storyEditions.any((e) => e.productKey == key)) {
     return '내지 24쪽 · 표지 별도 · 정사각·가로 · 인쇄 5가지 크기 · 전용 소재 3종';
   }

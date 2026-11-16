@@ -33,6 +33,7 @@ final pointPurchaseServiceProvider = Provider<PointPurchaseService>((ref) {
     onBalanceChanged: () {
       ref.invalidate(myPointBalanceProvider);
       ref.invalidate(myPointLedgerProvider);
+      ref.invalidate(pointLedgerHistoryProvider);
     },
   );
   ref.onDispose(service.dispose);
@@ -98,3 +99,99 @@ final myPointLedgerProvider = FutureProvider<List<PointLedgerEntry>>((
       ? value
       : const [];
 });
+
+class PointLedgerHistoryState {
+  const PointLedgerHistoryState({
+    this.entries = const [],
+    this.nextCursor,
+    this.loading = false,
+    this.hasError = false,
+  });
+
+  final List<PointLedgerEntry> entries;
+  final PointLedgerCursor? nextCursor;
+  final bool loading;
+  final bool hasError;
+
+  bool get hasMore => nextCursor != null;
+}
+
+final pointLedgerHistoryProvider = NotifierProvider.autoDispose
+    .family<
+      PointLedgerHistoryController,
+      PointLedgerHistoryState,
+      PointLedgerFilter
+    >(PointLedgerHistoryController.new);
+
+class PointLedgerHistoryController extends Notifier<PointLedgerHistoryState> {
+  PointLedgerHistoryController(this.filter);
+
+  final PointLedgerFilter filter;
+  int _generation = 0;
+  String? _owner;
+  late BillingRepository _repository;
+
+  bool _isCurrent(int generation) =>
+      ref.mounted &&
+      generation == _generation &&
+      _owner != null &&
+      ref.read(visibleOrderOwnerProvider) == _owner;
+
+  @override
+  PointLedgerHistoryState build() {
+    final generation = ++_generation;
+    _owner = ref.watch(visibleOrderOwnerProvider);
+    _repository = ref.watch(billingRepositoryProvider);
+    ref.onDispose(() => _generation++);
+    if (_owner == null) return const PointLedgerHistoryState();
+
+    // State must exist before an immediately completed request can update it.
+    Future<void>.microtask(() => _fetchPage(generation));
+    return const PointLedgerHistoryState(loading: true);
+  }
+
+  Future<void> loadMore() async {
+    if (!_isCurrent(_generation) || state.loading || !state.hasMore) return;
+    final generation = _generation;
+    final before = state.nextCursor;
+    state = PointLedgerHistoryState(
+      entries: state.entries,
+      nextCursor: before,
+      loading: true,
+    );
+    await _fetchPage(generation, before: before);
+  }
+
+  Future<void> refresh() async {
+    if (!ref.mounted) return;
+    // A refresh supersedes both the initial request and a pending older page.
+    final generation = ++_generation;
+    state = PointLedgerHistoryState(loading: _owner != null);
+    await _fetchPage(generation);
+  }
+
+  Future<void> _fetchPage(int generation, {PointLedgerCursor? before}) async {
+    if (!_isCurrent(generation)) return;
+    try {
+      final page = await _repository
+          .getMyPointLedgerPage(filter: filter, before: before)
+          .timeout(const Duration(seconds: 8));
+      if (!_isCurrent(generation)) return;
+      state = PointLedgerHistoryState(
+        entries: List.unmodifiable([
+          if (before != null) ...state.entries,
+          ...page.entries,
+        ]),
+        nextCursor: page.nextCursor,
+      );
+    } catch (_) {
+      if (!_isCurrent(generation)) return;
+      // Keep the last successful cursor so the failed page can be retried.
+      state = PointLedgerHistoryState(
+        entries: state.entries,
+        nextCursor: state.nextCursor,
+        hasError: true,
+      );
+    }
+  }
+}

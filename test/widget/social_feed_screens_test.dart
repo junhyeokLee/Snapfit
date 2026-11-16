@@ -14,7 +14,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
 import 'package:snap_fit/features/social/data/social_repository.dart';
 import 'package:snap_fit/features/social/domain/social_models.dart';
-import 'package:snap_fit/features/social/domain/social_topics.dart';
 import 'package:snap_fit/features/social/presentation/providers/social_providers.dart';
 import 'package:snap_fit/features/social/presentation/views/social_feed_screen.dart';
 import 'package:snap_fit/features/social/presentation/views/social_profile_screen.dart';
@@ -136,6 +135,7 @@ SocialWork _work({
   List<String>? imageUrls,
 }) => SocialWork(
   id: id,
+  kind: 'moment',
   author: author,
   title: title,
   caption: caption,
@@ -215,6 +215,7 @@ class _FeedRepository extends SocialRepository {
 
   SocialWork _view(SocialWork work, {String? status}) => SocialWork(
     id: work.id,
+    kind: work.kind,
     author: _profile(work.author),
     title: work.title,
     caption: work.caption,
@@ -340,7 +341,15 @@ class _FeedRepository extends SocialRepository {
       feedFailures--;
       throw StateError('Synthetic temporary feed error');
     }
-    final items = (feedPages == null ? works : feedPages![offset ~/ limit])
+    var pageIndex = 0, pageStart = 0;
+    if (feedPages != null) {
+      while (pageIndex + 1 < feedPages!.length &&
+          offset >= pageStart + feedPages![pageIndex].length) {
+        pageStart += feedPages![pageIndex].length;
+        pageIndex++;
+      }
+    }
+    final items = (feedPages == null ? works : feedPages![pageIndex])
         .where((work) {
           return work.isPublished &&
               (!following || followed.contains(work.author.userId)) &&
@@ -350,7 +359,7 @@ class _FeedRepository extends SocialRepository {
         .toList();
     return SocialWorkPage(
       items: items,
-      hasMore: feedPages != null && offset ~/ limit < feedPages!.length - 1,
+      hasMore: feedPages != null && pageIndex < feedPages!.length - 1,
       nextOffset: offset + items.length,
     );
   }
@@ -426,6 +435,7 @@ class _FeedRepository extends SocialRepository {
     String id,
     String body, {
     String? requestId,
+    String? parentCommentId,
   }) async {
     commentCalls++;
     commentRequestIds.add(requestId);
@@ -479,6 +489,22 @@ class _FeedRepository extends SocialRepository {
   }
 
   @override
+  Future<SocialWorkPage> fetchProfileMomentsPage(
+    String userId, {
+    int offset = 0,
+    int limit = 12,
+  }) async => SocialWorkPage(
+    items: works
+        .where(
+          (work) =>
+              work.author.userId == userId && work.isMoment && work.isPublished,
+        )
+        .toList(),
+    hasMore: false,
+    nextOffset: works.length,
+  );
+
+  @override
   Future<void> deleteWork(String id) async {
     works = works
         .map((work) => work.id == id ? _view(work, status: 'deleted') : work)
@@ -499,6 +525,13 @@ Widget _app(
     ),
     socialAuthStateProvider.overrideWith((_) => const Stream<String?>.empty()),
     socialRepositoryProvider.overrideWithValue(repository),
+    socialProfileMomentMonthsPageProvider.overrideWith(
+      (_, _) async => const SocialMomentMonthsPage(
+        items: [],
+        hasMore: false,
+        nextOffset: 0,
+      ),
+    ),
   ],
   child: MaterialApp(
     theme: (dark ? SnapFitTheme.dark() : SnapFitTheme.light()).copyWith(
@@ -543,9 +576,10 @@ Future<void> _withDecodedNetworkImages(Future<void> Function() body) async {
 
 Future<void> _decodeDetailImages(
   WidgetTester tester,
-  Iterable<SocialWork> works,
-) async {
-  final context = tester.element(find.byType(SocialWorkDetailScreen));
+  Iterable<SocialWork> works, {
+  Finder? screen,
+}) async {
+  final context = tester.element(screen ?? find.byType(SocialWorkDetailScreen));
   await tester.runAsync(() async {
     for (final work in works) {
       for (final url in work.imageUrls) {
@@ -695,11 +729,11 @@ void main() {
             ),
           );
           await tester.pumpAndSettle();
-          final action = find.byTooltip(save ? '작품 저장' : '좋아요');
+          final action = find.byTooltip(save ? '기록 저장' : '좋아요');
           await _scrollTo(tester, action);
           await tester.tap(action);
           await tester.pumpAndSettle();
-          final cancel = find.byTooltip(save ? '작품 저장 해제' : '좋아요 취소');
+          final cancel = find.byTooltip(save ? '기록 저장 해제' : '좋아요 취소');
           await _scrollTo(tester, cancel);
           expect(
             save ? repository.saved : repository.liked,
@@ -821,11 +855,11 @@ void main() {
             .showComments,
         true,
       );
-      expect(find.text('공개 작품을 불러오고 있어요.'), findsOneWidget);
+      expect(find.text('공개 기록과 앨범을 불러오고 있어요.'), findsOneWidget);
       gate.complete();
       repository.workBarrier = null;
       await tester.pumpAndSettle();
-      expect(find.text('이 작품에 남긴 이야기').hitTestable(), findsOneWidget);
+      expect(find.text('이 기록에 남긴 이야기').hitTestable(), findsOneWidget);
       expect(tester.testTextInput.isVisible, false);
       expect(repository.commentCalls, 0);
       await tester.ensureVisible(find.text(work.title));
@@ -840,37 +874,22 @@ void main() {
     },
   );
 
-  testWidgets(
-    'topic empty state clears only the topic and retains honest loading',
-    (tester) async {
-      final gate = Completer<void>();
-      final repository = _FeedRepository([_work()])..feedBarrier = gate;
-      await tester.pumpWidget(_app(const SocialFeedScreen(), repository));
-      await tester.pump();
-      expect(find.text('공개 작품을 불러오고 있어요.'), findsOneWidget);
-      expect(find.byType(SocialFeedCard), findsNothing);
-      gate.complete();
-      repository.feedBarrier = null;
-      await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('모든 주제 보기'));
-      await tester.pumpAndSettle();
-      final topic = find.descendant(
-        of: find.byType(BottomSheet),
-        matching: find.widgetWithText(ChoiceChip, socialTopicLabels.last),
-      );
-      await tester.ensureVisible(topic);
-      await tester.tap(topic);
-      await tester.pumpAndSettle();
-      expect(find.text('아직 이 주제의 작품이 없어요.'), findsOneWidget);
-      expect(find.text('첫 기록을 기다리고 있어요.'), findsNothing);
-      await _scrollTo(tester, find.text('모든 주제로 보기'));
-      await tester.tap(find.text('모든 주제로 보기'));
-      await tester.pumpAndSettle();
-      expect(repository.feedQueries.last.topic, isNull);
-      expect(repository.feedQueries.last.following, false);
-      expect(find.byType(SocialFeedCard), findsOneWidget);
-    },
-  );
+  testWidgets('monthly feed loading remains honest until records arrive', (
+    tester,
+  ) async {
+    final gate = Completer<void>();
+    final repository = _FeedRepository([_work()])..feedBarrier = gate;
+    await tester.pumpWidget(_app(const SocialFeedScreen(), repository));
+    await tester.pump();
+    expect(find.text('공개한 기록을 불러오고 있어요.'), findsOneWidget);
+    expect(find.byType(SocialFeedCard), findsNothing);
+    gate.complete();
+    repository.feedBarrier = null;
+    await tester.pumpAndSettle();
+    expect(find.byType(SocialFeedCard), findsOneWidget);
+    expect(find.byType(ChoiceChip), findsNothing);
+    expect(repository.feedQueries.last.topic, isNull);
+  });
 
   testWidgets('offset pages never render the same work twice', (tester) async {
     final first = _work(id: 'first'),
@@ -883,10 +902,10 @@ void main() {
       ];
     await tester.pumpWidget(_app(const SocialFeedScreen(), repository));
     await tester.pumpAndSettle();
-    await _scrollTo(tester, find.text('작품 더 보기'));
-    await tester.tap(find.text('작품 더 보기'));
+    await _scrollTo(tester, find.text('기록 더 보기'));
+    await tester.tap(find.text('기록 더 보기'));
     await tester.pumpAndSettle();
-    expect(repository.feedQueries.last.offset, 12);
+    expect(repository.feedQueries.last.offset, 2);
     expect(find.byKey(const ValueKey('first')), findsOneWidget);
     expect(find.byKey(const ValueKey('overlap')), findsOneWidget);
     expect(find.byKey(const ValueKey('last')), findsOneWidget);
@@ -1175,7 +1194,10 @@ void main() {
                   'social-${detail ? 'detail' : 'feed'}-artwork-travel-work',
                 ),
               );
-              final contentWidth = viewportWidth.clamp(0.0, 1120.0);
+              final contentWidth = viewportWidth.clamp(
+                0.0,
+                detail ? 820.0 : 1120.0,
+              );
               final inset = detail && contentWidth >= 760 ? 24.0 : 16.0;
               final expectedWidth = contentWidth - inset * 2;
               final size = tester.getSize(artwork);
@@ -1208,48 +1230,23 @@ void main() {
     );
   }
 
-  testWidgets('all canonical subjects can be selected from the topic sheet', (
+  testWidgets('monthly feed hides album publications and opens with records', (
     tester,
   ) async {
-    await tester.binding.setSurfaceSize(const Size(320, 700));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-    final topic = socialTopicLabels.last;
     final repository = _FeedRepository([
-      _work(id: 'last-topic', topic: topic, title: '나만의 특별한 기록'),
+      _work(id: 'record'),
+      SocialWork(
+        id: 'album-only',
+        author: _author,
+        title: '공개 앨범',
+        createdAt: DateTime.utc(2026, 10, 28),
+      ),
     ]);
-    await tester.pumpWidget(
-      _app(const SocialFeedScreen(), repository, textScale: 2.2),
-    );
+    await tester.pumpWidget(_app(const SocialFeedScreen(), repository));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('모든 주제 보기'));
-    await tester.pumpAndSettle();
-    final sheet = find.byType(BottomSheet);
-    final choices = find.descendant(
-      of: sheet,
-      matching: find.byType(ChoiceChip),
-    );
-    expect(
-      tester
-          .widgetList<ChoiceChip>(choices)
-          .map((chip) => (chip.label as Text).data)
-          .toList(),
-      ['전체', ...socialTopicLabels],
-    );
-    final target = find.descendant(
-      of: sheet,
-      matching: find.widgetWithText(ChoiceChip, topic),
-    );
-    await tester.ensureVisible(target);
-    await tester.pumpAndSettle();
-    await tester.tap(target);
-    await tester.pumpAndSettle();
-    expect(find.byType(BottomSheet), findsNothing);
-    expect(repository.feedQueries.last.topic, topic);
-    expect(
-      find.widgetWithText(ChoiceChip, topic).hitTestable(),
-      findsOneWidget,
-    );
-    expect(find.byKey(const ValueKey('last-topic')), findsOneWidget);
+    expect(find.byKey(const ValueKey('record')), findsOneWidget);
+    expect(find.byKey(const ValueKey('album-only')), findsNothing);
+    expect(find.byTooltip('한 장의 기록 남기기'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -1265,12 +1262,12 @@ void main() {
     expect(repository.liked, contains('travel-work'));
     await _scrollTo(tester, find.byTooltip('좋아요 취소'));
     expect(find.text('43'), findsOneWidget);
-    await _scrollTo(tester, find.byTooltip('작품 저장'));
-    await tester.tap(find.byTooltip('작품 저장'));
+    await _scrollTo(tester, find.byTooltip('기록 저장'));
+    await tester.tap(find.byTooltip('기록 저장'));
     await tester.pumpAndSettle();
     expect(repository.saved, contains('travel-work'));
-    await _scrollTo(tester, find.byTooltip('작품 저장 해제'));
-    await tester.tap(find.byTooltip('작품 저장 해제'));
+    await _scrollTo(tester, find.byTooltip('기록 저장 해제'));
+    await tester.tap(find.byTooltip('기록 저장 해제'));
     await tester.pumpAndSettle();
     expect(repository.saved, isEmpty);
     expect(repository.saveCalls, 2);
@@ -1313,9 +1310,15 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        await _scrollTo(tester, find.byTooltip('작품 저장'));
+        await _scrollTo(tester, find.byTooltip('기록 저장'));
         expect(find.text('1234'), findsOneWidget);
-        expect(find.text('123'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(SocialReactions),
+            matching: find.text('123'),
+          ),
+          findsOneWidget,
+        );
         await _scrollTo(tester, find.text('댓글 남기기'));
         expect(find.byType(TextField), findsOneWidget);
         expect(tester.takeException(), isNull);
@@ -1344,38 +1347,130 @@ void main() {
       await _scrollTo(tester, find.byTooltip('댓글 보기'));
       await tester.tap(find.byTooltip('댓글 보기'));
       await tester.pumpAndSettle();
-      expect(find.text('이 작품에 남긴 이야기').hitTestable(), findsOneWidget);
+      expect(find.text('이 기록에 남긴 이야기').hitTestable(), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
 
-  testWidgets(
-    'feed retries then preserves following and topic query semantics',
-    (tester) async {
-      final repository = _FeedRepository([
-        _work(),
-        _work(id: 'daily', topic: '일상', title: '느린 하루'),
-      ])..feedFailures = 1;
+  testWidgets('feed retries then preserves the following query', (
+    tester,
+  ) async {
+    final repository = _FeedRepository([
+      _work(),
+      _work(id: 'daily', topic: '일상', title: '느린 하루'),
+    ])..feedFailures = 1;
 
-      await tester.pumpWidget(_app(const SocialFeedScreen(), repository));
-      await tester.pumpAndSettle();
-      expect(find.text('기록을 불러오지 못했어요.'), findsOneWidget);
-      await tester.tap(find.text('다시 시도'));
-      await tester.pumpAndSettle();
-      expect(find.byType(SocialFeedCard), findsWidgets);
-      await tester.tap(find.widgetWithText(TextButton, '팔로잉'));
-      await tester.pumpAndSettle();
-      expect(repository.feedQueries.last.following, isTrue);
-      expect(find.text('새로운 기록을 기다리고 있어요.'), findsOneWidget);
-      await tester.tap(find.text('추천 피드 보기'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(ChoiceChip, '일상'));
-      await tester.pumpAndSettle();
-      expect(repository.feedQueries.last.topic, '일상');
-      expect(repository.feedQueries.last.following, isFalse);
-      expect(find.byKey(const ValueKey('daily')), findsOneWidget);
-      expect(find.byKey(const ValueKey('travel-work')), findsNothing);
-      expect(tester.takeException(), isNull);
+    await tester.pumpWidget(_app(const SocialFeedScreen(), repository));
+    await tester.pumpAndSettle();
+    expect(find.text('기록을 불러오지 못했어요.'), findsOneWidget);
+    await tester.tap(find.text('다시 시도'));
+    await tester.pumpAndSettle();
+    expect(find.byType(SocialFeedCard), findsWidgets);
+    await tester.tap(find.widgetWithText(TextButton, '팔로잉'));
+    await tester.pumpAndSettle();
+    expect(repository.feedQueries.last.following, isTrue);
+    expect(find.text('새로운 기록을 기다리고 있어요.'), findsOneWidget);
+    await tester.tap(find.text('최신 피드 보기'));
+    await tester.pumpAndSettle();
+    expect(repository.feedQueries.last.topic, isNull);
+    expect(repository.feedQueries.last.following, isFalse);
+    expect(find.byKey(const ValueKey('daily')), findsOneWidget);
+    expect(find.byKey(const ValueKey('travel-work')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'feed pages swipe without navigating and reactions retain the selected page',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await _withDecodedNetworkImages(() async {
+        final urls = [
+          'https://fixture.invalid/storage/v1/object/sign/works/first.png?token=old',
+          'https://fixture.invalid/storage/v1/object/sign/works/second.png?token=old',
+        ];
+        final repository = _FeedRepository([_work(imageUrls: urls)]);
+        await tester.pumpWidget(_app(const SocialFeedScreen(), repository));
+        await tester.pump();
+        await _decodeDetailImages(
+          tester,
+          repository.works,
+          screen: find.byType(SocialFeedScreen),
+        );
+        final pages = find.byKey(
+          const ValueKey('social-feed-pages-travel-work'),
+        );
+        final counter = find.byKey(
+          const ValueKey('social-feed-page-count-travel-work'),
+        );
+        await tester.drag(pages, const Offset(-330, 0));
+        await tester.pumpAndSettle();
+        expect(tester.widget<Text>(counter).data, '2 / 2');
+        expect(find.byType(SocialWorkDetailScreen), findsNothing);
+        await _scrollTo(tester, find.byTooltip('좋아요'));
+        await tester.tap(find.byTooltip('좋아요'));
+        await tester.pumpAndSettle();
+        expect(repository.liked, contains('travel-work'));
+        expect(tester.widget<Text>(counter).data, '2 / 2');
+        repository.works = [
+          _work(
+            imageUrls: urls
+                .map((url) => url.replaceAll('token=old', 'token=new'))
+                .toList(),
+          ),
+        ];
+        ProviderScope.containerOf(
+          tester.element(find.byType(SocialFeedScreen)),
+        ).invalidate(socialFeedProvider);
+        await tester.pump();
+        await _decodeDetailImages(
+          tester,
+          repository.works,
+          screen: find.byType(SocialFeedScreen),
+        );
+        expect(
+          tester.widget<Text>(counter).data,
+          '2 / 2',
+          reason: 'A renewed signature is still the same published page.',
+        );
+        await _scrollTo(tester, pages);
+        await tester.tap(
+          find.byKey(const ValueKey('social-feed-image-travel-work-1')),
+        );
+        await tester.pumpAndSettle();
+        expect(
+          tester
+              .widget<SocialWorkDetailScreen>(
+                find.byType(SocialWorkDetailScreen),
+              )
+              .initialPage,
+          1,
+        );
+        expect(find.text('2 / 2'), findsOneWidget);
+        await tester.tap(find.byTooltip('뒤로가기'));
+        await tester.pumpAndSettle();
+        repository.works = [_work(imageUrls: urls.reversed.toList())];
+        ProviderScope.containerOf(
+          tester.element(find.byType(SocialFeedScreen)),
+        ).invalidate(socialFeedProvider);
+        await tester.pumpAndSettle();
+        expect(
+          tester.widget<Text>(counter).data,
+          '1 / 2',
+          reason: 'Actual page order changes reset the preview.',
+        );
+
+        await _scrollTo(
+          tester,
+          find.byKey(const ValueKey('social-feed-open-travel-work')),
+        );
+        await tester.tap(
+          find.byKey(const ValueKey('social-feed-open-travel-work')),
+        );
+        await tester.pumpAndSettle();
+        expect(find.byType(SocialWorkDetailScreen), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
     },
   );
 
@@ -1407,7 +1502,7 @@ void main() {
       );
       await tester.tap(find.byTooltip('뒤로가기'));
       await tester.pumpAndSettle();
-      final detail = find.text('작품 자세히 보기');
+      final detail = find.byKey(const ValueKey('social-feed-open-travel-work'));
       await _scrollTo(tester, detail);
       await tester.tap(detail);
       await tester.pumpAndSettle();
@@ -1434,7 +1529,14 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
       await _withDecodedNetworkImages(() async {
         final repository = _FeedRepository([
-          _work(image: true, aspectRatio: .75),
+          _work(
+            image: true,
+            aspectRatio: .75,
+            imageUrls: [
+              'https://fixture.invalid/functions/v1/social-media?work=travel-work&position=0&token=initial',
+              'https://fixture.invalid/functions/v1/social-media?work=travel-work&position=1&token=initial',
+            ],
+          ),
         ]);
         await tester.pumpWidget(
           _app(
@@ -1455,8 +1557,8 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('2 / 2'), findsOneWidget);
 
-        await _scrollTo(tester, find.byTooltip('작품 크게 보기'));
-        await tester.tap(find.byTooltip('작품 크게 보기'));
+        await _scrollTo(tester, find.byTooltip('기록 크게 보기'));
+        await tester.tap(find.byTooltip('기록 크게 보기'));
         await tester.pumpAndSettle();
         final viewer = find.byKey(
           const ValueKey('social-artwork-viewer-travel-work'),
@@ -1466,7 +1568,7 @@ void main() {
         );
         expect(viewer, findsOneWidget);
         expect(tester.widget<Text>(count).data, '2 / 2');
-        await tester.tap(find.byTooltip('작품 확대'));
+        await tester.tap(find.byTooltip('사진 확대'));
         await tester.pumpAndSettle();
         expect(find.text('150%'), findsOneWidget);
 
@@ -1477,7 +1579,9 @@ void main() {
           title: original.title,
           caption: original.caption,
           topic: original.topic,
-          imageUrls: original.imageUrls.map((url) => '$url?renewed=1').toList(),
+          imageUrls: original.imageUrls
+              .map((url) => url.replaceFirst('token=initial', 'token=renewed'))
+              .toList(),
           status: original.status,
           createdAt: original.createdAt,
           likeCount: original.likeCount,
@@ -1536,8 +1640,8 @@ void main() {
         await _decodeDetailImages(tester, repository.works);
         final context = tester.element(find.byType(SocialWorkDetailScreen));
         final container = ProviderScope.containerOf(context);
-        await _scrollTo(tester, find.byTooltip('작품 크게 보기'));
-        await tester.tap(find.byTooltip('작품 크게 보기'));
+        await _scrollTo(tester, find.byTooltip('기록 크게 보기'));
+        await tester.tap(find.byTooltip('기록 크게 보기'));
         await tester.pumpAndSettle();
         expect(
           find.byKey(const ValueKey('social-artwork-viewer-travel-work')),
@@ -1618,8 +1722,8 @@ void main() {
       await _scrollTo(tester, find.byTooltip('좋아요'));
       await tester.tap(find.byTooltip('좋아요'));
       await tester.pumpAndSettle();
-      await _scrollTo(tester, find.byTooltip('작품 저장'));
-      await tester.tap(find.byTooltip('작품 저장'));
+      await _scrollTo(tester, find.byTooltip('기록 저장'));
+      await tester.tap(find.byTooltip('기록 저장'));
       await tester.pumpAndSettle();
 
       final artwork = find.byKey(
@@ -1631,14 +1735,14 @@ void main() {
       expect(find.byType(SocialWorkDetailScreen), findsOneWidget);
       await _scrollTo(tester, find.byTooltip('좋아요 취소'));
       expect(find.text('43'), findsOneWidget);
-      expect(find.byTooltip('작품 저장 해제'), findsOneWidget);
+      expect(find.byTooltip('기록 저장 해제'), findsOneWidget);
       await tester.tap(find.byTooltip('좋아요 취소'));
       await tester.pumpAndSettle();
-      await tester.pageBack();
+      await tester.tap(find.byTooltip('뒤로가기'));
       await tester.pumpAndSettle();
       await _scrollTo(tester, find.byTooltip('좋아요'));
       expect(find.text('42'), findsOneWidget);
-      expect(find.byTooltip('작품 저장 해제'), findsOneWidget);
+      expect(find.byTooltip('기록 저장 해제'), findsOneWidget);
       expect(repository.liked, isEmpty);
       expect(repository.saved, contains('travel-work'));
       expect(repository.likeWrites, [
@@ -1731,7 +1835,7 @@ void main() {
       await tester.tap(find.text('저장 해제'));
       await tester.pumpAndSettle();
       expect(repository.saveCalls, 1);
-      expect(find.text('아직 저장한 작품이 없어요.'), findsOneWidget);
+      expect(find.text('아직 저장한 기록이나 앨범이 없어요.'), findsOneWidget);
       repository.saved.add('travel-work');
       final container = ProviderScope.containerOf(
         tester.element(find.byType(SocialSavedWorksScreen)),
@@ -1743,7 +1847,7 @@ void main() {
       actor = null;
       container.invalidate(socialCurrentUserIdProvider);
       await tester.pumpAndSettle();
-      expect(find.text('나만 보는 작품 보관함'), findsOneWidget);
+      expect(find.text('나만 보는 기록·앨범 보관함'), findsOneWidget);
       expect(find.text(_work().title), findsNothing);
       expect(tester.takeException(), isNull);
     },
@@ -1782,7 +1886,7 @@ void main() {
       actor = null;
       container.invalidate(socialCurrentUserIdProvider);
       await tester.pumpAndSettle();
-      expect(find.text('내 작품을 관리하는 공간'), findsOneWidget);
+      expect(find.text('내 공개 기록과 앨범을 관리해요.'), findsOneWidget);
       expect(find.text(first.title), findsNothing);
       expect(tester.takeException(), isNull);
     },
@@ -1841,7 +1945,7 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        await _scrollTo(tester, find.byTooltip('작품 저장'));
+        await _scrollTo(tester, find.byTooltip('기록 저장'));
         expect(find.text('1234'), findsOneWidget);
         expect(find.text('123'), findsOneWidget);
         expect(tester.takeException(), isNull);

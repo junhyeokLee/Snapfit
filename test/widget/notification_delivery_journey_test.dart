@@ -25,6 +25,7 @@ import 'package:snap_fit/features/notification/presentation/views/notification_s
 import 'package:snap_fit/features/profile/presentation/views/notification_settings_screen.dart';
 
 import 'ai_album_start_step_test.dart' show loadCreationFonts;
+import '../helpers/notification_async_fixture.dart';
 
 const _owner = '11111111-1111-1111-1111-111111111111';
 const _permission = NotificationSettings(
@@ -108,6 +109,7 @@ void main() {
   final opened = <Map<String, dynamic>>[];
   Completer<http.Response>? readReceipt;
   var readFails = false;
+  final remotePreferences = <String, dynamic>{};
   late FirebaseMessagingPlatform previousMessaging;
 
   setUpAll(() async {
@@ -135,6 +137,21 @@ void main() {
       ),
       httpClient: MockClient((request) async {
         requests.add(request);
+        if (request.url.path.endsWith('/push_preferences')) {
+          if (request.method == 'PATCH') {
+            remotePreferences.addAll(
+              jsonDecode(request.body) as Map<String, dynamic>,
+            );
+          }
+          if (request.method == 'GET' || request.method == 'PATCH') {
+            return http.Response(
+              jsonEncode({'user_id': _owner, ...remotePreferences}),
+              200,
+              headers: {'content-type': 'application/json'},
+              request: request,
+            );
+          }
+        }
         if (request.method == 'PATCH' &&
             request.url.path.endsWith('/notifications')) {
           if (readReceipt != null) return readReceipt!.future;
@@ -218,6 +235,7 @@ void main() {
     bool dark = false,
     double scale = 1,
     _Action? action,
+    List<AppNotificationItem>? inbox,
   }) async {
     metrics(tester, size);
     addTearDown(tester.view.reset);
@@ -240,7 +258,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          notificationInboxProvider.overrideWith((_) async => items),
+          notificationInboxProvider.overrideWith((_) async => inbox ?? items),
           notificationUnreadCountProvider.overrideWith((_) async => 3),
           notificationRetentionDaysProvider.overrideWith((_) async => 90),
           if (action != null)
@@ -300,106 +318,159 @@ void main() {
         testWidgets(
           'saved opt-out and inbox remain usable $size dark=$dark scale=$scale',
           (tester) async {
-            await mount(tester, size: size, dark: dark, scale: scale);
-            final suffix = scale > 1 ? '-large' : '';
-            await capture(tester, 'inbox$suffix', size, dark);
-            await tester.tap(find.byKey(const ValueKey('inbox-settings')));
-            // The SDK/storage futures originate in setUp's real async zone.
-            // Drain both zones while the account read finishes; keep the UI's
-            // loading indicator active instead of replacing the real screen.
-            for (
-              var attempt = 0;
-              attempt < 8 &&
-                  find.byType(NotificationSettingsContent).evaluate().isEmpty;
-              attempt++
-            ) {
-              await tester.pump();
-              await tester.runAsync(
-                () => Future<void>.delayed(const Duration(milliseconds: 1)),
+            try {
+              await mount(tester, size: size, dark: dark, scale: scale);
+              final suffix = scale > 1 ? '-large' : '';
+              await capture(tester, 'inbox$suffix', size, dark);
+              await tester.tap(find.byKey(const ValueKey('inbox-settings')));
+              // The SDK/storage futures originate in setUp's real async zone.
+              // Drain both zones while the account read finishes; keep the UI's
+              // loading indicator active instead of replacing the real screen.
+              for (
+                var attempt = 0;
+                attempt < 8 &&
+                    find.byType(NotificationSettingsContent).evaluate().isEmpty;
+                attempt++
+              ) {
+                await tester.pump();
+                await tester.runAsync(
+                  () => Future<void>.delayed(const Duration(milliseconds: 1)),
+                );
+              }
+              await tester.pumpAndSettle();
+              final content = tester.widget<NotificationSettingsContent>(
+                find.byType(NotificationSettingsContent),
               );
+              expect(content.settings.all, false);
+              expect(content.settings.nightMute, true);
+              expect(content.settings.permissionGranted, true);
+              await capture(tester, 'settings$suffix', size, dark);
+              final scrollable = find
+                  .descendant(
+                    of: find.byKey(
+                      const PageStorageKey('notification-preferences'),
+                    ),
+                    matching: find.byType(Scrollable),
+                  )
+                  .first;
+              await tester.scrollUntilVisible(
+                find.text('야간 알림 끄기'),
+                120,
+                scrollable: scrollable,
+              );
+              await tester.pumpAndSettle();
+              expect(tester.takeException(), isNull);
+              await tester.tap(find.byTooltip('뒤로가기'));
+              await tester.pumpAndSettle();
+              expect(
+                find.byKey(const ValueKey('inbox-item-1')),
+                findsOneWidget,
+              );
+              expect(
+                requests.where(
+                  (request) =>
+                      request.method == 'POST' &&
+                      request.url.path.endsWith('/push_preferences'),
+                ),
+                isEmpty,
+              );
+            } finally {
+              await drainNotificationFixture(tester);
             }
-            await tester.pumpAndSettle();
-            final content = tester.widget<NotificationSettingsContent>(
-              find.byType(NotificationSettingsContent),
-            );
-            expect(content.settings.all, false);
-            expect(content.settings.nightMute, true);
-            expect(content.settings.permissionGranted, true);
-            await capture(tester, 'settings$suffix', size, dark);
-            final scrollable = find
-                .descendant(
-                  of: find.byKey(
-                    const PageStorageKey('notification-preferences'),
-                  ),
-                  matching: find.byType(Scrollable),
-                )
-                .first;
-            await tester.scrollUntilVisible(
-              find.text('야간 알림 끄기'),
-              120,
-              scrollable: scrollable,
-            );
-            await tester.pumpAndSettle();
-            expect(tester.takeException(), isNull);
-            await tester.tap(find.byTooltip('뒤로가기'));
-            await tester.pumpAndSettle();
-            expect(find.byKey(const ValueKey('inbox-item-1')), findsOneWidget);
-            expect(
-              requests.where(
-                (request) =>
-                    request.method == 'POST' &&
-                    request.url.path.endsWith('/push_preferences'),
-              ),
-              isEmpty,
-            );
           },
         );
       }
     }
   }
 
+  testWidgets(
+    'social comment inbox preserves the exact work and comment destination',
+    (tester) async {
+      try {
+        const workId = '33333333-3333-4333-8333-333333333333';
+        const commentId = '44444444-4444-4444-8444-444444444444';
+        await mount(
+          tester,
+          inbox: [
+            AppNotificationItem(
+              id: 91,
+              type: 'social_comment',
+              title: '공개한 기록에 새 댓글이 달렸어요',
+              body: '댓글을 확인해 보세요.',
+              createdAt: DateTime.now(),
+              isRead: false,
+              userId: _owner,
+              deeplink: 'snapfit://work?workId=$workId&comments=1',
+              data: const {
+                'workId': workId,
+                'commentId': commentId,
+                'showComments': true,
+              },
+            ),
+          ],
+        );
+        expect(find.textContaining('새 댓글 ·'), findsOneWidget);
+        expect(find.byIcon(Icons.chat_bubble_outline_rounded), findsOneWidget);
+        await capture(tester, 'social-comment', const Size(390, 844), false);
+        await tester.tap(find.byKey(const ValueKey('inbox-item-91')));
+        await tester.pumpAndSettle();
+        expect(opened, hasLength(1));
+        expect(opened.single['workId'], workId);
+        expect(opened.single['commentId'], commentId);
+        expect(opened.single['showComments'], true);
+        expect(opened.single['type'], 'social_comment');
+      } finally {
+        await drainNotificationFixture(tester);
+      }
+    },
+  );
+
   for (final fails in [false, true]) {
     testWidgets(
       'inbox opens immediately when the read receipt ${fails ? 'fails' : 'is pending'}',
       (tester) async {
-        final action = _Action();
-        when(
-          () => action.markRead(any()),
-        ).thenThrow(StateError('must use the shared best-effort receipt'));
-        await mount(tester, action: action);
-        readFails = fails;
-        if (!fails) readReceipt = Completer<http.Response>();
-        await tester.tap(find.byKey(const ValueKey('inbox-item-1')));
-        await tester.pump();
-        await tester.pump();
-        expect(opened, hasLength(1));
-        expect(opened.single['orderId'], 'fixture-order-1');
-        expect(opened.single['userId'], _owner);
-        verifyNever(() => action.markRead(any()));
-        expect(
-          requests.where(
-            (request) =>
-                request.method == 'PATCH' &&
-                request.url.path.endsWith('/notifications'),
-          ),
-          hasLength(1),
-        );
-        expect(find.text('알림을 열지 못했어요. 다시 시도해주세요.'), findsNothing);
-        if (!fails) {
-          expect(readReceipt!.isCompleted, false);
-          readReceipt!.complete(
-            http.Response(
-              '[]',
-              200,
-              headers: {'content-type': 'application/json'},
-              request: requests.firstWhere(
-                (request) => request.method == 'PATCH',
-              ),
+        try {
+          final action = _Action();
+          when(
+            () => action.markRead(any()),
+          ).thenThrow(StateError('must use the shared best-effort receipt'));
+          await mount(tester, action: action);
+          readFails = fails;
+          if (!fails) readReceipt = Completer<http.Response>();
+          await tester.tap(find.byKey(const ValueKey('inbox-item-1')));
+          await tester.pump();
+          await tester.pump();
+          expect(opened, hasLength(1));
+          expect(opened.single['orderId'], 'fixture-order-1');
+          expect(opened.single['userId'], _owner);
+          verifyNever(() => action.markRead(any()));
+          expect(
+            requests.where(
+              (request) =>
+                  request.method == 'PATCH' &&
+                  request.url.path.endsWith('/notifications'),
             ),
+            hasLength(1),
           );
+          expect(find.text('알림을 열지 못했어요. 다시 시도해주세요.'), findsNothing);
+          if (!fails) {
+            expect(readReceipt!.isCompleted, false);
+            readReceipt!.complete(
+              http.Response(
+                '[]',
+                200,
+                headers: {'content-type': 'application/json'},
+                request: requests.firstWhere(
+                  (request) => request.method == 'PATCH',
+                ),
+              ),
+            );
+          }
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+        } finally {
+          await drainNotificationFixture(tester);
         }
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
       },
     );
   }

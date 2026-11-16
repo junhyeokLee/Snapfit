@@ -112,7 +112,7 @@ Future<void> _review(WidgetTester tester) async {
   await _tap(tester, find.text('다음 · 1쪽'));
   await _tap(tester, find.text('다음 · 1쪽'));
   await _tap(tester, find.byType(CheckboxListTile));
-  await _tap(tester, find.text('피드에 무료로 공개'));
+  await _tap(tester, find.text('프로필에 앨범 공개'));
 }
 
 void main() {
@@ -140,10 +140,10 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     await tester.tap(find.byTooltip('이전 단계'));
     await tester.pumpAndSettle();
-    expect(find.text('2 / 3 · 작품 소개'), findsOneWidget);
+    expect(find.text('2 / 3 · 앨범 소개'), findsOneWidget);
     reload.complete(_saved.copyWith(title: '늦게 도착한 이전 선택'));
     await tester.pumpAndSettle();
-    expect(find.text('2 / 3 · 작품 소개'), findsOneWidget);
+    expect(find.text('2 / 3 · 앨범 소개'), findsOneWidget);
     expect(
       tester.widget<TextField>(find.byType(TextField).first).controller!.text,
       _saved.title,
@@ -180,7 +180,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, '다시 확인'));
       await tester.pumpAndSettle();
       final publish = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, '작품 공개 중…'),
+        find.widgetWithText(FilledButton, '앨범 공개 중…'),
       );
       expect(publish.onPressed, isNull);
       expect(
@@ -274,7 +274,7 @@ void main() {
     );
     final container = _container(albums, social);
     await _mount(tester, container);
-    expect(find.text('앨범 소유자만 작품을 공개할 수 있어요.'), findsOneWidget);
+    expect(find.text('앨범 소유자만 앨범을 공개할 수 있어요.'), findsOneWidget);
     expect(find.byType(CheckboxListTile), findsNothing);
     expect(find.text('어떤 장면을 나눌까요?'), findsNothing);
     verifyNever(() => social.ensureOwnProfile());

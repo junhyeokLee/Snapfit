@@ -285,6 +285,17 @@ void main() {
             ),
           ),
           socialCurrentUserIdProvider.overrideWith((_) => 'qa'),
+          socialProfileMomentsPageProvider.overrideWith(
+            (_, _) async =>
+                const SocialWorkPage(items: [], hasMore: false, nextOffset: 0),
+          ),
+          socialProfileMomentMonthsPageProvider.overrideWith(
+            (_, _) async => const SocialMomentMonthsPage(
+              items: [],
+              hasMore: false,
+              nextOffset: 0,
+            ),
+          ),
           ownSocialProfileProvider.overrideWith(
             (_) async => const SocialProfile(
               userId: 'qa',
@@ -444,9 +455,9 @@ void main() {
         await mount(tester, const SocialProfileScreen(), scale: 1, dark: dark);
         expect(find.byTooltip('뒤로가기'), findsNothing);
         await capture(tester, 'personal-refresh-profile', size, dark);
-        await reveal(tester, key('profile-order-shortcut'));
+        await reveal(tester, key('profile-header-orders'));
         await capture(tester, 'personal-refresh-account-actions', size, dark);
-        await tap(tester, key('profile-shortcut-orders'));
+        await tap(tester, key('profile-header-orders'));
         expect(find.byType(OrderHistoryScreen), findsOneWidget);
         await capture(tester, 'personal-refresh-orders', size, dark);
         await tap(tester, key('personal-order-${orders.first.orderId}'));
@@ -541,10 +552,10 @@ void main() {
           viewport(tester, size);
           await mount(tester, const SocialProfileScreen(), dark: dark);
           await capture(tester, 'personal-atelier-profile', size, dark);
-          await reveal(tester, key('profile-design-collection'));
+          await reveal(tester, key('profile-shortcut-library'));
           await paint(tester);
           await capture(tester, 'personal-atelier-profile-designs', size, dark);
-          await tap(tester, find.byTooltip('내 보관함 모두 보기'));
+          await tap(tester, key('profile-shortcut-library'));
           expect(find.byType(MaterialCatalogScreen), findsOneWidget);
           await capture(tester, 'personal-atelier-library', size, dark);
           await tap(tester, key('library-type-템플릿'));
@@ -586,13 +597,9 @@ void main() {
           viewport(tester, size);
           await mount(tester, albumPage(), dark: dark);
           await capture(tester, 'personal-atelier-albums', size, dark);
-          await tap(tester, find.text('완료'));
-          await capture(
-            tester,
-            'personal-atelier-albums-completed',
-            size,
-            dark,
-          );
+          expect(find.text('전체'), findsOneWidget);
+          expect(find.text('진행 중'), findsNothing);
+          expect(find.text('완료'), findsNothing);
           await tap(tester, find.text('즐겨찾기'));
           await capture(
             tester,
@@ -708,11 +715,11 @@ void main() {
         FocusManager.instance.primaryFocus?.unfocus();
         viewport(tester, size);
         await mount(tester, albumPage(), scale: 1.8);
-        await tap(tester, find.text('완료'));
+        await tap(tester, find.text('즐겨찾기'));
         viewport(tester, other);
         await paint(tester);
-        expect(key('personal-record-4'), findsOneWidget);
-        expect(key('personal-record-1'), findsNothing);
+        expect(key('personal-record-1'), findsOneWidget);
+        expect(key('personal-record-4'), findsNothing);
         await mount(tester, const OrderHistoryScreen(), scale: 1.8);
         await tap(tester, key('personal-order-${orders.first.orderId}'));
         final info = find
@@ -752,18 +759,21 @@ void main() {
       viewport(tester, size);
       await mount(tester, const SocialProfileScreen(), scale: 1.8, dark: true);
       expect(tester.takeException(), isNull);
+      await reveal(tester, key('my-point-summary'));
+      await tap(tester, key('my-point-summary'));
       final charge = key('my-point-charge');
       await reveal(tester, charge);
       expect(charge.hitTestable(), findsOneWidget);
       expect(tester.getSize(charge).height, greaterThanOrEqualTo(44));
-      await reveal(tester, key('profile-design-collection'));
+      await tap(tester, key('my-point-close'));
+      await reveal(tester, key('profile-shortcut-library'));
       expect(tester.takeException(), isNull);
       await capture(tester, 'personal-atelier-profile-large', size, true);
     });
   }
 
   testWidgets(
-    'profile only previews confirmed purchases and opens their type',
+    'profile library shortcut shows confirmed purchases without duplicate previews',
     (tester) async {
       reset(tester);
       viewport(tester, const Size(390, 844));
@@ -772,45 +782,40 @@ void main() {
         const SocialProfileScreen(),
         owned: {'frame:materialLinenOval'},
       );
-      await reveal(tester, key('profile-design-collection'));
-      expect(key('personal-design-frame:materialLinenOval'), findsOneWidget);
+      await reveal(tester, key('profile-shortcut-library'));
+      expect(find.byType(OwnedDesignShelf), findsNothing);
+      await tap(tester, key('profile-shortcut-library'));
+      expect(find.byType(MaterialCatalogScreen), findsOneWidget);
+      await tap(tester, key('library-type-프레임'));
+      expect(key('material-item-frame:materialLinenOval'), findsOneWidget);
       expect(
-        key('personal-design-${pointShopTemplateKey(templates.first)}'),
+        key('material-item-${pointShopTemplateKey(templates.first)}'),
         findsNothing,
-      );
-      await tap(tester, key('personal-design-frame:materialLinenOval'));
-      expect(
-        tester
-            .widget<MaterialCatalogScreen>(find.byType(MaterialCatalogScreen))
-            .initialType,
-        '프레임',
       );
       expect(find.text('1개 항목'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
 
-  testWidgets('profile paper preview opens the paper collection', (
-    tester,
-  ) async {
-    reset(tester);
-    viewport(tester, const Size(390, 844));
-    await mount(
-      tester,
-      const SocialProfileScreen(),
-      owned: {'sticker:studioCottonRag'},
-    );
-    await reveal(tester, key('profile-design-collection'));
-    await tap(tester, key('personal-design-sticker:studioCottonRag'));
-    expect(
-      tester
-          .widget<MaterialCatalogScreen>(find.byType(MaterialCatalogScreen))
-          .initialType,
-      '종이',
-    );
-    expect(find.text('1개 항목'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+  testWidgets(
+    'profile library shortcut keeps the paper collection accessible',
+    (tester) async {
+      reset(tester);
+      viewport(tester, const Size(390, 844));
+      await mount(
+        tester,
+        const SocialProfileScreen(),
+        owned: {'sticker:studioCottonRag'},
+      );
+      await reveal(tester, key('profile-shortcut-library'));
+      expect(find.byType(OwnedDesignShelf), findsNothing);
+      await tap(tester, key('profile-shortcut-library'));
+      await tap(tester, key('library-type-종이'));
+      expect(key('material-item-sticker:studioCottonRag'), findsOneWidget);
+      expect(find.text('1개 항목'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'bookmarking a library item never opens its detail or changes ownership',

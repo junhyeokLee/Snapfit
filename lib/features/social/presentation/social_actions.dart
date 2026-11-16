@@ -5,6 +5,7 @@ import '../../../core/navigation/web_app_location.dart';
 import '../../../shared/web/web_design.dart';
 import '../../auth/presentation/views/login_screen.dart';
 import 'providers/social_providers.dart';
+import '../../../shared/widgets/snapfit_motion.dart';
 
 Future<bool> requireSocialLogin(BuildContext context, WidgetRef ref) async {
   if (ref.read(socialCurrentUserIdProvider) != null) return true;
@@ -12,7 +13,7 @@ Future<bool> requireSocialLogin(BuildContext context, WidgetRef ref) async {
     context: context,
     builder: (context) => AlertDialog(
       title: const Text('로그인하고 기록을 이어가세요.'),
-      content: const Text('작품 공개와 저장, 좋아요와 소통은 로그인 후 이용할 수 있어요.'),
+      content: const Text('기록·앨범 공개와 저장, 좋아요와 소통은 로그인 후 이용할 수 있어요.'),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
@@ -34,7 +35,7 @@ Future<bool> requireSocialLogin(BuildContext context, WidgetRef ref) async {
     } else {
       await Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        snapFitRoute(page: const LoginScreen()),
       );
     }
   }
@@ -49,6 +50,9 @@ void invalidateSocial(WidgetRef ref, {String? workId}) {
   ref.invalidate(socialSavedWorksPageProvider);
   ref.invalidate(socialProfileWorksProvider);
   ref.invalidate(socialProfileWorksPageProvider);
+  ref.invalidate(socialProfileMomentsPageProvider);
+  ref.invalidate(socialProfileMomentMonthsPageProvider);
+  ref.invalidate(socialMomentMonthPageProvider);
   ref.invalidate(socialProfileProvider);
   ref.invalidate(ownSocialProfileProvider);
   if (workId != null) ref.invalidate(socialWorkProvider(workId));

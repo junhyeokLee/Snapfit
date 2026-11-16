@@ -14,12 +14,15 @@ import 'package:snap_fit/features/moments/data/moment_photo_codec.dart';
 import 'package:snap_fit/features/moments/domain/moment_draft.dart';
 import 'package:snap_fit/features/moments/domain/moment_record.dart';
 import 'package:snap_fit/features/moments/presentation/providers/moments_providers.dart';
+import 'package:snap_fit/features/moments/presentation/providers/moment_publication_providers.dart';
 import 'package:snap_fit/features/moments/presentation/views/moment_compose_screen.dart';
 import 'package:snap_fit/features/moments/presentation/views/moment_saved_preview_screen.dart';
 import 'package:snap_fit/features/moments/presentation/views/moments_screen.dart';
+import 'package:snap_fit/features/moments/presentation/moments_navigation.dart';
 import 'package:snap_fit/features/moments/presentation/widgets/moments_widgets.dart';
 
 import '../helpers/memory_moment_draft_store.dart';
+import '../helpers/memory_moment_publication_repository.dart';
 
 final _date = DateTime.utc(2026, 10, 26);
 
@@ -97,13 +100,21 @@ class _Repository implements MomentsRepository {
   final changes = StreamController<String?>.broadcast();
   bool offline = false;
   int saves = 0;
+  int reads = 0;
   int? expectedRevision;
   @override
   String? get currentUserId => actor;
   @override
   Stream<String?> get authChanges => changes.stream;
+  void change(String? next) {
+    actor = next;
+    changes.add(next);
+  }
+
   @override
-  Future<MomentJournal> listMonth(DateTime month) async {
+  Future<MomentJournal> listMonth(DateTime? requestedMonth) async {
+    final month = requestedMonth ?? momentMonth(_date);
+    reads++;
     if (offline) throw const MomentException('연결을 확인해 주세요.');
     return MomentJournal(
       today: _date,
@@ -144,6 +155,7 @@ Future<ProviderContainer> _mount(
   _Repository repo,
   MemoryMomentDraftStore store, {
   String? initialId,
+  bool direct = false,
 }) async {
   tester.view.physicalSize = const Size(430, 1100);
   tester.view.devicePixelRatio = 1;
@@ -153,6 +165,9 @@ Future<ProviderContainer> _mount(
     retry: (_, _) => null,
     overrides: [
       momentsRepositoryProvider.overrideWithValue(repo),
+      momentPublicationRepositoryProvider.overrideWithValue(
+        MemoryMomentPublicationRepository(),
+      ),
       momentDraftStoreProvider.overrideWithValue(store),
     ],
   );
@@ -168,7 +183,21 @@ Future<ProviderContainer> _mount(
         bundle: _FixtureAssetBundle(),
         child: MaterialApp(
           theme: SnapFitTheme.light(),
-          home: MomentsScreen(initialDraftRecordId: initialId),
+          home: direct
+              ? Consumer(
+                  builder: (context, ref, _) => Scaffold(
+                    body: TextButton(
+                      key: const ValueKey('direct-moment-compose'),
+                      onPressed: () => openMomentCompose(
+                        context,
+                        ref,
+                        draftRecordId: initialId,
+                      ),
+                      child: const Text('바로 기록 남기기'),
+                    ),
+                  ),
+                )
+              : MomentsScreen(initialDraftRecordId: initialId),
         ),
       ),
     ),
@@ -228,16 +257,209 @@ Future<void> _settle(WidgetTester tester) async {
   );
 }
 
+Future<void> _settleDirect(WidgetTester tester) async {
+  if (!kIsWeb) {
+    for (var frame = 0; frame < 3; frame++) {
+      await tester.pump(const Duration(milliseconds: 400));
+      final images = tester.widgetList<Image>(find.byType(Image)).toList();
+      await tester.runAsync(() async {
+        for (final image in images) {
+          await precacheImage(
+            image.image,
+            tester.element(find.byType(Image).first),
+          ).timeout(const Duration(seconds: 5));
+        }
+      });
+    }
+  }
+  await _settle(tester);
+}
+
+Future<void> _saveDirect(WidgetTester tester) async {
+  final save = find.byKey(const ValueKey('moment-save'));
+  await tester.scrollUntilVisible(
+    save,
+    250,
+    scrollable: find
+        .descendant(
+          of: find.byType(MomentComposeScreen),
+          matching: find.byType(Scrollable),
+        )
+        .first,
+  );
+  await tester.ensureVisible(save);
+  await tester.tap(save);
+  await _settleDirect(tester);
+}
+
 void main() {
   setUp(() => SnapfitImage.storageOwnerForTesting = () => 'owner');
   tearDown(() => SnapfitImage.storageOwnerForTesting = null);
+  testWidgets(
+    'direct writing opens the composer without waiting for an offline journal',
+    (tester) async {
+      final repo = _Repository()..offline = true;
+      final store = MemoryMomentDraftStore();
+      final container = await _mount(tester, repo, store, direct: true);
+      await tester.tap(find.byKey(const ValueKey('direct-moment-compose')));
+      await _settleDirect(tester);
+      expect(find.byType(MomentComposeScreen), findsOneWidget);
+      expect(find.byType(MomentsScreen), findsNothing);
+      expect(repo.reads, 0);
+      expect(repo.saves, 0);
+      // Release the mounted midnight scheduler before binding invariants.
+      await tester.pumpWidget(const SizedBox.shrink());
+      container.dispose();
+      await tester.pump();
+    },
+  );
+
+  testWidgets(
+    'direct recovered new record saves once then opens the monthly appreciation preview',
+    (tester) async {
+      final draft = _draft();
+      final repo = _Repository()..offline = true;
+      final store = MemoryMomentDraftStore()..seed(draft);
+      await _mount(
+        tester,
+        repo,
+        store,
+        direct: true,
+        initialId: draft.recordId,
+      );
+      await tester.tap(find.byKey(const ValueKey('direct-moment-compose')));
+      await _settleDirect(tester);
+      expect(find.byKey(const ValueKey('moment-new-photo-0')), findsOneWidget);
+      expect(repo.reads, 0);
+      // Saving still confirms the server date after the immediate offline entry.
+      repo.offline = false;
+      await _saveDirect(tester);
+      expect(repo.saves, 1);
+      expect(repo.reads, 1);
+      expect(store.drafts, isEmpty);
+      expect(find.byType(MomentSavedPreviewScreen), findsOneWidget);
+      expect(find.byType(MomentsScreen), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'direct saved preview only describes the saved photos without a complete journal',
+    (tester) async {
+      final draft = _draft();
+      final repo = _Repository()..offline = true;
+      final store = MemoryMomentDraftStore()..seed(draft);
+      await _mount(
+        tester,
+        repo,
+        store,
+        direct: true,
+        initialId: draft.recordId,
+      );
+      await tester.tap(find.byKey(const ValueKey('direct-moment-compose')));
+      await _settleDirect(tester);
+      expect(repo.reads, 0);
+      // The date confirmation must not turn its payload into month history.
+      repo.offline = false;
+      await _saveDirect(tester);
+
+      expect(repo.saves, 1);
+      expect(repo.reads, 1);
+      expect(find.byType(MomentSavedPreviewScreen), findsOneWidget);
+      // Direct entry has no month history, so it cannot claim a first or total.
+      expect(find.text('내 한 달의\n첫 장이 생겼어요.'), findsNothing);
+      expect(find.text('나의 한 달에\n한 장이 더 쌓였어요.'), findsNothing);
+      expect(find.textContaining('10월에 모은 사진'), findsNothing);
+      expect(find.text('이 순간을,\n잘 간직했어요.'), findsOneWidget);
+      expect(
+        find.text('사진 1장을 저장했어요.\n모아둔 사진으로 내 한 달의 책을 만들어보세요.'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'direct recovered edit keeps its revision and skips the new-record preview',
+    (tester) async {
+      final draft = _draft(editing: true);
+      final repo = _Repository();
+      final store = MemoryMomentDraftStore()..seed(draft);
+      await _mount(
+        tester,
+        repo,
+        store,
+        direct: true,
+        initialId: draft.recordId,
+      );
+      await tester.tap(find.byKey(const ValueKey('direct-moment-compose')));
+      await _settleDirect(tester);
+      await _saveDirect(tester);
+      expect(repo.saves, 1);
+      expect(repo.expectedRevision, 7);
+      expect(find.byType(MomentSavedPreviewScreen), findsNothing);
+      expect(
+        find.byKey(const ValueKey('direct-moment-compose')),
+        findsOneWidget,
+      );
+      expect(store.drafts, isEmpty);
+    },
+  );
+
+  testWidgets(
+    'direct draft lookup rejects an owner A-B-A change before pushing a route',
+    (tester) async {
+      final pending = Completer<void>();
+      final repo = _Repository();
+      final store = MemoryMomentDraftStore()
+        ..seed(_draft())
+        ..beforeLoad = () => pending.future;
+      await _mount(tester, repo, store, direct: true, initialId: 'new');
+      await tester.tap(find.byKey(const ValueKey('direct-moment-compose')));
+      await tester.pump();
+      repo.change('other');
+      repo.change('owner');
+      await tester.pump();
+      pending.complete();
+      await _settleDirect(tester);
+      expect(find.byType(MomentComposeScreen), findsNothing);
+      expect(find.byType(MomentSavedPreviewScreen), findsNothing);
+      expect(repo.saves, 0);
+      expect(store.drafts, isNotEmpty);
+    },
+  );
+
+  testWidgets(
+    'direct late compose result cannot show an appreciation preview after owner A-B-A',
+    (tester) async {
+      final repo = _Repository();
+      final store = MemoryMomentDraftStore();
+      await _mount(tester, repo, store, direct: true);
+      await tester.tap(find.byKey(const ValueKey('direct-moment-compose')));
+      await _settleDirect(tester);
+      repo.change('other');
+      repo.change('owner');
+      tester.state<NavigatorState>(find.byType(Navigator).first).pop(_original);
+      await _settleDirect(tester);
+      expect(find.byType(MomentSavedPreviewScreen), findsNothing);
+      expect(
+        find.byKey(const ValueKey('direct-moment-compose')),
+        findsOneWidget,
+      );
+      expect(repo.saves, 0);
+    },
+  );
   testWidgets('restored raw photo remains decodable for display and upload', (
     tester,
   ) async {
     final draft = _draft();
     final store = MemoryMomentDraftStore()..seed(draft);
     final repo = _Repository()..offline = true;
-    await _mount(tester, repo, store, initialId: draft.recordId);
+    final container = await _mount(
+      tester,
+      repo,
+      store,
+      initialId: draft.recordId,
+    );
     final photo = find.byKey(const ValueKey('moment-new-photo-0'));
     expect(photo, findsOneWidget);
     final restoredBytes = tester.widget<MomentPhotoView>(photo).bytes!;
@@ -259,40 +481,89 @@ void main() {
       expect(prepared.width, 2);
       expect(prepared.height, 2);
     });
+    await tester.pumpWidget(const SizedBox.shrink());
+    container.dispose();
+    await tester.pump();
   });
-  testWidgets('local recovery remains reachable while journal is offline', (
-    tester,
-  ) async {
-    final repo = _Repository()..offline = true;
-    final store = MemoryMomentDraftStore()..seed(_draft());
-    await _mount(tester, repo, store);
-    expect(find.byKey(const ValueKey('moments-resume-draft')), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('moments-resume-draft')));
-    await _settle(tester);
-    expect(find.byType(MomentComposeScreen), findsOneWidget);
-    expect(find.byKey(const ValueKey('moment-new-photo-0')), findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.byKey(const ValueKey('moment-caption')),
-      250,
-      scrollable: find
-          .descendant(
-            of: find.byType(MomentComposeScreen),
-            matching: find.byType(Scrollable),
-          )
-          .first,
+  testWidgets(
+    'explicit draft recovery remains reachable while journal is offline',
+    (tester) async {
+      final repo = _Repository()..offline = true;
+      final store = MemoryMomentDraftStore()..seed(_draft());
+      final container = await _mount(tester, repo, store, initialId: 'new');
+      expect(find.byType(MomentComposeScreen), findsOneWidget);
+      expect(find.byKey(const ValueKey('moment-new-photo-0')), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('moment-caption')),
+        250,
+        scrollable: find
+            .descendant(
+              of: find.byType(MomentComposeScreen),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      expect(find.text('보관한 순간'), findsOneWidget);
+      expect(repo.saves, 0);
+      await tester.pumpWidget(const SizedBox.shrink());
+      container.dispose();
+      await tester.pump();
+    },
+  );
+  for (final deepEntry in [false, true]) {
+    testWidgets(
+      'recovered new record with unavailable journal shows only saved photos deepEntry=$deepEntry',
+      (tester) async {
+        final draft = _draft();
+        final repo = _Repository()..offline = true;
+        final store = MemoryMomentDraftStore()..seed(draft);
+        await _mount(
+          tester,
+          repo,
+          store,
+          initialId: draft.recordId,
+          direct: !deepEntry,
+        );
+        if (!deepEntry) {
+          await tester.tap(find.byKey(const ValueKey('direct-moment-compose')));
+          await _settleDirect(tester);
+        }
+        expect(find.byType(MomentComposeScreen), findsOneWidget);
+        final readsBeforeSave = repo.reads;
+        // The original journal is unavailable; saving still confirms its date.
+        repo.offline = false;
+        await _saveDirect(tester);
+
+        expect(repo.saves, 1);
+        expect(repo.reads, greaterThan(readsBeforeSave));
+        expect(store.drafts, isEmpty);
+        expect(find.byType(MomentSavedPreviewScreen), findsOneWidget);
+        expect(find.text('내 한 달의\n첫 장이 생겼어요.'), findsNothing);
+        expect(find.textContaining('10월에 모은 사진'), findsNothing);
+        expect(find.text('이 순간을,\n잘 간직했어요.'), findsOneWidget);
+        expect(
+          find.text('사진 1장을 저장했어요.\n모아둔 사진으로 내 한 달의 책을 만들어보세요.'),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
+      },
     );
-    expect(find.text('보관한 순간'), findsOneWidget);
-    expect(repo.saves, 0);
-  });
+  }
   for (final deepEntry in [false, true]) {
     testWidgets('restored edit skips new-record reward deepEntry=$deepEntry', (
       tester,
     ) async {
       final repo = _Repository();
       final store = MemoryMomentDraftStore()..seed(_draft(editing: true));
-      await _mount(tester, repo, store, initialId: deepEntry ? 'record' : null);
+      await _mount(
+        tester,
+        repo,
+        store,
+        initialId: 'record',
+        direct: !deepEntry,
+      );
       if (!deepEntry) {
-        await tester.tap(find.byKey(const ValueKey('moments-resume-draft')));
+        await tester.tap(find.byKey(const ValueKey('direct-moment-compose')));
         await _settle(tester);
       }
       expect(find.byType(MomentComposeScreen), findsOneWidget);
@@ -311,7 +582,10 @@ void main() {
       expect(repo.saves, 1);
       expect(repo.expectedRevision, 7);
       expect(find.byType(MomentSavedPreviewScreen), findsNothing);
-      expect(find.byType(MomentsScreen), findsOneWidget);
+      expect(
+        find.byType(MomentsScreen),
+        deepEntry ? findsOneWidget : findsNothing,
+      );
       expect(find.byKey(const ValueKey('moments-resume-draft')), findsNothing);
       expect(store.drafts, isEmpty);
     });

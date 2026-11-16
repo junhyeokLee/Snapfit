@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/fonts/document_font_gate.dart';
 import '../../../../shared/widgets/experience_style.dart';
 import 'material_preview_composition.dart';
 
@@ -23,6 +24,16 @@ class MaterialApplicationPreview extends StatelessWidget {
       type,
       photoIndex: photoIndex,
     );
+    if (composition.serif) {
+      return DocumentFontGate(
+        families: const ['Eulyoo'],
+        builder: (_) => _buildPrepared(composition),
+      );
+    }
+    return _buildPrepared(composition);
+  }
+
+  Widget _buildPrepared(MaterialPreviewComposition composition) {
     final source = composition.letteringSourceSize;
     final materialLayer = Positioned.fromRect(
       rect: composition.materialRect,

@@ -22,6 +22,20 @@ abstract interface class HomeNewsDeliveryRepository {
   Future<bool> recordDeliveryView(String deliveryId, String campaignId);
 }
 
+abstract interface class HomeNewsTodayRepository {
+  Future<HomeNewsExposureState> hideForToday();
+}
+
+extension HomeNewsTodayCapabilities on HomeNewsRepository {
+  Future<HomeNewsExposureState> hideForToday() {
+    final repository = this;
+    if (repository is HomeNewsTodayRepository) {
+      return (repository as HomeNewsTodayRepository).hideForToday();
+    }
+    return getExposureState();
+  }
+}
+
 extension HomeNewsDeliveryCapabilities on HomeNewsRepository {
   Future<HomeNewsDeliveryClaim> claimDelivery(List<String> campaignIds) async {
     final repository = this;
@@ -51,28 +65,40 @@ extension HomeNewsDeliveryCapabilities on HomeNewsRepository {
 }
 
 class SupabaseHomeNewsRepository
-    implements HomeNewsRepository, HomeNewsDeliveryRepository {
+    implements
+        HomeNewsRepository,
+        HomeNewsDeliveryRepository,
+        HomeNewsTodayRepository {
   SupabaseHomeNewsRepository(this.client) {
     _actor = currentUserId;
-    _subscription = client.auth.onAuthStateChange.listen((state) {
-      final next = _personalUserId(state.session?.user);
-      if (next != _actor) {
-        _actor = next;
-        _sessionRevision++;
-      }
-    });
+    _subscription = client.auth.onAuthStateChange.listen(
+      (state) {
+        final next = _personalUserId(state.session?.user);
+        if (next != _actor) {
+          _actor = next;
+          _sessionRevision++;
+        }
+      },
+      onError: (Object _, StackTrace __) {
+        // A failed token refresh is not a sign-out. Invalidate pending replies
+        // while retaining the SDK's real account for a fresh authorized retry.
+        _connectionRevision++;
+      },
+    );
   }
 
   final SupabaseClient client;
   late final StreamSubscription<AuthState> _subscription;
   String? _actor;
   int _sessionRevision = 0;
+  int _connectionRevision = 0;
 
   @override
   String? get currentUserId => _personalUserId(client.auth.currentUser);
 
   @override
   Stream<String?> get authChanges => client.auth.onAuthStateChange
+      .handleError((Object _, StackTrace __) {})
       .map((state) => _personalUserId(state.session?.user))
       .distinct();
 
@@ -83,11 +109,15 @@ class SupabaseHomeNewsRepository
     final owner = currentUserId;
     if (owner == null) throw StateError('로그인 후 새 소식을 확인할 수 있어요.');
     final revision = _sessionRevision;
+    final connection = _connectionRevision;
     final raw = await client
         .rpc(name, params: params)
         .timeout(const Duration(seconds: 15));
     if (owner != currentUserId || revision != _sessionRevision) {
       throw StateError('계정이 변경됐어요. 새 소식을 다시 열어주세요.');
+    }
+    if (connection != _connectionRevision) {
+      throw StateError('연결 상태를 확인하지 못했어요. 새 소식을 다시 열어주세요.');
     }
     if (raw is! Map || raw['userId'] != owner) {
       throw const FormatException('새 소식 계정 정보를 확인할 수 없어요.');
@@ -110,8 +140,7 @@ class SupabaseHomeNewsRepository
     });
     final state = HomeNewsExposureState.fromJson(raw);
     final claimed = raw['claimed'];
-    if (claimed is! bool ||
-        (claimed && (!state.hasSeen(campaignId) || state.dailyCount != 1))) {
+    if (claimed is! bool || (claimed && state.hiddenForToday)) {
       throw const FormatException('새 소식 노출 결과를 확인할 수 없어요.');
     }
     return claimed;
@@ -141,11 +170,9 @@ class SupabaseHomeNewsRepository
         ids.any((id) => !campaignIds.contains(id)) ||
         (claimed &&
             (ids.isEmpty ||
-                ids.first != campaignIds.first ||
                 deliveryId is! String ||
                 !state.deliveries.any((row) => row.id == deliveryId) ||
-                !state.hasSeen(ids.first) ||
-                state.dailyCount != 1)) ||
+                state.hiddenForToday)) ||
         (!claimed && (deliveryId != null || ids.isNotEmpty))) {
       throw const FormatException('소식 묶음 기록을 다시 확인해 주세요.');
     }
@@ -154,6 +181,17 @@ class SupabaseHomeNewsRepository
       deliveryId: deliveryId as String?,
       campaignIds: List.unmodifiable(ids),
     );
+  }
+
+  @override
+  Future<HomeNewsExposureState> hideForToday() async {
+    final state = HomeNewsExposureState.fromJson(
+      await _request('hide_home_news_for_today'),
+    );
+    if (!state.hiddenForToday || state.hiddenUntil == null) {
+      throw const FormatException('오늘 하루 숨김 상태를 확인할 수 없어요.');
+    }
+    return state;
   }
 
   @override

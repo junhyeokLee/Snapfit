@@ -10,6 +10,7 @@ import '../../../../shared/web/web_design.dart';
 import '../../data/customer_print_test_checkout.dart';
 import '../../data/print_dev_checkout.dart';
 import '../../domain/order_visibility_owner.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 /// A successful owner-scoped server read grants visibility to the separate TEST
 /// history. These records never enter the production order or receipt models.
@@ -151,7 +152,7 @@ class _CustomerPrintTestOrderHistoryState
                 key: const ValueKey('customer-test-history-refresh'),
                 tooltip: 'TEST 주문 새로고침',
                 onPressed: orders.isLoading ? null : _refresh,
-                icon: const Icon(Icons.refresh, size: 21),
+                icon: const ExperienceIcon('RefreshCw', size: 21),
               ),
             ],
           ),
@@ -274,10 +275,7 @@ class _CustomerPrintTestOrderHistoryState
                                 ),
                               ),
                             ),
-                            Icon(
-                              Icons.chevron_right,
-                              size: 18,
-                              color: WebPalette.of(context).muted,
+                            ExperienceIcon('ChevronRight', size: 18, color: WebPalette.of(context).muted,
                             ),
                           ],
                         ),
@@ -294,7 +292,7 @@ class _CustomerPrintTestOrderHistoryState
                       '${_stage(order.session)}',
                     ),
                     isThreeLine: true,
-                    trailing: const Icon(Icons.chevron_right),
+                    trailing: const ExperienceIcon('ChevronRight'),
                     onTap: () => _openDetail(order.session.runId),
                   );
                 },
@@ -428,12 +426,12 @@ class _CustomerPrintTestDetailState
                     key: const ValueKey('customer-test-detail-refresh'),
                     tooltip: 'TEST 주문 상태 새로고침',
                     onPressed: _loading ? null : _refresh,
-                    icon: const Icon(Icons.refresh),
+                    icon: const ExperienceIcon('RefreshCw'),
                   ),
                   IconButton(
                     tooltip: '닫기',
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
+                    icon: const ExperienceIcon('X'),
                   ),
                 ],
               ),

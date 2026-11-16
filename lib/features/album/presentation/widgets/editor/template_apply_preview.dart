@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../../../shared/web/web_design.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 Future<bool> showTemplateApplyPreview(
   BuildContext context, {
@@ -37,7 +38,7 @@ Future<bool> showTemplateApplyPreview(
                 trailing: IconButton(
                   onPressed: () => Navigator.pop(dialogContext, false),
                   tooltip: '미리보기 닫기',
-                  icon: const Icon(Icons.close, size: 20),
+                  icon: const ExperienceIcon('X', size: 20),
                 ),
               ),
               Divider(height: 1, color: WebPalette.of(context).line),
@@ -122,7 +123,7 @@ Future<bool> showTemplateApplyPreview(
                         IconButton(
                           tooltip: '미리보기 닫기',
                           onPressed: () => Navigator.pop(context, false),
-                          icon: const Icon(Icons.close, size: 22),
+                          icon: const ExperienceIcon('X', size: 22),
                         ),
                       ],
                     ),

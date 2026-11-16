@@ -18,12 +18,14 @@ class CreationCollectionShowcase extends StatefulWidget {
     this.showTitle = false,
     this.accessBadge,
     this.editorial = false,
+    this.showDetails = true,
   });
   final PremiumTemplate template;
   final VoidCallback? onOpen;
   final bool showTitle;
   final Widget? accessBadge;
   final bool editorial;
+  final bool showDetails;
   @override
   State<CreationCollectionShowcase> createState() =>
       _CreationCollectionShowcaseState();
@@ -203,38 +205,44 @@ class _CreationCollectionShowcaseState
                     ],
                   ),
           ),
-          const SizedBox(height: 12),
-          Text(
-            widget.showTitle
-                ? widget.template.title
-                : _inner.isEmpty
-                ? '표지'
-                : '표지와 내지',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: ExperienceFormStyle.text(
-              context,
-              16,
-              weight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '${widget.template.category ?? '앨범'} · 내지 ${widget.template.pageCount}쪽',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: ExperienceFormStyle.text(context, 12, secondary: true),
-                ),
+          if (widget.showDetails) ...[
+            const SizedBox(height: 12),
+            Text(
+              widget.showTitle
+                  ? widget.template.title
+                  : _inner.isEmpty
+                  ? '표지'
+                  : '표지와 내지',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: ExperienceFormStyle.text(
+                context,
+                16,
+                weight: FontWeight.w600,
               ),
-              if (widget.accessBadge != null) ...[
-                const SizedBox(width: 12),
-                widget.accessBadge!,
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${widget.template.category ?? '앨범'} · 내지 ${widget.template.pageCount}쪽',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: ExperienceFormStyle.text(
+                      context,
+                      12,
+                      secondary: true,
+                    ),
+                  ),
+                ),
+                if (widget.accessBadge != null) ...[
+                  const SizedBox(width: 12),
+                  widget.accessBadge!,
+                ],
               ],
-            ],
-          ),
+            ),
+          ],
         ],
       ),
     ),

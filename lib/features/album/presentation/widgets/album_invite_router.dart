@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../service/pending_album_invite.dart';
 import '../views/album_invite_accept_screen.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 /// Mounted by AuthGate after splash; leaves existing editor routes intact.
 class AlbumInviteRouter extends ConsumerStatefulWidget {
@@ -62,16 +63,13 @@ class _AlbumInviteRouterState extends ConsumerState<AlbumInviteRouter> {
     _presented[navigator] = active;
     try {
       await navigator.push<void>(
-        MaterialPageRoute(
-          settings: const RouteSettings(name: '/album-invitation'),
-          builder: (_) => ValueListenableBuilder<PendingAlbumInvite>(
+        snapFitRoute(page: ValueListenableBuilder<PendingAlbumInvite>(
             valueListenable: active,
             builder: (_, current, __) => AlbumInviteAcceptScreen(
               key: ObjectKey(current),
               invite: current,
             ),
-          ),
-        ),
+          ), settings: const RouteSettings(name: '/album-invitation')),
       );
     } finally {
       if (identical(_presented[navigator], active))

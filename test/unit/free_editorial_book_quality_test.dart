@@ -45,6 +45,12 @@ const _activeLayouts = {
   'closing-portrait',
   'three-scene-sequence',
   'contact-gallery',
+  'taste-archive-scene',
+  'taste-archive-collection',
+  'our-good-company-scene',
+  'our-good-company-collection',
+  'dates-of-us-scene',
+  'dates-of-us-collection',
 };
 // Compiled from fixed hashes only; the original recording stays in /private/tmp.
 const _compiledBaselineBase64 =
@@ -5509,6 +5515,45 @@ String _archivedDisplayCopy(Map layer) {
   return _words(layer['text']);
 }
 
+// Approved catalog-only substitutions. Each original ID and exact before/after
+// pair remains checked; the immutable source baseline is not re-recorded.
+const _storeQualitySamplePairs = {
+  'taste-archive/3_photo_4': (
+    'asset:assets/templates/original_editorial/images/daily_fruit.png',
+    'asset:assets/frame_preview/studio_laptop.jpg',
+  ),
+  'taste-archive/4_photo_3': (
+    'asset:assets/templates/original_editorial/images/daily_friends.png',
+    'asset:assets/frame_preview/artist_palette.jpg',
+  ),
+  'taste-archive/4_photo_5': (
+    'asset:assets/templates/original_editorial/images/small_days_walk.png',
+    'asset:assets/frame_preview/wardrobe.jpg',
+  ),
+  'our-good-company/3_photo_3': (
+    'asset:assets/templates/original_editorial/images/small_days_walk.png',
+    'asset:assets/templates/original_editorial/images/daily_friends.png',
+  ),
+  'our-good-company/4_photo_2': (
+    'asset:assets/templates/original_editorial/images/daily_fruit.png',
+    'asset:assets/templates/original_editorial/images/family_friends.png',
+  ),
+  'dates-of-us/3_quality_photo_15': (
+    'asset:assets/templates/original_editorial/images/couple_anniversary.png',
+    'asset:assets/templates/original_editorial/images/couple_cafe.png',
+  ),
+  'dates-of-us/4_quality_photo_14': (
+    'asset:assets/templates/original_editorial/images/travel_coast.png',
+    'asset:assets/templates/original_editorial/images/travel_cafe.png',
+  ),
+};
+const _removedStoreCoverCompanions = {
+  'taste-archive': 'asset:assets/frame_preview/studio_laptop.jpg',
+  'our-good-company': 'asset:assets/frame_preview/celebration.jpg',
+  'dates-of-us':
+      'asset:assets/templates/jeju_travel/images/approved_stock/sunset_people.jpg',
+};
+
 Map<String, dynamic> _sources(Map layer) {
   final fields = <String, dynamic>{
     for (final key in const ['imageUrl', 'originalUrl', 'previewUrl'])
@@ -5525,6 +5570,20 @@ Map<String, dynamic> _sources(Map layer) {
       );
     }
     fields['imageUrl'] = _incorrectRoomSample;
+  }
+  if (layer.containsKey('editorialSourcePhoto')) {
+    final match = RegExp(
+      r'^(taste-archive|our-good-company|dates-of-us)_(portrait|square|landscape|landscape4x3|landscape5x4)_(.+)$',
+    ).firstMatch('${layer['id']}');
+    final pair = match == null
+        ? null
+        : _storeQualitySamplePairs['${match.group(1)}/${match.group(3)}'];
+    if (pair == null ||
+        layer['editorialSourcePhoto'] != pair.$1 ||
+        fields['imageUrl'] != pair.$2) {
+      throw StateError('Unapproved store sample substitution: ${layer['id']}');
+    }
+    fields['imageUrl'] = pair.$1;
   }
   return fields;
 }
@@ -5649,7 +5708,37 @@ Map<String, dynamic> _recordBook(
 }
 
 String _sourceDigest(Map<String, dynamic> page) {
-  final record = _pageRecord(page);
+  var source = page;
+  if (page['coverArtDirection'] == 'objects-company-dates-2026-11-02') {
+    final layers = (page['layers'] as List).cast<Map>();
+    final hero = layers.singleWhere((l) => l['type'] == 'image');
+    final match = RegExp(
+      r'^(taste-archive|our-good-company|dates-of-us)_(portrait|square|landscape|landscape4x3|landscape5x4)_0_signature_photo$',
+    ).firstMatch('${hero['id']}');
+    expect(
+      match,
+      isNotNull,
+      reason:
+          'Only the approved three covers may remove their secondary photo.',
+    );
+    final companionId =
+        '${match!.group(1)}_${match.group(2)}_0_signature_companion';
+    expect(layers.any((l) => l['id'] == companionId), isFalse);
+    // Reconstruct only the known removed slot for the archived source contract.
+    // The current catalog is independently tested to have exactly one photo.
+    source = {
+      ...page,
+      'layers': [
+        ...layers,
+        {
+          'id': companionId,
+          'type': 'image',
+          'imageUrl': _removedStoreCoverCompanions[match.group(1)],
+        },
+      ],
+    };
+  }
+  final record = _pageRecord(source);
   return _digest({
     'ids': {
       for (final e in (record['ids'] as Map).entries)
@@ -5772,10 +5861,24 @@ void _inspectPage(
         .fold<double>(0, math.max);
     expect(
       largest / (aspect.canvas.width * aspect.canvas.height),
-      greaterThanOrEqualTo(.8),
-      reason: '$book: immersive hero photograph',
+      greaterThanOrEqualTo(switch (page['coverArtDirection'] ==
+              'objects-company-dates-2026-11-02'
+          ? book.split('/').first
+          : '') {
+        'our-good-company' => .45,
+        'dates-of-us' => .665,
+        _ => .8,
+      }),
+      reason: '$book: photography leads the approved cover composition',
     );
-    expect(page['coverTextTreatment'], 'open-photographic-type', reason: book);
+    expect(page['coverTextTreatment'], switch (page['coverArtDirection'] ==
+            'objects-company-dates-2026-11-02'
+        ? book.split('/').first
+        : '') {
+      'our-good-company' => 'uncropped-company-mat',
+      'dates-of-us' => 'literary-photo-colophon',
+      _ => 'open-photographic-type',
+    }, reason: book);
     expect(page['typographyPanelCoverageFraction'], 0.0, reason: book);
     final photoIndex = layers.indexWhere((l) => l.type == LayerType.image);
     expect(
@@ -5938,6 +6041,49 @@ void _inspectPage(
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(_loadFonts);
+  test(
+    'November sample provenance accepts only the seven reviewed ID/photo pairs',
+    () {
+      for (final entry in _storeQualitySamplePairs.entries) {
+        final parts = entry.key.split('/');
+        for (final aspect in CollectionAspect.printable) {
+          final id = '${parts[0]}_${aspect.name}_${parts[1]}';
+          expect(
+            _sources({
+              'id': id,
+              'imageUrl': entry.value.$2,
+              'editorialSourcePhoto': entry.value.$1,
+            }),
+            {'imageUrl': entry.value.$1},
+          );
+          expect(
+            () => _sources({
+              'id': id,
+              'imageUrl': 'asset:assets/another-photo.jpg',
+              'editorialSourcePhoto': entry.value.$1,
+            }),
+            throwsStateError,
+          );
+          expect(
+            () => _sources({
+              'id': id,
+              'imageUrl': entry.value.$2,
+              'editorialSourcePhoto': 'asset:assets/another-source.jpg',
+            }),
+            throwsStateError,
+          );
+        }
+      }
+      expect(
+        () => _sources({
+          'id': 'unrelated_square_3_photo_4',
+          'imageUrl': _storeQualitySamplePairs.values.first.$2,
+          'editorialSourcePhoto': _storeQualitySamplePairs.values.first.$1,
+        }),
+        throwsStateError,
+      );
+    },
+  );
   if (_record) {
     test('record all 126 shipping books as fixed source and identity hashes', () {
       expect((_baseline['books'] as Map).keys, hasLength(42));

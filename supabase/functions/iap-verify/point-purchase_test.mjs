@@ -518,3 +518,42 @@ test("production adapter calls Google one-time endpoint and server-only atomic R
   assert.equal(grantArgs.p_purchase.transactionId, "canonical-token");
   assert.equal(grantArgs.p_purchase.storeAccountId, userId);
 });
+
+test('oversized UTF-8 and declared bodies never reach a provider or grant', async () => {
+  let verified = 0, granted = 0;
+  const run = handler({verify: async () => { verified++; return google(); },
+    grant: async () => { granted++; throw new Error('must not grant'); }});
+  const body = JSON.stringify({...googleRequest(), note: '가'.repeat(23000)});
+  assert.ok(body.length < 65536);
+  for (const request of [new Request('https://offline.test', {method:'POST',body}),
+    new Request('https://offline.test',{method:'POST',body:JSON.stringify(googleRequest()),headers:{'content-length':'65537'}})]) {
+    const response=await run(request); assert.equal(response.status,413);
+    assert.equal((await response.json()).code,'request_too_large');
+    assert.match(response.headers.get('cache-control'),/no-store/);
+  }
+  assert.equal(verified,0); assert.equal(granted,0);
+});
+
+test('a chunked oversized stream is cancelled without waiting for its end', {timeout:2000}, async () => {
+  let cancelled = false;
+  const stream = new ReadableStream({
+    start(controller) { controller.enqueue(new Uint8Array(32768)); controller.enqueue(new Uint8Array(32769)); },
+    cancel() { cancelled=true; },
+  });
+  const request = new Request('https://offline.test',{method:'POST',body:stream,duplex:'half'});
+  const response = await handler()(request);
+  assert.equal(response.status,413); assert.equal(cancelled,true);
+});
+
+test('malformed UTF-8 is rejected before any store verification', async () => {
+  let verified=0;
+  const response=await handler({verify:async()=>{verified++;return google();}})(
+    new Request('https://offline.test',{method:'POST',body:new Uint8Array([123,34,255,34,125])}));
+  assert.equal(response.status,400);assert.equal((await response.json()).code,'invalid_json');assert.equal(verified,0);
+});
+
+test('payment success and private error responses are never cacheable', async () => {
+  for (const run of [handler(),handler({authenticate:async()=>{throw new Error('Unauthorized');}})]) {
+    const response=await run(post());assert.match(response.headers.get('cache-control'),/private.*no-store/);
+  }
+});

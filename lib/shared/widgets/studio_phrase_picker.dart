@@ -11,6 +11,7 @@ import 'editor_material_filter_bar.dart';
 import 'experience_form_style.dart';
 import '../../features/point_shop/data/point_shop_provider.dart';
 import '../../features/point_shop/domain/point_shop_product.dart';
+import '../../shared/widgets/experience_icon.dart';
 
 class StudioPhrasePicker extends ConsumerStatefulWidget {
   const StudioPhrasePicker({super.key, required this.onSelect});
@@ -80,7 +81,7 @@ class _StudioPhraseSheetState extends State<_StudioPhraseSheet> {
                 trailing: IconButton(
                   key: const ValueKey('phrase-sheet-close'),
                   tooltip: '닫기',
-                  icon: const Icon(Icons.close),
+                  icon: const ExperienceIcon('X'),
                   onPressed: _finishing ? null : () => _finish(),
                 ),
               ),
@@ -272,7 +273,7 @@ class _StudioPhrasePickerState extends ConsumerState<StudioPhrasePicker> {
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  const Icon(Icons.add, size: 18),
+                                  const ExperienceIcon('Plus', size: 18),
                                 ],
                               ),
                             ],

@@ -25,6 +25,7 @@ import 'template_page_renderer.dart';
 import 'material_original_preview.dart';
 import 'template_book_artwork.dart';
 import '../../../../core/utils/context_extensions.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 Future<T?> _choose<T>(BuildContext context, Widget child) => kIsWeb
     ? showWebAwareDialog<T>(
@@ -100,17 +101,14 @@ Future<void> pickAlbumForMaterial(
     }
     await Navigator.push<bool>(
       context,
-      MaterialPageRoute(
-        settings: kIsWeb
+      snapFitRoute(page: PageEditorScreen(
+          initialPageIndex: page,
+          initialMaterialKey: productKey,
+        ), settings: kIsWeb
             ? WebAppRouteSettings(
                 WebAppLocation(WebAppPage.editor, '${album.id}'),
               )
-            : null,
-        builder: (_) => PageEditorScreen(
-          initialPageIndex: page,
-          initialMaterialKey: productKey,
-        ),
-      ),
+            : null),
     );
     if (context.mounted) ref.read(homeViewModelProvider.notifier).refresh();
   } catch (error) {
@@ -227,10 +225,7 @@ class _PickerShell extends StatelessWidget {
         IconButton(
           tooltip: '닫기',
           onPressed: () => Navigator.pop(context),
-          icon: Icon(
-            Icons.close,
-            size: 22,
-            color: ExperienceFormStyle.ink(context),
+          icon: ExperienceIcon('X', size: 22, color: ExperienceFormStyle.ink(context),
           ),
         ),
       ],

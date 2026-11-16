@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,24 +7,37 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/navigation/web_app_location.dart';
 import '../../../album/data/album_creation_catalog_provider.dart';
+import '../../../moments/presentation/providers/moments_providers.dart';
+import '../../../moments/presentation/views/moment_compose_screen.dart';
 import '../../../store/presentation/views/template_detail_screen.dart';
 import '../../data/social_template_catalog.dart';
+import '../../data/social_repository.dart'
+    show SocialActionException, socialActionMessage;
 import '../../domain/social_models.dart';
 import '../providers/social_providers.dart';
 import '../social_actions.dart';
 import '../social_navigation.dart';
 import '../widgets/social_widgets.dart';
 import '../widgets/social_web_frame.dart';
+import '../widgets/social_page_header.dart';
 import '../widgets/social_template_start_card.dart';
+import '../widgets/social_report_sheet.dart';
+import '../widgets/social_snapshot_identity.dart';
+import '../widgets/social_comment_widgets.dart';
+import '../widgets/social_work_share_sheet.dart';
+import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 class SocialWorkDetailScreen extends ConsumerStatefulWidget {
   const SocialWorkDetailScreen({
     super.key,
     required this.workId,
     this.showComments = false,
+    this.initialPage = 0,
   });
   final String workId;
   final bool showComments;
+  final int initialPage;
   @override
   ConsumerState<SocialWorkDetailScreen> createState() =>
       _SocialWorkDetailScreenState();
@@ -31,15 +46,52 @@ class SocialWorkDetailScreen extends ConsumerStatefulWidget {
 class _SocialWorkDetailScreenState
     extends ConsumerState<SocialWorkDetailScreen> {
   final _comment = TextEditingController();
-  final _pager = PageController();
+  final _commentFocus = FocusNode();
+  final _composerKey = GlobalKey();
+  late final PageController _pager;
   final _commentsKey = GlobalKey();
   bool _busy = false;
+  bool _sharing = false;
+  bool _sendingComment = false;
   int _page = 0;
   int _mutationRevision = 0;
+
+  Future<void> _share(SocialWork work) async {
+    if (_sharing) return;
+    final revision = _mutationRevision;
+    setState(() => _sharing = true);
+    try {
+      await showSocialWorkShareSheet(
+        context,
+        work: work,
+        initialPage: _page,
+        isActive: () =>
+            mounted &&
+            revision == _mutationRevision &&
+            widget.workId == work.id &&
+            sameSocialWorkShareSnapshot(
+              work,
+              ref.read(socialWorkProvider(work.id)).asData?.value,
+            ),
+      );
+    } finally {
+      if (mounted) setState(() => _sharing = false);
+    }
+  }
+
   final _commentOffsets = <int>[0];
   bool _initialCommentsOpened = false;
-  (String, String, String)? _commentRequestFingerprint;
+  (String, String, String, String?)? _commentRequestFingerprint;
   String? _commentRequestId;
+  SocialComment? _replyTarget;
+  Timer? _mentionDebounce;
+  int _mentionRevision = 0;
+  TextRange? _mentionRange;
+  String? _mentionQuery;
+  List<SocialProfile> _mentionSuggestions = const [];
+  bool _mentionLoading = false;
+  bool _mentionFailed = false;
+  bool _composerUpdateQueued = false;
   DialogRoute<void>? _artworkRoute;
   List<String>? _viewerUrls;
   ValueNotifier<List<String>>? _viewerImageUrls;
@@ -48,10 +100,14 @@ class _SocialWorkDetailScreenState
   int _viewerRevision = 0;
   bool _openingTemplate = false;
   int _templateRevision = 0;
+  DialogRoute<bool>? _privateDialogRoute;
   @override
   void initState() {
     super.initState();
+    _page = widget.initialPage < 0 ? 0 : widget.initialPage;
+    _pager = PageController(initialPage: _page);
     _comment.addListener(_resetChangedCommentRequest);
+    _commentFocus.addListener(_queueComposerUpdate);
   }
 
   void _resetChangedCommentRequest() {
@@ -60,7 +116,171 @@ class _SocialWorkDetailScreenState
       _commentRequestFingerprint = null;
       _commentRequestId = null;
     }
+    _queueComposerUpdate();
   }
+
+  void _queueComposerUpdate() {
+    if (_composerUpdateQueued) return;
+    _composerUpdateQueued = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _composerUpdateQueued = false;
+      if (mounted) _updateMentionQuery();
+    });
+  }
+
+  void _clearMentionSearch() {
+    _mentionDebounce?.cancel();
+    _mentionRevision++;
+    _mentionRange = null;
+    _mentionQuery = null;
+    _mentionSuggestions = const [];
+    _mentionLoading = false;
+    _mentionFailed = false;
+  }
+
+  List<SocialProfile> _knownMentionProfiles(String query) {
+    final found = <String, SocialProfile>{};
+    void add(SocialProfile profile) {
+      if (profile.handle.toLowerCase().startsWith(query)) {
+        found[profile.userId] = profile;
+      }
+    }
+
+    final work = ref.read(socialWorkProvider(widget.workId)).asData?.value;
+    if (work != null) add(work.author);
+    if (_replyTarget != null) add(_replyTarget!.author);
+    for (final offset in _commentOffsets) {
+      final page = ref
+          .read(
+            socialCommentsPageProvider(
+              SocialCommentsQuery(widget.workId, offset: offset),
+            ),
+          )
+          .asData
+          ?.value;
+      for (final comment in page?.items ?? const <SocialComment>[]) {
+        add(comment.author);
+      }
+    }
+    return found.values.take(5).toList();
+  }
+
+  void _updateMentionQuery({bool force = false}) {
+    final token = _commentFocus.hasFocus && !_busy
+        ? socialMentionToken(_comment.value)
+        : null;
+    if (token == null) {
+      setState(_clearMentionSearch);
+      return;
+    }
+    final query = token.query;
+    final range = token.range;
+    if (!force && query == _mentionQuery && range == _mentionRange) {
+      setState(() {});
+      return;
+    }
+    _mentionDebounce?.cancel();
+    final revision = ++_mentionRevision;
+    final actor = ref.read(socialCurrentUserIdProvider);
+    final workId = widget.workId;
+    setState(() {
+      _mentionQuery = query;
+      _mentionRange = range;
+      _mentionSuggestions = _knownMentionProfiles(query);
+      _mentionLoading = query.isNotEmpty;
+      _mentionFailed = false;
+    });
+    if (query.isEmpty) return;
+    _mentionDebounce = Timer(const Duration(milliseconds: 240), () async {
+      bool current() =>
+          mounted &&
+          revision == _mentionRevision &&
+          workId == widget.workId &&
+          actor == ref.read(socialCurrentUserIdProvider) &&
+          _commentFocus.hasFocus;
+      try {
+        final profiles = await ref
+            .read(socialRepositoryProvider)
+            .searchProfiles(query);
+        if (!current()) return;
+        final unique = <String, SocialProfile>{
+          for (final profile in _knownMentionProfiles(query))
+            profile.userId: profile,
+          for (final profile in profiles) profile.userId: profile,
+        };
+        setState(() {
+          _mentionSuggestions = unique.values.take(5).toList();
+          _mentionLoading = false;
+          _mentionFailed = false;
+        });
+      } catch (_) {
+        if (!current()) return;
+        setState(() {
+          _mentionLoading = false;
+          _mentionFailed = true;
+        });
+      }
+    });
+  }
+
+  void _selectMention(SocialProfile profile) {
+    final token = socialMentionToken(_comment.value);
+    if (token == null ||
+        token.query != _mentionQuery ||
+        token.range != _mentionRange) {
+      _queueComposerUpdate();
+      return;
+    }
+    final range = token.range;
+    final trailing = _comment.text.substring(range.end);
+    final replacement = '@${profile.handle}${trailing.isEmpty ? ' ' : ''}';
+    final text = _comment.text.replaceRange(
+      range.start,
+      range.end,
+      replacement,
+    );
+    if (text.characters.length > 300) return;
+    _comment.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(
+        offset:
+            range.start +
+            replacement.length +
+            (trailing.startsWith(' ') ? 1 : 0),
+      ),
+    );
+    setState(_clearMentionSearch);
+    _commentFocus.requestFocus();
+  }
+
+  void _replyTo(SocialComment comment) {
+    if (_busy) return;
+    setState(() {
+      if (_replyTarget?.id != comment.id) {
+        _commentRequestFingerprint = null;
+        _commentRequestId = null;
+      }
+      _replyTarget = comment;
+    });
+    _commentFocus.requestFocus();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final composer = _composerKey.currentContext;
+      if (mounted && composer != null) {
+        Scrollable.ensureVisible(
+          composer,
+          alignment: 1,
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+        );
+      }
+    });
+  }
+
+  void _cancelReply() => setState(() {
+    _replyTarget = null;
+    _commentRequestFingerprint = null;
+    _commentRequestId = null;
+  });
 
   @override
   void didUpdateWidget(covariant SocialWorkDetailScreen oldWidget) {
@@ -69,20 +289,24 @@ class _SocialWorkDetailScreenState
       _templateRevision++;
       _openingTemplate = false;
       _dismissArtworkViewer();
+      _dismissPrivateDialog();
       _mutationRevision++;
       _busy = false;
+      _sendingComment = false;
       _comment.clear();
       _commentRequestFingerprint = null;
       _commentRequestId = null;
+      _replyTarget = null;
+      _clearMentionSearch();
       _initialCommentsOpened = false;
-      _page = 0;
+      _page = widget.initialPage < 0 ? 0 : widget.initialPage;
       _commentOffsets
         ..clear()
         ..add(0);
       final workId = widget.workId;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && widget.workId == workId && _pager.hasClients) {
-          _pager.jumpToPage(0);
+          _pager.jumpToPage(_page);
         }
       });
     }
@@ -92,6 +316,9 @@ class _SocialWorkDetailScreenState
   void dispose() {
     _templateRevision++;
     _dismissArtworkViewer();
+    _dismissPrivateDialog();
+    _mentionDebounce?.cancel();
+    _commentFocus.dispose();
     _comment.dispose();
     _pager.dispose();
     super.dispose();
@@ -101,6 +328,194 @@ class _SocialWorkDetailScreenState
       mounted &&
       revision == _mutationRevision &&
       ref.read(socialCurrentUserIdProvider) == actor;
+
+  void _dismissPrivateDialog() {
+    final route = _privateDialogRoute;
+    _privateDialogRoute = null;
+    if (route == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (route.isActive) route.navigator?.removeRoute(route);
+    });
+  }
+
+  bool _currentOwnerMoment(SocialWork work, String actor, int revision) {
+    final latest = ref.read(socialWorkProvider(work.id)).asData?.value;
+    return _sameRequest(actor, revision) &&
+        widget.workId == work.id &&
+        latest?.isMoment == true &&
+        latest?.isPublished == true &&
+        latest?.author.userId == actor &&
+        latest?.publicationRevision == work.publicationRevision;
+  }
+
+  Future<void> _makeMomentPrivate(SocialWork work) async {
+    final actor = ref.read(socialCurrentUserIdProvider);
+    if (_busy ||
+        actor == null ||
+        !work.isMoment ||
+        !work.isPublished ||
+        work.author.userId != actor)
+      return;
+    final publicationRevision = work.publicationRevision;
+    if (publicationRevision == null) {
+      ref.invalidate(socialWorkProvider(work.id));
+      socialError(context, message: '공개 상태를 새로 확인한 뒤 다시 눌러 주세요.');
+      return;
+    }
+    final revision = ++_mutationRevision;
+    setState(() {
+      _busy = true;
+      _clearMentionSearch();
+    });
+    try {
+      final route = DialogRoute<bool>(
+        context: context,
+        builder: (context) => Consumer(
+          builder: (context, ref, _) {
+            ref.watch(socialCurrentUserIdProvider);
+            ref.watch(socialWorkProvider(work.id));
+            if (!_currentOwnerMoment(work, actor, revision)) {
+              _dismissPrivateDialog();
+              return const SizedBox.shrink();
+            }
+            return AlertDialog(
+              title: const Text('나만 보는 기록으로 바꿀까요?'),
+              content: const Text('피드와 공개 프로필에서 내려가요. 내 사진과 월간 앨범은 그대로 남아요.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('취소'),
+                ),
+                FilledButton(
+                  key: const ValueKey('social-moment-private-confirm'),
+                  onPressed: () => Navigator.pop(context, true),
+                  style: SocialStyle.primary(context),
+                  child: const Text('나만 보기로 바꾸기'),
+                ),
+              ],
+            );
+          },
+        ),
+      );
+      _privateDialogRoute = route;
+      final confirmed = await Navigator.of(
+        context,
+        rootNavigator: true,
+      ).push(route);
+      if (identical(_privateDialogRoute, route)) _privateDialogRoute = null;
+      if (confirmed != true || !_currentOwnerMoment(work, actor, revision))
+        return;
+      await ref
+          .read(socialRepositoryProvider)
+          .setMomentPublicationVisibility(
+            work.id,
+            false,
+            expectedPublicationRevision: publicationRevision,
+          );
+      if (!_sameRequest(actor, revision)) return;
+      _dismissArtworkViewer();
+      invalidateSocial(ref, workId: work.id);
+      final fresh = await ref.read(socialWorkProvider(work.id).future);
+      if (!_sameRequest(actor, revision)) return;
+      if (fresh?.isPublished == true) {
+        throw StateError('publication_changed');
+      }
+      socialError(context, message: '나만 보는 기록으로 바꿨어요.');
+    } catch (error) {
+      if (_sameRequest(actor, revision)) {
+        invalidateSocial(ref, workId: work.id);
+        socialError(
+          context,
+          message: socialActionMessage(
+            error,
+            fallback: '공개 상태를 확인하지 못했어요. 최신 상태를 확인한 뒤 다시 시도해 주세요.',
+          ),
+        );
+      }
+    } finally {
+      if (mounted && revision == _mutationRevision)
+        setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _editMoment(SocialWork work) async {
+    final actor = ref.read(socialCurrentUserIdProvider);
+    if (_busy || actor == null || !work.isMoment || work.author.userId != actor)
+      return;
+    final revision = ++_mutationRevision;
+    setState(() {
+      _busy = true;
+      _clearMentionSearch();
+    });
+    try {
+      final record = await ref
+          .read(socialRepositoryProvider)
+          .fetchOwnMomentRecord(work.id);
+      if (!_sameRequest(actor, revision)) return;
+      if (record == null || ref.read(momentsCurrentUserIdProvider) != actor) {
+        socialError(
+          context,
+          message: '원본 기록을 확인하지 못했어요. 최신 상태를 확인한 뒤 다시 눌러 주세요.',
+        );
+        return;
+      }
+      await Navigator.of(context).push<Object?>(
+        snapFitRoute(page: MomentComposeScreen(record: record)),
+      );
+      if (!_sameRequest(actor, revision)) return;
+      ref.invalidate(momentsMonthProvider);
+      ref.invalidate(momentDraftsProvider);
+      ref.invalidate(momentDraftSummariesForOwnerProvider(actor));
+      invalidateSocial(ref, workId: work.id);
+    } catch (error) {
+      if (_sameRequest(actor, revision)) {
+        socialError(
+          context,
+          message: socialActionMessage(
+            error,
+            fallback: '원본 기록을 불러오지 못했어요. 다시 시도해 주세요.',
+          ),
+        );
+      }
+    } finally {
+      if (mounted && revision == _mutationRevision)
+        setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _report(SocialWork work, {SocialComment? comment}) async {
+    final actor = ref.read(socialCurrentUserIdProvider);
+    final revision = _mutationRevision;
+    final workId = widget.workId;
+    if (!work.isPublished ||
+        actor == (comment?.author.userId ?? work.author.userId) ||
+        !await requireSocialLogin(context, ref) ||
+        actor == null ||
+        !_sameRequest(actor, revision) ||
+        widget.workId != workId)
+      return;
+    final sent = await showSocialReportSheet(
+      context,
+      title: comment == null ? (work.isMoment ? '기록 신고' : '앨범 신고') : '댓글 신고',
+      ownerId: actor,
+      onSubmit: (reason, detail, requestId) async {
+        if (!_sameRequest(actor, revision) || widget.workId != workId) {
+          throw StateError('report_target_changed');
+        }
+        await ref
+            .read(socialRepositoryProvider)
+            .reportContent(
+              targetKind: comment == null ? 'work' : 'comment',
+              targetId: comment?.id ?? work.id,
+              reason: reason,
+              details: detail,
+              requestId: requestId,
+            );
+      },
+    );
+    if (sent && _sameRequest(actor, revision))
+      socialError(context, message: '신고를 접수했어요. 운영자가 확인할게요.');
+  }
 
   Future<void> _openSourceTemplate(SocialWork work) async {
     final source = work.sourceTemplate;
@@ -132,7 +547,7 @@ class _SocialWorkDetailScreenState
       if (!current()) return;
       if (fresh == null || fresh.productKey != source.productKey) {
         ref.invalidate(socialWorkProvider(workId));
-        socialError(context, message: '지금은 이 작품의 템플릿을 이용할 수 없어요.');
+        socialError(context, message: '지금은 이 앨범의 템플릿을 이용할 수 없어요.');
         return;
       }
       final catalog = await ref.read(albumCreationCatalogProvider.future);
@@ -146,12 +561,9 @@ class _SocialWorkDetailScreenState
       // The normal detail and checkout flow remains authoritative for price,
       // ownership and preparation of clean sample-free creation pages.
       await Navigator.of(context).push<void>(
-        MaterialPageRoute<void>(
-          settings: WebAppRouteSettings(
+        snapFitRoute<void>(page: TemplateDetailScreen(template: template), settings: WebAppRouteSettings(
             WebAppLocation(WebAppPage.template, '${template.id}'),
-          ),
-          builder: (_) => TemplateDetailScreen(template: template),
-        ),
+          )),
       );
     } catch (_) {
       if (current()) {
@@ -191,18 +603,27 @@ class _SocialWorkDetailScreenState
         widget.workId != workId)
       return;
     final revision = ++_mutationRevision;
-    setState(() => _busy = true);
+    setState(() {
+      _busy = true;
+      _clearMentionSearch();
+    });
     try {
       await write();
       if (_sameRequest(actor, revision)) {
         if (refreshComments) _refreshComments();
         invalidateSocial(ref, workId: widget.workId);
       }
-    } catch (_) {
+    } catch (error) {
       if (_sameRequest(actor, revision)) {
         if (refreshComments) _refreshComments();
         invalidateSocial(ref, workId: widget.workId);
-        socialError(context, message: '요청 결과를 확인하지 못했어요. 최신 상태를 다시 확인할게요.');
+        socialError(
+          context,
+          message: socialActionMessage(
+            error,
+            fallback: '요청 결과를 확인하지 못했어요. 최신 상태를 다시 확인할게요.',
+          ),
+        );
       }
     } finally {
       if (mounted && revision == _mutationRevision)
@@ -210,8 +631,28 @@ class _SocialWorkDetailScreenState
     }
   }
 
+  Future<void> _deleteComment(SocialComment comment) async {
+    final actor = ref.read(socialCurrentUserIdProvider);
+    final workId = widget.workId;
+    final revision = _mutationRevision;
+    await _mutate(() async {
+      await ref.read(socialRepositoryProvider).deleteComment(comment.id);
+      if (!mounted ||
+          widget.workId != workId ||
+          ref.read(socialCurrentUserIdProvider) != actor ||
+          _mutationRevision != revision + 1) {
+        return;
+      }
+      if (_replyTarget?.id == comment.id ||
+          _replyTarget?.rootCommentId == comment.id) {
+        _cancelReply();
+      }
+    }, refreshComments: true);
+  }
+
   Future<void> _send() async {
     final text = _comment.text.trim();
+    final parentCommentId = _replyTarget?.id;
     final actor = ref.read(socialCurrentUserIdProvider);
     final workId = widget.workId;
     final intentRevision = _mutationRevision;
@@ -223,38 +664,65 @@ class _SocialWorkDetailScreenState
         actor == null ||
         intentRevision != _mutationRevision ||
         ref.read(socialCurrentUserIdProvider) != actor ||
-        widget.workId != workId)
+        widget.workId != workId ||
+        _replyTarget?.id != parentCommentId ||
+        _comment.text.trim() != text)
       return;
-    final fingerprint = (actor, workId, text);
+    final fingerprint = (actor, workId, text, parentCommentId);
     if (_commentRequestFingerprint != fingerprint) {
       _commentRequestFingerprint = fingerprint;
       _commentRequestId = const Uuid().v4();
     }
     final requestId = _commentRequestId!;
     final revision = ++_mutationRevision;
-    setState(() => _busy = true);
+    setState(() {
+      _busy = true;
+      _sendingComment = true;
+      _clearMentionSearch();
+    });
     try {
-      await ref
-          .read(socialRepositoryProvider)
-          .addComment(workId, text, requestId: requestId);
+      final repository = ref.read(socialRepositoryProvider);
+      if (parentCommentId == null) {
+        await repository.addComment(workId, text, requestId: requestId);
+      } else {
+        await repository.addComment(
+          workId,
+          text,
+          requestId: requestId,
+          parentCommentId: parentCommentId,
+        );
+      }
       if (!_sameRequest(actor, revision)) return;
       _comment.clear();
       _commentRequestFingerprint = null;
       _commentRequestId = null;
+      _replyTarget = null;
+      _clearMentionSearch();
       _refreshComments();
       invalidateSocial(ref, workId: workId);
-    } catch (_) {
+    } catch (error) {
       if (_sameRequest(actor, revision)) {
+        if (error is SocialActionException &&
+            error.code == 'social_comment_parent_unavailable' &&
+            _replyTarget?.id == parentCommentId) {
+          _cancelReply();
+        }
         _refreshComments();
         invalidateSocial(ref, workId: workId);
         socialError(
           context,
-          message: '전송 결과를 확인하지 못했어요. 작성한 내용으로 다시 시도할 수 있어요.',
+          message: socialActionMessage(
+            error,
+            fallback: '전송 결과를 확인하지 못했어요. 작성한 내용으로 다시 시도할 수 있어요.',
+          ),
         );
       }
     } finally {
       if (mounted && revision == _mutationRevision)
-        setState(() => _busy = false);
+        setState(() {
+          _busy = false;
+          _sendingComment = false;
+        });
     }
   }
 
@@ -283,29 +751,18 @@ class _SocialWorkDetailScreenState
   }
 
   bool _sameArtworkAssets(List<String>? previous, List<String> next) {
-    if (previous == null || previous.length != next.length) return false;
-    for (var index = 0; index < previous.length; index++) {
-      if (previous[index] == next[index]) continue;
-      final before = Uri.tryParse(previous[index]);
-      final after = Uri.tryParse(next[index]);
-      if (before == null ||
-          after == null ||
-          !const ['http', 'https'].contains(before.scheme) ||
-          before.scheme != after.scheme ||
-          before.host != after.host ||
-          before.port != after.port ||
-          before.userInfo != after.userInfo ||
-          before.path != after.path) {
-        return false;
-      }
-    }
-    return true;
+    return previous != null &&
+        listEquals(
+          previous.map(socialSnapshotIdentity).toList(),
+          next.map(socialSnapshotIdentity).toList(),
+        );
   }
 
   void _updateArtworkViewer(SocialWork work) {
     final route = _artworkRoute;
     if (route == null) return;
-    if (work.id != widget.workId ||
+    if (work.isRestricted ||
+        work.id != widget.workId ||
         _viewerStatus != work.status ||
         _viewerAuthorId != work.author.userId ||
         !_sameArtworkAssets(_viewerUrls, work.imageUrls)) {
@@ -331,7 +788,8 @@ class _SocialWorkDetailScreenState
   }
 
   void _openArtworkViewer(SocialWork work) {
-    if (_artworkRoute != null || work.imageUrls.isEmpty) return;
+    if (_artworkRoute != null || work.isRestricted || work.imageUrls.isEmpty)
+      return;
     final actor = ref.read(socialCurrentUserIdProvider);
     if (widget.workId != work.id ||
         (!work.isPublished && actor != work.author.userId)) {
@@ -396,21 +854,54 @@ class _SocialWorkDetailScreenState
         _templateRevision++;
         _openingTemplate = false;
         _dismissArtworkViewer();
+        _dismissPrivateDialog();
         _comment.clear();
         _commentRequestFingerprint = null;
         _commentRequestId = null;
+        _replyTarget = null;
+        _clearMentionSearch();
         _mutationRevision++;
         _commentOffsets
           ..clear()
           ..add(0);
-        if (mounted && _busy) setState(() => _busy = false);
+        if (mounted && _busy) {
+          setState(() {
+            _busy = false;
+            _sendingComment = false;
+          });
+        }
       }
     });
     final result = ref.watch(socialWorkProvider(widget.workId));
     return SocialWebFrame(
       child: Scaffold(
         backgroundColor: SocialStyle.background(context),
-        appBar: AppBar(title: const Text('작품')),
+        appBar: SocialPageHeader(
+          title: result.value == null
+              ? '기록·앨범'
+              : result.value!.isMoment
+              ? '한 장의 기록'
+              : '앨범',
+          actions: [
+            if (result.asData?.value case final work?)
+              if (work.isPublished && !work.isRestricted)
+                IconButton(
+                  key: const ValueKey('social-work-share'),
+                  tooltip: '공유',
+                  onPressed: _sharing ? null : () => _share(work),
+                  icon: const ExperienceIcon('Share2'),
+                ),
+            if (result.asData?.value case final work?)
+              if (work.isPublished &&
+                  ref.watch(socialCurrentUserIdProvider) != work.author.userId)
+                IconButton(
+                  key: const ValueKey('social-work-report'),
+                  tooltip: work.isMoment ? '기록 신고' : '앨범 신고',
+                  onPressed: () => _report(work),
+                  icon: const ExperienceIcon('Flag'),
+                ),
+          ],
+        ),
         body: result.when(
           skipLoadingOnRefresh: true,
           loading: () => const Center(child: SocialLoading()),
@@ -434,8 +925,8 @@ class _SocialWorkDetailScreenState
 
   Widget _unavailable() => const SocialContent(
     child: SocialEmpty(
-      title: '현재 볼 수 없는 작품이에요.',
-      message: '공개가 종료되었거나 접근할 수 없는 작품이에요.',
+      title: '현재 볼 수 없는 기록·앨범이에요.',
+      message: '공개가 종료되었거나 접근할 수 없는 기록·앨범이에요.',
     ),
   );
 
@@ -447,8 +938,9 @@ class _SocialWorkDetailScreenState
         : ref.watch(albumCreationCatalogProvider).value;
     final hasSource =
         w.isPublished &&
+        !w.isRestricted &&
         socialSourceCatalogTemplate(source, catalog ?? const []) != null;
-    if (!w.isPublished && !own) {
+    if ((!w.isPublished || w.isRestricted) && !own) {
       _dismissArtworkViewer();
       return _unavailable();
     }
@@ -463,14 +955,17 @@ class _SocialWorkDetailScreenState
         if (_pager.hasClients) _pager.jumpToPage(page);
       });
     }
-    if (widget.showComments && w.isPublished && !_initialCommentsOpened) {
+    if (widget.showComments &&
+        w.isPublished &&
+        !w.isRestricted &&
+        !_initialCommentsOpened) {
       _initialCommentsOpened = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _openComments();
       });
     }
     return SocialContent(
-      maxWidth: 1120,
+      maxWidth: 820,
       child: RefreshIndicator(
         onRefresh: () async {
           _refreshComments();
@@ -501,13 +996,14 @@ class _SocialWorkDetailScreenState
                       child: ExcludeSemantics(
                         child: SocialAuthorLine(
                           author: w.author,
+                          compact: true,
                           onTap: () =>
                               openSocialProfile(context, w.author.userId),
                         ),
                       ),
                     ),
                   ),
-                  if (!w.isPublished) ...[
+                  if (w.isRestricted || !w.isPublished) ...[
                     const SizedBox(height: 4),
                     DecoratedBox(
                       decoration: BoxDecoration(
@@ -520,7 +1016,11 @@ class _SocialWorkDetailScreenState
                           vertical: 10,
                         ),
                         child: Text(
-                          '비공개 보관 · 나만 보는 작품',
+                          w.isRestricted
+                              ? '공개가 제한된 ${w.isMoment ? '기록' : '앨범'}이에요. 원본은 그대로 보관돼요.'
+                              : w.isMoment
+                              ? '비공개 보관 · 나만 보는 기록'
+                              : '비공개 보관 · 나만 보는 앨범',
                           style: TextStyle(
                             fontSize: 13,
                             height: 1.5,
@@ -543,7 +1043,7 @@ class _SocialWorkDetailScreenState
                         borderRadius: BorderRadius.circular(wide ? 22 : 16),
                       ),
                       clipBehavior: Clip.antiAlias,
-                      child: w.imageUrls.isEmpty
+                      child: w.isRestricted || w.imageUrls.isEmpty
                           ? const SocialArtworkPlaceholder()
                           : PageView.builder(
                               key: ValueKey('social-detail-pages-${w.id}'),
@@ -561,30 +1061,15 @@ class _SocialWorkDetailScreenState
                             ),
                     ),
                   ),
-                  if (w.imageUrls.isNotEmpty) ...[
+                  if (!w.isRestricted && w.imageUrls.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     _artworkControls(w, page),
                   ],
-                  SizedBox(height: wide ? 28 : 22),
-                  Semantics(
-                    header: true,
-                    child: Text(
-                      w.title,
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(
-                            fontSize: wide ? 38 : 29,
-                            fontWeight: FontWeight.w600,
-                            height: 1.3,
-                            letterSpacing: -.9,
-                          ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  SocialWorkMetadata(work: w),
-                  if (w.isPublished) ...[
-                    const SizedBox(height: 16),
+                  if (w.isPublished && !w.isRestricted) ...[
+                    const SizedBox(height: 8),
                     SocialReactions(
                       work: w,
+                      compact: true,
                       busy: _busy,
                       onLike: () => _mutate(
                         () => ref
@@ -599,37 +1084,75 @@ class _SocialWorkDetailScreenState
                       onComments: _openComments,
                     ),
                   ],
-                  if (w.caption.isNotEmpty) ...[
-                    const SizedBox(height: 30),
-                    Text(
-                      '작가의 기록',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: SocialStyle.accent(context),
-                      ),
+                  SizedBox(height: wide ? 20 : 14),
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      w.title,
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(
+                            fontSize: w.isMoment
+                                ? (wide ? 26 : 23)
+                                : (wide ? 34 : 28),
+                            fontWeight: FontWeight.w600,
+                            height: 1.3,
+                            letterSpacing: -.6,
+                          ),
                     ),
-                    const SizedBox(height: 12),
+                  ),
+                  const SizedBox(height: 12),
+                  SocialWorkMetadata(work: w),
+                  if (w.caption.isNotEmpty) ...[
+                    const SizedBox(height: 18),
+                    if (!w.isMoment) ...[
+                      Text(
+                        '작가의 기록',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: SocialStyle.accent(context),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
                     Align(
                       alignment: Alignment.centerLeft,
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 720),
                         child: Text(
                           w.caption,
-                          style: const TextStyle(fontSize: 16, height: 1.85),
+                          style: const TextStyle(fontSize: 15, height: 1.75),
                         ),
                       ),
                     ),
                   ],
                   if (own) ...[
                     const SizedBox(height: 24),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: OutlinedButton.icon(
-                        onPressed: () => openSocialManage(context),
-                        icon: const Icon(Icons.tune_rounded, size: 18),
-                        label: const Text('내 공개 작품 관리'),
-                      ),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        OutlinedButton.icon(
+                          key: const ValueKey('social-owner-edit'),
+                          onPressed: _busy
+                              ? null
+                              : () => w.isMoment
+                                    ? _editMoment(w)
+                                    : openSocialManage(context),
+                          icon: const ExperienceIcon('SlidersHorizontal', size: 18),
+                          label: Text(w.isMoment ? '이 기록 수정' : '내 공개 앨범 관리'),
+                        ),
+                        if (w.isMoment && w.isPublished)
+                          TextButton.icon(
+                            key: const ValueKey('social-moment-make-private'),
+                            onPressed: _busy
+                                ? null
+                                : () => _makeMomentPrivate(w),
+                            icon: const ExperienceIcon('Lock', size: 18),
+                            label: const Text('나만 보기로 바꾸기'),
+                          ),
+                      ],
                     ),
                   ],
                   if (hasSource) ...[
@@ -642,10 +1165,12 @@ class _SocialWorkDetailScreenState
                   ],
                   const SizedBox(height: 32),
                   Divider(height: 1, color: SocialStyle.line(context)),
-                  if (w.isPublished) _comments(w),
+                  if (w.isPublished && !w.isRestricted) _comments(w),
                   const SizedBox(height: 28),
                   Text(
-                    '선택해 공개한 페이지만 표시돼요. 원본 앨범은 별도로 보관돼요.',
+                    w.isMoment
+                        ? '선택해 공개한 사진 한 장과 글만 보여요. 내 기록과 월간 앨범은 별도로 보관돼요.'
+                        : '선택해 공개한 페이지만 표시돼요. 원본 앨범은 별도로 보관돼요.',
                     style: TextStyle(
                       fontSize: 12,
                       height: 1.7,
@@ -673,7 +1198,7 @@ class _SocialWorkDetailScreenState
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeOut,
                   ),
-            icon: const Icon(Icons.arrow_back_rounded, size: 20),
+            icon: const ExperienceIcon('ArrowLeft', size: 20),
           ),
           Expanded(
             child: Semantics(
@@ -696,24 +1221,24 @@ class _SocialWorkDetailScreenState
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeOut,
                   ),
-            icon: const Icon(Icons.arrow_forward_rounded, size: 20),
+            icon: const ExperienceIcon('ArrowRight', size: 20),
           ),
         ],
       );
       final expand = Tooltip(
-        message: '작품 크게 보기',
+        message: '${work.isMoment ? '기록' : '앨범'} 크게 보기',
         child: TextButton.icon(
           onPressed: () => _openArtworkViewer(work),
           style: TextButton.styleFrom(
             minimumSize: const Size(0, 48),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             foregroundColor: SocialStyle.ink(context),
-            textStyle: const TextStyle(
+            textStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
               fontSize: 13,
               fontWeight: FontWeight.w500,
             ),
           ),
-          icon: const Icon(Icons.open_in_full, size: 17),
+          icon: const ExperienceIcon('Maximize2', size: 17),
           label: const Text('확대 감상'),
         ),
       );
@@ -743,65 +1268,251 @@ class _SocialWorkDetailScreenState
     );
     return Padding(
       key: _commentsKey,
-      padding: const EdgeInsets.only(top: 32),
+      padding: const EdgeInsets.only(top: 26),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Semantics(
-            header: true,
-            child: Text(
-              '이 작품에 남긴 이야기',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                letterSpacing: -.3,
+          Row(
+            children: [
+              Expanded(
+                child: Semantics(
+                  header: true,
+                  child: Text(
+                    work.isMoment ? '이 기록에 남긴 이야기' : '이 앨범에 남긴 이야기',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -.4,
+                    ),
+                  ),
+                ),
               ),
-            ),
+              if (work.commentCount > 0)
+                Container(
+                  margin: const EdgeInsets.only(left: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 9,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: SocialStyle.paper(context),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${work.commentCount}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: SocialStyle.accent(context),
+                    ),
+                  ),
+                ),
+            ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 12),
           first.when(
             skipLoadingOnRefresh: true,
-            loading: () => const LinearProgressIndicator(),
-            error: (_, _) => TextButton(
-              onPressed: _refreshComments,
-              child: const Text('댓글 다시 불러오기'),
+            loading: () => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Semantics(
+                  label: '댓글 불러오는 중',
+                  child: const SizedBox.square(
+                    dimension: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              ),
+            ),
+            error: (_, _) => Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: _refreshComments,
+                icon: const ExperienceIcon('RefreshCw', size: 17),
+                label: const Text('댓글 다시 불러오기'),
+              ),
             ),
             data: (_) => _commentPages(work),
           ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _comment,
-            maxLength: 300,
-            minLines: 1,
-            maxLines: 4,
-            enabled: !_busy,
-            decoration: InputDecoration(
-              labelText: '작품에 이야기 남기기',
-              hintText: '서로의 기록을 존중해 주세요.',
-              filled: true,
-              fillColor: SocialStyle.paper(context),
-              alignLabelWithHint: true,
-              contentPadding: const EdgeInsets.all(16),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: SocialStyle.line(context)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: SocialStyle.line(context)),
-              ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: FilledButton(
-              onPressed: _busy ? null : _send,
-              style: SocialStyle.primary(context),
-              child: const Text('댓글 남기기'),
-            ),
-          ),
+          const SizedBox(height: 18),
+          _commentComposer(work),
         ],
       ),
     );
+  }
+
+  Widget _commentComposer(SocialWork work) {
+    final muted = SnapFitColors.textSecondaryOf(context);
+    final reply = _replyTarget;
+    return Column(
+      key: _composerKey,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (_mentionQuery != null)
+          SocialMentionSuggestions(
+            profiles: _mentionSuggestions,
+            query: _mentionQuery!,
+            loading: _mentionLoading,
+            failed: _mentionFailed,
+            onSelect: _selectMention,
+            onRetry: () => _updateMentionQuery(force: true),
+          ),
+        Container(
+          decoration: BoxDecoration(
+            color: SocialStyle.paper(context),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: _commentFocus.hasFocus
+                  ? SocialStyle.accent(context).withValues(alpha: .35)
+                  : SocialStyle.line(context).withValues(alpha: .65),
+            ),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (reply != null)
+                Container(
+                  key: const ValueKey('social-comment-reply-target'),
+                  padding: const EdgeInsets.fromLTRB(14, 3, 4, 3),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: SocialStyle.line(context)),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.subdirectory_arrow_right_rounded,
+                        size: 16,
+                        color: SocialStyle.accent(context),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${reply.author.displayName}님에게 답글 남기는 중',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: SocialStyle.accent(context),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        key: const ValueKey('social-comment-cancel-reply'),
+                        tooltip: '답글 취소',
+                        onPressed: _busy ? null : _cancelReply,
+                        icon: const ExperienceIcon('X', size: 17),
+                      ),
+                    ],
+                  ),
+                ),
+              TextField(
+                key: const ValueKey('social-comment-input'),
+                controller: _comment,
+                focusNode: _commentFocus,
+                maxLength: 300,
+                minLines: 2,
+                maxLines: 5,
+                enabled: !_busy,
+                textCapitalization: TextCapitalization.sentences,
+                scrollPadding: const EdgeInsets.only(bottom: 140, top: 32),
+                decoration: InputDecoration(
+                  labelText: reply != null
+                      ? '답글 남기기'
+                      : work.isMoment
+                      ? '기록에 이야기 남기기'
+                      : '앨범에 이야기 남기기',
+                  hintText: '@아이디로 함께 이야기할 사람을 불러보세요.',
+                  hintStyle: TextStyle(fontSize: 13, color: muted),
+                  labelStyle: TextStyle(fontSize: 14, color: muted),
+                  floatingLabelStyle: TextStyle(
+                    fontSize: 13,
+                    color: SocialStyle.accent(context),
+                  ),
+                  filled: false,
+                  counterText: '',
+                  alignLabelWithHint: true,
+                  contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                ),
+                style: const TextStyle(fontSize: 14, height: 1.6),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 0, 10, 10),
+                child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  runSpacing: 6,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          key: const ValueKey('social-comment-mention'),
+                          tooltip: '사용자 멘션하기',
+                          onPressed: _busy ? null : _insertMention,
+                          icon: ExperienceIcon('AtSign', size: 21, color: muted),
+                        ),
+                        Text(
+                          '${_comment.text.characters.length}/300',
+                          style: TextStyle(fontSize: 11, color: muted),
+                        ),
+                      ],
+                    ),
+                    FilledButton.icon(
+                      key: const ValueKey('social-comment-send'),
+                      onPressed: _busy || _comment.text.trim().isEmpty
+                          ? null
+                          : _send,
+                      style: SocialStyle.primary(context).copyWith(
+                        minimumSize: const WidgetStatePropertyAll(Size(0, 42)),
+                        shape: WidgetStatePropertyAll(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                        ),
+                        padding: const WidgetStatePropertyAll(
+                          EdgeInsets.symmetric(horizontal: 16),
+                        ),
+                      ),
+                      icon: _sendingComment
+                          ? const SizedBox.square(
+                              dimension: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const ExperienceIcon('ArrowUp', size: 16),
+                      label: Text(reply == null ? '댓글 남기기' : '답글 보내기'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _insertMention() {
+    final selection = _comment.selection;
+    final from = selection.isValid ? selection.start : _comment.text.length;
+    final to = selection.isValid ? selection.end : from;
+    final prefix = from > 0 && _comment.text[from - 1].trim().isNotEmpty
+        ? ' '
+        : '';
+    final insertion = '$prefix@';
+    final next = _comment.text.replaceRange(from, to, insertion);
+    if (next.characters.length > 300) return;
+    _comment.value = TextEditingValue(
+      text: next,
+      selection: TextSelection.collapsed(offset: from + insertion.length),
+    );
+    _commentFocus.requestFocus();
   }
 
   Widget _commentPages(SocialWork work) {
@@ -861,7 +1572,7 @@ class _SocialWorkDetailScreenState
                         return;
                       setState(() => _commentOffsets.add(page.nextOffset));
                     },
-                    icon: const Icon(Icons.expand_less_rounded),
+                    icon: const ExperienceIcon('ChevronUp'),
                     label: const Text('이전 댓글 더 보기'),
                   ),
                 )
@@ -879,34 +1590,29 @@ class _SocialWorkDetailScreenState
               ),
             ),
           ),
-        for (final comment in newest.reversed)
-          ListTile(
+        for (final comment in socialThreadedComments(newest))
+          SocialCommentTile(
             key: ValueKey('social-comment-${comment.id}'),
-            contentPadding: EdgeInsets.zero,
-            title: TextButton(
-              onPressed: () =>
-                  openSocialProfile(context, comment.author.userId),
-              style: TextButton.styleFrom(
-                alignment: Alignment.centerLeft,
-                padding: EdgeInsets.zero,
-              ),
-              child: Text(comment.author.displayName),
-            ),
-            subtitle: Text(comment.body, style: const TextStyle(height: 1.7)),
-            trailing: user == comment.author.userId
+            comment: comment,
+            workAuthorId: work.author.userId,
+            onProfile: (profile) => openSocialProfile(context, profile.userId),
+            onReply: _busy ? null : () => _replyTo(comment),
+            action: user == comment.author.userId
                 ? IconButton(
                     tooltip: '내 댓글 삭제',
-                    icon: const Icon(Icons.close, size: 18),
+                    icon: ExperienceIcon('Trash2', size: 17, color: SnapFitColors.textMutedOf(context),
+                    ),
+                    onPressed: _busy ? null : () => _deleteComment(comment),
+                  )
+                : IconButton(
+                    key: ValueKey('social-comment-report-${comment.id}'),
+                    tooltip: '댓글 신고',
+                    icon: ExperienceIcon('MoreHorizontal', size: 19, color: SnapFitColors.textMutedOf(context),
+                    ),
                     onPressed: _busy
                         ? null
-                        : () => _mutate(
-                            () => ref
-                                .read(socialRepositoryProvider)
-                                .deleteComment(comment.id),
-                            refreshComments: true,
-                          ),
-                  )
-                : null,
+                        : () => _report(work, comment: comment),
+                  ),
           ),
       ],
     );
@@ -1019,7 +1725,7 @@ class _ArtworkViewerState extends State<_ArtworkViewer> {
                       tooltip: '확대 감상 닫기',
                       color: Colors.white,
                       onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close_rounded),
+                      icon: const ExperienceIcon('X'),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -1082,7 +1788,7 @@ class _ArtworkViewerState extends State<_ArtworkViewer> {
                           color: Colors.white,
                           disabledColor: Colors.white30,
                           onPressed: _page == 0 ? null : () => _turnPage(-1),
-                          icon: const Icon(Icons.arrow_back_rounded),
+                          icon: const ExperienceIcon('ArrowLeft'),
                         ),
                         Expanded(
                           child: Semantics(
@@ -1107,7 +1813,7 @@ class _ArtworkViewerState extends State<_ArtworkViewer> {
                           onPressed: _page == widget.urls.length - 1
                               ? null
                               : () => _turnPage(1),
-                          icon: const Icon(Icons.arrow_forward_rounded),
+                          icon: const ExperienceIcon('ArrowRight'),
                         ),
                       ],
                     ),
@@ -1115,7 +1821,7 @@ class _ArtworkViewerState extends State<_ArtworkViewer> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         IconButton(
-                          tooltip: '작품 축소',
+                          tooltip: '사진 축소',
                           color: Colors.white,
                           disabledColor: Colors.white30,
                           onPressed: _scale <= 1.01
@@ -1145,11 +1851,11 @@ class _ArtworkViewerState extends State<_ArtworkViewer> {
                           ),
                         ),
                         IconButton(
-                          tooltip: '작품 확대',
+                          tooltip: '사진 확대',
                           color: Colors.white,
                           disabledColor: Colors.white30,
                           onPressed: _scale >= 3.99 ? null : () => _zoom(1.5),
-                          icon: const Icon(Icons.add_rounded),
+                          icon: const ExperienceIcon('Plus'),
                         ),
                       ],
                     ),

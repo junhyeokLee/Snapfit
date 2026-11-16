@@ -62,10 +62,10 @@ List<_StudioPage> _studioVowSpread(StudioEdition e, CollectionAspect a, int i) {
     double w,
     double h, {
     double size = .070,
-  }) => _milestoneTitle(sheet, text, x, y, w, h, size: size);
+  }) => _studioMilestoneTitle(sheet, text, x, y, w, h, size: size);
   void caption(_StudioPage sheet, double x, double y, double w, double h) =>
       _milestoneCaption(sheet, story.$2, x, y, w, h);
-  _milestoneLabel(
+  _studioMilestoneLabel(
     l,
     e.premium ? 'VOW ARCHIVE / ${i + 1}' : 'OUR PROMISE / ${i + 1}',
     .07,
@@ -76,7 +76,7 @@ List<_StudioPage> _studioVowSpread(StudioEdition e, CollectionAspect a, int i) {
     switch (i) {
       case 0:
         l.scene(p(0), .08, .14, .84, .64, fill: true);
-        _milestoneLabel(l, 'OUR BEGINNING, TOGETHER', .10, .84, .80);
+        _studioMilestoneLabel(l, 'OUR BEGINNING, TOGETHER', .10, .84, .80);
         title(r, '함께하기로\n한 우리', .13, .19, .74, .25);
         caption(r, .14, .59, .71, .17);
         r.rule(.14, .84, .23, color: '#8FA6AD');
@@ -124,7 +124,7 @@ List<_StudioPage> _studioVowSpread(StudioEdition e, CollectionAspect a, int i) {
         );
         r.scene(p(1), .58, .41, .32, .40, frame: 'studioRounded', fill: true);
       case 5:
-        _milestoneNote(
+        _studioMilestoneNote(
           l,
           'atelierWritingVow',
           '우리의 약속\n\n서로의 이야기를 끝까지 듣고\n작은 기쁨을 먼저 나누며\n같은 편으로 오래 함께할게.',
@@ -158,7 +158,7 @@ List<_StudioPage> _studioVowSpread(StudioEdition e, CollectionAspect a, int i) {
           );
         }
         title(l, '남겨 둔 작은 것들', .10, .65, .80, .13, size: .052);
-        _milestoneNote(
+        _studioMilestoneNote(
           r,
           'atelierWritingLetter',
           '기억해 둘 것\n\n꽃의 이름\n우리의 첫 반지\n직접 쓴 짧은 편지',
@@ -190,13 +190,13 @@ List<_StudioPage> _studioVowSpread(StudioEdition e, CollectionAspect a, int i) {
         l.type('함께\n걷는 쪽으로', .78, .40, .15, .28, size: .028, font: 'Eulyoo');
         title(r, '이제부터\n우리의 날들', .13, .21, .74, .23, size: .071);
         caption(r, .14, .61, .72, .16);
-        _milestoneLabel(r, 'THE STORY CONTINUES', .14, .86, .72);
+        _studioMilestoneLabel(r, 'THE STORY CONTINUES', .14, .86, .72);
     }
   } else {
     switch (i) {
       case 0:
         l.scene(p(1), .09, .15, .74, .46, frame: 'atelierEnvelope', turn: -2);
-        _milestoneNote(
+        _studioMilestoneNote(
           l,
           'atelierWritingVow',
           '두 사람의 시작에\n당신을\n초대합니다.',
@@ -242,10 +242,10 @@ List<_StudioPage> _studioVowSpread(StudioEdition e, CollectionAspect a, int i) {
           font: 'Eulyoo',
         );
         r.scene(p(2), .045, .11, .91, .69, frame: 'storyVowGate', fill: true);
-        _milestoneLabel(r, 'BEFORE THE CEREMONY', .10, .85, .80);
+        _studioMilestoneLabel(r, 'BEFORE THE CEREMONY', .10, .85, .80);
       case 4:
         l.scene(p(2), .08, .12, .84, .50, frame: 'atelierFolio');
-        _milestoneNote(
+        _studioMilestoneNote(
           l,
           'atelierWritingVow',
           '눈을 보고\n천천히 건넨\n우리의 약속',
@@ -298,7 +298,7 @@ List<_StudioPage> _studioVowSpread(StudioEdition e, CollectionAspect a, int i) {
           fill: true,
         );
       case 8:
-        _milestoneNote(
+        _studioMilestoneNote(
           l,
           'atelierWritingVow',
           '서로에게 읽어 준 말\n\n매일의 작은 이야기를 나누고\n잘 모르는 마음은 다시 물으며\n오래 편안한 사람이 되어 줄게.',
@@ -329,7 +329,7 @@ List<_StudioPage> _studioVowSpread(StudioEdition e, CollectionAspect a, int i) {
           frame: 'studioPhotoCorners',
           fill: true,
         );
-        _milestoneNote(
+        _studioMilestoneNote(
           r,
           'atelierWritingLetter',
           '먼 길 와 준 사람\n반갑게 웃어 준 사람\n오래 고마운 이름들',
@@ -340,7 +340,7 @@ List<_StudioPage> _studioVowSpread(StudioEdition e, CollectionAspect a, int i) {
         );
       case 10:
         title(l, '축하를\n모아 둔 곳', .12, .15, .76, .23, size: .077);
-        _milestoneNote(
+        _studioMilestoneNote(
           l,
           'atelierWritingLetter',
           '좋은 날의 마음을\n오래 간직할게요.',
@@ -411,7 +411,7 @@ List<_StudioPage> _studioVowSpread(StudioEdition e, CollectionAspect a, int i) {
         title(r, '앞으로도\n같은 편', .12, .18, .76, .26, size: .082);
         caption(r, .14, .60, .72, .16);
         r.rule(.14, .83, .72, color: '#BFA0A6');
-        _milestoneLabel(r, 'A VOW TO KEEP / OUR NEXT CHAPTER', .14, .87, .72);
+        _studioMilestoneLabel(r, 'A VOW TO KEEP / OUR NEXT CHAPTER', .14, .87, .72);
     }
   }
   return [l, r];

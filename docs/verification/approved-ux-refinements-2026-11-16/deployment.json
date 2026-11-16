@@ -1,0 +1,58 @@
+{
+  "project_id": "rrbhxdtriummqpztpjrk",
+  "migration": {
+    "version": "20261115162020",
+    "name": "point_ledger_ai_title_snapshot"
+  },
+  "sql_sha256": "3182738642a6d028d8a8ec5324dcd2ea14be3861e541704322c5401e762ccf53",
+  "applied": true,
+  "user_authorized": true,
+  "function_body_matches_local_exactly": true,
+  "anon_execute": false,
+  "authenticated_execute": true,
+  "security_definer_unchanged": true,
+  "search_path_unchanged": true,
+  "verification_scope": "Schema, function source/privileges, migration history and local synthetic regression tests; no wallet/ledger aggregate reads.",
+  "payments_executed": false,
+  "advisories": [
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "count": 67,
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "includes_target_function": false
+    },
+    {
+      "name": "function_search_path_mutable",
+      "level": "WARN",
+      "count": 2,
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "includes_target_function": false
+    },
+    {
+      "name": "anon_security_definer_function_executable",
+      "level": "WARN",
+      "count": 8,
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable",
+      "includes_target_function": false
+    },
+    {
+      "name": "authenticated_security_definer_function_executable",
+      "level": "WARN",
+      "count": 13,
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable",
+      "includes_target_function": true
+    },
+    {
+      "name": "auth_leaked_password_protection",
+      "level": "WARN",
+      "count": 1,
+      "remediation": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection",
+      "includes_target_function": false
+    }
+  ],
+  "advisory_note": "Authenticated SECURITY DEFINER access existed before and is required for this RPC; auth.uid and server ownership guards remain. The migration did not add any anonymous access.",
+  "wallet_or_ledger_aggregates_queried": false,
+  "post_deploy_regression_passed": 17,
+  "post_deploy_regression_failed": 0
+}

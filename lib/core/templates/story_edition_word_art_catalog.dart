@@ -2,6 +2,12 @@ part of 'studio_word_art_catalog.dart';
 
 const storyEditionWordArts = [
   StudioWordArt(
+    'story-reading-room',
+    '책장 사이의 오후 타이틀',
+    '책장 사이의\n오후',
+    canvasSize: Size(500, 320),
+  ),
+  StudioWordArt(
     'story-morning-vow',
     "오전의 서약 타이틀 조합",
     "오전의 서약",

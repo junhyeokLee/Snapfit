@@ -32,7 +32,9 @@ class PendingPointPurchase {
     }
     return PendingPointPurchase(
       // Native metadata helps route retries; the server independently verifies it.
-      ownerId: (storeOwner?.isNotEmpty ?? false) ? storeOwner! : ownerId,
+      ownerId: ((storeOwner?.isNotEmpty ?? false) ? storeOwner! : ownerId)
+          .trim()
+          .toLowerCase(),
       productId: purchase.productID,
       transactionId: id.isEmpty ? token : id,
       source: source,
@@ -44,7 +46,9 @@ class PendingPointPurchase {
 
   factory PendingPointPurchase.fromJson(Map<String, dynamic> json) =>
       PendingPointPurchase(
-        ownerId: json['ownerId'] as String,
+        // Foundation UUID.uuidString can return StoreKit's account token in
+        // uppercase. Supabase UUIDs and server verification use lowercase.
+        ownerId: (json['ownerId'] as String).trim().toLowerCase(),
         productId: json['productId'] as String,
         transactionId: json['transactionId'] as String,
         source: json['source'] as String,

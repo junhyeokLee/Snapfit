@@ -1,0 +1,183 @@
+{
+  "date": "2026-11-02",
+  "environment": "Production Firebase hosting, actual existing authenticated Chrome session, normal UI only",
+  "url": "https://snapfit-c719d.web.app/feed",
+  "authentication": {
+    "existingSession": true,
+    "credentialExported": false,
+    "loginBypassUsed": false,
+    "passwordChanged": false
+  },
+  "liveChecks": {
+    "main": {
+      "loaded": true,
+      "albumsBefore": 0,
+      "albumsAfter": 2,
+      "homeNewsShownAndDismissedNormally": true
+    },
+    "my": {
+      "loaded": true,
+      "privateMonthlyArchiveLoaded": true,
+      "publicRecordsBefore": 0,
+      "publicRecordsAfter": 0,
+      "pointBalanceBefore": 20,
+      "pointBalanceAfter": 20,
+      "followingCount": 1
+    },
+    "feed": {
+      "latestLoaded": true,
+      "followingLoaded": true,
+      "existingPublicPhotoRendered": true
+    },
+    "store": {
+      "loaded": true,
+      "templateCountVisible": 133,
+      "selectedTemplate": "작은 날의 기록",
+      "selectedTemplateId": -9303,
+      "pricePoints": 0,
+      "startReachedAlbumSettings": true
+    },
+    "creation": {
+      "photoPickerRead": true,
+      "photoSize": [
+        800,
+        600
+      ],
+      "syntheticPhotoOnly": true,
+      "originalPhotoSha256": "8b8a23836d56dbe8d22d46d4fd141b4b066c529a8d8e6ed9419bd416830f3aab",
+      "photoPlacedInCover": true,
+      "remainingPhotoSlotsIntentionallyEmpty": 25,
+      "size": "20x20cm",
+      "cover": "soft",
+      "interiorPages": 24,
+      "reviewReached": true,
+      "createReachedSavedEditor": true,
+      "albumId": 109,
+      "albumTitle": "작은 날의 기록",
+      "coverTestLabel": "테스트\n앨범"
+    },
+    "saveAndReopen": {
+      "textEdited": true,
+      "accountSaveConfirmed": true,
+      "reopenedFromMain": true,
+      "editedAgainAndResaved": true,
+      "browserReloadRetainedLogin": true,
+      "browserReloadRestoredAlbum109": true,
+      "photoAndKoreanFontRenderedAfterReload": true
+    },
+    "freshFinalReleaseCreation": {
+      "albumId": 110,
+      "albumTitle": "로그인 흐름 확인 2026-11-02",
+      "template": "작은 날의 기록",
+      "templateId": -9303,
+      "pricePoints": 0,
+      "properTitleInputAndServerPersistence": true,
+      "syntheticPhotoPickerAndPlacementPassed": true,
+      "creationCoverTextEdited": "테스트\n앨범",
+      "afterCreateTextEdited": "테스트\n완료",
+      "authoredTextFrameObservedInInspector": {
+        "x": 250,
+        "y": 305,
+        "width": 222.5,
+        "height": 180,
+        "rotation": 0
+      },
+      "noManualPositionOrSizeChange": true,
+      "undoRedoPassed": true,
+      "accountSaveConfirmed": true,
+      "readerAlbum110Reached": true,
+      "browserReloadRetainedLoginAndAlbumRoute": true,
+      "photoAndTextRenderedAfterReload": true,
+      "reopenedAgainFromMain": true
+    },
+    "finalRouteRecheck": {
+      "mainLoadedWithTwoAlbums": true,
+      "myProfileAndPrivateMonthLoaded": true,
+      "myPublicRecords": 0,
+      "myPointBalance": 20,
+      "feedLatestLoaded": true,
+      "feedFollowingLoaded": true
+    }
+  },
+  "productionSideEffects": {
+    "newPrivateTestAlbums": 2,
+    "personalPhotosUploaded": 0,
+    "syntheticPhotosUploaded": 2,
+    "pointsSpent": 0,
+    "publicationRequested": false,
+    "likesOrFollowsChanged": false,
+    "existingAlbumsModified": false,
+    "testAlbumsLeftInAccount": [
+      {
+        "id": 109,
+        "title": "작은 날의 기록",
+        "coverLabel": "테스트 앨범"
+      },
+      {
+        "id": 110,
+        "title": "로그인 흐름 확인 2026-11-02",
+        "coverLabel": "테스트 완료"
+      }
+    ]
+  },
+  "notes": [
+    "Native accessibility setValue did not dispatch Flutter input events for the proposed QA album title; the actual album keeps the chosen template title and its cover was explicitly edited through Playwright.fill to label it 테스트 앨범. No product title-reset bug found.",
+    "Initial captured developer logs contained three opaque Object errors (including an extension source) near file-chooser tooling; these could not be classified as app failures. All live app steps completed."
+  ],
+  "additionalFixes": {
+    "boundedReadSeconds": 25,
+    "scope": "Feed/profile/public profile album and month reads including avatar and legacy snapshot signing",
+    "manualRetry": "Affected Riverpod providers opt out of repeated default automatic retries; existing visible manual retry preserved",
+    "writes": "Purchase/like/follow/publication mutation lifetimes unchanged",
+    "editedCoverText": "Preserve finite authored text width when editing, preventing right/center aligned text from expanding past the page; existing saved documents are not rewritten on load.",
+    "qaAlbum109Repair": "Only the newly created diagnostic test album had its already-inflated title moved from X250 to X150 through the normal UI; this is not used as proof of the code fix."
+  },
+  "finalReleaseVerification": {
+    "passed": true,
+    "hostingVersion": "projects/360727043538/sites/snapfit-c719d/versions/150b30126f3592bc",
+    "main_sha256": "293baa5ef0081335de6615e0caa6d3c49204225cf13e347220fd22b3d318204c",
+    "main_file": "main.293baa5ef0081335de66.dart.js",
+    "bootstrap_sha256": "62b83ebd50aa23c9c01ae72cd0529c867b87b56a0952ddc83a57b5bb45cff048",
+    "bootstrap_file": "flutter_bootstrap.62b83ebd50aa23c9c01a.js",
+    "matchedProductionAssets": 4,
+    "actualAuthenticatedBrowserDOMMainAndBootstrapMatch": true,
+    "sourceAnalysis": "No issues found",
+    "scopedDiffCheckPassed": true,
+    "independentReviews": "Social retry and text width preservation reviewed, no remaining blockers"
+  },
+  "automatedVerification": [
+    {
+      "suite": "Social read/auth/profile/discovery regression",
+      "passed": 117,
+      "failed": 0,
+      "log": "social-all-final.log"
+    },
+    {
+      "suite": "Real-font text-edit/editor/save/roundtrip/render regression",
+      "passed": 104,
+      "failed": 0,
+      "log": "text-save-regression.log"
+    }
+  ],
+  "intermediateRelease": {
+    "hostingVersion": "262ef09f7da6eb8d",
+    "mainFile": "main.d77073123bf128db5373.dart.js",
+    "authenticatedMainMyLatestAndFollowingPassed": true,
+    "actualDOMMainAndBootstrapMatchedBuild": true,
+    "matchedProductionAssets": 4
+  },
+  "scopeLimits": {
+    "actualAccount": "One pre-existing signed-in Chrome account; real production UI, no auth bypass",
+    "paidTemplatePurchaseTested": false,
+    "nativePhysicalDeviceTested": false,
+    "androidArtifactRebuiltThisTurn": false,
+    "databaseSchemaChanged": false,
+    "knownTextBehavior": "Very long edited text can grow vertically and may require user layout adjustment; this fix specifically preserves the existing horizontal frame rather than changing saved documents on load."
+  },
+  "evidenceImages": [
+    "fresh-template-title-frame.jpg",
+    "fresh-template-saved-frame.jpg",
+    "final-saved-album.jpg"
+  ],
+  "initialFixtureCorrections": "Initial tests exposed HTTP mock request metadata and SDK isolate lifecycle fixture issues; these were corrected without removing assertions. Final social suite117 and editor/save suite104 both passed."
+}

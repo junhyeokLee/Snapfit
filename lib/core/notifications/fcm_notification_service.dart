@@ -76,6 +76,8 @@ class FcmNotificationService {
       _localInitialized = false,
       _signingOut = false;
   static Future<void>? _syncFuture;
+  static Future<void> _deviceCleanup = Future.value();
+  static Future<void> _installationOperations = Future.value();
   @visibleForTesting
   static void Function(Object, StackTrace)? onRegistrationErrorForTesting;
   static Timer? _retry;
@@ -85,7 +87,7 @@ class FcmNotificationService {
   static Future<void> _preferenceWrites = Future.value();
   static Future<void> _preferenceEdits = Future.value();
   static final _preferenceReads =
-      <({String userId, int generation}), Future<void>>{};
+      <({String userId, int generation, bool refresh}), Future<void>>{};
   static final _preferenceVersions = <String, int>{};
   static NotificationTapHandler? _onTap;
   static Map<String, dynamic>? _pendingTap;
@@ -127,6 +129,12 @@ class FcmNotificationService {
       _client.auth.onAuthStateChange.listen((state) {
         _generation++;
         _preferencesUser = null;
+        if (!kIsWeb) {
+          // A preceding cleanup may already have removed this installation's
+          // binding, even if an A -> B -> A session returns with the same token.
+          _lastRegistrationSignature = null;
+          _lastRegisteredAt = null;
+        }
         if (kIsWeb && _webSessionUser != state.session?.user.id) {
           // Clear the worker before any new account can bind this installation.
           final previousUser = _webSessionUser;
@@ -151,7 +159,7 @@ class FcmNotificationService {
           if (pending != null) unawaited(openNotification(pending));
           unawaited(syncSession());
         }
-      });
+      }, onError: (Object _, StackTrace __) => _scheduleRetry());
       if (!kIsWeb) unawaited(_readLaunchNotification());
     }
     // Errors are handled inside syncSession; callers need not await network work.
@@ -194,6 +202,11 @@ class FcmNotificationService {
       _client.auth.currentUser?.id == userId;
 
   static Future<void> _sync(int generation) async {
+    // Firebase's installation token is shared by accounts. A new owner's
+    // registration must wait for any older deleteToken operation to finish.
+    await _deviceCleanup;
+    await _waitForInstallationOperations();
+    if (generation != _generation || _signingOut) return;
     final userId = _client.auth.currentUser?.id;
     if (userId == null || _signingOut) return;
     if (kIsWeb) {
@@ -222,7 +235,7 @@ class FcmNotificationService {
         throw StateError('APNs registration pending');
       }
     }
-    await _messaging.setAutoInitEnabled(true);
+    await _mutateInstallation(() => _messaging.setAutoInitEnabled(true));
     // Remove obsolete global subscriptions before any account receives private events.
     for (final topic in _legacyTopics) {
       await _messaging.unsubscribeFromTopic(topic).timeout(_timeout);
@@ -308,7 +321,7 @@ class FcmNotificationService {
       if (deleteToken) {
         try {
           if (await _messaging.isSupported())
-            await _messaging.deleteToken().timeout(_timeout);
+            await _mutateInstallation(_messaging.deleteToken);
         } catch (_) {}
       }
     });
@@ -317,6 +330,7 @@ class FcmNotificationService {
   static Future<void> _syncWeb(String userId, int generation) async {
     _webOwnerReady = false;
     await _webCleanup;
+    await _waitForInstallationOperations();
     if (!_current(userId, generation)) return;
     final prefs = await SharedPreferences.getInstance();
     if (!_current(userId, generation)) return;
@@ -342,7 +356,7 @@ class FcmNotificationService {
       if (!_current(userId, generation)) return;
       try {
         if (environment.supported && await _messaging.isSupported()) {
-          await _messaging.deleteToken().timeout(_timeout);
+          await _mutateInstallation(_messaging.deleteToken);
         }
       } catch (_) {}
       if (!_current(userId, generation)) return;
@@ -530,7 +544,7 @@ class FcmNotificationService {
     }
     if (!_current(userId, generation))
       throw StateError('notification_settings_owner_changed');
-    await _messaging.deleteToken().timeout(_timeout);
+    await _mutateInstallation(_messaging.deleteToken);
     if (!_current(userId, generation))
       throw StateError('notification_settings_owner_changed');
     _registeredToken = null;
@@ -553,26 +567,37 @@ class FcmNotificationService {
     return operation;
   }
 
-  static Future<void> _syncPreferences(String userId, int generation) {
-    final key = (userId: userId, generation: generation);
+  static Future<void> _syncPreferences(
+    String userId,
+    int generation, {
+    bool refresh = false,
+  }) {
+    final key = (userId: userId, generation: generation, refresh: refresh);
     final pending = _preferenceReads[key];
     if (pending != null) return pending;
     late final Future<void> operation;
-    operation = _readPreferences(userId, generation).whenComplete(() {
-      if (identical(_preferenceReads[key], operation)) {
-        _preferenceReads.remove(key);
-      }
-    });
+    operation = _readPreferences(userId, generation, refresh: refresh)
+        .whenComplete(() {
+          if (identical(_preferenceReads[key], operation)) {
+            _preferenceReads.remove(key);
+          }
+        });
     _preferenceReads[key] = operation;
     return operation;
   }
 
-  static Future<void> _readPreferences(String userId, int generation) async {
+  static Future<void> _readPreferences(
+    String userId,
+    int generation, {
+    bool refresh = false,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     await _preferenceEdits;
     if (!_current(userId, generation)) return;
     final dirty = prefs.getBool('push_prefs_dirty_$userId') ?? false;
-    if (_preferencesUser != userId && !dirty) {
+    if (dirty) await _saveRemotePrefs(prefs, userId, generation);
+    if (!_current(userId, generation)) return;
+    if (refresh || _preferencesUser != userId) {
       final version = _preferenceVersions[userId] ?? 0;
       final row = await _client
           .from('push_preferences')
@@ -600,10 +625,10 @@ class FcmNotificationService {
       if (!_current(userId, generation)) return;
       if (changedWhileReading) {
         await _saveRemotePrefs(prefs, userId, generation);
+        await _readPreferences(userId, generation, refresh: true);
         return;
       }
     }
-    if (dirty) await _saveRemotePrefs(prefs, userId, generation);
     if (_current(userId, generation)) _preferencesUser = userId;
   }
 
@@ -611,7 +636,9 @@ class FcmNotificationService {
   static String _prefKey(String key, String? userId) =>
       '${key}_${userId ?? 'signed_out'}';
 
-  static Future<NotificationSettingsState> loadSettings() async {
+  static Future<NotificationSettingsState> loadSettings({
+    bool refresh = false,
+  }) async {
     final userId = _client.auth.currentUser?.id;
     final generation = _generation;
     final prefs = await SharedPreferences.getInstance();
@@ -626,7 +653,9 @@ class FcmNotificationService {
     checkOwner();
     // Every platform must resolve the account's first remote read before its
     // editable form can turn cached defaults into a full settings snapshot.
-    if (userId != null) await _syncPreferences(userId, generation);
+    if (userId != null) {
+      await _syncPreferences(userId, generation, refresh: refresh);
+    }
     checkOwner();
     final permissionGranted = await isPermissionGranted();
     await _preferenceEdits;
@@ -684,6 +713,45 @@ class FcmNotificationService {
     required bool nightMute,
     String? expectedOwnerId,
   }) async {
+    return _updatePreferences({
+      kAll: all,
+      kOrder: order,
+      kInvite: invite,
+      kComment: comment,
+      kMarketing: marketing,
+      kNewTemplate: newTemplate,
+      kNightMute: nightMute,
+    }, expectedOwnerId: expectedOwnerId);
+  }
+
+  /// A switch edits only its own server field, preserving other devices' choices.
+  static Future<void> updateSetting(
+    String key,
+    bool value, {
+    String? expectedOwnerId,
+  }) {
+    if (!_columns.containsKey(key)) {
+      throw ArgumentError.value(key, 'key', 'Unknown notification setting');
+    }
+    return _updatePreferences({key: value}, expectedOwnerId: expectedOwnerId);
+  }
+
+  static Set<String> _dirtyPreferenceKeys(
+    SharedPreferences prefs,
+    String userId,
+  ) {
+    if (!(prefs.getBool('push_prefs_dirty_$userId') ?? false)) return {};
+    // Older installations stored a complete pending snapshot without field keys.
+    final keys = prefs.getStringList('push_prefs_dirty_keys_$userId');
+    return keys == null
+        ? _columns.keys.toSet()
+        : keys.where(_columns.containsKey).toSet();
+  }
+
+  static Future<void> _updatePreferences(
+    Map<String, bool> values, {
+    String? expectedOwnerId,
+  }) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) {
       if (expectedOwnerId != null) {
@@ -700,15 +768,6 @@ class FcmNotificationService {
     if (!_current(userId, generation)) {
       throw StateError('notification_settings_owner_changed');
     }
-    final values = {
-      kAll: all,
-      kOrder: order,
-      kInvite: invite,
-      kComment: comment,
-      kMarketing: marketing,
-      kNewTemplate: newTemplate,
-      kNightMute: nightMute,
-    };
     await _editPreferences(() async {
       if (!_current(userId, generation)) {
         throw StateError('notification_settings_owner_changed');
@@ -716,6 +775,12 @@ class FcmNotificationService {
       _preferenceVersions[userId] = (_preferenceVersions[userId] ?? 0) + 1;
       // The complete intent stays in this owner's namespace if the account
       // changes during local storage. It can be retried on that owner's login.
+      final dirtyKeys = _dirtyPreferenceKeys(prefs, userId)
+        ..addAll(values.keys);
+      await prefs.setStringList(
+        'push_prefs_dirty_keys_$userId',
+        dirtyKeys.toList(),
+      );
       await prefs.setBool('push_prefs_dirty_$userId', true);
       for (final entry in values.entries) {
         await prefs.setBool(_prefKey(entry.key, userId), entry.value);
@@ -763,30 +828,90 @@ class FcmNotificationService {
       await _preferenceEdits;
       if (!_current(userId, generation)) return;
       final version = _preferenceVersions[userId] ?? 0;
+      final dirtyKeys = _dirtyPreferenceKeys(prefs, userId);
+      if (dirtyKeys.isEmpty) return;
+      // Creating an absent row must never reset an existing row's opt-outs.
       await _client
           .from('push_preferences')
-          .upsert({
-            'user_id': userId,
-            for (final entry in _columns.entries)
-              entry.value:
-                  prefs.getBool(_prefKey(entry.key, userId)) ??
-                  _default(entry.key),
-          })
+          .upsert(
+            {'user_id': userId},
+            onConflict: 'user_id',
+            ignoreDuplicates: true,
+          )
           .timeout(_timeout);
+      if (!_current(userId, generation)) return;
+      final saved = await _client
+          .from('push_preferences')
+          .update({
+            for (final key in dirtyKeys)
+              _columns[key]!:
+                  prefs.getBool(_prefKey(key, userId)) ?? _default(key),
+          })
+          .eq('user_id', userId)
+          .select('user_id')
+          .maybeSingle()
+          .timeout(_timeout);
+      if (!_current(userId, generation)) return;
+      if (saved?['user_id'] != userId) {
+        throw StateError('notification_settings_not_saved');
+      }
       await _editPreferences(() async {
         if (!_current(userId, generation)) return;
         if ((_preferenceVersions[userId] ?? 0) == version) {
           await prefs.setBool('push_prefs_dirty_$userId', false);
+          await prefs.remove('push_prefs_dirty_keys_$userId');
         }
       });
     });
   }
 
-  static Future<void> clearDevicePushState() async {
+  // A Dart timeout cannot cancel an SDK token mutation. Keep the physical
+  // operation in the installation barrier after the caller's timeout, so a
+  // late delete/auto-init change cannot invalidate a newer owner's token.
+  static Future<void> _mutateInstallation(Future<void> Function() mutation) {
+    final operation = _installationOperations.then((_) => mutation());
+    _installationOperations = operation.catchError((_) {});
+    return operation.timeout(_timeout);
+  }
+
+  static Future<void> _waitForInstallationOperations() async {
+    while (true) {
+      final pending = _installationOperations;
+      await pending;
+      if (identical(pending, _installationOperations)) return;
+    }
+  }
+
+  static Future<void> clearDevicePushState() {
+    final pendingSync = _syncFuture;
+    final previousCleanup = _deviceCleanup;
+    final completed = Completer<void>();
+    _deviceCleanup = completed.future;
     _signingOut = true;
-    _generation++;
+    final generation = ++_generation;
     _retry?.cancel();
     final userId = _client.auth.currentUser?.id;
+    return (() async {
+      try {
+        await previousCleanup;
+        if (!_sameCleanup(userId, generation)) return;
+        await _clearDevicePushState(userId, generation, pendingSync);
+      } finally {
+        completed.complete();
+      }
+    })();
+  }
+
+  static bool _sameCleanup(String? userId, int generation) =>
+      _signingOut &&
+      generation == _generation &&
+      _client.auth.currentUser?.id == userId;
+
+  static Future<void> _clearDevicePushState(
+    String? userId,
+    int generation,
+    Future<void>? pendingSync,
+  ) async {
     final clearingBrowser = kIsWeb
         ? _browser.clearOwner().catchError((_) {})
         : null;
@@ -796,16 +921,20 @@ class FcmNotificationService {
     }
     // Drain in-flight registration before signing out, so it cannot restore a stale binding.
     try {
-      await _syncFuture?.timeout(const Duration(seconds: 12));
+      await pendingSync?.timeout(const Duration(seconds: 12));
     } catch (_) {}
+    if (!_sameCleanup(userId, generation)) return;
     if (kIsWeb) {
       try {
         await clearingBrowser;
       } catch (_) {}
+      if (!_sameCleanup(userId, generation)) return;
       if (userId != null && _client.auth.currentUser?.id == userId) {
         try {
           final prefs = await SharedPreferences.getInstance();
+          if (!_sameCleanup(userId, generation)) return;
           await prefs.setBool('web_push_enabled_$userId', false);
+          if (!_sameCleanup(userId, generation)) return;
           final token = _registeredToken;
           if (token != null) {
             await _client
@@ -816,10 +945,12 @@ class FcmNotificationService {
                 .timeout(_timeout);
           }
         } catch (_) {}
+        if (!_sameCleanup(userId, generation)) return;
         try {
-          await _messaging.deleteToken().timeout(_timeout);
+          await _mutateInstallation(_messaging.deleteToken);
         } catch (_) {}
       }
+      if (!_sameCleanup(userId, generation)) return;
       _registeredToken = null;
       _lastRegistrationSignature = null;
       _lastRegisteredAt = null;
@@ -830,6 +961,7 @@ class FcmNotificationService {
     try {
       final token =
           _registeredToken ?? await _messaging.getToken().timeout(_timeout);
+      if (!_sameCleanup(userId, generation)) return;
       if (userId != null && token != null) {
         await _client
             .from('push_devices')
@@ -841,15 +973,19 @@ class FcmNotificationService {
     } catch (_) {
       AppLogger.debug('[FCM] unregister deferred; token will be invalidated');
     }
+    if (!_sameCleanup(userId, generation)) return;
     try {
-      await _messaging.deleteToken().timeout(_timeout);
+      await _mutateInstallation(_messaging.deleteToken);
     } catch (_) {}
+    if (!_sameCleanup(userId, generation)) return;
     try {
-      await _messaging.setAutoInitEnabled(false);
+      await _mutateInstallation(() => _messaging.setAutoInitEnabled(false));
     } catch (_) {}
+    if (!_sameCleanup(userId, generation)) return;
     try {
       await _localNotifications.cancelAll();
     } catch (_) {}
+    if (!_sameCleanup(userId, generation)) return;
     _registeredToken = null;
     _lastRegistrationSignature = null;
     _lastRegisteredAt = null;

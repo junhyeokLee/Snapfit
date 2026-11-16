@@ -13,6 +13,8 @@ import '../../../profile/data/order_repository.dart';
 import '../../../profile/domain/print_checkout.dart';
 import '../../../profile/presentation/views/order_history_screen.dart';
 import '../../../profile/presentation/views/print_order_request_screen.dart';
+import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 /// Print and shipment milestones are distinct facts from the owned order.
 class PrintOrderCompleteScreen extends ConsumerStatefulWidget {
@@ -93,7 +95,7 @@ class _PrintOrderCompleteScreenState
                   IconButton(
                     onPressed: _loading ? null : _refresh,
                     tooltip: '진행 상황 새로고침',
-                    icon: const Icon(Icons.refresh),
+                    icon: const ExperienceIcon('RefreshCw'),
                   ),
                 ],
               ),
@@ -182,15 +184,11 @@ class _PrintOrderCompleteScreenState
                                 ),
                                 children: [
                                   _confirmation(),
-                                  const SizedBox(height: 24),
-                                  _progressDetails(),
-                                  const SizedBox(height: 24),
-                                  Divider(
-                                    color: ExperienceFormStyle.line(context),
-                                  ),
                                   const SizedBox(height: 16),
                                   _receiptDetails(),
-                                  const SizedBox(height: 24),
+                                  const SizedBox(height: 20),
+                                  _progressDetails(),
+                                  const SizedBox(height: 20),
                                   _actions(),
                                 ],
                               ),
@@ -211,7 +209,7 @@ class _PrintOrderCompleteScreenState
       IconButton(
         onPressed: _loading ? null : _refresh,
         tooltip: '진행 상황 새로고침',
-        icon: const Icon(Icons.refresh, size: 20),
+        icon: const ExperienceIcon('RefreshCw', size: 20),
       ),
     ],
     child: ListView(
@@ -272,24 +270,18 @@ class _PrintOrderCompleteScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (!compact) ...[
-          Icon(
-            canceled ? Icons.cancel_outlined : Icons.check_circle_outline,
-            size: 36,
-            color: ExperienceFormStyle.selectionInk(context),
-          ),
-          const SizedBox(height: 12),
-        ],
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (compact) ...[
-              Icon(
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Icon(
                 canceled ? Icons.cancel_outlined : Icons.check_circle_outline,
-                size: 20,
+                size: compact ? 20 : 24,
                 color: ExperienceFormStyle.selectionInk(context),
               ),
-              const SizedBox(width: 8),
-            ],
+            ),
+            const SizedBox(width: 8),
             Expanded(
               child: Text(
                 compact
@@ -301,8 +293,8 @@ class _PrintOrderCompleteScreenState
                     : '결제가 확인됐어요',
                 style: ExperienceFormStyle.text(
                   context,
-                  compact ? 16 : 24,
-                  weight: compact ? FontWeight.w600 : FontWeight.w700,
+                  compact ? 16 : 20,
+                  weight: FontWeight.w600,
                 ),
               ),
             ),
@@ -313,9 +305,7 @@ class _PrintOrderCompleteScreenState
           Text(
             canceled
                 ? '취소·환불 내역은 주문 내역에서 확인할 수 있어요.'
-                : kIsWeb
-                ? '창을 닫아도 제작사 주문 접수가 이어집니다. 제작과 배송 상황은 주문 내역에서 확인할 수 있어요.'
-                : '앱을 닫아도 제작사 주문 접수가 이어집니다. 제작과 배송 상황은 주문 내역에서 확인할 수 있어요.',
+                : '제작·배송 상황은 주문 내역에서 확인할 수 있어요.',
             style: ExperienceFormStyle.text(context, 13, secondary: true),
           ),
         ],
@@ -329,89 +319,210 @@ class _PrintOrderCompleteScreenState
         progress?.shippedAt != null &&
         (progress?.trackingNumber?.isNotEmpty ?? false) &&
         (progress?.courier?.isNotEmpty ?? false);
+    // 다음 예정은 알려진 진행 상태와 확인된 이력이 있을 때만 안내한다.
+    final next = progress == null || _error != null || progress.requiresAction
+        ? null
+        : switch (progress.customerStage) {
+            'PAID' || 'QUEUED' when progress.vendorAcceptedAt == null =>
+              progress.filesReadyAt == null
+                  ? '인쇄 파일 생성'
+                  : !progress.preflightPassed
+                  ? '인쇄 규격 검사'
+                  : '제작사 주문 접수',
+            'RENDERING' => '인쇄 규격 검사',
+            'FILES_READY' when progress.filesReadyAt != null =>
+              progress.preflightPassed ? '제작사 주문 접수' : '인쇄 규격 검사',
+            'VENDOR_ACCEPTED' ||
+            'FILE_CHECKING' when progress.vendorAcceptedAt != null => '책 제작',
+            'FILE_CHECKED' ||
+            'PRODUCTION_PENDING' when progress.fileCheckedAt != null => '책 제작',
+            'PRODUCTION' || 'IN_PRODUCTION'
+                when progress.productionStartedAt != null =>
+              '택배 출고',
+            'SHIPPING' when shipped => '배송 완료',
+            _ => null,
+          };
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          progress?.label ?? '진행 상황 확인 중',
-          style: ExperienceFormStyle.text(context, 16, weight: FontWeight.w600),
+        Container(
+          key: const ValueKey('print-progress-current'),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: ExperienceFormStyle.selection(context),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: ExperienceFormStyle.line(context)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '현재 상태',
+                style: ExperienceFormStyle.text(context, 12, secondary: true),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                _error != null
+                    ? '진행 상황 다시 확인이 필요해요'
+                    : progress?.label ?? '진행 상황 확인 중',
+                style: ExperienceFormStyle.text(
+                  context,
+                  20,
+                  weight: FontWeight.w700,
+                ),
+              ),
+              if (_loading)
+                const Padding(
+                  padding: EdgeInsets.only(top: 12),
+                  child: LinearProgressIndicator(),
+                ),
+              if (_error != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Text(
+                    _error!,
+                    style: ExperienceFormStyle.text(context, 13),
+                  ),
+                ),
+              if (next != null) ...[
+                const SizedBox(height: 16),
+                Text(
+                  '다음 예정 단계',
+                  style: ExperienceFormStyle.text(context, 12, secondary: true),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  next,
+                  style: ExperienceFormStyle.text(
+                    context,
+                    14,
+                    weight: FontWeight.w600,
+                  ),
+                ),
+              ],
+              if (progress?.requiresAction == true)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Text(
+                    '제작 준비 중 확인이 필요한 부분이 있어 담당자가 확인하고 있습니다. 진행 상황은 주문 내역에서 안내합니다.',
+                    style: ExperienceFormStyle.text(context, 14),
+                  ),
+                ),
+              if (shipped)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Text(
+                    '${progress?.courier} · ${progress?.trackingNumber}',
+                    style: ExperienceFormStyle.text(context, 14),
+                  ),
+                ),
+            ],
+          ),
         ),
-        if (_loading)
-          const Padding(
-            padding: EdgeInsets.only(top: 12),
-            child: LinearProgressIndicator(),
-          ),
-        if (_error != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: Text(_error!, style: ExperienceFormStyle.text(context, 13)),
-          ),
         const SizedBox(height: 12),
-        _stage('결제 확인', true, first: true),
-        _stage('인쇄 파일 생성', progress?.filesReadyAt != null),
-        _stage('인쇄 규격 검사', progress?.preflightPassed == true),
-        _stage('제작사 주문 접수', progress?.vendorAcceptedAt != null),
-        _stage('제작사 파일 확인', progress?.fileCheckedAt != null),
-        _stage('책 제작', progress?.productionStartedAt != null),
-        _stage('택배 출고', shipped),
-        _stage('배송 완료', progress?.customerStage == 'DELIVERED', last: true),
-        if (progress?.requiresAction == true)
-          Padding(
-            padding: const EdgeInsets.only(top: 16),
-            child: Text(
-              '제작 준비 중 확인이 필요한 부분이 있어 담당자가 확인하고 있습니다. 진행 상황은 주문 내역에서 안내합니다.',
-              style: ExperienceFormStyle.text(context, 14),
+        ExpansionTile(
+          key: const PageStorageKey('print-progress-timeline'),
+          initiallyExpanded: false,
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: ExperienceFormStyle.line(context)),
+          ),
+          collapsedShape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: ExperienceFormStyle.line(context)),
+          ),
+          iconColor: ExperienceFormStyle.selectionInk(context),
+          collapsedIconColor: ExperienceFormStyle.muted(context),
+          title: Text(
+            '전체 진행 단계 보기',
+            style: ExperienceFormStyle.text(
+              context,
+              14,
+              weight: FontWeight.w600,
             ),
           ),
-        if (shipped)
-          Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: Text(
-              '${progress?.courier} · ${progress?.trackingNumber}',
-              style: ExperienceFormStyle.text(context, 14),
-            ),
-          ),
+          children: [
+            _stage('결제 확인', true, first: true),
+            _stage('인쇄 파일 생성', progress?.filesReadyAt != null),
+            _stage('인쇄 규격 검사', progress?.preflightPassed == true),
+            _stage('제작사 주문 접수', progress?.vendorAcceptedAt != null),
+            _stage('제작사 파일 확인', progress?.fileCheckedAt != null),
+            _stage('책 제작', progress?.productionStartedAt != null),
+            _stage('택배 출고', shipped),
+            _stage('배송 완료', progress?.customerStage == 'DELIVERED', last: true),
+          ],
+        ),
       ],
     );
   }
 
-  Widget _receiptDetails({bool compact = false}) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        widget.receipt.title,
-        style: ExperienceFormStyle.text(
-          context,
-          compact ? 14 : 18,
-          weight: compact ? FontWeight.w600 : FontWeight.w700,
+  Widget _receiptDetails({bool compact = false}) {
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.receipt.title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: ExperienceFormStyle.text(
+            context,
+            compact ? 14 : 16,
+            weight: FontWeight.w600,
+          ),
         ),
+        const SizedBox(height: 12),
+        Column(
+          key: const ValueKey('print-receipt-amount'),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '결제 확인 금액',
+              style: ExperienceFormStyle.text(context, 12, secondary: true),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '${_won(widget.receipt.amount)}원',
+              style: ExperienceFormStyle.text(
+                context,
+                compact ? 20 : 24,
+                weight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        Text(
+          '주문번호',
+          style: ExperienceFormStyle.text(context, 12, secondary: true),
+        ),
+        const SizedBox(height: 4),
+        SelectableText(
+          widget.receipt.orderId,
+          style: ExperienceFormStyle.text(context, 13),
+        ),
+      ],
+    );
+    if (kIsWeb) return content;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: ExperienceFormStyle.surface(context),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ExperienceFormStyle.line(context)),
       ),
-      const SizedBox(height: 8),
-      Text(
-        '결제금액 ${_won(widget.receipt.amount)}원',
-        style: ExperienceFormStyle.text(context, 16),
-      ),
-      const SizedBox(height: 12),
-      Text(
-        '주문번호',
-        style: ExperienceFormStyle.text(context, 12, secondary: true),
-      ),
-      SelectableText(
-        widget.receipt.orderId,
-        style: ExperienceFormStyle.text(context, 13),
-      ),
-    ],
-  );
+      child: content,
+    );
+  }
 
   Widget _actions({bool wide = false}) {
     final orderHistory = FilledButton(
       style: ExperienceFormStyle.primary(context),
       onPressed: () => Navigator.pushReplacement<void, void>(
         context,
-        MaterialPageRoute(
-          builder: (_) =>
-              OrderHistoryScreen(initialOrderId: widget.receipt.orderId),
-        ),
+        snapFitRoute(page: OrderHistoryScreen(initialOrderId: widget.receipt.orderId)),
       ),
       child: const Text('주문 내역 확인하기'),
     );
@@ -454,7 +565,7 @@ class _PrintOrderCompleteScreenState
             );
             if (mounted) _refresh();
           },
-          icon: const Icon(Icons.chat_bubble_outline),
+          icon: const ExperienceIcon('MessageCircle'),
           label: const Text('주문 문의 · 취소 · 환불 요청'),
         ),
       ],

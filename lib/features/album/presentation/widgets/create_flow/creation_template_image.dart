@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/utils/image_url_policy.dart';
 import '../../../../../shared/snapfit_image.dart';
 import '../../../../../shared/widgets/catalog_cover_skeleton.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 class CreationTemplateImage extends StatelessWidget {
   const CreationTemplateImage({
@@ -19,7 +20,7 @@ class CreationTemplateImage extends StatelessWidget {
 
   Widget _buildImage(BuildContext context, BoxConstraints bounds) {
     const fallback = Center(
-      child: Icon(Icons.photo_album_outlined, color: Color(0xFF7C8C88)),
+      child: ExperienceIcon('Bookmark', color: Color(0xFF7C8C88)),
     );
     final pixels = bounds.hasBoundedWidth
         ? bounds.maxWidth * MediaQuery.devicePixelRatioOf(context)

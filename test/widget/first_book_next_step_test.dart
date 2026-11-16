@@ -12,6 +12,8 @@ import 'package:snap_fit/features/moments/domain/moment_draft.dart';
 import 'package:snap_fit/features/moments/presentation/providers/moments_providers.dart';
 import 'package:snap_fit/features/moments/presentation/widgets/first_book_next_step_card.dart';
 import 'package:snap_fit/features/moments/presentation/widgets/moment_draft_recovery_card.dart';
+import 'package:snap_fit/features/album/presentation/widgets/home/album_next_page_preview.dart';
+import 'package:snap_fit/features/album/presentation/widgets/reader/album_reader_page_content.dart';
 
 import '../helpers/memory_moment_draft_store.dart';
 import '../helpers/moment_draft_fixtures.dart';
@@ -100,6 +102,56 @@ void main() {
       await loadMomentCaptureFonts();
     }
   });
+  testWidgets(
+    'idle home uses the daily record entry without a second album-start card',
+    (tester) async {
+      await _mount(
+        tester,
+        FirstBookNextStepCard(
+          ownerId: 'owner-a',
+          albums: const [],
+          onMoments: () {},
+          onDraft: (_) {},
+          onContinueAlbum: (_) {},
+          idleContent: const Text('사진 한 장과 한 줄로, 하루씩 쌓는 나의 기록'),
+          activeFooter: const Text('복구 아래 기록 진입'),
+        ),
+      );
+      expect(find.text('사진 한 장과 한 줄로, 하루씩 쌓는 나의 기록'), findsOneWidget);
+      expect(find.byKey(const ValueKey('first-book-next-step')), findsNothing);
+      expect(find.text('복구 아래 기록 진입'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'unfinished album recovery and the labelled journal action remain separate',
+    (tester) async {
+      String? destination;
+      await _mount(
+        tester,
+        FirstBookNextStepCard(
+          ownerId: 'owner-a',
+          albums: [_book()],
+          onMoments: () => destination = 'moments',
+          onDraft: (_) {},
+          onContinueAlbum: (_) => destination = 'album',
+          idleContent: const Text('빈 앨범용 기록 진입'),
+          activeFooter: TextButton(
+            onPressed: () => destination = 'moments',
+            child: const Text('오늘의 한 장 · 나의 기록'),
+          ),
+        ),
+      );
+      expect(find.text('이번엔 1쪽만 완성해요.'), findsOneWidget);
+      expect(find.text('빈 앨범용 기록 진입'), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('first-book-next-step')));
+      expect(destination, 'album');
+      await tester.tap(find.text('오늘의 한 장 · 나의 기록'));
+      expect(destination, 'moments');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('local record recovery wins over creation and saved album', (
     tester,
   ) async {
@@ -143,7 +195,7 @@ void main() {
           onContinueAlbum: (album) => destination = album,
         ),
       );
-      expect(find.text('남은 1쪽부터 이어 만들어요.'), findsOneWidget);
+      expect(find.text('이번엔 1쪽만 완성해요.'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('first-book-next-step')));
       expect(destination, same(own));
     },
@@ -170,11 +222,83 @@ void main() {
         onContinueAlbum: (album) => destination = album,
       ),
     );
-    expect(find.text('마저 만들던 여행'), findsOneWidget);
-    expect(find.text('남은 1쪽부터 이어 만들어요.'), findsOneWidget);
+    expect(find.textContaining('마저 만들던 여행'), findsOneWidget);
+    expect(find.text('이번엔 1쪽만 완성해요.'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('first-book-next-step')));
     expect(destination, same(older));
   });
+
+  testWidgets(
+    'the one-page card uses the actual unfinished page and remaining photo slots',
+    (tester) async {
+      final book = _book().copyWith(
+        ratio: '1.3333333333333333',
+        targetPages: 2,
+        coverLayersJson: jsonEncode({
+          'pages': [
+            {'index': 0, 'isCover': true, 'layers': []},
+            {
+              'index': 1,
+              'isCover': false,
+              'layers': [
+                {
+                  'id': 'finished-note',
+                  'type': 'TEXT',
+                  'templateContent': false,
+                  'payload': {'text': '내가 남긴 첫 쪽'},
+                },
+              ],
+            },
+            {
+              'index': 2,
+              'isCover': false,
+              'backgroundColor': 0xFFF1EEE8,
+              'layers': [
+                for (final id in ['photo-left', 'photo-right'])
+                  {
+                    'id': id,
+                    'type': 'IMAGE',
+                    'templateContent': true,
+                    'x': 0.1,
+                    'y': 0.1,
+                    'width': 0.35,
+                    'height': 0.6,
+                    'rotation': 0,
+                    'payload': {},
+                  },
+              ],
+            },
+          ],
+        }),
+      );
+      await _mount(
+        tester,
+        FirstBookNextStepCard(
+          ownerId: 'owner-a',
+          albums: [book],
+          onMoments: () {},
+          onDraft: (_) {},
+          onContinueAlbum: (_) {},
+        ),
+      );
+      expect(find.text('이번엔 2쪽만 완성해요.'), findsOneWidget);
+      expect(find.textContaining('사진 2칸을 채우면 돼요.'), findsOneWidget);
+      expect(find.byType(AlbumNextPagePreview), findsOneWidget);
+      final preview = tester.widget<AlbumReaderPageContent>(
+        find.descendant(
+          of: find.byType(AlbumNextPagePreview),
+          matching: find.byType(AlbumReaderPageContent),
+        ),
+      );
+      expect(preview.layers.map((layer) => layer.id), [
+        'photo-left',
+        'photo-right',
+      ]);
+      expect(preview.baseCanvasSize.aspectRatio, closeTo(4 / 3, .0001));
+      expect(preview.flatPresentation, isTrue);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'completed book returns to the moments flow without claiming an unfinished page',

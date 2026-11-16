@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../core/utils/context_extensions.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../../../core/navigation/web_app_location.dart';
 import '../../viewmodels/album_editor_view_model.dart';
@@ -19,7 +20,6 @@ import 'home_album_paper_open_overlay.dart';
 import 'album_open_origin.dart';
 import '../../../data/api/album_provider.dart';
 import '../../../service/album_collaboration_session.dart';
-import '../../../../../core/utils/context_extensions.dart';
 import '../../../../../shared/widgets/snapfit_motion.dart';
 import '../../../../social/presentation/views/social_publish_screen.dart';
 
@@ -55,12 +55,9 @@ class HomeAlbumActions {
           ref.read(albumCollaborationActorProvider) != actor)
         return;
       await Navigator.of(context).push<void>(
-        MaterialPageRoute<void>(
-          settings: WebAppRouteSettings(
+        snapFitRoute<void>(page: SocialPublishScreen(album: saved), settings: WebAppRouteSettings(
             WebAppLocation(WebAppPage.socialPublish, '${saved.id}'),
-          ),
-          builder: (_) => SocialPublishScreen(album: saved),
-        ),
+          )),
       );
     } catch (_) {
       if (context.mounted &&
@@ -77,7 +74,12 @@ class HomeAlbumActions {
     dynamic album, {
     bool startWithPages = false,
     bool startAtFirstIncompletePage = false,
+    bool onePageGoal = false,
+    bool returnToPreviousOnSave = false,
+    bool Function()? canContinue,
+    VoidCallback? onEditorClosed,
   }) async {
+    if (!context.mounted || canContinue?.call() == false) return;
     final actor = ref.read(albumCollaborationActorProvider);
     if (album is Album && !album.allowsEditing) {
       context.showSnack('보기 전용 앨범이에요. 편집 권한을 요청해 주세요.');
@@ -92,7 +94,8 @@ class HomeAlbumActions {
     bool current() =>
         context.mounted &&
         preparation == _editPreparationRevision &&
-        ref.read(albumCollaborationActorProvider) == actor;
+        ref.read(albumCollaborationActorProvider) == actor &&
+        canContinue?.call() != false;
     void accountChanged(String? next) {
       if (next == actor || preparation != _editPreparationRevision) return;
       _editPreparationRevision++;
@@ -169,28 +172,45 @@ class HomeAlbumActions {
       // or a monthly-photo append may have changed which page needs attention.
       final pages = vm.pages;
       final firstInterior = pages.indexWhere((page) => !page.isCover);
+      final incompletePage = firstIncompleteAlbumPageIndex(pages);
+      if (onePageGoal && incompletePage == null) {
+        ref.invalidate(homeViewModelProvider);
+        context.showSnack('이 앨범의 내지는 이미 완성됐어요.');
+        return;
+      }
       final initialPage = startAtFirstIncompletePage
-          ? firstIncompleteAlbumPageIndex(pages) ??
-                (firstInterior >= 0 ? firstInterior : 0)
+          ? incompletePage ?? (firstInterior >= 0 ? firstInterior : 0)
           : 0;
-      Navigator.push(
+      final editing = Navigator.push(
         context,
-        MaterialPageRoute(
-          settings: albumId != null && albumId > 0
+        snapFitRoute(page: startWithPages || startAtFirstIncompletePage
+              ? PageEditorScreen(
+                  initialPageIndex: initialPage,
+                  onePageGoal: onePageGoal,
+                  returnToPreviousOnSave: returnToPreviousOnSave,
+                  initialSelectedLayerId: onePageGoal
+                      ? preparedAlbumPageProgress(
+                          pages[initialPage],
+                        ).firstUnfilledPhotoId
+                      : null,
+                )
+              : AddCoverScreen(editAlbum: album), settings: albumId != null && albumId > 0
               ? WebAppRouteSettings(
                   WebAppLocation(WebAppPage.editor, '$albumId'),
                 )
-              : null,
-          builder: (_) => startWithPages || startAtFirstIncompletePage
-              ? PageEditorScreen(initialPageIndex: initialPage)
-              : AddCoverScreen(editAlbum: album),
-        ),
+              : null),
       );
+      if (onEditorClosed != null) {
+        // The preparation lock ends now; refresh the caller only after editing.
+        unawaited(
+          editing.then((_) {
+            if (context.mounted) onEditorClosed();
+          }),
+        );
+      }
     } catch (e) {
       if (current()) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('앨범 편집을 열 수 없습니다: $e')));
+        context.showErrorSnack('앨범 편집을 열 수 없습니다: $e');
       }
     } finally {
       accountChanges.close();
@@ -232,9 +252,7 @@ class HomeAlbumActions {
     } catch (e) {
       if (context.mounted &&
           ref.read(albumCollaborationActorProvider) == actor) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('삭제 실패: $e')));
+        context.showErrorSnack('삭제 실패: $e');
       }
     }
   }
@@ -317,11 +335,7 @@ class HomeAlbumActions {
         final routeResult = Navigator.push<Object?>(
           context,
           kIsWeb
-              ? MaterialPageRoute<Object?>(
-                  settings: readerSettings,
-                  builder: (_) =>
-                      AlbumReaderScreen(initialSpreadIndex: initialSpreadIndex),
-                )
+              ? snapFitRoute<Object?>(page: AlbumReaderScreen(initialSpreadIndex: initialSpreadIndex), settings: readerSettings)
               : openOverlay == null
               ? snapFitAlbumOpenRoute<Object?>(
                   settings: readerSettings,

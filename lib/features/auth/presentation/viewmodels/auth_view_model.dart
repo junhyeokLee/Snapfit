@@ -36,45 +36,163 @@ final authUserIdProvider = FutureProvider<String?>((ref) async {
 /// 홈 상단 로그인 상태 표시용
 final authViewModelProvider = AsyncNotifierProvider<AuthViewModel, UserInfo?>(
   AuthViewModel.new,
+  // A bounded account check must expose its retry UI after one deadline.
+  // Riverpod's automatic build retries would keep that failure loading.
+  retry: (_, _) => null,
+);
+
+/// Bounds both browser session verification and platform storage reads.
+final authStateLoadTimeoutProvider = Provider<Duration>(
+  (ref) => const Duration(seconds: 25),
 );
 
 class AuthViewModel extends AsyncNotifier<UserInfo?> {
   Future<void>? _googleInitializeFuture;
   int _sessionSyncRevision = 0;
+  Future<void>? _sessionSyncFuture;
+  ({bool sdk, String? token})? _sessionSyncKey;
+  Completer<UserInfo?>? _initialUser;
+
+  String? get _sdkOwner {
+    try {
+      return ref.read(supabaseClientProvider).auth.currentUser?.id;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String? get _sdkToken {
+    try {
+      return ref.read(supabaseClientProvider).auth.currentSession?.accessToken;
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
-  FutureOr<UserInfo?> build() async {
-    ref.onDispose(() => _sessionSyncRevision++);
-    if (kIsWeb) {
-      return (await ref.read(authServiceProvider).synchronizeSupabaseSession())
-          ?.user;
-    }
-    return ref.read(tokenStorageProvider).getUserInfo();
-  }
-
-  Future<void> refresh() async {
-    if (kIsWeb) return synchronizeSupabaseSession();
-    state = const AsyncLoading();
-    state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
-  }
-
-  /// Called after Supabase has exchanged/restored its OAuth session. Never
-  /// derives a signed-in profile from the browser URL or cached token claims.
-  Future<void> synchronizeSupabaseSession() async {
-    final revision = ++_sessionSyncRevision;
-    state = const AsyncLoading();
+  FutureOr<UserInfo?> build() {
+    final initial = Completer<UserInfo?>();
+    _initialUser = initial;
+    StreamSubscription<AuthState>? subscription;
     try {
-      final auth = await ref
-          .read(authServiceProvider)
-          .synchronizeSupabaseSession();
-      if (!ref.mounted || revision != _sessionSyncRevision) return;
-      state = AsyncData(auth?.user);
-      ref.invalidate(authUserIdProvider);
-      if (auth != null) await syncConsentIfPresent();
-    } catch (error, stack) {
-      if (!ref.mounted || revision != _sessionSyncRevision) return;
-      state = AsyncError(error, stack);
+      final client = ref.read(supabaseClientProvider);
+      var observedOwner = client.auth.currentUser?.id;
+      subscription = client.auth.onAuthStateChange.listen((event) {
+        final next = event.session?.user.id;
+        if (next == observedOwner)
+          return; // token refresh is not an account swap.
+        observedOwner = next;
+        final revision = ++_sessionSyncRevision;
+        _sessionSyncFuture = null;
+        _sessionSyncKey = null;
+        // Invalidate immediately, before a rapid A → B → A can be coalesced.
+        if (initial.isCompleted) state = const AsyncLoading();
+        scheduleMicrotask(() {
+          if (ref.mounted && revision == _sessionSyncRevision) {
+            unawaited(_loadSession(fromSdk: kIsWeb));
+          }
+        });
+      }, onError: (Object _, StackTrace __) {});
+    } catch (_) {
+      // A fixture without an SDK session cannot gain private account data.
     }
+    ref.onDispose(() {
+      unawaited(subscription?.cancel());
+      _sessionSyncRevision++;
+      _sessionSyncFuture = null;
+      _sessionSyncKey = null;
+      if (!initial.isCompleted) initial.complete(null);
+    });
+    // Only the newest session operation resolves build's future. Otherwise a
+    // delayed initial A response could overwrite a newer signed-out/B state.
+    unawaited(_loadSession(fromSdk: kIsWeb, initial: true));
+    return initial.future;
+  }
+
+  Future<void> refresh() => _loadSession(fromSdk: kIsWeb);
+
+  /// Called after the SDK exchanges/restores its session. Matching validated
+  /// accounts remain mounted while background verification is in progress.
+  Future<void> synchronizeSupabaseSession() => _loadSession(fromSdk: true);
+
+  Future<void> _loadSession({required bool fromSdk, bool initial = false}) {
+    final key = (sdk: fromSdk, token: _sdkToken);
+    final pending = _sessionSyncFuture;
+    if (pending != null && _sessionSyncKey == key) return pending;
+    final revision = ++_sessionSyncRevision;
+    final owner = _sdkOwner;
+    final previous = initial ? null : state.asData?.value;
+    final retain = previous != null && previous.id == owner;
+    if (!initial && !retain) state = const AsyncLoading();
+    final timeout = ref.read(authStateLoadTimeoutProvider);
+    final initialUser = _initialUser;
+
+    bool current() => ref.mounted && revision == _sessionSyncRevision;
+    void data(UserInfo? user) {
+      if (initialUser != null && !initialUser.isCompleted) {
+        initialUser.complete(user);
+      } else {
+        state = AsyncData(user);
+      }
+    }
+
+    late final Future<void> request;
+    request =
+        () async {
+          try {
+            final user =
+                await (fromSdk
+                        ? ref
+                              .read(authServiceProvider)
+                              .synchronizeSupabaseSession()
+                              .then((auth) => auth?.user)
+                        : ref.read(tokenStorageProvider).getUserInfo())
+                    .timeout(timeout);
+            if (!current()) return;
+            if (owner != _sdkOwner) {
+              data(null);
+              return;
+            }
+            // Native secure storage is not an authenticated SDK session by itself.
+            data(user?.id == owner ? user : null);
+            ref.invalidate(authUserIdProvider);
+            if (fromSdk && user != null) {
+              // Consent sync must not hold navigation or the login state hostage.
+              unawaited(
+                syncConsentIfPresent()
+                    .timeout(timeout)
+                    .catchError((Object _) {}),
+              );
+            }
+          } catch (error, stack) {
+            if (!current()) return;
+            if (owner != _sdkOwner) {
+              data(null);
+              return;
+            }
+            final transient =
+                error is TimeoutException ||
+                error is AuthRetryableFetchException ||
+                error is SocketException;
+            if (retain &&
+                transient &&
+                previous != null &&
+                previous.id == _sdkOwner) {
+              data(previous);
+            } else if (initialUser != null && !initialUser.isCompleted) {
+              initialUser.completeError(error, stack);
+            } else {
+              state = AsyncError(error, stack);
+            }
+          }
+        }().whenComplete(() {
+          if (identical(_sessionSyncFuture, request)) {
+            _sessionSyncFuture = null;
+            _sessionSyncKey = null;
+          }
+        });
+    _sessionSyncKey = key;
+    return _sessionSyncFuture = request;
   }
 
   /// Web photo pickers provide bytes rather than a dart:io File.
@@ -271,6 +389,8 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
 
   Future<void> logout() async {
     _sessionSyncRevision++;
+    final initial = _initialUser;
+    if (initial != null && !initial.isCompleted) initial.complete(null);
     state = const AsyncData(null);
     unawaited(ref.read(authServiceProvider).logout());
   }
@@ -409,6 +529,13 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
   }
 
   Future<void> syncConsentIfPresent() async {
-    await ref.read(authServiceProvider).syncConsentIfPresent();
+    // Legal consent is retained locally and retried on the next login. A
+    // bookkeeping outage must not keep an already authenticated route loading.
+    try {
+      await ref
+          .read(authServiceProvider)
+          .syncConsentIfPresent()
+          .timeout(ref.read(authStateLoadTimeoutProvider));
+    } catch (_) {}
   }
 }

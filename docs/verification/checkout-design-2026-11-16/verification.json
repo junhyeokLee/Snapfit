@@ -1,0 +1,84 @@
+{
+  "recordedAt": "2026-11-15T17:46:30.845908+00:00",
+  "scope": "Local Flutter checkout/completion presentation; no live payment, order, refund or deployment",
+  "productTests": 140,
+  "captureTests": 9,
+  "captureImages": 15,
+  "suites": {
+    "checkout": {
+      "passed": 35,
+      "failed": 0,
+      "skipped": 0
+    },
+    "complete": {
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0
+    },
+    "consent": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
+    "printservice": {
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0
+    },
+    "responsive": {
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0
+    },
+    "journey": {
+      "passed": 46,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_checkout": {
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_complete": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "analyzer": "No issues found!",
+  "diffCheckExit": 0,
+  "sourceSha256": {
+    "lib/features/album/presentation/views/print_order_checkout_screen.dart": "f6f05a991b91d3e06e6e3732f9554bd0c7256ba4c923fb4ebada3a9bce694683",
+    "lib/features/album/presentation/views/print_order_complete_screen.dart": "9e9ac16e3ab17059236e6b55b5cefb188d880ccf376355cc0b40f5ec2d5d5af5",
+    "test/widget/print_order_checkout_test.dart": "ba225944af0a7663c77f7d6b01a5acecacfa604dc861df3faf1fc7c284fee23a",
+    "test/widget/print_order_complete_test.dart": "f9313233020526c07ab085e4a4ed595988495f001922c81f59bd905b5e7f8505",
+    "test/widget/print_journey_responsive_test.dart": "425f75abcf70c79a94a72368701b2755c63558e1c2289375447678ae55f651bf"
+  },
+  "imageSha256": {
+    "06-checkout-consents-320-dark-text160.png": "3d1a2454e196e18b964a9255198e549abfb5f834691557e75004dddc645c6a6b",
+    "04-checkout-custom-consent-expanded-390-light.png": "91a8a82fa54d24ae1c1e8e0b4b08a5340bcb58278535bead06e76625993d1163",
+    "01-checkout-delivery-390-light.png": "9938583d680bedf5cbff57491c9d2dde53249a25615d8426876bd2135a0c3425",
+    "11-complete-expanded-timeline-390-light.png": "6b75ff2d948b6b19ff9efd3604757d6567d2854406fd1e63c67220c1243267c8",
+    "12-complete-review-required-390-light.png": "f0c4b27fdf76f9570c08dfb0319f99baa170d59565eb0b0511628ed67b9b0f43",
+    "10-complete-current-next-collapsed-390-light.png": "2fcfaba2d541351b97dda1e27788af4998cc96d2987e58c494eea862eddd7b5d",
+    "09-complete-file-checking-top-390-light.png": "2fcfaba2d541351b97dda1e27788af4998cc96d2987e58c494eea862eddd7b5d",
+    "05-checkout-review-320-dark-text160.png": "fb22a0d2305ee92fbe98109f57ed880ea4bee7f0b32d384228721f7b5d42ba9c",
+    "14-complete-paid-current-320-dark-text160.png": "aaa62e424d3f267da91cac3fa217237a3c93e0f51c5289dc000cdf80106aab08",
+    "13-complete-paid-top-320-dark-text160.png": "58862ed451046b0cd06c4b1fe0db679a5e124fee8ef6261555e62389805e291b",
+    "07-checkout-consents-bottom-320-dark-text160.png": "484b077ad3ccd8a8ef11d54c082cc5df5cae8c2c1432155a8d013e3ec2fd1cbd",
+    "08-checkout-summary-844-landscape-text180.png": "53d847e8787d1dbc730af311f5b7b13376a2ba5fbee898ae4d0c1cff4656ae86",
+    "02-checkout-review-top-390-light.png": "668a63473911e65706d3c6d7c9265bbf133074f40e79778a8e9dc0a5527e26e1",
+    "15-complete-file-checking-844-dark-text180.png": "e63d23466c476c3652a4b59fda5a8b771bbd46f9fff013f6e5fd966e9cfe6c44",
+    "03-checkout-three-consents-390-light.png": "9cee16d33f0941ceda0128dd1ce34e1d8356f41ea6d81f5a9d38e61d98285aaf"
+  },
+  "review": "Independent read-only review of both presentation files; no blocking finding after domain-label and storage-key checks",
+  "limitations": [
+    "Native headless Flutter widget rendering with bundled fonts and synthetic owner/order fixtures",
+    "No physical Android/iOS device, browser payment SDK, live charge, refund, fulfillment or deployment performed"
+  ],
+  "proofImageSha256": {
+    "디자인_개선_화면.png": "4852d554f9b94f1cae2d60a32f6796c6a583bd37d537a0a07536fce66cd6eaf3",
+    "전체_화면_검토.png": "9fee8334c29520e1c53c6cac524633d4dc77390a1ed042be1c43ee5db45fe0e0"
+  }
+}

@@ -189,15 +189,15 @@ Widget? _buildStickerDecoration(LayerModel layer) {
     );
   }
   if (layer.imageBackground == 'stickerHeartRed') {
-    return const FittedBox(
-      fit: BoxFit.contain,
-      child: Text('❤', style: TextStyle(color: Color(0xFFD74A4A))),
+    return CustomPaint(
+      size: Size(layer.width, layer.height),
+      painter: const _HeartStickerPainter(color: Color(0xFFD74A4A)),
     );
   }
   if (layer.imageBackground == 'stickerLeafGreen') {
-    return const FittedBox(
-      fit: BoxFit.contain,
-      child: Text('❧', style: TextStyle(color: Color(0xFF6FA05A))),
+    return CustomPaint(
+      size: Size(layer.width, layer.height),
+      painter: const _LeafStickerPainter(color: Color(0xFF6FA05A)),
     );
   }
   if (layer.imageBackground == 'stickerSparkleBlue') {
@@ -289,12 +289,9 @@ Widget? _buildStickerDecoration(LayerModel layer) {
     );
   }
   if (layer.imageBackground == 'stickerCloverGreen') {
-    return const FittedBox(
-      fit: BoxFit.contain,
-      child: Text(
-        '☘',
-        style: TextStyle(color: Color(0xFF4C8F4E), fontSize: 44),
-      ),
+    return CustomPaint(
+      size: Size(layer.width, layer.height),
+      painter: const _CloverStickerPainter(color: Color(0xFF4C8F4E)),
     );
   }
   if (layer.imageBackground == 'stickerInstantCamera') {

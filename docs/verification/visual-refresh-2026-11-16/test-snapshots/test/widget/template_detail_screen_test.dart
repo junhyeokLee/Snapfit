@@ -1,0 +1,442 @@
+import '../support/store_detail_loading.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:network_image_mock/network_image_mock.dart';
+import 'package:snap_fit/features/store/data/api/template_provider.dart';
+import 'package:snap_fit/features/store/domain/entities/premium_template.dart';
+import 'package:snap_fit/features/store/presentation/views/template_detail_screen.dart';
+import 'package:snap_fit/features/point_shop/data/point_shop_provider.dart';
+import 'package:snap_fit/features/point_shop/domain/point_shop_product.dart';
+
+import '../helpers/mock_repositories.dart';
+
+Widget _wrap(Widget child) {
+  return ProviderScope(
+    overrides: [
+      pointShopCatalogProvider.overrideWith(
+        (_) async => [
+          const PointShopProduct(
+            productKey: 'template:server-2000',
+            kind: 'template',
+            assetId: 'server-2000',
+            title: '검수용 무료 템플릿',
+            pointPrice: 0,
+            isActive: true,
+          ),
+        ],
+      ),
+      ownedPointShopKeysProvider.overrideWith((_) async => <String>{}),
+    ],
+    child: ScreenUtilInit(
+      designSize: const Size(390, 844),
+      minTextAdapt: true,
+      builder: (_, __) => MaterialApp(home: child),
+    ),
+  );
+}
+
+// 추천 카드에도 쪽수가 있으므로 상세의 페이지 분량 지표만 검사한다.
+Finder _pageCountMetric(String value) => find.descendant(
+  of: find
+      .ancestor(of: find.text('페이지 분량'), matching: find.byType(Column))
+      .first,
+  matching: find.text(value),
+);
+
+PremiumTemplate _template({
+  int likeCount = 1,
+  bool isLiked = false,
+  int pageCount = 2,
+  String title = 'Template A',
+  String? subTitle,
+  String? category,
+  List<String>? tags,
+}) {
+  return PremiumTemplate(
+    id: 2000,
+    title: title,
+    subTitle: subTitle,
+    coverImageUrl: 'https://example.com/cover.png',
+    previewImages: const [],
+    pageCount: pageCount,
+    userCount: 1,
+    category: category,
+    tags: tags,
+    isPremium: false,
+    likeCount: likeCount,
+    isLiked: isLiked,
+    templateJson: '''
+    {
+      "pages": [
+        { "layers": [ { "id": "c1", "type": "TEXT", "x": 0.1, "y": 0.1, "width": 0.5, "height": 0.2, "rotation": 0.0, "opacity": 1.0, "scale": 1.0, "payload": { "text": "hi" } } ] },
+        { "layers": [ { "id": "p1", "type": "IMAGE", "x": 0.2, "y": 0.2, "width": 0.5, "height": 0.5, "rotation": 0.0, "opacity": 1.0, "scale": 1.0, "payload": { "imageUrl": "x" } } ] }
+      ]
+    }
+    ''',
+  );
+}
+
+void main() {
+  storeDetailTestWidgets('template detail loads repository-backed template', (
+    tester,
+  ) async {
+    final mockRepo = MockTemplateRepository();
+    final template = _template();
+    final likedTemplate = _template(likeCount: 2, isLiked: true);
+    var getTemplateCallCount = 0;
+
+    when(() => mockRepo.getTemplate(2000)).thenAnswer((invocation) async {
+      getTemplateCallCount++;
+      return getTemplateCallCount >= 2 ? likedTemplate : template;
+    });
+    when(() => mockRepo.likeTemplate(2000)).thenAnswer((_) async {});
+
+    await mockNetworkImagesFor(() async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [templateRepositoryProvider.overrideWithValue(mockRepo)],
+          child: _wrap(TemplateDetailScreen(template: template)),
+        ),
+      );
+
+      await tester.pump();
+      await settleStoreDetail(tester);
+
+      expect(find.byType(TemplateDetailScreen), findsOneWidget);
+    });
+  });
+
+  storeDetailTestWidgets('template detail renders use flow entry state', (
+    tester,
+  ) async {
+    final mockRepo = MockTemplateRepository();
+    final template = _template();
+
+    stubGetTemplates(mockRepo, [template]);
+
+    await mockNetworkImagesFor(() async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [templateRepositoryProvider.overrideWithValue(mockRepo)],
+          child: _wrap(TemplateDetailScreen(template: template)),
+        ),
+      );
+
+      await tester.pump();
+      await settleStoreDetail(tester);
+
+      expect(find.byType(TemplateDetailScreen), findsOneWidget);
+    });
+  });
+
+  storeDetailTestWidgets(
+    'template detail exposes real artwork and purchase terms',
+    (tester) async {
+      final mockRepo = MockTemplateRepository();
+      final template = _template(
+        title: '여행의 장면',
+        subTitle: '여행 사진을 한 권의 룩북처럼 정리해요.',
+        pageCount: 24,
+        category: '여행',
+        tags: const ['여행', '제주', '감성', '프리미엄'],
+      );
+
+      stubGetTemplates(mockRepo, [template]);
+
+      await mockNetworkImagesFor(() async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [templateRepositoryProvider.overrideWithValue(mockRepo)],
+            child: _wrap(TemplateDetailScreen(template: template)),
+          ),
+        );
+
+        await tester.pump();
+        await settleStoreDetail(tester);
+
+        expect(
+          find.byKey(const ValueKey('template-detail-stage')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('template-spread-pager')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('template-spread-list')),
+          findsOneWidget,
+        );
+        await tester.ensureVisible(
+          find.byKey(const ValueKey('template-gallery-information')),
+        );
+        await tester.tap(find.text('디자인 구성 · 사진과 글'));
+        await settleStoreDetail(tester);
+        expect(
+          find.byKey(const ValueKey('template-purchase-overview')),
+          findsOneWidget,
+        );
+        expect(find.text('내 사진으로 만드는 앨범'), findsOneWidget);
+        expect(_pageCountMetric('24쪽'), findsOneWidget);
+        expect(find.text('이 디자인으로 시작'), findsOneWidget);
+        expect(find.text('여행 컬렉션'), findsOneWidget);
+        expect(find.text('프리미엄'), findsNothing);
+      });
+    },
+  );
+
+  storeDetailTestWidgets(
+    'template detail keeps artwork title and CTA visible while full metadata scrolls',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final mockRepo = MockTemplateRepository();
+      final template = _template(
+        title: '여행의 장면',
+        subTitle: '여행 사진을 한 권의 룩북처럼 정리해요.',
+        pageCount: 24,
+        category: '여행',
+        tags: const ['여행', '제주', '감성'],
+      );
+      stubGetTemplates(mockRepo, [template]);
+
+      await mockNetworkImagesFor(() async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [templateRepositoryProvider.overrideWithValue(mockRepo)],
+            child: _wrap(TemplateDetailScreen(template: template)),
+          ),
+        );
+
+        await tester.pump();
+        await settleStoreDetail(tester);
+
+        final titleRect = tester.getRect(find.text('여행의 장면').first);
+        final heroMetaRect = tester.getRect(_pageCountMetric('24쪽'));
+        final ctaRect = tester.getRect(
+          find.byKey(const ValueKey('template-detail-use')),
+        );
+
+        final stageRect = tester.getRect(
+          find.byKey(const ValueKey('template-detail-stage')),
+        );
+        expect(titleRect.top, greaterThanOrEqualTo(stageRect.bottom));
+        expect(titleRect.bottom, lessThan(heroMetaRect.top));
+        expect(titleRect.bottom, lessThan(ctaRect.top));
+        expect(ctaRect.bottom, lessThanOrEqualTo(844));
+        expect(ctaRect.top, greaterThan(700));
+        await tester.ensureVisible(_pageCountMetric('24쪽'));
+        await settleStoreDetail(tester);
+        expect(_pageCountMetric('24쪽').hitTestable(), findsOneWidget);
+        expect(
+          tester.getRect(find.byKey(const ValueKey('template-detail-use'))),
+          ctaRect,
+        );
+      });
+    },
+  );
+
+  storeDetailTestWidgets(
+    'template detail handles long Korean title category and tags',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final mockRepo = MockTemplateRepository();
+      final template = _template(
+        title: '제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿',
+        subTitle: '부모님과 아이들의 긴 여행 사진을 감성적인 한 권의 룩북처럼 정리해요.',
+        pageCount: 24,
+        category: '가족여행프리미엄에디토리얼',
+        tags: const ['가족여행프리미엄', '제주감성스냅', '여름방학기록', '긴태그숨김'],
+      );
+      stubGetTemplates(mockRepo, [template]);
+
+      await mockNetworkImagesFor(() async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [templateRepositoryProvider.overrideWithValue(mockRepo)],
+            child: _wrap(TemplateDetailScreen(template: template)),
+          ),
+        );
+
+        await tester.pump();
+        await settleStoreDetail(tester);
+
+        expect(tester.takeException(), isNull);
+        expect(find.text('제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿'), findsOneWidget);
+        expect(find.text('가족여행프리미엄에디토리얼 컬렉션'), findsOneWidget);
+        expect(find.text('가족여행프리미엄'), findsNothing);
+        expect(find.text('제주감성스냅'), findsNothing);
+        expect(find.text('여름방학기록'), findsNothing);
+        expect(find.text('긴태그숨김'), findsNothing);
+
+        final titleRect = tester.getRect(
+          find.text('제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿').first,
+        );
+        final categoryRect = tester.getRect(find.text('가족여행프리미엄에디토리얼 컬렉션'));
+        final ctaRect = tester.getRect(
+          find.byKey(const ValueKey('template-detail-use')),
+        );
+
+        expect(titleRect.left, greaterThanOrEqualTo(0));
+        expect(titleRect.right, lessThanOrEqualTo(390));
+        expect(titleRect.top, lessThan(600));
+        expect(categoryRect.right, lessThanOrEqualTo(390));
+        expect(ctaRect.bottom, lessThanOrEqualTo(844));
+      });
+    },
+  );
+
+  storeDetailTestWidgets(
+    'template detail stays stable across iPhone and Galaxy viewports',
+    (tester) async {
+      const viewports = [
+        ('iPhone SE', Size(320, 568)),
+        ('iPhone 13 mini', Size(375, 812)),
+        ('iPhone 15', Size(393, 852)),
+        ('iPhone 15 Pro Max', Size(430, 932)),
+        ('Galaxy compact', Size(360, 780)),
+        ('Galaxy standard', Size(412, 915)),
+        ('Galaxy Ultra', Size(480, 1040)),
+      ];
+
+      for (final viewport in viewports) {
+        tester.view.physicalSize = viewport.$2;
+        tester.view.devicePixelRatio = 1.0;
+
+        final mockRepo = MockTemplateRepository();
+        final template = _template(
+          title: '제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿',
+          subTitle: '부모님과 아이들의 긴 여행 사진을 감성적인 한 권의 룩북처럼 정리해요.',
+          pageCount: 24,
+          category: '가족여행프리미엄에디토리얼',
+          tags: const ['가족여행프리미엄', '제주감성스냅', '여름방학기록', '긴태그숨김'],
+        );
+        stubGetTemplates(mockRepo, [template]);
+
+        await mockNetworkImagesFor(() async {
+          await tester.pumpWidget(
+            ProviderScope(
+              overrides: [
+                templateRepositoryProvider.overrideWithValue(mockRepo),
+              ],
+              child: _wrap(TemplateDetailScreen(template: template)),
+            ),
+          );
+
+          await tester.pump();
+          await settleStoreDetail(tester);
+          await settleStoreDetail(tester);
+
+          expect(tester.takeException(), isNull, reason: viewport.$1);
+
+          final width = viewport.$2.width;
+          final height = viewport.$2.height;
+          final titleRect = tester.getRect(
+            find.text('제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿').first,
+          );
+          final categoryRect = tester.getRect(find.text('가족여행프리미엄에디토리얼 컬렉션'));
+          final ctaRect = tester.getRect(
+            find.byKey(const ValueKey('template-detail-use')),
+          );
+          final heroMetaRect = tester.getRect(_pageCountMetric('24쪽'));
+
+          expect(titleRect.left, greaterThanOrEqualTo(0), reason: viewport.$1);
+          expect(
+            titleRect.right,
+            lessThanOrEqualTo(width),
+            reason: viewport.$1,
+          );
+          expect(
+            categoryRect.right,
+            lessThanOrEqualTo(width),
+            reason: viewport.$1,
+          );
+          expect(
+            heroMetaRect.right,
+            lessThanOrEqualTo(width),
+            reason: viewport.$1,
+          );
+          expect(ctaRect.left, greaterThanOrEqualTo(0), reason: viewport.$1);
+          expect(ctaRect.right, lessThanOrEqualTo(width), reason: viewport.$1);
+          expect(
+            ctaRect.bottom,
+            lessThanOrEqualTo(height),
+            reason: viewport.$1,
+          );
+        });
+      }
+
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+    },
+  );
+
+  storeDetailTestWidgets(
+    'template detail supports larger text scale with long Korean metadata',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final mockRepo = MockTemplateRepository();
+      final template = _template(
+        title: '제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿',
+        subTitle: '부모님과 아이들의 긴 여행 사진을 감성적인 한 권의 룩북처럼 정리해요.',
+        pageCount: 24,
+        category: '가족여행프리미엄에디토리얼',
+        tags: const ['가족여행프리미엄', '제주감성스냅', '여름방학기록', '긴태그숨김'],
+      );
+      stubGetTemplates(mockRepo, [template]);
+
+      await mockNetworkImagesFor(() async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [templateRepositoryProvider.overrideWithValue(mockRepo)],
+            child: _wrap(
+              MediaQuery(
+                data: const MediaQueryData(
+                  size: Size(390, 844),
+                  textScaler: TextScaler.linear(1.3),
+                ),
+                child: TemplateDetailScreen(template: template),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pump();
+        await settleStoreDetail(tester);
+
+        expect(tester.takeException(), isNull);
+        expect(find.text('이 디자인으로 시작'), findsOneWidget);
+        expect(find.text('가족여행프리미엄에디토리얼 컬렉션'), findsOneWidget);
+        expect(find.text('여름방학기록'), findsNothing);
+
+        final titleRect = tester.getRect(
+          find.text('제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿').first,
+        );
+        final categoryRect = tester.getRect(find.text('가족여행프리미엄에디토리얼 컬렉션'));
+        final ctaRect = tester.getRect(
+          find.byKey(const ValueKey('template-detail-use')),
+        );
+
+        expect(titleRect.left, greaterThanOrEqualTo(0));
+        expect(titleRect.right, lessThanOrEqualTo(390));
+        expect(categoryRect.right, lessThanOrEqualTo(390));
+        expect(ctaRect.left, greaterThanOrEqualTo(0));
+        expect(ctaRect.right, lessThanOrEqualTo(390));
+        expect(ctaRect.bottom, lessThanOrEqualTo(844));
+      });
+    },
+  );
+}

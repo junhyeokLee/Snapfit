@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'dart:js_interop';
 
 import 'package:photo_manager/photo_manager.dart';
@@ -28,6 +29,10 @@ class BrowserAlbumCreationDraftStore
 
   _StoredBrowserDraft _encode(String owner, AlbumCreationDraft draft) {
     if (owner.trim().isEmpty) throw ArgumentError('Draft owner is required');
+    if (draft.creationAttempt?.ownerId != null &&
+        draft.creationAttempt!.ownerId != owner) {
+      throw ArgumentError('Creation attempt owner cannot change');
+    }
     final json = jsonEncode(draft.toJson());
     if (utf8.encode(json).length > 32 * 1024 * 1024) {
       throw const BrowserPhotoException('임시 저장할 앨범 정보가 너무 커요.');
@@ -102,6 +107,27 @@ class BrowserAlbumCreationDraftStore
     '다른 창에서 임시 저장한 내용이 변경되었어요. 이 화면을 다시 열어 최신 앨범을 확인해주세요.',
   );
 
+  String _digest(Map<String, dynamic> metadata) {
+    Object? canonical(Object? value) {
+      if (value is Map) {
+        final keys = value.keys.cast<String>().toList()..sort();
+        return {for (final key in keys) key: canonical(value[key])};
+      }
+      if (value is List) return value.map(canonical).toList();
+      return value;
+    }
+
+    // Existing version-1 drafts predate this optional field. Missing and null
+    // represent the same draft; JSON key order is not a revision either.
+    final normalized = {
+      ...metadata,
+      'creationAttempt': metadata['creationAttempt'],
+    };
+    return sha256
+        .convert(utf8.encode(jsonEncode(canonical(normalized))))
+        .toString();
+  }
+
   _BrowserDraftRevision? _revision(String owner, JSObject? value) {
     if (value == null) return null;
     final metadata = _metadata(owner, value);
@@ -119,6 +145,7 @@ class BrowserAlbumCreationDraftStore
       id: id,
       updatedAtMicros: timestamp.toUtc().microsecondsSinceEpoch,
       createdAlbumId: createdAlbumId as int?,
+      digest: _digest(metadata),
     );
   }
 
@@ -126,6 +153,7 @@ class BrowserAlbumCreationDraftStore
     id: draft.id,
     updatedAtMicros: draft.updatedAt.toUtc().microsecondsSinceEpoch,
     createdAlbumId: draft.createdAlbumId,
+    digest: _digest(draft.toJson()),
   );
 
   @override
@@ -279,6 +307,7 @@ typedef _BrowserDraftRevision = ({
   String id,
   int updatedAtMicros,
   int? createdAlbumId,
+  String digest,
 });
 
 extension type _StoredBrowserDraft._(JSObject _) implements JSObject {

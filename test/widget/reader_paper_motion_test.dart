@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
@@ -130,6 +131,7 @@ Future<BookFlipController> _reader(
   double devicePixelRatio = 1,
   bool reduceMotion = false,
   bool accessibleNavigation = false,
+  bool singlePageFocus = false,
   bool dark = false,
   double textScale = 1,
   ValueNotifier<int?>? requestedPage,
@@ -190,6 +192,7 @@ Future<BookFlipController> _reader(
                       onStateChanged: () {},
                       onFocusPageChanged: onFocusPageChanged,
                       focusMode: true,
+                      singlePageFocus: singlePageFocus,
                       requestedFocusPageIndex: requested,
                     ),
                   ),
@@ -222,8 +225,918 @@ Future<BookFlipController> _reader(
   return controller;
 }
 
+Future<void> _settleFocused(
+  WidgetTester tester,
+  BookFlipController controller,
+) async {
+  // A same-spread pan animates the camera while the paper controller is idle.
+  for (var frame = 0; frame < 100; frame++) {
+    await tester.pump(const Duration(milliseconds: 16));
+    if (frame > 0 &&
+        !tester.binding.hasScheduledFrame &&
+        !controller.isAnimating) {
+      break;
+    }
+  }
+  expect(controller.isAnimating, isFalse);
+  expect(tester.binding.hasScheduledFrame, isFalse);
+}
+
+Future<void> _pumpUntilLeafMoves(
+  WidgetTester tester,
+  BookFlipController controller,
+) async {
+  // The first spring tick establishes its timestamp after endOfFrame.
+  for (
+    var frame = 0;
+    frame < 20 && controller.isAnimating && controller.flipProgress == 0;
+    frame++
+  ) {
+    await tester.pump(const Duration(milliseconds: 16));
+  }
+  expect(controller.isAnimating, isTrue);
+  expect(controller.flipProgress, inExclusiveRange(0, 1));
+}
+
+Rect _focusViewport(WidgetTester tester) =>
+    tester.getRect(find.byKey(const ValueKey('reader-page-viewport')));
+
+void _expectSpine(WidgetTester tester, {required bool leftPage}) {
+  final viewport = _focusViewport(tester);
+  final book = tester.getRect(find.byKey(const ValueKey('reader-focus-book')));
+  final spine = book.left + book.width / 2;
+  expect(spine, inInclusiveRange(viewport.left, viewport.right));
+  expect(
+    leftPage ? viewport.right - spine : spine - viewport.left,
+    inInclusiveRange(0, 24.1),
+    reason:
+        'The shared spine must stay beside the focused page, with a small peek.',
+  );
+}
+
+engine.FlipScene _activeBookScene(WidgetTester tester) {
+  final canvas = find.byElementPredicate(
+    (element) =>
+        element is RenderObjectElement &&
+        element.renderObject is engine.RenderBookCanvas,
+  );
+  final dynamic canvasWidget = tester.widget(canvas);
+  return canvasWidget.scene as engine.FlipScene;
+}
+
+void _expectReadableLeaf(engine.FlipScene scene, int expectedArtwork) {
+  final positions = scene.mesh.posSoup;
+  final texture = scene.mesh.texSoup;
+  final sampledArtwork = <int>{};
+  var readableTriangles = 0;
+  for (var offset = 0; offset < scene.mesh.triCount * 6; offset += 6) {
+    final x1 = positions[offset + 2] - positions[offset];
+    final y1 = positions[offset + 3] - positions[offset + 1];
+    final x2 = positions[offset + 4] - positions[offset];
+    final y2 = positions[offset + 5] - positions[offset + 1];
+    final u1 = texture[offset + 2] - texture[offset];
+    final v1 = texture[offset + 3] - texture[offset + 1];
+    final u2 = texture[offset + 4] - texture[offset];
+    final v2 = texture[offset + 5] - texture[offset + 1];
+    final screenArea = x1 * y2 - y1 * x2;
+    final textureArea = u1 * v2 - v1 * u2;
+    if (screenArea.abs() < .001 || textureArea.abs() < .001) continue;
+    // Matching orientation in screen/texture space means text is not mirrored.
+    expect(screenArea * textureArea, greaterThan(0));
+    readableTriangles++;
+    final u = (texture[offset] + texture[offset + 2] + texture[offset + 4]) / 3;
+    final v =
+        (texture[offset + 1] + texture[offset + 3] + texture[offset + 5]) / 3;
+    sampledArtwork.add(
+      (v / scene.cellH).floor() * scene.atlasCols + (u / scene.cellW).floor(),
+    );
+  }
+  expect(readableTriangles, greaterThan(0));
+  expect(sampledArtwork, contains(expectedArtwork));
+  expect(sampledArtwork.difference({scene.leafFront, scene.leafBack}), isEmpty);
+}
+
+({double x, double top, double bottom}) _leafBoundaryAt(
+  engine.BookFlipMesh mesh,
+  double u,
+) {
+  // 참조 HTML의 40개 조각과 엔진의 메시 해상도를 독립적으로 비교한다.
+  final position = u * (mesh.nu - 1);
+  final left = position.floor();
+  final right = position.ceil();
+  final mix = position - left;
+  double sample(List<double> values, int row) => ui.lerpDouble(
+    values[row * mesh.nu + left],
+    values[row * mesh.nu + right],
+    mix,
+  )!;
+  return (
+    x: sample(mesh.sx, 0),
+    top: sample(mesh.sy, 0),
+    bottom: sample(mesh.sy, mesh.nv - 1),
+  );
+}
+
 void main() {
   setUpAll(loadCreationFonts);
+
+  group('single-page book focus', () {
+    for (final backwards in [false, true]) {
+      testWidgets(
+        'cover ${backwards ? 'closing' : 'opening'} uses the approved leaf profile and timing',
+        (tester) async {
+          final requested = ValueNotifier<int?>(backwards ? 1 : 0);
+          addTearDown(requested.dispose);
+          var focus = backwards ? 1 : 0;
+          final controller = await _reader(
+            tester,
+            viewport: const Size(390, 844),
+            cover: defaultCoverSize,
+            captureKey: GlobalKey(),
+            spread: backwards ? 1 : 0,
+            singlePageFocus: true,
+            requestedPage: requested,
+            onFocusPageChanged: (page) => focus = page,
+          );
+          try {
+            final fixture =
+                jsonDecode(
+                      File(
+                        'test/fixtures/approved_album_leaf_vertices.json',
+                      ).readAsStringSync(),
+                    )
+                    as Map<String, dynamic>;
+            final frames = fixture['frames'] as List;
+            await tester.tap(find.byTooltip(backwards ? '이전 페이지' : '다음 페이지'));
+            await tester.pump();
+            await tester.pump();
+            final book = tester.widget<BookFlip>(find.byType(BookFlip));
+            expect(book.curl?.profile, BookFlipCurveProfile.albumPreview);
+            final scene = _activeBookScene(tester);
+            expect(scene.leafFront, backwards ? 2 : 1);
+            expect(scene.leafBack, backwards ? 1 : 2);
+            var elapsed = 0;
+            for (final progress in [0.0, .25, .5, .75, 1.0]) {
+              // 원본 500ms easeOutCubic의 역함수로 같은 시점의 실제 지면을 읽는다.
+              final microseconds =
+                  (500000 * (1 - math.pow(1 - progress, 1 / 3))).round();
+              await tester.pump(Duration(microseconds: microseconds - elapsed));
+              elapsed = microseconds;
+              expect(controller.flipProgress, closeTo(progress, .00002));
+              final leafProgress = backwards ? 1 - progress : progress;
+              final frame =
+                  frames.firstWhere(
+                        (candidate) => candidate['progress'] == leafProgress,
+                      )
+                      as Map;
+              final vertices = frame['vertices'] as List;
+              final width = scene.w / 2;
+              for (var column = 0; column < vertices.length; column++) {
+                final reference = vertices[column] as Map;
+                final actual = _leafBoundaryAt(
+                  scene.mesh,
+                  column / (vertices.length - 1),
+                );
+                final reason =
+                    'Cover ${backwards ? 'closing' : 'opening'}, p=$progress, column=$column';
+                expect(
+                  (actual.x - width) / width,
+                  closeTo((reference['x'] as num).toDouble(), .0008),
+                  reason: reason,
+                );
+                expect(
+                  actual.top / scene.h,
+                  closeTo((reference['top'] as num).toDouble(), .0008),
+                  reason: reason,
+                );
+                expect(
+                  actual.bottom / scene.h,
+                  closeTo((reference['bottom'] as num).toDouble(), .0008),
+                  reason: reason,
+                );
+              }
+              if (progress == .25 || progress == .75) {
+                _expectReadableLeaf(
+                  scene,
+                  progress == .25 ? scene.leafFront : scene.leafBack,
+                );
+              }
+            }
+            await tester.pump(const Duration(microseconds: 1));
+            expect(controller.isAnimating, isFalse);
+            expect(controller.currentSpread, backwards ? 0 : 1);
+            expect(focus, backwards ? 0 : 1);
+          } finally {
+            await tester.pumpWidget(const SizedBox());
+          }
+        },
+      );
+    }
+
+    for (final backwards in [false, true]) {
+      testWidgets(
+        'projected ${backwards ? 'backward' : 'forward'} leaf matches the approved HTML frames',
+        (tester) async {
+          final requested = ValueNotifier<int?>(backwards ? 3 : 2);
+          addTearDown(requested.dispose);
+          final controller = await _reader(
+            tester,
+            viewport: const Size(390, 844),
+            cover: defaultCoverSize,
+            captureKey: GlobalKey(),
+            spread: backwards ? 2 : 1,
+            singlePageFocus: true,
+            requestedPage: requested,
+          );
+          try {
+            final fixture =
+                jsonDecode(
+                      File(
+                        'test/fixtures/approved_album_leaf_vertices.json',
+                      ).readAsStringSync(),
+                    )
+                    as Map<String, dynamic>;
+            final frames = fixture['frames'] as List;
+            final viewport = _focusViewport(tester);
+            final gesture = await tester.startGesture(
+              Offset(
+                backwards ? viewport.left + 40 : viewport.right - 40,
+                viewport.center.dy,
+              ),
+            );
+            // 실제 뷰 제스처로 페이지 앞뒷면과 카메라 전환을 먼저 시작한다.
+            await gesture.moveBy(Offset(backwards ? 20 : -20, 0));
+            await tester.pump();
+            final scene = _activeBookScene(tester);
+            final width = scene.w / 2;
+            final height = scene.h;
+            for (final rawFrame in backwards ? frames.reversed : frames) {
+              final frame = rawFrame as Map;
+              final leafProgress = (frame['progress'] as num).toDouble();
+              final progress = backwards ? 1 - leafProgress : leafProgress;
+              controller.dragToDistance(
+                localPosition: Offset(width, height / 2),
+                direction: backwards
+                    ? FlipDirection.backward
+                    : FlipDirection.forward,
+                distance: width * progress,
+              );
+              await tester.pump();
+              expect(scene.active, isTrue);
+              expect(controller.flipProgress, closeTo(progress, .00001));
+              final vertices = frame['vertices'] as List;
+              for (var column = 0; column < vertices.length; column++) {
+                final reference = vertices[column] as Map;
+                final actual = _leafBoundaryAt(
+                  scene.mesh,
+                  column / (vertices.length - 1),
+                );
+                final reason =
+                    'HTML leaf=$leafProgress, native=$progress, column=$column';
+                expect(
+                  (actual.x - width) / width,
+                  closeTo((reference['x'] as num).toDouble(), .0008),
+                  reason: reason,
+                );
+                expect(
+                  actual.top / height,
+                  closeTo((reference['top'] as num).toDouble(), .0008),
+                  reason: reason,
+                );
+                expect(
+                  actual.bottom / height,
+                  closeTo((reference['bottom'] as num).toDouble(), .0008),
+                  reason: reason,
+                );
+              }
+            }
+            await gesture.cancel();
+            await _settleFocused(tester, controller);
+          } finally {
+            await tester.pumpWidget(const SizedBox());
+          }
+        },
+      );
+    }
+
+    testWidgets('button leaf uses the approved 500ms ease-out timing', (
+      tester,
+    ) async {
+      final requested = ValueNotifier<int?>(2);
+      addTearDown(requested.dispose);
+      var focus = 2;
+      final controller = await _reader(
+        tester,
+        viewport: const Size(390, 844),
+        cover: defaultCoverSize,
+        captureKey: GlobalKey(),
+        spread: 1,
+        singlePageFocus: true,
+        requestedPage: requested,
+        onFocusPageChanged: (page) => focus = page,
+      );
+      try {
+        await tester.tap(find.byTooltip('다음 페이지'));
+        await tester.pump();
+        await tester.pump();
+        expect(controller.isAnimating, isTrue);
+        for (final expected in [.578125, .875, .984375]) {
+          await tester.pump(const Duration(milliseconds: 125));
+          expect(controller.flipProgress, closeTo(expected, .015));
+          expect(focus, 2);
+        }
+        await tester.pump(const Duration(milliseconds: 125));
+        // Flutter 완료 판정은 duration을 엄격히 지난 다음 틱에 전달된다.
+        await tester.pump(const Duration(microseconds: 1));
+        expect(controller.isAnimating, isFalse);
+        expect(controller.currentSpread, 2);
+        expect(focus, 3);
+      } finally {
+        await tester.pumpWidget(const SizedBox());
+      }
+    });
+
+    testWidgets('same-spread pan uses the approved 500ms ease-out timing', (
+      tester,
+    ) async {
+      var focus = 3;
+      final controller = await _reader(
+        tester,
+        viewport: const Size(390, 844),
+        cover: defaultCoverSize,
+        captureKey: GlobalKey(),
+        singlePageFocus: true,
+        onFocusPageChanged: (page) => focus = page,
+      );
+      try {
+        final book = find.byKey(const ValueKey('reader-focus-book'));
+        final start = tester.getRect(book);
+        final width = start.width / 2;
+        await tester.tap(find.byTooltip('다음 페이지'));
+        await tester.pump();
+        await tester.pump();
+        for (final expected in [.578125, .875, .984375]) {
+          await tester.pump(const Duration(milliseconds: 125));
+          final progress = (start.left - tester.getRect(book).left) / width;
+          expect(progress, closeTo(expected, .015));
+          expect(controller.isAnimating, isFalse);
+          expect(controller.currentSpread, 2);
+          expect(focus, 3);
+        }
+        await tester.pump(const Duration(milliseconds: 125));
+        await tester.pump(const Duration(microseconds: 1));
+        expect(focus, 4);
+        _expectSpine(tester, leftPage: false);
+      } finally {
+        await tester.pumpWidget(const SizedBox());
+      }
+    });
+
+    testWidgets('painted leaf preserves the approved colored paper tint', (
+      tester,
+    ) async {
+      final pages = ValueNotifier(
+        _album(defaultCoverSize)
+            .map(
+              (page) => page.copyWith(
+                backgroundColor: 0xffff0000,
+                layers: const <LayerModel>[],
+              ),
+            )
+            .toList(),
+      );
+      final requested = ValueNotifier<int?>(2);
+      addTearDown(pages.dispose);
+      addTearDown(requested.dispose);
+      final captureKey = GlobalKey();
+      final controller = await _reader(
+        tester,
+        viewport: const Size(390, 844),
+        cover: defaultCoverSize,
+        captureKey: captureKey,
+        spread: 1,
+        singlePageFocus: true,
+        pagesNotifier: pages,
+        requestedPage: requested,
+      );
+      try {
+        final viewport = _focusViewport(tester);
+        final gesture = await tester.startGesture(
+          Offset(viewport.right - 40, viewport.center.dy),
+        );
+        await gesture.moveBy(const Offset(-20, 0));
+        await tester.pump();
+        final scene = _activeBookScene(tester);
+        final width = scene.w / 2;
+        controller.dragToDistance(
+          localPosition: Offset(width, scene.h / 2),
+          direction: FlipDirection.forward,
+          distance: width * .25,
+        );
+        await tester.pump();
+        expect(controller.flipProgress, closeTo(.25, .00001));
+        // 조각 경계의 안티앨리어싱을 피해 20번째 조각 내부의 픽셀을 읽는다.
+        final boundary = _leafBoundaryAt(scene.mesh, 20.5 / 40);
+        final book = tester.getRect(
+          find.byKey(const ValueKey('reader-focus-book')),
+        );
+        final sample =
+            book.topLeft +
+            Offset(boundary.x, (boundary.top + boundary.bottom) / 2) -
+            tester.getTopLeft(find.byKey(captureKey));
+        final image = await _capture(tester, captureKey);
+        try {
+          final pixels = (await tester.runAsync(
+            () => image.toByteData(format: ui.ImageByteFormat.rawRgba),
+          ))!;
+          final x = sample.dx.round();
+          final y = sample.dy.round();
+          expect(x, inInclusiveRange(0, image.width - 1));
+          expect(y, inInclusiveRange(0, image.height - 1));
+          final offset = (y * image.width + x) * 4;
+          // 원본 rgba(35,42,34,a)를 빨강 위에 srcOver한 결과다.
+          // 회색 modulate만 적용하면 초록·파랑 채널이 0이라 이 검사를 통과하지 못한다.
+          final alpha = (.06 + .08 * (20 / 40)) * math.sin(math.pi * .25);
+          final expected = [
+            255 * (1 - alpha) + 35 * alpha,
+            42 * alpha,
+            34 * alpha,
+          ];
+          for (var channel = 0; channel < 3; channel++) {
+            expect(
+              pixels.getUint8(offset + channel),
+              closeTo(expected[channel], 2),
+              reason: 'Actual painted strip 20, RGB channel $channel',
+            );
+          }
+          expect(pixels.getUint8(offset + 3), 255);
+        } finally {
+          image.dispose();
+        }
+        await gesture.cancel();
+        await _settleFocused(tester, controller);
+      } finally {
+        await tester.pumpWidget(const SizedBox());
+      }
+    });
+
+    for (final cover in [coverSizes[0], coverSizes[1], coverSizes[2]]) {
+      testWidgets(
+        'keeps trim ratio ${cover.ratio} and the spine on each side',
+        (tester) async {
+          var focus = 3;
+          final controller = await _reader(
+            tester,
+            viewport: const Size(390, 844),
+            cover: cover,
+            captureKey: GlobalKey(),
+            singlePageFocus: true,
+            onFocusPageChanged: (page) => focus = page,
+          );
+          try {
+            final viewport = _focusViewport(tester);
+            final book = tester.getRect(
+              find.byKey(const ValueKey('reader-focus-book')),
+            );
+            expect(book.width / 2, greaterThanOrEqualTo(312));
+            expect(book.width / 2 / book.height, closeTo(cover.ratio, .001));
+            expect(viewport.width, lessThanOrEqualTo(390));
+            _expectSpine(tester, leftPage: true);
+
+            await tester.tap(find.byTooltip('다음 페이지'));
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 120));
+            expect(controller.currentSpread, 2);
+            expect(controller.isAnimating, isFalse);
+            expect(
+              focus,
+              3,
+              reason: 'The source page remains selected during a pan.',
+            );
+            await _settleFocused(tester, controller);
+            expect(focus, 4);
+            expect(controller.currentSpread, 2);
+            _expectSpine(tester, leftPage: false);
+          } finally {
+            await tester.pumpWidget(const SizedBox());
+          }
+        },
+      );
+    }
+
+    testWidgets(
+      'pans within a spread and turns the same sheet in both directions',
+      (tester) async {
+        var focus = 3;
+        final controller = await _reader(
+          tester,
+          viewport: const Size(390, 844),
+          cover: defaultCoverSize,
+          captureKey: GlobalKey(),
+          singlePageFocus: true,
+          onFocusPageChanged: (page) => focus = page,
+        );
+        try {
+          final book = find.byType(BookFlip);
+          final renderer = tester.state(book);
+          final artwork = tester.widget<BookFlip>(book).pages;
+          for (final step in [
+            (next: true, page: 4, spread: 2, leaf: false),
+            (next: true, page: 5, spread: 3, leaf: true),
+            (next: false, page: 4, spread: 2, leaf: true),
+            (next: false, page: 3, spread: 2, leaf: false),
+          ]) {
+            final source = focus;
+            await tester.tap(find.byTooltip(step.next ? '다음 페이지' : '이전 페이지'));
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 120));
+            expect(controller.isAnimating, step.leaf);
+            expect(focus, source);
+            if (step.leaf) {
+              await _pumpUntilLeafMoves(tester, controller);
+              expect(focus, source);
+              expect(
+                controller.flipDirection,
+                step.next ? FlipDirection.forward : FlipDirection.backward,
+              );
+            }
+            await _settleFocused(tester, controller);
+            expect(focus, step.page);
+            expect(controller.currentSpread, step.spread);
+            _expectSpine(tester, leftPage: step.page.isOdd);
+            expect(tester.state(book), same(renderer));
+            expect(tester.widget<BookFlip>(book).pages, same(artwork));
+          }
+        } finally {
+          await tester.pumpWidget(const SizedBox());
+        }
+      },
+    );
+
+    testWidgets('page 2 turns into page 3 with readable front and back artwork', (
+      tester,
+    ) async {
+      final requested = ValueNotifier<int?>(2);
+      addTearDown(requested.dispose);
+      var focus = 2;
+      final controller = await _reader(
+        tester,
+        viewport: const Size(390, 844),
+        cover: defaultCoverSize,
+        captureKey: GlobalKey(),
+        spread: 1,
+        singlePageFocus: true,
+        requestedPage: requested,
+        onFocusPageChanged: (page) => focus = page,
+      );
+      try {
+        for (final step in [
+          (direction: -1.0, front: 3, back: 4, target: 3, spread: 2),
+          (direction: 1.0, front: 4, back: 3, target: 2, spread: 1),
+        ]) {
+          final viewport = _focusViewport(tester);
+          final drag = await tester.startGesture(
+            Offset(
+              step.direction < 0 ? viewport.right - 40 : viewport.left + 40,
+              viewport.center.dy,
+            ),
+          );
+          await drag.moveBy(Offset(step.direction * viewport.width * .24, 0));
+          await tester.pump();
+          final scene = _activeBookScene(tester);
+          expect(scene.active, isTrue);
+          // Captured texture 0 is a blank sheet, so album pages are offset by 1.
+          expect(scene.leafFront, step.front);
+          expect(scene.leafBack, step.back);
+          expect(scene.baseLeft, 2);
+          expect(scene.baseRight, 5);
+          _expectReadableLeaf(scene, step.front);
+          await drag.moveBy(Offset(step.direction * viewport.width * .65, 0));
+          await tester.pump();
+          expect(controller.flipProgress, greaterThan(.5));
+          _expectReadableLeaf(scene, step.back);
+          await drag.up();
+          await _settleFocused(tester, controller);
+          expect(focus, step.target);
+          expect(controller.currentSpread, step.spread);
+          _expectSpine(tester, leftPage: step.target.isOdd);
+        }
+      } finally {
+        await tester.pumpWidget(const SizedBox());
+      }
+    });
+
+    testWidgets(
+      'cancelled drags restore both the camera and the paper spread',
+      (tester) async {
+        var focus = 3;
+        final controller = await _reader(
+          tester,
+          viewport: const Size(390, 844),
+          cover: defaultCoverSize,
+          captureKey: GlobalKey(),
+          singlePageFocus: true,
+          onFocusPageChanged: (page) => focus = page,
+        );
+        try {
+          for (final source in [3, 4]) {
+            if (source == 4) {
+              await tester.tap(find.byTooltip('다음 페이지'));
+              await _settleFocused(tester, controller);
+            }
+            final viewport = _focusViewport(tester);
+            final initialBook = tester.getRect(
+              find.byKey(const ValueKey('reader-focus-book')),
+            );
+            final drag = await tester.startGesture(
+              Offset(viewport.right - 40, viewport.center.dy),
+            );
+            await drag.moveBy(Offset(-viewport.width * .23, 0));
+            await tester.pump();
+            expect(focus, source);
+            expect(controller.currentSpread, 2);
+            expect(controller.isAnimating, source == 4);
+            await drag.cancel();
+            await _settleFocused(tester, controller);
+            expect(focus, source);
+            expect(controller.currentSpread, 2);
+            expect(
+              tester
+                  .getRect(find.byKey(const ValueKey('reader-focus-book')))
+                  .left,
+              closeTo(initialBook.left, .1),
+            );
+            _expectSpine(tester, leftPage: source.isOdd);
+          }
+        } finally {
+          await tester.pumpWidget(const SizedBox());
+        }
+      },
+    );
+
+    testWidgets('rotation during a held leaf restores the exact right page', (
+      tester,
+    ) async {
+      var focus = 3;
+      final controller = await _reader(
+        tester,
+        viewport: const Size(390, 844),
+        cover: defaultCoverSize,
+        captureKey: GlobalKey(),
+        singlePageFocus: true,
+        onFocusPageChanged: (page) => focus = page,
+      );
+      try {
+        await tester.tap(find.byTooltip('다음 페이지'));
+        await _settleFocused(tester, controller);
+        expect(focus, 4);
+        final viewport = _focusViewport(tester);
+        final drag = await tester.startGesture(
+          Offset(viewport.right - 40, viewport.center.dy),
+        );
+        await drag.moveBy(Offset(-viewport.width * .35, 0));
+        await tester.pump();
+        expect(controller.isAnimating, isTrue);
+        tester.view.physicalSize = const Size(844, 390);
+        await tester.pump();
+        await drag.cancel();
+        await _ready(tester, controller);
+        await _settleFocused(tester, controller);
+        expect(controller.currentSpread, 2);
+        expect(focus, 4);
+        tester.view.physicalSize = const Size(390, 844);
+        await tester.pump();
+        await _ready(tester, controller);
+        await _settleFocused(tester, controller);
+        expect(focus, 4);
+        _expectSpine(tester, leftPage: false);
+      } finally {
+        await tester.pumpWidget(const SizedBox());
+      }
+    });
+
+    testWidgets('latest exact-page request supersedes an unfinished pan', (
+      tester,
+    ) async {
+      final requested = ValueNotifier<int?>(null);
+      addTearDown(requested.dispose);
+      var focus = 3;
+      final controller = await _reader(
+        tester,
+        viewport: const Size(390, 844),
+        cover: defaultCoverSize,
+        captureKey: GlobalKey(),
+        singlePageFocus: true,
+        requestedPage: requested,
+        onFocusPageChanged: (page) => focus = page,
+      );
+      try {
+        final artwork = tester.widget<BookFlip>(find.byType(BookFlip)).pages;
+        await tester.tap(find.byTooltip('다음 페이지'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 80));
+        requested.value = 7;
+        await tester.pump();
+        requested.value = 2;
+        await tester.pump();
+        await _settleFocused(tester, controller);
+        expect(focus, 2);
+        expect(controller.currentSpread, 1);
+        _expectSpine(tester, leftPage: false);
+        expect(
+          tester.widget<BookFlip>(find.byType(BookFlip)).pages,
+          same(artwork),
+        );
+      } finally {
+        await tester.pumpWidget(const SizedBox());
+      }
+    });
+
+    testWidgets(
+      'rotation preserves an explicit adjacent-page request mid-turn',
+      (tester) async {
+        final requested = ValueNotifier<int?>(null);
+        addTearDown(requested.dispose);
+        var focus = 3;
+        final controller = await _reader(
+          tester,
+          viewport: const Size(390, 844),
+          cover: defaultCoverSize,
+          captureKey: GlobalKey(),
+          singlePageFocus: true,
+          requestedPage: requested,
+          onFocusPageChanged: (page) => focus = page,
+        );
+        try {
+          await tester.tap(find.byTooltip('다음 페이지'));
+          await _settleFocused(tester, controller);
+          expect(focus, 4);
+          expect(controller.currentSpread, 2);
+
+          requested.value = 5;
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 80));
+          await _pumpUntilLeafMoves(tester, controller);
+          expect(focus, 4);
+
+          tester.view.physicalSize = const Size(844, 390);
+          await tester.pump();
+          await _ready(tester, controller);
+          await _settleFocused(tester, controller);
+          expect(focus, 5);
+          expect(controller.currentSpread, 3);
+          expect(tester.takeException(), isNull);
+        } finally {
+          await tester.pumpWidget(const SizedBox());
+        }
+      },
+    );
+
+    testWidgets('pointer cancellation cannot undo an explicit page request', (
+      tester,
+    ) async {
+      final requested = ValueNotifier<int?>(null);
+      addTearDown(requested.dispose);
+      var focus = 3;
+      final controller = await _reader(
+        tester,
+        viewport: const Size(390, 844),
+        cover: defaultCoverSize,
+        captureKey: GlobalKey(),
+        singlePageFocus: true,
+        requestedPage: requested,
+        onFocusPageChanged: (page) => focus = page,
+      );
+      try {
+        await tester.tap(find.byTooltip('다음 페이지'));
+        await _settleFocused(tester, controller);
+        expect(focus, 4);
+
+        requested.value = 5;
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 80));
+        await _pumpUntilLeafMoves(tester, controller);
+        final viewport = _focusViewport(tester);
+        final drag = await tester.startGesture(
+          Offset(viewport.right - 80, viewport.center.dy),
+        );
+        await drag.moveBy(Offset(viewport.width * .23, 0));
+        await tester.pump();
+        await drag.cancel();
+        await _settleFocused(tester, controller);
+
+        expect(focus, 5);
+        expect(controller.currentSpread, 3);
+        _expectSpine(tester, leftPage: true);
+        expect(tester.takeException(), isNull);
+      } finally {
+        await tester.pumpWidget(const SizedBox());
+      }
+    });
+
+    for (final innerCount in [0, 1, 3]) {
+      testWidgets(
+        'does not enter a blank final page with $innerCount inner pages',
+        (tester) async {
+          final pages = ValueNotifier(
+            _album(defaultCoverSize).take(innerCount + 1).toList(),
+          );
+          addTearDown(pages.dispose);
+          var focus = 0;
+          final controller = await _reader(
+            tester,
+            viewport: const Size(390, 844),
+            cover: defaultCoverSize,
+            captureKey: GlobalKey(),
+            spread: 0,
+            singlePageFocus: true,
+            pagesNotifier: pages,
+            onFocusPageChanged: (page) => focus = page,
+          );
+          try {
+            for (var page = 1; page <= innerCount; page++) {
+              await tester.tap(find.byTooltip('다음 페이지'));
+              await _settleFocused(tester, controller);
+              expect(focus, page);
+              expect(controller.currentSpread, page == 3 ? 2 : 1);
+            }
+            final finalSpread = controller.currentSpread;
+            await tester.tap(find.byTooltip('다음 페이지'));
+            await _settleFocused(tester, controller);
+            expect(focus, innerCount);
+            expect(controller.currentSpread, finalSpread);
+            if (innerCount > 0) _expectSpine(tester, leftPage: true);
+            for (var page = innerCount - 1; page >= 0; page--) {
+              await tester.tap(find.byTooltip('이전 페이지'));
+              await _settleFocused(tester, controller);
+              expect(focus, page);
+            }
+            expect(controller.currentSpread, 0);
+            await tester.tap(find.byTooltip('이전 페이지'));
+            await _settleFocused(tester, controller);
+            expect(focus, 0);
+            expect(controller.currentSpread, 0);
+          } finally {
+            await tester.pumpWidget(const SizedBox());
+          }
+        },
+      );
+    }
+
+    testWidgets(
+      'landscape keeps full spreads when single-page focus is enabled',
+      (tester) async {
+        var focus = 3;
+        final controller = await _reader(
+          tester,
+          viewport: const Size(844, 390),
+          cover: defaultCoverSize,
+          captureKey: GlobalKey(),
+          singlePageFocus: true,
+          onFocusPageChanged: (page) => focus = page,
+        );
+        try {
+          await tester.tap(find.byTooltip('다음 페이지'));
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 120));
+          expect(controller.isAnimating, isTrue);
+          await _settleFocused(tester, controller);
+          expect(controller.currentSpread, 3);
+          expect(focus, 5);
+        } finally {
+          await tester.pumpWidget(const SizedBox());
+        }
+      },
+    );
+
+    testWidgets(
+      'reduced motion changes focused pages without camera or paper animation',
+      (tester) async {
+        var focus = 3;
+        final controller = await _reader(
+          tester,
+          viewport: const Size(390, 844),
+          cover: defaultCoverSize,
+          captureKey: GlobalKey(),
+          singlePageFocus: true,
+          reduceMotion: true,
+          onFocusPageChanged: (page) => focus = page,
+        );
+        try {
+          for (final target in [4, 5]) {
+            await tester.tap(find.byTooltip('다음 페이지'));
+            await tester.pump();
+            expect(focus, target);
+            expect(controller.currentSpread, target == 4 ? 2 : 3);
+            expect(controller.isAnimating, isFalse);
+            _expectSpine(tester, leftPage: target.isOdd);
+          }
+        } finally {
+          await tester.pumpWidget(const SizedBox());
+        }
+      },
+    );
+  });
 
   testWidgets(
     'rotation keeps the latest picker target over an older unfinished jump',
@@ -931,7 +1844,7 @@ void main() {
     });
   }
 
-  for (final ratio in [.75, 1.0, 4 / 3]) {
+  for (final ratio in [.75, 1.0, 4 / 3, 5 / 4]) {
     test('curl is finite, mirrored and lands exactly flat at ratio $ratio', () {
       final forward = engine.BookFlipMesh(nu: 35, nv: 25);
       final backward = engine.BookFlipMesh(nu: 35, nv: 25);
@@ -1158,7 +2071,7 @@ void main() {
         (widget) =>
             widget.key is ValueKey<String> &&
             RegExp(
-              r'^book_flip_\d+_',
+              r'^book_flip_(?:album|material)_\d+_',
             ).hasMatch((widget.key! as ValueKey<String>).value),
         skipOffstage: false,
       );

@@ -1,0 +1,44 @@
+{
+  "tests": [
+    {
+      "group": "core",
+      "passed": 32,
+      "failed": 0
+    },
+    {
+      "group": "entry",
+      "passed": 8,
+      "failed": 0
+    },
+    {
+      "group": "refinement",
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "group": "draft",
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "group": "profile",
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "group": "journey",
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "group": "capture",
+      "passed": 2,
+      "failed": 0
+    }
+  ],
+  "total_passed": 49,
+  "total_failed": 0,
+  "runtime": "Flutter native test engine; one process at a time",
+  "application_build": false,
+  "deployment": false
+}

@@ -1,0 +1,58 @@
+{
+  "completedAtUtc": "2026-11-03T18:24:05.529104+00:00",
+  "status": "published-verified-and-preview-cleanup-complete",
+  "artwork": {
+    "postsUpdated": 4,
+    "newAccounts": 0,
+    "editableLayers": [
+      13,
+      13,
+      13,
+      14
+    ],
+    "originalsCaptionsAndProfilesPreserved": true,
+    "publicRasterAndPrivateDesignVerified": true,
+    "previousVersionsPrivateAndPreserved": true,
+    "report": "output/decorated-feed-20261103-v3/republication-report.json"
+  },
+  "stickerFix": {
+    "keys": [
+      "stickerHeartRed",
+      "stickerLeafGreen",
+      "stickerCloverGreen"
+    ],
+    "behavior": "Vector shapes replace missing font glyphs in editor, static previews and print without changing stored keys or colors."
+  },
+  "validation": {
+    "renderPreparation": 1,
+    "stickerAndArtworkRegression": 8,
+    "updaterRecovery": 3,
+    "analyzer": "No issues found!",
+    "independentSql": {
+      "profiles": 6,
+      "privateRecords": 5,
+      "publishedMoments": 5,
+      "albums": 20,
+      "targetRecordRevisions": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "unrelatedProfilesRecordAndWorkHashesUnchanged": true
+    }
+  },
+  "cleanup": {
+    "deletedFiles": 42,
+    "deletedLogicalBytes": 62063965,
+    "preservedOriginalPhotos": 10,
+    "preservedFinalArtworks": 4,
+    "preservedMediaHashChecks": 14,
+    "previewServerListening": false,
+    "report": "output/preview-cleanup-20261104.json",
+    "allSourceAndEditableDesignsPreserved": true,
+    "dependencyCachesBuildOutputsAndOtherTasksUntouched": true
+  },
+  "clientFullBuildRun": false,
+  "clientDeploymentRun": false
+}

@@ -85,6 +85,7 @@ function destination(data) {
   };
   const positiveId = (value) => /^[1-9][0-9]{0,17}$/.test(String(value || ''));
   const uuid = (value) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value || ''));
+  if (uuid(data.workId)) return route(`/works/${data.workId}?comments=1`);
   if (/^[A-Za-z0-9_-]{1,200}$/.test(String(data.orderId || ''))) {
     return route(`/orders/${data.orderId}`);
   }

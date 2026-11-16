@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/commerce/commerce_policy.dart';
+import '../../../core/commerce/seller_contact.dart';
 import '../../../core/constants/album_page_policy.dart';
 import '../../../core/constants/cover_size.dart';
 import '../../../core/navigation/web_app_location.dart';
@@ -10,6 +11,8 @@ import '../../../shared/web/web_design.dart';
 import '../../album/printing/print_vendor_spec.dart';
 import '../data/public_print_catalog.dart';
 import '../../../core/utils/context_extensions.dart';
+import '../../../shared/widgets/experience_icon.dart';
+import '../../../shared/widgets/snapfit_motion.dart';
 
 void openPublicCommerce(BuildContext context, WebAppLocation location) {
   final navigate = WebNavigationScope.maybeOf(context)?.onPublicNavigate;
@@ -17,14 +20,11 @@ void openPublicCommerce(BuildContext context, WebAppLocation location) {
     navigate(location);
   } else {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        settings: WebAppRouteSettings(location),
-        builder: (_) => location.page == WebAppPage.printProducts
+      snapFitRoute<void>(page: location.page == WebAppPage.printProducts
             ? const PrintProductsScreen()
             : CommercePolicyScreen(
                 kind: CommercePolicyKind.values.byName(location.id!),
-              ),
-      ),
+              ), settings: WebAppRouteSettings(location)),
     );
   }
 }
@@ -129,7 +129,7 @@ class _PrintProductsScreenState extends ConsumerState<PrintProductsScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.info_outline, color: palette.brandInk),
+                  ExperienceIcon('Info', color: palette.brandInk),
                   const SizedBox(width: 12),
                   const Expanded(
                     child: Text(
@@ -393,6 +393,8 @@ class _PrintProductsScreenState extends ConsumerState<PrintProductsScreen> {
               ),
             ),
             const SizedBox(height: 44),
+            const WebSurface(child: WebPointPolicyNotice()),
+            const SizedBox(height: 32),
             const PublicCommerceFooter(),
           ],
         ),
@@ -639,6 +641,10 @@ class CommercePolicyScreen extends StatelessWidget {
               style: TextStyle(color: palette.muted),
             ),
             const SizedBox(height: 20),
+            if (kind == CommercePolicyKind.seller) ...[
+              const WebSurface(child: PublicSellerContactDetails()),
+              const SizedBox(height: 24),
+            ],
             if (!document.sections.any(
               (section) => section.content == CommercePolicy.draftNotice,
             )) ...[
@@ -691,8 +697,7 @@ class _PolicyLink extends StatelessWidget {
   );
 }
 
-/// The business record remains explicitly incomplete until the owner supplies
-/// registered public seller details. Never reuse a private delivery address.
+/// Shared public seller disclosure. It never enables a payment or an order.
 class PublicCommerceFooter extends StatelessWidget {
   const PublicCommerceFooter({super.key});
   @override
@@ -733,7 +738,15 @@ class PublicCommerceFooter extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '사업자등록·통신판매업 신고 또는 면제 여부·판매자 주소·고객센터 정보는 운영 개시 전에 확정하여 공개합니다.\n'
+            '대표 ${CommercePolicy.representativeName} · 사업자등록번호 ${CommercePolicy.businessRegistrationNumber}\n'
+            '${CommercePolicy.businessType}',
+            style: TextStyle(fontSize: 12, height: 1.8, color: palette.muted),
+          ),
+          const SizedBox(height: 8),
+          const PublicSellerContactDetails(),
+          const SizedBox(height: 8),
+          Text(
+            '사업자등록은 완료되었으며 PG·카드사 심사와 제작 운영 계약은 준비 중입니다.\n'
             '현재 실제 결제와 제작 주문은 제공하지 않습니다.',
             style: TextStyle(fontSize: 12, height: 1.8, color: palette.muted),
           ),
@@ -746,11 +759,75 @@ class PublicCommerceFooter extends StatelessWidget {
               if (!opened && context.mounted)
                 context.showSnack('문의: ${CommercePolicy.contactEmail}');
             },
-            icon: const Icon(Icons.mail_outline, size: 16),
+            icon: const ExperienceIcon('Mail', size: 16),
             label: const Text('문의 ${CommercePolicy.contactEmail}'),
           ),
         ],
       ),
+    );
+  }
+}
+
+class PublicSellerContactDetails extends StatelessWidget {
+  const PublicSellerContactDetails({
+    super.key,
+    this.businessAddress = SellerContact.businessAddress,
+    this.supportPhone = SellerContact.supportPhone,
+  });
+
+  final String businessAddress;
+  final String supportPhone;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = WebPalette.of(context);
+    return SelectionArea(
+      child: Text(
+        '사업장 주소: ${businessAddress.isEmpty ? '공개할 사업장 주소 확인 중' : businessAddress}\n'
+        '고객센터: ${supportPhone.isEmpty ? '이메일 문의' : supportPhone}\n'
+        '${SellerContact.supportHours}\n'
+        '${SellerContact.mailOrderStatus}\n'
+        '반품은 문의 접수 후 안내받은 주소로 보내주세요.',
+        key: const ValueKey('public-seller-contact-details'),
+        style: TextStyle(fontSize: 12, height: 1.8, color: palette.muted),
+      ),
+    );
+  }
+}
+
+/// Publicly readable from both the product guide and the web points screen.
+class WebPointPolicyNotice extends StatelessWidget {
+  const WebPointPolicyNotice({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = WebPalette.of(context);
+    return Column(
+      key: const ValueKey('web-point-policy-notice'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '포인트·디지털 상품 안내',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 12),
+        const Text(CommercePolicy.webPointUsageSummary),
+        const SizedBox(height: 10),
+        Text(
+          CommercePolicy.webPointRefundSummary,
+          style: TextStyle(color: palette.muted, height: 1.8),
+        ),
+        const SizedBox(height: 8),
+        TextButton.icon(
+          key: const ValueKey('web-point-refund-policy-link'),
+          onPressed: () => openPublicCommerce(
+            context,
+            const WebAppLocation(WebAppPage.policy, 'refund'),
+          ),
+          icon: const Icon(Icons.policy_outlined, size: 18),
+          label: const Text('포인트 취소·환불 정책 전체 보기'),
+        ),
+      ],
     );
   }
 }

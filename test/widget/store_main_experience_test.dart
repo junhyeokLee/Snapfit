@@ -27,11 +27,14 @@ import 'package:snap_fit/features/point_shop/domain/point_shop_template_key.dart
 import 'package:snap_fit/features/point_shop/presentation/point_shop_access.dart';
 import 'package:snap_fit/features/store/data/api/template_provider.dart';
 import 'package:snap_fit/features/store/data/store_curation_provider.dart';
+import 'package:snap_fit/features/store/data/store_discovery_provider.dart';
 import 'package:snap_fit/features/store/presentation/views/store_hub_screen.dart';
 import 'package:snap_fit/features/store/presentation/views/store_screen.dart';
 import 'package:snap_fit/features/store/presentation/widgets/template_catalog_tile.dart';
 import 'package:snap_fit/features/store/presentation/widgets/catalog_edition_artwork.dart';
 import 'package:snap_fit/features/store/presentation/widgets/template_curation.dart';
+import 'package:snap_fit/features/store/presentation/widgets/template_editorial_list.dart';
+import 'package:snap_fit/features/store/presentation/widgets/store_material_discovery.dart';
 import 'package:snap_fit/features/store/presentation/widgets/material_catalog_tile.dart';
 import 'package:snap_fit/features/store/presentation/widgets/material_curation.dart';
 import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
@@ -266,6 +269,7 @@ void main() {
                 ),
                 notificationUnreadCountProvider.overrideWith((_) async => 0),
                 mockTemplateList(() async => publishedCreationTemplates),
+                storeDiscoveryProvider.overrideWith((_) async => const {}),
                 storeCurationsProvider.overrideWith(
                   (_) async => {
                     'templates': StoreCuration.templates,
@@ -335,10 +339,38 @@ void main() {
           expect(find.text('snapfit'), findsNothing);
           expect(find.byType(TabBar), findsNothing);
           expect(container.read(homeUiStateProvider).bottomNavIndex, 2);
+          final selected = StoreCuration.templates
+              .resolve(publishedCreationTemplates, pointShopTemplateKey)
+              .take(6)
+              .toList();
+          expect(selected, hasLength(6));
+          final shelf = find.byKey(const ValueKey('store-featured-templates'));
+          expect(shelf, findsOneWidget);
           expect(
-            find.byKey(const ValueKey('store-collection-spotlight')),
+            find.byKey(
+              ValueKey('store-featured-template-${selected.first.id}'),
+            ),
+            findsOneWidget,
+            reason:
+                'The initial discovery section contains a real curated product',
+          );
+          expect(
+            find.byKey(
+              ValueKey('store-featured-template-price-${selected.first.id}'),
+            ),
             findsOneWidget,
           );
+          expect(
+            find.byKey(ValueKey('store-featured-open-${selected.first.id}')),
+            findsOneWidget,
+          );
+          expect(
+            find.byKey(ValueKey('store-featured-template-${selected[1].id}')),
+            findsNothing,
+            reason: 'The recommendation hero has one selected product',
+          );
+          expect(find.byType(TemplateCuration), findsNothing);
+          expect(find.byKey(const ValueKey('curation-pager')), findsNothing);
           final icons = tester.widgetList<ExperienceIcon>(
             find.descendant(
               of: navigation,
@@ -371,6 +403,29 @@ void main() {
           final scroll = tester
               .widget<CustomScrollView>(find.byType(CustomScrollView).first)
               .controller!;
+          final catalogScroll = find
+              .descendant(
+                of: find.byType(CustomScrollView).first,
+                matching: find.byType(Scrollable),
+              )
+              .first;
+          for (
+            var attempt = 0;
+            find.byType(TemplateCatalogTile).evaluate().isEmpty && attempt < 20;
+            attempt++
+          ) {
+            await tester.drag(catalogScroll, const Offset(0, -180));
+            await _paint(tester);
+          }
+          expect(find.byType(TemplateCatalogTile), findsWidgets);
+          await tester.ensureVisible(find.byType(TemplateCatalogTile).first);
+          await _paint(tester);
+          final catalog = tester.widget<TemplateEditorialList>(
+            find.byType(TemplateEditorialList),
+          );
+          expect(catalog.compactStart, isTrue);
+          expect(catalog.templates, isNotEmpty);
+          expect(catalog.interlude, isA<StoreMaterialDiscovery>());
           scroll.jumpTo(0);
           await _paint(tester);
           await tester.scrollUntilVisible(
@@ -394,34 +449,9 @@ void main() {
           await _paint(tester);
           await tester.tap(find.byKey(const ValueKey('store-topic-여행')));
           await _paint(tester);
-          // Choosing a topic removes the large discovery shelf so the controls
-          // and actual matching designs remain the next visible action.
-          expect(
-            find.byKey(const ValueKey('store-collection-spotlight')),
-            findsNothing,
-          );
-          expect(
-            find.byKey(const ValueKey('store-topic-여행')).hitTestable(),
-            findsOneWidget,
-          );
-          await tester.scrollUntilVisible(
-            find.byKey(const ValueKey('store-topic-여행')),
-            180,
-            scrollable: find
-                .descendant(
-                  of: find.byType(CustomScrollView).first,
-                  matching: find.byType(Scrollable),
-                )
-                .first,
-          );
-          expect(
-            tester
-                .widget<ChoiceChip>(
-                  find.byKey(const ValueKey('store-topic-여행')),
-                )
-                .selected,
-            isTrue,
-          );
+          // 주제를 고른 뒤 추가 스크롤 없이 필터와 결과가 먼저 보여야 한다.
+          expect(find.text('여행 템플릿').hitTestable(), findsOneWidget);
+          expect(find.text('주제 · 여행'), findsOneWidget);
           for (
             var attempt = 0;
             find.byType(TemplateCatalogTile).evaluate().isEmpty && attempt < 20;

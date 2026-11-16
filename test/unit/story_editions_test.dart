@@ -21,6 +21,77 @@ import 'package:snap_fit/features/point_shop/domain/premium_volume_registration.
 import 'package:snap_fit/features/store/data/api/material_provider.dart';
 import 'package:snap_fit/features/store/presentation/widgets/material_preview_composition.dart';
 
+// The original 65 books retain their own composition contract. New editions
+// have dedicated native-font and whole-photo tests, rather than inheriting
+// the original cover-style sequence or twelve distinct spread geometries.
+const _legacyStoryEditions = <StoryEdition>[
+  ...originalStoryEditions,
+  ...exclusiveStoryEditions,
+  ...clubStoryEditions,
+  ...activityStoryEditions,
+];
+const _legacyStoryTopicCounts = {
+  '웨딩': 5,
+  '여행': 5,
+  '일상': 5,
+  '성장·육아': 5,
+  '가족·친구': 5,
+  '커플·기념일': 5,
+  '반려동물': 5,
+  '스포츠·도전': 10,
+  '졸업·새출발': 5,
+  '동아리': 15,
+};
+const _additionalStoryIdentities = {
+  -9761: (id: 'story-coffee-notebook', category: '일상', paid: false, style: 30),
+  -9762: (
+    id: 'story-night-city-archive',
+    category: '여행',
+    paid: true,
+    style: 31,
+  ),
+  -9771: (id: 'story-reading-room', category: '취미·기록', paid: false, style: 32),
+  -9772: (id: 'story-hobby-clay', category: '취미·기록', paid: false, style: 40),
+  -9773: (id: 'story-hobby-leaf', category: '취미·기록', paid: false, style: 41),
+  -9774: (id: 'story-hobby-film', category: '취미·기록', paid: true, style: 42),
+  -9775: (id: 'story-hobby-bake', category: '취미·기록', paid: false, style: 43),
+  -9776: (id: 'story-hobby-knit', category: '취미·기록', paid: true, style: 44),
+  -9777: (id: 'story-hobby-music', category: '취미·기록', paid: true, style: 45),
+  -9778: (id: 'story-hobby-paper', category: '취미·기록', paid: true, style: 46),
+  -9779: (id: 'story-hobby-gallery', category: '취미·기록', paid: true, style: 47),
+  -9780: (id: 'story-hobby-camp', category: '취미·기록', paid: true, style: 48),
+  -9781: (
+    id: 'story-milestone-little-applause',
+    category: '졸업·새출발',
+    paid: false,
+    style: 50,
+  ),
+  -9782: (
+    id: 'story-milestone-first-home',
+    category: '졸업·새출발',
+    paid: false,
+    style: 51,
+  ),
+  -9783: (
+    id: 'story-milestone-second-beginning',
+    category: '졸업·새출발',
+    paid: true,
+    style: 52,
+  ),
+  -9784: (
+    id: 'story-milestone-next-season',
+    category: '졸업·새출발',
+    paid: true,
+    style: 53,
+  ),
+  -9785: (
+    id: 'story-milestone-first-exhibition',
+    category: '졸업·새출발',
+    paid: true,
+    style: 54,
+  ),
+};
+
 Future<void> loadStoryFonts() async {
   for (final entry
       in jsonDecode(await rootBundle.loadString('FontManifest.json')) as List) {
@@ -30,6 +101,15 @@ Future<void> loadStoryFonts() async {
       'Cormorant Garamond',
       'Poppins',
       'Raleway',
+      'Arirang2',
+      'Eulyoo',
+      'Arita',
+      'Tenada',
+      'Samlip',
+      'NanumPen',
+      'Maker',
+      'Paece',
+      'Doldam',
     ].contains(entry['family']))
       continue;
     final loader = FontLoader(entry['family'] as String);
@@ -43,68 +123,87 @@ Future<void> loadStoryFonts() async {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(loadStoryFonts);
-  test('65 story identities, including five free and five paid club books', () {
-    expect(storyEditions, hasLength(65));
-    expect(storyEditions.map((e) => e.id).toSet(), hasLength(65));
-    expect(storyEditions.map((e) => e.catalogId).toSet(), hasLength(65));
-    for (final topic in templateTopicOrder) {
-      final selected = storyEditions.where((e) => e.category == topic);
-      expect(
-        selected,
-        hasLength(
+  test(
+    '126 story identities retain legacy books and add 44 paid concept volumes',
+    () {
+      expect(_legacyStoryEditions, hasLength(65));
+      expect(storyEditions, hasLength(126));
+      expect(storyEditions.map((e) => e.id).toSet(), hasLength(126));
+      expect(storyEditions.map((e) => e.catalogId).toSet(), {
+        ..._legacyStoryEditions.map((e) => e.catalogId),
+        ..._additionalStoryIdentities.keys,
+        for (var id = -9801; id >= -9844; id--) id,
+      });
+      expect(templateTopicOrder, containsAll(_legacyStoryTopicCounts.keys));
+      for (final entry in _legacyStoryTopicCounts.entries) {
+        final topic = entry.key;
+        final selected = _legacyStoryEditions.where((e) => e.category == topic);
+        expect(selected, hasLength(entry.value));
+        expect(
+          selected.map((e) => e.coverStyle).toSet(),
           topic == '동아리'
-              ? 15
+              ? {10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24}
               : topic == '스포츠·도전'
-              ? 10
-              : 5,
-        ),
-      );
-      expect(
-        selected.map((e) => e.coverStyle).toSet(),
-        topic == '동아리'
-            ? {10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24}
-            : topic == '스포츠·도전'
-            ? {5, 6, 7, 8, 9, 25, 26, 27, 28, 29}
-            : selected.first.exclusivePhotography
-            ? {5, 6, 7, 8, 9}
-            : {0, 1, 2, 3, 4},
-      );
-    }
-    expect(bundledCreationTemplates, hasLength(47));
-    expect(publishedCreationTemplates, hasLength(133));
-    for (final e in storyEditions) {
-      final item = publishedCreationTemplates.singleWhere(
-        (t) => t.id == e.catalogId,
-      );
-      expect(item.isPremium, e.isPremium);
-      expect(item.pageCount, 24);
-      expect(item.documentBuilder, isNotNull);
-      expect(item.tags, containsAll(e.discoveryTags));
-      expect(
-        publishedDesignTemplates.singleWhere((d) => d.id == e.id).tags,
-        containsAll(e.discoveryTags),
-      );
-      expect(pointShopTemplateKey(item), e.productKey);
-      expect(pointShopRequiresFreePrice(e.productKey), !e.isPremium);
-      expect(
-        pointShopLaunchPrices[e.productKey]?.points,
-        e.isPremium ? 1800 : 0,
-      );
-      expect(isPendingTemplateProduct(e.productKey), false);
-      expect(
-        pointShopKnownProducts
-            .singleWhere((p) => p.productKey == e.productKey)
-            .isActive,
-        false,
-      );
-    }
-  });
+              ? {5, 6, 7, 8, 9, 25, 26, 27, 28, 29}
+              : selected.first.exclusivePhotography
+              ? {5, 6, 7, 8, 9}
+              : {0, 1, 2, 3, 4},
+        );
+      }
+      for (final entry in _additionalStoryIdentities.entries) {
+        final edition = storyEditions.singleWhere(
+          (e) => e.catalogId == entry.key,
+        );
+        expect(edition.id, entry.value.id);
+        expect(edition.category, entry.value.category);
+        expect(edition.isPremium, entry.value.paid);
+        expect(edition.coverStyle, entry.value.style);
+        expect(edition.exclusivePhotography, isTrue);
+      }
+      expect(bundledCreationTemplates, hasLength(54));
+      expect(publishedCreationTemplates, hasLength(194));
+      for (final e in storyEditions) {
+        final item = publishedCreationTemplates.singleWhere(
+          (t) => t.id == e.catalogId,
+        );
+        expect(item.isPremium, e.isPremium);
+        expect(item.pageCount, e.innerPages);
+        expect(item.documentBuilder, isNotNull);
+        expect(item.tags, containsAll(e.discoveryTags));
+        expect(
+          publishedDesignTemplates.singleWhere((d) => d.id == e.id).tags,
+          containsAll(e.discoveryTags),
+        );
+        expect(pointShopTemplateKey(item), e.productKey);
+        expect(pointShopRequiresFreePrice(e.productKey), !e.isPremium);
+        expect(
+          pointShopLaunchPrices[e.productKey]?.points,
+          e.qualityRevision == premiumQuartetRevision
+              ? 2500
+              : e.isPremium
+              ? 1800
+              : 0,
+        );
+        expect(isPendingTemplateProduct(e.productKey), false);
+        expect(
+          pointShopKnownProducts
+              .singleWhere((p) => p.productKey == e.productKey)
+              .isActive,
+          false,
+        );
+      }
+    },
+  );
 
   test(
-    '195 matching materials are editable, individually priced and theme-correct',
+    '378 primary story materials remain editable, priced and theme-correct',
     () {
-      expect(storyEditionDecorations, hasLength(130));
-      expect(storyEditionWordArts, hasLength(65));
+      expect(storyEditionDecorations, hasLength(132));
+      expect(storyEditionWordArts, hasLength(66));
+      expect(hobbyExpansionDecorations, hasLength(18));
+      expect(hobbyExpansionWordArts, hasLength(9));
+      expect(milestoneExpansionDecorations, hasLength(10));
+      expect(milestoneExpansionWordArts, hasLength(5));
       final keys = <String>{};
       for (final e in storyEditions) {
         for (final key in e.materialKeys) {
@@ -153,11 +252,11 @@ void main() {
           _fits(l, art.sourceSize);
         }
       }
-      expect(keys, hasLength(195));
+      expect(keys, hasLength(378));
     },
   );
 
-  for (final e in storyEditions) {
+  for (final e in _legacyStoryEditions) {
     for (final aspect in CollectionAspect.printable) {
       test(
         '${e.id}/${aspect.name}: complete authored pages, fitting type and save roundtrip',

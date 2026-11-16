@@ -5,6 +5,7 @@ import '../../../../core/constants/snapfit_colors.dart';
 import '../../domain/moment_record.dart';
 import '../../domain/monthly_album_builder.dart';
 import 'moments_widgets.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 /// Monthly books use the same physical trim and canvas as a newly created
 /// SnapFit album. A preview must never turn that square into a portrait book.
@@ -116,25 +117,18 @@ class MomentBookCover extends StatelessWidget {
                               aspectRatio: .876 * width / (.662 * height),
                               label: '${month.month}월 앨범 표지 사진',
                               fit: BoxFit.contain,
+                              imageDecodeWidth: compact ? 384 : 1200,
                               backgroundColor: SnapFitColors.accentLight,
                             )
                           : ColoredBox(
                               color: Colors.white.withValues(alpha: .8),
                               child: Center(
                                 child: compact
-                                    ? const Icon(
-                                        Icons.add_photo_alternate_outlined,
-                                        color: SnapFitColors.accentInk,
-                                        size: 22,
-                                      )
+                                    ? const ExperienceIcon('ImagePlus', color: SnapFitColors.accentInk, size: 22)
                                     : Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          const Icon(
-                                            Icons.add_photo_alternate_outlined,
-                                            color: SnapFitColors.accentInk,
-                                            size: 30,
-                                          ),
+                                          const ExperienceIcon('ImagePlus', color: SnapFitColors.accentInk, size: 30),
                                           const SizedBox(height: 10),
                                           Text(
                                             '내 사진이 들어갈 자리',

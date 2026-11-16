@@ -9,12 +9,15 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/api/album_provider.dart';
 import '../../data/api/storage_service.dart';
+import '../../data/gallery/browser_photo_asset.dart';
 import '../../domain/entities/album.dart';
+import '../../domain/entities/album_photo_fill_draft.dart';
 import '../../domain/entities/album_source_template.dart';
 import '../../domain/entities/album_edit_failure.dart';
 import '../../data/dto/request/create_album_request.dart';
 import '../../domain/entities/album_page.dart';
 import '../../domain/entities/album_creation_draft.dart';
+import '../../domain/entities/album_creation_attempt.dart';
 import '../../domain/entities/album_save_progress.dart';
 import '../../../../core/constants/cover_size.dart';
 import '../../../../core/constants/album_page_policy.dart';
@@ -49,6 +52,28 @@ class _AlbumSaveAttempt {
   final String expectedUpdatedAt;
   final String requestId;
   final CreateAlbumRequest request;
+}
+
+class _AlbumPhotoFillSnapshot {
+  _AlbumPhotoFillSnapshot(AlbumEditorViewModel editor)
+    : pages = [
+        for (final page in editor._pages)
+          page.copyWith(layers: List<LayerModel>.unmodifiable(page.layers)),
+      ],
+      sourceAlbum = editor._sourceAlbum,
+      productKey = editor._sourceTemplateProductKey,
+      theme = editor._selectedTheme,
+      coverCanvas = editor._lastCoverCanvasSize,
+      innerCanvas = editor._lastInnerCanvasSize,
+      targetPages = editor._targetPagesHint,
+      title = editor._initialAlbumTitle;
+
+  final List<AlbumPage> pages;
+  final Album? sourceAlbum;
+  final String? productKey, title;
+  final CoverTheme theme;
+  final Size coverCanvas, innerCanvas;
+  final int targetPages;
 }
 
 /// 갤러리 + 편집 상태 (MVVM)
@@ -126,6 +151,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   late final AlbumRepository _albumRepository;
 
   final List<AlbumPage> _pages = [];
+  final _photoFillSnapshots = Expando<_AlbumPhotoFillSnapshot>('photo-fill');
   Object _editSessionIdentity = Object();
 
   /// Page IDs are reused in new drafts. Transient editor tools must also match
@@ -136,6 +162,9 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   Album? _sourceAlbum;
   String? _editingActor;
   _AlbumSaveAttempt? _pendingSaveAttempt;
+  AlbumCreationAttempt? _pendingCreationAttempt;
+  String? _creationDraftOwner, _creationDraftId;
+  Future<void> Function(AlbumCreationAttempt)? _persistCreationAttempt;
   Object? _activeSaveIdentity;
   bool _disposed = false;
   bool _checkingRemote = false;
@@ -159,6 +188,14 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
   // ===== Undo / Redo (현재 페이지 기준) =====
   static const int _maxHistory = 30;
+  final _singlePageCanvases = Expando<Size>('local-single-page-canvas');
+  Object? _singlePageDraftSession;
+  bool get _isSinglePageDraft =>
+      _singlePageDraftSession != null &&
+      identical(_singlePageDraftSession, _editSessionIdentity) &&
+      _editingAlbumId == null &&
+      _pages.length == 1 &&
+      _pages.single.id == 'local-single-page';
   final Map<int, List<AlbumPage>> _undoByPage = {};
   final Map<int, List<AlbumPage>> _redoByPage = {};
   bool _historyLocked = false; // undo/redo 적용 중 기록 방지
@@ -168,6 +205,26 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
   bool get hasUnsavedChanges => _hasUnsavedChanges;
   Object? get lastSaveError => _lastSaveError;
+
+  /// Bind only after resetting a new editor. A restored command is immutable,
+  /// while the visible document can keep changing before a safe retry.
+  void bindCreationDraft({
+    required String ownerId,
+    required String draftId,
+    AlbumCreationAttempt? attempt,
+    required Future<void> Function(AlbumCreationAttempt) persist,
+  }) {
+    if (ownerId.isEmpty ||
+        draftId.isEmpty ||
+        attempt != null &&
+            (attempt.ownerId != ownerId || attempt.draftId != draftId)) {
+      throw const AlbumEditSessionChanged();
+    }
+    _creationDraftOwner = ownerId;
+    _creationDraftId = draftId;
+    _pendingCreationAttempt = attempt;
+    _persistCreationAttempt = persist;
+  }
 
   AlbumEditCheckpoint captureEditCheckpoint() => AlbumEditCheckpoint._(
     albumId: _editingAlbumId,
@@ -265,7 +322,185 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
   bool get hasRemoteChanges => syncKind == AlbumEditSyncKind.remoteChanged;
 
+  /// Expose existing conflict recovery without accepting any newer revision or
+  /// replacing the local creation document with server content.
+  void showCreatedAlbumConflict() {
+    if (_editingAlbumId == null || _editingActor != _readOwner()) return;
+    _lastSaveError = const AlbumRevisionConflict();
+    _hasUnsavedChanges = true;
+    _syncStatus(AlbumEditSyncKind.remoteChanged);
+    _emit();
+  }
+
   bool get editingAccessRevoked => !editingAllowed;
+
+  /// 별도 화면에서 선택한 사진은 명시적으로 적용하기 전까지 원본과 격리한다.
+  AlbumPhotoFillDraft? beginPhotoFill() {
+    if (_disposed || _isSaving || _pages.isEmpty) return null;
+    final owner = _readOwner();
+    if (owner == null ||
+        owner.trim().isEmpty ||
+        owner != _editingActor ||
+        !editingAllowed ||
+        _pendingCoverLayersJson != null ||
+        _pendingTemplatePagesAfterLoad != null) {
+      return null;
+    }
+    final draft = AlbumPhotoFillDraft(
+      pages: [for (final page in _pages) page.layers],
+      cover: _cover,
+      pageIndex: _currentPageIndex,
+      ownerId: owner,
+      sessionIdentity: _editSessionIdentity,
+      albumId: _editingAlbumId,
+    );
+    // 작업본의 가변 목록을 원본 비교 기준으로 사용하지 않는다.
+    _photoFillSnapshots[draft] = _AlbumPhotoFillSnapshot(this);
+    return draft;
+  }
+
+  bool isPhotoFillCurrent(AlbumPhotoFillDraft draft) {
+    if (_disposed ||
+        _isSaving ||
+        !identical(draft.sessionIdentity, _editSessionIdentity) ||
+        draft.albumId != _editingAlbumId ||
+        draft.ownerId != _editingActor ||
+        draft.ownerId != _readOwner() ||
+        !editingAllowed) {
+      return false;
+    }
+    final original = _photoFillSnapshots[draft];
+    if (original == null ||
+        draft.cover.name != _cover.name ||
+        draft.cover.ratio != _cover.ratio ||
+        draft.cover.realSize != _cover.realSize ||
+        draft.cover.productId != _cover.productId ||
+        original.sourceAlbum != _sourceAlbum ||
+        original.productKey != _sourceTemplateProductKey ||
+        original.theme != _selectedTheme ||
+        original.coverCanvas != _lastCoverCanvasSize ||
+        original.innerCanvas != _lastInnerCanvasSize ||
+        original.targetPages != _targetPagesHint ||
+        original.title != _initialAlbumTitle ||
+        original.pages.length != _pages.length ||
+        _pendingCoverLayersJson != null ||
+        _pendingTemplatePagesAfterLoad != null) {
+      return false;
+    }
+    for (var page = 0; page < _pages.length; page++) {
+      final before = original.pages[page];
+      final current = _pages[page];
+      if (before.id != current.id ||
+          before.pageIndex != current.pageIndex ||
+          before.isCover != current.isCover ||
+          before.backgroundColor != current.backgroundColor ||
+          before.layers.length != current.layers.length) {
+        return false;
+      }
+      for (var layer = 0; layer < before.layers.length; layer++) {
+        if (!identical(before.layers[layer], current.layers[layer]))
+          return false;
+      }
+    }
+    return true;
+  }
+
+  /// 모든 반환값을 먼저 검증한 뒤 변경된 페이지의 기존 히스토리에만 기록한다.
+  bool applyPhotoFill(AlbumPhotoFillDraft draft, List<List<LayerModel>> pages) {
+    if (!isPhotoFillCurrent(draft) || pages.length != _pages.length)
+      return false;
+    final replacements = <int, List<LayerModel>>{};
+    for (var page = 0; page < _pages.length; page++) {
+      final current = _pages[page].layers;
+      final staged = pages[page];
+      if (current.length != staged.length) return false;
+      final next = List<LayerModel>.of(current);
+      var changed = false;
+      for (var layer = 0; layer < current.length; layer++) {
+        final before = current[layer];
+        final after = staged[layer];
+        if (!_photoFillStructureMatches(before, after)) return false;
+        final asset = after.asset;
+        if (asset is BrowserPhotoAsset && asset.ownerId != draft.ownerId) {
+          return false;
+        }
+        final samePhoto =
+            _photoFillSourceMatches(before, after) &&
+            before.imageOffset == after.imageOffset &&
+            before.imageZoom == after.imageZoom;
+        if (before.type != LayerType.image) {
+          if (!samePhoto ||
+              before.isTemplateContent != after.isTemplateContent) {
+            return false;
+          }
+          continue;
+        }
+        if (!after.imageZoom.isFinite ||
+            after.imageZoom <= 0 ||
+            after.imageOffset != null &&
+                (!after.imageOffset!.dx.isFinite ||
+                    !after.imageOffset!.dy.isFinite) ||
+            before.isTemplateContent != after.isTemplateContent &&
+                (after.isTemplateContent != false ||
+                    _photoFillSourceMatches(before, after))) {
+          return false;
+        }
+        // 사진 도구는 원격 URL을 새로 만들지 않고 기존 원본을 유지/제거한다.
+        if (after.imageUrl != null && after.imageUrl != before.imageUrl ||
+            after.originalUrl != null &&
+                after.originalUrl != before.originalUrl ||
+            after.previewUrl != null && after.previewUrl != before.previewUrl) {
+          return false;
+        }
+        if (!samePhoto || before.isTemplateContent != after.isTemplateContent) {
+          next[layer] = after;
+          changed = true;
+        }
+      }
+      if (changed) replacements[page] = next;
+    }
+    for (final entry in replacements.entries) {
+      _recordPageUndo(entry.key, skipDuplicate: false);
+      _pages[entry.key] = _pages[entry.key].copyWith(layers: entry.value);
+    }
+    if (replacements.isNotEmpty) _emit();
+    return true;
+  }
+
+  bool _photoFillSourceMatches(LayerModel a, LayerModel b) =>
+      identical(a.asset, b.asset) &&
+      a.imageUrl == b.imageUrl &&
+      a.originalUrl == b.originalUrl &&
+      a.previewUrl == b.previewUrl;
+
+  bool _photoFillStructureMatches(LayerModel a, LayerModel b) =>
+      a.id == b.id &&
+      a.type == b.type &&
+      a.position == b.position &&
+      a.text == b.text &&
+      a.textStyle == b.textStyle &&
+      a.textStyleType == b.textStyleType &&
+      a.bubbleColor == b.bubbleColor &&
+      a.scale == b.scale &&
+      a.rotation == b.rotation &&
+      a.textAlign == b.textAlign &&
+      a.width == b.width &&
+      a.height == b.height &&
+      a.canvasClip == b.canvasClip &&
+      a.textBackground == b.textBackground &&
+      a.textFillMode == b.textFillMode &&
+      a.textFillImageUrl == b.textFillImageUrl &&
+      a.imageBackground == b.imageBackground &&
+      a.imageTemplate == b.imageTemplate &&
+      a.decorationFillColor == b.decorationFillColor &&
+      a.decorationBorderColor == b.decorationBorderColor &&
+      a.decorationBorderWidth == b.decorationBorderWidth &&
+      a.decorationCornerRadius == b.decorationCornerRadius &&
+      a.frameBaseWidth == b.frameBaseWidth &&
+      a.frameBaseHeight == b.frameBaseHeight &&
+      a.frameBasePosition == b.frameBasePosition &&
+      a.opacity == b.opacity &&
+      a.zIndex == b.zIndex;
 
   /// Foreground checks detect remote saves/revocation without replacing local
   /// layers. They are advisory; the server CAS remains the write authority.
@@ -440,6 +675,10 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     int targetPages = AlbumPagePolicy.minInnerPages,
     String? sourceTemplateProductKey,
   }) {
+    _pendingCreationAttempt = null;
+    _creationDraftOwner = null;
+    _creationDraftId = null;
+    _persistCreationAttempt = null;
     _clearAllHistory();
     _editSessionIdentity = Object();
     _pages.clear();
@@ -477,6 +716,108 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     final prev = state.value ?? const AlbumEditorState();
     state = AsyncData(prev.copyWith(coverCanvasSize: null));
     _emit();
+  }
+
+  /// Seeds one local page in an isolated provider scope. This creates no album,
+  /// uploads nothing, and never participates in a durable album save session.
+  /// Hosts must override this notifier and its cover/sync providers together.
+  void startSinglePageDraft({
+    required List<LayerModel> layers,
+    required Size canvasSize,
+    int? backgroundColor,
+  }) {
+    if (!canvasSize.width.isFinite ||
+        !canvasSize.height.isFinite ||
+        canvasSize.width <= 0 ||
+        canvasSize.height <= 0) {
+      throw ArgumentError.value(canvasSize, 'canvasSize');
+    }
+    _clearAllHistory();
+    _pages
+      ..clear()
+      ..add(
+        AlbumPage(
+          id: 'local-single-page',
+          layers: List.of(layers),
+          pageIndex: 0,
+          backgroundColor: backgroundColor,
+        ),
+      );
+    _cover = CoverSize(
+      name: '한 장의 기록',
+      ratio: canvasSize.width / canvasSize.height,
+      realSize: Size(10 * canvasSize.width / canvasSize.height, 10),
+    );
+    _selectedTheme = CoverTheme.classic;
+    _currentPageIndex = 0;
+    _editingAlbumId = null;
+    _beginSession(null);
+    _singlePageDraftSession = _editSessionIdentity;
+    _singlePageCanvases[_pages.single] = canvasSize;
+    _pendingCreationAttempt = null;
+    _creationDraftOwner = null;
+    _creationDraftId = null;
+    _persistCreationAttempt = null;
+    _pendingCoverLayersJson = null;
+    _pendingTemplatePagesAfterLoad = null;
+    _pendingTemplateProductKeyAfterLoad = null;
+    _targetPagesHint = 0;
+    _initialCoverImageUrl = null;
+    _initialCoverThumbnailUrl = null;
+    _initialAlbumTitle = null;
+    _lastCoverCanvasSize = canvasSize;
+    _lastInnerCanvasSize = canvasSize;
+    _hasUnsavedChanges = false;
+    ref.read(coverViewModelProvider.notifier).selectCover(_cover);
+    ref.read(coverViewModelProvider.notifier).updateTheme(_selectedTheme);
+    final previous = state.value ?? const AlbumEditorState();
+    state = AsyncData(
+      previous.copyWith(
+        coverCanvasSize: canvasSize,
+        innerCanvasSize: canvasSize,
+      ),
+    );
+    _emit();
+  }
+
+  /// A format change belongs to the isolated moment draft's existing history.
+  /// Saved albums and normal album creation never enter this local session.
+  bool resizeSinglePageDraft({
+    required List<LayerModel> layers,
+    required Size canvasSize,
+  }) {
+    if (!_isSinglePageDraft || _isSaving) return false;
+    if (!canvasSize.width.isFinite ||
+        !canvasSize.height.isFinite ||
+        canvasSize.width <= 0 ||
+        canvasSize.height <= 0) {
+      throw ArgumentError.value(canvasSize, 'canvasSize');
+    }
+    _recordUndo();
+    final page = _pages.single.copyWith(layers: List.of(layers));
+    _pages[0] = page;
+    _singlePageCanvases[page] = canvasSize;
+    _restoreSinglePageCanvas(page);
+    _emit();
+    return true;
+  }
+
+  void _restoreSinglePageCanvas(AlbumPage page) {
+    if (!_isSinglePageDraft) return;
+    final canvas = _singlePageCanvases[page];
+    if (canvas == null) return;
+    _cover = CoverSize(
+      name: '한 장의 기록',
+      ratio: canvas.width / canvas.height,
+      realSize: Size(10 * canvas.width / canvas.height, 10),
+    );
+    _lastCoverCanvasSize = canvas;
+    _lastInnerCanvasSize = canvas;
+    final previous = state.value ?? const AlbumEditorState();
+    state = AsyncData(
+      previous.copyWith(coverCanvasSize: canvas, innerCanvasSize: canvas),
+    );
+    ref.read(coverViewModelProvider.notifier).selectCover(_cover);
   }
 
   /// 스토어 로컬 템플릿(홈 피처드 등)을 에디터 페이지로 직접 시작
@@ -789,7 +1130,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     for (int srcIndex = srcStart; srcIndex < templatePages.length; srcIndex++) {
       final isCover = dstIndex == 0;
       while (_pages.length <= dstIndex) {
-        _pages.add(_service.createPage(index: _pages.length, isCover: false));
+        _pages.add(_newInnerPage());
       }
 
       final targetCanvas = isCover ? _coverReferenceSize : _innerPageCanvasSize;
@@ -1330,7 +1671,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       _checkTemplatePageLimit(count);
       _padInnerPages(count);
       _targetPagesHint = count;
-      await albumVm.createAlbum(
+      final seed = CreateAlbumRequest(
         ratio: cover.ratio.toString(),
         title: title ?? '',
         targetPages: count,
@@ -1352,6 +1693,37 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         coverPreviewUrl: '',
         coverOriginalUrl: '',
         coverTheme: themeLabel,
+      );
+      final persist = _persistCreationAttempt;
+      final draftId = _creationDraftId;
+      if (persist == null || draftId == null || _creationDraftOwner != actor) {
+        throw const AlbumCreationRecoveryRequired();
+      }
+      final attempt = _pendingCreationAttempt ??= AlbumCreationAttempt(
+        ownerId: actor,
+        draftId: draftId,
+        requestId: const Uuid().v4(),
+        seed: seed,
+      );
+      if (attempt.ownerId != actor || attempt.draftId != draftId) {
+        throw const AlbumEditSessionChanged();
+      }
+      // A failed durable write must prevent even the first server request.
+      // Repeating this step also checkpoints edits made after a lost response.
+      await persist(attempt);
+      requireCurrent();
+      await albumVm.createAlbum(
+        requestId: attempt.requestId,
+        expectedUserId: actor,
+        ratio: attempt.seed.ratio,
+        title: attempt.seed.title,
+        targetPages: attempt.seed.targetPages,
+        coverLayersJson: attempt.seed.coverLayersJson,
+        coverImageUrl: attempt.seed.coverImageUrl,
+        coverThumbnailUrl: attempt.seed.coverThumbnailUrl,
+        coverOriginalUrl: attempt.seed.coverOriginalUrl,
+        coverPreviewUrl: attempt.seed.coverPreviewUrl,
+        coverTheme: attempt.seed.coverTheme,
       );
       requireCurrent();
       final created = ref.read(albumViewModelProvider).asData?.value;
@@ -1645,22 +2017,29 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     final style = layer.textStyle ?? const TextStyle(fontSize: 18);
     final isCoverPage = currentPage?.isCover == true;
     final canvas = isCoverPage ? _coverReferenceSize : _innerPageCanvasSize;
-    final naturalPainter = TextPainter(
-      text: TextSpan(text: text, style: style),
-      textDirection: TextDirection.ltr,
-      textAlign: layer.textAlign ?? TextAlign.center,
-      maxLines: null,
-    )..layout(minWidth: 0, maxWidth: 100000);
+    // An authored frame is the document's wrapping width and alignment anchor.
+    // Growing it to the unwrapped text width moves right/center-aligned text
+    // beyond the page, even when a later edit makes the title shorter. New text
+    // already receives its natural initial frame in addTextLayer.
+    final hasFrameWidth = layer.width.isFinite && layer.width > 1;
+    var nextW = layer.width;
+    if (!hasFrameWidth) {
+      final naturalPainter = TextPainter(
+        text: TextSpan(text: text, style: style),
+        textDirection: TextDirection.ltr,
+        textAlign: layer.textAlign ?? TextAlign.center,
+        maxLines: null,
+      )..layout(minWidth: 0, maxWidth: 100000);
+      const hPad = 36.0;
+      final maxCanvasTextW = math.max(24.0, canvas.width - 8.0);
+      nextW = (naturalPainter.width + hPad)
+          .clamp(24.0, maxCanvasTextW)
+          .toDouble();
+    }
 
-    // 렌더러의 기본 텍스트 패딩과 맞춰 clipping을 방지한다.
-    const hPad = 36.0;
+    // Retain descender safety while measuring the same wrapping width as the
+    // saved-frame renderer. Existing valid height never shrinks during editing.
     const vPad = 32.0;
-    final maxCanvasTextW = math.max(24.0, canvas.width - 8.0);
-    final naturalRequiredW = (naturalPainter.width + hPad)
-        .clamp(24.0, maxCanvasTextW)
-        .toDouble();
-    final nextW = math.max(layer.width, naturalRequiredW);
-
     final fittedPainter = TextPainter(
       text: TextSpan(text: text, style: style),
       textDirection: TextDirection.ltr,
@@ -1798,9 +2177,15 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     }
   }
 
+  // Page IDs identify editing targets independently of their current ordinal.
+  // New pages must not alias a retained page or revive a deleted target ID.
+  AlbumPage _newInnerPage() => _service
+      .createPage(index: _pages.length)
+      .copyWith(id: 'page_${const Uuid().v4()}');
+
   void _padInnerPages(int count) {
     while (innerPageCount < count) {
-      _pages.add(_service.createPage(index: _pages.length));
+      _pages.add(_newInnerPage());
     }
   }
 
@@ -1869,7 +2254,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       _pages.removeAt(removedIndex);
     }
     if (wasEven && partner == null) {
-      _pages.add(_service.createPage(index: _pages.length));
+      _pages.add(_newInnerPage());
     }
     for (var i = 0; i < _pages.length; i++) {
       final page = _pages[i];
@@ -1888,9 +2273,17 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   }
 
   /// 현재 페이지에 템플릿 적용 (기존 레이어를 템플릿 레이아웃으로 교체)
-  void applyTemplateToCurrentPage(PageTemplate template, Size canvasSize) {
+  bool applyTemplateToCurrentPage(PageTemplate template, Size canvasSize) {
+    // A layout preview can outlive the permission/session that opened it.
+    // Never replace a read-only page or change a document during its save.
+    if (_disposed ||
+        _isSaving ||
+        !editingAllowed ||
+        _editingActor != _readOwner()) {
+      return false;
+    }
     final page = currentPage;
-    if (page == null) return;
+    if (page == null) return false;
     _recordUndo();
     final fromTemplate = _service.createPageFromTemplate(
       template: template,
@@ -1907,6 +2300,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       backgroundColor: fromTemplate.backgroundColor,
     );
     _emit();
+    return true;
   }
 
   /// 디자인 템플릿(레이어 세트) 적용
@@ -1967,6 +2361,14 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         position: Offset(l.position.dx * sx, l.position.dy * sy),
         width: l.width * sx,
         height: l.height * sy,
+        canvasClip: l.canvasClip == null
+            ? null
+            : Rect.fromLTWH(
+                l.canvasClip!.left * sx,
+                l.canvasClip!.top * sy,
+                l.canvasClip!.width * sx,
+                l.canvasClip!.height * sy,
+              ),
         textStyle: scaledStyle,
       );
     }).toList();
@@ -2525,6 +2927,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     final prevSnapshot = undoStack.removeLast();
     _historyLocked = true;
     _pages[_currentPageIndex] = _clonePage(prevSnapshot);
+    _restoreSinglePageCanvas(_pages[_currentPageIndex]);
     _historyLocked = false;
     _hasUnsavedChanges = _canUndo || _canRedo || _hasUnsavedChanges;
     _emit();
@@ -2542,6 +2945,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     final nextSnapshot = redoStack.removeLast();
     _historyLocked = true;
     _pages[_currentPageIndex] = _clonePage(nextSnapshot);
+    _restoreSinglePageCanvas(_pages[_currentPageIndex]);
     _historyLocked = false;
     _hasUnsavedChanges = _canUndo || _canRedo || _hasUnsavedChanges;
     _emit();
@@ -2554,15 +2958,21 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   }
 
   void _recordUndo() {
+    _recordPageUndo(_currentPageIndex);
+  }
+
+  void _recordPageUndo(int pageIndex, {bool skipDuplicate = true}) {
     if (_historyLocked) return;
-    if (_pages.isEmpty) return;
-    final page = _pages[_currentPageIndex];
+    if (pageIndex < 0 || pageIndex >= _pages.length) return;
+    final page = _pages[pageIndex];
 
     final snapshot = _clonePage(page);
-    final undoStack = _undoByPage.putIfAbsent(_currentPageIndex, () => []);
+    final undoStack = _undoByPage.putIfAbsent(pageIndex, () => []);
 
     // 너무 잦은 중복 기록 방지(간단 비교)
-    if (undoStack.isNotEmpty && _pageEquals(undoStack.last, snapshot)) {
+    if (skipDuplicate &&
+        undoStack.isNotEmpty &&
+        _pageEquals(undoStack.last, snapshot)) {
       return;
     }
 
@@ -2571,16 +2981,27 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     if (undoStack.length > _maxHistory) {
       undoStack.removeAt(0);
     }
-    _redoByPage[_currentPageIndex]?.clear();
+    _redoByPage[pageIndex]?.clear();
   }
 
   AlbumPage _clonePage(AlbumPage page) {
-    return page.copyWith(
+    final clone = page.copyWith(
       layers: page.layers.map((l) => l.copyWith()).toList(growable: true),
     );
+    // Snapshot tags take precedence: an undo snapshot must never inherit the
+    // current canvas. A normal layer/background edit may replace the current
+    // page object, so only that current local page gets the live-size fallback.
+    final canvas =
+        _singlePageCanvases[page] ??
+        (_isSinglePageDraft && identical(page, currentPage)
+            ? _lastCoverCanvasSize
+            : null);
+    if (canvas != null) _singlePageCanvases[clone] = canvas;
+    return clone;
   }
 
   bool _pageEquals(AlbumPage a, AlbumPage b) {
+    if (_singlePageCanvases[a] != _singlePageCanvases[b]) return false;
     if (a.backgroundColor != b.backgroundColor) return false;
     if (a.layers.length != b.layers.length) return false;
     for (int i = 0; i < a.layers.length; i++) {

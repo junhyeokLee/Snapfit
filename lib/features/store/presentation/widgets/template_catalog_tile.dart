@@ -1,7 +1,7 @@
+import 'store_product_badge.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../shared/widgets/catalog_preview_builder.dart';
 import '../../../../core/theme/snapfit_design_tokens.dart'
     show SnapFitRadius, SnapFitShadow;
@@ -15,6 +15,7 @@ import '../../../point_shop/presentation/point_shop_access.dart';
 import '../../domain/entities/premium_template.dart';
 import 'catalog_edition_artwork.dart';
 import 'catalog_item_title.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 class TemplateCatalogTile extends StatefulWidget {
   const TemplateCatalogTile({
@@ -156,32 +157,15 @@ class _TemplateCatalogTileState extends State<TemplateCatalogTile> {
                                 label: widget.template.title,
                               ),
                             ),
-                            if (widget.template.isBest || widget.template.isNew)
-                              Positioned(
-                                left: 9,
-                                bottom: 9,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: widget.template.isBest
-                                        ? const Color(0xFFD4A853)
-                                        : SnapFitColors.actionAccent,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    widget.template.isBest ? 'BEST' : 'NEW',
-                                    style: const TextStyle(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
+                            Positioned(
+                              left: 9,
+                              bottom: 9,
+                              child: StoreProductBadge(
+                                productKey: pointShopTemplateKey(
+                                  widget.template,
                                 ),
                               ),
+                            ),
                           ],
                         ),
                       ),
@@ -199,6 +183,43 @@ class _TemplateCatalogTileState extends State<TemplateCatalogTile> {
                         15,
                         weight: FontWeight.w600,
                       ).copyWith(height: 1.4),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
+                  child: SizedBox(
+                    height: math.max(
+                      34,
+                      MediaQuery.textScalerOf(context).scale(14) * 1.5,
+                    ),
+                    child: LayoutBuilder(
+                      builder: (context, bounds) {
+                        final showSpread =
+                            hasSpread &&
+                            bounds.maxWidth >= 152 &&
+                            MediaQuery.textScalerOf(context).scale(14) <= 17;
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: PointShopProductBadge(
+                                productKey: pointShopTemplateKey(
+                                  widget.template,
+                                ),
+                                unlistedLabel: widget.template.isPremium
+                                    ? '판매 준비 중'
+                                    : '무료',
+                                compact: false,
+                                fontSize: 14,
+                              ),
+                            ),
+                            if (showSpread) ...[
+                              const SizedBox(width: 8),
+                              SizedBox(width: 58, height: 32, child: _spread),
+                            ],
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -251,7 +272,7 @@ class _TemplateCatalogTileState extends State<TemplateCatalogTile> {
                                 ).copyWith(height: 1.4),
                               ),
                               child: widget.comparisonSelected
-                                  ? const Icon(Icons.check, size: 20)
+                                  ? const ExperienceIcon('Check', size: 20)
                                   : const Text('비교'),
                             ),
                           ),
@@ -260,43 +281,6 @@ class _TemplateCatalogTileState extends State<TemplateCatalogTile> {
                   ),
                 ),
                 const Spacer(),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(2, 8, 2, 12),
-                  child: SizedBox(
-                    height: math.max(
-                      34,
-                      MediaQuery.textScalerOf(context).scale(14) * 1.5,
-                    ),
-                    child: LayoutBuilder(
-                      builder: (context, bounds) {
-                        final showSpread =
-                            hasSpread &&
-                            bounds.maxWidth >= 152 &&
-                            MediaQuery.textScalerOf(context).scale(14) <= 17;
-                        return Row(
-                          children: [
-                            Expanded(
-                              child: PointShopProductBadge(
-                                productKey: pointShopTemplateKey(
-                                  widget.template,
-                                ),
-                                unlistedLabel: widget.template.isPremium
-                                    ? '판매 준비 중'
-                                    : '무료',
-                                compact: false,
-                                fontSize: 14,
-                              ),
-                            ),
-                            if (showSpread) ...[
-                              const SizedBox(width: 8),
-                              SizedBox(width: 58, height: 32, child: _spread),
-                            ],
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                ),
               ],
             ),
           ),

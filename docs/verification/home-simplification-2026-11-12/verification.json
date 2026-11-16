@@ -1,0 +1,112 @@
+{
+  "status": "passed",
+  "unique_tests_passed": 331,
+  "failed": 0,
+  "suites": [
+    {
+      "suite": "summary",
+      "exit": 0,
+      "result": "RESULT passed=20 failed=0 skipped=0",
+      "log": "summary-final-tests.log"
+    },
+    {
+      "suite": "monthly",
+      "exit": 0,
+      "result": "RESULT passed=7 failed=0 skipped=0",
+      "log": "monthly-verified-tests.log"
+    },
+    {
+      "suite": "albumEntry",
+      "exit": 0,
+      "result": "RESULT passed=1 failed=0 skipped=0",
+      "log": "albumEntry-tests.log"
+    },
+    {
+      "suite": "choices",
+      "exit": 0,
+      "result": "RESULT passed=8 failed=0 skipped=0",
+      "log": "choices-verified-tests.log"
+    },
+    {
+      "suite": "draft",
+      "exit": 0,
+      "result": "RESULT passed=12 failed=0 skipped=0",
+      "log": "draft-tests.log"
+    },
+    {
+      "suite": "records",
+      "exit": 0,
+      "result": "RESULT passed=49 failed=0 skipped=0",
+      "log": "records-verified-tests.log"
+    },
+    {
+      "suite": "retention",
+      "exit": 0,
+      "result": "RESULT passed=13 failed=0 skipped=0",
+      "log": "retention-verified-tests.log"
+    },
+    {
+      "suite": "reward",
+      "exit": 0,
+      "result": "RESULT passed=30 failed=0 skipped=0",
+      "log": "reward-tests.log"
+    },
+    {
+      "suite": "format",
+      "exit": 0,
+      "result": "RESULT passed=8 failed=0 skipped=0",
+      "log": "format-final-tests.log"
+    },
+    {
+      "suite": "creationRoutes",
+      "exit": 0,
+      "result": "RESULT passed=12 failed=0 skipped=0",
+      "log": "creationRoutes-final-tests.log"
+    },
+    {
+      "suite": "creationEntry",
+      "exit": 0,
+      "result": "RESULT passed=35 failed=0 skipped=0",
+      "log": "creationEntry-tests.log"
+    },
+    {
+      "suite": "creationJourney",
+      "exit": 0,
+      "result": "RESULT passed=6 failed=0 skipped=0",
+      "log": "creationJourney-tests.log"
+    },
+    {
+      "suite": "home",
+      "exit": 0,
+      "result": "RESULT passed=17 failed=0 skipped=0",
+      "log": "home-verified-tests.log"
+    },
+    {
+      "suite": "chrome",
+      "exit": 0,
+      "result": "RESULT passed=20 failed=0 skipped=0",
+      "log": "chrome-tests.log"
+    },
+    {
+      "suite": "depth",
+      "exit": 0,
+      "result": "RESULT passed=76 failed=0 skipped=0",
+      "log": "depth-tests.log"
+    },
+    {
+      "suite": "guide",
+      "exit": 0,
+      "result": "RESULT passed=11 failed=0 skipped=0",
+      "log": "guide-tests.log"
+    },
+    {
+      "suite": "firstflow",
+      "exit": 0,
+      "result": "RESULT passed=6 failed=0 skipped=0",
+      "log": "firstflow-tests.log"
+    }
+  ],
+  "platform": "native Flutter widget tests, synthetic local repositories",
+  "full_app_build": false,
+  "server_mutations": false
+}

@@ -1,5 +1,22 @@
 # SnapFit: Album Mark
 
+## Current splash — 2026-10-29
+
+The production splash now shows a people-free, printed-photo album on the logo
+cyan background (`#0AB5D1`) with the white SnapFit lockup. Portrait and landscape
+artwork replace the earlier couple photograph. The generated source PNGs retain
+their metadata; selected files and final editing prompts are recorded in
+`assets/brand/album-mark/splash-provenance-20261029.json`.
+
+Flutter uses the orientation-specific artwork during the existing native splash
+interval. Android and iOS system launch screens use the original centered book
+logo on cyan, including matching window and system-bar backgrounds. The app icon,
+album content and web's immediate-entry behavior are retained. Six phone/tablet
+layouts are captured by `test/widget/splash_artwork_layout_test.dart`.
+
+The sections below document the original September exploration; their coastal
+scene descriptions are historical, rather than the current splash design.
+
 ## Scope
 
 Static brand exploration requested on 2026-09-07. The latest request explicitly

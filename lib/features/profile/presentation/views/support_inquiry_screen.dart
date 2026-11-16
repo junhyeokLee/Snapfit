@@ -16,8 +16,12 @@ class SupportInquiryScreen extends ConsumerStatefulWidget {
     super.key,
     this.initialCategory = 'GENERAL',
     this.initialSubject = '',
+    this.isOwnerCurrent,
+    this.onSubmitted,
   });
   final String initialCategory, initialSubject;
+  final bool Function()? isOwnerCurrent;
+  final VoidCallback? onSubmitted;
 
   @override
   ConsumerState<SupportInquiryScreen> createState() =>
@@ -109,6 +113,10 @@ class _SupportInquiryScreenState extends ConsumerState<SupportInquiryScreen> {
     if (!mounted || _submitting || ModalRoute.of(context)?.isCurrent == false) {
       return;
     }
+    if (_sent) {
+      Navigator.of(context).pop(true);
+      return;
+    }
     _exitGuardKey.currentState?.requestClose();
   }
 
@@ -116,6 +124,7 @@ class _SupportInquiryScreenState extends ConsumerState<SupportInquiryScreen> {
     if (!mounted ||
         _submitting ||
         _sent ||
+        widget.isOwnerCurrent?.call() == false ||
         (kIsWeb && !_webOwnerCurrent) ||
         ModalRoute.of(context)?.isCurrent == false) {
       return;
@@ -145,12 +154,13 @@ class _SupportInquiryScreenState extends ConsumerState<SupportInquiryScreen> {
             subject: subject,
             message: message,
           );
-      if (!mounted) return;
+      if (!mounted || widget.isOwnerCurrent?.call() == false) return;
       setState(() => _sent = true);
+      widget.onSubmitted?.call();
       if (kIsWeb && !_webOwnerCurrent) return;
       if (ModalRoute.of(context)?.isCurrent == false) return;
-      context.showSnack('문의가 접수되었습니다. 빠르게 답변드릴게요.');
-      Navigator.of(context).pop();
+      context.showSnack('문의가 접수되었습니다.');
+      Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted || (kIsWeb && !_webOwnerCurrent)) return;
       final msg = AppErrorMapper.toUserMessage(e);

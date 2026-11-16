@@ -1,0 +1,175 @@
+{
+  "date": "2026-11-12",
+  "timezone": "Asia/Seoul",
+  "status": "implemented and locally verified",
+  "functionalTests": {
+    "passed": 85,
+    "failed": 0,
+    "skipped": 0,
+    "suites": [
+      {
+        "suite": "page",
+        "passed": 19,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/page.log"
+      },
+      {
+        "suite": "state",
+        "passed": 12,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/state.log"
+      },
+      {
+        "suite": "history",
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/history.log"
+      },
+      {
+        "suite": "repository",
+        "passed": 11,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/repository.log"
+      },
+      {
+        "suite": "owner",
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/owner.log"
+      },
+      {
+        "suite": "responsive",
+        "passed": 26,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/responsive.log"
+      },
+      {
+        "suite": "aiReturn",
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/aiReturn.log"
+      }
+    ]
+  },
+  "captureScenariosPassed": 4,
+  "acceptedImages": [
+    "before/02-history-spent-390x844.png",
+    "after/01-history-all-390x844.png",
+    "after/03-history-spent-320x844-dark-large-text.png",
+    "after/04-history-more-390x844.png"
+  ],
+  "excludedImages": [
+    {
+      "path": "before/01-history-all-390x844.png",
+      "reason": "Native offscreen capture omitted wallet text; not used as full-layout evidence"
+    },
+    {
+      "path": "after/02-history-spent-390x844.png",
+      "reason": "Fixed header and wallet text omitted by native offscreen capture"
+    },
+    {
+      "path": "after/recapture/02-history-spent-390x844.png",
+      "reason": "Fixed header omitted again; complete dark 320x844 capture used for spent-state evidence"
+    }
+  ],
+  "beforeEvidence": {
+    "sourceRows": 6,
+    "queryLimit": 5,
+    "spentFound": false,
+    "incorrectEmptyState": true
+  },
+  "afterEvidence": {
+    "spentFound": true,
+    "incorrectEmptyState": false,
+    "filteredQuery": {
+      "source": "page",
+      "userId": "11111111-1111-4111-8111-111111111111",
+      "filter": "spent",
+      "limit": 21,
+      "before": null
+    },
+    "moreButtonVisible": true,
+    "capturePurchaseCalls": 0
+  },
+  "queryContract": {
+    "pageSize": 20,
+    "maxPageSize": 50,
+    "lookaheadRows": 1,
+    "filterBeforeLimit": true,
+    "order": [
+      "created_at desc",
+      "id desc"
+    ],
+    "cursor": [
+      "created_at",
+      "id"
+    ],
+    "ownerPredicatePreserved": true,
+    "summaryDefaultLimit": 5,
+    "schemaChanged": false
+  },
+  "refreshInvalidationSites": {
+    "count": 11,
+    "paths": [
+      "lib/main.dart",
+      "lib/features/attendance/presentation/views/attendance_screen.dart",
+      "lib/features/point_shop/data/point_shop_provider.dart",
+      "lib/features/referral/presentation/views/referral_screen.dart",
+      "lib/features/moments/presentation/views/moment_compose_screen.dart",
+      "lib/features/social/presentation/views/social_profile_screen.dart",
+      "lib/features/social/presentation/widgets/social_profile_personal_area.dart",
+      "lib/features/profile/presentation/views/billing_management_screen.dart",
+      "lib/features/profile/presentation/views/billing_management_screen.dart",
+      "lib/features/billing/data/billing_provider.dart",
+      "lib/features/billing/presentation/widgets/web_point_topup_panel.dart"
+    ]
+  },
+  "analysis": {
+    "files": 18,
+    "result": "No issues found!",
+    "log": "logs/analysis.log"
+  },
+  "independentReview": {
+    "completed": true,
+    "unresolvedFindings": 0
+  },
+  "testFixtureNotes": [
+    "Riverpod 3.2.1 family fixtures use overrideWith2 for factories that receive a filter",
+    "Mock HTTP responses explicitly attach request as the installed PostgREST response parser requires it",
+    "The final static analysis removes one redundant test import; no production or assertion changed after the passing suites"
+  ],
+  "limits": [
+    "No live database or RLS execution",
+    "No real purchase or wallet change",
+    "Native Flutter widget captures with synthetic ledger and bundled fonts",
+    "Web layout and browser execution not captured; shared query/controller and web wiring are analyzed",
+    "No complete app build, real device, screen-reader or measured contrast audit"
+  ],
+  "sha256": {
+    "lib/main.dart": "513c24f993485459dcdca077e7397b0fde840f14feb23392fed48f0eb3f18980",
+    "lib/features/attendance/presentation/views/attendance_screen.dart": "4c91ba3032d5913f9313349dcadf583269d5e3fdfb1d7eae2483a84dc5a7f8ee",
+    "lib/features/point_shop/data/point_shop_provider.dart": "ca76d1d150fe6047b4525fd6402b7fb268650447382c03bf7ed6eb360c8edf66",
+    "lib/features/referral/presentation/views/referral_screen.dart": "39df7d4dccd5d872e5b61e4dda78041faafd944610351c42497ecc5ab275456c",
+    "lib/features/moments/presentation/views/moment_compose_screen.dart": "24572a9fb87e1c926e7e9c334303e2f48bfea4615b9506300f8dbcfb3cdf3303",
+    "lib/features/social/presentation/views/social_profile_screen.dart": "5743225dbcf2d35407fe227553c5c55080fc70aa7614dfba7ee03425967a96f7",
+    "lib/features/social/presentation/widgets/social_profile_personal_area.dart": "f2a5a662a0557d3acdb39dce7541862d504da5d5ba00b714231bb6608ef6772d",
+    "lib/features/profile/presentation/views/billing_management_screen.dart": "ebe21e18a48e00d194ac66130885c0c83d305c6aeaa8db057226679134c54594",
+    "lib/features/billing/data/billing_provider.dart": "49d498fa92ca99894833c5b4a56d13a826ef8134159eb4b5d789acad9c04aa71",
+    "lib/features/billing/presentation/widgets/web_point_topup_panel.dart": "47e46e493352c09357d03c17921e0c425cc489b515e249490ace4a54c847cd6d",
+    "lib/features/billing/data/billing_repository.dart": "89f0f5e411afd1cbd130b89396a485a1600fafbc298056981095012c1e76b023",
+    "test/unit/point_ledger_page_repository_test.dart": "08686a69f17bde071ec1a79b179f129a3d9f88b0451b700144f30d20b83dca40",
+    "test/unit/point_ledger_history_provider_test.dart": "f7ec59f7a65b68c47623e26116bc527de37ead96921a56611f820f18d4b5ceb8",
+    "test/widget/point_ledger_history_test.dart": "468b683714d63fa471f8be306a04e47ba70702c827c5f1ff1b25aea5eda54696",
+    "test/support/point_ledger_history_fakes.dart": "23569fdddbe0cb9b599a35196a5fc24df81673e2e08e1d240a901e4a601852cc",
+    "test/widget/billing_responsive_refinement_test.dart": "f28e02a29bb5d2784226deecc49fd3ea44e3596c3095cdede9bb06df3fb0e5c7",
+    "test/widget/billing_management_ai_return_test.dart": "5616a2b7540978d24d742b8a451504bcda2d4225e9623a7016966227edf03fde",
+    "test/widget/web_billing_design_capture_test.dart": "c824c610e6af89ba60d2c827bf6baeed22497268c5fd23ba8ff5bd2629635ffd"
+  }
+}

@@ -7,6 +7,7 @@ import '../../../../core/templates/studio_decoration_catalog.dart';
 import '../../../../core/templates/studio_phrase_catalog.dart';
 import '../../../../core/templates/studio_word_art_catalog.dart';
 import '../../../../core/templates/story_edition_catalog.dart';
+import '../../../../core/templates/premium_quartet_frame_catalog.dart';
 import '../../../../shared/widgets/image_frame_style_picker.dart'
     show imageFrameStyles;
 import '../../domain/entities/catalog_material.dart';
@@ -27,14 +28,17 @@ List<CatalogMaterial> get bundledMaterials => [
       label: spec.label,
       type: spec.category == StudioDecorationCategory.paper ? '종이' : '스티커',
       collection: spec.collection,
-      isPremium: storyMaterialsById[spec.id]?.isPremium ?? false,
+      isPremium: storyEditionForMaterial(spec.id)?.isPremium ?? false,
     ),
   for (final frame in imageFrameStyles.where((f) => f.key.isNotEmpty))
     CatalogMaterial(
       productKey: 'frame:${frame.key}',
       label: frame.label,
       type: '프레임',
-      collection: frame.category,
+      collection:
+          storyEditionsById[premiumQuartetFrameBookIds[frame.key]]?.title ??
+          frame.category,
+      isPremium: premiumQuartetFramesById.containsKey(frame.key),
     ),
   for (final phrase in studioPhrases)
     CatalogMaterial(
@@ -48,8 +52,8 @@ List<CatalogMaterial> get bundledMaterials => [
       productKey: art.productKey,
       label: art.label,
       type: '문구',
-      collection: storyEditionsById[art.id]?.title,
-      isPremium: storyEditionsById[art.id]?.isPremium ?? false,
+      collection: storyEditionForMaterial(art.id)?.title,
+      isPremium: storyEditionForMaterial(art.id)?.isPremium ?? false,
     ),
 ];
 

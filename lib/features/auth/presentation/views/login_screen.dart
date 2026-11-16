@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/theme/snapfit_design_tokens.dart' show SnapFitRadius;
@@ -25,16 +26,19 @@ import '../../domain/consent_policy.dart';
 import '../../domain/email_auth_error.dart';
 import '../../domain/web_oauth.dart';
 import '../viewmodels/auth_view_model.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({
     super.key,
     this.startInPasswordReset = false,
     this.authNotice,
+    this.onRetrySession,
   });
 
   final bool startInPasswordReset;
   final String? authNotice;
+  final VoidCallback? onRetrySession;
 
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
@@ -48,6 +52,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _animateIn = false;
   final _scrollController = ScrollController();
   final _formHostKey = GlobalKey();
+  VideoPlayerController? _videoBgController;
 
   final _signUpFormKey = GlobalKey<FormState>();
   final _emailLoginFormKey = GlobalKey<FormState>();
@@ -72,6 +77,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _showNewPasswordConfirm = false;
   String? _pendingConfirmationEmail;
   bool _resetEmailSent = false;
+  String? _resetEmailSentTo;
   bool _confirmationEmailResent = false;
   bool _confirmationNeedsRequest = false;
   bool _passwordChangeComplete = false;
@@ -87,6 +93,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   bool get _isLoading => _loadingProvider != null;
   bool get _canCreateEmailAccount => _termsChecked && _privacyChecked;
+  bool get _hasVideoBackground =>
+      !kIsWeb &&
+      (_videoBgController?.value.isInitialized ?? false) &&
+      _mode == _AuthMode.login;
 
   @override
   void initState() {
@@ -95,18 +105,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     _mode = widget.startInPasswordReset
         ? _AuthMode.resetPassword
         : _AuthMode.login;
+    _resetEmailController.addListener(_onResetEmailChanged);
     ScreenLogger.enter('LoginScreen', '카카오/구글/이메일 로그인 진입 화면');
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      setState(() => _animateIn = true);
-    });
+    if (kIsWeb) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() => _animateIn = true);
+      });
+    } else {
+      _initVideoBg();
+    }
+  }
+
+  Future<void> _initVideoBg() async {
+    final controller = VideoPlayerController.asset('assets/snapfit_intro.mp4');
+    _videoBgController = controller;
+    try {
+      await controller.initialize();
+    } catch (e) {
+      debugPrint('[LoginBg] initialize error: $e');
+      // 비디오 실패 시 일반 화면으로 페이드인
+      if (mounted) setState(() => _animateIn = true);
+      return;
+    }
+    if (!mounted) return;
+    controller.setLooping(true);
+    controller.setVolume(0);
+    controller.play();
+    setState(() => _animateIn = true);
   }
 
   @override
   void didUpdateWidget(covariant LoginScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.authNotice != widget.authNotice &&
-        widget.authNotice != null) {
+        (widget.authNotice != null ||
+            _emailFormError == oldWidget.authNotice)) {
       _emailFormError = widget.authNotice;
       if (_loadingProvider == _LoginProvider.kakao ||
           _loadingProvider == _LoginProvider.google) {
@@ -125,6 +159,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     _socialLoginRevision++;
     _confirmationCooldownTimer?.cancel();
     _resetCooldownTimer?.cancel();
+    _videoBgController?.dispose();
     _scrollController.dispose();
     _nameController.dispose();
     _emailController.dispose();
@@ -133,6 +168,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     _confirmationCodeController.dispose();
     _loginEmailController.dispose();
     _loginPasswordController.dispose();
+    _resetEmailController.removeListener(_onResetEmailChanged);
     _resetEmailController.dispose();
     _newPasswordController.dispose();
     _newPasswordConfirmController.dispose();
@@ -317,6 +353,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  void _onResetEmailChanged() {
+    // 커서 이동은 발송 안내를 지우지 않고, 실제 수신 주소가 바뀔 때만 지운다.
+    if (_resetEmailSent &&
+        _resetEmailController.text.trim() != _resetEmailSentTo) {
+      setState(() => _resetEmailSent = false);
+    }
+  }
+
   Future<void> _requestPasswordReset() async {
     if (!mounted ||
         _mode != _AuthMode.resetRequest ||
@@ -325,6 +369,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     FocusScope.of(context).unfocus();
     if (_isLoading || _resetCooldown > 0) return;
     if (!(_resetPasswordFormKey.currentState?.validate() ?? false)) return;
+    final email = _resetEmailController.text.trim();
     setState(() {
       _emailFormError = null;
       _loadingProvider = _LoginProvider.email;
@@ -332,10 +377,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       await ref
           .read(authViewModelProvider.notifier)
-          .requestPasswordReset(_resetEmailController.text.trim());
+          .requestPasswordReset(email);
       if (!mounted) return;
-      setState(() => _resetEmailSent = true);
       _startEmailCooldown(confirmation: false);
+      if (_mode != _AuthMode.resetRequest ||
+          ModalRoute.of(context)?.isCurrent == false)
+        return;
+      setState(() {
+        _resetEmailSentTo = email;
+        _resetEmailSent = _resetEmailController.text.trim() == email;
+      });
       context.showSnack('비밀번호 재설정 메일을 보냈어요.');
     } catch (e) {
       if (!mounted) return;
@@ -439,6 +490,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _submitNewPassword() async {
     if (!mounted ||
         _isLoading ||
+        _passwordChangeComplete ||
         _mode != _AuthMode.resetPassword ||
         ModalRoute.of(context)?.isCurrent == false)
       return;
@@ -455,6 +507,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           .updatePassword(_newPasswordController.text);
       TextInput.finishAutofillContext();
       if (!mounted) return;
+      // 성공한 입력은 다시 제출하지 않도록 지우고 완료 화면으로 전환한다.
+      _newPasswordController.clear();
+      _newPasswordConfirmController.clear();
       setState(() => _passwordChangeComplete = true);
       context.showSnack('비밀번호가 변경되었어요.');
     } catch (e) {
@@ -468,6 +523,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } finally {
       if (mounted) setState(() => _loadingProvider = null);
     }
+  }
+
+  bool get _canReturnAfterPasswordChange {
+    final auth = ref.read(authViewModelProvider);
+    return !auth.isLoading &&
+        !auth.hasError &&
+        auth.asData?.value != null &&
+        Navigator.of(context).canPop();
+  }
+
+  void _finishPasswordReset() {
+    if (!mounted ||
+        _isLoading ||
+        !_passwordChangeComplete ||
+        _mode != _AuthMode.resetPassword ||
+        ModalRoute.of(context)?.isCurrent == false)
+      return;
+    // 유효한 세션 위에 열린 복구 화면만 닫고, 루트의 인증 판단은 AuthGate에 맡긴다.
+    if (_canReturnAfterPasswordChange) {
+      Navigator.of(context).pop();
+      return;
+    }
+    _switchMode(_AuthMode.emailLogin);
   }
 
   Future<void> _submitEmailSignUp() async {
@@ -595,30 +673,72 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: Builder(builder: _buildWebLogin),
       );
     }
+    final videoBg = _videoBgController;
+    final hasVideo =
+        videoBg != null &&
+        videoBg.value.isInitialized &&
+        _mode == _AuthMode.login;
+    // Show dark bg immediately while video initializes to avoid white flash.
+    final videoPending =
+        !kIsWeb && videoBg != null && !_animateIn && _mode == _AuthMode.login;
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SnapFitTheme.systemOverlayStyle(context),
+      value: hasVideo
+          ? SystemUiOverlayStyle.light
+          : SnapFitTheme.systemOverlayStyle(context),
       child: Scaffold(
-        backgroundColor: SnapFitColors.isDark(context)
-            ? SnapFitColors.deepCharcoal
-            : const Color(0xFFF9F7F4),
-        body: _AuthResponsiveShell(
-          controller: _scrollController,
-          animateIn: _animateIn,
-          mode: _mode,
-          keyboardOpen: MediaQuery.viewInsetsOf(context).bottom > 0,
-          form: KeyedSubtree(
-            key: _formHostKey,
-            child: Semantics(
-              container: true,
-              child: switch (_mode) {
-                _AuthMode.login => _buildLoginCard(context),
-                _AuthMode.emailLogin => _buildEmailLoginCard(context),
-                _AuthMode.signup => _buildSignUpCard(context),
-                _AuthMode.resetRequest ||
-                _AuthMode.resetPassword => _buildResetPasswordCard(context),
-              },
+        backgroundColor: (hasVideo || videoPending)
+            ? Colors.black
+            : Theme.of(context).scaffoldBackgroundColor,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (hasVideo) ...[
+              FittedBox(
+                fit: BoxFit.cover,
+                clipBehavior: Clip.hardEdge,
+                child: SizedBox(
+                  width: videoBg.value.size.width,
+                  height: videoBg.value.size.height,
+                  child: VideoPlayer(videoBg),
+                ),
+              ),
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0x66000000),
+                      Color(0x33000000),
+                      Color(0x88000000),
+                    ],
+                    stops: [0.0, 0.45, 1.0],
+                  ),
+                ),
+              ),
+            ],
+            _AuthResponsiveShell(
+              controller: _scrollController,
+              // 영상 준비 상태와 관계없이 일반 로그인·입력 폼은 바로 읽을 수 있다.
+              animateIn: _animateIn || !hasVideo,
+              mode: _mode,
+              keyboardOpen: MediaQuery.viewInsetsOf(context).bottom > 0,
+              videoBackground: hasVideo,
+              form: KeyedSubtree(
+                key: _formHostKey,
+                child: Semantics(
+                  container: true,
+                  child: switch (_mode) {
+                    _AuthMode.login => _buildLoginCard(context),
+                    _AuthMode.emailLogin => _buildEmailLoginCard(context),
+                    _AuthMode.signup => _buildSignUpCard(context),
+                    _AuthMode.resetRequest ||
+                    _AuthMode.resetPassword => _buildResetPasswordCard(context),
+                  },
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -776,18 +896,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         children: [
           if (_emailFormError != null) ...[
             _emailErrorNotice(),
+            if (widget.onRetrySession != null && widget.authNotice != null)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  key: const ValueKey('auth-retry-session'),
+                  onPressed: _isLoading ? null : widget.onRetrySession,
+                  icon: const ExperienceIcon('RefreshCw', size: 18),
+                  label: const Text('계정 다시 확인'),
+                ),
+              ),
             const SizedBox(height: 12),
           ],
-          Text('내 앨범으로 계속하기', style: _titleStyle(context)),
-          if (!kIsWeb) ...[
-            const SizedBox(height: 8),
-            Text(
-              '앨범을 만들 때 사용한 방법으로 로그인해 주세요.',
-              key: const ValueKey('auth-login-guidance'),
-              style: ExperienceFormStyle.text(context, 13, secondary: true),
-            ),
-          ],
-          SizedBox(height: 22),
+          if (!_hasVideoBackground) ...[
+            Text('내 앨범으로 계속하기', style: _titleStyle(context)),
+            if (!kIsWeb) ...[
+              const SizedBox(height: 8),
+              Text(
+                '앨범을 만들 때 사용한 방법으로 로그인해 주세요.',
+                key: const ValueKey('auth-login-guidance'),
+                style: ExperienceFormStyle.text(context, 13, secondary: true),
+              ),
+            ],
+            const SizedBox(height: 22),
+          ] else
+            const SizedBox(height: 4),
           _SocialLoginButton.kakao(
             loading:
                 _loadingProvider == _LoginProvider.kakao && !_confirmingConsent,
@@ -831,18 +964,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           ],
           SizedBox(height: 16),
-          const _DividerWithText('또는'),
+          _DividerWithText('또는', videoBg: _hasVideoBackground),
           SizedBox(height: 12),
           OutlinedButton(
             onPressed: _isLoading
                 ? null
                 : () => _switchMode(_AuthMode.emailLogin),
-            style: _outlineButtonStyle(context),
+            style: _hasVideoBackground
+                ? _outlineButtonStyleOnVideo(context)
+                : _outlineButtonStyle(context),
             child: const Text('이메일로 로그인'),
           ),
           SizedBox(height: 8),
           TextButton(
             onPressed: _isLoading ? null : () => _switchMode(_AuthMode.signup),
+            style: _hasVideoBackground
+                ? TextButton.styleFrom(foregroundColor: Colors.white70)
+                : null,
             child: const Text('이메일로 새 계정 만들기'),
           ),
           TextButton.icon(
@@ -863,7 +1001,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       );
                     }
                   },
-            icon: const Icon(Icons.auto_stories_outlined, size: 19),
+            icon: const ExperienceIcon('BookOpen', size: 19),
             label: const Text('먼저 디자인 둘러보기'),
           ),
           SizedBox(height: 12),
@@ -899,7 +1037,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 onPressed: _isLoading
                     ? null
                     : () => _switchMode(_AuthMode.login),
-                icon: const Icon(Icons.close_rounded),
+                icon: const ExperienceIcon('X'),
               ),
             ],
           ),
@@ -988,6 +1126,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Widget _buildResetPasswordCard(BuildContext context) {
     final isUpdate = _mode == _AuthMode.resetPassword;
+    if (isUpdate && _passwordChangeComplete) {
+      return _buildPasswordCompletionCard(context);
+    }
     return _AuthPaperCard(
       maxWidth: 500,
       child: Form(
@@ -1013,7 +1154,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 onPressed: _isLoading
                     ? null
                     : () => _switchMode(_AuthMode.emailLogin),
-                icon: const Icon(Icons.close_rounded),
+                icon: const ExperienceIcon('X'),
               ),
             ],
           ),
@@ -1032,11 +1173,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const _InlineAuthNotice(
                   icon: Icons.mark_email_read_rounded,
                   text: '입력한 이메일로 재설정 링크를 보냈어요. 메일함을 확인해주세요.',
-                ),
-              if (_passwordChangeComplete)
-                const _InlineAuthNotice(
-                  icon: Icons.check_circle_rounded,
-                  text: '비밀번호가 변경되었어요. 이제 새 비밀번호로 로그인할 수 있어요.',
                 ),
             ],
           ),
@@ -1128,7 +1264,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   )
                 : Text(
                     isUpdate
-                        ? (_passwordChangeComplete ? '다시 변경하기' : '비밀번호 변경하기')
+                        ? '비밀번호 변경하기'
                         : _resetCooldown > 0
                         ? '$_resetCooldown초 후 다시 보내기'
                         : _resetEmailSent
@@ -1143,6 +1279,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: const Text('이메일 로그인으로 돌아가기'),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildPasswordCompletionCard(BuildContext context) {
+    // 완료 뒤 세션 검증이 진행되거나 실패해도 이전 사용자로 복귀하지 않는다.
+    ref.watch(authViewModelProvider);
+    final canReturn = _canReturnAfterPasswordChange;
+    return _AuthPaperCard(
+      maxWidth: 500,
+      child: _AuthFormLayout(
+        header: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const _CardEyebrow('계정 복구'),
+            const SizedBox(height: 8),
+            Text('비밀번호 변경 완료', style: _titleStyle(context)),
+          ],
+        ),
+        fields: Align(
+          alignment: Alignment.centerLeft,
+          child: ExperienceIcon('CheckCircle2', size: 48, color: ExperienceFormStyle.selectionInk(context),
+          ),
+        ),
+        aside: Text(
+          canReturn ? '새 비밀번호가 저장되었어요.' : '새 비밀번호로 로그인해 주세요.',
+          style: _bodyStyle(context),
+        ),
+        action: ElevatedButton(
+          key: const ValueKey('auth-password-complete'),
+          onPressed: _isLoading ? null : _finishPasswordReset,
+          style: _primaryButtonStyle(context),
+          child: Text(canReturn ? '스냅핏으로 돌아가기' : '이메일로 로그인'),
+        ),
+        secondary: const SizedBox.shrink(),
       ),
     );
   }
@@ -1169,7 +1340,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 onPressed: _isLoading
                     ? null
                     : () => _switchMode(_AuthMode.signup),
-                icon: const Icon(Icons.close_rounded),
+                icon: const ExperienceIcon('X'),
               ),
             ],
           ),
@@ -1317,7 +1488,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 onPressed: _isLoading
                     ? null
                     : () => _switchMode(_AuthMode.login),
-                icon: const Icon(Icons.close_rounded),
+                icon: const ExperienceIcon('X'),
               ),
             ],
           ),
@@ -1550,7 +1721,7 @@ class _AuthConsentSheetState extends State<_AuthConsentSheet> {
                         IconButton(
                           key: const ValueKey('auth-consent-close'),
                           tooltip: '동의 취소',
-                          icon: const Icon(Icons.close),
+                          icon: const ExperienceIcon('X'),
                           onPressed: () => _finish(),
                         ),
                       ],
@@ -1780,6 +1951,7 @@ class _AuthResponsiveShell extends StatelessWidget {
     required this.mode,
     required this.form,
     required this.keyboardOpen,
+    this.videoBackground = false,
   });
 
   final bool animateIn;
@@ -1787,9 +1959,21 @@ class _AuthResponsiveShell extends StatelessWidget {
   final _AuthMode mode;
   final Widget form;
   final bool keyboardOpen;
+  final bool videoBackground;
 
   @override
-  Widget build(BuildContext context) => SafeArea(
+  Widget build(BuildContext context) {
+    final child = _buildShell(context);
+    if (videoBackground) {
+      return Theme(
+        data: Theme.of(context).copyWith(brightness: Brightness.dark),
+        child: child,
+      );
+    }
+    return child;
+  }
+
+  Widget _buildShell(BuildContext context) => SafeArea(
     child: LayoutBuilder(
       builder: (context, constraints) {
         final login = mode == _AuthMode.login;
@@ -1797,6 +1981,9 @@ class _AuthResponsiveShell extends StatelessWidget {
             constraints.maxWidth >= 540 &&
             MediaQuery.orientationOf(context) == Orientation.landscape;
         final reducedMotion = MediaQuery.disableAnimationsOf(context);
+        final brandTextColor = videoBackground
+            ? Colors.white
+            : ExperienceFormStyle.ink(context);
         final brand = Row(
           key: const ValueKey('auth-brand'),
           children: [
@@ -1813,7 +2000,7 @@ class _AuthResponsiveShell extends StatelessWidget {
                     fontSize: 28,
                     letterSpacing: 0,
                     fontWeight: FontWeight.w700,
-                    color: ExperienceFormStyle.ink(context),
+                    color: brandTextColor,
                   ),
                 ),
               ),
@@ -1862,6 +2049,62 @@ class _AuthResponsiveShell extends StatelessWidget {
               ),
             ),
           );
+        if (videoBackground) {
+          return AnimatedOpacity(
+            opacity: animateIn ? 1 : 0,
+            duration: Duration(milliseconds: reducedMotion ? 0 : 320),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                  child: brand,
+                ),
+                const Spacer(),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(28, 0, 28, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '소중한 순간을\n나만의 이야기로.',
+                        style: const TextStyle(
+                          fontSize: 30,
+                          height: 1.25,
+                          letterSpacing: -0.5,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        '사진을 모아 세상에 하나뿐인 앨범을 만드세요.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          height: 1.5,
+                          color: Colors.white.withValues(alpha: 0.72),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Container(
+                  margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+                  padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.48),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.1),
+                    ),
+                  ),
+                  child: form,
+                ),
+              ],
+            ),
+          );
+        }
         return SingleChildScrollView(
           controller: controller,
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -2012,22 +2255,33 @@ class _CardEyebrow extends StatelessWidget {
 }
 
 class _DividerWithText extends StatelessWidget {
-  const _DividerWithText(this.text);
+  const _DividerWithText(this.text, {this.videoBg = false});
   final String text;
+  final bool videoBg;
   @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      Expanded(child: Divider(color: ExperienceFormStyle.line(context))),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Text(
-          text,
-          style: ExperienceFormStyle.text(context, 12, secondary: true),
+  Widget build(BuildContext context) {
+    final dividerColor = videoBg
+        ? Colors.white.withValues(alpha: 0.25)
+        : ExperienceFormStyle.line(context);
+    final textColor = videoBg ? Colors.white.withValues(alpha: 0.5) : null;
+    return Row(
+      children: [
+        Expanded(child: Divider(color: dividerColor)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Text(
+            text,
+            style: ExperienceFormStyle.text(
+              context,
+              12,
+              secondary: true,
+            ).copyWith(color: textColor),
+          ),
         ),
-      ),
-      Expanded(child: Divider(color: ExperienceFormStyle.line(context))),
-    ],
-  );
+        Expanded(child: Divider(color: dividerColor)),
+      ],
+    );
+  }
 }
 
 class _SocialLoginButton extends StatelessWidget {
@@ -2423,10 +2677,7 @@ class _TermsCheckTile extends StatelessWidget {
               IconButton(
                 tooltip: '$label 보기',
                 onPressed: enabled ? onView : null,
-                icon: Icon(
-                  Icons.chevron_right,
-                  size: 20,
-                  color: ExperienceFormStyle.muted(context),
+                icon: ExperienceIcon('ChevronRight', size: 20, color: ExperienceFormStyle.muted(context),
                 ),
               ),
           ],
@@ -2495,6 +2746,15 @@ class _FooterLink extends StatelessWidget {
     );
   }
 }
+
+ButtonStyle _outlineButtonStyleOnVideo(BuildContext context) =>
+    OutlinedButton.styleFrom(
+      minimumSize: const Size(0, 52),
+      foregroundColor: Colors.white,
+      side: BorderSide(color: Colors.white.withValues(alpha: 0.4)),
+      textStyle: ExperienceFormStyle.text(context, 14, weight: FontWeight.w600),
+      shape: const StadiumBorder(),
+    );
 
 ButtonStyle _outlineButtonStyle(BuildContext context) =>
     OutlinedButton.styleFrom(

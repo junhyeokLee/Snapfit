@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'experience_form_style.dart';
+import '../../shared/widgets/experience_icon.dart';
 
 class CatalogActiveFilter {
   const CatalogActiveFilter({
@@ -66,7 +67,7 @@ class CatalogActiveFilters extends StatelessWidget {
                       shape: const StadiumBorder(),
                       materialTapTargetSize: MaterialTapTargetSize.padded,
                       visualDensity: VisualDensity.standard,
-                      deleteIcon: const Icon(Icons.close_rounded, size: 17),
+                      deleteIcon: const ExperienceIcon('X', size: 17),
                       deleteIconColor: ExperienceFormStyle.selectionInk(
                         context,
                       ),

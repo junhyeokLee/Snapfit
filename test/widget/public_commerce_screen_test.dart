@@ -142,4 +142,61 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('registered seller is shown while live sales remain closed', (
+    tester,
+  ) async {
+    await _mount(
+      tester,
+      const CommercePolicyScreen(kind: CommercePolicyKind.seller),
+    );
+    expect(find.textContaining('219-14-74705'), findsWidgets);
+    expect(find.textContaining('사업자등록은 PG·카드사 심사'), findsWidgets);
+    expect(find.textContaining('공개할 사업장 주소 확인 중'), findsWidgets);
+    expect(find.textContaining('고객센터: 이메일 문의'), findsWidgets);
+    expect(find.text('결제하기'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final width in [390.0, 1440.0]) {
+    testWidgets('approved seller contacts wrap without overflow at $width', (
+      tester,
+    ) async {
+      await _mount(
+        tester,
+        const Scaffold(
+          body: SingleChildScrollView(
+            padding: EdgeInsets.all(16),
+            child: PublicSellerContactDetails(
+              businessAddress: '경기도 예시시 예시로 1, 101동 101호(테스트 주소)',
+              supportPhone: '010-0000-0000',
+            ),
+          ),
+        ),
+        width: width,
+      );
+      expect(find.textContaining('101동 101호'), findsOneWidget);
+      expect(find.textContaining('010-0000-0000'), findsOneWidget);
+      expect(find.textContaining('확인 중'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('points refund rules are public and do not launch checkout', (
+    tester,
+  ) async {
+    final navigated = <WebAppLocation>[];
+    await _mount(
+      tester,
+      const Scaffold(body: WebPointPolicyNotice()),
+      onPublicNavigate: navigated.add,
+    );
+    expect(find.text(CommercePolicy.webPointRefundSummary), findsOneWidget);
+    await tester.tap(
+      find.byKey(const ValueKey('web-point-refund-policy-link')),
+    );
+    expect(navigated, [const WebAppLocation(WebAppPage.policy, 'refund')]);
+    expect(find.byType(FilledButton), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }

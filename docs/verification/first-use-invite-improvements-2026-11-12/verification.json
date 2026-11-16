@@ -1,0 +1,153 @@
+{
+  "date": "2026-11-12",
+  "timezone": "Asia/Seoul",
+  "scope": [
+    "inline first-home guide",
+    "two starting paths in introduction chapter 2",
+    "same-role explicit new invitation link"
+  ],
+  "tests": {
+    "passed": 191,
+    "failed": 0,
+    "skipped": 0,
+    "suites": [
+      {
+        "suite": "guide",
+        "passed": 11,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/guide.log"
+      },
+      {
+        "suite": "intro",
+        "passed": 14,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/intro.log"
+      },
+      {
+        "suite": "invite",
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/invite.log"
+      },
+      {
+        "suite": "flow",
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/flow.log"
+      },
+      {
+        "suite": "memory",
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/memory.log"
+      },
+      {
+        "suite": "session",
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/session.log"
+      },
+      {
+        "suite": "news",
+        "passed": 23,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/news.log"
+      },
+      {
+        "suite": "inviteJourney",
+        "passed": 24,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/inviteJourney.log"
+      },
+      {
+        "suite": "sharing",
+        "passed": 16,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/sharing.log"
+      },
+      {
+        "suite": "accept",
+        "passed": 47,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/accept.log"
+      },
+      {
+        "suite": "members",
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/members.log"
+      },
+      {
+        "suite": "monthly",
+        "passed": 19,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/monthly.log"
+      },
+      {
+        "suite": "home",
+        "passed": 17,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/home.log"
+      }
+    ]
+  },
+  "captures": {
+    "passed": 5,
+    "visuallyReviewed": 5,
+    "freshNativeProcessPerScene": true,
+    "syntheticLocalData": true,
+    "sizes": [
+      "390x844",
+      "320x568"
+    ]
+  },
+  "analysis": {
+    "files": 14,
+    "result": "No issues found!",
+    "log": "logs/analysis.log"
+  },
+  "golden": {
+    "path": "test/widget/goldens/first_home_guide_390x844.png",
+    "updatedAfterVisualReview": true,
+    "freshComparisonPassed": true
+  },
+  "review": {
+    "independentCodeReviewCompleted": true,
+    "manualReplayScrollReviewCompleted": true,
+    "knownBlockingFindings": 0
+  },
+  "limits": [
+    "Native widget tests with fake services, not a full app or physical-device build",
+    "No real invitations, messages, orders or account changes"
+  ],
+  "sha256": {
+    "lib/features/onboarding/presentation/widgets/first_home_guide.dart": "660c23e81821a9f131cc9ae1ab39dd6581bda0424fcfd5432959a81102f959c1",
+    "lib/features/onboarding/presentation/app_introduction_screen.dart": "c08b0c139a422ab4c089404f342af0413d5fe2e27358ddeaa274a49d7a243088",
+    "lib/features/album/presentation/widgets/home/home_album_destination.dart": "7875ece34f832ffbf0808b74ee467a04fa5444e52b54f8ab2eec290653ae200c",
+    "lib/features/album/presentation/widgets/home/home_moment_summary_card.dart": "49c4038e7e7a02da04873cb9ecb9f0cd177c35c148c045098074a25392c0d252",
+    "lib/features/album/presentation/views/album_invite_screen.dart": "a35d01d70199412bdd6aa09934a21cee4f1ae8359ea0bcff6be708d2025f2ffe",
+    "test/widget/first_home_guide_test.dart": "6f9276d51c1dcdd681c04b89d28ce19c627387ffe334d5ec4366ef8d004d4bf6",
+    "test/widget/app_introduction_test.dart": "d7cfbb75942d5d27c38ef79f427d7356b3caa41681a8b2a8da5cdac4991a61d0",
+    "test/widget/first_visit_flow_test.dart": "c42802491b1a45311c653bb7e009f51b52a1f2dfbeaab413463d82f450257194",
+    "test/widget/home_moment_summary_test.dart": "ff4c9925b353455a373347cd462dfe3c557c524a07a56b0630c62aaaeadae342",
+    "test/widget/home_news_gate_test.dart": "6b0390dfb403dfca332d6b7fb2d9fa13fb0257664b3af4c8c41e9baaec6883f1",
+    "test/widget/onboarding_memory_review_test.dart": "e864bbd38eace696aa445e8bbeb127baef68e5e2a87d74b7260f1e39f92617a7",
+    "test/widget/onboarding_session_review_test.dart": "48a58e154d2417b8e564f05ea31fc8b39b3803f4037c41cf95dc9a6ceed9eeed",
+    "test/widget/album_invite_screen_test.dart": "87dcecdbc542a42a6f92dcf611f648700c7ec985ec25740f6e6e4a0a95f7df7c",
+    "test/review/onboarding_reproduction_cases.dart": "5f5d45e676aeb91b9e5b91459711699a8f6f2a81426ce4ead9c3f26e3bf4322a",
+    "test/widget/goldens/first_home_guide_390x844.png": "1d704b1d3a86dcf89f3f2605e7b6742d39fc389632b43fe40bcef3a16603ed44"
+  }
+}

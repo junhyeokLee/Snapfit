@@ -1,0 +1,92 @@
+{
+  "date": "2026-11-16",
+  "approved_items": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "tests": {
+    "uncertainty": {
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0
+    },
+    "iap": {
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0
+    },
+    "apple": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    "printservice": {
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0
+    },
+    "consent": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
+    "repositories": {
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0
+    },
+    "shop": {
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0
+    },
+    "checkout": {
+      "passed": 32,
+      "failed": 0,
+      "skipped": 0
+    },
+    "responsive": {
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "tests_passed": 154,
+  "capture_cases": 5,
+  "screenshots": [
+    "01-delayed-charge-blocked-390-light.png",
+    "02-empty-restore-keeps-fence-390-light.png",
+    "03-restarted-pending-checkout-390-light.png",
+    "04-catalog-unverified-blocked-390-light.png",
+    "05-catalog-reverified-390-light.png",
+    "06-consent-guidance-390.png",
+    "07-consent-two-left-390.png",
+    "08-consent-complete-390.png",
+    "06-consent-guidance-320.png",
+    "07-consent-two-left-320.png",
+    "08-consent-complete-320.png",
+    "09-confirmed-paid-receipt.png"
+  ],
+  "compile_errors": 0,
+  "analysis_issues": 0,
+  "native_real_payment_tested": false,
+  "production_deployed": false,
+  "operational_db_or_financial_queries": false,
+  "scope": "Flutter client/services and isolated tests only; unchanged server billing and ownership policy.",
+  "review": "Independent review completed; identified account-switch terminal handling and provisional receipt ownership edge cases were fixed and covered.",
+  "known_limit": "A store response with no identifiable owner/product/transaction is not proof of no charge. Unknown attempts stay blocked through empty restore; UI exposes status confirmation and customer support. Real StoreKit/Play/PG validation still needed.",
+  "source_sha256": {
+    "lib/features/billing/data/point_purchase_service.dart": "8f09658ed7c48001aaacf35b88f10f9c7b8c521914884a687d4e207c80137eac",
+    "lib/features/billing/domain/pending_point_checkout.dart": "b4461677c597e55731711b00c2e9c63d4599f23a3e1c0bc2c69179bab64dca2e",
+    "lib/features/profile/presentation/views/billing_management_screen.dart": "5495a73288b857c9dc06622f1a30e4c3a0dcafee7cb45c90655e6d06b209f8b8",
+    "lib/features/album/presentation/views/print_order_checkout_screen.dart": "33b47db641fb70a9c75566baa8ae3e8f90c1fe3ad041e55d53cf6643307bd159",
+    "test/support/point_purchase_fakes.dart": "88a85a89f453d6fcf575114736c72d172fbf390b24e20c174d03b87ed7692666",
+    "test/unit/point_purchase_uncertainty_test.dart": "8d2192ce4504f328c520e979d7a7ee85ceeacc65fb916aa4417487bcb6f877dc",
+    "test/unit/point_purchase_service_test.dart": "5e6f80ee839520f5bd4b8491b6485704874ed4e9abd9811576e44782441eb808",
+    "test/unit/point_purchase_apple_finish_timeout_test.dart": "5e3986f4194dc1d26afda7534fe2b51ddae86f6d9c2222ca7b0f2417671668ed",
+    "test/widget/print_order_checkout_test.dart": "45db1f2268dc300eaf4bccc1384bc51270722e7fc04abba1d6533ff1e1c78547",
+    "test/widget/billing_responsive_refinement_test.dart": "4e1df7f9d4e834202f56c4aecdde3d0df643510ee550ef01b20bca91ac318707"
+  }
+}

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/web/web_design.dart';
 import '../../domain/entities/order_history_item.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 /// Customer order facts remain readable in a table or a narrow browser row.
 class WebOrderHistoryRow extends StatelessWidget {
@@ -143,7 +144,7 @@ class WebOrderHistoryRow extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Icon(Icons.chevron_right, size: 18, color: palette.muted),
+                    ExperienceIcon('ChevronRight', size: 18, color: palette.muted),
                   ],
                 )
               : Column(
@@ -180,11 +181,7 @@ class WebOrderHistoryRow extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Icon(
-                          Icons.chevron_right,
-                          size: 18,
-                          color: palette.muted,
-                        ),
+                        ExperienceIcon('ChevronRight', size: 18, color: palette.muted),
                       ],
                     ),
                     const SizedBox(height: 16),

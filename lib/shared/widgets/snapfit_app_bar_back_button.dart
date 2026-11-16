@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/snapfit_colors.dart';
 import '../../core/theme/snapfit_design_tokens.dart';
+import '../../shared/widgets/experience_icon.dart';
 
 class SnapFitAppBarBackButton extends StatelessWidget {
   final VoidCallback? onPressed;
@@ -13,10 +14,7 @@ class SnapFitAppBarBackButton extends StatelessWidget {
     return IconButton(
       tooltip: '뒤로가기',
       onPressed: onPressed ?? () => Navigator.maybePop(context),
-      icon: Icon(
-        Icons.arrow_back_ios_new_rounded,
-        size: 20,
-        color: color ?? SnapFitColors.textPrimaryOf(context),
+      icon: ExperienceIcon('ArrowLeft', size: 20, color: color ?? SnapFitColors.textPrimaryOf(context),
       ),
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(minWidth: 48, minHeight: 48),

@@ -6,6 +6,7 @@ import '../../../../core/navigation/web_app_location.dart';
 import '../../../album/service/pending_album_invite.dart';
 import '../../data/pending_referral.dart';
 import '../views/referral_screen.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 /// Native links resume a code preview. Only the screen's explicit registration
 /// action can grant points. Web links are presented by the browser router.
@@ -61,16 +62,13 @@ class _ReferralLinkRouterState extends ConsumerState<ReferralLinkRouter> {
       _presented[navigator] = active;
       navigator
           .push<void>(
-            MaterialPageRoute<void>(
-              settings: WebAppRouteSettings(
-                WebAppLocation(WebAppPage.referral, invite.code),
-              ),
-              builder: (_) => ValueListenableBuilder<PendingReferral>(
+            snapFitRoute<void>(page: ValueListenableBuilder<PendingReferral>(
                 valueListenable: active,
                 builder: (_, current, __) =>
                     ReferralScreen(initialCode: current.code),
-              ),
-            ),
+              ), settings: WebAppRouteSettings(
+                WebAppLocation(WebAppPage.referral, invite.code),
+              )),
           )
           .whenComplete(() {
             if (identical(_presented[navigator], active))

@@ -18,6 +18,8 @@ const _creator = SocialProfile(
   userId: 'creator',
   displayName: '여행 창작자',
   handle: 'travel.creator',
+  momentsCount: 9,
+  worksCount: 2,
 );
 
 SocialWork _work(
@@ -270,6 +272,7 @@ void main() {
     await tester.tap(find.widgetWithText(OutlinedButton, '다시 시도'));
     await tester.pumpAndSettle();
     expect(find.text(_creator.displayName), findsOneWidget);
+    expect(find.text('@travel.creator · 공개 기록 9개 · 앨범 2개'), findsOneWidget);
     expect(repository.workSearches, 1);
     expect(repository.profileSearches, 2);
     expect(tester.takeException(), isNull);
@@ -336,9 +339,9 @@ void main() {
     await tester.tap(find.text('여행의 기록'));
     await tester.pumpAndSettle();
     repository.works = [];
-    await tester.pageBack();
+    await tester.tap(find.byTooltip('뒤로가기'));
     await tester.pumpAndSettle();
-    expect(find.text('찾는 작품이 아직 없어요.'), findsOneWidget);
+    expect(find.text('찾는 기록이나 앨범이 아직 없어요.'), findsOneWidget);
     expect(repository.workSearches, 2);
     expect(tester.takeException(), isNull);
   });
@@ -482,7 +485,7 @@ void main() {
           await tester.pumpAndSettle();
         }
         for (var page = 0; page < 2; page++) {
-          final more = find.widgetWithText(OutlinedButton, '작품 더 보기');
+          final more = find.widgetWithText(OutlinedButton, '기록·앨범 더 보기');
           await _scrollTo(tester, more);
           await tester.tap(more);
           await tester.pumpAndSettle();
@@ -494,7 +497,7 @@ void main() {
           12,
           24,
         ]);
-        expect(find.widgetWithText(OutlinedButton, '작품 더 보기'), findsNothing);
+        expect(find.widgetWithText(OutlinedButton, '기록·앨범 더 보기'), findsNothing);
         expect(tester.takeException(), isNull);
       },
     );
@@ -542,7 +545,7 @@ void main() {
       await tester.pumpAndSettle();
       await _search(tester, '기록');
       await tester.pumpAndSettle();
-      final more = find.widgetWithText(OutlinedButton, '작품 더 보기');
+      final more = find.widgetWithText(OutlinedButton, '기록·앨범 더 보기');
       await _scrollTo(tester, more);
       await tester.tap(more);
       await tester.pumpAndSettle();
@@ -569,7 +572,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     for (var page = 0; page < 2; page++) {
-      final more = find.widgetWithText(OutlinedButton, '작품 더 보기');
+      final more = find.widgetWithText(OutlinedButton, '공개본 더 보기');
       await _scrollTo(tester, more);
       await tester.tap(more);
       await tester.pumpAndSettle();
@@ -577,7 +580,7 @@ void main() {
     await _scrollTo(tester, find.text('내 기록 31'));
     expect(find.text('내 기록 31'), findsOneWidget);
     expect(repository.ownQueries, [('all', 0), ('all', 12), ('all', 24)]);
-    expect(find.widgetWithText(OutlinedButton, '작품 더 보기'), findsNothing);
+    expect(find.widgetWithText(OutlinedButton, '공개본 더 보기'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -597,8 +600,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('오래된 비공개 기록'), findsOneWidget);
     expect(repository.ownQueries.last, ('private', 0));
-    expect(find.widgetWithText(OutlinedButton, '작품 더 보기'), findsNothing);
-    expect(find.text('아직 이곳에 작품이 없어요.'), findsNothing);
+    expect(find.widgetWithText(OutlinedButton, '공개본 더 보기'), findsNothing);
+    expect(find.text('아직 공개한 기록이나 앨범이 없어요.'), findsNothing);
   });
 
   testWidgets('management reserves an action before its confirmation opens', (
@@ -643,7 +646,7 @@ void main() {
     );
     await tester.tap(find.widgetWithText(OutlinedButton, '비공개로 전환'));
     await tester.pumpAndSettle();
-    expect(find.text('작품을 비공개로 바꿀까요?'), findsOneWidget);
+    expect(find.text('공개본을 비공개로 바꿀까요?'), findsOneWidget);
     actor = 'other-owner';
     container.invalidate(socialCurrentUserIdProvider);
     container.invalidate(socialOwnWorksPageProvider);
@@ -748,7 +751,7 @@ void main() {
       container.invalidate(socialOwnWorksPageProvider);
       await tester.pumpAndSettle();
       expect(find.text('다른 화면의 안내'), findsOneWidget);
-      expect(find.text('작품을 비공개로 바꿀까요?'), findsNothing);
+      expect(find.text('공개본을 비공개로 바꿀까요?'), findsNothing);
       expect(repository.visibilityWrites, isEmpty);
       await tester.tap(find.text('안내 닫기'));
       await tester.pumpAndSettle();

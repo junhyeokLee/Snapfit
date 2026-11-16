@@ -1,0 +1,1226 @@
+--- a/lib/features/album/presentation/views/print_order_checkout_screen.dart
++++ b/lib/features/album/presentation/views/print_order_checkout_screen.dart
+@@ -1,4 +1,5 @@
+ import 'dart:async';
++import 'dart:convert';
+ 
+ import 'package:flutter/foundation.dart';
+ import 'package:flutter/material.dart';
+@@ -25,6 +26,8 @@
+ import '../../../profile/presentation/views/order_history_screen.dart';
+ import '../../../profile/presentation/views/terms_policy_screen.dart';
+ import '../../printing/print_vendor_spec.dart';
++import '../../domain/entities/album.dart';
++import '../widgets/home/home_album_cover_thumbnail.dart';
+ import 'print_order_complete_screen.dart';
+ 
+ /// Keeps delivery details in this route until a supported payment is submitted.
+@@ -69,6 +72,7 @@
+   final _memo = TextEditingController();
+   final _scroll = ScrollController();
+   late OrderQuoteResult _quote = widget.initialQuote;
++  Album? _previewAlbum;
+   PrintCheckoutReadiness? _readiness;
+   bool _loading = false;
+   bool _paying = false;
+@@ -296,6 +300,12 @@
+         _readiness = readiness;
+         _testCapability = testCapability;
+         _reviewChanged = changed || specChanged;
++        // 표지는 검토한 문서에서만 가져온다. 표시용 데이터는 결제 판단에 쓰지 않는다.
++        _previewAlbum = changed || specChanged
++            ? null
++            : snapshot == null
++            ? _previewAlbum
++            : _albumFromSnapshot(snapshot);
+         if (changed || specChanged || priceChanged) _clearConsent();
+         _notice = changed || specChanged
+             ? '앨범 내용이나 제작 구성이 바뀌었어요. 인쇄 미리보기를 다시 확인해주세요.'
+@@ -309,6 +319,7 @@
+       if (mounted && _ownerCurrent) {
+         setState(() {
+           _readiness = null;
++          _previewAlbum = null;
+           _testCapability = null;
+           _error = '주문 준비 상태를 확인하지 못했습니다. 다시 확인해주세요.';
+         });
+@@ -317,6 +328,33 @@
+       return false;
+     } finally {
+       if (mounted) setState(() => _loading = false);
++    }
++  }
++
++  Album? _albumFromSnapshot(Map<String, dynamic> snapshot) {
++    final row = snapshot['album'];
++    if (row is! Map) return null;
++    String? string(String key) =>
++        row[key] is String ? row[key] as String : null;
++    try {
++      final layers = row['cover_layers_json'];
++      return Album(
++        id: widget.albumId,
++        title: widget.albumTitle,
++        ratio: string('ratio') ?? '',
++        coverLayersJson: layers is Map
++            ? jsonEncode(layers)
++            : layers is String
++            ? layers
++            : '',
++        coverTheme: string('cover_theme'),
++        coverThumbnailUrl: string('cover_thumbnail_url'),
++        coverPreviewUrl: string('cover_preview_url'),
++        coverImageUrl: string('cover_image_url'),
++      );
++    } catch (_) {
++      // 미리보기 메타데이터 오류가 배송지 입력이나 주문 상태 확인을 막지 않게 한다.
++      return null;
+     }
+   }
+ 
+@@ -986,19 +1024,9 @@
+                                           crossAxisAlignment:
+                                               CrossAxisAlignment.start,
+                                           children: [
+-                                            _albumSummary(compact: true),
+-                                            const SizedBox(height: 8),
+-                                            _priceDetails(compact: true),
++                                            _albumSummary(),
+                                             const SizedBox(height: 16),
+-                                            Divider(
+-                                              color: ExperienceFormStyle.line(
+-                                                context,
+-                                              ),
+-                                            ),
+-                                            const SizedBox(height: 8),
+-                                            _configuration(
+-                                              includeProduct: true,
+-                                            ),
++                                            _orderSummary(compact: true),
+                                           ],
+                                         ),
+                                       ),
+@@ -1151,15 +1179,9 @@
+                   ),
+                 ),
+                 const SizedBox(height: 18),
+-                _albumSummary(compact: true),
+-                const SizedBox(height: 24),
+-                Divider(color: WebPalette.of(context).line),
+-                const SizedBox(height: 18),
+-                _configuration(includeProduct: true),
+-                const SizedBox(height: 24),
+-                Divider(color: WebPalette.of(context).line),
+-                const SizedBox(height: 18),
+-                _priceDetails(compact: true),
++                _albumSummary(),
++                const SizedBox(height: 16),
++                _orderSummary(compact: true),
+                 const SizedBox(height: 24),
+                 if (_reviewing)
+                   _paymentActions(wide: false)
+@@ -1206,34 +1228,107 @@
+     ],
+   );
+ 
+-  Widget _albumSummary({bool compact = false}) => Column(
+-    crossAxisAlignment: CrossAxisAlignment.start,
+-    children: [
+-      if (!compact) ...[
+-        Text(
+-          '제작할 앨범',
+-          style: ExperienceFormStyle.text(context, 12, secondary: true),
+-        ),
+-        const SizedBox(height: 6),
++  Widget _albumSummary() => Container(
++    key: const ValueKey('print-checkout-album-summary'),
++    width: double.infinity,
++    padding: const EdgeInsets.all(16),
++    decoration: BoxDecoration(
++      color: ExperienceFormStyle.surface(context),
++      borderRadius: BorderRadius.circular(SnapFitRadius.lg),
++      border: Border.all(color: ExperienceFormStyle.line(context)),
++    ),
++    child: LayoutBuilder(
++      builder: (context, bounds) {
++        final stacked =
++            bounds.maxWidth < 240 ||
++            MediaQuery.textScalerOf(context).scale(14) > 20;
++        final cover = Semantics(
++          label: '앨범 표지',
++          image: true,
++          child: SizedBox(
++            width: 100,
++            height: 92,
++            child: Center(
++              child: _previewAlbum == null
++                  ? Icon(
++                      Icons.photo_album_outlined,
++                      size: 42,
++                      color: ExperienceFormStyle.muted(context),
++                    )
++                  : HomeAlbumCoverThumbnail(
++                      album: _previewAlbum!,
++                      height: 92,
++                      maxWidth: 100,
++                      showShadow: false,
++                      showBookDepth: false,
++                    ),
++            ),
++          ),
++        );
++        final details = Column(
++          crossAxisAlignment: CrossAxisAlignment.start,
++          children: [
++            Text(
++              '제작할 앨범',
++              style: ExperienceFormStyle.text(context, 12, secondary: true),
++            ),
++            const SizedBox(height: 6),
++            Text(
++              widget.albumTitle,
++              style: ExperienceFormStyle.text(
++                context,
++                18,
++                weight: FontWeight.w600,
++              ),
++            ),
++            const SizedBox(height: 8),
++            Text(
++              _productLabel(),
++              style: ExperienceFormStyle.text(context, 13, secondary: true),
++            ),
++            const SizedBox(height: 4),
++            Text(
++              '내지 ${_quote.pageCount}페이지 · 1권',
++              style: ExperienceFormStyle.text(context, 13, secondary: true),
++            ),
++          ],
++        );
++        return stacked
++            ? Column(
++                crossAxisAlignment: CrossAxisAlignment.start,
++                children: [cover, const SizedBox(height: 12), details],
++              )
++            : Row(
++                crossAxisAlignment: CrossAxisAlignment.center,
++                children: [
++                  cover,
++                  const SizedBox(width: 16),
++                  Expanded(child: details),
++                ],
++              );
++      },
++    ),
++  );
++
++  Widget _orderSummary({bool compact = false}) => Container(
++    key: const ValueKey('print-checkout-order-summary'),
++    width: double.infinity,
++    padding: const EdgeInsets.all(18),
++    decoration: BoxDecoration(
++      borderRadius: BorderRadius.circular(SnapFitRadius.lg),
++      border: Border.all(color: ExperienceFormStyle.line(context)),
++    ),
++    child: Column(
++      crossAxisAlignment: CrossAxisAlignment.start,
++      children: [
++        _configuration(),
++        Padding(
++          padding: const EdgeInsets.symmetric(vertical: 16),
++          child: Divider(height: 1, color: ExperienceFormStyle.line(context)),
++        ),
++        _priceDetails(compact: compact),
+       ],
+-      Text(
+-        widget.albumTitle,
+-        maxLines: compact ? 2 : null,
+-        overflow: compact ? TextOverflow.ellipsis : null,
+-        style: ExperienceFormStyle.text(
+-          context,
+-          compact ? 16 : 24,
+-          weight: compact ? FontWeight.w600 : FontWeight.w700,
+-        ),
+-      ),
+-      if (!compact) ...[
+-        const SizedBox(height: 6),
+-        Text(
+-          '${_productLabel()} · 내지 ${_quote.pageCount}페이지 · 1권',
+-          style: ExperienceFormStyle.text(context, 13, secondary: true),
+-        ),
+-      ],
+-    ],
++    ),
+   );
+ 
+   List<Widget> _orderNotices() => [
+@@ -1643,85 +1738,9 @@
+         style: ExperienceFormStyle.text(context, 14),
+       ),
+       if (_memo.text.trim().isNotEmpty) _note(_memo.text.trim()),
+-      if (!wide) ...[
+-        const SizedBox(height: 24),
+-        Divider(color: ExperienceFormStyle.line(context)),
+-        const SizedBox(height: 16),
+-        _configuration(),
+-        const SizedBox(height: 24),
+-        _priceDetails(),
+-      ],
+-      const SizedBox(height: 16),
+-      KeyedSubtree(
+-        key: _reviewConsentAnchor,
+-        child: CheckboxListTile(
+-          key: const ValueKey('print-checkout-agreement'),
+-          contentPadding: EdgeInsets.zero,
+-          controlAffinity: ListTileControlAffinity.leading,
+-          value: _agreed,
+-          onChanged: _paying || _loading || _reviewChanged
+-              ? null
+-              : (v) => setState(() => _agreed = v == true),
+-          title: Text(
+-            PrintCheckoutConsent.reviewNotice,
+-            style: ExperienceFormStyle.text(context, 13),
+-          ),
+-        ),
+-      ),
+-      Wrap(
+-        spacing: 8,
+-        runSpacing: 4,
+-        children: [
+-          TextButton(
+-            onPressed: _paying
+-                ? null
+-                : () => Navigator.pop(context, 'review_again'),
+-            child: const Text('최종 인쇄 미리보기 다시 확인'),
+-          ),
+-          _policyLink('이용약관', TermsPolicyDocType.terms),
+-          _policyLink('취소·환불 정책', TermsPolicyDocType.refund),
+-          _policyLink('제작·배송 안내', TermsPolicyDocType.shipping),
+-          _policyLink('개인정보 처리방침', TermsPolicyDocType.privacy),
+-        ],
+-      ),
+-      KeyedSubtree(
+-        key: _policyConsentAnchor,
+-        child: CheckboxListTile(
+-          key: const ValueKey('print-checkout-policy-agreement'),
+-          contentPadding: EdgeInsets.zero,
+-          controlAffinity: ListTileControlAffinity.leading,
+-          value: _policyAccepted,
+-          onChanged: _paying || _loading || _reviewChanged
+-              ? null
+-              : (v) => setState(() => _policyAccepted = v == true),
+-          title: Text(
+-            '[필수] 이용약관과 취소·환불·제작·배송 정책을 확인하고 동의합니다.',
+-            style: ExperienceFormStyle.text(context, 13),
+-          ),
+-        ),
+-      ),
+-      const SizedBox(height: 8),
+-      Text(
+-        '주문제작 상품의 청약철회 안내',
+-        style: ExperienceFormStyle.text(context, 13, weight: FontWeight.w600),
+-      ),
+-      _note(CommercePolicy.customProductionConsent),
+-      KeyedSubtree(
+-        key: _customConsentAnchor,
+-        child: CheckboxListTile(
+-          key: const ValueKey('print-checkout-custom-production-agreement'),
+-          contentPadding: EdgeInsets.zero,
+-          controlAffinity: ListTileControlAffinity.leading,
+-          value: _customProductionAccepted,
+-          onChanged: _paying || _loading || _reviewChanged
+-              ? null
+-              : (v) => setState(() => _customProductionAccepted = v == true),
+-          title: Text(
+-            '[필수·별도 동의] 위 주문제작 상품의 청약철회 제한 안내를 확인하고 동의합니다.',
+-            style: ExperienceFormStyle.text(context, 13),
+-          ),
+-        ),
+-      ),
++      if (!wide) ...[const SizedBox(height: 24), _orderSummary()],
++      const SizedBox(height: 24),
++      _consentDetails(),
+       if (!widget.testMode && _readiness?.canPay != true)
+         _note('현재 정책은 판매 준비용 초안입니다. 실제 결제와 제작 요청은 열리지 않습니다.'),
+       const SizedBox(height: 8),
+@@ -1742,6 +1761,146 @@
+         '결제 전에 인쇄 PDF를 만들고 업로드·검수합니다. 파일 준비 중에는 앱을 열어두세요. 결제 완료 후에는 앱을 닫아도 주문 처리가 이어집니다.',
+       ),
+     ],
++  );
++
++  Widget _consentDetails() => Container(
++    key: const ValueKey('print-checkout-consents'),
++    width: double.infinity,
++    padding: const EdgeInsets.all(16),
++    decoration: BoxDecoration(
++      borderRadius: BorderRadius.circular(SnapFitRadius.lg),
++      border: Border.all(color: ExperienceFormStyle.line(context)),
++    ),
++    child: Column(
++      crossAxisAlignment: CrossAxisAlignment.start,
++      children: [
++        _heading('결제 전 확인'),
++        const SizedBox(height: 6),
++        Text(
++          '필수 확인 3가지 · 각 항목을 직접 선택해주세요.',
++          style: ExperienceFormStyle.text(context, 12, secondary: true),
++        ),
++        const SizedBox(height: 12),
++        KeyedSubtree(
++          key: _reviewConsentAnchor,
++          child: CheckboxListTile(
++            key: const ValueKey('print-checkout-agreement'),
++            contentPadding: EdgeInsets.zero,
++            controlAffinity: ListTileControlAffinity.leading,
++            value: _agreed,
++            onChanged: _paying || _loading || _reviewChanged
++                ? null
++                : (v) => setState(() => _agreed = v == true),
++            title: Text(
++              '[필수] 앨범·제작 구성·배송지·금액 확인',
++              style: ExperienceFormStyle.text(context, 13),
++            ),
++          ),
++        ),
++        _disclosure(
++          key: 'print-checkout-review-details',
++          title: '확인 항목 자세히 보기',
++          children: [_note(PrintCheckoutConsent.reviewNotice)],
++        ),
++        TextButton(
++          onPressed: _paying
++              ? null
++              : () => Navigator.pop(context, 'review_again'),
++          child: const Text('최종 인쇄 미리보기 다시 확인'),
++        ),
++        Divider(color: ExperienceFormStyle.line(context)),
++        KeyedSubtree(
++          key: _policyConsentAnchor,
++          child: CheckboxListTile(
++            key: const ValueKey('print-checkout-policy-agreement'),
++            contentPadding: EdgeInsets.zero,
++            controlAffinity: ListTileControlAffinity.leading,
++            value: _policyAccepted,
++            onChanged: _paying || _loading || _reviewChanged
++                ? null
++                : (v) => setState(() => _policyAccepted = v == true),
++            title: Text(
++              '[필수] 이용약관·주문 정책 동의',
++              style: ExperienceFormStyle.text(context, 13),
++            ),
++          ),
++        ),
++        _disclosure(
++          key: 'print-checkout-policy-details',
++          title: '주문 정책 자세히 보기',
++          children: [
++            _note('이용약관과 취소·환불·제작·배송 정책을 확인하고 동의합니다.'),
++            Wrap(
++              spacing: 8,
++              runSpacing: 4,
++              children: [
++                _policyLink('이용약관', TermsPolicyDocType.terms),
++                _policyLink('취소·환불 정책', TermsPolicyDocType.refund),
++                _policyLink('제작·배송 안내', TermsPolicyDocType.shipping),
++                _policyLink('개인정보 처리방침', TermsPolicyDocType.privacy),
++              ],
++            ),
++          ],
++        ),
++        Divider(color: ExperienceFormStyle.line(context)),
++        const SizedBox(height: 8),
++        Text(
++          '주문제작 상품의 청약철회 안내',
++          style: ExperienceFormStyle.text(context, 13, weight: FontWeight.w600),
++        ),
++        _note(
++          '내 앨범으로 개별 제작됩니다. 제작이 시작되어 회복하기 어려운 중대한 손해가 예상되는 경우 단순 변심에 따른 청약철회가 제한될 수 있습니다. 제작 전 취소 요청과 불량·오배송 등 법정 권리는 별도로 보장됩니다.',
++        ),
++        _disclosure(
++          key: 'print-checkout-custom-production-details',
++          title: '청약철회 제한 안내 전문',
++          children: [_note(CommercePolicy.customProductionConsent)],
++        ),
++        KeyedSubtree(
++          key: _customConsentAnchor,
++          child: CheckboxListTile(
++            key: const ValueKey('print-checkout-custom-production-agreement'),
++            contentPadding: EdgeInsets.zero,
++            controlAffinity: ListTileControlAffinity.leading,
++            value: _customProductionAccepted,
++            onChanged: _paying || _loading || _reviewChanged
++                ? null
++                : (v) => setState(() => _customProductionAccepted = v == true),
++            title: Text(
++              '[필수·별도] 청약철회 제한 동의',
++              style: ExperienceFormStyle.text(context, 13),
++            ),
++          ),
++        ),
++      ],
++    ),
++  );
++
++  Widget _disclosure({
++    required String key,
++    required String title,
++    required List<Widget> children,
++  }) => Theme(
++    key: ValueKey(key),
++    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
++    child: ExpansionTile(
++      // 스크롤 위치(double)와 펼침 상태(bool)의 저장 키가 겹치지 않게 한다.
++      key: PageStorageKey(key),
++      tilePadding: EdgeInsets.zero,
++      childrenPadding: const EdgeInsets.only(bottom: 12),
++      expandedCrossAxisAlignment: CrossAxisAlignment.start,
++      iconColor: ExperienceFormStyle.muted(context),
++      collapsedIconColor: ExperienceFormStyle.muted(context),
++      title: Text(
++        title,
++        style: ExperienceFormStyle.text(
++          context,
++          12,
++          color: ExperienceFormStyle.selectionInk(context),
++        ),
++      ),
++      children: children,
++    ),
+   );
+ 
+   Widget _policyLink(String label, TermsPolicyDocType type) => TextButton(
+@@ -1842,11 +2001,10 @@
+     );
+   }
+ 
+-  Widget _configuration({bool includeProduct = false}) => Column(
++  Widget _configuration() => Column(
+     crossAxisAlignment: CrossAxisAlignment.start,
+     children: [
+       _heading('제작 구성'),
+-      if (includeProduct) _note(_productLabel()),
+       _note('표지와 내지 ${_quote.pageCount}페이지 · 1권'),
+       _note(
+         _quote.addedBlankPageCount > 0
+--- a/lib/features/album/presentation/views/print_order_complete_screen.dart
++++ b/lib/features/album/presentation/views/print_order_complete_screen.dart
+@@ -182,15 +182,11 @@
+                                 ),
+                                 children: [
+                                   _confirmation(),
+-                                  const SizedBox(height: 24),
+-                                  _progressDetails(),
+-                                  const SizedBox(height: 24),
+-                                  Divider(
+-                                    color: ExperienceFormStyle.line(context),
+-                                  ),
+                                   const SizedBox(height: 16),
+                                   _receiptDetails(),
+-                                  const SizedBox(height: 24),
++                                  const SizedBox(height: 20),
++                                  _progressDetails(),
++                                  const SizedBox(height: 20),
+                                   _actions(),
+                                 ],
+                               ),
+@@ -272,24 +268,18 @@
+     return Column(
+       crossAxisAlignment: CrossAxisAlignment.start,
+       children: [
+-        if (!compact) ...[
+-          Icon(
+-            canceled ? Icons.cancel_outlined : Icons.check_circle_outline,
+-            size: 36,
+-            color: ExperienceFormStyle.selectionInk(context),
+-          ),
+-          const SizedBox(height: 12),
+-        ],
+         Row(
++          crossAxisAlignment: CrossAxisAlignment.start,
+           children: [
+-            if (compact) ...[
+-              Icon(
++            Padding(
++              padding: const EdgeInsets.only(top: 2),
++              child: Icon(
+                 canceled ? Icons.cancel_outlined : Icons.check_circle_outline,
+-                size: 20,
++                size: compact ? 20 : 24,
+                 color: ExperienceFormStyle.selectionInk(context),
+               ),
+-              const SizedBox(width: 8),
+-            ],
++            ),
++            const SizedBox(width: 8),
+             Expanded(
+               child: Text(
+                 compact
+@@ -301,8 +291,8 @@
+                     : '결제가 확인됐어요',
+                 style: ExperienceFormStyle.text(
+                   context,
+-                  compact ? 16 : 24,
+-                  weight: compact ? FontWeight.w600 : FontWeight.w700,
++                  compact ? 16 : 20,
++                  weight: FontWeight.w600,
+                 ),
+               ),
+             ),
+@@ -313,9 +303,7 @@
+           Text(
+             canceled
+                 ? '취소·환불 내역은 주문 내역에서 확인할 수 있어요.'
+-                : kIsWeb
+-                ? '창을 닫아도 제작사 주문 접수가 이어집니다. 제작과 배송 상황은 주문 내역에서 확인할 수 있어요.'
+-                : '앱을 닫아도 제작사 주문 접수가 이어집니다. 제작과 배송 상황은 주문 내역에서 확인할 수 있어요.',
++                : '제작·배송 상황은 주문 내역에서 확인할 수 있어요.',
+             style: ExperienceFormStyle.text(context, 13, secondary: true),
+           ),
+         ],
+@@ -329,79 +317,203 @@
+         progress?.shippedAt != null &&
+         (progress?.trackingNumber?.isNotEmpty ?? false) &&
+         (progress?.courier?.isNotEmpty ?? false);
++    // 다음 예정은 알려진 진행 상태와 확인된 이력이 있을 때만 안내한다.
++    final next = progress == null || _error != null || progress.requiresAction
++        ? null
++        : switch (progress.customerStage) {
++            'PAID' || 'QUEUED' when progress.vendorAcceptedAt == null =>
++              progress.filesReadyAt == null
++                  ? '인쇄 파일 생성'
++                  : !progress.preflightPassed
++                  ? '인쇄 규격 검사'
++                  : '제작사 주문 접수',
++            'RENDERING' => '인쇄 규격 검사',
++            'FILES_READY' when progress.filesReadyAt != null =>
++              progress.preflightPassed ? '제작사 주문 접수' : '인쇄 규격 검사',
++            'VENDOR_ACCEPTED' ||
++            'FILE_CHECKING' when progress.vendorAcceptedAt != null => '책 제작',
++            'FILE_CHECKED' ||
++            'PRODUCTION_PENDING' when progress.fileCheckedAt != null => '책 제작',
++            'PRODUCTION' || 'IN_PRODUCTION'
++                when progress.productionStartedAt != null =>
++              '택배 출고',
++            'SHIPPING' when shipped => '배송 완료',
++            _ => null,
++          };
+     return Column(
++      crossAxisAlignment: CrossAxisAlignment.stretch,
++      children: [
++        Container(
++          key: const ValueKey('print-progress-current'),
++          padding: const EdgeInsets.all(16),
++          decoration: BoxDecoration(
++            color: ExperienceFormStyle.selection(context),
++            borderRadius: BorderRadius.circular(16),
++            border: Border.all(color: ExperienceFormStyle.line(context)),
++          ),
++          child: Column(
++            crossAxisAlignment: CrossAxisAlignment.start,
++            children: [
++              Text(
++                '현재 상태',
++                style: ExperienceFormStyle.text(context, 12, secondary: true),
++              ),
++              const SizedBox(height: 6),
++              Text(
++                _error != null
++                    ? '진행 상황 다시 확인이 필요해요'
++                    : progress?.label ?? '진행 상황 확인 중',
++                style: ExperienceFormStyle.text(
++                  context,
++                  20,
++                  weight: FontWeight.w700,
++                ),
++              ),
++              if (_loading)
++                const Padding(
++                  padding: EdgeInsets.only(top: 12),
++                  child: LinearProgressIndicator(),
++                ),
++              if (_error != null)
++                Padding(
++                  padding: const EdgeInsets.only(top: 12),
++                  child: Text(
++                    _error!,
++                    style: ExperienceFormStyle.text(context, 13),
++                  ),
++                ),
++              if (next != null) ...[
++                const SizedBox(height: 16),
++                Text(
++                  '다음 예정 단계',
++                  style: ExperienceFormStyle.text(context, 12, secondary: true),
++                ),
++                const SizedBox(height: 4),
++                Text(
++                  next,
++                  style: ExperienceFormStyle.text(
++                    context,
++                    14,
++                    weight: FontWeight.w600,
++                  ),
++                ),
++              ],
++              if (progress?.requiresAction == true)
++                Padding(
++                  padding: const EdgeInsets.only(top: 16),
++                  child: Text(
++                    '제작 준비 중 확인이 필요한 부분이 있어 담당자가 확인하고 있습니다. 진행 상황은 주문 내역에서 안내합니다.',
++                    style: ExperienceFormStyle.text(context, 14),
++                  ),
++                ),
++              if (shipped)
++                Padding(
++                  padding: const EdgeInsets.only(top: 12),
++                  child: Text(
++                    '${progress?.courier} · ${progress?.trackingNumber}',
++                    style: ExperienceFormStyle.text(context, 14),
++                  ),
++                ),
++            ],
++          ),
++        ),
++        const SizedBox(height: 12),
++        ExpansionTile(
++          key: const PageStorageKey('print-progress-timeline'),
++          initiallyExpanded: false,
++          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
++          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
++          shape: RoundedRectangleBorder(
++            borderRadius: BorderRadius.circular(16),
++            side: BorderSide(color: ExperienceFormStyle.line(context)),
++          ),
++          collapsedShape: RoundedRectangleBorder(
++            borderRadius: BorderRadius.circular(16),
++            side: BorderSide(color: ExperienceFormStyle.line(context)),
++          ),
++          iconColor: ExperienceFormStyle.selectionInk(context),
++          collapsedIconColor: ExperienceFormStyle.muted(context),
++          title: Text(
++            '전체 진행 단계 보기',
++            style: ExperienceFormStyle.text(
++              context,
++              14,
++              weight: FontWeight.w600,
++            ),
++          ),
++          children: [
++            _stage('결제 확인', true, first: true),
++            _stage('인쇄 파일 생성', progress?.filesReadyAt != null),
++            _stage('인쇄 규격 검사', progress?.preflightPassed == true),
++            _stage('제작사 주문 접수', progress?.vendorAcceptedAt != null),
++            _stage('제작사 파일 확인', progress?.fileCheckedAt != null),
++            _stage('책 제작', progress?.productionStartedAt != null),
++            _stage('택배 출고', shipped),
++            _stage('배송 완료', progress?.customerStage == 'DELIVERED', last: true),
++          ],
++        ),
++      ],
++    );
++  }
++
++  Widget _receiptDetails({bool compact = false}) {
++    final content = Column(
+       crossAxisAlignment: CrossAxisAlignment.start,
+       children: [
+         Text(
+-          progress?.label ?? '진행 상황 확인 중',
+-          style: ExperienceFormStyle.text(context, 16, weight: FontWeight.w600),
+-        ),
+-        if (_loading)
+-          const Padding(
+-            padding: EdgeInsets.only(top: 12),
+-            child: LinearProgressIndicator(),
+-          ),
+-        if (_error != null)
+-          Padding(
+-            padding: const EdgeInsets.only(top: 12),
+-            child: Text(_error!, style: ExperienceFormStyle.text(context, 13)),
+-          ),
++          widget.receipt.title,
++          maxLines: 2,
++          overflow: TextOverflow.ellipsis,
++          style: ExperienceFormStyle.text(
++            context,
++            compact ? 14 : 16,
++            weight: FontWeight.w600,
++          ),
++        ),
+         const SizedBox(height: 12),
+-        _stage('결제 확인', true, first: true),
+-        _stage('인쇄 파일 생성', progress?.filesReadyAt != null),
+-        _stage('인쇄 규격 검사', progress?.preflightPassed == true),
+-        _stage('제작사 주문 접수', progress?.vendorAcceptedAt != null),
+-        _stage('제작사 파일 확인', progress?.fileCheckedAt != null),
+-        _stage('책 제작', progress?.productionStartedAt != null),
+-        _stage('택배 출고', shipped),
+-        _stage('배송 완료', progress?.customerStage == 'DELIVERED', last: true),
+-        if (progress?.requiresAction == true)
+-          Padding(
+-            padding: const EdgeInsets.only(top: 16),
+-            child: Text(
+-              '제작 준비 중 확인이 필요한 부분이 있어 담당자가 확인하고 있습니다. 진행 상황은 주문 내역에서 안내합니다.',
+-              style: ExperienceFormStyle.text(context, 14),
+-            ),
+-          ),
+-        if (shipped)
+-          Padding(
+-            padding: const EdgeInsets.only(top: 12),
+-            child: Text(
+-              '${progress?.courier} · ${progress?.trackingNumber}',
+-              style: ExperienceFormStyle.text(context, 14),
+-            ),
+-          ),
++        Column(
++          key: const ValueKey('print-receipt-amount'),
++          crossAxisAlignment: CrossAxisAlignment.start,
++          children: [
++            Text(
++              '결제 확인 금액',
++              style: ExperienceFormStyle.text(context, 12, secondary: true),
++            ),
++            const SizedBox(height: 4),
++            Text(
++              '${_won(widget.receipt.amount)}원',
++              style: ExperienceFormStyle.text(
++                context,
++                compact ? 20 : 24,
++                weight: FontWeight.w700,
++              ),
++            ),
++          ],
++        ),
++        const SizedBox(height: 14),
++        Text(
++          '주문번호',
++          style: ExperienceFormStyle.text(context, 12, secondary: true),
++        ),
++        const SizedBox(height: 4),
++        SelectableText(
++          widget.receipt.orderId,
++          style: ExperienceFormStyle.text(context, 13),
++        ),
+       ],
+     );
+-  }
+-
+-  Widget _receiptDetails({bool compact = false}) => Column(
+-    crossAxisAlignment: CrossAxisAlignment.start,
+-    children: [
+-      Text(
+-        widget.receipt.title,
+-        style: ExperienceFormStyle.text(
+-          context,
+-          compact ? 14 : 18,
+-          weight: compact ? FontWeight.w600 : FontWeight.w700,
+-        ),
++    if (kIsWeb) return content;
++    return Container(
++      width: double.infinity,
++      padding: const EdgeInsets.all(16),
++      decoration: BoxDecoration(
++        color: ExperienceFormStyle.surface(context),
++        borderRadius: BorderRadius.circular(16),
++        border: Border.all(color: ExperienceFormStyle.line(context)),
+       ),
+-      const SizedBox(height: 8),
+-      Text(
+-        '결제금액 ${_won(widget.receipt.amount)}원',
+-        style: ExperienceFormStyle.text(context, 16),
+-      ),
+-      const SizedBox(height: 12),
+-      Text(
+-        '주문번호',
+-        style: ExperienceFormStyle.text(context, 12, secondary: true),
+-      ),
+-      SelectableText(
+-        widget.receipt.orderId,
+-        style: ExperienceFormStyle.text(context, 13),
+-      ),
+-    ],
+-  );
++      child: content,
++    );
++  }
+ 
+   Widget _actions({bool wide = false}) {
+     final orderHistory = FilledButton(
+--- a/test/widget/print_order_checkout_test.dart
++++ b/test/widget/print_order_checkout_test.dart
+@@ -7,6 +7,9 @@
+ import 'package:mocktail/mocktail.dart';
+ import 'package:shared_preferences/shared_preferences.dart';
+ import 'package:snap_fit/features/album/presentation/views/print_order_checkout_screen.dart';
++import 'package:snap_fit/features/album/presentation/widgets/home/home_album_cover_thumbnail.dart';
++import 'package:snap_fit/core/commerce/commerce_policy.dart';
++import 'dart:convert';
+ import 'package:snap_fit/features/album/presentation/views/print_order_complete_screen.dart';
+ import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
+ import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
+@@ -289,6 +292,91 @@
+   }
+ 
+   testWidgets(
++    'design: summary reuses the verified album cover including map documents',
++    (tester) async {
++      await pump(tester);
++      final preview = find.byType(HomeAlbumCoverThumbnail);
++      expect(preview, findsOneWidget);
++      final album = tester.widget<HomeAlbumCoverThumbnail>(preview).album;
++      expect(album.id, 7);
++      expect(
++        jsonDecode(album.coverLayersJson),
++        _snapshot()['album']['cover_layers_json'],
++      );
++      expect(
++        find.byKey(const ValueKey('print-checkout-album-summary')),
++        findsOneWidget,
++      );
++      expect(tester.takeException(), isNull);
++    },
++  );
++
++  testWidgets('design: changed review removes the old album cover', (
++    tester,
++  ) async {
++    await pump(tester);
++    expect(find.byType(HomeAlbumCoverThumbnail), findsOneWidget);
++    when(
++      () => orders.fetchPrintPreviewSnapshot(albumId: 7),
++    ).thenAnswer((_) async => _snapshot(text: '다른 표지'));
++    await tester.tap(find.byTooltip('최신 주문 정보 확인'));
++    await tester.pumpAndSettle();
++    expect(find.byType(HomeAlbumCoverThumbnail), findsNothing);
++    expect(find.textContaining('앨범 내용이나 제작 구성이 바뀌었어요.'), findsOneWidget);
++  });
++
++  testWidgets(
++    'design: production and total stay together and detail disclosure never grants consent',
++    (tester) async {
++      await pump(tester);
++      await validDelivery(tester);
++      await review(tester);
++      final summary = find.byKey(
++        const ValueKey('print-checkout-order-summary'),
++      );
++      expect(summary, findsOneWidget);
++      expect(
++        find.descendant(of: summary, matching: find.text('제작 구성')),
++        findsOneWidget,
++      );
++      expect(
++        find.descendant(of: summary, matching: find.text('49,900원')),
++        findsOneWidget,
++      );
++      expect(
++        find.descendant(of: summary, matching: find.text('기본 배송비 포함')),
++        findsOneWidget,
++      );
++      final details = find.byKey(
++        const ValueKey('print-checkout-custom-production-details'),
++      );
++      await tester.ensureVisible(details);
++      await tester.pumpAndSettle();
++      expect(find.text(CommercePolicy.customProductionConsent), findsNothing);
++      await tester.tap(details);
++      await tester.pumpAndSettle();
++      expect(find.text(CommercePolicy.customProductionConsent), findsOneWidget);
++      for (final key in [
++        'print-checkout-agreement',
++        'print-checkout-policy-agreement',
++        'print-checkout-custom-production-agreement',
++      ]) {
++        final checkbox = find.byKey(ValueKey(key));
++        expect(tester.widget<CheckboxListTile>(checkbox).value, isFalse);
++      }
++      expect(
++        tester
++            .widget<FilledButton>(
++              find.widgetWithText(FilledButton, '49,900원 결제하기'),
++            )
++            .onPressed,
++        isNull,
++      );
++      await tester.pumpWidget(const SizedBox());
++    },
++  );
++
++  testWidgets(
+     'priority: direct closed checkout asks for no delivery and can refresh into READY',
+     (tester) async {
+       var ready = false;
+@@ -503,6 +591,16 @@
+       expect(
+         (await PrintPaymentRecoveryStore().read('fixture-owner'))?.sdkStarted,
+         isFalse,
++      );
++      await tester.scrollUntilVisible(
++        find.text('준비 주문 취소 요청'),
++        100,
++        scrollable: find
++            .descendant(
++              of: find.byType(ListView).first,
++              matching: find.byType(Scrollable),
++            )
++            .first,
+       );
+       await tester.ensureVisible(find.text('준비 주문 취소 요청'));
+       await tester.tap(find.text('준비 주문 취소 요청'));
+@@ -900,6 +998,16 @@
+           opens++;
+           return const PortOneSdkResult.canceled();
+         },
++      );
++      await tester.scrollUntilVisible(
++        find.textContaining('서버 저장 합성 수령인'),
++        120,
++        scrollable: find
++            .descendant(
++              of: find.byType(ListView).first,
++              matching: find.byType(Scrollable),
++            )
++            .first,
+       );
+       expect(find.textContaining('서버 저장 합성 수령인'), findsOneWidget);
+       expect(
+--- a/test/widget/print_order_complete_test.dart
++++ b/test/widget/print_order_complete_test.dart
+@@ -40,6 +40,15 @@
+ 
+   Future<void> stage(WidgetTester tester, String label, bool confirmed) async {
+     final row = find.byKey(ValueKey('print-progress-$label'));
++    if (row.evaluate().isEmpty) {
++      final toggle = find.byKey(
++        const PageStorageKey('print-progress-timeline'),
++      );
++      await tester.ensureVisible(toggle);
++      await tester.pumpAndSettle();
++      await tester.tap(toggle);
++      await tester.pumpAndSettle();
++    }
+     await tester.ensureVisible(row);
+     await tester.pump();
+     expect(
+@@ -143,4 +152,160 @@
+       await tester.pumpWidget(const SizedBox());
+     },
+   );
++  testWidgets(
++    'completion prioritizes the real current and next stage with the full timeline collapsed',
++    (tester) async {
++      await pump(
++        tester,
++        PrintOrderProgress(
++          orderId: 'owned-order',
++          customerStage: 'FILE_CHECKING',
++          preflightPassed: true,
++          requiresAction: false,
++          filesReadyAt: DateTime.utc(2026, 10, 14, 2),
++          vendorAcceptedAt: DateTime.utc(2026, 10, 14, 3),
++        ),
++      );
++      final current = find.byKey(const ValueKey('print-progress-current'));
++      expect(current, findsOneWidget);
++      expect(
++        find.descendant(of: current, matching: find.text('제작사 파일 확인 중')),
++        findsOneWidget,
++      );
++      expect(
++        find.descendant(of: current, matching: find.text('다음 예정 단계')),
++        findsOneWidget,
++      );
++      expect(
++        find.descendant(of: current, matching: find.text('책 제작')),
++        findsOneWidget,
++      );
++      expect(
++        find.byKey(const ValueKey('print-progress-제작사 파일 확인')),
++        findsNothing,
++      );
++      final toggle = find.byKey(
++        const PageStorageKey('print-progress-timeline'),
++      );
++      expect(
++        tester.getTopLeft(current).dy,
++        lessThan(tester.getTopLeft(toggle).dy),
++      );
++      await stage(tester, '제작사 주문 접수', true);
++      await stage(tester, '제작사 파일 확인', false);
++      await stage(tester, '책 제작', false);
++      await tester.pumpWidget(const SizedBox());
++    },
++  );
++
++  testWidgets(
++    'completion exposes amount and order number before optional timeline details',
++    (tester) async {
++      tester.view.physicalSize = const Size(390, 844);
++      tester.view.devicePixelRatio = 1;
++      addTearDown(tester.view.resetPhysicalSize);
++      addTearDown(tester.view.resetDevicePixelRatio);
++      await pump(
++        tester,
++        const PrintOrderProgress(
++          orderId: 'owned-order',
++          customerStage: 'PAID',
++          preflightPassed: false,
++          requiresAction: false,
++        ),
++      );
++      final amount = find.byKey(const ValueKey('print-receipt-amount'));
++      expect(amount, findsOneWidget);
++      expect(
++        find.descendant(of: amount, matching: find.text('49,900원')),
++        findsOneWidget,
++      );
++      expect(find.byType(SelectableText), findsOneWidget);
++      expect(tester.getBottomRight(amount).dy, lessThan(844));
++      expect(
++        tester.getBottomRight(find.byType(SelectableText)).dy,
++        lessThan(844),
++      );
++      expect(find.byKey(const ValueKey('print-progress-책 제작')), findsNothing);
++      await tester.pumpWidget(const SizedBox());
++    },
++  );
++
++  for (final stageName in ['CANCELED', 'REVIEW_REQUIRED', 'REFUND_REQUESTED']) {
++    testWidgets('completion does not predict production for $stageName', (
++      tester,
++    ) async {
++      tester.view.physicalSize = const Size(390, 844);
++      tester.view.devicePixelRatio = 1;
++      addTearDown(tester.view.resetPhysicalSize);
++      addTearDown(tester.view.resetDevicePixelRatio);
++      await pump(
++        tester,
++        const PrintOrderProgress(
++          orderId: 'owned-order',
++          customerStage: 'PAID',
++          preflightPassed: false,
++          requiresAction: false,
++        ),
++      );
++      when(() => orders.fetchMyPrintOrderProgress('owned-order')).thenAnswer(
++        (_) async => PrintOrderProgress(
++          orderId: 'owned-order',
++          customerStage: stageName,
++          preflightPassed: false,
++          requiresAction: stageName == 'REVIEW_REQUIRED',
++        ),
++      );
++      await tester.tap(find.byTooltip('진행 상황 새로고침'));
++      await tester.pumpAndSettle();
++      final current = find.byKey(const ValueKey('print-progress-current'));
++      expect(current, findsOneWidget);
++      expect(
++        find.descendant(of: current, matching: find.text('다음 예정 단계')),
++        findsNothing,
++      );
++      expect(find.text('환불 완료'), findsNothing);
++      if (stageName == 'CANCELED')
++        expect(find.text('주문이 취소됐어요'), findsOneWidget);
++      if (stageName == 'REVIEW_REQUIRED')
++        expect(find.textContaining('담당자가 확인하고 있습니다'), findsOneWidget);
++      await tester.pumpWidget(const SizedBox());
++    });
++  }
++
++  testWidgets(
++    'completion keeps the paid receipt visible when the latest progress read fails',
++    (tester) async {
++      tester.view.physicalSize = const Size(390, 844);
++      tester.view.devicePixelRatio = 1;
++      addTearDown(tester.view.resetPhysicalSize);
++      addTearDown(tester.view.resetDevicePixelRatio);
++      await pump(
++        tester,
++        const PrintOrderProgress(
++          orderId: 'owned-order',
++          customerStage: 'PAID',
++          preflightPassed: false,
++          requiresAction: false,
++        ),
++      );
++      when(
++        () => orders.fetchMyPrintOrderProgress('owned-order'),
++      ).thenThrow(StateError('synthetic progress read failure'));
++      await tester.tap(find.byTooltip('진행 상황 새로고침'));
++      await tester.pumpAndSettle();
++      expect(
++        find.byKey(const ValueKey('print-receipt-amount')),
++        findsOneWidget,
++      );
++      expect(find.text('결제가 확인됐어요'), findsOneWidget);
++      final current = find.byKey(const ValueKey('print-progress-current'));
++      expect(
++        find.descendant(of: current, matching: find.text('다음 예정 단계')),
++        findsNothing,
++      );
++      expect(find.textContaining('진행 상황을 불러오지 못했어요'), findsOneWidget);
++      await tester.pumpWidget(const SizedBox());
++    },
++  );
+ }
+--- a/test/widget/print_journey_responsive_test.dart
++++ b/test/widget/print_journey_responsive_test.dart
+@@ -55,6 +55,29 @@
+     paymentConfirmedAt: DateTime.utc(2026, 10, 14, 1),
+   ),
+ );
++
++Future<void> _showProgressStage(WidgetTester tester, Finder stage) async {
++  if (stage.evaluate().isEmpty) {
++    final details = find.byKey(const PageStorageKey('print-progress-timeline'));
++    if (details.evaluate().isEmpty) {
++      await tester.scrollUntilVisible(
++        details,
++        120,
++        scrollable: find
++            .descendant(
++              of: find.byKey(const PageStorageKey('print-progress-content')),
++              matching: find.byType(Scrollable),
++            )
++            .first,
++      );
++    }
++    await tester.ensureVisible(details);
++    await tester.pumpAndSettle();
++    await tester.tap(details);
++    await tester.pumpAndSettle();
++  }
++  await tester.ensureVisible(stage);
++}
+ 
+ void main() {
+   _PaintBinding();
+@@ -309,7 +332,8 @@
+           dark: dark,
+         );
+         await capture(tester, 'print-shipping-progress', size, dark);
+-        await tester.ensureVisible(
++        await _showProgressStage(
++          tester,
+           find.byKey(const ValueKey('print-progress-배송 완료')),
+         );
+         await tester.pumpAndSettle();
+@@ -372,7 +396,7 @@
+             final stage = find.byKey(
+               const ValueKey('print-progress-제작사 주문 접수'),
+             );
+-            await tester.ensureVisible(stage);
++            await _showProgressStage(tester, stage);
+             await tester.pumpAndSettle();
+             expect(
+               find.descendant(of: stage, matching: find.text('대기')),
+@@ -553,7 +577,7 @@
+     metrics(tester, const Size(844, 390));
+     await tester.pumpAndSettle();
+     final stage = find.byKey(const ValueKey('print-progress-책 제작'));
+-    await tester.ensureVisible(stage);
++    await _showProgressStage(tester, stage);
+     await tester.pumpAndSettle();
+     expect(
+       find.descendant(of: stage, matching: find.text('대기')),

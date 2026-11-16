@@ -12,8 +12,7 @@ abstract class AlbumCreationDraftStore {
   );
 }
 
-/// Optional optimistic concurrency support for browser creation flows.
-/// Native stores retain their existing lifecycle and do not implement this.
+/// Optimistic concurrency for a creation flow's exact durable draft version.
 abstract interface class AlbumCreationDraftWriteSession {
   Future<void> beginDraftWriteSession(
     String owner,

@@ -1,0 +1,144 @@
+{
+  "date": "2026-11-12",
+  "kind": "native_widget_followup_ux_audit",
+  "product_code_changed_this_audit": false,
+  "environment": {
+    "logical_size": [
+      390,
+      844
+    ],
+    "capture_pixel_ratio": 2,
+    "theme": "SnapFitTheme.light",
+    "renderer": "flutter_tester software rendering"
+  },
+  "result": {
+    "reproduction_scenarios_passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "screenshots": 11,
+    "probe_analysis": "No issues found!"
+  },
+  "priority_order": [
+    "auth_form_contrast_and_recovery_next_action",
+    "photo_query_failure_message",
+    "unsaved_social_profile_text_exit"
+  ],
+  "observations": {
+    "gallery_failure_and_empty_captures_pixel_identical": true,
+    "initialized_video_case": "VideoPlayer was initialized before navigation; absent on email/reset forms; light theme and black Scaffold asserted",
+    "password_and_email": "Fake service responses; no real email sent or password changed",
+    "profile": "Actual editor pushed, text changed, maybePop true without prompt, reentry restores fixture value"
+  },
+  "limits": [
+    "No real-device or OS gallery permission flow",
+    "No live AuthGate, email reset link or authenticated-home navigation validation",
+    "Video initialization is a platform fixture; actual video playback frames and quality not evaluated",
+    "No real profile save, photo upload, database request or account change",
+    "Audit covers named followup flows and does not certify the entire application"
+  ],
+  "screens": [
+    {
+      "path": "screens/01-gallery-query-failed.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "5a3b201b3f0c213bce208a960a5f3a3fa9eb921f52928b4c0416195a5eb5857a"
+    },
+    {
+      "path": "screens/02-gallery-truly-empty.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "5a3b201b3f0c213bce208a960a5f3a3fa9eb921f52928b4c0416195a5eb5857a"
+    },
+    {
+      "path": "screens/03-password-before-submit.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "f3c97e0399ab857e3484080f42ee92a5f18b54cc69f3a3d31b505625d552b2da"
+    },
+    {
+      "path": "screens/04-password-complete.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "3dfdeb0ea178983a168e1378b294e63ba3a3d88ceac7f9e85ebf317c3e0ae5d0"
+    },
+    {
+      "path": "screens/05-password-return-shows-login.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "3604b74244e2eaf8afbc572206e9b34f3d3d73482d51725032b63bcdaa72733e"
+    },
+    {
+      "path": "screens/06-reset-email-sent.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "47ff6fee4309bf8d645ae148c0e0219ab80f0a2545c8c57031ec47c91fa574be"
+    },
+    {
+      "path": "screens/07-reset-email-edited.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "36e0f0ed7970aa38fdfa8547c3ffc30624a544b9130b5350b189eb4a0f7f1f2b"
+    },
+    {
+      "path": "screens/08-profile-unsaved-draft.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "e44f1147dc6a85a030381eb9a1ed33da7c7a07d943f5c92e2a40fe7b3d473835"
+    },
+    {
+      "path": "screens/09-profile-reentered.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "47175b8cf6261ee273066e46deaeff26185c050cbe94cba50494cc9bc3cda564"
+    },
+    {
+      "path": "screens/10-initialized-video-email-form.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "08769ee54eac702f13f3b82b37b11689f2db97dafed77109cefb919875beb5cc"
+    },
+    {
+      "path": "screens/11-initialized-video-reset-form.png",
+      "size": [
+        780,
+        1688
+      ],
+      "sha256": "053babb1429aab70ad227c0e690804b44b8dbd34c401e461b34dab015c44a04c"
+    }
+  ],
+  "product_source_sha256": {
+    "lib/features/auth/presentation/views/login_screen.dart": "6d12645935953ce81de7cbf78f0f56a1877096dd180c7b1ccfcfd3fd9344269a",
+    "lib/features/album/presentation/viewmodels/gallery_notifier.dart": "aabe0d7aa427a6e065cdf6de72ebb90b5f921386664aca0a0e7a3924f7f6a27d",
+    "lib/shared/widgets/album_bottom_sheet.dart": "df71ba34ddf207603a04ba4dccd2d657072fb34b59b7490335e221b7289f744c",
+    "lib/features/social/presentation/views/social_profile_edit_screen.dart": "2d58bb78e6c6be8f77077ab2dc21a23b7b66aa2f41ff98205671b292c3f7e495",
+    "lib/main.dart": "513c24f993485459dcdca077e7397b0fde840f14feb23392fed48f0eb3f18980",
+    "lib/core/theme/snapfit_theme.dart": "9e93834a117a894017338e9dadeb4d034845d2e1b21c25a568ab79610a9527e8"
+  },
+  "probe_sha256": "a50022b1efe1196bb19043c156f7a524eeb50823e95805d5cd47cc6f3938b9f8",
+  "runner_sha256": "02b6e0754c047d0247d1c23fa83b2b00fc1b295cc442ded792531a10ef8b7002",
+  "logs": [
+    "logs/compile.log",
+    "logs/capture.log",
+    "logs/analyze.log"
+  ]
+}

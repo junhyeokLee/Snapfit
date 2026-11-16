@@ -298,7 +298,7 @@ Future<void> _description(WidgetTester tester) =>
 Future<void> _publish(WidgetTester tester) async {
   await _tap(tester, find.text('다음 · 1쪽'));
   await _tap(tester, find.byType(CheckboxListTile));
-  await _tap(tester, find.text('피드에 무료로 공개'));
+  await _tap(tester, find.text('프로필에 앨범 공개'));
 }
 
 void main() {
@@ -350,7 +350,7 @@ void main() {
       await _tap(tester, button);
       expect(social.resolveCalls, ['work', 'work']);
       expect(find.byType(TemplateDetailScreen), findsNothing);
-      expect(find.text('지금은 이 작품의 템플릿을 이용할 수 없어요.'), findsOneWidget);
+      expect(find.text('지금은 이 앨범의 템플릿을 이용할 수 없어요.'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
@@ -458,7 +458,7 @@ void main() {
           find.byKey(const ValueKey('social-publish-template-review')),
           include ? findsOneWidget : findsNothing,
         );
-        await _tap(tester, find.text('피드에 무료로 공개'));
+        await _tap(tester, find.text('프로필에 앨범 공개'));
         expect(social.beginCalls, hasLength(2));
         expect(
           social.beginCalls.last.requestId,
@@ -514,7 +514,7 @@ void main() {
         tester,
         find.byKey(const ValueKey('social-publish-template-retry')),
       );
-      expect(find.text('2 / 3 · 작품 소개'), findsOneWidget);
+      expect(find.text('2 / 3 · 앨범 소개'), findsOneWidget);
       final fields = tester
           .widgetList<TextField>(find.byType(TextField))
           .toList();

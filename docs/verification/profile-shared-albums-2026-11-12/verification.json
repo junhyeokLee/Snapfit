@@ -1,0 +1,129 @@
+{
+  "date": "2026-11-12",
+  "regressionPassed": 93,
+  "capturePassed": 6,
+  "suites": [
+    {
+      "name": "home",
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "profile",
+      "passed": 25,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "reliability",
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "screens",
+      "passed": 38,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "captures",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "analysis": "No issues found! (5 files)",
+  "sourceSha256": {
+    "lib/features/social/presentation/widgets/social_profile_personal_area.dart": "fe1f7854a8d9bae8d53b6af21006ac27b2f267b8451f3f67c75861700c6aa920",
+    "lib/features/album/presentation/viewmodels/home_view_model.dart": "29486950618ef2b3a6d7293e882661e703b9e74147471a7146edb7091a668151",
+    "test/widget/social_profile_personal_area_test.dart": "e0ee6c3471898824825c5b18a2c766e49aabf12d393e545756736e7152e51013",
+    "test/unit/home_view_model_test.dart": "41cf7fb007e06b3d784b148ab26e8d3e0fdb3ac863cfe8e57702925f99588bad",
+    "docs/verification/profile-shared-albums-2026-11-12/probes/native_capture.dart": "88846fe36a018a18fb468b8e633722a7a9b4d55b256f864522f49d1c68bbf02f"
+  },
+  "captureMethod": "Native production SocialProfileScreen with app theme and real bundle fonts; in-memory synthetic owner and album providers. No server or device interaction.",
+  "imageComparison": {
+    "error-large-dark.png": {
+      "size": [
+        640,
+        1688
+      ],
+      "changedBounds": [
+        113,
+        528,
+        601,
+        608
+      ]
+    },
+    "success-large-dark.png": {
+      "size": [
+        640,
+        1688
+      ],
+      "changedBounds": null
+    },
+    "error.png": {
+      "size": [
+        780,
+        1688
+      ],
+      "changedBounds": [
+        112,
+        892,
+        741,
+        942
+      ]
+    },
+    "success.png": {
+      "size": [
+        780,
+        1688
+      ],
+      "changedBounds": null
+    },
+    "loading-large-dark.png": {
+      "size": [
+        640,
+        1688
+      ],
+      "changedBounds": [
+        113,
+        567,
+        525,
+        608
+      ]
+    },
+    "loading.png": {
+      "size": [
+        780,
+        1688
+      ],
+      "changedBounds": [
+        113,
+        919,
+        341,
+        942
+      ]
+    }
+  },
+  "redEvidence": {
+    "logs/red.log": {
+      "passed": 1,
+      "failed": 3
+    },
+    "logs/boundary-red.log": {
+      "passed": 0,
+      "failed": 3
+    },
+    "logs/session-red.log": {
+      "passed": 0,
+      "failed": 1
+    }
+  },
+  "limitations": [
+    "Native widget captures are not a connected-device interaction check.",
+    "Riverpod copyWithPrevious is marked internal; the account-transition integration regression guards this narrow dependency."
+  ],
+  "independentReview": "Account-transition loading and failure findings addressed; no remaining blockers."
+}

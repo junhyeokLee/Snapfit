@@ -76,13 +76,11 @@ class TemplatePurchaseOverview extends ConsumerWidget {
     required this.productKey,
     required this.materialKeys,
     required this.isPublishedFree,
-    required this.onMaterials,
   });
 
   final String productKey;
   final Set<String> materialKeys;
   final bool isPublishedFree;
-  final VoidCallback onMaterials;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -189,26 +187,6 @@ class TemplatePurchaseOverview extends ConsumerWidget {
               detail: reusable == materialKeys.length
                   ? '현재 ${materialKeys.length}종 모두 무료 또는 보유한 소재로, 다른 앨범에도 추가할 수 있어요.'
                   : '현재 재사용 가능 $reusable종 · 나머지 ${materialKeys.length - reusable}종은 소재별 가격과 보유 권한을 확인해 주세요.',
-            ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton(
-                key: const ValueKey('template-reuse-details'),
-                onPressed: onMaterials,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Flexible(child: Text('소재별 이용 범위')),
-                    const SizedBox(width: 6),
-                    ExperienceIcon(
-                      'ChevronRight',
-                      size: 16,
-                      color: ExperienceFormStyle.selectionInk(context),
-                    ),
-                  ],
-                ),
-              ),
             ),
           ],
         ],

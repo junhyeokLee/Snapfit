@@ -14,11 +14,15 @@ import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
 import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
 import 'package:snap_fit/features/profile/domain/order_visibility_owner.dart';
 import 'package:snap_fit/features/profile/data/print_dev_checkout.dart';
+import 'package:snap_fit/features/profile/data/customer_print_test_checkout.dart';
 import 'package:snap_fit/features/profile/data/print_payment_service.dart';
 import 'package:snap_fit/features/profile/domain/print_checkout.dart';
 import '../printing/hardcover_print_export_test.dart' as hard;
+import '../unit/print_dev_checkout_test.dart' as dev;
 
 class _OrderRepo extends Mock implements OrderRepository {}
+
+class _CustomerTests extends Mock implements CustomerPrintTestCheckoutService {}
 
 class _PreviewAuth extends AuthViewModel {
   @override
@@ -144,6 +148,9 @@ void main() {
   Future<void> pump(
     WidgetTester tester, {
     Future<bool> Function(PrintPhotoEditTarget)? onEditPhotoIssue,
+    bool admin = false,
+    CustomerPrintTestCheckoutService? customerTests,
+    ValueChanged<Object?>? onExit,
   }) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -151,7 +158,11 @@ void main() {
           orderRepositoryProvider.overrideWithValue(orders),
           authViewModelProvider.overrideWith(_PreviewAuth.new),
           visibleOrderOwnerProvider.overrideWithValue('preview-fixture-owner'),
-          printDevAdminAccessProvider.overrideWithValue(false),
+          printDevAdminAccessProvider.overrideWithValue(admin),
+          if (customerTests != null)
+            customerPrintTestCheckoutServiceProvider.overrideWithValue(
+              customerTests,
+            ),
           printPaymentServiceProvider.overrideWith(
             (_) => PrintPaymentService(
               repository: orders,
@@ -161,15 +172,38 @@ void main() {
           printPreviewExporterProvider.overrideWithValue(exporter),
         ],
         child: MaterialApp(
-          home: PrintOrderPreviewScreen(
-            albumId: 7,
-            albumTitle: 'Our album',
-            onEditPhotoIssue: onEditPhotoIssue,
-          ),
+          home: onExit == null
+              ? PrintOrderPreviewScreen(
+                  albumId: 7,
+                  albumTitle: 'Our album',
+                  onEditPhotoIssue: onEditPhotoIssue,
+                )
+              : Scaffold(
+                  body: Builder(
+                    builder: (context) => TextButton(
+                      onPressed: () async => onExit(
+                        await Navigator.push<Object?>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const PrintOrderPreviewScreen(
+                              albumId: 7,
+                              albumTitle: 'Our album',
+                            ),
+                          ),
+                        ),
+                      ),
+                      child: const Text('open preview'),
+                    ),
+                  ),
+                ),
         ),
       ),
     );
     await tester.pumpAndSettle();
+    if (onExit != null) {
+      await tester.tap(find.text('open preview'));
+      await tester.pumpAndSettle();
+    }
   }
 
   Future<void> openPdfTools(WidgetTester tester) async {
@@ -364,15 +398,125 @@ void main() {
     },
   );
 
+  for (final allowed in [true, false]) {
+    testWidgets(
+      'administrator TEST capability is checked before closed delivery allowed=$allowed',
+      (tester) async {
+        final snapshot = {
+          ...dev.devSnapshot,
+          'album': {...dev.devSnapshot['album'] as Map, 'id': 7},
+        };
+        final revision = printCheckoutRevision(snapshot);
+        final quote = OrderQuoteResult.fromJson({
+          'productCode': 'REDP_300_HARD',
+          'pageCount': 80,
+          'sourcePageCount': 80,
+          'amount': 159900,
+          'basePrice': 159900,
+          'basePages': 80,
+          'supplierCostVerified': true,
+          'shippingIncluded': true,
+          'spec': dev.devSpec,
+        });
+        when(
+          () => orders.fetchPrintPreviewSnapshot(albumId: 7),
+        ).thenAnswer((_) async => snapshot);
+        when(() => orders.fetchPrintCheckoutReadiness(albumId: 7)).thenAnswer(
+          (_) async => PrintCheckoutReadiness(
+            canPay: false,
+            status: 'PREPARING',
+            reasonCode: 'print_sales_not_ready',
+            message: '정식 주문을 준비하고 있어요.',
+            quote: quote,
+          ),
+        );
+        final tests = _CustomerTests();
+        when(
+          () => tests.capability(albumId: 7, reviewedRevision: revision),
+        ).thenAnswer(
+          (_) async => allowed
+              ? CustomerPrintTestCapability.fromJson({
+                  'canTest': true,
+                  'environment': 'test',
+                  'isTest': true,
+                  'productionApproved': false,
+                  'albumId': 7,
+                  'reviewedRevision': revision,
+                  'productId': 'REDP_300_HARD',
+                  'pageCount': 80,
+                  'totalAmount': 159900,
+                  'currency': 'KRW',
+                  'storeId': PrintDevCheckoutSession.testStoreId,
+                  'channelKey': PrintDevCheckoutSession.testChannelKey,
+                })
+              : null,
+        );
+        when(() => tests.resume()).thenAnswer((_) async => null);
+        when(() => tests.sdkStarted()).thenAnswer((_) async => false);
+        await pump(tester, admin: true, customerTests: tests);
+        await tester.ensureVisible(find.byType(CheckboxListTile));
+        await tester.tap(find.byType(CheckboxListTile));
+        await tester.pump();
+        final next = find.byKey(const ValueKey('print-continue-to-delivery'));
+        await tester.ensureVisible(next);
+        expect(tester.widget<FilledButton>(next).onPressed, isNotNull);
+        await tester.tap(next);
+        await tester.pumpAndSettle();
+        if (allowed) {
+          expect(
+            tester
+                .widget<PrintOrderCheckoutScreen>(
+                  find.byType(PrintOrderCheckoutScreen),
+                )
+                .testMode,
+            isTrue,
+          );
+          expect(
+            find.byKey(const ValueKey('print-recipient-name')),
+            findsOneWidget,
+          );
+        } else {
+          expect(find.byType(PrintOrderCheckoutScreen), findsNothing);
+          expect(
+            find.text('TEST 주문 권한을 확인하지 못했어요. 다시 확인해주세요.'),
+            findsOneWidget,
+          );
+        }
+        expect(exporter.generationCalls, 0);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets(
+    'priority: closed orders explain availability before delivery is collected',
+    (tester) async {
+      await pump(tester);
+      final status = find.byKey(const ValueKey('print-preview-order-status'));
+      expect(status, findsOneWidget);
+      expect(find.text('정식 주문을 준비하고 있어요.'), findsOneWidget);
+      await tester.ensureVisible(find.byType(CheckboxListTile));
+      await tester.tap(find.byType(CheckboxListTile));
+      await tester.pump();
+      final next = find.byKey(const ValueKey('print-continue-to-delivery'));
+      await tester.ensureVisible(next);
+      expect(tester.widget<FilledButton>(next).onPressed, isNull);
+      expect(find.text('주문 준비 중'), findsOneWidget);
+      expect(find.byType(PrintOrderCheckoutScreen), findsNothing);
+      expect(exporter.generationCalls, 0);
+      verifyNever(() => orders.fetchMyOrders());
+    },
+  );
+
   testWidgets(
     'reviewed album moves directly to delivery without exporting PDFs or creating an order',
     (tester) async {
       when(() => orders.fetchPrintCheckoutReadiness(albumId: 7)).thenAnswer(
         (_) async => PrintCheckoutReadiness(
-          canPay: false,
-          status: 'PREPARING',
-          reasonCode: 'print_sales_not_ready',
-          message: '정식 주문 서비스를 준비하고 있어요.',
+          canPay: true,
+          status: 'READY',
+          reasonCode: '',
+          message: '',
           quote: await orders.fetchOrderQuote(albumId: 7),
         ),
       );
@@ -400,6 +544,65 @@ void main() {
   );
 
   testWidgets(
+    'added blank pages show a prominent count and return to editing without ordering',
+    (tester) async {
+      Object? result;
+      await pump(tester, onExit: (value) => result = value);
+      final warning = find.byKey(const ValueKey('print-added-blank-pages'));
+      await scrollPreviewTo(tester, warning, 200);
+      expect(find.text('20쪽 중 19쪽이 추가 빈 페이지예요'), findsOneWidget);
+      final edit = find.descendant(
+        of: warning,
+        matching: find.widgetWithText(TextButton, '앨범 계속 편집하기'),
+      );
+      await tester.ensureVisible(edit);
+      await tester.tap(edit);
+      await tester.pumpAndSettle();
+      expect(result, 'edit_album');
+      expect(find.byType(PrintOrderPreviewScreen), findsNothing);
+      expect(exporter.generationCalls, 0);
+      verifyNever(() => orders.fetchMyOrders());
+    },
+  );
+
+  testWidgets(
+    'a full album does not show an added blank page warning',
+    (tester) async {
+      final original = await orders.fetchOrderQuote(albumId: 7);
+      final snapshot = await orders.fetchPrintPreviewSnapshot(albumId: 7);
+      final album = Map<String, dynamic>.from(snapshot['album'] as Map);
+      album['cover_layers_json'] = jsonEncode({
+        'pages': [
+          {'index': 0, 'isCover': true, 'layers': []},
+          for (var page = 1; page <= 20; page++)
+            {'index': page, 'isCover': false, 'layers': []},
+        ],
+      });
+      when(() => orders.fetchPrintPreviewSnapshot(albumId: 7)).thenAnswer(
+        (_) async => {...snapshot, 'album': album},
+      );
+      when(() => orders.fetchOrderQuote(albumId: 7)).thenAnswer(
+        (_) async => OrderQuoteResult(
+          pageCount: 20,
+          sourcePageCount: 20,
+          addedBlankPageCount: 0,
+          amount: original.amount,
+          basePages: original.basePages,
+          basePrice: original.basePrice,
+          extraPageCount: 0,
+          extraPagePrice: original.extraPagePrice,
+          printSpec: original.printSpec,
+        ),
+      );
+      await pump(tester);
+      expect(find.text('내지 20페이지 · 앞표지와 뒤표지 별도'), findsOneWidget);
+      expect(find.byKey(const ValueKey('print-added-blank-pages')), findsNothing);
+      expect(find.text('앨범 계속 편집하기'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
     'unverified server estimate stays hidden while square preview remains available',
     (tester) async {
       await pump(tester);
@@ -416,11 +619,11 @@ void main() {
       expect(find.text('빈 페이지'), findsOneWidget);
       await scrollPreviewTo(
         tester,
-        find.widgetWithText(FilledButton, '배송지 입력하기'),
+        find.byKey(const ValueKey('print-continue-to-delivery')),
         300,
       );
       final disabledPayment = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, '배송지 입력하기'),
+        find.byKey(const ValueKey('print-continue-to-delivery')),
       );
       expect(disabledPayment.onPressed, isNull);
       expect(find.textContaining('영업일 5~6일'), findsOneWidget);
@@ -808,13 +1011,13 @@ void main() {
         expect(find.textContaining('309,900원'), findsNothing);
         await scrollPreviewTo(
           tester,
-          find.widgetWithText(FilledButton, '배송지 입력하기'),
+          find.byKey(const ValueKey('print-continue-to-delivery')),
           300,
         );
         expect(
           tester
               .widget<FilledButton>(
-                find.widgetWithText(FilledButton, '배송지 입력하기'),
+                find.byKey(const ValueKey('print-continue-to-delivery')),
               )
               .onPressed,
           isNull,

@@ -11,32 +11,30 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:snap_fit/features/album/data/album_creation_draft_store.dart';
 import 'package:snap_fit/features/album/data/album_creation_catalog_provider.dart';
-import 'package:snap_fit/features/album/data/api/album_provider.dart';
-import 'package:snap_fit/features/album/presentation/views/add_cover_screen.dart';
 import 'package:snap_fit/features/album/presentation/views/page_editor_screen.dart';
 import 'package:snap_fit/features/album/presentation/views/home_screen.dart';
 import 'package:snap_fit/features/notification/presentation/providers/notification_provider.dart';
 import 'package:snap_fit/features/moments/presentation/widgets/first_book_next_step_card.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
-import 'package:snap_fit/features/album/service/album_editor_service.dart';
+import 'package:snap_fit/features/album/presentation/providers/album_edit_session_provider.dart';
 import 'package:snap_fit/features/album/domain/entities/album_creation_draft.dart';
 import 'package:snap_fit/features/album/domain/entities/layer.dart';
 import 'package:snap_fit/features/album/domain/entities/album_creation_template.dart';
 import 'package:snap_fit/core/constants/cover_size.dart';
 import 'package:snap_fit/core/constants/cover_theme.dart';
+import 'package:snap_fit/features/moments/domain/moment_record.dart';
+import 'package:snap_fit/features/moments/presentation/providers/moment_entry_refresh_provider.dart';
 import 'package:snap_fit/features/album/domain/entities/album_page.dart';
 import 'package:snap_fit/features/album/presentation/views/album_create_flow_screen.dart';
+import 'package:snap_fit/features/album/presentation/widgets/create_flow/album_create_step1.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/album_creation_review_sheet.dart';
-import 'package:snap_fit/features/album/presentation/widgets/create_flow/template_photo_fill_step.dart';
 import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
 import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
 import 'package:snap_fit/features/album/presentation/widgets/home/home_empty_state.dart';
 import '../unit/album_creation_draft_test.dart' show creationDraftFixture;
 import 'ai_album_start_step_test.dart' show loadCreationFonts, wrapCreation;
 import 'home_screen_test.dart' show FakeAuthViewModel;
-import '../helpers/mock_repositories.dart';
-import '../unit/album_editor_view_model_test.dart'
-    show FakeStorageService, FakeAlbumPersistenceService;
+import '../helpers/unified_creation_fixtures.dart';
 
 class MemoryCreationDraftStore implements AlbumCreationDraftStore {
   AlbumCreationDraft? draft;
@@ -106,7 +104,7 @@ List<List<LayerModel>> _pages() => List.generate(
   ],
 );
 
-AlbumCreationDraft _draft() {
+AlbumCreationDraft _draft({bool pendingPhoto = false}) {
   final cover = coverSizes[1].withCoverType(PrintCoverType.hard);
   final canvas = coverCanvasBaseSize(cover);
   final pages = AlbumCreationTemplate.preparePages(
@@ -120,8 +118,10 @@ AlbumCreationDraft _draft() {
   json['canvasSizes'] = {'landscape': size};
   json['baseCanvasSize'] = size;
   json['editedCoverCanvasSize'] = size;
-  json['pendingPhotos'] = [];
-  json['selectedPhotoId'] = null;
+  if (!pendingPhoto) {
+    json['pendingPhotos'] = [];
+    json['selectedPhotoId'] = null;
+  }
   json['currentPage'] = 1;
   json['selectedSlot'] = {'page': 1, 'id': 'photo-1'};
   return AlbumCreationDraft.fromJson(json);
@@ -165,16 +165,15 @@ Future<ProviderContainer> _boot(
   double textScale = 1,
   AlbumCreationDraft? initialDraft,
   AlbumCreateFlowScreen? initialScreen,
+  RecordingCreationAlbums? albums,
 }) async {
   final container = ProviderContainer(
     overrides: [
       albumCreationDraftStoreProvider.overrideWithValue(store),
-      albumRepositoryProvider.overrideWithValue(MockAlbumRepository()),
-      storageServiceProvider.overrideWithValue(FakeStorageService()),
-      albumPersistenceServiceProvider.overrideWithValue(
-        FakeAlbumPersistenceService(),
+      ...unifiedCreationBackendOverrides(
+        albums: albums ?? RecordingCreationAlbums(owner: 'user'),
       ),
-      albumEditorServiceProvider.overrideWithValue(const AlbumEditorService()),
+      albumEditorOwnerReaderProvider.overrideWithValue(() => 'user'),
       authViewModelProvider.overrideWith(
         () => FakeAuthViewModel(
           const UserInfo(id: 'user', name: '우리', provider: 'email'),
@@ -218,12 +217,46 @@ Future<ProviderContainer> _boot(
   return container;
 }
 
+Future<void> _continueToEditor(WidgetTester tester) async {
+  // Setup owns the create boundary; all document editing starts in the editor.
+  tester.widget<AlbumCreateStep1>(find.byType(AlbumCreateStep1)).onNext();
+  await tester.pumpAndSettle();
+  expect(find.byType(PageEditorScreen), findsOneWidget);
+  expect(find.byType(AlbumCreateFlowScreen), findsNothing);
+}
+
 void main() {
   setUpAll(loadCreationFonts);
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     FlutterSecureStorage.setMockInitialValues({});
   });
+  testWidgets(
+    'catalogue header back returns to methods before leaving creation',
+    (tester) async {
+      _size(tester, const Size(390, 844));
+      final store = MemoryCreationDraftStore();
+      await _boot(tester, store, initialScreen: const AlbumCreateFlowScreen());
+      await tester.tap(find.byKey(const ValueKey('creation-open-catalog')));
+      await tester.pumpAndSettle();
+      expect(find.text('디자인 고르기'), findsOneWidget);
+      tester.view.physicalSize = const Size(844, 390);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('creation-hub-back')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('creation-manual-start')),
+        findsOneWidget,
+      );
+      expect(find.text('앨범 만들기를 나갈까요?'), findsNothing);
+      expect(store.writes, 0);
+      await tester.tap(find.byKey(const ValueKey('creation-manual-start')));
+      await tester.pumpAndSettle();
+      expect(find.text('책장에 표시할 이름'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets(
     'automatic template previews stay examples and preserve local photos',
     (tester) async {
@@ -275,45 +308,65 @@ void main() {
     },
   );
 
-  testWidgets('restores photo-fill page and writes a resumable local draft', (
-    tester,
-  ) async {
-    _size(tester, const Size(390, 844));
-    final store = MemoryCreationDraftStore();
-    final container = await _boot(tester, store);
-    final fill = tester.widget<TemplatePhotoFillStep>(
-      find.byType(TemplatePhotoFillStep),
-    );
-    expect(fill.session!.page, 1);
-    expect(fill.session!.selectedSlot, (page: 1, id: 'photo-1'));
-    await tester.tap(find.byKey(const ValueKey('creation-save-draft')));
-    await tester.pumpAndSettle();
-    expect(store.draft!.title, '여행의 조각');
-    expect(store.draft!.pages!.length, 6);
-    expect(store.draft!.currentPage, 1);
-    expect(
-      (await container.read(albumCreationDraftProvider.future))!.id,
-      store.draft!.id,
-    );
-    expect(find.text('이 기기에 임시 저장했어요.'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
-
   testWidgets(
-    'cover review opens the chosen inner page and preserves the workspace and cover edits',
+    'restores legacy photo-fill work at setup and saves a resumable draft',
     (tester) async {
       _size(tester, const Size(390, 844));
       final store = MemoryCreationDraftStore();
       final container = await _boot(tester, store);
-      final session = tester
-          .widget<TemplatePhotoFillStep>(find.byType(TemplatePhotoFillStep))
-          .session!;
-      tester
-          .widget<TemplatePhotoFillStep>(find.byType(TemplatePhotoFillStep))
-          .onContinue();
+      final setup = tester.widget<AlbumCreateStep1>(
+        find.byType(AlbumCreateStep1),
+      );
+      expect(setup.albumTitle, '여행의 조각');
+      expect(setup.documentPages!.length, 6);
+      expect(find.byType(PageEditorScreen), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('creation-save-draft')));
       await tester.pumpAndSettle();
-      expect(find.byType(AddCoverScreen), findsOneWidget);
+      expect(store.draft!.title, '여행의 조각');
+      expect(store.draft!.pages!.length, 6);
+      expect(store.draft!.currentPage, 1);
+      expect(store.draft!.selectedSlot, (page: 1, id: 'photo-1'));
+      expect(store.draft!.step, 0);
+      expect(store.draft!.showPhotoFill, isFalse);
+      expect(
+        (await container.read(albumCreationDraftProvider.future))!.id,
+        store.draft!.id,
+      );
+      expect(find.text('이 기기에 임시 저장했어요.'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'unified editor restores the photo queue and preserves cover edits across page navigation',
+    (tester) async {
+      _size(tester, const Size(390, 844));
+      final store = MemoryCreationDraftStore();
+      final albums = RecordingCreationAlbums(owner: 'user');
+      final container = await _boot(
+        tester,
+        store,
+        albums: albums,
+        initialDraft: _draft(pendingPhoto: true),
+      );
+      await _continueToEditor(tester);
+      final editor = tester.widget<PageEditorScreen>(
+        find.byType(PageEditorScreen),
+      );
+      final session = editor.initialPhotoFillSession!;
+      expect(session.page, 1);
+      expect(session.selectedSlot, (page: 1, id: 'photo-1'));
+      expect(session.pendingPhotos.single.id, 'local-photo-1');
+      expect(session.selectedPhoto?.id, 'local-photo-1');
+      expect(albums.creates, 1);
+      expect(albums.requestedOwners, ['user']);
+      expect(albums.requestIds.single, isNotEmpty);
       final vm = container.read(albumEditorViewModelProvider.notifier);
+      expect(vm.editingAlbumId, albums.albumId);
+      expect(vm.currentPageIndex, 1);
+      await tester.tap(find.byKey(const ValueKey('editor-page-0')));
+      await tester.pumpAndSettle();
+      expect(vm.currentPageIndex, 0);
       vm.updatePageLayers([
         for (final layer in vm.layers)
           layer.type == LayerType.text
@@ -321,27 +374,39 @@ void main() {
               : layer,
       ]);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('전체 확인').last);
+      await tester.tap(find.byKey(const ValueKey('editor-page-1')));
       await tester.pumpAndSettle();
-      expect(find.byType(AlbumCreationReviewSheet), findsOneWidget);
-      await tester.tap(find.byKey(const ValueKey('creation-review-page-1')));
-      await tester.pumpAndSettle();
-      final restored = tester.widget<TemplatePhotoFillStep>(
-        find.byType(TemplatePhotoFillStep),
-      );
-      expect(identical(restored.session, session), isTrue);
-      expect(restored.session!.page, 1);
+      expect(vm.currentPageIndex, 1);
       expect(
-        restored.pages.first
+        identical(
+          tester
+              .widget<PageEditorScreen>(find.byType(PageEditorScreen))
+              .initialPhotoFillSession,
+          session,
+        ),
+        isTrue,
+      );
+      expect(
+        vm.pages.first.layers
             .where((layer) => layer.type == LayerType.text)
             .single
             .text,
         '다듬은 표지 문구',
       );
-      await tester.tap(find.byKey(const ValueKey('creation-save-draft')));
+      await tester.tap(find.byKey(const ValueKey('editor-save-draft')));
       await tester.pumpAndSettle();
+      expect(store.draft!.createdAlbumId, albums.albumId);
+      expect(store.draft!.editorCheckpoint!.pageIndex, 1);
       expect(
-        store.draft!.pages!.first
+        store.draft!.editorCheckpoint!.sourceUpdatedAt,
+        RecordingCreationAlbums.revision,
+      );
+      expect(store.draft!.editorCheckpoint!.sourceOwnerId, 'user');
+      expect(store.draft!.editorCheckpoint!.sourceMemberRole, 'OWNER');
+      expect(store.draft!.pendingPhotos.single.id, 'local-photo-1');
+      expect(store.draft!.selectedPhotoId, 'local-photo-1');
+      expect(
+        store.draft!.editorCheckpoint!.pages.first.layers
             .where((layer) => layer.type == LayerType.text)
             .single
             .text,
@@ -358,8 +423,15 @@ void main() {
       final json = _draft().toJson()..['createdAlbumId'] = 12;
       final draft = AlbumCreationDraft.fromJson(json);
       final store = MemoryCreationDraftStore()..draft = draft;
-      final container = await _boot(tester, store, initialDraft: draft);
+      final albums = RecordingCreationAlbums(owner: 'user', albumId: 12);
+      final container = await _boot(
+        tester,
+        store,
+        initialDraft: draft,
+        albums: albums,
+      );
       expect(find.byType(PageEditorScreen), findsOneWidget);
+      expect(albums.creates, 0);
       final vm = container.read(albumEditorViewModelProvider.notifier);
       expect(vm.editingAlbumId, 12);
       expect(vm.pages.length, 25);
@@ -493,11 +565,16 @@ void main() {
       _size(tester, const Size(390, 844));
       final store = MemoryCreationDraftStore();
       await _boot(tester, store);
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-      await tester.pumpAndSettle();
+      for (final state in [AppLifecycleState.inactive, AppLifecycleState.hidden, AppLifecycleState.paused]) {
+        tester.binding.handleAppLifecycleStateChanged(state);
+        await tester.pumpAndSettle();
+      }
       expect(store.draft!.currentPage, 1);
       expect(find.byType(AlertDialog), findsNothing);
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      for (final state in [AppLifecycleState.hidden, AppLifecycleState.inactive, AppLifecycleState.resumed]) {
+        tester.binding.handleAppLifecycleStateChanged(state);
+        await tester.pumpAndSettle();
+      }
     },
   );
 
@@ -535,7 +612,7 @@ void main() {
     const Size(844, 390),
   ]) {
     for (final dark in [false, true]) {
-      testWidgets('creation workspace and exit dialog fit $size dark=$dark', (
+      testWidgets('creation setup, editor and exit dialog fit $size dark=$dark', (
         tester,
       ) async {
         _size(tester, size);
@@ -549,18 +626,15 @@ void main() {
         await _capture(
           tester,
           capture,
-          'creation-workspace-${size.width.toInt()}-${dark ? 'dark' : 'light'}',
+          'creation-settings-${size.width.toInt()}-${dark ? 'dark' : 'light'}',
         );
-        tester
-            .widget<TemplatePhotoFillStep>(find.byType(TemplatePhotoFillStep))
-            .onContinue();
-        await tester.pumpAndSettle();
+        await _continueToEditor(tester);
         await _capture(
           tester,
           capture,
-          'creation-cover-${size.width.toInt()}-${dark ? 'dark' : 'light'}',
+          'creation-editor-${size.width.toInt()}-${dark ? 'dark' : 'light'}',
         );
-        await tester.tap(find.byKey(const ValueKey('creation-exit')));
+        await tester.tap(find.byTooltip('편집 마치기'));
         await tester.pumpAndSettle();
         await _capture(
           tester,
@@ -575,8 +649,7 @@ void main() {
         _size(tester, size);
         final capture = GlobalKey();
         final store = MemoryCreationDraftStore()..draft = _draft();
-        final repo = MockAlbumRepository();
-        stubFetchMyAlbums(repo, []);
+        final albums = RecordingCreationAlbums(owner: 'user');
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
@@ -584,7 +657,8 @@ void main() {
                 () => HomeUiStateNotifier(initialIndex: 0),
               ),
               albumCreationDraftStoreProvider.overrideWithValue(store),
-              albumRepositoryProvider.overrideWithValue(repo),
+              ...unifiedCreationBackendOverrides(albums: albums),
+              albumEditorOwnerReaderProvider.overrideWithValue(() => 'user'),
               authViewModelProvider.overrideWith(
                 () => FakeAuthViewModel(
                   const UserInfo(id: 'user', name: '우리', provider: 'email'),
@@ -594,6 +668,13 @@ void main() {
                 (ref) => Stream.value([]),
               ),
               notificationUnreadCountProvider.overrideWith((ref) async => 0),
+              momentEntryJournalProvider.overrideWith((ref) async => MomentJournal(
+                today: DateTime.utc(2026, 11, 11),
+                weekStart: DateTime.utc(2026, 11, 9),
+                month: DateTime.utc(2026, 11),
+                records: const [],
+                weekPhotoCount: 0,
+              )),
             ],
             child: RepaintBoundary(
               key: capture,
@@ -611,24 +692,31 @@ void main() {
           matching: find.text('이어서 만들기'),
         );
         expect(resume, findsOneWidget);
-        expect(
-          find.byKey(const ValueKey('home-moments-entry')).hitTestable(),
-          findsOneWidget,
+        final dailyRecord = find.byKey(
+          const ValueKey('home-monthly-feed-record'),
         );
+        await tester.ensureVisible(dailyRecord);
+        expect(dailyRecord.hitTestable(), findsOneWidget);
         await _capture(
           tester,
           capture,
           'creation-home-resume-${size.width.toInt()}-${dark ? 'dark' : 'light'}',
         );
+        await tester.ensureVisible(resume);
+        expect(resume.hitTestable(), findsOneWidget);
         await tester.tap(resume);
         await tester.pumpAndSettle();
+        expect(find.byType(AlbumCreateStep1), findsOneWidget);
+        expect(find.byType(PageEditorScreen), findsNothing);
+        await _continueToEditor(tester);
         expect(
           tester
-              .widget<TemplatePhotoFillStep>(find.byType(TemplatePhotoFillStep))
-              .session!
+              .widget<PageEditorScreen>(find.byType(PageEditorScreen))
+              .initialPhotoFillSession!
               .page,
           1,
         );
+        expect(albums.creates, 1);
         expect(tester.takeException(), isNull);
       });
       testWidgets(
@@ -701,25 +789,28 @@ void main() {
   );
 
   for (final size in [const Size(320, 568), const Size(844, 390)]) {
-    testWidgets(
-      'creation header, cover actions, review and exit fit large text at $size',
-      (tester) async {
-        _size(tester, size);
-        await _boot(tester, MemoryCreationDraftStore(), textScale: 1.6);
-        tester
-            .widget<TemplatePhotoFillStep>(find.byType(TemplatePhotoFillStep))
-            .onContinue();
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('전체 확인').first);
-        await tester.pumpAndSettle();
-        expect(find.byType(AlbumCreationReviewSheet), findsOneWidget);
-        await tester.tap(find.byTooltip('닫기'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.byKey(const ValueKey('creation-exit')));
-        await tester.pumpAndSettle();
-        expect(find.text('계속 만들기'), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      },
-    );
+    testWidgets('creation settings, editor and exit fit large text at $size', (
+      tester,
+    ) async {
+      _size(tester, size);
+      final container = await _boot(tester, MemoryCreationDraftStore(), textScale: 1.6);
+      expect(find.byType(AlbumCreateStep1), findsOneWidget);
+      await _continueToEditor(tester);
+      expect(find.byKey(const ValueKey('editor-page-rail')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('editor-save-draft')));
+      await tester.pumpAndSettle();
+      final vm = container.read(albumEditorViewModelProvider.notifier);
+      final originalCount = vm.innerPageCount;
+      final addPage = find.byKey(const Key('addInnerPagesButton'));
+      await tester.ensureVisible(addPage);
+      await tester.tap(addPage);
+      await tester.pumpAndSettle();
+      expect(vm.innerPageCount, originalCount + 2);
+      expect(vm.hasUnsavedChanges, isTrue);
+      await tester.tap(find.byTooltip('편집 마치기'));
+      await tester.pumpAndSettle();
+      expect(find.text('계속 편집'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   }
 }

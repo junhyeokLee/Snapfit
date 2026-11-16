@@ -65,12 +65,12 @@ void main() {
     },
   );
 
-  test('daily and weekly caps each suppress automatic display', () {
+  test('daily and weekly statistics no longer suppress home-entry display', () {
     expect(
       HomeNewsExposureState.fromJson(
         _state(daily: 1, history: [_exposure(shownAt: '2026-10-26T15:00:00Z')]),
       ).canAutoShow,
-      isFalse,
+      isTrue,
     );
     expect(
       HomeNewsExposureState.fromJson(
@@ -88,12 +88,12 @@ void main() {
           ],
         ),
       ).canAutoShow,
-      isFalse,
+      isTrue,
     );
   });
 
   test(
-    'rejects forged date/week, excessive or inconsistent quota, and history duplicates',
+    'rejects forged date/week, inconsistent statistics and history duplicates',
     () {
       for (final invalid in [
         _state(date: '2026-10-26'),
@@ -237,7 +237,7 @@ void main() {
       final state = HomeNewsExposureState.fromJson(json);
       expect(state.history, hasLength(4));
       expect(state.deliveries, hasLength(1));
-      expect(state.canAutoShow, isFalse);
+      expect(state.canAutoShow, isTrue);
       expect(
         () => HomeNewsExposureState.fromJson({...json, 'dailyCount': 0}),
         throwsFormatException,
@@ -288,7 +288,65 @@ void main() {
       });
       expect(state.dailyCount, 1);
       expect(state.weeklyCount, 2);
-      expect(state.canAutoShow, isFalse);
+      expect(state.canAutoShow, isTrue);
+    },
+  );
+
+  test(
+    'today-hide alone suppresses home entry until the exact next Korean midnight',
+    () {
+      final hidden = HomeNewsExposureState.fromJson({
+        ..._state(),
+        'hiddenForToday': true,
+        'hiddenUntil': '2026-10-27T15:00:00Z',
+      });
+      expect(hidden.canAutoShow, isFalse);
+      expect(hidden.hiddenUntil, DateTime.utc(2026, 10, 27, 15));
+      for (final invalid in [
+        {..._state(), 'hiddenForToday': true},
+        {
+          ..._state(),
+          'hiddenForToday': true,
+          'hiddenUntil': '2026-10-27T14:59:59Z',
+        },
+        {
+          ..._state(),
+          'hiddenForToday': false,
+          'hiddenUntil': '2026-10-27T15:00:00Z',
+        },
+        {..._state(), 'hiddenForToday': 'true'},
+      ]) {
+        expect(
+          () => HomeNewsExposureState.fromJson(invalid),
+          throwsFormatException,
+        );
+      }
+    },
+  );
+
+  test(
+    'bounded omitted counters retain exact statistics without limiting repeated entry',
+    () {
+      final json = {
+        ..._state(daily: 80, weekly: 81),
+        'omittedDailyCount': 80,
+        'omittedWeeklyCount': 80,
+      };
+      final state = HomeNewsExposureState.fromJson(json);
+      expect(state.dailyCount, 80);
+      expect(state.weeklyCount, 81);
+      expect(state.canAutoShow, isTrue);
+      for (final invalid in [
+        {...json, 'omittedDailyCount': 79},
+        {...json, 'omittedWeeklyCount': 79},
+        {...json, 'omittedDailyCount': -1},
+        {...json, 'omittedWeeklyCount': '80'},
+      ]) {
+        expect(
+          () => HomeNewsExposureState.fromJson(invalid),
+          throwsFormatException,
+        );
+      }
     },
   );
 }

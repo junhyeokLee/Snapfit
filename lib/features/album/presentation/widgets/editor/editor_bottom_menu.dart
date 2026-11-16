@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../../shared/widgets/album_stage_style.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../../../shared/widgets/experience_icon.dart';
+import '../../../../../core/theme/snapfit_design_tokens.dart' show SnapFitRadius;
 
 enum EditorMode {
   none,
@@ -28,11 +29,13 @@ class EditorBottomMenu extends StatelessWidget {
     this.onUndo,
     this.onRedo,
     this.useCreationStyle = false,
+    this.onFillPhotos,
   });
 
   final EditorMode currentMode;
   final ValueChanged<EditorMode> onModeChanged;
   final VoidCallback? onAddPhoto, onCover, onUndo, onRedo;
+  final VoidCallback? onFillPhotos;
   final bool isCover, showCoverMenuItem, canUndo, canRedo, useCreationStyle;
 
   @override
@@ -45,9 +48,17 @@ class EditorBottomMenu extends StatelessWidget {
       if (isCover && showCoverMenuItem)
         _EditorMenuItem('커버', 'BookOpen', null, onAction: onCover),
       const _EditorMenuItem('레이아웃', 'LayoutGrid', EditorMode.layout),
-      const _EditorMenuItem('배경', 'Settings2', EditorMode.backgroundColor),
+      const _EditorMenuItem('배경', 'PaintBucket', EditorMode.backgroundColor),
       if (useCreationStyle)
-        const _EditorMenuItem('재배치', 'Layers2', EditorMode.layer),
+        const _EditorMenuItem('겹침 순서', 'Layers2', EditorMode.layer),
+      if (onFillPhotos != null)
+        _EditorMenuItem(
+          '사진 여러 장 넣기',
+          'ImagePlus',
+          null,
+          onAction: onFillPhotos,
+          maxLines: 2,
+        ),
     ];
     return LayoutBuilder(
       builder: (context, box) {
@@ -106,7 +117,11 @@ class EditorBottomMenu extends StatelessWidget {
                     history,
                     _tool(
                       context,
-                      const _EditorMenuItem('재배치', 'Layers2', EditorMode.layer),
+                      const _EditorMenuItem(
+                        '겹침 순서',
+                        'Layers2',
+                        EditorMode.layer,
+                      ),
                       labelHeight,
                     ),
                     Divider(height: 1, color: AlbumStageStyle.line(context)),
@@ -125,7 +140,7 @@ class EditorBottomMenu extends StatelessWidget {
                           _tool(
                             context,
                             const _EditorMenuItem(
-                              '재배치',
+                              '겹침 순서',
                               'Layers2',
                               EditorMode.layer,
                             ),
@@ -183,16 +198,16 @@ class EditorBottomMenu extends StatelessWidget {
           color: selected
               ? AlbumStageStyle.controlFill(context)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(SnapFitRadius.sm),
           child: InkWell(
             onTap: action,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(SnapFitRadius.sm),
             child: SizedBox(
               width: math.max(
                 60,
                 MediaQuery.textScalerOf(context).scale(11) * 4 + 12,
               ),
-              height: 34 + labelHeight,
+              height: 34 + labelHeight * item.maxLines,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -200,7 +215,8 @@ class EditorBottomMenu extends StatelessWidget {
                   const SizedBox(height: 5),
                   Text(
                     item.label,
-                    maxLines: 1,
+                    maxLines: item.maxLines,
+                    textAlign: TextAlign.center,
                     style: ExperienceFormStyle.text(
                       context,
                       11,
@@ -219,8 +235,15 @@ class EditorBottomMenu extends StatelessWidget {
 }
 
 class _EditorMenuItem {
-  const _EditorMenuItem(this.label, this.icon, this.mode, {this.onAction});
+  const _EditorMenuItem(
+    this.label,
+    this.icon,
+    this.mode, {
+    this.onAction,
+    this.maxLines = 1,
+  });
   final String label, icon;
   final EditorMode? mode;
   final VoidCallback? onAction;
+  final int maxLines;
 }

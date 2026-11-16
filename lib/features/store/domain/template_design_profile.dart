@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:convert';
 
 import '../../../core/templates/template_document_pages.dart';
+import '../../../core/data/catalog_template_metadata.dart';
 import 'entities/premium_template.dart';
 
 /// Describes the editable contents of the supplied document's default edition.
@@ -55,6 +56,16 @@ class TemplateDesignProfile {
   String get briefLabel => '$photoLabel · $pageLabel';
 
   factory TemplateDesignProfile.of(PremiumTemplate template) {
+    final exported = canonicalTemplateMetadata(template)?['profile'] as Map?;
+    if (exported != null) {
+      return TemplateDesignProfile._(
+        photoSlotCount: exported['photoSlotCount'] as int?,
+        innerPhotoSlotCount: exported['innerPhotoSlotCount'] as int?,
+        innerPageCount: exported['innerPageCount'] as int?,
+        photoPageCount: exported['photoPageCount'] as int?,
+        recordPageCount: exported['recordPageCount'] as int?,
+      );
+    }
     String? source;
     try {
       source = template.templateJson;

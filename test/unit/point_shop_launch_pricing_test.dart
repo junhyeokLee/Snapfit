@@ -15,11 +15,20 @@ import 'package:snap_fit/core/templates/template_visual_material_inventory.dart'
 import '../../tool/template_studio/export_launch_pricing.dart';
 import '../../tool/template_studio/export_price_application.dart';
 
+const _refinedFreeWordArts = {
+  'bold-cut': (title: '볼드 컷아웃', text: '같이 찍자!'),
+  'ticket-label': (title: '티켓 라벨', text: '오늘의 기분 : 맑음'),
+  'hand-note': (title: '손글씨 밑줄', text: '다음 장도 함께'),
+  'diecut': (title: '겹인쇄 스티커', text: '반짝반짝'),
+};
+
 void main() {
   test(
     'price book covers approved catalog without client-side live pricing',
     () {
       final expected = {
+        for (final edition in sensoryStoryEditions)
+          ...edition.includedMaterialKeys,
         ...freeTemplateMaterialProductKeys,
         ...[
           ...conceptWaveDecorations,
@@ -34,8 +43,20 @@ void main() {
           ...atelierStoryPhotoFrames,
         ].map((s) => 'frame:$s'),
         ...atelierWordArts.map((a) => a.productKey),
+        ..._refinedFreeWordArts.keys.map((id) => 'phrase:collage-$id'),
         ...storyEditionWordArts.map((a) => a.productKey),
+        ...hobbyExpansionWordArts.map((a) => a.productKey),
+        ...milestoneExpansionWordArts.map((a) => a.productKey),
         ...storyEditionDecorations.map((a) => 'sticker:${a.id}'),
+        ...hobbyExpansionDecorations.map((a) => 'sticker:${a.id}'),
+        ...milestoneExpansionDecorations.map((a) => 'sticker:${a.id}'),
+        for (final edition in [
+          ...hobbyExpansionEditions,
+          ...milestoneExpansionEditions,
+        ])
+          for (final frame in edition.photoFrames) 'frame:$frame',
+        for (final edition in premiumQuartetEditions)
+          ...edition.includedMaterialKeys,
         ...pendingStoryEditionProducts.map((p) => p.productKey),
         ...pendingPremiumVolumeProducts.map((p) => p.productKey),
         ...pendingConceptVolumeProducts.map((p) => p.productKey),
@@ -44,17 +65,18 @@ void main() {
         ...authoredCollections.map(pointShopAuthoredTemplateKey),
         ...storyEditions.where((e) => !e.isPremium).map((e) => e.productKey),
       };
-      expect(expected, hasLength(482));
+      expect(expected, hasLength(974));
       expect(pointShopLaunchPrices.keys.toSet(), expected);
       expect(
         pointShopLaunchPrices.values.where((p) => p.points == 0),
-        hasLength(113),
+        hasLength(156),
       );
       for (final e in pointShopLaunchPrices.entries) {
         expect(e.value.reason, isNotEmpty);
         expect({
           0,
           100,
+          150,
           200,
           300,
           400,
@@ -74,8 +96,128 @@ void main() {
       }
       expect(pointShopLaunchPrices['template:lightbound']!.points, 0);
       expect(pointShopLaunchPrices['frame:atelier-not-reviewed'], isNull);
-      expect(pointShopLaunchPrices['phrase:collage-bold-cut'], isNull);
+      expect(pointShopLaunchPrices['phrase:collage-not-reviewed'], isNull);
       expect(() => pointShopLaunchPrices.clear(), throwsUnsupportedError);
+    },
+  );
+
+  test('refined starter word art registers free with unchanged identities', () {
+    final rows = pointShopPriceApplicationRows();
+    for (final entry in _refinedFreeWordArts.entries) {
+      final id = entry.key;
+      final key = 'phrase:collage-$id';
+      final art = studioWordArtById(id)!;
+      final product = pointShopKnownProducts.singleWhere(
+        (product) => product.productKey == key,
+      );
+      expect(art.productKey, key);
+      expect(art.favoriteKey, 'textStyle:luminous-edition:$id');
+      expect(art.insertionValue, 'wordart:$id');
+      expect(art.label, entry.value.title);
+      expect(art.text, entry.value.text);
+      expect(pointShopLaunchPrices[key]!.points, 0);
+      expect(pointShopLaunchPrices[key]!.reason, contains('기존 무료'));
+      expect(product.pointPrice, isNull, reason: 'no live price fallback');
+      expect(product.isActive, isFalse);
+      expect(isPendingAtelierMaterialProduct(key), isFalse);
+      expect(isPendingTemplateProduct(key), isFalse);
+      expect(ownerApprovedCatalogProductKeys, isNot(contains(key)));
+      expect(freeTemplateMaterialProductKeys, isNot(contains(key)));
+      expect(rows.singleWhere((row) => row['product_key'] == key), {
+        'product_key': key,
+        'asset_id': 'collage-$id',
+        'kind': 'phrase',
+        'title': entry.value.title,
+        'point_price': 0,
+        'is_active': true,
+      });
+    }
+    expect(() => validatePointShopCatalogRelease(rows), returnsNormally);
+  });
+
+  test(
+    'the new reading book and its three editable materials are all free',
+    () {
+      const keys = {
+        'template:story-reading-room',
+        'sticker:story-reading-room-paper',
+        'sticker:story-reading-room-motif',
+        'phrase:collage-story-reading-room',
+      };
+      final rows = pointShopPriceApplicationRows();
+      expect(
+        rows.where((row) => keys.contains(row['product_key'])),
+        hasLength(4),
+      );
+      for (final key in keys) {
+        final row = rows.singleWhere((row) => row['product_key'] == key);
+        expect(row['point_price'], 0, reason: key);
+        expect(row['is_active'], isTrue, reason: key);
+        expect(pointShopRequiresFreePrice(key), isTrue, reason: key);
+        expect(pointShopLaunchPrices[key]!.points, 0, reason: key);
+        expect(ownerApprovedCatalogProductKeys, isNot(contains(key)));
+      }
+      expect(() => validatePointShopCatalogRelease(rows), returnsNormally);
+    },
+  );
+
+  test(
+    'fourteen new complete books register seventy distinct matching products',
+    () {
+      const freeIds = {-9772, -9773, -9775, -9781, -9782};
+      const publishedIds = {
+        -9772,
+        -9773,
+        -9774,
+        -9775,
+        -9776,
+        -9777,
+        -9778,
+        -9779,
+        -9780,
+        -9781,
+        -9782,
+        -9783,
+        -9784,
+        -9785,
+      };
+      final editions = [
+        ...hobbyExpansionEditions,
+        ...milestoneExpansionEditions,
+      ];
+      expect(editions.map((e) => e.catalogId).toSet(), publishedIds);
+      expect(
+        editions.where((e) => !e.isPremium).map((e) => e.catalogId).toSet(),
+        freeIds,
+      );
+      expect(editions.expand((e) => e.photoFrames).toSet(), hasLength(14));
+      final rows = pointShopPriceApplicationRows();
+      final productKeys = <String>{};
+      var freeProducts = 0;
+      for (final edition in editions) {
+        final free = freeIds.contains(edition.catalogId);
+        final keys = {edition.productKey, ...edition.includedMaterialKeys};
+        expect(keys, hasLength(5), reason: edition.id);
+        for (final key in keys) {
+          expect(
+            productKeys.add(key),
+            isTrue,
+            reason: 'New books must have independent kits: $key',
+          );
+          final row = rows.singleWhere((row) => row['product_key'] == key);
+          expect(row['is_active'], isTrue, reason: key);
+          expect(row['point_price'], free ? 0 : greaterThan(0), reason: key);
+          expect(pointShopRequiresFreePrice(key), free, reason: key);
+          if (free) freeProducts++;
+        }
+        expect(
+          pointShopLaunchPrices[edition.productKey]!.points,
+          free ? 0 : 1800,
+        );
+      }
+      expect(productKeys, hasLength(70));
+      expect(freeProducts, 25);
+      expect(() => validatePointShopCatalogRelease(rows), returnsNormally);
     },
   );
 
@@ -110,7 +252,7 @@ void main() {
     expect(result['changesCustomerAccess'], false);
     expect(result['grantsIncludedMaterials'], false);
     expect(result['marketValidated'], false);
-    expect(result['products'], hasLength(482));
+    expect(result['products'], hasLength(974));
     expect(
       jsonDecode(File('${out.path}/prices.json').readAsStringSync()),
       result,
@@ -142,22 +284,22 @@ void main() {
 
   test('owner application includes delivered premium books', () {
     final rows = pointShopPriceApplicationRows();
-    expect(rows, hasLength(482));
-    expect(rows.map((r) => r['product_key']).toSet(), hasLength(482));
-    expect(rows.where((r) => r['point_price'] == 0), hasLength(113));
-    expect(rows.where((r) => r['is_active'] == true), hasLength(482));
-    expect(ownerApprovedCatalogProductKeys, hasLength(284));
+    expect(rows, hasLength(974));
+    expect(rows.map((r) => r['product_key']).toSet(), hasLength(974));
+    expect(rows.where((r) => r['point_price'] == 0), hasLength(156));
+    expect(rows.where((r) => r['is_active'] == true), hasLength(974));
+    expect(ownerApprovedCatalogProductKeys, hasLength(733));
     expect(
       ownerApprovedCatalogProductKeys.where(
         (key) => key.startsWith('template:'),
       ),
-      hasLength(72),
+      hasLength(126),
     );
     expect(
       ownerApprovedCatalogProductKeys.where(
         (key) => !key.startsWith('template:'),
       ),
-      hasLength(212),
+      hasLength(607),
     );
     for (final key in ownerApprovedCatalogProductKeys) {
       expect(
@@ -203,7 +345,7 @@ void main() {
     final data = exportPriceApplication(out);
     expect(data['status'], 'prepared-not-executed');
     expect(data['remoteVerified'], false);
-    expect(data['activeProductCount'], 482);
+    expect(data['activeProductCount'], 974);
     expect(data['ownerApprovalRevision'], pointShopCatalogApprovalRevision);
     expect(data['activationPreservesConfiguredPrices'], true);
     expect(data['changesWallets'], false);

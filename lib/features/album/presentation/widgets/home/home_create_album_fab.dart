@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/utils/screen_logger.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 /// 홈 화면 우측 하단 새 앨범 버튼
 class HomeCreateAlbumFab extends StatelessWidget {
@@ -35,11 +36,7 @@ class HomeCreateAlbumFab extends StatelessWidget {
             customBorder: const CircleBorder(),
             onTap: onPressed,
             child: const Center(
-              child: Icon(
-                Icons.add_rounded,
-                color: SnapFitColors.pureWhite,
-                size: 28,
-              ),
+              child: ExperienceIcon('Plus', color: SnapFitColors.pureWhite, size: 28),
             ),
           ),
         ),

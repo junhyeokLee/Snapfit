@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../controllers/layer_transform_geometry.dart';
 import '../web/web_editor_viewport.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 export '../../controllers/layer_transform_geometry.dart'
     show ResizeHandlePosition;
@@ -298,11 +299,7 @@ class _WebSelectionFrameState extends State<WebSelectionFrame> {
               ),
             ),
             child: rotation
-                ? Icon(
-                    Icons.rotate_right,
-                    color: SnapFitColors.accent,
-                    size: 13 / _viewportScale,
-                  )
+                ? ExperienceIcon('RotateCw', color: SnapFitColors.accent, size: 13 / _viewportScale)
                 : null,
           ),
         ),

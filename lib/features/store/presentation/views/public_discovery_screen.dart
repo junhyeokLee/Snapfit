@@ -1,3 +1,8 @@
+import '../../data/store_discovery_provider.dart';
+import '../../domain/store_product_discovery.dart';
+import '../../domain/store_template_recommendations.dart';
+import '../../../point_shop/domain/point_shop_template_key.dart';
+import '../widgets/store_product_badge.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,22 +22,22 @@ import '../widgets/public_catalog_empty_state.dart';
 import '../widgets/public_template_information.dart';
 import 'template_detail_screen.dart';
 import '../../../../core/utils/context_extensions.dart';
+import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 /// A read-only introduction backed exclusively by the published bundled catalog.
 /// Browsing never creates an anonymous account or requests customer data.
-class PublicDiscoveryScreen extends StatefulWidget {
+class PublicDiscoveryScreen extends ConsumerStatefulWidget {
   const PublicDiscoveryScreen({super.key, this.catalogOnly = false});
   final bool catalogOnly;
 
   @override
-  State<PublicDiscoveryScreen> createState() => _PublicDiscoveryScreenState();
+  ConsumerState<PublicDiscoveryScreen> createState() =>
+      _PublicDiscoveryScreenState();
 }
 
-class _PublicDiscoveryScreenState extends State<PublicDiscoveryScreen> {
+class _PublicDiscoveryScreenState extends ConsumerState<PublicDiscoveryScreen> {
   final _search = TextEditingController();
-  final _discoveryCatalog = orderPublicDiscoveryTemplates(
-    publishedCreationTemplates,
-  );
   String _category = '전체';
   int _limit = 12;
   TemplateDesignComparisonSelection _comparison =
@@ -119,11 +124,7 @@ class _PublicDiscoveryScreenState extends State<PublicDiscoveryScreen> {
       return;
     }
     Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        settings: kIsWeb ? WebAppRouteSettings(location) : null,
-        builder: (_) =>
-            TemplateDetailScreen(template: template, guestPreview: true),
-      ),
+      snapFitRoute<void>(page: TemplateDetailScreen(template: template, guestPreview: true), settings: kIsWeb ? WebAppRouteSettings(location) : null),
     );
   }
 
@@ -166,22 +167,29 @@ class _PublicDiscoveryScreenState extends State<PublicDiscoveryScreen> {
   Widget build(BuildContext context) {
     final palette = WebPalette.of(context);
     final query = _search.text.trim().toLowerCase();
-    final templates = _discoveryCatalog
-        .where((template) {
-          final matchesQuery =
-              query.isEmpty ||
-              '${template.title} ${template.description ?? ''} ${template.tags?.join(' ') ?? ''}'
-                  .toLowerCase()
-                  .contains(query);
-          return matchesQuery &&
-              (_category == '전체' || template.category == _category);
-        })
-        .toList(growable: false);
-    final categories = <String>{
-      '전체',
-      for (final template in publishedCreationTemplates)
-        if (template.category?.isNotEmpty == true) template.category!,
-    }.toList();
+    final metadata =
+        ref.watch(storeDiscoveryProvider).asData?.value ??
+        bundledStoreDiscovery;
+    final now = ref.watch(storeDiscoveryClockProvider);
+    final templates =
+        orderPublicDiscoveryTemplates(
+              publishedCreationTemplates,
+              discovery: metadata,
+              now: now,
+            )
+            .where((template) {
+              final matchesQuery =
+                  query.isEmpty ||
+                  '${template.title} ${template.description ?? ''} ${template.tags?.join(' ') ?? ''}'
+                      .toLowerCase()
+                      .contains(query);
+              return matchesQuery &&
+                  (_category == '전체' || template.category == _category);
+            })
+            .toList(growable: false);
+    final categories = storeTemplateCategories(
+      publishedCreationTemplates.map((template) => template.category ?? ''),
+    ).where((category) => category != storeRecommendedCategory).toList();
     final suggestedCategories = categories
         .where((category) => category != '전체' && category != _category)
         .take(3)
@@ -193,7 +201,7 @@ class _PublicDiscoveryScreenState extends State<PublicDiscoveryScreen> {
           IconButton(
             tooltip: '로그인으로 돌아가기',
             onPressed: _login,
-            icon: const Icon(Icons.close),
+            icon: const ExperienceIcon('X'),
           ),
         TextButton(
           onPressed: () =>
@@ -275,7 +283,11 @@ class _PublicDiscoveryScreenState extends State<PublicDiscoveryScreen> {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const Align(
+                        alignment: Alignment.centerRight,
+                        child: StoreBadgeRulesButton(),
+                      ),
+                      const SizedBox(height: 8),
                       TextField(
                         key: const ValueKey('discovery-search'),
                         controller: _search,
@@ -286,7 +298,7 @@ class _PublicDiscoveryScreenState extends State<PublicDiscoveryScreen> {
                             FocusManager.instance.primaryFocus?.unfocus(),
                         onChanged: (_) => setState(() => _limit = 12),
                         decoration: InputDecoration(
-                          prefixIcon: const Icon(Icons.search),
+                          prefixIcon: const ExperienceIcon('Search'),
                           labelText: '주제나 디자인 이름으로 검색',
                           suffixIcon: _search.text.isEmpty
                               ? null
@@ -297,7 +309,7 @@ class _PublicDiscoveryScreenState extends State<PublicDiscoveryScreen> {
                                     _search.clear();
                                     _limit = 12;
                                   }),
-                                  icon: const Icon(Icons.close),
+                                  icon: const ExperienceIcon('X'),
                                 ),
                         ),
                       ),
@@ -366,9 +378,23 @@ class _PublicDiscoveryScreenState extends State<PublicDiscoveryScreen> {
                                 children: [
                                   AspectRatio(
                                     aspectRatio: 1,
-                                    child: CreationCatalogCover(
-                                      template: template,
-                                      useThumbnail: true,
+                                    child: Stack(
+                                      fit: StackFit.expand,
+                                      children: [
+                                        CreationCatalogCover(
+                                          template: template,
+                                          useThumbnail: true,
+                                        ),
+                                        Positioned(
+                                          left: 8,
+                                          bottom: 8,
+                                          child: StoreProductBadge(
+                                            productKey: pointShopTemplateKey(
+                                              template,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                   const SizedBox(height: 12),

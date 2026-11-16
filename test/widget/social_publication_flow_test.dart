@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' show SemanticsAction;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -241,7 +242,7 @@ Future<void> _finish(
   WidgetTester tester,
   _PublicationRepository repository,
 ) async {
-  final publish = find.widgetWithText(FilledButton, '피드에 무료로 공개');
+  final publish = find.widgetWithText(FilledButton, '프로필에 앨범 공개');
   await _reveal(tester, publish);
   await tester.tap(publish);
   for (var attempt = 0; attempt < 200 && !repository.finalized; attempt++) {
@@ -391,20 +392,24 @@ void main() {
       await tester.enterText(find.byType(TextField).first, '나의 공개 하이라이트');
       await _tap(tester, find.text('다음 · 2쪽'));
       await _reveal(tester, find.byType(CheckboxListTile));
+      await _tap(
+        tester,
+        find.byKey(const ValueKey('social-publish-review-page-2')),
+      );
       final up = find.byTooltip('공개 순서 앞으로');
-      await tester.tap(up.last);
+      await tester.tap(up);
       await tester.pumpAndSettle();
-      await _reveal(tester, find.text('피드에 무료로 공개'));
+      await _reveal(tester, find.text('프로필에 앨범 공개'));
       expect(
         tester
             .widget<FilledButton>(
-              find.widgetWithText(FilledButton, '피드에 무료로 공개'),
+              find.widgetWithText(FilledButton, '프로필에 앨범 공개'),
             )
             .onPressed,
         isNull,
       );
       await _tap(tester, find.byType(CheckboxListTile));
-      await _tap(tester, find.text('피드에 무료로 공개'));
+      await _tap(tester, find.text('프로필에 앨범 공개'));
       expect(repository.requests, hasLength(1));
       expect(repository.requests.single['pageIndexes'], [2, 0]);
       expect(repository.requests.single['title'], '나의 공개 하이라이트');
@@ -450,7 +455,7 @@ void main() {
       await _tap(tester, find.text('다음 · 1쪽'));
       await _tap(tester, find.text('다음 · 1쪽'));
       await _tap(tester, find.byType(CheckboxListTile));
-      await _tap(tester, find.text('피드에 무료로 공개'));
+      await _tap(tester, find.text('프로필에 앨범 공개'));
       expect(repository.requests, hasLength(1));
       await _tap(tester, find.text('이전 단계에서 다시 확인'));
       await tester.enterText(find.byType(TextField).first, '다시 확인한 새 공개 제목');
@@ -473,6 +478,191 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets(
+    'twenty-page review keeps publishing within two screens and supports focused page inspection',
+    (tester) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        final saved = _album('공개할 스무 장', [
+          for (var page = 0; page < 20; page++) _page(page, 'Saved page $page'),
+        ]);
+        final albums = _Albums(saved);
+        final repository = _PublicationRepository();
+        await tester.binding.setSurfaceSize(const Size(390, 844));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        await tester.pumpWidget(
+          _host(
+            entry: saved,
+            albums: albums,
+            repository: repository,
+            actor: () => _owner,
+          ),
+        );
+        await tester.tap(find.text('공개 시작'));
+        await tester.pumpAndSettle();
+        await _tap(tester, find.text('다음 · 20쪽'));
+        await _tap(tester, find.text('다음 · 20쪽'));
+        final publish = find.widgetWithText(FilledButton, '프로필에 앨범 공개');
+        await tester.scrollUntilVisible(
+          publish,
+          500,
+          scrollable: find.byType(Scrollable).first,
+          maxScrolls: 30,
+        );
+        await tester.ensureVisible(publish);
+        await tester.pumpAndSettle();
+        final vertical = tester
+            .state<ScrollableState>(find.byType(Scrollable).first)
+            .position;
+        expect(vertical.pixels, lessThan(vertical.viewportDimension * 2));
+        expect(tester.widget<FilledButton>(publish).onPressed, isNull);
+
+        final rail = find.byKey(const ValueKey('social-publish-review-pages'));
+        await tester.ensureVisible(rail);
+        await tester.pumpAndSettle();
+        final railScroll = find.descendant(
+          of: rail,
+          matching: find.byType(Scrollable),
+        );
+        await tester.scrollUntilVisible(
+          find.byKey(const ValueKey('social-publish-review-page-19')),
+          250,
+          scrollable: railScroll,
+          maxScrolls: 12,
+        );
+        expect(
+          tester
+              .getSemantics(find.bySemanticsLabel('20번째 공개 페이지, 19쪽'))
+              .getSemanticsData()
+              .hasAction(SemanticsAction.tap),
+          isTrue,
+        );
+        await tester.tap(
+          find.byKey(const ValueKey('social-publish-review-page-19')),
+        );
+        await tester.pumpAndSettle();
+        final stage = tester.widget<SocialPublicationPagePreview>(
+          find.byKey(const ValueKey('social-publish-review-stage')),
+        );
+        expect(stage.page.index, 19);
+        expect(repository.requests, isEmpty);
+        expect(albums.updates, 0);
+        expect(tester.takeException(), isNull);
+      } finally {
+        semantics.dispose();
+      }
+    },
+  );
+
+  testWidgets(
+    'focused review reorder keeps the page visible and asks for consent again',
+    (tester) async {
+      final saved = _album('두 장의 공개 순서', [
+        _page(0, 'Cover'),
+        _page(1, 'Inside'),
+      ]);
+      final albums = _Albums(saved);
+      final repository = _PublicationRepository()
+        ..loseFirstBeginResponse = true;
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(
+        _host(
+          entry: saved,
+          albums: albums,
+          repository: repository,
+          actor: () => _owner,
+        ),
+      );
+      await tester.tap(find.text('공개 시작'));
+      await tester.pumpAndSettle();
+      await _tap(tester, find.text('다음 · 2쪽'));
+      await _tap(tester, find.text('다음 · 2쪽'));
+      await _tap(tester, find.byType(CheckboxListTile));
+      await _tap(
+        tester,
+        find.byKey(const ValueKey('social-publish-review-page-1')),
+      );
+      await _tap(tester, find.byTooltip('공개 순서 앞으로'));
+      expect(
+        tester
+            .widget<SocialPublicationPagePreview>(
+              find.byKey(const ValueKey('social-publish-review-stage')),
+            )
+            .page
+            .index,
+        1,
+      );
+      expect(
+        tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value,
+        isFalse,
+      );
+      await _tap(tester, find.byType(CheckboxListTile));
+      await _tap(tester, find.text('프로필에 앨범 공개'));
+      expect(repository.requests.single['pageIndexes'], [1, 0]);
+      expect(repository.requests.single['expectedUpdatedAt'], saved.updatedAt);
+      expect(repository.uploads, isEmpty);
+      expect(albums.updates, 0);
+      expect(albums.locks, 0);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  for (final sample in [
+    (name: 'narrow large text', size: const Size(320, 568), scale: 2.0),
+    (name: 'landscape', size: const Size(844, 390), scale: 1.0),
+  ]) {
+    testWidgets(
+      'single-page review preserves its portrait ratio at ${sample.name}',
+      (tester) async {
+        final saved = _album('세로 앨범', [
+          _page(0, 'Portrait cover'),
+        ]).copyWith(ratio: '3:4');
+        final albums = _Albums(saved);
+        final repository = _PublicationRepository();
+        await tester.binding.setSurfaceSize(sample.size);
+        tester.platformDispatcher.textScaleFactorTestValue = sample.scale;
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        await tester.pumpWidget(
+          _host(
+            entry: saved,
+            albums: albums,
+            repository: repository,
+            actor: () => _owner,
+          ),
+        );
+        await tester.tap(find.text('공개 시작'));
+        await tester.pumpAndSettle();
+        await _tap(tester, find.text('다음 · 1쪽'));
+        await _tap(tester, find.text('다음 · 1쪽'));
+        final stage = find.byKey(const ValueKey('social-publish-review-stage'));
+        await _reveal(tester, stage);
+        final preview = tester.widget<SocialPublicationPagePreview>(stage);
+        expect(
+          tester.getSize(stage).aspectRatio,
+          closeTo(preview.page.canvasSize.aspectRatio, .001),
+        );
+        expect(
+          find.byKey(const ValueKey('social-publish-review-pages')),
+          findsNothing,
+        );
+        await _tap(tester, find.byType(CheckboxListTile));
+        await _reveal(tester, find.text('프로필에 앨범 공개'));
+        expect(
+          tester
+              .widget<FilledButton>(
+                find.widgetWithText(FilledButton, '프로필에 앨범 공개'),
+              )
+              .onPressed,
+          isNotNull,
+        );
+        expect(repository.requests, isEmpty);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 
   testWidgets(
     'logout while loading a saved album discards the private response',

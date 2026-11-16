@@ -1,3 +1,5 @@
+import 'package:snap_fit/features/store/data/store_discovery_provider.dart';
+import 'package:snap_fit/features/store/domain/store_product_discovery.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -37,7 +39,15 @@ void main() {
           .toList();
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [mockTemplateList(() => publishedCreationTemplates)],
+          overrides: [
+            mockTemplateList(() => publishedCreationTemplates),
+            storeDiscoveryClockProvider.overrideWithValue(
+              DateTime.utc(2026, 11, 3),
+            ),
+            storeDiscoveryProvider.overrideWith(
+              (_) async => bundledStoreDiscovery,
+            ),
+          ],
           child: wrapCreation(
             const MediaQuery(
               data: MediaQueryData(disableAnimations: true),
@@ -48,10 +58,10 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('133개의 디자인'), findsOneWidget);
+      expect(find.text('135개의 디자인'), findsOneWidget);
       final context = tester.element(find.byType(StoreScreen));
       final scope = ProviderScope.containerOf(context);
-      expect(scope.read(storeTemplateFeedProvider).items, hasLength(133));
+      expect(scope.read(storeTemplateFeedProvider).items, hasLength(135));
       final scroll = tester
           .widget<CustomScrollView>(find.byType(CustomScrollView))
           .controller!;
@@ -75,14 +85,15 @@ void main() {
       }
 
       await price('무료');
-      expect(find.text('47개의 디자인'), findsOneWidget);
+      expect(find.text('48개의 디자인'), findsOneWidget);
       await price('유료');
-      expect(find.text('86개의 디자인'), findsOneWidget);
+      expect(find.text('87개의 디자인'), findsOneWidget);
       await price('전체');
 
       // New categories and the free/paid club kits must all be searchable in
       // the actual store, rather than merely present in a design-review gallery.
       for (final edition in [
+        ...sensoryStoryEditions,
         exclusiveStoryEditions.first,
         exclusiveStoryEditions.last,
         clubStoryEditions.first,
@@ -117,6 +128,12 @@ void main() {
           ),
         );
         expect(card, findsOneWidget);
+        if (edition.catalogId == -9761 || edition.catalogId == -9762) {
+          expect(
+            find.byKey(ValueKey('store-badge-${edition.productKey}-NEW')),
+            findsOneWidget,
+          );
+        }
         expect(find.text('판매 준비 중'), findsNothing);
         expect(find.text(edition.isPremium ? '1800P' : '무료'), findsWidgets);
         expect(tester.takeException(), isNull);

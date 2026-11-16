@@ -19,35 +19,69 @@ final socialRepositoryProvider = Provider<SocialRepository>(
   (ref) => SocialRepository(ref.watch(supabaseClientProvider)),
 );
 
+// A bounded page read must expose its retry action after the first failure.
+// Riverpod's default automatic retries otherwise keep initial pages loading
+// through repeated 25-second timeouts and may repeat profile bootstrap writes.
+Duration? _manualSocialReadRetry(int retryCount, Object error) => null;
+
 final socialFeedProvider = FutureProvider.autoDispose
     .family<SocialWorkPage, SocialFeedQuery>((ref, query) {
       ref.watch(socialAuthStateProvider);
-      return ref
-          .read(socialRepositoryProvider)
-          .fetchFeed(
-            following: query.following,
-            topic: query.topic,
-            offset: query.offset,
-            limit: query.limit,
-          );
-    });
+      return ref.read(socialRepositoryProvider).fetchFeedPage(query);
+    }, retry: _manualSocialReadRetry);
 final socialProfileProvider = FutureProvider.autoDispose
     .family<SocialProfile?, String>((ref, userId) {
       ref.watch(socialAuthStateProvider);
       return ref.read(socialRepositoryProvider).fetchProfile(userId);
-    });
+    }, retry: _manualSocialReadRetry);
 final ownSocialProfileProvider = FutureProvider.autoDispose<SocialProfile?>((
   ref,
 ) {
   ref.watch(socialAuthStateProvider);
   if (ref.watch(socialCurrentUserIdProvider) == null) return null;
   return ref.read(socialRepositoryProvider).ensureOwnProfile();
-});
+}, retry: _manualSocialReadRetry);
 final socialProfileWorksProvider = FutureProvider.autoDispose
     .family<List<SocialWork>, String>((ref, userId) {
       ref.watch(socialAuthStateProvider);
       return ref.read(socialRepositoryProvider).fetchProfileWorks(userId);
     });
+final socialProfileMomentsPageProvider = FutureProvider.autoDispose
+    .family<SocialWorkPage, SocialProfileWorksQuery>((ref, query) {
+      ref.watch(socialAuthStateProvider);
+      return ref
+          .read(socialRepositoryProvider)
+          .fetchProfileMomentsPage(
+            query.userId,
+            offset: query.offset,
+            limit: query.limit,
+          );
+    }, retry: _manualSocialReadRetry);
+final socialProfileMomentMonthsPageProvider = FutureProvider.autoDispose
+    .family<SocialMomentMonthsPage, SocialProfileWorksQuery>((ref, query) {
+      ref.watch(socialAuthStateProvider);
+      return ref
+          .read(socialRepositoryProvider)
+          .fetchProfileMomentMonthsPage(
+            query.userId,
+            offset: query.offset,
+            limit: query.limit,
+            cursor: query.cursor,
+          );
+    }, retry: _manualSocialReadRetry);
+final socialMomentMonthPageProvider = FutureProvider.autoDispose
+    .family<SocialWorkPage, SocialMomentMonthQuery>((ref, query) {
+      ref.watch(socialAuthStateProvider);
+      return ref
+          .read(socialRepositoryProvider)
+          .fetchProfileMomentMonthPage(
+            query.userId,
+            query.month,
+            offset: query.offset,
+            limit: query.limit,
+            cursor: query.cursor,
+          );
+    }, retry: _manualSocialReadRetry);
 final socialRelationsProvider = FutureProvider.autoDispose
     .family<List<SocialProfile>, SocialRelationsQuery>((ref, query) {
       ref.watch(socialAuthStateProvider);
@@ -119,7 +153,7 @@ final socialProfileWorksPageProvider = FutureProvider.autoDispose
             offset: query.offset,
             limit: query.limit,
           );
-    });
+    }, retry: _manualSocialReadRetry);
 final socialRelationsPageProvider = FutureProvider.autoDispose
     .family<SocialProfilePage, SocialRelationsQuery>((ref, query) {
       ref.watch(socialAuthStateProvider);

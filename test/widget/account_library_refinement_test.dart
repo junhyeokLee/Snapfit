@@ -30,6 +30,7 @@ import 'package:snap_fit/features/store/presentation/widgets/library_design_tile
 import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
 import 'package:snap_fit/shared/widgets/experience_form_style.dart';
 import 'package:snap_fit/shared/widgets/image_frame_style_picker.dart';
+import 'package:snap_fit/shared/widgets/snapfit_shimmer.dart';
 import 'ai_album_start_step_test.dart' show loadCreationFonts;
 
 const _user = UserInfo(
@@ -134,6 +135,18 @@ Future<void> _paintArtwork(WidgetTester tester) async {
     }
   });
   await tester.pump();
+}
+
+Finder _librarySortLabel(String label) => find.descendant(
+  of: find.byKey(const ValueKey('library-sort')),
+  matching: find.text(label),
+);
+
+Future<void> _toggleLibraryFavorites(WidgetTester tester) async {
+  final filter = find.widgetWithText(FilterChip, '즐겨찾기');
+  await tester.ensureVisible(filter);
+  await tester.tap(filter);
+  await tester.pumpAndSettle();
 }
 
 Future<void> _capture(WidgetTester tester, GlobalKey key, String name) async {
@@ -386,11 +399,10 @@ void main() {
     expect(find.text('구매 완료'), findsNWidgets(2));
     expect(ownershipCalls, 1);
     await _capture(tester, key, 'library-name-order');
-    await tester.tap(find.text('즐겨찾기'));
-    await tester.pumpAndSettle();
+    await _toggleLibraryFavorites(tester);
     expect(card(firstKey), findsNothing);
     expect(card(secondKey), findsOneWidget);
-    expect(find.text('이름순'), findsOneWidget);
+    expect(_librarySortLabel('이름순'), findsOneWidget);
     expect(ownershipCalls, 1);
     expect(tester.takeException(), isNull);
   });
@@ -426,7 +438,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('library-sidebar')), findsOneWidget);
     expect(find.text('검색: ${spec.label}'), findsOneWidget);
-    expect(find.text('이름순'), findsOneWidget);
+    expect(_librarySortLabel('이름순'), findsOneWidget);
     expect(find.text('1개 항목'), findsOneWidget);
     final scroll = find.byKey(const ValueKey('material-catalog-scroll'));
     final sidebar = tester.getRect(
@@ -442,7 +454,7 @@ void main() {
     tester.view.padding = const FakeViewPadding(bottom: 24);
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('library-sidebar')), findsNothing);
-    expect(find.text('이름순'), findsOneWidget);
+    expect(_librarySortLabel('이름순'), findsOneWidget);
     expect(find.text('1개 항목'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -458,8 +470,7 @@ void main() {
     );
     await tester.pumpWidget(_app(const MaterialCatalogScreen(library: true)));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('즐겨찾기'));
-    await tester.pumpAndSettle();
+    await _toggleLibraryFavorites(tester);
     expect(find.text('판매 준비 중'), findsOneWidget);
     expect(find.text('무료'), findsNothing);
     expect(find.text('구매 완료'), findsNothing);
@@ -647,7 +658,8 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.text('보관함을 불러오고 있어요'), findsOneWidget);
+    expect(find.byType(SnapFitShimmerMaterialTileGrid), findsOneWidget);
+    expect(find.text('항목을 불러오는 중'), findsOneWidget);
     expect(find.text('0개 항목'), findsNothing);
     await _capture(tester, key, 'library-loading');
     pending.completeError(Exception('offline'));
@@ -729,8 +741,7 @@ void main() {
     expect(find.text('아직 보관한 항목이 없어요.'), findsOneWidget);
     expect(find.text('구매한 소재와 즐겨찾기가 여기에 모여요.'), findsOneWidget);
     await _capture(tester, key, 'library-empty');
-    await tester.tap(find.text('즐겨찾기'));
-    await tester.pumpAndSettle();
+    await _toggleLibraryFavorites(tester);
     expect(find.text('즐겨찾는 항목이 없어요.'), findsOneWidget);
     expect(find.text('보관함을 불러오지 못했어요'), findsNothing);
     await _capture(tester, key, 'favorites-empty');
@@ -772,8 +783,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(secondCard, findsOneWidget);
       expect(tester.widget<LibraryDesignTile>(secondCard).owned, isTrue);
-      await tester.tap(find.text('즐겨찾기'));
-      await tester.pumpAndSettle();
+      await _toggleLibraryFavorites(tester);
       expect(
         tester.getTopLeft(find.byKey(ValueKey('material-item-$secondKey'))).dx,
         lessThan(
@@ -785,7 +795,11 @@ void main() {
       await tester.enterText(find.byType(TextField), '존재하지 않는 소재');
       await tester.pumpAndSettle();
       expect(find.text('조건에 맞는 항목이 없어요.'), findsOneWidget);
-      await tester.tap(find.text('필터 초기화'));
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
+      final reset = find.byKey(const ValueKey('catalog-empty-reset'));
+      await tester.ensureVisible(reset);
+      await tester.tap(reset);
       await tester.pumpAndSettle();
       expect(find.text('2개 항목'), findsOneWidget);
       expect(tester.takeException(), isNull);

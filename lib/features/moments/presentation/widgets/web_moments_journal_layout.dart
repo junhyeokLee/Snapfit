@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'moments_widgets.dart';
 
 /// Records keep the largest surface; progress and the growing book sit beside
-/// them on wide screens and follow the first photograph on compact screens.
+/// them on wide screens. Compact screens keep month tools together before the
+/// continuous record timeline rather than inserting them between photographs.
 class WebMomentsJournalLayout extends StatelessWidget {
   const WebMomentsJournalLayout({
     super.key,
@@ -43,10 +44,20 @@ class WebMomentsJournalLayout extends StatelessWidget {
             const SizedBox(height: 20),
             monthNavigation,
             const SizedBox(height: 12),
-            if (records.isNotEmpty) records.first,
-            _rail(includeWeekly: false),
-            const SizedBox(height: 24),
-            ...records.skip(1),
+            if (recap != null || album != null) ...[
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  if (recap != null) recap!,
+                  if (album != null) album!,
+                ],
+              ),
+              const SizedBox(height: 18),
+            ],
+            ...records,
+            const SizedBox(height: 20),
+            const MomentPrivateNote(),
           ],
         );
       }

@@ -34,7 +34,11 @@ void stubFetchMyAlbums(MockAlbumRepository mock, List<Album> albums) {
     () => mock.fetchAlbum(any()),
   ).thenThrow(UnimplementedError('stub if needed'));
   when(
-    () => mock.createAlbum(any()),
+    () => mock.createAlbum(
+      any(),
+      requestId: any(named: 'requestId'),
+      expectedUserId: any(named: 'expectedUserId'),
+    ),
   ).thenThrow(UnimplementedError('stub if needed'));
   when(() => mock.deleteAlbum(any())).thenAnswer((_) async {});
 }

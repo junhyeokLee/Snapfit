@@ -256,6 +256,8 @@ void main() {
         findsNothing,
       );
       final first = find.byKey(const ValueKey('creation-template-1000'));
+      await tester.tap(find.byKey(const ValueKey('creation-open-catalog')));
+      await settleStoreDetail(tester);
       await tester.ensureVisible(first);
       await settleStoreDetail(tester);
       final before = [...reads];

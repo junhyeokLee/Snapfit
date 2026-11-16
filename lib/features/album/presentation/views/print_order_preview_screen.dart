@@ -26,6 +26,8 @@ import '../widgets/print_fulfillment_notice.dart';
 import 'print_order_checkout_screen.dart';
 import 'print_dev_checkout_screen.dart';
 import '../../../../core/utils/context_extensions.dart';
+import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 final printPreviewExporterProvider = Provider<AlbumPrintExporter>(
   (ref) => AlbumPrintExporter(loadOnlyUsedFonts: true),
@@ -52,6 +54,7 @@ class _PrintOrderPreviewScreenState
     extends ConsumerState<PrintOrderPreviewScreen>
     with WidgetsBindingObserver {
   OrderQuoteResult? _quote;
+  PrintCheckoutReadiness? _readiness;
   PrintAlbumDocument? _document;
   Map<String, dynamic>? _snapshot;
   PrintVendorSpec? _spec;
@@ -72,6 +75,14 @@ class _PrintOrderPreviewScreenState
   String? _priceUpdateNotice;
   String? _progress;
   int _page = 0;
+
+  bool get _customerTestCandidate =>
+      ref.read(printDevAdminAccessProvider) &&
+      _product?.id == 'REDP_300_HARD' &&
+      _document?.interiors.length == 80;
+
+  bool get _checkoutAvailable =>
+      _readiness?.canPay == true || _customerTestCandidate;
 
   @override
   void initState() {
@@ -136,6 +147,7 @@ class _PrintOrderPreviewScreenState
                   printSpecRevision(quote.printSpec);
       setState(() {
         if (reviewChanged) {
+          _readiness = null;
           _checkedLayout = false;
           _report = null;
           _photoIssues = const [];
@@ -150,6 +162,7 @@ class _PrintOrderPreviewScreenState
             quote.shippingIncluded != previous.shippingIncluded ||
             quote.retailPriceStatus != previous.retailPriceStatus;
         _quote = quote;
+        _readiness = readiness;
         _quoteIsFinal = quote.hasFinalRetailPrice;
         _priceRefreshError = null;
         if (priceChanged) {
@@ -161,6 +174,7 @@ class _PrintOrderPreviewScreenState
           identical(_quote, previous) &&
           identical(_snapshot, snapshot)) {
         setState(() {
+          _readiness = null;
           _priceRefreshError = '최신 판매가를 확인하지 못했어요. 다시 확인한 뒤 주문 내용을 이어가주세요.';
           _priceUpdateNotice = null;
         });
@@ -182,6 +196,7 @@ class _PrintOrderPreviewScreenState
       _photoIssues = const [];
       _export = null;
       _quote = null;
+      _readiness = null;
       _document = null;
       _snapshot = null;
       _spec = null;
@@ -234,6 +249,7 @@ class _PrintOrderPreviewScreenState
       if (!mounted) return;
       setState(() {
         _quote = quote;
+        _readiness = readiness;
         _quoteIsFinal = quote.hasFinalRetailPrice;
         _document = document;
         _snapshot = snapshot;
@@ -401,25 +417,30 @@ class _PrintOrderPreviewScreenState
         _report == null ||
         _spec == null ||
         _quote == null ||
-        _snapshot == null) {
+        _snapshot == null ||
+        !_checkoutAvailable) {
       return;
     }
     setState(() => _openingCheckout = true);
     try {
       final revision = printCheckoutRevision(_snapshot!);
+      final owner = ref.read(visibleOrderOwnerProvider);
       CustomerPrintTestCapability? test;
-      if (ref.read(printDevAdminAccessProvider) &&
-          _product?.id == 'REDP_300_HARD' &&
-          _document?.interiors.length == 80) {
+      if (_customerTestCandidate) {
         test = await ref
             .read(customerPrintTestCheckoutServiceProvider)
             .capability(albumId: widget.albumId, reviewedRevision: revision);
       }
-      if (!mounted) return;
+      if (!mounted || ref.read(visibleOrderOwnerProvider) != owner) return;
+      // TEST 권한이 없다고 일반 배송지 입력으로 우회하지 않는다.
+      if (_readiness?.canPay != true && test == null) {
+        setState(() => _error = 'TEST 주문 권한을 확인하지 못했어요. 다시 확인해주세요.');
+        return;
+      }
       final result = await Navigator.push<String>(
         context,
-        MaterialPageRoute(
-          builder: (_) => PrintOrderCheckoutScreen(
+        snapFitRoute(
+          page: PrintOrderCheckoutScreen(
             albumId: widget.albumId,
             albumTitle: widget.albumTitle,
             initialQuote: _quote!,
@@ -427,14 +448,11 @@ class _PrintOrderPreviewScreenState
             testMode: test != null,
             onOpenTestOrder: (runId) => Navigator.push<void>(
               context,
-              MaterialPageRoute(
-                builder: (_) => OrderHistoryScreen(initialTestRunId: runId),
-              ),
+              snapFitRoute(page: OrderHistoryScreen(initialTestRunId: runId)),
             ),
           ),
         ),
       );
-      if (!mounted) return;
       if (result == 'review_again') {
         await _load();
       } else if (result == 'edit_album') {
@@ -483,13 +501,11 @@ class _PrintOrderPreviewScreenState
       return;
     await Navigator.push<void>(
       context,
-      MaterialPageRoute(
-        builder: (_) => PrintDevCheckoutScreen(
+      snapFitRoute(page: PrintDevCheckoutScreen(
           albumId: widget.albumId,
           albumTitle: widget.albumTitle,
           reviewedRevision: printCheckoutRevision(_snapshot!),
-        ),
-      ),
+        )),
     );
   }
 
@@ -514,7 +530,7 @@ class _PrintOrderPreviewScreenState
                     onPressed: _loading || _busy || _openingPhotoEditor
                         ? null
                         : _load,
-                    icon: const Icon(Icons.refresh, size: 20),
+                    icon: const ExperienceIcon('RefreshCw', size: 20),
                     tooltip: '최신 앨범으로 다시 확인',
                   ),
                 ],
@@ -612,7 +628,7 @@ class _PrintOrderPreviewScreenState
           onPressed: _busy || _openingPhotoEditor
               ? null
               : () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back, size: 18),
+          icon: const ExperienceIcon('ArrowLeft', size: 18),
           label: const Text('앨범으로'),
         ),
         IconButton(
@@ -621,7 +637,7 @@ class _PrintOrderPreviewScreenState
               ? null
               : _load,
           tooltip: '최신 앨범으로 다시 확인',
-          icon: const Icon(Icons.refresh, size: 20),
+          icon: const ExperienceIcon('RefreshCw', size: 20),
         ),
       ],
       child: LayoutBuilder(
@@ -774,7 +790,7 @@ class _PrintOrderPreviewScreenState
                       _checkedLayout = false;
                     })
                   : null,
-              icon: const Icon(Icons.chevron_left, size: 24),
+              icon: const ExperienceIcon('ChevronLeft', size: 24),
             ),
             Expanded(
               child: Text(
@@ -793,7 +809,7 @@ class _PrintOrderPreviewScreenState
                       _checkedLayout = false;
                     })
                   : null,
-              icon: const Icon(Icons.chevron_right, size: 24),
+              icon: const ExperienceIcon('ChevronRight', size: 24),
             ),
           ],
         ),
@@ -803,6 +819,18 @@ class _PrintOrderPreviewScreenState
 
   Widget _details(BuildContext context, {bool showTitle = true}) {
     final quote = _quote;
+    final editingDisabled =
+        _loading ||
+        _busy ||
+        _openingCheckout ||
+        _openingPhotoEditor ||
+        _refreshingPrice;
+    Widget editAlbumButton() => TextButton(
+      onPressed: editingDisabled
+          ? null
+          : () => Navigator.pop(context, 'edit_album'),
+      child: const Text('앨범 계속 편집하기'),
+    );
     Widget note(String value) => Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Text(
@@ -848,7 +876,7 @@ class _PrintOrderPreviewScreenState
           if (!_loading && !_busy && !_openingPhotoEditor)
             OutlinedButton.icon(
               onPressed: _load,
-              icon: const Icon(Icons.refresh, size: 18),
+              icon: const ExperienceIcon('RefreshCw', size: 18),
               label: const Text('다시 확인'),
             ),
         ],
@@ -862,7 +890,7 @@ class _PrintOrderPreviewScreenState
           if (!_loading && !_busy && !_refreshingPrice && !_openingPhotoEditor)
             OutlinedButton.icon(
               onPressed: _load,
-              icon: const Icon(Icons.refresh, size: 18),
+              icon: const ExperienceIcon('RefreshCw', size: 18),
               label: const Text('최신 앨범으로 다시 확인'),
             ),
         ],
@@ -901,13 +929,32 @@ class _PrintOrderPreviewScreenState
             quote.priceNotice.isNotEmpty
                 ? quote.priceNotice
                 : _quoteIsFinal
-                ? '확인된 최종 판매가입니다. 배송지를 입력한 뒤 주문 내용을 확인해주세요.'
+                ? '확인된 최종 판매가입니다.'
                 : quote.hasPlannedRetailPrice
-                ? '제작 견적을 반영한 예정 판매가입니다. 현재 주문·결제는 준비 중입니다.'
+                ? '제작 견적을 반영한 예정 판매가입니다.'
                 : kIsWeb
                 ? '이 규격·페이지 조합의 제작비를 아직 확인하지 못했습니다. 비용 확인 후 판매가를 안내합니다.'
                 : '이 규격·페이지 조합의 제작 견적을 확인한 뒤 판매가를 안내합니다.',
           ),
+          if (_readiness != null &&
+              _error == null &&
+              _priceRefreshError == null)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                _readiness!.canPay
+                    ? '주문할 수 있어요. 배송지를 입력해 주문 내용을 확인하세요.'
+                    : _readiness!.message.isNotEmpty
+                    ? _readiness!.message
+                    : '정식 주문을 준비하고 있어요. 앨범은 계속 수정할 수 있어요.',
+                key: const ValueKey('print-preview-order-status'),
+                style: ExperienceFormStyle.text(
+                  context,
+                  13,
+                  weight: FontWeight.w600,
+                ),
+              ),
+            ),
           const SizedBox(height: 24),
           Divider(color: ExperienceFormStyle.line(context)),
           const SizedBox(height: 16),
@@ -916,6 +963,38 @@ class _PrintOrderPreviewScreenState
           note(
             '작성한 내지 ${quote.sourcePageCount}페이지 + 뒤에 추가되는 빈 페이지 ${quote.addedBlankPageCount}페이지',
           ),
+          if (quote.addedBlankPageCount > 0)
+            Container(
+              key: const ValueKey('print-added-blank-pages'),
+              width: double.infinity,
+              margin: const EdgeInsets.only(top: 16),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              decoration: BoxDecoration(
+                color: ExperienceFormStyle.selection(context),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: ExperienceFormStyle.line(context)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${quote.pageCount}쪽 중 ${quote.addedBlankPageCount}쪽이 추가 빈 페이지예요',
+                    style: ExperienceFormStyle.text(
+                      context,
+                      16,
+                      weight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '제작 쪽수에 맞춰 앨범 뒤에 추가돼요. 사진과 글을 더 담으려면 편집으로 돌아가세요.',
+                    style: ExperienceFormStyle.text(context, 13),
+                  ),
+                  const SizedBox(height: 4),
+                  editAlbumButton(),
+                ],
+              ),
+            ),
           if (quote.hasPlannedRetailPrice && quote.extraPageCount > 0)
             note(
               '기본 ${quote.basePages}페이지 ${_won(quote.basePrice)}원 + 추가 ${quote.extraPageCount}페이지 ${_won(quote.extraPageCount * quote.extraPagePrice)}원',
@@ -963,14 +1042,27 @@ class _PrintOrderPreviewScreenState
                       _refreshingPrice ||
                       !_checkedLayout ||
                       _error != null ||
-                      _priceRefreshError != null
+                      _priceRefreshError != null ||
+                      !_checkoutAvailable
                   ? null
                   : _continueToCheckout,
               style: ExperienceFormStyle.primary(context),
-              child: const Text('배송지 입력하기'),
+              child: Text(
+                _priceRefreshError != null
+                    ? '주문 정보 다시 확인'
+                    : _readiness?.canPay == true
+                    ? '배송지 입력하기'
+                    : _customerTestCandidate
+                    ? 'TEST 배송지 입력하기'
+                    : '주문 준비 중',
+              ),
             ),
           ),
-          note('배송지와 최종 주문 내용을 확인합니다. 결제 가능 여부는 다음 화면에서 안내해요.'),
+          note(
+            _checkoutAvailable
+                ? '배송지와 최종 주문 내용을 확인합니다.'
+                : '주문이 열리면 배송지를 입력할 수 있어요. 앨범은 계속 수정할 수 있어요.',
+          ),
           if (ref.watch(printDevAdminAccessProvider) &&
               _product?.id == 'REDP_300_HARD' &&
               _document?.interiors.length == 80) ...[
@@ -1010,7 +1102,7 @@ class _PrintOrderPreviewScreenState
                           _error != null
                       ? null
                       : _generate,
-                  icon: const Icon(Icons.picture_as_pdf, size: 19),
+                  icon: const ExperienceIcon('Printer', size: 19),
                   label: const Text('표지·내지 검수용 PDF 만들기'),
                 ),
               ),
@@ -1022,7 +1114,7 @@ class _PrintOrderPreviewScreenState
                     _export!.coverPdf,
                     'snapfit-${widget.albumId}-cover-review.pdf',
                   ),
-                  icon: const Icon(Icons.download_outlined, size: 18),
+                  icon: const ExperienceIcon('Download', size: 18),
                   label: const Text('표지 PDF 보기·저장'),
                 ),
                 OutlinedButton.icon(
@@ -1030,7 +1122,7 @@ class _PrintOrderPreviewScreenState
                     _export!.interiorPdf,
                     'snapfit-${widget.albumId}-interior-review.pdf',
                   ),
-                  icon: const Icon(Icons.download_outlined, size: 18),
+                  icon: const ExperienceIcon('Download', size: 18),
                   label: const Text('내지 PDF 보기·저장'),
                 ),
               ],
@@ -1042,12 +1134,7 @@ class _PrintOrderPreviewScreenState
         const SizedBox(height: 16),
         const PrintFulfillmentNotice(),
         const SizedBox(height: 16),
-        TextButton(
-          onPressed: _busy || _openingPhotoEditor
-              ? null
-              : () => Navigator.pop(context, 'edit_album'),
-          child: const Text('앨범 계속 편집하기'),
-        ),
+        if (quote == null || quote.addedBlankPageCount <= 0) editAlbumButton(),
       ],
     );
   }
@@ -1104,7 +1191,7 @@ class _PrintOrderPreviewScreenState
                   'print-edit-photo-${issue.target.pageIndex}-${issue.target.layerId}',
                 ),
                 onPressed: disabled ? null : () => _editPhotoIssue(issue),
-                icon: const Icon(Icons.edit_outlined, size: 18),
+                icon: const ExperienceIcon('PenLine', size: 18),
                 label: const Text('이 사진 수정하기'),
               ),
               TextButton(

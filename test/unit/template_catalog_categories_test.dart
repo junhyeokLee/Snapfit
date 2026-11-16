@@ -5,7 +5,7 @@ import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
 import 'package:snap_fit/features/album/presentation/providers/design_template_catalog_provider.dart';
 
 void main() {
-  test('ten populated topics keep a stable order in every catalog', () {
+  test('eleven populated topics preserve the original authoring indices', () {
     expect(templateTopicOrder, [
       '웨딩',
       '여행',
@@ -17,6 +17,7 @@ void main() {
       '스포츠·도전',
       '졸업·새출발',
       '동아리',
+      '취미·기록',
     ]);
     expect(
       orderedTemplateTopics(
@@ -28,23 +29,26 @@ void main() {
       '동아리': 5,
       '웨딩': 6,
       '여행': 6,
-      '일상': 6,
+      '일상': 7,
       '성장·육아': 6,
       '가족·친구': 6,
       '커플·기념일': 6,
       '반려동물': 6,
+      '취미·기록': 4,
+      '졸업·새출발': 2,
     };
     const totalCounts = {
-      '동아리': 15,
-      '웨딩': 15,
-      '여행': 15,
-      '일상': 14,
-      '성장·육아': 15,
-      '가족·친구': 15,
-      '커플·기념일': 14,
-      '반려동물': 15,
-      '스포츠·도전': 10,
-      '졸업·새출발': 5,
+      '동아리': 19,
+      '웨딩': 19,
+      '여행': 20,
+      '일상': 19,
+      '성장·육아': 19,
+      '가족·친구': 19,
+      '커플·기념일': 18,
+      '반려동물': 19,
+      '스포츠·도전': 14,
+      '졸업·새출발': 14,
+      '취미·기록': 14,
     };
     for (final topic in templateTopicOrder) {
       expect(
@@ -54,6 +58,11 @@ void main() {
       expect(
         publishedDesignTemplates.where((t) => t.category == topic).length,
         totalCounts[topic],
+      );
+      expect(
+        totalCounts[topic],
+        greaterThanOrEqualTo(10),
+        reason: '$topic must offer at least ten independently authored books',
       );
     }
     expect(orderedTemplateTopics(['', '기타', '여행', '여행']), ['여행', '기타']);

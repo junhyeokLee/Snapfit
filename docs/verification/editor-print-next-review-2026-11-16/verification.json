@@ -1,0 +1,60 @@
+{
+  "date": "2026-11-16",
+  "kind": "read_only_followup_audit",
+  "product_code_changed": false,
+  "capture_scenarios": {
+    "passed": 5,
+    "failed": 0
+  },
+  "accepted_screens": 6,
+  "size": [
+    390,
+    844
+  ],
+  "theme": "light",
+  "priority": [
+    "mobile_editor_current_and_total_pages",
+    "visible_added_blank_pages_summary",
+    "layer_order_naming",
+    "print_confirmation_copy"
+  ],
+  "source_sha256": {
+    "lib/features/album/presentation/views/page_editor_screen.dart": "bd23af1a5691ea07a77a6f0c6aebcc3ad9975eee852a7fd63ea49501d8bdaf6d",
+    "lib/features/album/presentation/widgets/editor/editor_context_dock.dart": "0b4338882093564c686962736aca52cc946f0f09642f74b43945a7ad95f1f5dd",
+    "lib/features/album/presentation/widgets/editor/layer_manager_panel.dart": "c1f1636bbb457dd4128059ebc5987d92177a2913f73763a38d2fc047b7a6e306",
+    "lib/features/album/presentation/widgets/reader/album_completion_confirmation.dart": "1ccca802f9c7a56fdc8082fc096f1fb54bbf2592956d6d3d465c6edd223ac061",
+    "lib/features/album/presentation/views/album_reader_screen.dart": "5e8832f0228721954c0e08a18646b905a7819b8f88eed07df5d111d0dd012f07",
+    "lib/features/album/presentation/views/print_order_preview_screen.dart": "fd6051a624196388bbccb2f79af9496dbde9277eae02672003bf3608986f15ad"
+  },
+  "screens": [
+    {
+      "path": "screens/01-editor-cover.png",
+      "sha256": "00da0a0d125de693e3b5dd792de82df98f48c4b52d1a4d0807647f788bab97dc"
+    },
+    {
+      "path": "screens/02-editor-inner.png",
+      "sha256": "dded3cbb6f112e0c3ae51c551ccdb638efec2a378ee31abc5ce490cde88ad996"
+    },
+    {
+      "path": "screens/03-editor-more.png",
+      "sha256": "7198ef2eb98686fbf2ea708f4e63402e6ed2b239df4ae98ae2c7d9990b3123ea"
+    },
+    {
+      "path": "screens/04-print-confirmation.png",
+      "sha256": "f4e4dc29247d0ab629f9b519c02e57d2a9b32a53a5e70969e8b54c9f6728f1d7"
+    },
+    {
+      "path": "screens/05-print-preview-preparing.png",
+      "sha256": "cefdb8d4daa102a7e0372bb9dcfc62f455c1b8a8cae67d55e8e2f7297e2531e7"
+    },
+    {
+      "path": "screens/06-print-details.png",
+      "sha256": "9109bcc0ead44046a3a8bd1f70e966691b5d9d268dc1aed0c476deed0288d28e"
+    }
+  ],
+  "limits": [
+    "Independent native fixture scenes, not one real customer journey.",
+    "Print quote fixture is PREPARING, not verified ready checkout.",
+    "No device, large text, dark, screen reader, production request, save, export, order, build or deploy."
+  ]
+}

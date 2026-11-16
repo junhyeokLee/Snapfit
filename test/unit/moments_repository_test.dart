@@ -5,13 +5,17 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:image/image.dart' as img;
 import 'package:mocktail/mocktail.dart';
+import 'package:snap_fit/core/constants/cover_size.dart';
 import 'package:snap_fit/features/album/domain/repositories/album_repository.dart';
 import 'package:snap_fit/features/album/domain/entities/album.dart';
+import 'package:snap_fit/features/album/domain/entities/layer.dart';
+import 'package:snap_fit/features/album/domain/entities/layer_export_mapper.dart';
 import 'package:snap_fit/features/billing/data/billing_repository.dart';
 import 'package:snap_fit/features/billing/domain/entities/storage_preflight.dart';
 import 'package:snap_fit/features/moments/data/moment_photo_codec.dart';
 import 'package:snap_fit/features/moments/data/moments_repository.dart';
 import 'package:snap_fit/features/moments/domain/moment_record.dart';
+import 'package:snap_fit/features/moments/domain/moment_photo_design.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 const _a = '11111111-1111-4111-8111-111111111111';
@@ -77,6 +81,7 @@ void main() {
   late String? actor;
   late List<http.Request> requests;
   late Future<http.Response> Function(http.Request) respond;
+  late Future<void> Function() prepareMonthlyFonts;
   http.Response response(Object value, [int status = 200]) => http.Response(
     jsonEncode(value),
     status,
@@ -123,11 +128,21 @@ void main() {
     );
     billing = _Billing();
     albums = _Albums();
+    prepareMonthlyFonts = () async {};
     repository = SupabaseMomentsRepository(
       client,
       albums: albums,
       billing: billing,
+      prepareMonthlyFonts: () => prepareMonthlyFonts(),
     );
+  });
+
+  test('current journal omits device month and uses the server day', () async {
+    final journal = await repository.listMonth(null);
+    final request = requests.single;
+    expect(jsonDecode(request.body), {'p_month': null});
+    expect(journal.today, DateTime.utc(2026, 11, 1));
+    expect(journal.month, DateTime.utc(2026, 11, 1));
   });
   tearDown(() async {
     repository.dispose();
@@ -196,6 +211,68 @@ void main() {
               request.url.path.contains('save_weekly_moment'),
         ),
         hasLength(1),
+      );
+    },
+  );
+  test(
+    'saving edited retained photos preserves private layers without reuploading originals',
+    () async {
+      final design = MomentPhotoDesign.fromJson({
+        'version': 1,
+        'canvas': {'width': 500, 'height': 400},
+        'backgroundColor': '#fff8edda',
+        'layers': [
+          {
+            'id': 'original',
+            'type': 'IMAGE',
+            'zIndex': 0,
+            'x': 0,
+            'y': 0,
+            'width': 1,
+            'height': 1,
+            'rotation': 0,
+            'payload': {
+              'originalUrl': momentPhotoOriginalSource,
+              'imageTemplate': 'free',
+            },
+          },
+        ],
+      });
+      final photo = MomentPhoto.fromJson((_record()['photos'] as List).single)
+          .withUrl('https://private.invalid/signed?token=secret')
+          .withDesign(design);
+      respond = (request) async {
+        if (request.url.path.contains('/rest/v1/')) {
+          final body = jsonDecode(request.body) as Map;
+          return response({
+            ..._record(),
+            'photos': body['p_photos'],
+            'revision': 2,
+          });
+        }
+        return response([]);
+      };
+      final saved = await repository.save(
+        id: _id,
+        recordDate: DateTime.utc(2026, 10, 26),
+        caption: '피드에만 남긴 글',
+        existingPhotos: [photo],
+        uploads: [],
+        expectedRevision: 1,
+      );
+      final body = jsonDecode(requests.first.body) as Map;
+      expect(body['p_photos'][0]['design'], design.toJson());
+      expect(saved.photos.single.design!.toJson(), design.toJson());
+      expect(jsonEncode(body['p_photos']), isNot(contains('token=secret')));
+      expect(jsonEncode(body['p_photos']), isNot(contains('피드에만')));
+      verifyNever(
+        () => billing.preflightStorage(
+          incomingBytes: any(named: 'incomingBytes'),
+        ),
+      );
+      expect(
+        requests.where((r) => r.url.path.contains('/storage/v1/object/')),
+        isEmpty,
       );
     },
   );
@@ -468,6 +545,23 @@ void main() {
     () async {
       final input = img.encodePng(img.Image(width: 2, height: 2));
       final prepared = await prepareMomentPhoto(input);
+      final design = MomentPhotoDesign.fromJson({
+        'version': 1,
+        'canvas': {'width': 100, 'height': 100},
+        'backgroundColor': '#ffffffff',
+        'layers': [
+          {
+            'id': 'original',
+            'type': 'IMAGE',
+            'x': 0,
+            'y': 0,
+            'width': 1,
+            'height': 1,
+            'rotation': 0,
+            'payload': {'originalUrl': momentPhotoOriginalSource},
+          },
+        ],
+      });
       when(
         () => billing.preflightStorage(
           incomingBytes: any(named: 'incomingBytes'),
@@ -502,10 +596,22 @@ void main() {
         caption: '',
         existingPhotos: [],
         uploads: [
-          MomentUpload(id: _photoId, bytes: input, filename: 'photo.png'),
+          MomentUpload(
+            id: _photoId,
+            bytes: input,
+            filename: 'photo.png',
+            design: design,
+          ),
         ],
       );
       expect(saved.id, _id);
+      final request = requests.singleWhere(
+        (r) => r.url.path.contains('save_weekly_moment'),
+      );
+      expect(
+        jsonDecode(request.body)['p_photos'][0]['design'],
+        design.toJson(),
+      );
       expect(
         requests.where(
           (request) =>
@@ -617,6 +723,7 @@ void main() {
       const initial = Album(
         id: 42,
         title: 'My edited title',
+        ratio: '4/3',
         updatedAt: '2026-10-26T03:00:00Z',
         coverLayersJson: '{"private":"preserve"}',
       );
@@ -655,8 +762,121 @@ void main() {
       expect((pages.single as Map)['isCover'], false);
       expect(jsonEncode(pages), contains('supabase://album-assets/$_path'));
       expect(jsonEncode(body), isNot(contains('My edited title')));
+      final canvas = coverCanvasBaseSize(initial.physicalCoverSize);
+      final layers = ((pages.single as Map)['layers'] as List).map(
+        (value) => LayerExportMapper.fromJson(
+          Map<String, dynamic>.from(value as Map),
+          canvasSize: canvas,
+        ),
+      );
+      final photo = layers.singleWhere(
+        (layer) => layer.type == LayerType.image,
+      );
+      expect(photo.width / photo.height, closeTo(1920 / 1280, .0001));
+      expect(photo.imageZoom, 1);
     },
   );
+  test(
+    'new monthly album waits for original fonts before measuring or mutating',
+    () async {
+      final fonts = Completer<void>();
+      prepareMonthlyFonts = () => fonts.future;
+      when(
+        () => albums.fetchAlbum('42'),
+      ).thenAnswer((_) async => const Album(id: 42));
+      respond = (_) async => response({'albumId': 42});
+      final pending = repository.createMonthlyAlbum(
+        month: DateTime.utc(2026, 10),
+        selectedRecords: [MomentRecord.fromJson(_record())],
+        selectedPhotoIds: [_photoId],
+        title: '가을의 기록',
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(requests, isEmpty);
+      verifyNever(() => albums.fetchAlbum(any()));
+      fonts.complete();
+      expect((await pending).id, 42);
+      expect(
+        requests.single.url.path,
+        '/rest/v1/rpc/create_moment_month_album',
+      );
+      final body = jsonDecode(requests.single.body) as Map;
+      expect(jsonEncode(body['p_album']), contains('Eulyoo'));
+      expect(body['p_photo_ids'], [_photoId]);
+    },
+  );
+
+  for (final backToOriginal in [false, true]) {
+    test(
+      'monthly creation cancels after ${backToOriginal ? 'A to B to A' : 'A to B'} during font loading',
+      () async {
+        final fonts = Completer<void>();
+        prepareMonthlyFonts = () => fonts.future;
+        final pending = repository.createMonthlyAlbum(
+          month: DateTime.utc(2026, 10),
+          selectedRecords: [MomentRecord.fromJson(_record())],
+          selectedPhotoIds: [_photoId],
+          title: '가을의 기록',
+        );
+        change(_b);
+        if (backToOriginal) change(_a);
+        fonts.complete();
+        await expectLater(pending, throwsA(isA<MomentException>()));
+        expect(requests, isEmpty);
+        verifyNever(() => albums.fetchAlbum(any()));
+      },
+    );
+  }
+
+  test(
+    'failed monthly font preparation leaves no album request and can retry',
+    () async {
+      var attempts = 0;
+      prepareMonthlyFonts = () async {
+        if (++attempts == 1) throw StateError('font download failed');
+      };
+      when(
+        () => albums.fetchAlbum('42'),
+      ).thenAnswer((_) async => const Album(id: 42));
+      respond = (_) async => response({'albumId': 42});
+      Future<Album> create() => repository.createMonthlyAlbum(
+        month: DateTime.utc(2026, 10),
+        selectedRecords: [MomentRecord.fromJson(_record())],
+        selectedPhotoIds: [_photoId],
+        title: '가을의 기록',
+      );
+      await expectLater(create(), throwsStateError);
+      expect(requests, isEmpty);
+      expect((await create()).id, 42);
+      expect(requests, hasLength(1));
+    },
+  );
+
+  test('monthly append rechecks session after waiting for fonts', () async {
+    final fonts = Completer<void>();
+    final preparing = Completer<void>();
+    prepareMonthlyFonts = () {
+      preparing.complete();
+      return fonts.future;
+    };
+    when(() => albums.fetchAlbum('42')).thenAnswer(
+      (_) async => const Album(id: 42, updatedAt: '2026-10-26T03:00:00Z'),
+    );
+    respond = (_) async => response({..._journal(), 'monthlyAlbumId': 42});
+    final pending = repository.appendMonthlyAlbum(
+      month: DateTime.utc(2026, 10),
+      selectedRecords: [MomentRecord.fromJson(_record())],
+      selectedPhotoIds: [_photoId],
+    );
+    await preparing.future;
+    expect(requests, hasLength(1));
+    expect(requests.single.url.path, '/rest/v1/rpc/get_moment_journal');
+    change(_b);
+    change(_a);
+    fonts.complete();
+    await expectLater(pending, throwsA(isA<MomentException>()));
+    expect(requests, hasLength(1));
+  });
   test(
     'append opens existing album without mutation when selected photos were imported',
     () async {

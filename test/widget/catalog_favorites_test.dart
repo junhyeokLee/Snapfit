@@ -227,14 +227,17 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      // 제작 방식 선택 뒤 디자인 목록으로 들어가는 현재 진입 동선을 따른다.
+      await tester.tap(find.byKey(const ValueKey('creation-open-catalog')));
+      await tester.pumpAndSettle();
       final hubScroll = find
           .descendant(
             of: find.byKey(const PageStorageKey('albumCreationHub')),
             matching: find.byType(Scrollable),
           )
           .first;
-      final favoritesFilter = find.byWidgetPredicate(
-        (widget) => widget is IconButton && widget.tooltip == '즐겨찾기만 보기',
+      final favoritesFilter = find.byKey(
+        const ValueKey('creation-favorites-only'),
       );
       await tester.scrollUntilVisible(
         favoritesFilter,
@@ -261,7 +264,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(selected, 0);
       expect(CatalogFavorites.instance.keys, isEmpty);
-      expect(find.text('즐겨찾기한 항목이 없어요'), findsOneWidget);
+      expect(find.text('즐겨찾기한 디자인이 아직 없어요.'), findsOneWidget);
+      expect(find.byType(SnackBarAction), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );

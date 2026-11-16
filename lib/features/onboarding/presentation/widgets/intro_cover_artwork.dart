@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/constants/snapfit_colors.dart';
 import 'intro_artwork_cache.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 /// Fixed artwork for P1–3 only. The print typography is baked into three small
 /// assets, so opening the introduction does not load another runtime font.
@@ -170,7 +171,7 @@ class _Editor extends StatelessWidget {
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(Icons.arrow_back, size: 13),
+              ExperienceIcon('ArrowLeft', size: 13),
               Text('표지', style: TextStyle(fontSize: 10)),
               Text('저장', style: TextStyle(fontSize: 10)),
             ],
@@ -224,7 +225,7 @@ class _Editor extends StatelessWidget {
                 (Icons.add_photo_alternate_outlined, '사진'),
                 (Icons.crop, '자르기'),
                 (Icons.palette_outlined, '꾸미기'),
-                (Icons.layers_outlined, '재배치'),
+                (Icons.layers_outlined, '겹침 순서'),
               ])
                 Expanded(
                   child: Column(

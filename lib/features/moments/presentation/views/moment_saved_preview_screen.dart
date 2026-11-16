@@ -1,26 +1,28 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../shared/snapfit_image.dart';
+import '../../../../core/fonts/document_fonts.dart';
+import '../widgets/moment_document_font_entry.dart';
+
 import '../../../../shared/widgets/experience_form_style.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 import '../../../../shared/widgets/experience_style.dart';
 import '../../../album/domain/entities/album.dart';
-import '../../../album/domain/entities/layer.dart';
-import '../../../album/domain/entities/layer_export_mapper.dart';
 import '../../../social/presentation/widgets/social_web_frame.dart';
 import '../../../social/presentation/widgets/social_widgets.dart';
-import '../../../store/presentation/widgets/template_page_renderer.dart';
 import '../../domain/moment_record.dart';
-import '../../domain/monthly_album_builder.dart';
 import '../../data/moment_engagement_repository.dart';
 import '../providers/moment_engagement_providers.dart';
 import '../providers/moments_providers.dart';
+import '../providers/moment_publication_providers.dart';
 import '../widgets/moments_widgets.dart';
+import '../widgets/moment_share_sheet.dart';
+import '../widgets/moment_publication_panel.dart';
 import 'moment_reminder_settings_screen.dart';
 import 'monthly_moment_preview_screen.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 /// A saved record already exists here. This preview never creates an album;
 /// the owner explicitly chooses that action in the monthly preview.
@@ -28,42 +30,58 @@ Future<void> showMomentSavedPreview(
   BuildContext context, {
   required MomentRecord record,
   required MomentJournal journal,
+  bool hasCompleteJournal = true,
   Future<void> Function(Album)? onAlbumCreated,
 }) => Navigator.of(context).push<void>(
-  MaterialPageRoute<void>(
-    builder: (_) => MomentSavedPreviewScreen(
+  snapFitRoute(
+    page: MomentSavedPreviewScreen(
       record: record,
       journal: journal,
+      hasCompleteJournal: hasCompleteJournal,
       onAlbumCreated: onAlbumCreated,
     ),
   ),
 );
 
 class MomentSavedPreviewScreen extends ConsumerStatefulWidget {
+  final bool _fontsPrepared;
+
   const MomentSavedPreviewScreen({
     super.key,
     required this.record,
     required this.journal,
+    this.hasCompleteJournal = true,
     this.onAlbumCreated,
-  });
+  }) : _fontsPrepared = false;
 
   final MomentRecord record;
   final MomentJournal journal;
+  // First-record and monthly-total copy requires the complete month history.
+  final bool hasCompleteJournal;
   final Future<void> Function(Album)? onAlbumCreated;
+
+  MomentSavedPreviewScreen._withFontsReady(MomentSavedPreviewScreen original)
+    : _fontsPrepared = true,
+      record = original.record,
+      journal = original.journal,
+      hasCompleteJournal = original.hasCompleteJournal,
+      onAlbumCreated = original.onAlbumCreated;
 
   @override
   ConsumerState<MomentSavedPreviewScreen> createState() =>
-      _MomentSavedPreviewScreenState();
+      // ignore: no_logic_in_create_state — intentional: selects a different State subtype for deferred font loading
+      DocumentFonts.deferred && !_fontsPrepared
+      ? MomentDocumentFontEntryState<MomentSavedPreviewScreen>(
+          MomentSavedPreviewScreen._withFontsReady,
+        )
+      : _MomentSavedPreviewScreenState();
 }
 
 class _MomentSavedPreviewScreenState
     extends ConsumerState<MomentSavedPreviewScreen> {
   late final String? _owner;
   late final List<MomentRecord> _records;
-  late final List<LayerModel> _cover;
-  late final Color _coverColor;
-  late final Map<String, String> _displaySources;
-  bool _sessionChanged = false, _opening = false;
+  bool _sessionChanged = false, _opening = false, _sharing = false;
   int _identity = 0;
   String? _error;
 
@@ -83,43 +101,6 @@ class _MomentSavedPreviewScreenState
             momentMonth(record.recordDate) == month)
           record,
     ];
-    final selected = selectMonthlyMomentPhotoIds(
-      month: month,
-      records: _records,
-    );
-    // The latest saved scene becomes this ephemeral preview's cover. The
-    // monthly editor still offers its normal explicit cover selection.
-    final latest = widget.record.photos.firstOrNull?.id;
-    final ids = latest == null
-        ? selected
-        : <String>[
-            latest,
-            ...selected.where((id) => id != latest),
-          ].take(9).toList();
-    final draft = buildMonthlyMomentAlbum(
-      month: month,
-      records: _records,
-      selectedPhotoIds: ids,
-    );
-    final document = jsonDecode(draft.coverLayersJson) as Map;
-    final page = Map<String, dynamic>.from(
-      (document['pages'] as List).first as Map,
-    );
-    _coverColor = Color((page['backgroundColor'] as num).toInt());
-    _cover = (page['layers'] as List)
-        .map(
-          (layer) => LayerExportMapper.fromJson(
-            Map<String, dynamic>.from(layer as Map),
-            canvasSize: monthlyMomentCanvasSize,
-            isCover: true,
-          ),
-        )
-        .toList();
-    _displaySources = {
-      for (final record in _records)
-        for (final photo in record.photos)
-          if (photo.url.isNotEmpty) photo.storageUri: photo.url,
-    };
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted ||
           _owner == null ||
@@ -140,6 +121,7 @@ class _MomentSavedPreviewScreenState
 
   Future<void> _preview() async {
     if (_opening ||
+        _sharing ||
         _sessionChanged ||
         _owner == null ||
         ref.read(momentsCurrentUserIdProvider) != _owner)
@@ -161,8 +143,8 @@ class _MomentSavedPreviewScreenState
           .listMonth(month);
       if (!current()) return;
       await Navigator.of(context).push<void>(
-        MaterialPageRoute<void>(
-          builder: (_) => MonthlyMomentPreviewScreen(
+        snapFitRoute(
+          page: MonthlyMomentPreviewScreen(
             month: month,
             records: journal.records,
             today: journal.today,
@@ -184,6 +166,23 @@ class _MomentSavedPreviewScreenState
     }
   }
 
+  Future<void> _shareRecord() async {
+    if (_opening ||
+        _sharing ||
+        _sessionChanged ||
+        _owner == null ||
+        ref.read(momentsCurrentUserIdProvider) != _owner)
+      return;
+    final identity = _identity;
+    setState(() => _sharing = true);
+    try {
+      // 공유는 방금 저장한 기록에 속한 사진만 명시적으로 선택한다.
+      await showMomentShareSheet(context, record: widget.record);
+    } finally {
+      if (mounted && identity == _identity) setState(() => _sharing = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final actor = ref.watch(momentsCurrentUserIdProvider);
@@ -195,6 +194,7 @@ class _MomentSavedPreviewScreenState
     });
     final locked = _sessionChanged || actor == null || actor != _owner;
     final firstRecord = _records.length == 1;
+    final savedPhoto = widget.record.photos.firstOrNull;
     final photoCount = _records.fold<int>(
       0,
       (sum, record) => sum + record.photos.length,
@@ -212,68 +212,40 @@ class _MomentSavedPreviewScreenState
             ? const SocialEmpty(
                 title: '계정이 변경되었어요',
                 message: '나의 기록으로 돌아가 다시 시작해 주세요.',
-                icon: Icons.lock_outline_rounded,
+                icon: ExperienceIcon('Lock', size: 28),
               )
             : SafeArea(
                 top: false,
                 child: SocialContent(
                   maxWidth: 580,
                   child: ListView(
+                    cacheExtent: 800,
                     padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
                     children: [
-                      Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 370),
-                          child: Semantics(
-                            label:
-                                '방금 저장한 사진이 담긴 ${widget.record.recordDate.month}월 앨범 표지 미리보기',
-                            image: true,
-                            child: Container(
+                      if (savedPhoto != null)
+                        Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 370),
+                            // 저장한 지면 자체를 보여 주며 월간 표지나 문구를 다시 합성하지 않는다.
+                            child: KeyedSubtree(
                               key: const ValueKey('moment-saved-book-cover'),
-                              clipBehavior: Clip.antiAlias,
-                              decoration: BoxDecoration(
-                                color: _coverColor,
-                                borderRadius: BorderRadius.circular(5),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: .09),
-                                    blurRadius: 24,
-                                    offset: const Offset(0, 12),
-                                  ),
-                                ],
-                              ),
-                              child: AspectRatio(
-                                aspectRatio: monthlyMomentAlbumCoverSize.ratio,
-                                child: LayoutBuilder(
-                                  builder: (context, size) =>
-                                      TemplatePageRenderer(
-                                        layers: _cover,
-                                        width: size.maxWidth,
-                                        height: size.maxWidth,
-                                        designCanvasSize:
-                                            monthlyMomentCanvasSize,
-                                        preserveTypography: true,
-                                        imageDecodeWidth: 1200,
-                                        photoBuilder: (layer, width) =>
-                                            SnapfitImage(
-                                              urlOrGs:
-                                                  _displaySources[layer
-                                                      .imageUrl] ??
-                                                  layer.imageUrl ??
-                                                  '',
-                                              fit: BoxFit.contain,
-                                              memCacheWidth: width,
-                                            ),
-                                      ),
-                                ),
+                              child: MomentPhotoView(
+                                key: const ValueKey('moment-saved-photo'),
+                                photo: savedPhoto,
+                                aspectRatio: savedPhoto.aspectRatio,
+                                label: '방금 저장한 사진',
+                                backgroundColor: Colors.transparent,
+                                fit: BoxFit.contain,
+                                imageDecodeWidth: 1200,
                               ),
                             ),
                           ),
                         ),
-                      ),
                       const SizedBox(height: 30),
                       Text(
-                        !_matchingMonth
+                        !widget.hasCompleteJournal
+                            ? '이 순간을,\n잘 간직했어요.'
+                            : !_matchingMonth
                             ? '이 순간이,\n한 달의 책이 될 거예요.'
                             : firstRecord
                             ? '내 한 달의\n첫 장이 생겼어요.'
@@ -288,7 +260,9 @@ class _MomentSavedPreviewScreenState
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        _matchingMonth
+                        !widget.hasCompleteJournal
+                            ? '사진 ${widget.record.photos.length}장을 저장했어요.\n모아둔 사진으로 내 한 달의 책을 만들어보세요.'
+                            : _matchingMonth
                             ? '${widget.record.recordDate.month}월에 모은 사진 $photoCount장.\n이 순간들로 내 한 달의 책을 만들어보세요.'
                             : '${widget.record.recordDate.month}월의 순간을 저장했어요.\n모아둔 사진으로 내 한 달의 책을 만들어보세요.',
                         textAlign: TextAlign.center,
@@ -299,26 +273,6 @@ class _MomentSavedPreviewScreenState
                         ).copyWith(height: 1.7),
                       ),
                       const SizedBox(height: 18),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.check_circle_rounded,
-                            size: 16,
-                            color: SocialStyle.accent(context),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            '나만 보는 기록에 저장했어요',
-                            style: ExperienceFormStyle.text(
-                              context,
-                              12,
-                              secondary: true,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
                       if (_error != null) ...[
                         MomentErrorNotice(message: _error!),
                         const SizedBox(height: 16),
@@ -327,8 +281,18 @@ class _MomentSavedPreviewScreenState
                         key: const ValueKey('moment-saved-preview'),
                         onPressed: _opening ? null : _preview,
                         style: SocialStyle.primary(context),
-                        child: Text(_opening ? '이달의 앨범을 불러오는 중…' : '내 앨범 미리보기'),
+                        child: Text(
+                          _opening ? '이달의 앨범을 불러오는 중…' : '월간 앨범 미리보기',
+                        ),
                       ),
+                      const SizedBox(height: 8),
+                      if (widget.record.photos.isNotEmpty)
+                        OutlinedButton.icon(
+                          key: const ValueKey('moment-saved-share'),
+                          onPressed: _opening || _sharing ? null : _shareRecord,
+                          icon: const ExperienceIcon('Share2', size: 18),
+                          label: const Text('방금 남긴 기록 공유'),
+                        ),
                       const SizedBox(height: 8),
                       TextButton(
                         key: const ValueKey('moment-saved-return'),
@@ -337,27 +301,80 @@ class _MomentSavedPreviewScreenState
                             : () => Navigator.of(context).pop(),
                         child: const Text('기록으로 돌아가기'),
                       ),
+                      const SizedBox(height: 16),
+                      _publicationOptions(context),
                       const SizedBox(height: 12),
                       TextButton.icon(
                         key: const ValueKey('moment-saved-reminder'),
                         onPressed: _opening
                             ? null
                             : () => Navigator.of(context).push<void>(
-                                MaterialPageRoute<void>(
-                                  builder: (_) =>
-                                      const MomentReminderSettingsScreen(),
+                                snapFitRoute(
+                                  page: const MomentReminderSettingsScreen(),
                                 ),
                               ),
-                        icon: const Icon(
-                          Icons.notifications_none_rounded,
-                          size: 17,
-                        ),
+                        icon: const ExperienceIcon('Bell', size: 17),
                         label: const Text('원하는 날에 주간 알림 받기'),
                       ),
                     ],
                   ),
                 ),
               ),
+      ),
+    );
+  }
+
+  Widget _publicationOptions(BuildContext context) {
+    final publication = ref.watch(
+      momentPublicationStateProvider(widget.record.id),
+    );
+    // Keep an opened private panel and its retry message mounted while its
+    // status refreshes. Cold-load public/pending results still expand below.
+    final state = publication.hasValue ? publication.value : null;
+    final active = state?.isPublished == true || state?.isPending == true;
+    final title = state?.isPublished == true
+        ? '피드에 공개한 기록'
+        : state?.isPending == true
+        ? '준비 중인 피드 공개'
+        : publication.hasError
+        ? '피드 공개 상태 확인'
+        : '한 장을 피드에도 남겨볼까요?';
+    return KeyedSubtree(
+      key: const ValueKey('moment-saved-publication-options'),
+      child: ExpansionTile(
+        key: ValueKey(
+          'moment-saved-publication-${state?.status ?? (publication.hasError ? 'error' : 'loading')}',
+        ),
+        initiallyExpanded: active,
+        maintainState: false,
+        tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+        childrenPadding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: SocialStyle.line(context)),
+        ),
+        collapsedShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: SocialStyle.line(context)),
+        ),
+        leading: ExperienceIcon(
+          state?.isPublished == true ? 'Globe' : 'MessageCircle',
+          size: 19,
+          color: SocialStyle.accent(context),
+        ),
+        title: Text(
+          title,
+          style: ExperienceFormStyle.text(context, 14, weight: FontWeight.w600),
+        ),
+        subtitle: Text(
+          active ? '공개 상태 보기 · 나만 보기로 변경' : '사진 한 장과 글만 나누고 싶을 때',
+          style: ExperienceFormStyle.text(
+            context,
+            12,
+            secondary: true,
+          ).copyWith(height: 1.6),
+        ),
+        children: [MomentPublicationPanel(record: widget.record)],
       ),
     );
   }

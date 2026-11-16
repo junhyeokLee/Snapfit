@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/context_extensions.dart';
+import '../../billing/domain/point_top_up_context.dart';
 import '../../profile/presentation/views/billing_management_screen.dart';
 import '../data/point_shop_provider.dart';
 import '../domain/point_shop_product.dart';
@@ -31,12 +33,18 @@ Future<bool> ensurePointShopAccess(
   title: title,
 );
 
-typedef PointShopTopUp = Future<void> Function(BuildContext context);
+typedef PointShopTopUp =
+    Future<void> Function(
+      BuildContext context, {
+      required PointTopUpContext purchaseContext,
+    });
 final pointShopTopUpProvider = Provider<PointShopTopUp>(
-  (ref) => (context) async {
-    await Navigator.of(
-      context,
-    ).push<void>(snapFitRoute(page: const BillingManagementScreen()));
+  (ref) => (context, {required purchaseContext}) async {
+    await Navigator.of(context).push<void>(
+      snapFitRoute(
+        page: BillingManagementScreen(purchaseContext: purchaseContext),
+      ),
+    );
   },
 );
 
@@ -83,14 +91,45 @@ Future<bool> _requestAccess(
       if (userId != repository.currentUserId)
         throw const PointShopException('account_changed');
       if (action == PointShopPurchaseAction.topUp) {
-        await ref.read(pointShopTopUpProvider)(context);
+        await ref.read(pointShopTopUpProvider)(
+          context,
+          purchaseContext: PointTopUpContext(
+            ownerId: userId,
+            productKey: access.productKey,
+            title: access.title ?? title,
+            requiredPoints: price,
+          ),
+        );
         if (!active()) return false;
         refreshPointShop(ref);
         continue;
       }
-      final result = await repository
-          .purchase(productKey, price)
-          .timeout(const Duration(seconds: 20));
+      PointShopPurchase result;
+      try {
+        result = await repository
+            .purchase(productKey, price)
+            .timeout(const Duration(seconds: 20));
+      } on PointShopException catch (error) {
+        if (error.code != 'point_shop_price_changed') rethrow;
+        if (!active()) return false;
+        if (userId != repository.currentUserId) {
+          throw const PointShopException('account_changed');
+        }
+        // 같은 요청을 유지해야 새 가격 확인 후에도 편집기 적용으로 이어집니다.
+        final closed = await ScaffoldMessenger.of(context)
+            .showSnackBar(
+              SnackBar(
+                content: Text(error.message),
+                action: SnackBarAction(label: '새 가격 확인', onPressed: () {}),
+              ),
+            )
+            .closed;
+        if (closed != SnackBarClosedReason.action || !active()) return false;
+        if (userId != repository.currentUserId) {
+          throw const PointShopException('account_changed');
+        }
+        continue;
+      }
       if (!active()) return false;
       if (userId != repository.currentUserId)
         throw const PointShopException('account_changed');
@@ -116,9 +155,7 @@ Future<bool> _requestAccess(
       final message = error is PointShopException
           ? error.message
           : '구매 정보를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.';
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      context.showSnack(message);
     }
     return false;
   } finally {

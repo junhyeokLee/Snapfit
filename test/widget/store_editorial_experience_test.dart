@@ -10,14 +10,17 @@ import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
 import 'package:snap_fit/features/album/presentation/widgets/home/home_bottom_navigation_bar.dart';
 import 'package:snap_fit/features/point_shop/domain/point_shop_launch_pricing.dart';
 import 'package:snap_fit/features/point_shop/domain/point_shop_product.dart';
+import 'package:snap_fit/features/point_shop/domain/point_shop_template_key.dart';
 import 'package:snap_fit/features/store/data/api/template_provider.dart';
 import 'package:snap_fit/features/store/data/store_curation_provider.dart';
+import 'package:snap_fit/features/store/data/store_discovery_provider.dart';
 import 'package:snap_fit/features/store/presentation/views/material_catalog_screen.dart';
 import 'package:snap_fit/features/store/presentation/views/material_detail_screen.dart';
 import 'package:snap_fit/features/store/presentation/views/store_hub_screen.dart';
 import 'package:snap_fit/features/store/presentation/views/store_screen.dart';
 import 'package:snap_fit/features/store/presentation/widgets/store_material_discovery.dart';
 import 'package:snap_fit/features/store/presentation/widgets/template_editorial_list.dart';
+import 'package:snap_fit/features/store/presentation/widgets/template_catalog_tile.dart';
 import 'package:snap_fit/features/store/presentation/widgets/template_curation.dart';
 import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
 import 'ai_album_start_step_test.dart' show wrapCreation, loadCreationFonts;
@@ -55,6 +58,17 @@ Future<void> _capture(
     file.writeAsBytesSync(bytes!.buffer.asUint8List());
     image.dispose();
   });
+}
+
+void _expectFeaturedPosition(WidgetTester tester, int current, int total) {
+  final counter = tester.widget<Text>(
+    find.byKey(const ValueKey('store-featured-position')),
+  );
+  final text = counter.data ?? counter.textSpan?.toPlainText() ?? '';
+  final values = RegExp(
+    r'\d+',
+  ).allMatches(text).map((match) => int.parse(match.group(0)!)).toList();
+  expect(values, [current, total]);
 }
 
 void main() {
@@ -97,7 +111,7 @@ void main() {
   );
 
   for (final dark in [false, true]) {
-    testWidgets('editorial scenes, mixed materials and list work dark=$dark', (
+    testWidgets('featured products, mixed materials and list work dark=$dark', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(390, 844);
@@ -121,6 +135,7 @@ void main() {
           ProviderScope(
             overrides: [
               mockTemplateList(() => publishedCreationTemplates),
+              storeDiscoveryProvider.overrideWith((_) async => const {}),
               storeCurationsProvider.overrideWith(
                 (_) async => {
                   'templates': StoreCuration.templates,
@@ -151,56 +166,141 @@ void main() {
         ),
       );
       await _paint(tester);
-      final stage = tester.getRect(
-        find.byKey(const ValueKey('curation-pager')),
-      );
       final departments = tester.getRect(
         find.byKey(const ValueKey('store-departments')),
       );
-      expect(stage.top, lessThanOrEqualTo(64));
-      expect(stage.height, greaterThan(350));
-      expect(departments.bottom, lessThanOrEqualTo(stage.top));
+      final badgeRules = tester.getRect(
+        find.byKey(const ValueKey('store-badge-rules')),
+      );
+      expect(departments.bottom, lessThanOrEqualTo(64));
+      expect(badgeRules.top, greaterThanOrEqualTo(departments.bottom));
+      final discovery = tester.getRect(
+        find.byKey(const ValueKey('store-design-discovery')),
+      );
+      expect(discovery.top, greaterThanOrEqualTo(departments.bottom));
+      expect(badgeRules.top, greaterThanOrEqualTo(discovery.bottom));
+      final shelf = find.byKey(const ValueKey('store-featured-templates'));
+      final selected = StoreCuration.templates
+          .resolve(publishedCreationTemplates, pointShopTemplateKey)
+          .take(6)
+          .toList();
+      expect(selected, hasLength(6));
+      expect(shelf, findsOneWidget);
+      expect(
+        find.byKey(ValueKey('store-featured-template-${selected[1].id}')),
+        findsNothing,
+        reason: 'Only the selected book occupies the hero stage',
+      );
+      final shelfBounds = tester.getRect(shelf);
+      expect(shelfBounds.top, greaterThanOrEqualTo(discovery.top));
+      expect(shelfBounds.bottom, lessThanOrEqualTo(discovery.bottom));
+      final firstProduct = find.byKey(
+        ValueKey('store-featured-template-${selected.first.id}'),
+      );
+      expect(firstProduct, findsOneWidget);
+      expect(
+        find
+            .byKey(ValueKey('store-featured-open-${selected.first.id}'))
+            .hitTestable(),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .widget<Text>(
+              find.byKey(
+                ValueKey('store-featured-template-title-${selected.first.id}'),
+              ),
+            )
+            .semanticsLabel,
+        selected.first.title,
+      );
+      expect(
+        find.byKey(
+          ValueKey('store-featured-template-price-${selected.first.id}'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.byType(TemplateCuration), findsNothing);
+      expect(find.byKey(const ValueKey('curation-pager')), findsNothing);
       expect(find.byType(LinearProgressIndicator), findsNothing);
-      final details = tester.getRect(
-        find.byKey(const ValueKey('curation-details')),
-      );
       final suffix = dark ? 'dark' : 'light';
-      final selected = curateTemplates(publishedCreationTemplates);
-      expect(selected.map((t) => t.category), [
-        '일상',
-        '여행',
-        '가족·친구',
-        '동아리',
-        '반려동물',
-        '커플·기념일',
-      ]);
-      expect(find.byKey(const ValueKey('curation-scene-2')), findsWidgets);
-      await tester.tap(find.byTooltip('다음 컬렉션'));
-      await _paint(tester);
-      expect(find.byKey(const ValueKey('curation-scene-0')), findsWidgets);
-      expect(find.text('02 / 06'), findsOneWidget);
+      _expectFeaturedPosition(tester, 1, selected.length);
+      await _capture(tester, boundary, 'featured-first-390-$suffix');
       expect(
-        tester.getRect(find.byKey(const ValueKey('curation-details'))),
-        details,
+        find.byKey(ValueKey('store-featured-open-${selected.first.id}')),
+        findsOneWidget,
       );
-      await _capture(tester, boundary, 'collection-travel-390-$suffix');
-      for (var index = 2; index < selected.length; index++) {
-        await tester.tap(find.byTooltip('다음 컬렉션'));
+      for (var index = 1; index < selected.length; index++) {
+        final next = find.byKey(const ValueKey('store-featured-next'));
+        await tester.ensureVisible(next);
         await _paint(tester);
+        await tester.tap(next);
+        await _paint(tester);
+        _expectFeaturedPosition(tester, index + 1, selected.length);
+        expect(
+          tester
+              .widget<Text>(
+                find.byKey(
+                  ValueKey(
+                    'store-featured-template-title-${selected[index].id}',
+                  ),
+                ),
+              )
+              .semanticsLabel,
+          selected[index].title,
+        );
+        expect(
+          find.byKey(
+            ValueKey('store-featured-template-price-${selected[index].id}'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(ValueKey('store-featured-open-${selected[index].id}')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(
+            ValueKey('store-featured-template-${selected[index - 1].id}'),
+          ),
+          findsNothing,
+        );
       }
-      expect(find.byKey(const ValueKey('curation-scene-1')), findsWidgets);
-      expect(find.text('06 / 06'), findsOneWidget);
+      final previous = find.byKey(const ValueKey('store-featured-previous'));
+      await tester.ensureVisible(previous);
+      await tester.tap(previous);
+      await _paint(tester);
+      _expectFeaturedPosition(tester, selected.length - 1, selected.length);
       expect(
-        tester.getRect(find.byKey(const ValueKey('curation-details'))),
-        details,
+        find.byKey(
+          ValueKey('store-featured-open-${selected[selected.length - 2].id}'),
+        ),
+        findsOneWidget,
       );
-      await _capture(tester, boundary, 'collection-couple-390-$suffix');
+      await tester.tap(find.byKey(const ValueKey('store-featured-next')));
+      await _paint(tester);
+      expect(
+        find.byKey(ValueKey('store-featured-open-${selected.last.id}')),
+        findsOneWidget,
+      );
+      _expectFeaturedPosition(tester, selected.length, selected.length);
+      await _capture(tester, boundary, 'featured-last-390-$suffix');
       final scrollable = find
           .descendant(
             of: find.byType(CustomScrollView).first,
             matching: find.byType(Scrollable),
           )
           .first;
+      await tester.scrollUntilVisible(
+        find.byType(TemplateCatalogTile).first,
+        180,
+        scrollable: scrollable,
+      );
+      await _paint(tester);
+      final catalog = tester.widget<TemplateEditorialList>(
+        find.byType(TemplateEditorialList),
+      );
+      expect(catalog.interlude, isA<StoreMaterialDiscovery>());
       await tester.scrollUntilVisible(
         find.byTooltip('꾸밈소재 모두 보기'),
         180,
@@ -215,16 +315,96 @@ void main() {
       expect(find.byType(MaterialCatalogScreen), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('store-department-0')));
       await _paint(tester);
-      final featured = find.byKey(
-        ValueKey('editorial-edition-${publishedCreationTemplates.first.id}'),
+      // The compact first row remains the entry into actual products.
+      final firstListed = tester
+          .widget<TemplateEditorialList>(find.byType(TemplateEditorialList))
+          .templates
+          .first;
+      final featured = find.byKey(ValueKey('store-template-${firstListed.id}'));
+      tester
+          .widget<CustomScrollView>(find.byType(CustomScrollView).first)
+          .controller!
+          .jumpTo(0);
+      await _paint(tester);
+      await tester.scrollUntilVisible(
+        featured,
+        180,
+        scrollable: find
+            .descendant(
+              of: find.byType(CustomScrollView).first,
+              matching: find.byType(Scrollable),
+            )
+            .first,
       );
-      await tester.scrollUntilVisible(featured, 180, scrollable: scrollable);
       await Scrollable.ensureVisible(tester.element(featured), alignment: .05);
       await _paint(tester);
       await _capture(tester, boundary, 'editorial-list-390-$suffix');
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets(
+    'discovery can browse and open all twelve curated materials lazily',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        wrapCreation(
+          ProviderScope(
+            overrides: [
+              storeCurationsProvider.overrideWith(
+                (_) async => {'materials': StoreCuration.materials},
+              ),
+            ],
+            child: Scaffold(
+              body: SingleChildScrollView(
+                child: StoreMaterialDiscovery(onBrowse: () {}),
+              ),
+            ),
+          ),
+          shopProducts: [
+            for (final key in StoreCuration.materials.productKeys)
+              PointShopProduct(
+                productKey: key,
+                kind: key.split(':').first,
+                assetId: key.split(':').last,
+                title: key,
+                pointPrice: pointShopLaunchPrices[key]!.points,
+                isActive: true,
+              ),
+          ],
+          showShell: false,
+        ),
+      );
+      await tester.pumpAndSettle();
+      final shelf = find.byKey(
+        const ValueKey('store-material-discovery-shelf'),
+      );
+      final lastKey = StoreCuration.materials.productKeys.last;
+      final last = find.byKey(ValueKey('discovery-material-$lastKey'));
+      expect(shelf, findsOneWidget);
+      expect(last, findsNothing);
+      await tester.scrollUntilVisible(
+        last,
+        500,
+        scrollable: find.descendant(
+          of: shelf,
+          matching: find.byType(Scrollable),
+        ),
+      );
+      await tester.tap(last);
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<MaterialDetailScreen>(find.byType(MaterialDetailScreen))
+            .productKey,
+        lastKey,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'discovery uses canonical favorites and respects a hidden selection',
@@ -345,6 +525,20 @@ void main() {
       await tester.enterText(find.byType(TextField).hitTestable(), '디자인없음999');
       tester.view.viewInsets = const FakeViewPadding(bottom: 260);
       await tester.pumpAndSettle();
+      // Search and mood controls can fill the keyboard-reduced viewport.
+      // Reach the result sliver through the active search route's scroll view.
+      await tester.scrollUntilVisible(
+        find.text('조건에 맞는 디자인이 없어요'),
+        180,
+        scrollable: find
+            .descendant(
+              of: find.byWidgetPredicate(
+                (widget) => widget is StoreScreen && widget.searchMode,
+              ),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
       expect(find.text('조건에 맞는 디자인이 없어요'), findsOneWidget);
       expect(find.byType(StoreMaterialDiscovery), findsNothing);
       tester.view.viewInsets = const FakeViewPadding();

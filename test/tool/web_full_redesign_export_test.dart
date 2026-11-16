@@ -305,7 +305,7 @@ Widget _catalog(
         onFavoritesChanged: () {},
         resultLabel: '추천 디자인 3개',
         onReset: () {},
-        sort: '추천순',
+        sort: '최신순',
         onSortChanged: (_) {},
       ),
       const SizedBox(height: 24),

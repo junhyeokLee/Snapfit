@@ -201,6 +201,7 @@ void main() {
           final confirm = find.byKey(
             const ValueKey('album-completion-confirm'),
           );
+          expect(find.text('배치·금액 확인'), findsOneWidget);
           await tester.ensureVisible(confirm);
           await tester.pumpAndSettle();
           expect(confirm.hitTestable(), findsOneWidget);

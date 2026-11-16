@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/supabase/supabase_provider.dart';
+import '../domain/store_template_editorial_selection.dart';
 
 class StoreCuration {
   const StoreCuration({
@@ -38,25 +39,28 @@ class StoreCuration {
   static const templates = StoreCuration(
     placement: 'templates',
     title: '오래 간직하고 싶은 장면들',
-    subtitle: '사진이 한 권의 이야기가 되는 디자인',
-    productKeys: [
-      'template:alley-afternoon',
-      'template:story-coast-address',
-      'template:our-family-year',
-      'template:story-club-run-together',
-      'template:a-day-with-you',
-      'template:story-evening-for-two',
-    ],
+    subtitle: '일상의 무료 앨범부터 새로운 주제의 프리미엄까지, 열한 가지 취향',
+    productKeys: storeTemplateEditorialProductKeys,
   );
   static const materials = StoreCuration(
     placement: 'materials',
     title: '한 끗을 더하는 소재',
-    subtitle: '종이의 결부터 작은 매듭까지',
+    subtitle: '프레임·종이·스티커·문구를 세 가지씩, 서로 다른 꾸밈의 시작',
     productKeys: [
-      'frame:materialLinenOval',
-      'sticker:atelierColorSlips',
-      'sticker:atelierRibbonPlate',
-      'phrase:collage-atelier-ribbon',
+      // Each group of four introduces one frame, paper, sticker and phrase.
+      // Both the latest artwork and established free starters remain visible.
+      'frame:pq9841a',
+      'sticker:atelierWritingLetter',
+      'sticker:story-premium-hanbok-vows-keepsake',
+      'phrase:collage-atelier-laughter',
+      'frame:cafeLedgerMat',
+      'sticker:story-premium-thesis-new-sentence-paper',
+      'sticker:cafeRoastedLeaf',
+      'phrase:collage-story-premium-first-words-caption',
+      'frame:pq9807b',
+      'sticker:materialScallopNote',
+      'sticker:materialLace',
+      'phrase:collage-atelier-boarding',
     ],
   );
 }

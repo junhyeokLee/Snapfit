@@ -1,0 +1,256 @@
+{
+  "stage": "temporary Dart test binaries",
+  "beforeFreeBytes": 2798460928,
+  "afterFreeBytes": 7343972352,
+  "removed": [
+    {
+      "path": "/tmp/snapfit-reader-flow.dill",
+      "bytes": 125136408,
+      "allocatedBytes": 125136896
+    },
+    {
+      "path": "/tmp/snapfit-next-ux-audit-ready.dill",
+      "bytes": 125231632,
+      "allocatedBytes": 125235200
+    },
+    {
+      "path": "/tmp/snapfit-creation-final-runner.dill",
+      "bytes": 125551528,
+      "allocatedBytes": 125554688
+    },
+    {
+      "path": "/tmp/snapfit-unified-entry-green.dill",
+      "bytes": 125588504,
+      "allocatedBytes": 125591552
+    },
+    {
+      "path": "/tmp/snapfit-creation-green-runner.dill",
+      "bytes": 124913712,
+      "allocatedBytes": 124915712
+    },
+    {
+      "path": "/tmp/snapfit-settings-audit-runner.dill",
+      "bytes": 125551528,
+      "allocatedBytes": 125554688
+    },
+    {
+      "path": "/tmp/snapfit-saved-refinement-red.dill",
+      "bytes": 125323192,
+      "allocatedBytes": 125325312
+    },
+    {
+      "path": "/tmp/snapfit-album-settings-green.dill",
+      "bytes": 125117792,
+      "allocatedBytes": 125120512
+    },
+    {
+      "path": "/tmp/snapfit-home-priority-combined.dill",
+      "bytes": 125721504,
+      "allocatedBytes": 125722624
+    },
+    {
+      "path": "/tmp/snapfit-unified-entry-review.dill",
+      "bytes": 126256208,
+      "allocatedBytes": 126259200
+    },
+    {
+      "path": "/tmp/snapfit-reader-refinement.dill",
+      "bytes": 125303064,
+      "allocatedBytes": 125304832
+    },
+    {
+      "path": "/tmp/snapfit-priority-ux-green.dill",
+      "bytes": 125687344,
+      "allocatedBytes": 125689856
+    },
+    {
+      "path": "/tmp/snapfit-unified-entry-native-final.dill",
+      "bytes": 126429840,
+      "allocatedBytes": 126431232
+    },
+    {
+      "path": "/tmp/snapfit-unified-continuity.dill",
+      "bytes": 125344568,
+      "allocatedBytes": 125345792
+    },
+    {
+      "path": "/tmp/snapfit-unified-ai-scope.dill",
+      "bytes": 125381144,
+      "allocatedBytes": 125382656
+    },
+    {
+      "path": "/tmp/snapfit-creation-redesign-runner.dill",
+      "bytes": 124884512,
+      "allocatedBytes": 124887040
+    },
+    {
+      "path": "/tmp/snapfit-creation-components-runner.dill",
+      "bytes": 57724000,
+      "allocatedBytes": 57724928
+    },
+    {
+      "path": "/tmp/snapfit-reader-regression-verified.dill",
+      "bytes": 125722352,
+      "allocatedBytes": 125722624
+    },
+    {
+      "path": "/tmp/snapfit-compose-local-runner.dill",
+      "bytes": 124875576,
+      "allocatedBytes": 124878848
+    },
+    {
+      "path": "/tmp/snapfit-saved-refinement-green.dill",
+      "bytes": 125499392,
+      "allocatedBytes": 125501440
+    },
+    {
+      "path": "/tmp/snapfit-unified-entry-final.dill",
+      "bytes": 126588224,
+      "allocatedBytes": 126590976
+    },
+    {
+      "path": "/tmp/snapfit-unified-entry-red.dill",
+      "bytes": 125539944,
+      "allocatedBytes": 125542400
+    },
+    {
+      "path": "/tmp/snapfit-notebook-local-runner.dill",
+      "bytes": 124731408,
+      "allocatedBytes": 124735488
+    },
+    {
+      "path": "/tmp/snapfit-reader-navigation.dill",
+      "bytes": 124997784,
+      "allocatedBytes": 125001728
+    },
+    {
+      "path": "/tmp/snapfit-reader-before-cover.dill",
+      "bytes": 125154832,
+      "allocatedBytes": 125157376
+    },
+    {
+      "path": "/tmp/snapfit-album-settings-red.dill",
+      "bytes": 125086984,
+      "allocatedBytes": 125087744
+    },
+    {
+      "path": "/tmp/snapfit-color-capture.dill",
+      "bytes": 125226368,
+      "allocatedBytes": 125227008
+    },
+    {
+      "path": "/tmp/snapfit-background-red.dill",
+      "bytes": 125239744,
+      "allocatedBytes": 125243392
+    },
+    {
+      "path": "/tmp/snapfit-unified-entry-exit-red.dill",
+      "bytes": 125473344,
+      "allocatedBytes": 125476864
+    },
+    {
+      "path": "/tmp/snapfit-whole-ux-audit.dill",
+      "bytes": 125021336,
+      "allocatedBytes": 125022208
+    },
+    {
+      "path": "/tmp/snapfit-unified-editor-audit.dill",
+      "bytes": 125330000,
+      "allocatedBytes": 125333504
+    },
+    {
+      "path": "/tmp/snapfit-priority-ux-final.dill",
+      "bytes": 126021384,
+      "allocatedBytes": 126021632
+    },
+    {
+      "path": "/tmp/snapfit-home-full-layout.dill",
+      "bytes": 125184264,
+      "allocatedBytes": 125186048
+    },
+    {
+      "path": "/tmp/snapfit-unified-entry-complete.dill",
+      "bytes": 126635240,
+      "allocatedBytes": 126636032
+    },
+    {
+      "path": "/tmp/snapfit-photo-fill-parent-audit.dill",
+      "bytes": 125148736,
+      "allocatedBytes": 125149184
+    },
+    {
+      "path": "/tmp/snapfit-priority-ux-red.dill",
+      "bytes": 125392160,
+      "allocatedBytes": 125394944
+    },
+    {
+      "path": "/tmp/snapfit-album-settings-final.dill",
+      "bytes": 125148736,
+      "allocatedBytes": 125149184
+    }
+  ],
+  "logicalRemovedBytes": 4573164288,
+  "allocatedRemovedBytes": 4573241344,
+  "projectCleanup": {
+    "removed": [
+      {
+        "path": "/Users/devsheep/SnapFit/SnapFit/build",
+        "allocatedBytes": 4031184896
+      },
+      {
+        "path": "/Users/devsheep/SnapFit/SnapFit/.dart_tool/flutter_build",
+        "allocatedBytes": 342347776
+      },
+      {
+        "path": "/Users/devsheep/SnapFit/SnapFit/android/.gradle",
+        "allocatedBytes": 78721024
+      },
+      {
+        "path": "/Users/devsheep/SnapFit/SnapFit/android/.kotlin",
+        "allocatedBytes": 77824
+      }
+    ],
+    "beforeFreeBytes": 8098971648,
+    "afterFreeBytes": 12552454144,
+    "preservedNativeTestMetadata": [
+      "FontManifest.json",
+      "AssetManifest.bin",
+      "fonts",
+      "shaders"
+    ],
+    "excludedTrackedGeneratedDirectory": "android/build"
+  },
+  "summary": {
+    "removedAllocatedBytes": 9025572864,
+    "temporaryBinaryCount": 37,
+    "freeBytesAfterCleanup": 12552454144,
+    "appSourceAssetsOrFinalOutputsRemoved": false
+  },
+  "postValidationCleanup": {
+    "removed": [
+      {
+        "path": "/tmp/snapfit-first-use-invite-red.dill",
+        "allocatedBytes": 125784064
+      },
+      {
+        "path": "/tmp/snapfit-first-use-invite-green.dill",
+        "allocatedBytes": 125804544
+      },
+      {
+        "path": "/tmp/snapfit-first-use-guide-timing-red.dill",
+        "allocatedBytes": 125808640
+      },
+      {
+        "path": "/tmp/snapfit-first-use-replay-red.dill",
+        "allocatedBytes": 125923328
+      },
+      {
+        "path": "/tmp/snapfit-first-use-invite-final.dill",
+        "allocatedBytes": 134270976
+      }
+    ],
+    "allocatedBytes": 637591552,
+    "freeBytesBefore": 10861436928,
+    "freeBytesAfter": 11499012096
+  }
+}

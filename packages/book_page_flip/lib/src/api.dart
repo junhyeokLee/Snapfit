@@ -231,20 +231,30 @@ class BookFlipMaterial {
       Object.hash(stiffness, weight, gloss, translucency, thickness);
 }
 
+/// 페이지 곡면과 투영을 함께 선택한다. 기본값은 기존 종이 물성 모델이다.
+enum BookFlipCurveProfile {
+  material,
+
+  /// 40개 띠로 적분한 완만한 곡면과 감쇠 원근을 사용하는 앨범 미리보기.
+  albumPreview,
+}
+
+class _AlbumPreviewTiming extends Curve {
+  const _AlbumPreviewTiming();
+
+  @override
+  double transformInternal(double t) {
+    final remaining = 1.0 - t;
+    return 1.0 - remaining * remaining * remaining;
+  }
+}
+
 /// Direct control over the page-curve — the trajectory the turning leaf bends
 /// through — independent of the paper [BookFlipMaterial].
 ///
 /// Leave [BookFlip.curl] null (the default) to let the material decide the bend.
-/// Provide one to take over: every dial is 0..1 and maps into the engine's safe
-/// range, so no setting can break the flip's smoothness or its pop-free landing —
-/// at the flat rest states the leaf stays identical to the page beneath it for ANY
-/// curl, exactly as for any material. Its mid defaults give a balanced arc near the
-/// default book's; for the exact material-derived arc, leave [BookFlip.curl] null.
-/// Nudge a dial to reshape the turn.
-///
-/// Three ready-made curves — [gentle], [tight] and [floppy] — cover the common
-/// feels; they vary the magnitude of the one developable arc (its depth, corner
-/// fold and droop), not its underlying shape.
+/// The [gentle], [tight] and [floppy] presets tune that material curve. Choose
+/// [albumPreview] to use its own whole-sheet geometry and damped projection.
 @immutable
 class BookFlipCurl {
   /// Creates a page-curve. Every value has a sensible mid default; override only
@@ -254,6 +264,7 @@ class BookFlipCurl {
     this.foldTilt = 0.5,
     this.droop = 0.0,
     this.roll = 0.0,
+    this.profile = BookFlipCurveProfile.material,
   })  : assert(bend >= 0 && bend <= 1, 'bend must be 0..1'),
         assert(foldTilt >= 0 && foldTilt <= 1, 'foldTilt must be 0..1'),
         assert(droop >= 0 && droop <= 1, 'droop must be 0..1'),
@@ -275,6 +286,17 @@ class BookFlipCurl {
   /// The latter leaves the unturned portion flat while the fold crosses it.
   final double roll;
 
+  /// 물성 기반 기본 곡면과 승인된 앨범 미리보기 곡면을 구분한다.
+  final BookFlipCurveProfile profile;
+
+  /// 앨범 미리보기의 곡면·원근·앞뒷면 음영을 함께 사용한다.
+  /// 이 프로필은 [bend], [foldTilt], [droop], [roll] 대신 고정된 궤적을 따른다.
+  static const BookFlipCurl albumPreview =
+      BookFlipCurl(profile: BookFlipCurveProfile.albumPreview);
+
+  /// 미리보기 JavaScript의 1 − (1 − t)³. Bezier easeOutCubic과 구분한다.
+  static const Curve albumPreviewTiming = _AlbumPreviewTiming();
+
   /// A soft, wide, shallow turn — a relaxed arc, the way a well-thumbed
   /// paperback falls open.
   static const BookFlipCurl gentle =
@@ -294,12 +316,14 @@ class BookFlipCurl {
     double? foldTilt,
     double? droop,
     double? roll,
+    BookFlipCurveProfile? profile,
   }) =>
       BookFlipCurl(
         bend: bend ?? this.bend,
         foldTilt: foldTilt ?? this.foldTilt,
         droop: droop ?? this.droop,
         roll: roll ?? this.roll,
+        profile: profile ?? this.profile,
       );
 
   /// Blends smoothly from [a] at t=0 to [b] at t=1 — animate a page slowly
@@ -312,6 +336,8 @@ class BookFlipCurl {
       foldTilt: a.foldTilt + (b.foldTilt - a.foldTilt) * t,
       droop: a.droop + (b.droop - a.droop) * t,
       roll: a.roll + (b.roll - a.roll) * t,
+      // 서로 다른 곡면 모델은 수치로 보간할 수 없으므로 중간에서 전환한다.
+      profile: t < 0.5 ? a.profile : b.profile,
     );
   }
 
@@ -321,10 +347,11 @@ class BookFlipCurl {
       other.bend == bend &&
       other.foldTilt == foldTilt &&
       other.droop == droop &&
-      other.roll == roll;
+      other.roll == roll &&
+      other.profile == profile;
 
   @override
-  int get hashCode => Object.hash(bend, foldTilt, droop, roll);
+  int get hashCode => Object.hash(bend, foldTilt, droop, roll, profile);
 }
 
 /// Which visual effects a [BookFlip] draws. Every effect is ON by default —
@@ -516,6 +543,7 @@ class BookFlipController extends ChangeNotifier {
 
   int _spreadCache;
   _BookFlipState? _state;
+  _BookFlipPageSource? _pageSource;
   bool _emitScheduled = false;
 
   /// The spread (open two-page view) shown at rest. Spread 0 is the first two
@@ -529,8 +557,35 @@ class BookFlipController extends ChangeNotifier {
   /// Whether a flip is in progress (dragging or animating).
   bool get isAnimating => _state?._scene.active ?? false;
 
+  /// Direction of a released leaf completing its turn, excluding held/cancelled
+  /// drags. A host can distinguish another page request from a reverse re-grab.
+  FlipDirection? get settlingDirection {
+    final state = _state;
+    return state != null && !state._dragging && state._target == 1
+        ? flipDirection
+        : null;
+  }
+
+  /// Shortens only the current released turn when another input arrives.
+  /// Repeated requests do not restart this short completion animation.
+  bool finishTurnSoon() => _state?._finishTurnSoon() ?? false;
+
   /// Whether the book has finished preparing its page texture and can turn.
-  bool get isReady => _state?._phase.value == _BootPhase.ready;
+  bool get isReady =>
+      _state?._phase.value == _BootPhase.ready &&
+      (_pageSource?.isSpreadPacked(currentSpread) ?? true);
+
+  /// Prioritises the spread and its neighbouring turn faces during preparation.
+  /// It does not change the selected spread or interrupt an active gesture.
+  void requestSpread(int spread) => _pageSource?.requestSpread(spread);
+
+  /// Whether both resting faces of [spread] are in the current page texture.
+  /// A turn also requires its outgoing faces; its start method checks those.
+  bool isSpreadReady(int spread) =>
+      _state?._phase.value == _BootPhase.ready &&
+      spread >= 0 &&
+      spread < totalSpreads &&
+      (_pageSource?.isSpreadPacked(spread) ?? true);
 
   /// Progress of the current turn, 0 (flat) to 1 (turned). Stays 0 when idle.
   double get flipProgress => _state?._scene.t ?? 0.0;
@@ -562,7 +617,12 @@ class BookFlipController extends ChangeNotifier {
   /// still wants the real page curl to begin from the finger position.
   bool dragStart(Offset localPosition) {
     final state = _state;
-    if (state == null || state._phase.value != _BootPhase.ready) return false;
+    if (state == null ||
+        !isReady ||
+        state._scene.w <= 0 ||
+        state._scene.h <= 0) {
+      return false;
+    }
     state._onDragStart(localPosition);
     return true;
   }
@@ -583,13 +643,18 @@ class BookFlipController extends ChangeNotifier {
     required double distance,
   }) {
     final state = _state;
-    if (state == null || state._phase.value != _BootPhase.ready) return false;
+    if (state == null ||
+        state._phase.value != _BootPhase.ready ||
+        state._scene.w <= 0 ||
+        state._scene.h <= 0) {
+      return false;
+    }
     state._onDragDistance(
       localPosition,
       direction == FlipDirection.forward ? 1 : -1,
       distance,
     );
-    return true;
+    return state._scene.active;
   }
 
   /// Ends a drag started with [dragStart].
@@ -605,6 +670,7 @@ class BookFlipController extends ChangeNotifier {
   /// Jumps straight to [spread] with no animation — handy for restoring a saved
   /// position.
   void goToSpread(int spread) {
+    requestSpread(spread);
     _spreadCache = spread;
     _state?._jumpTo(spread);
   }
@@ -699,6 +765,10 @@ class BookFlip extends StatefulWidget {
   /// manage, unlike the default [BookFlip] constructor.
   /// [preparePage] can await image decoding for each mounted page. Capture then
   /// waits for another painted frame; failures use [errorBuilder].
+  /// [progressive] prepares the current turn faces first and fills distant page
+  /// textures in the background. The default still prepares the entire book.
+  /// [preparationPaused] lets a host camera animation pause only that background
+  /// preparation; the book's own animation controller keeps running.
   ///
   /// Everything else (controller, physics, material, curl, effects, fit, callbacks,
   /// loading and error builders) behaves exactly as on the default constructor. Pass
@@ -719,6 +789,8 @@ class BookFlip extends StatefulWidget {
     Key? key,
     double? pixelRatio,
     Future<void> Function(BuildContext context, int pageIndex)? preparePage,
+    bool progressive = false,
+    bool preparationPaused = false,
     BookFlipController? controller,
     BookFlipPhysics physics = const BookFlipPhysics(),
     BookFlipMaterial material = BookFlipMaterial.paper,
@@ -760,6 +832,8 @@ class BookFlip extends StatefulWidget {
       pageSize: pageSize,
       pixelRatio: pixelRatio,
       preparePage: preparePage,
+      progressive: progressive,
+      preparationPaused: preparationPaused,
       controller: controller,
       physics: physics,
       material: material,

@@ -19,6 +19,8 @@ class _BookRenderer {
   // _emitLeaf for nothing. Keyed by atlas IDENTITY (see _atlasShaderFor).
   ui.Image? _shaderAtlas;
   ui.ImageShader? _atlasShader;
+  final Float32List _albumStripPositions = Float32List(12);
+  final Float32List _albumStripTexture = Float32List(12);
 
   // The cached shader for [atlas], rebuilt ONLY on an atlas-identity change. On a
   // miss the superseded shader is disposed first — ui.ImageShader.dispose() is a
@@ -57,6 +59,8 @@ class _BookRenderer {
     if (w <= 1 || h <= 1) return;
     final spineX = w * 0.5;
     final idle = !scene.active || scene.dir == 0;
+    final albumPreview =
+        scene.curl?.profile == BookFlipCurveProfile.albumPreview;
 
     // L4 — leaf geometry is computed FIRST when active, because the base layer below
     // needs the projected free-edge curve to confine the OUTGOING page to the leaf's
@@ -100,16 +104,22 @@ class _BookRenderer {
 
     // L2 — CAST SHADOW (constant umbra, geometric vanish), drawn UNDER the leaf.
     if (scene.effects.castShadow) {
-      _drawCastShadow(canvas, m, w, h, hEnv, spineX, scene.dir);
+      if (albumPreview) {
+        _drawAlbumPreviewShadow(canvas, m, h);
+      } else {
+        _drawCastShadow(canvas, m, w, h, hEnv, spineX, scene.dir);
+      }
     }
-    m.computeNormals();
-    m.computeShading(
-      w,
-      h,
-      kFovY,
-      material: scene.material,
-      effects: scene.effects,
-    );
+    if (!albumPreview) {
+      m.computeNormals();
+      m.computeShading(
+        w,
+        h,
+        kFovY,
+        material: scene.material,
+        effects: scene.effects,
+      );
+    }
 
     final order = m.depthOrder();
     _emitLeaf(canvas, atlas, m, order, w, h);
@@ -176,6 +186,13 @@ class _BookRenderer {
     }
 
     final dir = scene.dir;
+    if (scene.curl?.profile == BookFlipCurveProfile.albumPreview &&
+        (scene.coverForwardEdge || scene.coverBackwardEdge)) {
+      // 표지는 한 장의 앞뒷면으로만 보인다. 첫 내지를 바닥 왼쪽에도 미리 그리면
+      // 표지를 열기 전부터 내용이 노출되므로, 오른쪽 지면만 종이 아래에 둔다.
+      blit(scene.baseRight, rightRect);
+      return;
+    }
     if (wake == null || dir == 0) {
       // Idle / boundary / firewall: plain two-half base, right half last.
       blit(scene.baseLeft, leftRect);
@@ -203,6 +220,14 @@ class _BookRenderer {
       // cover should be the only visible book content.
       final reveal = ((scene.t - 0.78) / 0.22).clamp(0.0, 1.0);
       blitWithOpacity(scene.leafBack, rightRect, reveal);
+      return;
+    }
+
+    if (scene.curl?.profile == BookFlipCurveProfile.albumPreview) {
+      // 원본 미리보기는 두 바닥 지면 위에 실제 앞뒷면을 덮는다. 미리 착지 쪽으로
+      // 바꾸는 기존 wake 합성은 이 프로필의 종이 실루엣과 겹침을 바꿀 수 있다.
+      blit(scene.baseLeft, leftRect);
+      blit(scene.baseRight, rightRect);
       return;
     }
 
@@ -273,8 +298,16 @@ class _BookRenderer {
       final a = m.triIdx[o], b = m.triIdx[o + 1], c = m.triIdx[o + 2];
       // Direction-aware facing (recto vs verso) + the horizontal-mirror flag that
       // makes the verso read correctly and lands at 180° with NO content snap.
-      final area = m.signedArea(a, b, c);
-      final faceFront = bookFlipFaceFront(area, dir);
+      final bool faceFront;
+      var omitAlbumStrip = false;
+      if (m._usesAlbumPreview) {
+        final leftColumn = math.min(a % m.nu, math.min(b % m.nu, c % m.nu));
+        final rightColumn = math.max(a % m.nu, math.max(b % m.nu, c % m.nu));
+        faceFront = _albumPreviewFaceFront(m, leftColumn, rightColumn);
+        omitAlbumStrip = (m.sx[rightColumn] - m.sx[leftColumn]).abs() < 0.02;
+      } else {
+        faceFront = bookFlipFaceFront(m.signedArea(a, b, c), dir);
+      }
       final cu = faceFront ? fU : bU;
       final cv = faceFront ? fV : bV;
       final mirror = bookFlipMirror(dir, faceFront);
@@ -291,8 +324,8 @@ class _BookRenderer {
         final v = m.vNorm[vIdx];
         final tU = mirror ? (1.0 - ui0) : ui0; // arc-length-locked; sign only
         final p2 = vi * 2;
-        pos[p2] = m.sx[vIdx];
-        pos[p2 + 1] = m.sy[vIdx];
+        pos[p2] = m.sx[omitAlbumStrip ? a : vIdx];
+        pos[p2 + 1] = m.sy[omitAlbumStrip ? a : vIdx];
         // Half-texel inset: map u,v∈[0,1] to pixel CENTERS so the bilinear
         // (FilterQuality.high) footprint never crosses into an adjacent atlas cell
         // (which would bleed a neighbouring page along the leaf edges). v never
@@ -307,6 +340,11 @@ class _BookRenderer {
         colS[vi] = (0xFF << 24) | (sp << 16) | (sp << 8) | sp;
         vi++;
       }
+    }
+
+    if (m._usesAlbumPreview) {
+      _emitAlbumPreviewLeaf(canvas, atlas, m);
+      return;
     }
 
     // ONE drawVertices for the whole leaf — single atlas texture, so the global
@@ -355,6 +393,97 @@ class _BookRenderer {
         Paint()..color = Colors.white,
       )
       ..restore();
+  }
+
+  bool _albumPreviewFaceFront(
+    BookFlipMesh mesh,
+    int leftColumn,
+    int rightColumn,
+  ) {
+    final physicalFront = math.cos(
+          (mesh._albumAngles[leftColumn] + mesh._albumAngles[rightColumn]) *
+              0.5,
+        ) >
+        0;
+    // 뒤로 넘길 때에는 엔진의 leafFront가 물리적 종이의 뒷면이다.
+    return scene.dir > 0 ? physicalFront : !physicalFront;
+  }
+
+  void _drawAlbumPreviewShadow(Canvas canvas, BookFlipMesh mesh, double h) {
+    if (mesh._albumProgress <= 0.0001 || mesh._albumProgress >= 0.9999) {
+      return;
+    }
+    final outer = mesh.sx[mesh.nu - 1];
+    canvas.drawRect(
+      Rect.fromLTWH(outer - 34, 0, 68, h),
+      Paint()
+        ..shader = ui.Gradient.linear(
+          Offset(outer - 34, 0),
+          Offset(outer + 34, 0),
+          const [Color(0x00263021), Color(0x32263021), Color(0x00263021)],
+          const [0.0, 0.5, 1.0],
+        ),
+    );
+  }
+
+  void _emitAlbumPreviewLeaf(Canvas canvas, ui.Image atlas, BookFlipMesh mesh) {
+    final front =
+        _cellRect(scene.leafFront, scene.atlasCols, scene.cellW, scene.cellH);
+    final back =
+        _cellRect(scene.leafBack, scene.atlasCols, scene.cellW, scene.cellH);
+    final texturePaint = Paint()
+      ..filterQuality = FilterQuality.high
+      ..shader = _atlasShaderFor(atlas);
+    const corners = [0, 1, 2, 0, 2, 3];
+    final bottomRow = (mesh.nv - 1) * mesh.nu;
+    final columns = mesh.nu - 1;
+    final flat = mesh._albumProgress <= 0.0001 || mesh._albumProgress >= 0.9999;
+
+    for (var i = 0; i < columns; i++) {
+      if ((mesh.sx[i + 1] - mesh.sx[i]).abs() < 0.02) continue;
+      final faceFront = _albumPreviewFaceFront(mesh, i, i + 1);
+      final cell = faceFront ? front : back;
+      final mirror = bookFlipMirror(scene.dir, faceFront);
+      for (var vertex = 0; vertex < 6; vertex++) {
+        final corner = corners[vertex];
+        final right = corner == 1 || corner == 2;
+        final bottom = corner >= 2;
+        final column = right ? i + 1 : i;
+        final source = (bottom ? bottomRow : 0) + column;
+        final u = column / columns;
+        final textureU = mirror ? 1.0 - u : u;
+        final offset = vertex * 2;
+        _albumStripPositions[offset] = mesh.sx[source];
+        _albumStripPositions[offset + 1] = mesh.sy[source];
+        _albumStripTexture[offset] =
+            cell.left + 0.5 + textureU * (scene.cellW - 1);
+        _albumStripTexture[offset + 1] =
+            cell.top + 0.5 + (bottom ? scene.cellH - 1 : 0);
+      }
+      canvas.drawVertices(
+        ui.Vertices.raw(
+          ui.VertexMode.triangles,
+          _albumStripPositions,
+          textureCoordinates: _albumStripTexture,
+        ),
+        BlendMode.modulate,
+        texturePaint,
+      );
+
+      if (flat) continue;
+      // 원본처럼 이미지 직후 같은 띠를 덧칠해야 겹친 종이 뒤의 음영이 새지 않는다.
+      final path = Path()
+        ..moveTo(mesh.sx[i], mesh.sy[i])
+        ..lineTo(mesh.sx[i + 1], mesh.sy[i + 1])
+        ..lineTo(mesh.sx[bottomRow + i + 1], mesh.sy[bottomRow + i + 1])
+        ..lineTo(mesh.sx[bottomRow + i], mesh.sy[bottomRow + i])
+        ..close();
+      final alpha = (0.06 + 0.08 * i / columns) * mesh._albumEnvelope;
+      canvas.drawPath(
+        path,
+        Paint()..color = Color.fromRGBO(35, 42, 34, alpha),
+      );
+    }
   }
 
   // Tight screen AABB of the projected leaf (sx/sy are firewalled finite), padded a

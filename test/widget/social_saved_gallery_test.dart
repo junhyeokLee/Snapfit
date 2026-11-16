@@ -40,6 +40,8 @@ class _SavedRepository extends SocialRepository {
 
   final offsets = <int>[];
   final writes = <String>[];
+  final saveStates = <bool>[];
+  final removedWorks = <String, SocialWork>{};
   final pages = <int, SocialWorkPage>{};
   final readBarriers = <Completer<SocialWorkPage>>[];
   final writeBarriers = <Completer<void>>[];
@@ -64,10 +66,24 @@ class _SavedRepository extends SocialRepository {
   @override
   Future<bool> setSaved(String id, bool saved) async {
     writes.add(id);
+    saveStates.add(saved);
     if (writeBarriers.isNotEmpty) await writeBarriers.removeAt(0).future;
-    if (removeOnSuccess) {
+    if (removeOnSuccess && saved) {
+      final work = removedWorks.remove(id);
+      if (work != null) {
+        final page = pages[0]!;
+        pages[0] = SocialWorkPage(
+          items: [work, ...page.items],
+          hasMore: page.hasMore,
+          nextOffset: page.nextOffset,
+        );
+      }
+    } else if (removeOnSuccess) {
       for (final offset in pages.keys.toList()) {
         final page = pages[offset]!;
+        for (final work in page.items.where((work) => work.id == id)) {
+          removedWorks[id] = work;
+        }
         pages[offset] = SocialWorkPage(
           items: page.items.where((work) => work.id != id).toList(),
           hasMore: page.hasMore,
@@ -118,7 +134,7 @@ Future<void> _size(WidgetTester tester, Size size) async {
 Finder _card(String id) => find.byKey(ValueKey('social-saved-card-$id'));
 
 Future<void> _more(WidgetTester tester) async {
-  final more = find.widgetWithText(OutlinedButton, '작품 더 보기');
+  final more = find.widgetWithText(OutlinedButton, '기록·앨범 더 보기');
   await tester.scrollUntilVisible(
     more,
     500,
@@ -150,6 +166,19 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('phone collection keeps one title and compact privacy guidance', (
+    tester,
+  ) async {
+    await _size(tester, const Size(390, 844));
+    final repository = _SavedRepository()..pages[0] = _page([_work('a')]);
+    await tester.pumpWidget(_app(repository));
+    await tester.pumpAndSettle();
+    expect(find.text('저장한 기록·앨범'), findsOneWidget);
+    expect(find.text('나에게만 보여요 · 공개가 종료된 기록과 앨범은 표시하지 않아요.'), findsOneWidget);
+    expect(tester.getTopLeft(_card('a')).dy, lessThan(180));
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('wide gallery has two large columns and builds rows lazily', (
     tester,
@@ -199,7 +228,7 @@ void main() {
         ..pages[37] = _page([_work('a'), _work('b')], next: 73);
       await tester.pumpWidget(_app(repository));
       await tester.pumpAndSettle();
-      final more = find.widgetWithText(OutlinedButton, '작품 더 보기');
+      final more = find.widgetWithText(OutlinedButton, '기록·앨범 더 보기');
       final request = tester.widget<OutlinedButton>(more).onPressed!;
       request();
       request();
@@ -264,7 +293,7 @@ void main() {
       expect(container.read(socialCurrentUserIdProvider), isNull);
       await tester.pumpAndSettle();
       expect(_card('second'), findsNothing);
-      expect(find.text('나만 보는 작품 보관함'), findsOneWidget);
+      expect(find.text('나만 보는 기록·앨범 보관함'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
@@ -315,8 +344,156 @@ void main() {
       pending.complete();
       await tester.pumpAndSettle();
       expect(_card('a'), findsNothing);
-      expect(find.text('아직 저장한 작품이 없어요.'), findsOneWidget);
+      expect(find.text('아직 저장한 기록이나 앨범이 없어요.'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
+  testWidgets(
+    'save removal can be undone after the card leaves the collection',
+    (tester) async {
+      await _size(tester, const Size(390, 1100));
+      final repository = _SavedRepository()
+        ..pages[0] = _page([_work('a')])
+        ..removeOnSuccess = true;
+      await tester.pumpWidget(_app(repository));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('social-saved-remove-a')));
+      await tester.pumpAndSettle();
+      expect(_card('a'), findsNothing);
+      expect(find.text('저장을 해제했어요'), findsOneWidget);
+      await tester.tap(find.text('되돌리기'));
+      await tester.pumpAndSettle();
+      expect(_card('a'), findsOneWidget);
+      expect(repository.saveStates, [false, true]);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'failed save restoration keeps the collection empty and reports it',
+    (tester) async {
+      final repository = _SavedRepository()
+        ..pages[0] = _page([_work('a')])
+        ..removeOnSuccess = true;
+      await tester.pumpWidget(_app(repository));
+      await tester.pumpAndSettle();
+      final remove = find.byKey(const ValueKey('social-saved-remove-a'));
+      await tester.ensureVisible(remove);
+      await tester.pumpAndSettle();
+      expect(remove.hitTestable(), findsOneWidget);
+      await tester.tap(remove);
+      await tester.pumpAndSettle();
+      final pending = Completer<void>();
+      repository.writeBarriers.add(pending);
+      await tester.tap(find.text('되돌리기'));
+      await tester.pump();
+      pending.completeError(StateError('Synthetic restoration failure'));
+      await tester.pumpAndSettle();
+      expect(_card('a'), findsNothing);
+      expect(find.text('처리하지 못했어요. 잠시 후 다시 시도해 주세요.'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'late undo response does not refresh the next account collection',
+    (tester) async {
+      String? actor = 'first';
+      final repository = _SavedRepository()
+        ..pages[0] = _page([_work('a')])
+        ..removeOnSuccess = true;
+      await tester.pumpWidget(_app(repository, actor: () => actor));
+      await tester.pumpAndSettle();
+      final remove = find.byKey(const ValueKey('social-saved-remove-a'));
+      await tester.ensureVisible(remove);
+      await tester.pumpAndSettle();
+      expect(remove.hitTestable(), findsOneWidget);
+      await tester.tap(remove);
+      await tester.pumpAndSettle();
+      final pending = Completer<void>();
+      repository.writeBarriers.add(pending);
+      await tester.tap(find.text('되돌리기'));
+      await tester.pump();
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(SocialSavedWorksScreen)),
+      );
+      actor = 'second';
+      repository.pages[0] = _page([_work('second')]);
+      container.invalidate(socialCurrentUserIdProvider);
+      await tester.pumpAndSettle();
+      final reads = repository.offsets.length;
+      pending.complete();
+      await tester.pumpAndSettle();
+      expect(repository.offsets.length, reads);
+      expect(_card('second'), findsOneWidget);
+      expect(_card('a'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'old undo never restores a work for another account or after dispose',
+    (tester) async {
+      String? actor = 'first';
+      final repository = _SavedRepository()
+        ..pages[0] = _page([_work('a')])
+        ..removeOnSuccess = true;
+      await tester.pumpWidget(_app(repository, actor: () => actor));
+      await tester.pumpAndSettle();
+      final remove = find.byKey(const ValueKey('social-saved-remove-a'));
+      await tester.ensureVisible(remove);
+      await tester.pumpAndSettle();
+      expect(remove.hitTestable(), findsOneWidget);
+      await tester.tap(remove);
+      await tester.pumpAndSettle();
+      final undo = tester
+          .widget<SnackBarAction>(find.byType(SnackBarAction))
+          .onPressed;
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(SocialSavedWorksScreen)),
+      );
+      actor = 'second';
+      container.invalidate(socialCurrentUserIdProvider);
+      await tester.pumpAndSettle();
+      expect(find.text('저장을 해제했어요'), findsNothing);
+      undo();
+      await tester.pumpAndSettle();
+      expect(repository.saveStates, [false]);
+      await tester.pumpWidget(const SizedBox.shrink());
+      undo();
+      await tester.pumpAndSettle();
+      expect(repository.saveStates, [false]);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets('rapid removals do not leave a queued undo for the previous account', (
+    tester,
+  ) async {
+    await _size(tester, const Size(1280, 1400));
+    String? actor = 'first';
+    final repository = _SavedRepository()
+      ..pages[0] = _page([_work('a'), _work('b')])
+      ..removeOnSuccess = true;
+    await tester.pumpWidget(_app(repository, actor: () => actor));
+    await tester.pumpAndSettle();
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(SocialSavedWorksScreen)),
+    );
+    await tester.tap(find.byKey(const ValueKey('social-saved-remove-a')));
+    await tester.pumpAndSettle();
+    expect(find.text('저장을 해제했어요'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('social-saved-remove-b')));
+    // Switch accounts before the first notice's reverse animation could finish.
+    await tester.pump();
+    actor = 'second';
+    repository.pages[0] = _page([_work('second')]);
+    container.invalidate(socialCurrentUserIdProvider);
+    await tester.pumpAndSettle();
+    expect(find.text('저장을 해제했어요'), findsNothing);
+    expect(find.text('되돌리기'), findsNothing);
+    expect(_card('second'), findsOneWidget);
+    expect(repository.saveStates, [false, false]);
+    expect(tester.takeException(), isNull);
+  });
+
 }

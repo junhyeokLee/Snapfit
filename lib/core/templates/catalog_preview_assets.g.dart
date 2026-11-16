@@ -25,7 +25,7 @@ const catalogPreviewAssets = <String, String>{
   'template:-9443': 'assets/catalog_thumbnails/template_-9443.png',
   'template:-9444': 'assets/catalog_thumbnails/template_-9444.png',
   'template:-9445': 'assets/catalog_thumbnails/template_-9445.png',
-  'template:-9451': 'assets/catalog_thumbnails/template_-9451.png',
+  'template:-9451': 'assets/catalog_thumbnails/template_-9451.444e0c82c535.png',
   'template:-9452': 'assets/catalog_thumbnails/template_-9452.png',
   'template:-9453': 'assets/catalog_thumbnails/template_-9453.png',
   'template:-9454': 'assets/catalog_thumbnails/template_-9454.png',
@@ -355,13 +355,13 @@ const catalogPreviewAssets = <String, String>{
   'frame:midnightDrip': 'assets/catalog_thumbnails/frame_midnightDrip.png',
   'frame:vaporStreet': 'assets/catalog_thumbnails/frame_vaporStreet.png',
   'phrase:collage-bold-cut':
-      'assets/catalog_thumbnails/phrase_collage-bold-cut.png',
+      'assets/catalog_thumbnails/phrase_collage-bold-cut.e7296f27173a.png',
   'phrase:collage-ticket-label':
-      'assets/catalog_thumbnails/phrase_collage-ticket-label.png',
+      'assets/catalog_thumbnails/phrase_collage-ticket-label.ee4dd0979f7f.png',
   'phrase:collage-hand-note':
-      'assets/catalog_thumbnails/phrase_collage-hand-note.png',
+      'assets/catalog_thumbnails/phrase_collage-hand-note.41e6aba5c7b9.png',
   'phrase:collage-diecut':
-      'assets/catalog_thumbnails/phrase_collage-diecut.png',
+      'assets/catalog_thumbnails/phrase_collage-diecut.d59a22753bc3.png',
   'phrase:collage-ribbon':
       'assets/catalog_thumbnails/phrase_collage-ribbon.png',
   'phrase:collage-seal': 'assets/catalog_thumbnails/phrase_collage-seal.png',
@@ -500,4 +500,823 @@ const catalogPreviewAssets = <String, String>{
       'assets/catalog_thumbnails/frame_storyDiscoverySlide.png',
   'frame:storyDiscoveryStitch':
       'assets/catalog_thumbnails/frame_storyDiscoveryStitch.png',
+  'template:-9761': 'assets/catalog_thumbnails/template_-9761.d3d67c9e66a4.png',
+  'template:-9762': 'assets/catalog_thumbnails/template_-9762.png',
+  'sticker:story-coffee-notebook-paper':
+      'assets/catalog_thumbnails/sticker_story-coffee-notebook-paper.png',
+  'sticker:story-coffee-notebook-motif':
+      'assets/catalog_thumbnails/sticker_story-coffee-notebook-motif.png',
+  'sticker:cafeRoastedLeaf':
+      'assets/catalog_thumbnails/sticker_cafeRoastedLeaf.png',
+  'sticker:story-night-city-archive-paper':
+      'assets/catalog_thumbnails/sticker_story-night-city-archive-paper.png',
+  'sticker:story-night-city-archive-motif':
+      'assets/catalog_thumbnails/sticker_story-night-city-archive-motif.png',
+  'sticker:nocturneGlassine':
+      'assets/catalog_thumbnails/sticker_nocturneGlassine.png',
+  'frame:cafeLedgerMat': 'assets/catalog_thumbnails/frame_cafeLedgerMat.png',
+  'frame:cafeReceiptFold':
+      'assets/catalog_thumbnails/frame_cafeReceiptFold.png',
+  'frame:cafeGlassine': 'assets/catalog_thumbnails/frame_cafeGlassine.png',
+  'frame:nocturneContact':
+      'assets/catalog_thumbnails/frame_nocturneContact.png',
+  'frame:nocturneTransit':
+      'assets/catalog_thumbnails/frame_nocturneTransit.png',
+  'frame:nocturneDuplex': 'assets/catalog_thumbnails/frame_nocturneDuplex.png',
+  'phrase:collage-story-coffee-notebook':
+      'assets/catalog_thumbnails/phrase_collage-story-coffee-notebook.png',
+  'phrase:collage-story-night-city-archive':
+      'assets/catalog_thumbnails/phrase_collage-story-night-city-archive.png',
+  'phrase:collage-sensory-coffee-note':
+      'assets/catalog_thumbnails/phrase_collage-sensory-coffee-note.png',
+  'phrase:collage-sensory-night-index':
+      'assets/catalog_thumbnails/phrase_collage-sensory-night-index.png',
+  'template:-9771': 'assets/catalog_thumbnails/template_-9771.png',
+  'sticker:story-reading-room-paper':
+      'assets/catalog_thumbnails/sticker_story-reading-room-paper.png',
+  'sticker:story-reading-room-motif':
+      'assets/catalog_thumbnails/sticker_story-reading-room-motif.png',
+  'phrase:collage-story-reading-room':
+      'assets/catalog_thumbnails/phrase_collage-story-reading-room.png',
+  'template:-9772': 'assets/catalog_thumbnails/template_-9772.png',
+  'template:-9773': 'assets/catalog_thumbnails/template_-9773.png',
+  'template:-9775': 'assets/catalog_thumbnails/template_-9775.png',
+  'template:-9781': 'assets/catalog_thumbnails/template_-9781.png',
+  'template:-9782': 'assets/catalog_thumbnails/template_-9782.png',
+  'template:-9774': 'assets/catalog_thumbnails/template_-9774.png',
+  'template:-9776': 'assets/catalog_thumbnails/template_-9776.png',
+  'template:-9777': 'assets/catalog_thumbnails/template_-9777.png',
+  'template:-9778': 'assets/catalog_thumbnails/template_-9778.png',
+  'template:-9779': 'assets/catalog_thumbnails/template_-9779.png',
+  'template:-9780': 'assets/catalog_thumbnails/template_-9780.png',
+  'template:-9783': 'assets/catalog_thumbnails/template_-9783.png',
+  'template:-9784': 'assets/catalog_thumbnails/template_-9784.png',
+  'template:-9785': 'assets/catalog_thumbnails/template_-9785.png',
+  'sticker:story-hobby-clay-paper':
+      'assets/catalog_thumbnails/sticker_story-hobby-clay-paper.png',
+  'sticker:story-hobby-clay-motif':
+      'assets/catalog_thumbnails/sticker_story-hobby-clay-motif.png',
+  'sticker:story-hobby-leaf-paper':
+      'assets/catalog_thumbnails/sticker_story-hobby-leaf-paper.png',
+  'sticker:story-hobby-leaf-motif':
+      'assets/catalog_thumbnails/sticker_story-hobby-leaf-motif.png',
+  'sticker:story-hobby-film-paper':
+      'assets/catalog_thumbnails/sticker_story-hobby-film-paper.png',
+  'sticker:story-hobby-film-motif':
+      'assets/catalog_thumbnails/sticker_story-hobby-film-motif.png',
+  'sticker:story-hobby-bake-paper':
+      'assets/catalog_thumbnails/sticker_story-hobby-bake-paper.png',
+  'sticker:story-hobby-bake-motif':
+      'assets/catalog_thumbnails/sticker_story-hobby-bake-motif.png',
+  'sticker:story-hobby-knit-paper':
+      'assets/catalog_thumbnails/sticker_story-hobby-knit-paper.png',
+  'sticker:story-hobby-knit-motif':
+      'assets/catalog_thumbnails/sticker_story-hobby-knit-motif.png',
+  'sticker:story-hobby-music-paper':
+      'assets/catalog_thumbnails/sticker_story-hobby-music-paper.png',
+  'sticker:story-hobby-music-motif':
+      'assets/catalog_thumbnails/sticker_story-hobby-music-motif.png',
+  'sticker:story-hobby-paper-paper':
+      'assets/catalog_thumbnails/sticker_story-hobby-paper-paper.png',
+  'sticker:story-hobby-paper-motif':
+      'assets/catalog_thumbnails/sticker_story-hobby-paper-motif.png',
+  'sticker:story-hobby-gallery-paper':
+      'assets/catalog_thumbnails/sticker_story-hobby-gallery-paper.png',
+  'sticker:story-hobby-gallery-motif':
+      'assets/catalog_thumbnails/sticker_story-hobby-gallery-motif.png',
+  'sticker:story-hobby-camp-paper':
+      'assets/catalog_thumbnails/sticker_story-hobby-camp-paper.png',
+  'sticker:story-hobby-camp-motif':
+      'assets/catalog_thumbnails/sticker_story-hobby-camp-motif.png',
+  'sticker:story-milestone-little-applause-paper':
+      'assets/catalog_thumbnails/sticker_story-milestone-little-applause-paper.png',
+  'sticker:story-milestone-little-applause-motif':
+      'assets/catalog_thumbnails/sticker_story-milestone-little-applause-motif.png',
+  'sticker:story-milestone-first-home-paper':
+      'assets/catalog_thumbnails/sticker_story-milestone-first-home-paper.png',
+  'sticker:story-milestone-first-home-motif':
+      'assets/catalog_thumbnails/sticker_story-milestone-first-home-motif.png',
+  'sticker:story-milestone-second-beginning-paper':
+      'assets/catalog_thumbnails/sticker_story-milestone-second-beginning-paper.png',
+  'sticker:story-milestone-second-beginning-motif':
+      'assets/catalog_thumbnails/sticker_story-milestone-second-beginning-motif.png',
+  'sticker:story-milestone-next-season-paper':
+      'assets/catalog_thumbnails/sticker_story-milestone-next-season-paper.png',
+  'sticker:story-milestone-next-season-motif':
+      'assets/catalog_thumbnails/sticker_story-milestone-next-season-motif.png',
+  'sticker:story-milestone-first-exhibition-paper':
+      'assets/catalog_thumbnails/sticker_story-milestone-first-exhibition-paper.png',
+  'sticker:story-milestone-first-exhibition-motif':
+      'assets/catalog_thumbnails/sticker_story-milestone-first-exhibition-motif.png',
+  'frame:clayContour': 'assets/catalog_thumbnails/frame_clayContour.png',
+  'frame:leafHerbarium': 'assets/catalog_thumbnails/frame_leafHerbarium.png',
+  'frame:filmContactRail':
+      'assets/catalog_thumbnails/frame_filmContactRail.png',
+  'frame:bakeRecipe': 'assets/catalog_thumbnails/frame_bakeRecipe.png',
+  'frame:knitStitch': 'assets/catalog_thumbnails/frame_knitStitch.png',
+  'frame:musicSleeve': 'assets/catalog_thumbnails/frame_musicSleeve.png',
+  'frame:paperNotch': 'assets/catalog_thumbnails/frame_paperNotch.png',
+  'frame:galleryRegistration':
+      'assets/catalog_thumbnails/frame_galleryRegistration.png',
+  'frame:campMap': 'assets/catalog_thumbnails/frame_campMap.png',
+  'frame:milestoneConfettiMat':
+      'assets/catalog_thumbnails/frame_milestoneConfettiMat.png',
+  'frame:milestoneBlueprintMount':
+      'assets/catalog_thumbnails/frame_milestoneBlueprintMount.png',
+  'frame:milestonePortfolioTab':
+      'assets/catalog_thumbnails/frame_milestonePortfolioTab.png',
+  'frame:milestoneLinenMedal':
+      'assets/catalog_thumbnails/frame_milestoneLinenMedal.png',
+  'frame:milestoneGalleryLabel':
+      'assets/catalog_thumbnails/frame_milestoneGalleryLabel.png',
+  'phrase:collage-story-hobby-clay':
+      'assets/catalog_thumbnails/phrase_collage-story-hobby-clay.png',
+  'phrase:collage-story-hobby-leaf':
+      'assets/catalog_thumbnails/phrase_collage-story-hobby-leaf.png',
+  'phrase:collage-story-hobby-film':
+      'assets/catalog_thumbnails/phrase_collage-story-hobby-film.png',
+  'phrase:collage-story-hobby-bake':
+      'assets/catalog_thumbnails/phrase_collage-story-hobby-bake.png',
+  'phrase:collage-story-hobby-knit':
+      'assets/catalog_thumbnails/phrase_collage-story-hobby-knit.png',
+  'phrase:collage-story-hobby-music':
+      'assets/catalog_thumbnails/phrase_collage-story-hobby-music.png',
+  'phrase:collage-story-hobby-paper':
+      'assets/catalog_thumbnails/phrase_collage-story-hobby-paper.png',
+  'phrase:collage-story-hobby-gallery':
+      'assets/catalog_thumbnails/phrase_collage-story-hobby-gallery.png',
+  'phrase:collage-story-hobby-camp':
+      'assets/catalog_thumbnails/phrase_collage-story-hobby-camp.png',
+  'phrase:collage-story-milestone-little-applause':
+      'assets/catalog_thumbnails/phrase_collage-story-milestone-little-applause.png',
+  'phrase:collage-story-milestone-first-home':
+      'assets/catalog_thumbnails/phrase_collage-story-milestone-first-home.png',
+  'phrase:collage-story-milestone-second-beginning':
+      'assets/catalog_thumbnails/phrase_collage-story-milestone-second-beginning.png',
+  'phrase:collage-story-milestone-next-season':
+      'assets/catalog_thumbnails/phrase_collage-story-milestone-next-season.png',
+  'phrase:collage-story-milestone-first-exhibition':
+      'assets/catalog_thumbnails/phrase_collage-story-milestone-first-exhibition.png',
+  'template:-9801': 'assets/catalog_thumbnails/template_-9801.png',
+  'template:-9802': 'assets/catalog_thumbnails/template_-9802.png',
+  'template:-9803': 'assets/catalog_thumbnails/template_-9803.png',
+  'template:-9804': 'assets/catalog_thumbnails/template_-9804.png',
+  'template:-9809': 'assets/catalog_thumbnails/template_-9809.png',
+  'template:-9817': 'assets/catalog_thumbnails/template_-9817.png',
+  'template:-9818': 'assets/catalog_thumbnails/template_-9818.png',
+  'template:-9819': 'assets/catalog_thumbnails/template_-9819.png',
+  'template:-9820': 'assets/catalog_thumbnails/template_-9820.png',
+  'template:-9833': 'assets/catalog_thumbnails/template_-9833.png',
+  'template:-9834': 'assets/catalog_thumbnails/template_-9834.png',
+  'template:-9835': 'assets/catalog_thumbnails/template_-9835.png',
+  'template:-9836': 'assets/catalog_thumbnails/template_-9836.png',
+  'template:-9837': 'assets/catalog_thumbnails/template_-9837.png',
+  'template:-9838': 'assets/catalog_thumbnails/template_-9838.png',
+  'sticker:story-premium-hanbok-vows-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-hanbok-vows-paper.png',
+  'sticker:story-premium-hanbok-vows-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-hanbok-vows-vellum.png',
+  'sticker:story-premium-hanbok-vows-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-hanbok-vows-motif.png',
+  'sticker:story-premium-hanbok-vows-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-hanbok-vows-keepsake.png',
+  'sticker:story-premium-civil-address-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-civil-address-paper.png',
+  'sticker:story-premium-civil-address-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-civil-address-vellum.png',
+  'sticker:story-premium-civil-address-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-civil-address-motif.png',
+  'sticker:story-premium-civil-address-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-civil-address-keepsake.png',
+  'sticker:story-premium-made-by-us-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-made-by-us-paper.png',
+  'sticker:story-premium-made-by-us-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-made-by-us-vellum.png',
+  'sticker:story-premium-made-by-us-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-made-by-us-motif.png',
+  'sticker:story-premium-made-by-us-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-made-by-us-keepsake.png',
+  'sticker:story-premium-renewed-vows-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-renewed-vows-paper.png',
+  'sticker:story-premium-renewed-vows-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-renewed-vows-vellum.png',
+  'sticker:story-premium-renewed-vows-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-renewed-vows-motif.png',
+  'sticker:story-premium-renewed-vows-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-renewed-vows-keepsake.png',
+  'sticker:story-premium-lunchbox-days-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-lunchbox-days-paper.png',
+  'sticker:story-premium-lunchbox-days-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-lunchbox-days-vellum.png',
+  'sticker:story-premium-lunchbox-days-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-lunchbox-days-motif.png',
+  'sticker:story-premium-lunchbox-days-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-lunchbox-days-keepsake.png',
+  'sticker:story-premium-family-house-archive-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-family-house-archive-paper.png',
+  'sticker:story-premium-family-house-archive-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-family-house-archive-vellum.png',
+  'sticker:story-premium-family-house-archive-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-family-house-archive-motif.png',
+  'sticker:story-premium-family-house-archive-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-family-house-archive-keepsake.png',
+  'sticker:story-premium-family-home-cinema-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-family-home-cinema-paper.png',
+  'sticker:story-premium-family-home-cinema-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-family-home-cinema-vellum.png',
+  'sticker:story-premium-family-home-cinema-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-family-home-cinema-motif.png',
+  'sticker:story-premium-family-home-cinema-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-family-home-cinema-keepsake.png',
+  'sticker:story-premium-friend-birthday-book-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-friend-birthday-book-paper.png',
+  'sticker:story-premium-friend-birthday-book-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-friend-birthday-book-vellum.png',
+  'sticker:story-premium-friend-birthday-book-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-friend-birthday-book-motif.png',
+  'sticker:story-premium-friend-birthday-book-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-friend-birthday-book-keepsake.png',
+  'sticker:story-premium-neighborhood-friends-map-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-neighborhood-friends-map-paper.png',
+  'sticker:story-premium-neighborhood-friends-map-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-neighborhood-friends-map-vellum.png',
+  'sticker:story-premium-neighborhood-friends-map-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-neighborhood-friends-map-motif.png',
+  'sticker:story-premium-neighborhood-friends-map-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-neighborhood-friends-map-keepsake.png',
+  'sticker:story-premium-thesis-new-sentence-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-thesis-new-sentence-paper.png',
+  'sticker:story-premium-thesis-new-sentence-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-thesis-new-sentence-vellum.png',
+  'sticker:story-premium-thesis-new-sentence-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-thesis-new-sentence-motif.png',
+  'sticker:story-premium-thesis-new-sentence-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-thesis-new-sentence-keepsake.png',
+  'sticker:story-premium-study-abroad-address-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-study-abroad-address-paper.png',
+  'sticker:story-premium-study-abroad-address-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-study-abroad-address-vellum.png',
+  'sticker:story-premium-study-abroad-address-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-study-abroad-address-motif.png',
+  'sticker:story-premium-study-abroad-address-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-study-abroad-address-keepsake.png',
+  'sticker:story-premium-middle-school-first-day-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-middle-school-first-day-paper.png',
+  'sticker:story-premium-middle-school-first-day-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-middle-school-first-day-vellum.png',
+  'sticker:story-premium-middle-school-first-day-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-middle-school-first-day-motif.png',
+  'sticker:story-premium-middle-school-first-day-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-middle-school-first-day-keepsake.png',
+  'sticker:story-premium-qualification-long-effort-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-qualification-long-effort-paper.png',
+  'sticker:story-premium-qualification-long-effort-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-qualification-long-effort-vellum.png',
+  'sticker:story-premium-qualification-long-effort-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-qualification-long-effort-motif.png',
+  'sticker:story-premium-qualification-long-effort-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-qualification-long-effort-keepsake.png',
+  'sticker:story-premium-choir-shared-voices-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-choir-shared-voices-paper.png',
+  'sticker:story-premium-choir-shared-voices-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-choir-shared-voices-vellum.png',
+  'sticker:story-premium-choir-shared-voices-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-choir-shared-voices-motif.png',
+  'sticker:story-premium-choir-shared-voices-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-choir-shared-voices-keepsake.png',
+  'sticker:story-premium-tabletop-friends-night-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-tabletop-friends-night-paper.png',
+  'sticker:story-premium-tabletop-friends-night-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-tabletop-friends-night-vellum.png',
+  'sticker:story-premium-tabletop-friends-night-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-tabletop-friends-night-motif.png',
+  'sticker:story-premium-tabletop-friends-night-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-tabletop-friends-night-keepsake.png',
+  'frame:pq9801a': 'assets/catalog_thumbnails/frame_pq9801a.png',
+  'frame:pq9801b': 'assets/catalog_thumbnails/frame_pq9801b.png',
+  'frame:pq9802a': 'assets/catalog_thumbnails/frame_pq9802a.png',
+  'frame:pq9802b': 'assets/catalog_thumbnails/frame_pq9802b.png',
+  'frame:pq9803a': 'assets/catalog_thumbnails/frame_pq9803a.png',
+  'frame:pq9803b': 'assets/catalog_thumbnails/frame_pq9803b.png',
+  'frame:pq9804a': 'assets/catalog_thumbnails/frame_pq9804a.png',
+  'frame:pq9804b': 'assets/catalog_thumbnails/frame_pq9804b.png',
+  'frame:pq9809a': 'assets/catalog_thumbnails/frame_pq9809a.png',
+  'frame:pq9809b': 'assets/catalog_thumbnails/frame_pq9809b.png',
+  'frame:pq9817a': 'assets/catalog_thumbnails/frame_pq9817a.png',
+  'frame:pq9817b': 'assets/catalog_thumbnails/frame_pq9817b.png',
+  'frame:pq9818a': 'assets/catalog_thumbnails/frame_pq9818a.png',
+  'frame:pq9818b': 'assets/catalog_thumbnails/frame_pq9818b.png',
+  'frame:pq9819a': 'assets/catalog_thumbnails/frame_pq9819a.png',
+  'frame:pq9819b': 'assets/catalog_thumbnails/frame_pq9819b.png',
+  'frame:pq9820a': 'assets/catalog_thumbnails/frame_pq9820a.png',
+  'frame:pq9820b': 'assets/catalog_thumbnails/frame_pq9820b.png',
+  'frame:pq9833a': 'assets/catalog_thumbnails/frame_pq9833a.png',
+  'frame:pq9833b': 'assets/catalog_thumbnails/frame_pq9833b.png',
+  'frame:pq9834a': 'assets/catalog_thumbnails/frame_pq9834a.png',
+  'frame:pq9834b': 'assets/catalog_thumbnails/frame_pq9834b.png',
+  'frame:pq9835a': 'assets/catalog_thumbnails/frame_pq9835a.png',
+  'frame:pq9835b': 'assets/catalog_thumbnails/frame_pq9835b.png',
+  'frame:pq9836a': 'assets/catalog_thumbnails/frame_pq9836a.png',
+  'frame:pq9836b': 'assets/catalog_thumbnails/frame_pq9836b.png',
+  'frame:pq9837a': 'assets/catalog_thumbnails/frame_pq9837a.png',
+  'frame:pq9837b': 'assets/catalog_thumbnails/frame_pq9837b.png',
+  'frame:pq9838a': 'assets/catalog_thumbnails/frame_pq9838a.png',
+  'frame:pq9838b': 'assets/catalog_thumbnails/frame_pq9838b.png',
+  'phrase:collage-story-premium-hanbok-vows':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-hanbok-vows.png',
+  'phrase:collage-story-premium-hanbok-vows-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-hanbok-vows-caption.png',
+  'phrase:collage-story-premium-civil-address':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-civil-address.png',
+  'phrase:collage-story-premium-civil-address-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-civil-address-caption.png',
+  'phrase:collage-story-premium-made-by-us':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-made-by-us.png',
+  'phrase:collage-story-premium-made-by-us-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-made-by-us-caption.png',
+  'phrase:collage-story-premium-renewed-vows':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-renewed-vows.png',
+  'phrase:collage-story-premium-renewed-vows-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-renewed-vows-caption.png',
+  'phrase:collage-story-premium-lunchbox-days':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-lunchbox-days.png',
+  'phrase:collage-story-premium-lunchbox-days-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-lunchbox-days-caption.png',
+  'phrase:collage-story-premium-family-house-archive':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-family-house-archive.png',
+  'phrase:collage-story-premium-family-house-archive-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-family-house-archive-caption.png',
+  'phrase:collage-story-premium-family-home-cinema':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-family-home-cinema.png',
+  'phrase:collage-story-premium-family-home-cinema-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-family-home-cinema-caption.png',
+  'phrase:collage-story-premium-friend-birthday-book':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-friend-birthday-book.png',
+  'phrase:collage-story-premium-friend-birthday-book-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-friend-birthday-book-caption.png',
+  'phrase:collage-story-premium-neighborhood-friends-map':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-neighborhood-friends-map.png',
+  'phrase:collage-story-premium-neighborhood-friends-map-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-neighborhood-friends-map-caption.png',
+  'phrase:collage-story-premium-thesis-new-sentence':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-thesis-new-sentence.png',
+  'phrase:collage-story-premium-thesis-new-sentence-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-thesis-new-sentence-caption.png',
+  'phrase:collage-story-premium-study-abroad-address':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-study-abroad-address.png',
+  'phrase:collage-story-premium-study-abroad-address-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-study-abroad-address-caption.png',
+  'phrase:collage-story-premium-middle-school-first-day':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-middle-school-first-day.png',
+  'phrase:collage-story-premium-middle-school-first-day-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-middle-school-first-day-caption.png',
+  'phrase:collage-story-premium-qualification-long-effort':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-qualification-long-effort.png',
+  'phrase:collage-story-premium-qualification-long-effort-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-qualification-long-effort-caption.png',
+  'phrase:collage-story-premium-choir-shared-voices':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-choir-shared-voices.png',
+  'phrase:collage-story-premium-choir-shared-voices-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-choir-shared-voices-caption.png',
+  'phrase:collage-story-premium-tabletop-friends-night':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-tabletop-friends-night.png',
+  'phrase:collage-story-premium-tabletop-friends-night-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-tabletop-friends-night-caption.png',
+  'template:-9814': 'assets/catalog_thumbnails/template_-9814.png',
+  'template:-9821': 'assets/catalog_thumbnails/template_-9821.png',
+  'template:-9822': 'assets/catalog_thumbnails/template_-9822.png',
+  'template:-9839': 'assets/catalog_thumbnails/template_-9839.png',
+  'template:-9840': 'assets/catalog_thumbnails/template_-9840.png',
+  'sticker:story-premium-first-winter-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-first-winter-paper.png',
+  'sticker:story-premium-first-winter-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-first-winter-vellum.png',
+  'sticker:story-premium-first-winter-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-first-winter-motif.png',
+  'sticker:story-premium-first-winter-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-first-winter-keepsake.png',
+  'sticker:story-premium-distant-love-letters-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-distant-love-letters-paper.png',
+  'sticker:story-premium-distant-love-letters-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-distant-love-letters-vellum.png',
+  'sticker:story-premium-distant-love-letters-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-distant-love-letters-motif.png',
+  'sticker:story-premium-distant-love-letters-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-distant-love-letters-keepsake.png',
+  'sticker:story-premium-twenty-seasons-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-twenty-seasons-paper.png',
+  'sticker:story-premium-twenty-seasons-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-twenty-seasons-vellum.png',
+  'sticker:story-premium-twenty-seasons-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-twenty-seasons-motif.png',
+  'sticker:story-premium-twenty-seasons-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-twenty-seasons-keepsake.png',
+  'sticker:story-premium-community-cooking-table-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-community-cooking-table-paper.png',
+  'sticker:story-premium-community-cooking-table-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-community-cooking-table-vellum.png',
+  'sticker:story-premium-community-cooking-table-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-community-cooking-table-motif.png',
+  'sticker:story-premium-community-cooking-table-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-community-cooking-table-keepsake.png',
+  'sticker:story-premium-repair-cafe-company-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-repair-cafe-company-paper.png',
+  'sticker:story-premium-repair-cafe-company-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-repair-cafe-company-vellum.png',
+  'sticker:story-premium-repair-cafe-company-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-repair-cafe-company-motif.png',
+  'sticker:story-premium-repair-cafe-company-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-repair-cafe-company-keepsake.png',
+  'frame:pq9814a': 'assets/catalog_thumbnails/frame_pq9814a.png',
+  'frame:pq9814b': 'assets/catalog_thumbnails/frame_pq9814b.png',
+  'frame:pq9821a': 'assets/catalog_thumbnails/frame_pq9821a.png',
+  'frame:pq9821b': 'assets/catalog_thumbnails/frame_pq9821b.png',
+  'frame:pq9822a': 'assets/catalog_thumbnails/frame_pq9822a.png',
+  'frame:pq9822b': 'assets/catalog_thumbnails/frame_pq9822b.png',
+  'frame:pq9839a': 'assets/catalog_thumbnails/frame_pq9839a.png',
+  'frame:pq9839b': 'assets/catalog_thumbnails/frame_pq9839b.png',
+  'frame:pq9840a': 'assets/catalog_thumbnails/frame_pq9840a.png',
+  'frame:pq9840b': 'assets/catalog_thumbnails/frame_pq9840b.png',
+  'phrase:collage-story-premium-first-winter':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-first-winter.png',
+  'phrase:collage-story-premium-first-winter-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-first-winter-caption.png',
+  'phrase:collage-story-premium-distant-love-letters':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-distant-love-letters.png',
+  'phrase:collage-story-premium-distant-love-letters-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-distant-love-letters-caption.png',
+  'phrase:collage-story-premium-twenty-seasons':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-twenty-seasons.png',
+  'phrase:collage-story-premium-twenty-seasons-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-twenty-seasons-caption.png',
+  'phrase:collage-story-premium-community-cooking-table':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-community-cooking-table.png',
+  'phrase:collage-story-premium-community-cooking-table-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-community-cooking-table-caption.png',
+  'phrase:collage-story-premium-repair-cafe-company':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-repair-cafe-company.png',
+  'phrase:collage-story-premium-repair-cafe-company-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-repair-cafe-company-caption.png',
+  'template:-9805': 'assets/catalog_thumbnails/template_-9805.png',
+  'template:-9806': 'assets/catalog_thumbnails/template_-9806.png',
+  'template:-9807': 'assets/catalog_thumbnails/template_-9807.0b5f2231dedc.png',
+  'template:-9808': 'assets/catalog_thumbnails/template_-9808.png',
+  'template:-9810': 'assets/catalog_thumbnails/template_-9810.png',
+  'template:-9811': 'assets/catalog_thumbnails/template_-9811.png',
+  'template:-9812': 'assets/catalog_thumbnails/template_-9812.png',
+  'template:-9813': 'assets/catalog_thumbnails/template_-9813.png',
+  'template:-9815': 'assets/catalog_thumbnails/template_-9815.png',
+  'template:-9816': 'assets/catalog_thumbnails/template_-9816.png',
+  'template:-9823': 'assets/catalog_thumbnails/template_-9823.png',
+  'template:-9824': 'assets/catalog_thumbnails/template_-9824.png',
+  'template:-9825': 'assets/catalog_thumbnails/template_-9825.png',
+  'template:-9841': 'assets/catalog_thumbnails/template_-9841.png',
+  'template:-9842': 'assets/catalog_thumbnails/template_-9842.png',
+  'template:-9843': 'assets/catalog_thumbnails/template_-9843.png',
+  'template:-9844': 'assets/catalog_thumbnails/template_-9844.png',
+  'sticker:story-premium-snow-map-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-snow-map-paper.png',
+  'sticker:story-premium-snow-map-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-snow-map-vellum.png',
+  'sticker:story-premium-snow-map-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-snow-map-motif.png',
+  'sticker:story-premium-snow-map-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-snow-map-keepsake.png',
+  'sticker:story-premium-onsen-pause-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-onsen-pause-paper.png',
+  'sticker:story-premium-onsen-pause-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-onsen-pause-vellum.png',
+  'sticker:story-premium-onsen-pause-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-onsen-pause-motif.png',
+  'sticker:story-premium-onsen-pause-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-onsen-pause-keepsake.png',
+  'sticker:story-premium-desert-night-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-desert-night-paper.png',
+  'sticker:story-premium-desert-night-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-desert-night-vellum.png',
+  'sticker:story-premium-desert-night-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-desert-night-motif.png',
+  'sticker:story-premium-desert-night-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-desert-night-keepsake.png',
+  'sticker:story-premium-bookshop-route-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-bookshop-route-paper.png',
+  'sticker:story-premium-bookshop-route-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-bookshop-route-vellum.png',
+  'sticker:story-premium-bookshop-route-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-bookshop-route-motif.png',
+  'sticker:story-premium-bookshop-route-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-bookshop-route-keepsake.png',
+  'sticker:story-premium-rain-commute-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-rain-commute-paper.png',
+  'sticker:story-premium-rain-commute-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-rain-commute-vellum.png',
+  'sticker:story-premium-rain-commute-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-rain-commute-motif.png',
+  'sticker:story-premium-rain-commute-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-rain-commute-keepsake.png',
+  'sticker:story-premium-mending-room-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-mending-room-paper.png',
+  'sticker:story-premium-mending-room-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-mending-room-vellum.png',
+  'sticker:story-premium-mending-room-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-mending-room-motif.png',
+  'sticker:story-premium-mending-room-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-mending-room-keepsake.png',
+  'sticker:story-premium-market-saturday-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-market-saturday-paper.png',
+  'sticker:story-premium-market-saturday-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-market-saturday-vellum.png',
+  'sticker:story-premium-market-saturday-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-market-saturday-motif.png',
+  'sticker:story-premium-market-saturday-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-market-saturday-keepsake.png',
+  'sticker:story-premium-first-picnic-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-first-picnic-paper.png',
+  'sticker:story-premium-first-picnic-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-first-picnic-vellum.png',
+  'sticker:story-premium-first-picnic-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-first-picnic-motif.png',
+  'sticker:story-premium-first-picnic-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-first-picnic-keepsake.png',
+  'sticker:story-premium-first-words-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-first-words-paper.png',
+  'sticker:story-premium-first-words-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-first-words-vellum.png',
+  'sticker:story-premium-first-words-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-first-words-motif.png',
+  'sticker:story-premium-first-words-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-first-words-keepsake.png',
+  'sticker:story-premium-little-independence-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-little-independence-paper.png',
+  'sticker:story-premium-little-independence-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-little-independence-vellum.png',
+  'sticker:story-premium-little-independence-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-little-independence-motif.png',
+  'sticker:story-premium-little-independence-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-little-independence-keepsake.png',
+  'sticker:story-premium-room-made-together-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-room-made-together-paper.png',
+  'sticker:story-premium-room-made-together-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-room-made-together-vellum.png',
+  'sticker:story-premium-room-made-together-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-room-made-together-motif.png',
+  'sticker:story-premium-room-made-together-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-room-made-together-keepsake.png',
+  'sticker:story-premium-couple-kitchen-lab-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-couple-kitchen-lab-paper.png',
+  'sticker:story-premium-couple-kitchen-lab-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-couple-kitchen-lab-vellum.png',
+  'sticker:story-premium-couple-kitchen-lab-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-couple-kitchen-lab-motif.png',
+  'sticker:story-premium-couple-kitchen-lab-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-couple-kitchen-lab-keepsake.png',
+  'sticker:story-premium-adoption-first-home-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-adoption-first-home-paper.png',
+  'sticker:story-premium-adoption-first-home-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-adoption-first-home-vellum.png',
+  'sticker:story-premium-adoption-first-home-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-adoption-first-home-motif.png',
+  'sticker:story-premium-adoption-first-home-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-adoption-first-home-keepsake.png',
+  'sticker:story-premium-watercolor-drying-time-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-watercolor-drying-time-paper.png',
+  'sticker:story-premium-watercolor-drying-time-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-watercolor-drying-time-vellum.png',
+  'sticker:story-premium-watercolor-drying-time-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-watercolor-drying-time-motif.png',
+  'sticker:story-premium-watercolor-drying-time-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-watercolor-drying-time-keepsake.png',
+  'sticker:story-premium-woodgrain-working-days-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-woodgrain-working-days-paper.png',
+  'sticker:story-premium-woodgrain-working-days-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-woodgrain-working-days-vellum.png',
+  'sticker:story-premium-woodgrain-working-days-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-woodgrain-working-days-motif.png',
+  'sticker:story-premium-woodgrain-working-days-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-woodgrain-working-days-keepsake.png',
+  'sticker:story-premium-embroidery-bloom-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-embroidery-bloom-paper.png',
+  'sticker:story-premium-embroidery-bloom-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-embroidery-bloom-vellum.png',
+  'sticker:story-premium-embroidery-bloom-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-embroidery-bloom-motif.png',
+  'sticker:story-premium-embroidery-bloom-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-embroidery-bloom-keepsake.png',
+  'sticker:story-premium-vinyl-listening-room-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-vinyl-listening-room-paper.png',
+  'sticker:story-premium-vinyl-listening-room-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-vinyl-listening-room-vellum.png',
+  'sticker:story-premium-vinyl-listening-room-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-vinyl-listening-room-motif.png',
+  'sticker:story-premium-vinyl-listening-room-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-vinyl-listening-room-keepsake.png',
+  'frame:pq9805a': 'assets/catalog_thumbnails/frame_pq9805a.png',
+  'frame:pq9805b': 'assets/catalog_thumbnails/frame_pq9805b.png',
+  'frame:pq9806a': 'assets/catalog_thumbnails/frame_pq9806a.png',
+  'frame:pq9806b': 'assets/catalog_thumbnails/frame_pq9806b.png',
+  'frame:pq9807a': 'assets/catalog_thumbnails/frame_pq9807a.png',
+  'frame:pq9807b': 'assets/catalog_thumbnails/frame_pq9807b.png',
+  'frame:pq9808a': 'assets/catalog_thumbnails/frame_pq9808a.png',
+  'frame:pq9808b': 'assets/catalog_thumbnails/frame_pq9808b.png',
+  'frame:pq9810a': 'assets/catalog_thumbnails/frame_pq9810a.png',
+  'frame:pq9810b': 'assets/catalog_thumbnails/frame_pq9810b.png',
+  'frame:pq9811a': 'assets/catalog_thumbnails/frame_pq9811a.png',
+  'frame:pq9811b': 'assets/catalog_thumbnails/frame_pq9811b.png',
+  'frame:pq9812a': 'assets/catalog_thumbnails/frame_pq9812a.png',
+  'frame:pq9812b': 'assets/catalog_thumbnails/frame_pq9812b.png',
+  'frame:pq9813a': 'assets/catalog_thumbnails/frame_pq9813a.png',
+  'frame:pq9813b': 'assets/catalog_thumbnails/frame_pq9813b.png',
+  'frame:pq9815a': 'assets/catalog_thumbnails/frame_pq9815a.png',
+  'frame:pq9815b': 'assets/catalog_thumbnails/frame_pq9815b.png',
+  'frame:pq9816a': 'assets/catalog_thumbnails/frame_pq9816a.png',
+  'frame:pq9816b': 'assets/catalog_thumbnails/frame_pq9816b.png',
+  'frame:pq9823a': 'assets/catalog_thumbnails/frame_pq9823a.png',
+  'frame:pq9823b': 'assets/catalog_thumbnails/frame_pq9823b.png',
+  'frame:pq9824a': 'assets/catalog_thumbnails/frame_pq9824a.png',
+  'frame:pq9824b': 'assets/catalog_thumbnails/frame_pq9824b.png',
+  'frame:pq9825a': 'assets/catalog_thumbnails/frame_pq9825a.png',
+  'frame:pq9825b': 'assets/catalog_thumbnails/frame_pq9825b.png',
+  'frame:pq9841a': 'assets/catalog_thumbnails/frame_pq9841a.png',
+  'frame:pq9841b': 'assets/catalog_thumbnails/frame_pq9841b.png',
+  'frame:pq9842a': 'assets/catalog_thumbnails/frame_pq9842a.png',
+  'frame:pq9842b': 'assets/catalog_thumbnails/frame_pq9842b.png',
+  'frame:pq9843a': 'assets/catalog_thumbnails/frame_pq9843a.png',
+  'frame:pq9843b': 'assets/catalog_thumbnails/frame_pq9843b.png',
+  'frame:pq9844a': 'assets/catalog_thumbnails/frame_pq9844a.png',
+  'frame:pq9844b': 'assets/catalog_thumbnails/frame_pq9844b.png',
+  'phrase:collage-story-premium-snow-map':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-snow-map.png',
+  'phrase:collage-story-premium-snow-map-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-snow-map-caption.png',
+  'phrase:collage-story-premium-onsen-pause':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-onsen-pause.png',
+  'phrase:collage-story-premium-onsen-pause-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-onsen-pause-caption.png',
+  'phrase:collage-story-premium-desert-night':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-desert-night.png',
+  'phrase:collage-story-premium-desert-night-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-desert-night-caption.png',
+  'phrase:collage-story-premium-bookshop-route':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-bookshop-route.png',
+  'phrase:collage-story-premium-bookshop-route-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-bookshop-route-caption.png',
+  'phrase:collage-story-premium-rain-commute':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-rain-commute.png',
+  'phrase:collage-story-premium-rain-commute-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-rain-commute-caption.png',
+  'phrase:collage-story-premium-mending-room':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-mending-room.png',
+  'phrase:collage-story-premium-mending-room-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-mending-room-caption.png',
+  'phrase:collage-story-premium-market-saturday':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-market-saturday.png',
+  'phrase:collage-story-premium-market-saturday-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-market-saturday-caption.png',
+  'phrase:collage-story-premium-first-picnic':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-first-picnic.png',
+  'phrase:collage-story-premium-first-picnic-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-first-picnic-caption.png',
+  'phrase:collage-story-premium-first-words':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-first-words.png',
+  'phrase:collage-story-premium-first-words-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-first-words-caption.png',
+  'phrase:collage-story-premium-little-independence':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-little-independence.png',
+  'phrase:collage-story-premium-little-independence-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-little-independence-caption.png',
+  'phrase:collage-story-premium-room-made-together':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-room-made-together.png',
+  'phrase:collage-story-premium-room-made-together-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-room-made-together-caption.png',
+  'phrase:collage-story-premium-couple-kitchen-lab':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-couple-kitchen-lab.png',
+  'phrase:collage-story-premium-couple-kitchen-lab-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-couple-kitchen-lab-caption.png',
+  'phrase:collage-story-premium-adoption-first-home':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-adoption-first-home.png',
+  'phrase:collage-story-premium-adoption-first-home-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-adoption-first-home-caption.png',
+  'phrase:collage-story-premium-watercolor-drying-time':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-watercolor-drying-time.png',
+  'phrase:collage-story-premium-watercolor-drying-time-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-watercolor-drying-time-caption.png',
+  'phrase:collage-story-premium-woodgrain-working-days':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-woodgrain-working-days.png',
+  'phrase:collage-story-premium-woodgrain-working-days-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-woodgrain-working-days-caption.png',
+  'phrase:collage-story-premium-embroidery-bloom':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-embroidery-bloom.png',
+  'phrase:collage-story-premium-embroidery-bloom-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-embroidery-bloom-caption.png',
+  'phrase:collage-story-premium-vinyl-listening-room':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-vinyl-listening-room.png',
+  'phrase:collage-story-premium-vinyl-listening-room-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-vinyl-listening-room-caption.png',
+  'template:-9826': 'assets/catalog_thumbnails/template_-9826.png',
+  'template:-9827': 'assets/catalog_thumbnails/template_-9827.40d8c88db9cd.png',
+  'template:-9828': 'assets/catalog_thumbnails/template_-9828.png',
+  'template:-9829': 'assets/catalog_thumbnails/template_-9829.png',
+  'template:-9830': 'assets/catalog_thumbnails/template_-9830.png',
+  'template:-9831': 'assets/catalog_thumbnails/template_-9831.png',
+  'template:-9832': 'assets/catalog_thumbnails/template_-9832.png',
+  'sticker:story-premium-senior-paw-days-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-senior-paw-days-paper.png',
+  'sticker:story-premium-senior-paw-days-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-senior-paw-days-vellum.png',
+  'sticker:story-premium-senior-paw-days-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-senior-paw-days-motif.png',
+  'sticker:story-premium-senior-paw-days-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-senior-paw-days-keepsake.png',
+  'sticker:story-premium-rabbit-little-traces-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-rabbit-little-traces-paper.png',
+  'sticker:story-premium-rabbit-little-traces-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-rabbit-little-traces-vellum.png',
+  'sticker:story-premium-rabbit-little-traces-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-rabbit-little-traces-motif.png',
+  'sticker:story-premium-rabbit-little-traces-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-rabbit-little-traces-keepsake.png',
+  'sticker:story-premium-pet-first-seaside-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-pet-first-seaside-paper.png',
+  'sticker:story-premium-pet-first-seaside-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-pet-first-seaside-vellum.png',
+  'sticker:story-premium-pet-first-seaside-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-pet-first-seaside-motif.png',
+  'sticker:story-premium-pet-first-seaside-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-pet-first-seaside-keepsake.png',
+  'sticker:story-premium-marathon-after-finish-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-marathon-after-finish-paper.png',
+  'sticker:story-premium-marathon-after-finish-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-marathon-after-finish-vellum.png',
+  'sticker:story-premium-marathon-after-finish-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-marathon-after-finish-motif.png',
+  'sticker:story-premium-marathon-after-finish-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-marathon-after-finish-keepsake.png',
+  'sticker:story-premium-yoga-morning-breath-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-yoga-morning-breath-paper.png',
+  'sticker:story-premium-yoga-morning-breath-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-yoga-morning-breath-vellum.png',
+  'sticker:story-premium-yoga-morning-breath-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-yoga-morning-breath-motif.png',
+  'sticker:story-premium-yoga-morning-breath-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-yoga-morning-breath-keepsake.png',
+  'sticker:story-premium-strength-progress-log-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-strength-progress-log-paper.png',
+  'sticker:story-premium-strength-progress-log-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-strength-progress-log-vellum.png',
+  'sticker:story-premium-strength-progress-log-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-strength-progress-log-motif.png',
+  'sticker:story-premium-strength-progress-log-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-strength-progress-log-keepsake.png',
+  'sticker:story-premium-first-surf-stand-paper':
+      'assets/catalog_thumbnails/sticker_story-premium-first-surf-stand-paper.png',
+  'sticker:story-premium-first-surf-stand-vellum':
+      'assets/catalog_thumbnails/sticker_story-premium-first-surf-stand-vellum.png',
+  'sticker:story-premium-first-surf-stand-motif':
+      'assets/catalog_thumbnails/sticker_story-premium-first-surf-stand-motif.png',
+  'sticker:story-premium-first-surf-stand-keepsake':
+      'assets/catalog_thumbnails/sticker_story-premium-first-surf-stand-keepsake.png',
+  'frame:pq9826a': 'assets/catalog_thumbnails/frame_pq9826a.png',
+  'frame:pq9826b': 'assets/catalog_thumbnails/frame_pq9826b.png',
+  'frame:pq9827a': 'assets/catalog_thumbnails/frame_pq9827a.png',
+  'frame:pq9827b': 'assets/catalog_thumbnails/frame_pq9827b.png',
+  'frame:pq9828a': 'assets/catalog_thumbnails/frame_pq9828a.png',
+  'frame:pq9828b': 'assets/catalog_thumbnails/frame_pq9828b.png',
+  'frame:pq9829a': 'assets/catalog_thumbnails/frame_pq9829a.png',
+  'frame:pq9829b': 'assets/catalog_thumbnails/frame_pq9829b.png',
+  'frame:pq9830a': 'assets/catalog_thumbnails/frame_pq9830a.png',
+  'frame:pq9830b': 'assets/catalog_thumbnails/frame_pq9830b.png',
+  'frame:pq9831a': 'assets/catalog_thumbnails/frame_pq9831a.png',
+  'frame:pq9831b': 'assets/catalog_thumbnails/frame_pq9831b.png',
+  'frame:pq9832a': 'assets/catalog_thumbnails/frame_pq9832a.png',
+  'frame:pq9832b': 'assets/catalog_thumbnails/frame_pq9832b.png',
+  'phrase:collage-story-premium-senior-paw-days':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-senior-paw-days.png',
+  'phrase:collage-story-premium-senior-paw-days-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-senior-paw-days-caption.png',
+  'phrase:collage-story-premium-rabbit-little-traces':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-rabbit-little-traces.png',
+  'phrase:collage-story-premium-rabbit-little-traces-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-rabbit-little-traces-caption.png',
+  'phrase:collage-story-premium-pet-first-seaside':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-pet-first-seaside.png',
+  'phrase:collage-story-premium-pet-first-seaside-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-pet-first-seaside-caption.png',
+  'phrase:collage-story-premium-marathon-after-finish':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-marathon-after-finish.png',
+  'phrase:collage-story-premium-marathon-after-finish-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-marathon-after-finish-caption.png',
+  'phrase:collage-story-premium-yoga-morning-breath':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-yoga-morning-breath.png',
+  'phrase:collage-story-premium-yoga-morning-breath-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-yoga-morning-breath-caption.png',
+  'phrase:collage-story-premium-strength-progress-log':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-strength-progress-log.png',
+  'phrase:collage-story-premium-strength-progress-log-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-strength-progress-log-caption.png',
+  'phrase:collage-story-premium-first-surf-stand':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-first-surf-stand.png',
+  'phrase:collage-story-premium-first-surf-stand-caption':
+      'assets/catalog_thumbnails/phrase_collage-story-premium-first-surf-stand-caption.png',
+  'template:-9741': 'assets/catalog_thumbnails/template_-9741.82d202ca0ea8.png',
+  'template:-9751': 'assets/catalog_thumbnails/template_-9751.3313def41b6b.png',
 };

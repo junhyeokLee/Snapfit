@@ -1,4 +1,8 @@
+import '../../data/store_discovery_provider.dart';
+import '../../domain/store_product_discovery.dart';
+import '../widgets/store_product_badge.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/fonts/document_font_gate.dart';
 import '../../../../shared/widgets/viewport_sliver_layout_builder.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
@@ -46,6 +50,8 @@ import 'material_detail_screen.dart';
 import '../widgets/material_original_preview.dart';
 import '../../../../core/templates/catalog_preview_assets.g.dart';
 import '../../../../shared/widgets/snapfit_shimmer.dart';
+import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 class _CatalogItem {
   const _CatalogItem(
@@ -89,7 +95,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
   final _libraryContentKey = GlobalKey();
   bool _favoritesOnly = false;
   String _priceFilter = '전체';
-  String _catalogSort = '추천순';
+  String _catalogSort = '최신순';
   _LibrarySort _librarySort = _LibrarySort.favorites;
   final _scroll = ScrollController();
   final _search = TextEditingController();
@@ -108,6 +114,8 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
   Object? _cachedOwnedRef;
   Object? _cachedTemplatesRef;
   Object? _cachedMaterialRef;
+  Object? _cachedDiscoveryRef;
+  DateTime? _cachedDiscoveryClock;
   int _cachedFavoritesVersion = -1;
   List<_CatalogItem> _cachedItems = const [];
   int _cachedTotal = 0;
@@ -154,7 +162,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
       _priceFilter = '전체';
       _favoritesOnly = false;
       _librarySort = _LibrarySort.favorites;
-      _catalogSort = '추천순';
+      _catalogSort = '최신순';
       _resetPage();
     });
   }
@@ -196,13 +204,13 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
       ),
     if (widget.library
         ? _librarySort == _LibrarySort.name
-        : _catalogSort != '추천순')
+        : _catalogSort != '최신순')
       CatalogActiveFilter(
         id: 'sort',
         label: widget.library ? '이름순' : _catalogSort,
         onRemove: () => _changeFilter(() {
           _librarySort = _LibrarySort.favorites;
-          _catalogSort = '추천순';
+          _catalogSort = '최신순';
         }),
       ),
   ];
@@ -241,10 +249,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
         children: [
           Text(_sortLabel, style: ExperienceFormStyle.text(context, 12)),
           const SizedBox(width: 6),
-          Icon(
-            Icons.expand_more,
-            size: 18,
-            color: ExperienceFormStyle.muted(context),
+          ExperienceIcon('ChevronDown', size: 18, color: ExperienceFormStyle.muted(context),
           ),
         ],
       ),
@@ -575,12 +580,15 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
         CatalogFavoriteKeys.phrase(phrase.id),
         phrase.text.replaceAll('\n', ' '),
         '문구',
-        (_) => FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            phrase.text,
-            textAlign: phrase.alignment,
-            style: phrase.lettering.style,
+        (_) => DocumentFontGate(
+          families: [phrase.lettering.font],
+          builder: (_) => FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              phrase.text,
+              textAlign: phrase.alignment,
+              style: phrase.lettering.style,
+            ),
           ),
         ),
       ),
@@ -599,27 +607,23 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
     if (item.template != null) {
       await Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (_) => TemplateDetailScreen(
+        snapFitRoute(page: TemplateDetailScreen(
             template: item.template!,
             heroTag: (this, item.key),
-          ),
-        ),
+          )),
       );
       return;
     }
     await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => MaterialDetailScreen(
+      snapFitRoute(page: MaterialDetailScreen(
           productKey: item.key,
           favoriteKey: item.favoriteKey,
           title: item.title,
           type: item.type,
           preview: (_) => item.preview(true),
           heroTag: (this, item.key),
-        ),
-      ),
+        )),
     );
   }
 
@@ -658,6 +662,10 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
           ? ref.watch(templateListProvider)
           : null;
       final materialMeta = ref.watch(materialListProvider);
+      final discovery =
+          ref.watch(storeDiscoveryProvider).asData?.value ??
+          bundledStoreDiscovery;
+      final discoveryClock = ref.watch(storeDiscoveryClockProvider);
       // A retained department still receives provider updates. Reuse its
       // mounted content while hidden and filter the latest data on return.
       if (!TickerMode.of(context)) {
@@ -690,6 +698,8 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
       final materialRef = materialMeta.asData?.value;
       final favoritesVersion = favorites.version;
       final dataChanged =
+          !identical(_cachedDiscoveryRef, discovery) ||
+          _cachedDiscoveryClock != discoveryClock ||
           !identical(_cachedCatalogRef, catalogRef) ||
           !identical(_cachedOwnedRef, ownedRef) ||
           !identical(_cachedTemplatesRef, templatesRef) ||
@@ -698,31 +708,40 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
       if (dataChanged) _filterVersion++;
       if (_filterVersion != _cachedFilterVersion || dataChanged) {
         _cachedFilterVersion = _filterVersion;
+        _cachedDiscoveryRef = discovery;
+        _cachedDiscoveryClock = discoveryClock;
         _cachedCatalogRef = catalogRef;
         _cachedOwnedRef = ownedRef;
         _cachedTemplatesRef = templatesRef;
         _cachedMaterialRef = materialRef;
         _cachedFavoritesVersion = favoritesVersion;
 
-        final computed = favorites.arrange(
-          _items(templatesRef ?? [], materialRef ?? [])
-              .where(
-                (item) =>
-                    (_type == '전체' || item.type == _type) &&
-                    (_query.isEmpty ||
-                        item.title.toLowerCase().contains(_query) ||
-                        item.type.contains(_query)) &&
-                    matchesPrice(item) &&
-                    (!widget.library ||
-                        ownedKeys.contains(item.key) ||
-                        favorites.contains(item.favoriteKey)),
-              )
-              .toList(),
-          (item) => item.favoriteKey,
-          onlyFavorites: _favoritesOnly,
-        );
-        if ((!widget.library && kIsWeb && _catalogSort == '이름순') ||
-            (widget.library && _librarySort == _LibrarySort.name)) {
+        var computed = _items(templatesRef ?? [], materialRef ?? [])
+            .where(
+              (item) =>
+                  (_type == '전체' || item.type == _type) &&
+                  (_query.isEmpty ||
+                      item.title.toLowerCase().contains(_query) ||
+                      item.type.contains(_query)) &&
+                  matchesPrice(item) &&
+                  (!_favoritesOnly || favorites.contains(item.favoriteKey)) &&
+                  (!widget.library ||
+                      ownedKeys.contains(item.key) ||
+                      favorites.contains(item.favoriteKey)),
+            )
+            .toList();
+        if (widget.library) {
+          computed = favorites.arrange(computed, (item) => item.favoriteKey);
+        } else {
+          computed = sortStoreProducts(
+            computed,
+            productKey: (item) => item.key,
+            discovery: discovery,
+            now: discoveryClock,
+            popularityFirst: _catalogSort == '인기순',
+          );
+        }
+        if (widget.library && _librarySort == _LibrarySort.name) {
           computed.sort((a, b) => a.title.compareTo(b.title));
         }
         _cachedItems = computed;
@@ -730,6 +749,11 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
       }
       final items = _cachedItems;
       final activeFilters = _activeFilters;
+      // 단독 즐겨찾기는 선택 버튼에서 해제할 수 있어 같은 조건을 반복하지 않는다.
+      final onlyLibraryFavorites =
+          widget.library &&
+          activeFilters.length == 1 &&
+          activeFilters.single.id == 'favorites';
       _total = _cachedTotal;
       final curation = !widget.library
           ? ref.watch(storeCurationsProvider).asData?.value['materials']
@@ -845,8 +869,11 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                         sort: widget.library
                             ? (_librarySort == _LibrarySort.name
                                   ? '이름순'
-                                  : '추천순')
+                                  : '즐겨찾기 먼저')
                             : _catalogSort,
+                        sortOptions: widget.library
+                            ? const ['즐겨찾기 먼저', '이름순']
+                            : const ['최신순', '인기순'],
                         onSortChanged: (value) => setState(() {
                           if (widget.library) {
                             _librarySort = value == '이름순'
@@ -862,7 +889,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                             _type != '전체' ||
                             _priceFilter != '전체' ||
                             _favoritesOnly ||
-                            _catalogSort != '추천순' ||
+                            _catalogSort != '최신순' ||
                             _librarySort != _LibrarySort.favorites,
                         onReset: _resetFilters,
                         leading: null,
@@ -881,16 +908,13 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                                 context,
                                 hint: '프레임, 스티커, 문구 검색',
                               ).copyWith(
-                                prefixIcon: const Icon(Icons.search, size: 20),
+                                prefixIcon: const ExperienceIcon('Search', size: 20),
                                 suffixIcon: _query.isEmpty
                                     ? null
                                     : IconButton(
                                         tooltip: '검색 지우기',
                                         onPressed: _clearSearchFilter,
-                                        icon: const Icon(
-                                          Icons.close_rounded,
-                                          size: 20,
-                                        ),
+                                        icon: const ExperienceIcon('X', size: 20),
                                       ),
                               ),
                           onSubmitted: (_) =>
@@ -957,6 +981,9 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                         _librarySearch(leading: _libraryFavorites()),
                       if (!widget.library)
                         CatalogFilterBar(
+                          sort: _catalogSort,
+                          onSortChanged: (value) =>
+                              _changeFilter(() => _catalogSort = value),
                           price: _priceFilter,
                           onPriceChanged: (value) => setState(() {
                             _priceFilter = value;
@@ -975,10 +1002,11 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                               ? (catalog.hasError ? '가격 확인 필요' : '가격 확인 중')
                               : '${items.length}개의 소재',
                         ),
-                      CatalogActiveFilters(
-                        filters: activeFilters,
-                        onReset: _resetFilters,
-                      ),
+                      if (!onlyLibraryFavorites)
+                        CatalogActiveFilters(
+                          filters: activeFilters,
+                          onReset: _resetFilters,
+                        ),
                       SizedBox(height: libraryWide ? 8 : 16),
                     ],
                     if (kIsWeb) const SizedBox(height: 20),
@@ -1244,6 +1272,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                                 template: item.template,
                                 owned: ownedKeys.contains(item.key),
                                 favoriteKey: item.favoriteKey,
+                                undoOnRemove: widget.library,
                                 heroTag: (this, item.key),
                                 previewHeight: previewHeight,
                                 onOpen: () => _open(item),
@@ -1326,35 +1355,13 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                                             ),
                                           ),
                                         ),
-                                        if (item.isNew || item.isBest)
-                                          Positioned(
-                                            left: 8,
-                                            bottom: 8,
-                                            child: Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 6,
-                                                    vertical: 2,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: item.isBest
-                                                    ? const Color(0xFFD4A853)
-                                                    : SnapFitColors
-                                                          .actionAccent,
-                                                borderRadius:
-                                                    BorderRadius.circular(4),
-                                              ),
-                                              child: Text(
-                                                item.isBest ? 'BEST' : 'NEW',
-                                                style: const TextStyle(
-                                                  fontSize: 9,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: Colors.white,
-                                                  letterSpacing: 0.5,
-                                                ),
-                                              ),
-                                            ),
+                                        Positioned(
+                                          left: 8,
+                                          bottom: 8,
+                                          child: StoreProductBadge(
+                                            productKey: item.key,
                                           ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -1408,6 +1415,7 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                                       CatalogFavoriteButton(
                                         bookmark: true,
                                         unframed: true,
+                                        undoOnRemove: widget.library,
                                         itemKey: item.favoriteKey,
                                         label: item.title,
                                       ),
@@ -1484,6 +1492,11 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               WebPageHeading(title: widget.library ? '내 디자인 보관함' : '꾸밈 소재'),
+              if (!widget.library)
+                const Align(
+                  alignment: Alignment.centerRight,
+                  child: StoreBadgeRulesButton(),
+                ),
               const SizedBox(height: 20),
               Expanded(child: body),
             ],

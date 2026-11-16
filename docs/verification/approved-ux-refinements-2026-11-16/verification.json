@@ -1,0 +1,136 @@
+{
+  "date": "2026-11-16",
+  "native_tests": {
+    "referral": {
+      "passed": 31,
+      "failed": 0,
+      "skipped": 0
+    },
+    "saved": {
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0
+    },
+    "print": {
+      "passed": 27,
+      "failed": 0,
+      "skipped": 0
+    },
+    "billing": {
+      "passed": 20,
+      "failed": 0,
+      "skipped": 0
+    },
+    "billingpage": {
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0
+    },
+    "ledgerprovider": {
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0
+    },
+    "history": {
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    "editor": {
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    "journey": {
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    },
+    "responsive": {
+      "passed": 26,
+      "failed": 0,
+      "skipped": 0
+    },
+    "dock": {
+      "passed": 17,
+      "failed": 0,
+      "skipped": 1
+    },
+    "bottom": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "panels": {
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    "tools": {
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "native_passed": 219,
+  "native_skipped": 1,
+  "server_passed": 17,
+  "capture_cases": 9,
+  "compile_errors": 0,
+  "analysis_errors": 0,
+  "analysis_warnings": 0,
+  "analysis_preexisting_info": 1,
+  "production_migration_applied": true,
+  "real_payments_or_messages_executed": false,
+  "files": {
+    "lib/features/billing/data/billing_repository.dart": "06d86ad4da7aa387681c6b0e5034c2dcf5391af5dab50953189a301935fbc3e4",
+    "lib/features/profile/presentation/views/billing_management_screen.dart": "e1085fa4aede257a34d702c9ca3557505ecc249d36ed0085dda033ac15d8f3a5",
+    "lib/features/referral/presentation/views/referral_screen.dart": "aaa71cc9224fb68af23652d306a9ca8a82dcffb49b48a2a993202339077500a3",
+    "lib/features/social/presentation/views/social_saved_works_screen.dart": "45f50fc6015af414cab4a6743aaa92d82405ab1f67956c74f5b25330b9a2be41",
+    "lib/features/album/presentation/views/page_editor_screen.dart": "6eea79b8edde97dcf3246d52d256693bf7c2510ed97cba8731f98b50233877d3",
+    "lib/features/album/presentation/views/print_order_preview_screen.dart": "5680732e03aa988f4a8697d08b81e3ca5bbf36e44668adeaee0558c661517a1f",
+    "lib/features/album/presentation/widgets/reader/album_completion_confirmation.dart": "0a09bc23eaded0aa8bd3786e43cc5e014cf2af801253e0a5972fc37c670a3f42",
+    "lib/features/album/presentation/widgets/editor/editor_bottom_menu.dart": "e016863d08d542bfabff8a02ed774eca8e1769a177fc86ddb34b17bf96d00ac1",
+    "lib/features/album/presentation/widgets/editor/editor_context_dock.dart": "d57ca75afc646634d31603c5aa943844b8e0fc6b11ae0665741c94ee3a1c1fd5",
+    "lib/features/album/presentation/widgets/editor/layer_manager_panel.dart": "8d21ea186d28ebe984d56e8317563105a0b9162db68ef64138d34dd63dfd53f6",
+    "lib/features/album/presentation/widgets/web/web_editor_tool_dialog.dart": "be4604229d1946bdb192f64d3fa29d4bdbda6dcea85dfb6c1a1b2f93f40b2adf",
+    "lib/features/moments/presentation/views/moment_photo_editor_screen.dart": "8de6f56feb82c6dc1d6f99de5c49db94c6ee89ccda998983a07667442fca91e1",
+    "lib/features/onboarding/presentation/widgets/intro_cover_artwork.dart": "3f8c72e68edebefb95e1e8949cc636412f24f9f66bd5258701e1c67981356e45",
+    "test/unit/billing_repository_test.dart": "cdd4224a62b0328bce8ed2bdcf6aaa91bc4260e159b82b943a872d0c60a952ea",
+    "test/unit/point_ledger_page_repository_test.dart": "05c6603e30f5f55f5cdf0d6ae632a0c2564d373085a287683a2d0d08d9185acf",
+    "test/widget/point_ledger_history_test.dart": "5c6506f4690a23234d98b3937b70aa1ffa0ed9c516e2ff82e5e1e06beb93a3f1",
+    "test/widget/referral_screen_test.dart": "b1207c4795067c1775e7ab2b252e2a84587855fd980a2c23a356eb98d4fdd4be",
+    "test/widget/social_saved_gallery_test.dart": "3d2ab09b39839bfc6fbc0671264b7bd365cab0519b1d9a9ac70fb7e66d2689af",
+    "test/widget/web_editor_tool_dialog_test.dart": "000dad4b88ca8b8c1625f630132be8df9b29b6914f79c8bd7713b3cf0f076671",
+    "test/widget/add_cover_screen_test.dart": "d0cdea65998388819b015c8639f1a57463254ac89e8516134991f768820702a6",
+    "test/widget/editor_navigation_panels_test.dart": "5b5f772c4c5bfb3d256441a9d0d9bd09f91de10d23992a34f547184781a9fd9f",
+    "test/widget/page_editor_screen_golden_test.dart": "c4d1e6b707262edf97b1d8f06a3042dd92a96a580316b3f0705b6258a3b1cb14",
+    "test/widget/web_album_editor_transform_flow_test.dart": "b315dc08a177a553ab04b74b6bae3dc6e32fd8deb9cae2219ecf7bf53a992be1",
+    "test/widget/editor_context_dock_test.dart": "47169c8fe4e1e2f77d6c06ad565c2acfc65f8e90788899270579334f1a46ea9c",
+    "test/widget/editor_bottom_menu_test.dart": "72e10340f86f9ab95a939fee98a5171767846f29a322e0b6c97ff861a494bcd9",
+    "test/widget/creation_refinement_test.dart": "894c067cd47bad3a202c36661a13559d220a4637beeb076ee49368f915a182d4",
+    "test/widget/web_album_workspaces_design_test.dart": "a125fbd4ef8cc25ef702139b50ccab98a34ebecb071955ba34cc1ea2ccc99610",
+    "test/review/editor_tools_verification_test.dart": "77d2b1c424080e47d7a0891183b0006469bd9fa2945fe29643fd0dfbc0b1a747",
+    "test/widget/print_order_preview_test.dart": "cfc94d1f1b35de02f4151074e724e151462e194c6b0f3f868323692241aca452",
+    "test/widget/device_journey_regression_test.dart": "6117ac71d593d39a08c93d039229e34d1660871fb340509a8fd0dca4e4aaf583",
+    "test/server/ai_template_billing_guard_sql.test.mjs": "fea0293863ee822bd8597c64f61158183260b761fa866be80e8bbe74859ef9b1",
+    "supabase/migrations/20261115162020_point_ledger_ai_title_snapshot.sql": "3182738642a6d028d8a8ec5324dcd2ea14be3861e541704322c5401e762ccf53"
+  },
+  "screenshots": [
+    "referral-incoming-link.png",
+    "points-history-390-light.png",
+    "points-history-spent-390-light.png",
+    "saved-gallery-phone-light.png",
+    "saved-gallery-phone-dark.png",
+    "saved-gallery-desktop-light.png",
+    "editor-cover.png",
+    "editor-page-count.png",
+    "editor-layer-order.png",
+    "print-preview.png",
+    "print-blank-pages.png",
+    "print-confirmation.png"
+  ],
+  "prior_blocked_action": "Live point wallet/ledger aggregate verification rejected by automatic approval review as sensitive financial metadata. No retry or workaround.",
+  "production_migration_version": "20261115162020",
+  "production_verification": "Exact function body, empty search_path, anon denied/authenticated allowed, and migration history verified; no live wallet/ledger aggregate query."
+}

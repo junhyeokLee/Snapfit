@@ -220,10 +220,7 @@ class SnapFitWebShell extends StatefulWidget {
                               foregroundColor: palette.muted,
                               padding: const EdgeInsets.all(14),
                             ),
-                            icon: const Icon(
-                              Icons.local_printshop_outlined,
-                              size: 18,
-                            ),
+                            icon: const ExperienceIcon('Printer', size: 18),
                             label: const Text('인쇄 상품·가격'),
                           ),
                         ],
@@ -282,7 +279,7 @@ class SnapFitWebShell extends StatefulWidget {
                   key: const ValueKey('web-navigation-menu'),
                   tooltip: '전체 메뉴',
                   onPressed: () => scaffoldKey.currentState?.openDrawer(),
-                  icon: const Icon(Icons.menu_rounded, size: 22),
+                  icon: const ExperienceIcon('Menu', size: 22),
                 ),
                 const SizedBox(width: 4),
                 WebBrand(
@@ -308,7 +305,7 @@ class SnapFitWebShell extends StatefulWidget {
                   IconButton(
                     tooltip: '새 앨범 만들기',
                     onPressed: destination(WebSection.create),
-                    icon: const Icon(Icons.add_rounded),
+                    icon: const ExperienceIcon('Plus'),
                   )
                 else
                   FilledButton.icon(
@@ -322,7 +319,7 @@ class SnapFitWebShell extends StatefulWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    icon: const Icon(Icons.add_rounded, size: 18),
+                    icon: const ExperienceIcon('Plus', size: 18),
                     label: const Text('새 앨범'),
                   ),
                 const SizedBox(width: 12),
@@ -332,7 +329,7 @@ class SnapFitWebShell extends StatefulWidget {
                 IconButton(
                   onPressed: notifications,
                   tooltip: '알림',
-                  icon: const Icon(Icons.notifications_none_rounded, size: 21),
+                  icon: const ExperienceIcon('Bell', size: 21),
                 ),
             ],
           ),

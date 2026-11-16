@@ -1,0 +1,53 @@
+{
+  "date": "2026-11-15",
+  "product_code_changed": false,
+  "capture_scenarios_passed": 5,
+  "accepted_screenshots": 7,
+  "priorities": [
+    "visible_bottom_navigation_labels",
+    "category_results_access",
+    "consistent_daily_add_copy",
+    "visible_weekly_recap_label"
+  ],
+  "screens": [
+    {
+      "path": "screens/01-home.png",
+      "sha256": "e1c613ac4d69226adb6fd56a9c8a7f69b077f5c9cd50971b4ba10727a474cc74"
+    },
+    {
+      "path": "screens/02-home-compact.png",
+      "sha256": "aa924d474d6fecc064872d1caee9cd75569e5923ded57a160252f99faad24189"
+    },
+    {
+      "path": "screens/03-record.png",
+      "sha256": "436935d023322d75de4b762f0fbeca5b17b1ecb143d7658cf10b6dab9a9ad814"
+    },
+    {
+      "path": "screens/04-store.png",
+      "sha256": "9492640c3ec80e341b7ae1344bc9b109ec791fddb2cc184b76da6402c12872c6"
+    },
+    {
+      "path": "screens/05-store-filtered.png",
+      "sha256": "11127ca9dd1740a6e0484d36ca1ccfdbef93342bf7ef7c916807f58a6e60908d"
+    },
+    {
+      "path": "screens/06-settings.png",
+      "sha256": "b927523a126983eaca6aa35a136a4e63a328d93a14a03cec3bcbf9fbb8ad1f74"
+    },
+    {
+      "path": "screens/07-notifications.png",
+      "sha256": "307ca3298fb5e51edf545422fb112f527b019812e8b79f4e74c55665e14d3186"
+    }
+  ],
+  "source_files": [
+    "lib/features/album/presentation/widgets/home/home_bottom_navigation_bar.dart",
+    "lib/features/album/presentation/widgets/home/home_moment_summary_card.dart",
+    "lib/features/moments/presentation/views/moments_screen.dart",
+    "lib/features/store/presentation/views/store_screen.dart"
+  ],
+  "limits": [
+    "Synthetic local data and actual source widgets; not a live account audit.",
+    "Light theme only; native phone sizes 390x844 and home-only 320x568.",
+    "No real-device, screen-reader, large-text, contrast, full regression suite or production flow validation."
+  ]
+}

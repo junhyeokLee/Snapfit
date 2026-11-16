@@ -1,0 +1,3 @@
+# Generation and semantic validation only; normal Flutter builds use stdlib.
+fonttools==4.61.1
+brotli==1.2.0

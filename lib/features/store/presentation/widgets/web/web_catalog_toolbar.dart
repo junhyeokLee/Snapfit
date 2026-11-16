@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../shared/web/web_design.dart';
 import '../../../../../shared/widgets/catalog_result_status.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 /// Desktop catalogs share the same visible search and wrapping filter order.
 class WebCatalogToolbar extends StatelessWidget {
@@ -22,6 +23,7 @@ class WebCatalogToolbar extends StatelessWidget {
     this.showOwned = true,
     this.sort,
     this.onSortChanged,
+    this.sortOptions = const ['최신순', '인기순'],
     this.leading,
     this.filtersActive = false,
   });
@@ -34,6 +36,7 @@ class WebCatalogToolbar extends StatelessWidget {
   final VoidCallback onFavoritesChanged, onReset;
   final String? sort;
   final ValueChanged<String>? onSortChanged;
+  final List<String> sortOptions;
   final Widget? leading;
 
   @override
@@ -90,9 +93,9 @@ class WebCatalogToolbar extends StatelessWidget {
                 isDense: true,
                 border: OutlineInputBorder(),
               ),
-              items: const [
-                DropdownMenuItem(value: '추천순', child: Text('추천순')),
-                DropdownMenuItem(value: '이름순', child: Text('이름순')),
+              items: [
+                for (final option in sortOptions)
+                  DropdownMenuItem(value: option, child: Text(option)),
               ],
               onChanged: (value) {
                 if (value != null) onSortChanged?.call(value);
@@ -135,7 +138,7 @@ class WebCatalogToolbar extends StatelessWidget {
                 onChanged: onSearchChanged,
                 decoration: InputDecoration(
                   hintText: searchHint,
-                  prefixIcon: const Icon(Icons.search, size: 21),
+                  prefixIcon: const ExperienceIcon('Search', size: 21),
                   suffixIcon: controller.text.isEmpty
                       ? null
                       : IconButton(
@@ -144,7 +147,7 @@ class WebCatalogToolbar extends StatelessWidget {
                             controller.clear();
                             onSearchChanged('');
                           },
-                          icon: const Icon(Icons.close, size: 19),
+                          icon: const ExperienceIcon('X', size: 19),
                         ),
                   filled: true,
                   fillColor: palette.canvas,
@@ -177,7 +180,8 @@ class WebCatalogToolbar extends StatelessWidget {
                           [
                             if (price != '전체') price,
                             if (favoritesOnly) '즐겨찾기',
-                            if (sort != null && sort != '추천순') sort!,
+                            if (sort != null && sort != sortOptions.first)
+                              sort!,
                           ].join(' · '),
                         )
                       : null,

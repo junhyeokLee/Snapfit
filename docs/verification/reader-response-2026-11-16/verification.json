@@ -1,0 +1,105 @@
+{
+  "date": "2026-11-16",
+  "method": "serial Flutter engine test runner; software rasterization; one process at a time",
+  "total_passed": 113,
+  "failed": 0,
+  "skipped": 0,
+  "suites": [
+    {
+      "suite": "reader_first",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0
+    },
+    {
+      "suite": "progressive",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0
+    },
+    {
+      "suite": "reader_lifecycle",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0
+    },
+    {
+      "suite": "reader_navigation",
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0
+    },
+    {
+      "suite": "reader_images",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0
+    },
+    {
+      "suite": "reader_thumbnails",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0
+    },
+    {
+      "suite": "image_quality",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0
+    },
+    {
+      "suite": "thumbnail_layout",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0
+    },
+    {
+      "suite": "paper_motion",
+      "passed": 60,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0
+    }
+  ],
+  "analyzer": "No issues found!",
+  "changed_production_files": [
+    "lib/features/album/presentation/views/album_reader_screen.dart",
+    "lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart",
+    "packages/book_page_flip/lib/src/api.dart",
+    "packages/book_page_flip/lib/src/state.dart",
+    "packages/book_page_flip/lib/src/widget_capture.dart",
+    "packages/book_page_flip/lib/src/widget_pages.dart"
+  ],
+  "added_tests": {
+    "test/widget/reader_first_interaction_test.dart": "4ad7dbb170adb5ff3282aa896bde0fcb686112074ef5f55c423101ebfe46c81a",
+    "test/widget/book_flip_progressive_entry_test.dart": "8b5d1bd6e26238c47713d08e236d6fd3ec8785b02804dd5e08a9be8da55bdda3"
+  },
+  "cold_entry_simulation": {
+    "pages": 40,
+    "frame_step_ms": 16,
+    "first_swipe_response_frames": 6,
+    "first_button_response_frames": 7,
+    "budget_frames": 8,
+    "hardware_latency_or_fps_measurement": false
+  },
+  "preserved": [
+    "500ms albumPreview settle timing",
+    "book curl geometry/rendering and page identity",
+    "reader image quality policy",
+    "navigation/edit return/lifecycle behavior"
+  ],
+  "limitations": [
+    "No device profile or real GPU frame-time measurement",
+    "No full application build or deployment",
+    "Newly requested photos still depend on decode/network completion"
+  ],
+  "review": "Final capture pause/resume lifecycle review: no blocker"
+}

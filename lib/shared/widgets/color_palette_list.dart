@@ -4,6 +4,7 @@ import '../web/web_design.dart';
 
 import '../../core/constants/snapfit_colors.dart';
 import 'no_glow.dart';
+import '../../shared/widgets/experience_icon.dart';
 
 /// 색상 팔레트 리스트 (옵션 영역)
 class ColorPaletteList extends StatelessWidget {
@@ -89,10 +90,7 @@ class ColorPaletteList extends StatelessWidget {
                     ),
                   ),
                   child: selected
-                      ? Icon(
-                          Icons.check,
-                          size: 16,
-                          color: color.computeLuminance() > .5
+                      ? ExperienceIcon('Check', size: 16, color: color.computeLuminance() > .5
                               ? Colors.black
                               : Colors.white,
                         )

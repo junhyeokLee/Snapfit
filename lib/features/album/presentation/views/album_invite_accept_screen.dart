@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -49,7 +51,11 @@ class _AlbumInviteAcceptScreenState
     extends ConsumerState<AlbumInviteAcceptScreen> {
   bool _loginRequested = false;
   bool _busy = false;
+  bool _delayed = false;
+  bool _checking = false;
+  Timer? _delayTimer;
   int? _acceptedId;
+  InviteInfoResponse? _acceptedInfo;
   String? _acceptedUserId;
   String? _acceptedRole;
   AlbumInviteFailure? _failure;
@@ -57,13 +63,22 @@ class _AlbumInviteAcceptScreenState
   final _failureKey = GlobalKey();
   int _requestRevision = 0;
 
+  bool get _canLeave => !_busy || _delayed;
+  bool get _showProgress => (_busy && !_delayed) || _checking;
+
+  AlbumInviteFailure get _delayedFailure => AlbumInviteFailure(
+    '참여 확인이 늦어지고 있어요',
+    '참여가 이미 완료되었을 수 있어요. 상태를 다시 확인하거나, 나중에 내 앨범을 새로고침하고 같은 초대 링크를 다시 열어 주세요.'
+        '${_failure == null ? '' : '\n${_failure!.message}'}',
+  );
+
   bool _current(String actor, int revision) =>
       mounted &&
       revision == _requestRevision &&
       ref.read(authViewModelProvider).asData?.value?.id == actor;
 
   Future<void> _accept(InviteInfoResponse info) async {
-    if (_busy) return;
+    if (_busy || _delayed || _checking) return;
     final user = ref.read(authViewModelProvider).asData?.value;
     if (user == null) {
       setState(() => _loginRequested = true);
@@ -73,6 +88,13 @@ class _AlbumInviteAcceptScreenState
     setState(() {
       _busy = true;
       _failure = null;
+    });
+    _delayTimer?.cancel();
+    // 요청은 서버에서 완료될 수 있으므로, 지연 안내가 수락을 다시 활성화하지 않는다.
+    _delayTimer = Timer(const Duration(seconds: 30), () {
+      if (_current(user.id, revision) && _busy) {
+        setState(() => _delayed = true);
+      }
     });
     try {
       final accepted = await ref
@@ -84,23 +106,18 @@ class _AlbumInviteAcceptScreenState
           !['OWNER', 'EDITOR', 'VIEWER'].contains(accepted.role)) {
         throw const FormatException('Invalid acceptance');
       }
-      setState(() {
-        _acceptedId = accepted.albumId;
-        _acceptedUserId = user.id;
-        _acceptedRole = accepted.role;
-      });
-      ref
-          .read(pendingAlbumInviteProvider.notifier)
-          .clearIfCurrent(widget.invite);
-      ref.invalidate(homeViewModelProvider);
+      _completeAcceptance(info, user.id, accepted.role);
     } catch (error) {
       if (_current(user.id, revision))
         setState(() {
           _failure = AlbumInviteFailure.from(error);
+          if (error is TimeoutException) _delayed = true;
+          if (!_failure!.retryable) _delayed = false;
           if (_failure!.needsLogin) _loginRequested = true;
         });
     } finally {
       if (_current(user.id, revision)) {
+        _delayTimer?.cancel();
         setState(() => _busy = false);
         if (!kIsWeb && _failure != null && !_loginRequested) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -121,6 +138,114 @@ class _AlbumInviteAcceptScreenState
         }
       }
     }
+  }
+
+  void _completeAcceptance(InviteInfoResponse info, String actor, String role) {
+    _delayTimer?.cancel();
+    setState(() {
+      // 먼저 확인된 현재 권한을 늦은 수락·재조회 응답이 덮어쓰지 못하게 한다.
+      _requestRevision++;
+      _acceptedId = info.albumId;
+      _acceptedInfo = info;
+      _acceptedUserId = actor;
+      _acceptedRole = role;
+      _busy = false;
+      _delayed = false;
+      _checking = false;
+      _failure = null;
+    });
+    ref.read(pendingAlbumInviteProvider.notifier).clearIfCurrent(widget.invite);
+    ref.invalidate(homeViewModelProvider);
+  }
+
+  Future<void> _recheckAcceptance() async {
+    if (!_delayed || _checking) return;
+    final actor = ref.read(authViewModelProvider).asData?.value?.id;
+    if (actor == null) {
+      setState(() => _loginRequested = true);
+      return;
+    }
+    final revision = _requestRevision;
+    setState(() {
+      _checking = true;
+      _failure = null;
+    });
+    try {
+      ref.invalidate(albumInviteInfoProvider(widget.invite.token));
+      final info = await ref
+          .read(albumInviteInfoProvider(widget.invite.token).future)
+          .timeout(const Duration(seconds: 30));
+      if (!_current(actor, revision)) return;
+      final members = await ref
+          .read(albumMemberRepositoryProvider)
+          .fetchMembers(info.albumId)
+          .timeout(const Duration(seconds: 30));
+      if (!_current(actor, revision)) return;
+      for (final member in members) {
+        if (member.userUuid == actor &&
+            member.status == 'ACCEPTED' &&
+            ['OWNER', 'EDITOR', 'VIEWER'].contains(member.role)) {
+          _completeAcceptance(info, actor, member.role);
+          return;
+        }
+      }
+      setState(() {
+        _failure = const AlbumInviteFailure(
+          '아직 참여 상태를 확인하지 못했어요',
+          '아직 참여 상태를 확인하지 못했어요. 잠시 후 다시 확인해 주세요.',
+        );
+      });
+    } catch (error) {
+      if (_current(actor, revision)) {
+        final failure = AlbumInviteFailure.from(error);
+        setState(() {
+          _failure = failure;
+          if (!failure.retryable) {
+            _requestRevision++;
+            _delayTimer?.cancel();
+            _busy = false;
+            _delayed = false;
+            _checking = false;
+          }
+          if (failure.needsLogin) _loginRequested = true;
+        });
+      }
+    } finally {
+      if (_current(actor, revision)) setState(() => _checking = false);
+    }
+  }
+
+  void _leave() {
+    _requestRevision++;
+    _delayTimer?.cancel();
+    ref.read(pendingAlbumInviteProvider.notifier).clearIfCurrent(widget.invite);
+    Navigator.of(context).maybePop();
+  }
+
+  void _act(
+    AsyncValue<InviteInfoResponse> invite, {
+    required bool terminal,
+    required bool joined,
+    required bool needsLogin,
+  }) {
+    if (terminal) {
+      _leave();
+    } else if (joined) {
+      _openAlbum();
+    } else if (needsLogin) {
+      setState(() => _loginRequested = true);
+    } else if (_delayed) {
+      _recheckAcceptance();
+    } else {
+      _accept(invite.requireValue);
+    }
+  }
+
+  @override
+  void dispose() {
+    _requestRevision++;
+    _delayTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _openAlbum() async {
@@ -154,11 +279,20 @@ class _AlbumInviteAcceptScreenState
     ref.listen(authViewModelProvider, (previous, next) {
       final oldUser = previous?.asData?.value?.id;
       final newUser = next.asData?.value?.id;
+      final loginCompleted =
+          _loginRequested &&
+          next.hasValue &&
+          newUser != null &&
+          !next.isLoading;
       if (oldUser != newUser) {
         setState(() {
           _requestRevision++;
+          _delayTimer?.cancel();
           _busy = false;
+          _delayed = false;
+          _checking = false;
           _acceptedId = null;
+          _acceptedInfo = null;
           _acceptedUserId = null;
           _acceptedRole = null;
           _openError = null;
@@ -171,11 +305,14 @@ class _AlbumInviteAcceptScreenState
           if (newUser != null) _loginRequested = false;
         });
       }
-      if (_loginRequested &&
-          next.hasValue &&
-          next.asData?.value != null &&
-          !next.isLoading) {
-        setState(() => _loginRequested = false);
+      if (loginCompleted) {
+        setState(() {
+          _loginRequested = false;
+          _failure = null;
+        });
+      }
+      if (loginCompleted || oldUser != newUser) {
+        ref.invalidate(albumInviteInfoProvider(widget.invite.token));
       }
     });
     final auth = ref.watch(authViewModelProvider);
@@ -203,7 +340,7 @@ class _AlbumInviteAcceptScreenState
                         TextButton.icon(
                           onPressed: () =>
                               setState(() => _loginRequested = false),
-                          icon: const Icon(Icons.arrow_back, size: 17),
+                          icon: const ExperienceIcon('ArrowLeft', size: 17),
                           label: const Text('초대로 돌아가기'),
                         ),
                         Text(
@@ -229,30 +366,44 @@ class _AlbumInviteAcceptScreenState
               ),
       );
     }
-    final invite = ref.watch(albumInviteInfoProvider(widget.invite.token));
+    final preview = ref.watch(albumInviteInfoProvider(widget.invite.token));
     final joined = _acceptedId != null && user?.id == _acceptedUserId;
-    final failure = joined ? null : _failure;
+    final invite = joined && _acceptedInfo != null
+        ? AsyncData(_acceptedInfo!)
+        : preview;
+    final failure = joined ? null : (_delayed ? _delayedFailure : _failure);
     final previewFailure = invite.hasError
-        ? AlbumInviteFailure.from(invite.error!)
+        ? AlbumInviteFailure.from(invite.error!, signedIn: user != null)
         : null;
+    final needsLogin =
+        !joined &&
+        (failure?.needsLogin == true || previewFailure?.needsLogin == true);
     final terminal =
         !joined &&
+        !_delayed &&
+        !needsLogin &&
         (failure?.retryable == false || previewFailure?.retryable == false);
     final canAct =
-        !_busy &&
+        !_checking &&
+        (!_busy || _delayed) &&
         !auth.isLoading &&
         (terminal ||
             joined ||
+            needsLogin ||
+            _delayed ||
             (!invite.isLoading &&
                 invite.hasValue &&
                 failure?.retryable != false));
     return PopScope(
-      canPop: !_busy,
+      canPop: _canLeave,
       onPopInvokedWithResult: (didPop, _) {
-        if (didPop)
+        if (didPop) {
+          _requestRevision++;
+          _delayTimer?.cancel();
           ref
               .read(pendingAlbumInviteProvider.notifier)
               .clearIfCurrent(widget.invite);
+        }
       },
       child: kIsWeb
           ? _buildWeb(
@@ -260,7 +411,9 @@ class _AlbumInviteAcceptScreenState
               user: user,
               joined: joined,
               failure: failure,
+              previewFailure: previewFailure,
               terminal: terminal,
+              needsLogin: needsLogin,
               canAct: canAct,
             )
           : Scaffold(
@@ -268,7 +421,7 @@ class _AlbumInviteAcceptScreenState
               appBar: ExperienceHeader(
                 title: '앨범 초대',
                 showNotifications: false,
-                onBack: _busy ? () {} : () => Navigator.of(context).maybePop(),
+                onBack: _canLeave ? _leave : () {},
               ),
               body: SafeArea(
                 top: false,
@@ -291,20 +444,22 @@ class _AlbumInviteAcceptScreenState
                               : 680,
                         ),
                         child: invite.when(
-                          loading: () => const Padding(
-                            padding: EdgeInsets.all(36),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                CircularProgressIndicator(),
-                                SizedBox(height: 20),
-                                Text('초대를 확인하고 있어요'),
-                              ],
-                            ),
-                          ),
-                          error: (error, _) => _error(
-                            AlbumInviteFailure.from(error),
-                            reload: true,
+                          loading: () => _delayed
+                              ? _error(failure!)
+                              : const Padding(
+                                  padding: EdgeInsets.all(36),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      CircularProgressIndicator(),
+                                      SizedBox(height: 20),
+                                      Text('초대를 확인하고 있어요'),
+                                    ],
+                                  ),
+                                ),
+                          error: (_, __) => _error(
+                            _delayed ? failure! : previewFailure!,
+                            reload: !_delayed,
                           ),
                           data: (info) => _content(
                             info,
@@ -354,13 +509,14 @@ class _AlbumInviteAcceptScreenState
                                   ),
                                 ),
                             onPressed: canAct
-                                ? () => terminal
-                                      ? Navigator.of(context).maybePop()
-                                      : joined
-                                      ? _openAlbum()
-                                      : _accept(invite.requireValue)
+                                ? () => _act(
+                                    invite,
+                                    terminal: terminal,
+                                    joined: joined,
+                                    needsLogin: needsLogin,
+                                  )
                                 : null,
-                            icon: _busy
+                            icon: _showProgress
                                 ? const SizedBox(
                                     width: 18,
                                     height: 18,
@@ -380,28 +536,37 @@ class _AlbumInviteAcceptScreenState
                                         : ExperienceFormStyle.muted(context),
                                   ),
                             label: Text(
-                              _busy
+                              _checking
+                                  ? '참여 상태 확인 중'
+                                  : _busy && !_delayed
                                   ? (joined ? '앨범 불러오는 중' : '참여하는 중')
                                   : terminal
                                   ? '초대 닫기'
                                   : joined
                                   ? '앨범 열기'
+                                  : needsLogin
+                                  ? '로그인하고 확인하기'
+                                  : _delayed
+                                  ? '참여 상태 다시 확인'
                                   : user == null
                                   ? '로그인하고 참여하기'
                                   : '초대 수락하기',
                               textAlign: TextAlign.center,
                             ),
                           );
-                          final dismiss = !_busy && !terminal
+                          final dismiss = _canLeave && !terminal
                               ? TextButton(
                                   key: const ValueKey('inviteAcceptDismiss'),
-                                  onPressed: () =>
-                                      Navigator.of(context).maybePop(),
+                                  onPressed: _leave,
                                   style: TextButton.styleFrom(
                                     minimumSize: const Size(0, 48),
                                   ),
                                   child: Text(
-                                    joined ? '돌아가기' : '초대 닫기',
+                                    _delayed
+                                        ? '나중에 확인하기'
+                                        : joined
+                                        ? '돌아가기'
+                                        : '초대 닫기',
                                     style: ExperienceFormStyle.text(
                                       context,
                                       13,
@@ -449,7 +614,9 @@ class _AlbumInviteAcceptScreenState
     required UserInfo? user,
     required bool joined,
     required AlbumInviteFailure? failure,
+    required AlbumInviteFailure? previewFailure,
     required bool terminal,
+    required bool needsLogin,
     required bool canAct,
   }) {
     Widget failureView(AlbumInviteFailure value, {bool reload = false}) =>
@@ -481,7 +648,7 @@ class _AlbumInviteAcceptScreenState
                   onPressed: () => ref.invalidate(
                     albumInviteInfoProvider(widget.invite.token),
                   ),
-                  icon: const Icon(Icons.refresh, size: 17),
+                  icon: const ExperienceIcon('RefreshCw', size: 17),
                   label: const Text('초대 다시 확인'),
                 ),
               ),
@@ -492,17 +659,14 @@ class _AlbumInviteAcceptScreenState
     final action = FilledButton.icon(
       key: const ValueKey('inviteAcceptAction'),
       onPressed: canAct
-          ? () {
-              if (terminal) {
-                Navigator.of(context).maybePop();
-              } else if (joined) {
-                _openAlbum();
-              } else {
-                _accept(invite.requireValue);
-              }
-            }
+          ? () => _act(
+              invite,
+              terminal: terminal,
+              joined: joined,
+              needsLogin: needsLogin,
+            )
           : null,
-      icon: _busy
+      icon: _showProgress
           ? const SizedBox(
               width: 17,
               height: 17,
@@ -517,7 +681,9 @@ class _AlbumInviteAcceptScreenState
               size: 18,
             ),
       label: Text(
-        _busy
+        _checking
+            ? '참여 상태 확인 중'
+            : _busy && !_delayed
             ? joined
                   ? '앨범을 불러오는 중'
                   : '참여하는 중'
@@ -525,6 +691,10 @@ class _AlbumInviteAcceptScreenState
             ? '초대 닫기'
             : joined
             ? '앨범 열기'
+            : needsLogin
+            ? '로그인하고 확인하기'
+            : _delayed
+            ? '참여 상태 다시 확인'
             : user == null
             ? '로그인하고 참여하기'
             : '초대 수락하기',
@@ -536,8 +706,8 @@ class _AlbumInviteAcceptScreenState
       showNavigation: false,
       actions: [
         TextButton.icon(
-          onPressed: _busy ? null : () => Navigator.of(context).maybePop(),
-          icon: const Icon(Icons.close, size: 17),
+          onPressed: _canLeave ? _leave : null,
+          icon: const ExperienceIcon('X', size: 17),
           label: const Text('초대 닫기'),
         ),
       ],
@@ -554,26 +724,28 @@ class _AlbumInviteAcceptScreenState
             ),
             const SizedBox(height: 30),
             invite.when(
-              loading: () => const WebSurface(
-                child: Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+              loading: () => _delayed
+                  ? WebSurface(child: failureView(failure!))
+                  : const WebSurface(
+                      child: Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                            SizedBox(width: 16),
+                            Text('초대를 확인하고 있습니다'),
+                          ],
+                        ),
                       ),
-                      SizedBox(width: 16),
-                      Text('초대를 확인하고 있습니다'),
-                    ],
-                  ),
-                ),
-              ),
-              error: (error, _) => WebSurface(
+                    ),
+              error: (_, __) => WebSurface(
                 child: failureView(
-                  AlbumInviteFailure.from(error),
-                  reload: true,
+                  _delayed ? failure! : previewFailure!,
+                  reload: !_delayed,
                 ),
               ),
               data: (info) {
@@ -656,10 +828,7 @@ class _AlbumInviteAcceptScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Icon(
-                        Icons.group_outlined,
-                        size: 26,
-                        color: WebPalette.of(context).brandInk,
+                      ExperienceIcon('Users2', size: 26, color: WebPalette.of(context).brandInk,
                       ),
                       const SizedBox(height: 18),
                       Text(
@@ -722,11 +891,17 @@ class _AlbumInviteAcceptScreenState
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 action,
-                if (!_busy && !terminal)
+                if (_canLeave && !terminal)
                   TextButton(
                     key: const ValueKey('inviteAcceptDismiss'),
-                    onPressed: () => Navigator.of(context).maybePop(),
-                    child: Text(joined ? '돌아가기' : '나중에 참여하기'),
+                    onPressed: _leave,
+                    child: Text(
+                      _delayed
+                          ? '나중에 확인하기'
+                          : joined
+                          ? '돌아가기'
+                          : '나중에 참여하기',
+                    ),
                   ),
               ],
             ),

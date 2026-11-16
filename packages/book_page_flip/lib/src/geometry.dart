@@ -138,6 +138,7 @@ class BookFlipMesh {
         grain[idx] = bookFlipGrainAt(un, vn);
       }
     }
+    _albumAngles = Float64List(nu);
   }
 
   final int nu, nv, n;
@@ -181,6 +182,57 @@ class BookFlipMesh {
 
   // Scratch (hoisted; no per-frame alloc). column-major handled by vm64.
   final vm.Vector4 _v4 = vm.Vector4.zero();
+
+  // 승인된 HTML의 40개 띠 적분점을 그대로 보관한다. 기본 곡면에는 관여하지 않는다.
+  final Float64List _albumStripX = Float64List(41);
+  final Float64List _albumStripZ = Float64List(41);
+  late final Float64List _albumAngles;
+  bool _usesAlbumPreview = false;
+  double _albumProgress = 0;
+  double _albumEnvelope = 0;
+
+  void _computeAlbumPreviewWorld(double w, double h, double t, int dir) {
+    // 역방향도 같은 물리적 종이를 반대 순서로 재생한다.
+    final progress = dir > 0 ? t : 1.0 - t;
+    _albumProgress = progress;
+    final envelope = math.sin(math.pi * progress);
+    _albumEnvelope = envelope;
+    final leafWidth = w * 0.5;
+    final strip = leafWidth / 40;
+    var x = 0.0;
+    var z = 0.0;
+    for (var i = 0; i <= 40; i++) {
+      _albumStripX[i] = x;
+      _albumStripZ[i] = z;
+      if (i < 40) {
+        final mid = (i + 0.5) / 40;
+        final angle = math.pi * progress + 0.28 * envelope * math.pow(mid, 1.4);
+        x += math.cos(angle) * strip;
+        z += math.sin(angle) * strip;
+      }
+    }
+
+    for (var i = 0; i < nu; i++) {
+      final u = nu == 1 ? 0.0 : i / (nu - 1);
+      final sample = u * 40;
+      final low = sample.floor().clamp(0, 39).toInt();
+      final mix = sample - low;
+      final px =
+          _albumStripX[low] + (_albumStripX[low + 1] - _albumStripX[low]) * mix;
+      final pz =
+          _albumStripZ[low] + (_albumStripZ[low + 1] - _albumStripZ[low]) * mix;
+      _albumAngles[i] = math.pi * progress + 0.28 * envelope * math.pow(u, 1.4);
+      for (var j = 0; j < nv; j++) {
+        final idx = j * nu + i;
+        wx[idx] = leafWidth + px;
+        wy[idx] = (nv == 1 ? 0.0 : j / (nv - 1)) * h;
+        wz[idx] = pz;
+        // 미리보기의 색은 strip 위에 별도 덧칠한다. 기존 법선 조명과 중복하지 않는다.
+        lum[idx] = 1;
+        spec[idx] = 0;
+      }
+    }
+  }
 
   /// World position of one leaf vertex. PURE — no Flutter, no canvas.
   ///   dir = +1 : right leaf turning forward (spine at center, free edge at x=W)
@@ -298,6 +350,11 @@ class BookFlipMesh {
     BookFlipCurl? curl,
   }) {
     final tc = t.isFinite ? t.clamp(0.0, 1.0) : 0.0; // temporal clamp
+    _usesAlbumPreview = curl?.profile == BookFlipCurveProfile.albumPreview;
+    if (_usesAlbumPreview) {
+      _computeAlbumPreviewWorld(w, h, tc, dir);
+      return;
+    }
     // A non-null curl OVERRIDES the material-derived geometry with its own dials;
     // null → the proven material path, byte-for-byte unchanged. Each curl dial maps
     // into the same CLAMPED envelope ([_kAmaxMin.._kAmaxHi], [_kTiltMin.._kTiltHi],
@@ -361,6 +418,28 @@ class BookFlipMesh {
       }
       lastBadCount = n;
       return; // degenerate viewport: never build a det=0 view
+    }
+    if (_usesAlbumPreview) {
+      final spine = w * 0.5;
+      final distance = spine * 12;
+      var bad = 0;
+      for (var i = 0; i < n; i++) {
+        // 원근의 영향도 sin(πt)로 줄여 안착 직전 종이가 반대로 부풀지 않게 한다.
+        final scale =
+            1.0 + (distance / (distance - wz[i]) - 1.0) * _albumEnvelope;
+        final px = spine + (wx[i] - spine) * scale;
+        final py = h * 0.5 + (wy[i] - h * 0.5) * scale;
+        if (px.isFinite && py.isFinite) {
+          sx[i] = px;
+          sy[i] = py;
+        } else {
+          sx[i] = wx[i].isFinite ? wx[i] : spine;
+          sy[i] = wy[i].isFinite ? wy[i] : h * 0.5;
+          bad++;
+        }
+      }
+      lastBadCount = bad;
+      return;
     }
     final camDist = camDistFor(h, fovY);
     var mvp = _mvp;

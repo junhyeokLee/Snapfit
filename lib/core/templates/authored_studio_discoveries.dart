@@ -64,10 +64,10 @@ List<_StudioPage> _studioDiscoverySpread(
     double w,
     double h, {
     double size = .067,
-  }) => _milestoneTitle(sheet, text, x, y, w, h, size: size);
+  }) => _studioMilestoneTitle(sheet, text, x, y, w, h, size: size);
   void caption(_StudioPage sheet, double x, double y, double w, double h) =>
       _milestoneCaption(sheet, story.$2, x, y, w, h);
-  _milestoneLabel(
+  _studioMilestoneLabel(
     l,
     e.premium ? 'DISCOVERY INDEX / ${i + 1}' : 'LITTLE DAYS / ${i + 1}',
     .07,
@@ -81,10 +81,10 @@ List<_StudioPage> _studioDiscoverySpread(
         l.scene(p(1), .12, .51, .46, .29, frame: 'studioOvalMat');
         l.type('처음의 표정,\n처음의 마음.', .65, .58, .25, .19, size: .029);
         r.scene(p(0), .13, .10, .74, .73, frame: 'studioRounded', fill: true);
-        _milestoneLabel(r, 'HELLO, LITTLE ONE', .13, .87, .74);
+        _studioMilestoneLabel(r, 'HELLO, LITTLE ONE', .13, .87, .74);
       case 1:
         l.scene(p(0), .08, .15, .73, .56, frame: 'studyFloatMount', fill: true);
-        _milestoneNote(
+        _studioMilestoneNote(
           l,
           'materialScallopNote',
           '이름을 불렀더니\n고개를 돌렸어.',
@@ -122,7 +122,7 @@ List<_StudioPage> _studioDiscoverySpread(
         l.scene(p(0), .10, .12, .80, .61, frame: 'studioDoubleMat', fill: true);
         caption(l, .13, .81, .74, .10);
         title(r, '한 입의\n새로운 표정', .10, .15, .80, .24, size: .069);
-        _milestoneNote(
+        _studioMilestoneNote(
           r,
           'atelierWritingRecord',
           '처음 먹어 본 것\n\n좋아했던 맛\n\n다음에 또 먹어 볼 것',
@@ -161,7 +161,7 @@ List<_StudioPage> _studioDiscoverySpread(
         r.scene(p(0), .14, .17, .48, .47, frame: 'studioArch', fill: true);
         r.type('작은 옷과\n자주 쓰는 물건들', .51, .72, .38, .16, size: .029);
       case 10:
-        _milestoneNote(
+        _studioMilestoneNote(
           l,
           'atelierWritingRecord',
           '오늘의 새로운 모습\n\n처음 해낸 일\n\n좋아했던 순간',
@@ -177,7 +177,7 @@ List<_StudioPage> _studioDiscoverySpread(
         l.type('매일\n조금씩\n달라지는 너', .72, .29, .20, .34, size: .032);
         title(r, '내일의 얼굴도\n기다릴게', .12, .20, .76, .23, size: .067);
         caption(r, .13, .63, .74, .16);
-        _milestoneLabel(r, 'A NEW LITTLE DAY', .13, .86, .74);
+        _studioMilestoneLabel(r, 'A NEW LITTLE DAY', .13, .86, .74);
     }
   } else {
     switch (i) {
@@ -212,9 +212,9 @@ List<_StudioPage> _studioDiscoverySpread(
           frame: 'storyDiscoveryStitch',
           fill: true,
         );
-        _milestoneLabel(r, 'THE WORLD IS STILL NEW', .13, .87, .74);
+        _studioMilestoneLabel(r, 'THE WORLD IS STILL NEW', .13, .87, .74);
       case 1:
-        _milestoneNote(
+        _studioMilestoneNote(
           l,
           'atelierWritingRecord',
           '오늘의 발견 목록\n\n01  바스락거리는 잎\n02  손에 들어오는 돌\n03  끝없이 그리는 선',
@@ -234,7 +234,7 @@ List<_StudioPage> _studioDiscoverySpread(
         caption(r, .14, .75, .72, .14);
       case 3:
         l.scene(p(1), .055, .15, .89, .55, frame: 'storyDiscoveryStitch');
-        _milestoneNote(
+        _studioMilestoneNote(
           l,
           'lifeWardrobeLabel',
           '오늘의 작품\n제목은 네 마음대로',
@@ -275,7 +275,7 @@ List<_StudioPage> _studioDiscoverySpread(
           frame: 'storyDiscoverySlide',
           fill: true,
         );
-        _milestoneLabel(r, 'SPECIMEN / A SMALL LEAF', .13, .87, .74);
+        _studioMilestoneLabel(r, 'SPECIMEN / A SMALL LEAF', .13, .87, .74);
       case 5:
         l.scene(
           p(3),
@@ -304,7 +304,7 @@ List<_StudioPage> _studioDiscoverySpread(
         r.scene(p(2), .12, .16, .76, .45, frame: 'atelierWeave');
         caption(r, .13, .75, .74, .14);
       case 7:
-        _milestoneLabel(l, 'MY LITTLE COLLECTION', .10, .15, .80);
+        _studioMilestoneLabel(l, 'MY LITTLE COLLECTION', .10, .15, .80);
         l.scene(p(2), .11, .29, .41, .30, frame: 'materialScallopMount');
         l.scene(
           p(1),
@@ -348,7 +348,7 @@ List<_StudioPage> _studioDiscoverySpread(
             frame: n == 1 ? 'storyDiscoveryStitch' : 'studioRounded',
             fill: true,
           );
-          _milestoneLabel(
+          _studioMilestoneLabel(
             r,
             ['CURIOUS', 'FOCUSED', 'HAPPY'][n],
             .09 + n * .29,
@@ -358,7 +358,7 @@ List<_StudioPage> _studioDiscoverySpread(
         }
         r.type('말하지 않아도 보이는 마음', .13, .83, .74, .07, size: .030);
       case 9:
-        _milestoneNote(
+        _studioMilestoneNote(
           l,
           'atelierWritingLetter',
           '네가 들려준 말\n\n“이것 봐, 내가 찾았어!”\n\n언제 / 산책하던 오후\n누구에게 / 같이 걷던 우리에게',
@@ -412,7 +412,7 @@ List<_StudioPage> _studioDiscoverySpread(
         title(r, '같이 발견한\n우리의 하루', .13, .72, .74, .17, size: .052);
       case 13:
         l.scene(p(3), .12, .22, .73, .45, frame: 'storyDiscoverySlide');
-        _milestoneLabel(l, 'THEN / 그때의 너', .14, .77, .72);
+        _studioMilestoneLabel(l, 'THEN / 그때의 너', .14, .77, .72);
         r.scene(
           p(0),
           .11,
@@ -429,7 +429,7 @@ List<_StudioPage> _studioDiscoverySpread(
         l.mat('wavePencil', .55, .83, .34, .065);
         r.scene(p(2), .08, .11, .48, .37, frame: 'atelierWeave', fill: true);
         r.scene(p(1), .41, .51, .47, .32, frame: 'studioPhotoCorners', turn: 2);
-        _milestoneNote(r, 'lifeWardrobeLabel', '오늘도 발견 완료', .09, .70, .31, .16);
+        _studioMilestoneNote(r, 'lifeWardrobeLabel', '오늘도 발견 완료', .09, .70, .31, .16);
       case 15:
         l.scene(
           p(0),
@@ -453,7 +453,7 @@ List<_StudioPage> _studioDiscoverySpread(
         title(r, '다음 장도\n궁금해서', .12, .20, .76, .25, size: .078);
         caption(r, .14, .60, .72, .17);
         r.rule(.14, .84, .42, color: '#B8CCDD');
-        _milestoneLabel(r, 'TO BE DISCOVERED, TOGETHER', .14, .88, .72);
+        _studioMilestoneLabel(r, 'TO BE DISCOVERED, TOGETHER', .14, .88, .72);
     }
   }
   return [l, r];

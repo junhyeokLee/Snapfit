@@ -1,3 +1,5 @@
+import '../../../../core/fonts/document_fonts.dart';
+import '../../../../core/utils/context_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,18 +8,31 @@ import '../../../profile/domain/order_visibility_owner.dart';
 import '../../data/album_creation_draft_store.dart';
 import '../../domain/entities/album_creation_draft.dart';
 
+/// Reads must fail visibly rather than keeping a design's start button busy.
+/// These limits never authorize replacing a draft or entering with fallback
+/// document fonts when the underlying operation has not completed.
+const albumCreationEntryReadTimeout = Duration(seconds: 12);
+const albumCreationEntryFontsTimeout = Duration(seconds: 40);
+
+final albumCreationFontPreparationProvider = Provider<Future<void> Function()>(
+  (_) => DocumentFonts.ensureAll,
+);
+
 /// A non-null decision either resumes the current draft or starts a new album.
 /// A null result leaves the caller and every saved draft unchanged.
 class AlbumCreationEntryDecision {
   const AlbumCreationEntryDecision._({
     this.draft,
     required String owner,
+    required ObservedOrderSession session,
     required _DraftRevision? expectedRevision,
   }) : _owner = owner,
+       _session = session,
        _expectedRevision = expectedRevision;
 
   final AlbumCreationDraft? draft;
   final String _owner;
+  final ObservedOrderSession _session;
   final _DraftRevision? _expectedRevision;
 }
 
@@ -34,11 +49,7 @@ _DraftRevision? _revision(AlbumCreationDraft? draft) => draft == null
       );
 
 void _changedDraftNotice(BuildContext context) {
-  ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-    const SnackBar(
-      content: Text('임시 저장한 앨범이 변경되었거나 삭제되었어요. 최신 목록에서 다시 선택해 주세요.'),
-    ),
-  );
+  context.showSnack('임시 저장한 앨범이 변경되었거나 삭제되었어요. 최신 목록에서 다시 선택해 주세요.');
 }
 
 void _draftReadFailure(
@@ -49,6 +60,9 @@ void _draftReadFailure(
   ScaffoldMessenger.maybeOf(context)?.showSnackBar(
     SnackBar(
       content: const Text('임시 저장한 앨범을 확인하지 못했어요. 다시 확인해 주세요.'),
+      behavior: SnackBarBehavior.floating,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       action: SnackBarAction(
         label: '다시 확인',
         onPressed: () {
@@ -73,12 +87,14 @@ Future<bool> validateAlbumCreationEntry(
       context.mounted &&
       route?.isCurrent != false &&
       ref.read(visibleOrderOwnerProvider) == decision._owner &&
+      identical(ref.read(orderSessionOwnerProvider), decision._session) &&
       (isStillCurrent?.call() ?? true);
   if (!active()) return false;
   try {
     final latest = await ref
         .read(albumCreationDraftStoreProvider)
-        .load(decision._owner);
+        .load(decision._owner)
+        .timeout(albumCreationEntryReadTimeout);
     if (!active()) return false;
     if (_revision(latest) != decision._expectedRevision) {
       _changedDraftNotice(context);
@@ -109,31 +125,62 @@ Future<AlbumCreationEntryDecision?> resolveAlbumCreationEntry(
   if (!currentRoute()) return null;
   String? owner;
   try {
-    owner = (await ref.read(authViewModelProvider.future))?.id;
+    owner =
+        (await ref
+                .read(authViewModelProvider.future)
+                .timeout(albumCreationEntryReadTimeout))
+            ?.id;
   } catch (_) {
     if (currentRoute()) {
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-        const SnackBar(content: Text('로그인 상태를 확인하지 못했어요. 다시 시도해 주세요.')),
+        SnackBar(
+          content: const Text('로그인 상태를 확인하지 못했어요. 다시 시도해 주세요.'),
+          behavior: SnackBarBehavior.floating,
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          action: SnackBarAction(
+            label: '다시 확인',
+            onPressed: () {
+              if (currentRoute()) ref.invalidate(authViewModelProvider);
+            },
+          ),
+        ),
       );
     }
     return null;
   }
   if (!currentRoute()) return null;
   if (owner == null || owner.isEmpty) {
-    ScaffoldMessenger.maybeOf(
-      context,
-    )?.showSnackBar(const SnackBar(content: Text('로그인 상태를 확인한 뒤 다시 시작해 주세요.')));
+    context.showSnack('로그인 상태를 확인한 뒤 다시 시작해 주세요.');
     return null;
   }
   if (ref.read(visibleOrderOwnerProvider) != owner) return null;
-
+  // String equality cannot detect A → B → A while assets/storage are pending.
+  // The SDK observer creates a new object only when its account changes.
+  final session = ref.read(orderSessionOwnerProvider);
   bool active() =>
-      currentRoute() && ref.read(visibleOrderOwnerProvider) == owner;
+      currentRoute() &&
+      ref.read(visibleOrderOwnerProvider) == owner &&
+      identical(ref.read(orderSessionOwnerProvider), session);
+  try {
+    await ref
+        .read(albumCreationFontPreparationProvider)()
+        .timeout(albumCreationEntryFontsTimeout);
+  } catch (_) {
+    if (active()) {
+      context.showSnack('앨범 글꼴을 불러오지 못했어요. 다시 시도해 주세요.');
+    }
+    return null;
+  }
+  if (!active()) return null;
 
   Future<AlbumCreationDraft?> latestDraft() {
     // Read the captured, validated account directly. An account-dependent
     // provider future may be cancelled by auth restoration or an account switch.
-    return ref.read(albumCreationDraftStoreProvider).load(owner!);
+    return ref
+        .read(albumCreationDraftStoreProvider)
+        .load(owner!)
+        .timeout(albumCreationEntryReadTimeout);
   }
 
   try {
@@ -143,6 +190,7 @@ Future<AlbumCreationEntryDecision?> resolveAlbumCreationEntry(
       return AlbumCreationEntryDecision._(
         draft: draft,
         owner: owner,
+        session: session,
         expectedRevision: _revision(draft),
       );
     }
@@ -151,7 +199,11 @@ Future<AlbumCreationEntryDecision?> resolveAlbumCreationEntry(
         _changedDraftNotice(context);
         return null;
       }
-      return AlbumCreationEntryDecision._(owner: owner, expectedRevision: null);
+      return AlbumCreationEntryDecision._(
+        owner: owner,
+        session: session,
+        expectedRevision: null,
+      );
     }
 
     final design = selectedDesignTitle?.trim();
@@ -214,6 +266,7 @@ Future<AlbumCreationEntryDecision?> resolveAlbumCreationEntry(
     return AlbumCreationEntryDecision._(
       draft: choice == _CreationEntryChoice.resume ? latest : null,
       owner: owner,
+      session: session,
       expectedRevision: _revision(latest),
     );
   } catch (_) {

@@ -1,0 +1,137 @@
+{
+  "created": "2026-11-03",
+  "generator": "built-in image_gen",
+  "use": "Original editorial sample photography and original cutout materials; sample photos excluded from customer album creation",
+  "photoReusePolicy": "edition-exclusive; five distinct photographs per book",
+  "assets": [
+    {
+      "asset": "assets/templates/sensory_editions_2026/coffee01.jpg",
+      "sourceSha256": "adb71f5041397e144485a291eb5082f6dfa8f140eb856d711100aa1a2f931e29",
+      "sha256": "5af6880819a47e61134978d1da75a7a679c629d142ac8d543483360b799068e4",
+      "encoding": "JPEG94; original generated PNG retained; no crop/resample",
+      "bytes": 608693,
+      "sourceFileName": "exec-af071f86-0a48-466f-948d-91f841180452.png"
+    },
+    {
+      "asset": "assets/templates/sensory_editions_2026/coffee02.jpg",
+      "sourceSha256": "48539b65f9220225eacb8643677b995b0b7ab6ca9b8c7c7b43b55628763184e1",
+      "sha256": "0d9c5d6428922c3a4318ecac6f1e2f7bfe7e5b78ed4550383f8f7e9a0618815a",
+      "encoding": "JPEG94; original generated PNG retained; no crop/resample",
+      "bytes": 536473,
+      "sourceFileName": "exec-936bd11b-1e7a-4115-8538-b470735a17ba.png"
+    },
+    {
+      "asset": "assets/templates/sensory_editions_2026/coffee03.jpg",
+      "sourceSha256": "452d67fac58e6cfaf1305fd6df41886843eb875f6ca628e16b9e2bad9583cad1",
+      "sha256": "860e7b5966f33bcd50b3baeb9e56c826d381f1c3e3c622d97c57f6f94e0d5c66",
+      "encoding": "JPEG94; original generated PNG retained; no crop/resample",
+      "bytes": 522512,
+      "sourceFileName": "exec-149da396-6a04-47de-b00c-1723209f7753.png"
+    },
+    {
+      "asset": "assets/templates/sensory_editions_2026/coffee04.jpg",
+      "sourceSha256": "68d6564284c61e2af7d652b32059f3ca507f7a27f51a40da7079dfe3f306a72b",
+      "sha256": "8be529af6f76ee20e7b06b704a6c011147e8b98c6340bb2f642dc2e3fcc21054",
+      "encoding": "JPEG94; original generated PNG retained; no crop/resample",
+      "bytes": 591071,
+      "sourceFileName": "exec-ade81168-1280-4fcc-bda6-0d8f43a214c8.png"
+    },
+    {
+      "asset": "assets/templates/sensory_editions_2026/coffee05.jpg",
+      "sourceSha256": "58a46aa239195ea4edebf0efb0e87fdd8eba856afdd5693a3a53b001f5f199cc",
+      "sha256": "b37aca5ed080be0cf43ba07b70d453fb108591da2d5bc13fb8a26ac36b8cf91e",
+      "encoding": "JPEG94; original generated PNG retained; no crop/resample",
+      "bytes": 498618,
+      "sourceFileName": "exec-ff4d8d19-7f05-4ad0-9ec5-de21c68e997a.png"
+    },
+    {
+      "asset": "assets/templates/sensory_editions_2026/night01.jpg",
+      "sourceSha256": "d5d49dcbbb17c453924cf036102a1b8f578e550f25b8000d4bf314d4b4b6721d",
+      "sha256": "8f93e4cd5ab62e0b472a4d8fb81e6ab93f78ee2682b06d081bbbde1a644c725d",
+      "encoding": "JPEG94; original generated PNG retained; no crop/resample",
+      "bytes": 824696,
+      "sourceFileName": "exec-5ebbd0b0-78b3-4990-9579-5dc92de1b868.png"
+    },
+    {
+      "asset": "assets/templates/sensory_editions_2026/night02.jpg",
+      "sourceSha256": "6fca0d9cba5a8936a9edd96106bd818aa8893b6eb01df306e02569b2bb7c9ebb",
+      "sha256": "19e0fb9e946333dc9a330d173cea280c72c65239455aa1dcdf292e96d6c1024c",
+      "encoding": "JPEG94; original generated PNG retained; no crop/resample",
+      "bytes": 542591,
+      "sourceFileName": "exec-e9221689-83d6-459c-ab28-1f59e153cdae.png"
+    },
+    {
+      "asset": "assets/templates/sensory_editions_2026/night03.jpg",
+      "sourceSha256": "db26e1e4b4663866a912e5b3d07e381e19ac1f5ebc1d430a997cb65c705fa98e",
+      "sha256": "540b03e987f61969e297566a3888437add40dda5568ea178a3a75bc3501a83f8",
+      "encoding": "JPEG94; original generated PNG retained; no crop/resample",
+      "bytes": 1035888,
+      "sourceFileName": "exec-1238c2c1-500f-43cc-9f7f-1efcc01acef3.png"
+    },
+    {
+      "asset": "assets/templates/sensory_editions_2026/night04.jpg",
+      "sourceSha256": "f2d4c04fefb7bb02f83439774a1b5f8989de974f9778e93bb62daf7c132c9881",
+      "sha256": "71d673c7d6fa7a71b0db6ea920c27a1c939447b1ccbe5c6e1bc9b27ddedd4e45",
+      "encoding": "JPEG94; original generated PNG retained; no crop/resample",
+      "bytes": 714910,
+      "sourceFileName": "exec-be58c7e0-e618-4924-8c70-10b11e740c78.png"
+    },
+    {
+      "asset": "assets/templates/sensory_editions_2026/night05.jpg",
+      "sourceSha256": "3ed89b9a8498590da6e743411e835a0c6a2cd73f67d0fff565867124021ef116",
+      "sha256": "c2a82a08ff13ea35eae217a5a9e66cd7b8ca43e3ba79e250e65a0666f3859c4b",
+      "encoding": "JPEG94; original generated PNG retained; no crop/resample",
+      "bytes": 507588,
+      "sourceFileName": "exec-27f81f3b-f64e-47e5-b6cc-871829efd32f.png"
+    },
+    {
+      "asset": "assets/sticker/sensory/cafe-clip.webp",
+      "sha256": "88e7e87018d0668cbfd32eefda9aa04882880d555fdbb22012518d9d6294f9d1",
+      "encoding": "lossless WebP; decoded RGBA including alpha exactly matches original PNG",
+      "bytes": 844756,
+      "originalAssetSha256": "4f9670b25c82a60c223bef6e9e93ddc462fe6988d7be3724eeb2d122cdab9e73",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "sourceFileName": "exec-44bf779c-3700-474c-a66f-e5096c155aa9.png"
+    },
+    {
+      "asset": "assets/sticker/sensory/cafe-leaf.webp",
+      "sha256": "7d28294b3325b730134cb9334a519e0af34d5a8738ccaa85925bc7a3c58d7310",
+      "encoding": "lossless WebP; decoded RGBA including alpha exactly matches original PNG",
+      "bytes": 641726,
+      "originalAssetSha256": "8d0c540592e62f64b382ce46ef7f26e9c0fa5924e904c528210555e02e97f467",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "sourceFileName": "exec-9551df9a-4905-4644-9daa-f998893d9904.png"
+    },
+    {
+      "asset": "assets/sticker/sensory/night-seal.webp",
+      "sha256": "90fdc858cee13d57ae28d77ab29e22aedb4137e0447ad8aa041f558b96d9cda4",
+      "encoding": "lossless WebP; decoded RGBA including alpha exactly matches original PNG",
+      "bytes": 1235916,
+      "originalAssetSha256": "259ed70e967632f26d044a404ee07245392ec2160a81706c92669c660f0119a7",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "sourceFileName": "exec-62af47d3-8a02-4d9c-b001-8df2ad0bec10.png"
+    },
+    {
+      "asset": "assets/sticker/sensory/night-glassine.webp",
+      "sha256": "37d32057d9a23d122bc3e96e2d7c11f2baca09729d5312e9afac18e50d1e585c",
+      "encoding": "lossless WebP; decoded RGBA including alpha exactly matches original PNG",
+      "bytes": 364174,
+      "originalAssetSha256": "787cb55e0da1f9153a3834c71059f5a11d9474deee3429e785c6a7b6b29a8df0",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "sourceFileName": "exec-7f85c581-6365-4473-81fb-3b1f0c112381.png"
+    }
+  ],
+  "totalBundledBytes": 9469612
+}

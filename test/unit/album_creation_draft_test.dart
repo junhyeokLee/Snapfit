@@ -348,6 +348,56 @@ void main() {
       () async => expect(await store.load('user'), isNull),
     );
     test(
+      'native sessions reject stale cleanup even when timestamps match',
+      () async {
+        final original = creationDraftFixture();
+        await store.save('user', original);
+        final second = LocalAlbumCreationDraftStore(
+          directory: () async => root,
+        );
+        await store.beginDraftWriteSession(
+          'user',
+          original.id,
+          restoring: original,
+        );
+        await second.beginDraftWriteSession(
+          'user',
+          original.id,
+          restoring: original,
+        );
+        final changed = AlbumCreationDraft.fromJson(
+          original.toJson()..['title'] = '다른 창의 새 편집',
+        );
+        await second.save('user', changed);
+        await expectLater(store.remove('user', original.id), throwsStateError);
+        await expectLater(store.save('user', original), throwsStateError);
+        expect((await second.load('user'))!.title, '다른 창의 새 편집');
+      },
+    );
+    test('two native instances serialize durable first-write CAS', () async {
+      final second = LocalAlbumCreationDraftStore(directory: () async => root);
+      final original = creationDraftFixture();
+      await Future.wait([
+        store.beginDraftWriteSession('user', original.id),
+        second.beginDraftWriteSession('user', original.id),
+      ]);
+      final results = await Future.wait([
+        store.save('user', original).then((_) => true, onError: (_) => false),
+        second
+            .save(
+              'user',
+              AlbumCreationDraft.fromJson(
+                original.toJson()..['title'] = '경쟁하는 초안',
+              ),
+            )
+            .then((_) => true, onError: (_) => false),
+      ]);
+      expect(results.where((value) => value), hasLength(1));
+      final durable = await store.load('user');
+      expect(durable, isNotNull);
+      expect(durable!.title, anyOf(original.title, '경쟁하는 초안'));
+    });
+    test(
       'persists across repository instances and isolates accounts',
       () async {
         await store.save('user-a', creationDraftFixture());

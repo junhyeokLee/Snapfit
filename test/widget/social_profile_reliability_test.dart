@@ -16,6 +16,23 @@ import 'package:snap_fit/features/social/presentation/views/social_relations_scr
 import 'package:snap_fit/features/social/presentation/widgets/social_profile_widgets.dart';
 import 'package:snap_fit/features/social/presentation/widgets/social_widgets.dart';
 
+final _emptyMomentPages = socialProfileMomentsPageProvider.overrideWith(
+  (_, _) async =>
+      const SocialWorkPage(items: [], hasMore: false, nextOffset: 0),
+);
+final _emptyMomentMonths = socialProfileMomentMonthsPageProvider.overrideWith(
+  (_, _) async =>
+      const SocialMomentMonthsPage(items: [], hasMore: false, nextOffset: 0),
+);
+
+Future<void> _openAlbums(WidgetTester tester) async {
+  final tab = find.byKey(const ValueKey('profile-collection-albums'));
+  await tester.ensureVisible(tab);
+  await tester.pumpAndSettle();
+  await tester.tap(tab);
+  await tester.pumpAndSettle();
+}
+
 Override _profileWorksOverride(
   String userId,
   FutureOr<List<SocialWork>> Function(Ref) load,
@@ -80,6 +97,8 @@ ProviderContainer _container(
   VoidCallback? onProfileRead,
 }) => ProviderContainer(
   overrides: [
+    _emptyMomentPages,
+    _emptyMomentMonths,
     socialCurrentUserIdProvider.overrideWith((ref) => ref.watch(_actor)),
     socialRepositoryProvider.overrideWithValue(repository),
     socialBlockedProfilesProvider.overrideWith((_) async => []),
@@ -136,6 +155,8 @@ Future<void> _cycleAccount(
 
 ProviderContainer _pagedContainer(_Repository repository) => ProviderContainer(
   overrides: [
+    _emptyMomentPages,
+    _emptyMomentMonths,
     socialCurrentUserIdProvider.overrideWith((ref) => ref.watch(_actor)),
     socialAuthStateProvider.overrideWith((_) => const Stream<String?>.empty()),
     socialRepositoryProvider.overrideWithValue(repository),
@@ -430,6 +451,8 @@ void main() {
       );
       final container = ProviderContainer(
         overrides: [
+          _emptyMomentPages,
+          _emptyMomentMonths,
           socialCurrentUserIdProvider.overrideWith((ref) => ref.watch(_actor)),
           socialRepositoryProvider.overrideWithValue(repository),
           socialBlockedProfilesProvider.overrideWith((_) async => []),
@@ -502,7 +525,7 @@ void main() {
         isTrue,
       );
       expect(retryNode.label, contains('이미지 다시 불러오기'));
-      expect(find.bySemanticsLabel('사진이 있는 작품, 1쪽 작품 보기'), findsOneWidget);
+      expect(find.bySemanticsLabel('사진이 있는 작품, 1쪽 앨범 보기'), findsOneWidget);
       await tester.tap(retry);
       await tester.pumpAndSettle();
       expect(retries, greaterThanOrEqualTo(2));
@@ -543,6 +566,7 @@ void main() {
         container,
         const SocialProfileScreen(userId: 'creator'),
       );
+      await _openAlbums(tester);
       expect(find.byType(SocialProfileWorkTile), findsNWidgets(12));
       final more = find.byKey(const ValueKey('social-profile-more-works'));
       await tester.ensureVisible(more);
@@ -605,12 +629,13 @@ void main() {
         container,
         const SocialProfileScreen(userId: 'creator'),
       );
+      await _openAlbums(tester);
       final more = find.byKey(const ValueKey('social-profile-more-works'));
       await tester.ensureVisible(more);
       await tester.tap(more);
       await tester.pumpAndSettle();
       expect(find.byType(SocialProfileWorkTile), findsNWidgets(12));
-      expect(find.text('작품을 더 불러오지 못했어요. 다시 시도해 주세요.'), findsOneWidget);
+      expect(find.text('앨범을 더 불러오지 못했어요. 다시 시도해 주세요.'), findsOneWidget);
       await tester.ensureVisible(more);
       await tester.tap(more);
       await tester.pumpAndSettle();
@@ -646,6 +671,7 @@ void main() {
       container,
       const SocialProfileScreen(userId: 'creator'),
     );
+    await _openAlbums(tester);
     await tester.ensureVisible(find.byTooltip('모아 보기'));
     await tester.tap(find.byTooltip('모아 보기'));
     await tester.pumpAndSettle();
@@ -761,6 +787,8 @@ void main() {
         });
         final container = ProviderContainer(
           overrides: [
+            _emptyMomentPages,
+            _emptyMomentMonths,
             socialCurrentUserIdProvider.overrideWith((_) => 'me'),
             socialRepositoryProvider.overrideWithValue(repository),
             socialBlockedProfilesProvider.overrideWith(
@@ -910,6 +938,8 @@ void main() {
       const commentsQuery = SocialCommentsQuery('open-work');
       final container = ProviderContainer(
         overrides: [
+          _emptyMomentPages,
+          _emptyMomentMonths,
           socialCurrentUserIdProvider.overrideWith((_) => 'me'),
           socialRepositoryProvider.overrideWithValue(repository),
           ownSocialProfileProvider.overrideWith((_) async => profile),

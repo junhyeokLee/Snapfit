@@ -1,0 +1,782 @@
+--- a/lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart
++++ b/lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart
+@@ -130,6 +130,9 @@
+   bool _isCoverPressed = false;
+   bool _isTurningWithControl = false;
+   int? _pendingControlDirection;
++  int? _queuedTurnDirection;
++  int? _expectedFocusEcho;
++  int _focusEchoEpoch = 0;
+   int? _requestedPreparationSpread;
+   late int _focusPageIndex;
+   int _bookContentSignature = 0;
+@@ -161,9 +164,13 @@
+   bool _openSpreadReducedMotion = false;
+   Duration? _openSpreadLastMoveTime;
+   double _openSpreadInstantVelocity = 0;
++  double _openSpreadPanStartProgress = 0;
++  bool _canContinueSettledTurn = false;
+   bool _suppressNextTapUp = false;
+   late final AnimationController _focusPanController;
+   bool _isPanningFocus = false;
++  bool _focusPanCommit = true;
++  bool _focusPanFinishingSoon = false;
+   bool _isJumpingFocus = false;
+   int _focusPanEpoch = 0;
+   int _focusRequestEpoch = 0;
+@@ -228,6 +235,8 @@
+     _openSpreadReducedMotion = false;
+     _openSpreadLastMoveTime = null;
+     _openSpreadInstantVelocity = 0;
++    _openSpreadPanStartProgress = 0;
++    _canContinueSettledTurn = false;
+   }
+ 
+   bool get _usesPreviewPointerMotion => widget.singlePageFocus;
+@@ -271,12 +280,15 @@
+ 
+   void _clearFocusCamera() {
+     _pendingControlDirection = null;
++    _queuedTurnDirection = null;
++    _expectedFocusEcho = null;
+     _requestedPreparationSpread = null;
+     _focusPanEpoch++;
+     _focusRequestEpoch++;
+     _pendingSingleFocusRequest = null;
+     _focusPanController.stop();
+     _isPanningFocus = false;
++    _focusPanFinishingSoon = false;
+     _focusTurnSourcePage = null;
+     _focusTurnTargetPage = null;
+   }
+@@ -291,11 +303,15 @@
+     }
+   }
+ 
+-  Future<void> _settleFocusPan({required bool commit}) async {
++  Future<void> _settleFocusPan({
++    required bool commit,
++    Duration? duration,
++  }) async {
+     final source = _focusTurnSourcePage;
+     final target = _focusTurnTargetPage;
+     if (!_isPanningFocus || source == null || target == null) return;
+     final epoch = _focusPanEpoch;
++    _focusPanCommit = commit;
+     setState(() => _isTurningWithControl = true);
+     try {
+       if (!SnapFitMotion.reduced(context)) {
+@@ -303,15 +319,18 @@
+             .animateTo(
+               commit ? 1 : 0,
+               curve: BookFlipCurl.albumPreviewTiming,
+-              duration: Duration(
+-                microseconds:
+-                    ((330 +
+-                                ((commit ? 1 : 0) - _focusPanController.value)
+-                                        .abs() *
+-                                    170) *
+-                            1000)
+-                        .round(),
+-              ),
++              duration:
++                  duration ??
++                  Duration(
++                    microseconds:
++                        ((330 +
++                                    ((commit ? 1 : 0) -
++                                                _focusPanController.value)
++                                            .abs() *
++                                        170) *
++                                1000)
++                            .round(),
++                  ),
+             )
+             .orCancel;
+       }
+@@ -320,12 +339,16 @@
+     }
+     if (!mounted || epoch != _focusPanEpoch) return;
+     final page = commit ? target : source;
++    final queuedDirection = _queuedTurnDirection;
+     setState(() {
+       _focusPageIndex = page;
+       _isTurningWithControl = false;
+       _clearFocusCamera();
+     });
+     await _syncSpreadFromFocus(page);
++    if (mounted && queuedDirection != null) {
++      unawaited(_turnFocusPage(queuedDirection));
++    }
+   }
+ 
+   Future<void> _finishFocusPageJump(int pageIndex) async {
+@@ -500,6 +523,12 @@
+     }
+     if (!widget.focusMode) return;
+     final requested = widget.requestedFocusPageIndex;
++    if (requested != oldWidget.requestedFocusPageIndex &&
++        requested == _expectedFocusEcho &&
++        requested == _focusPageIndex) {
++      _expectedFocusEcho = null;
++      return;
++    }
+     if (requested == null ||
+         requested == oldWidget.requestedFocusPageIndex ||
+         (requested == _focusPageIndex &&
+@@ -539,6 +568,17 @@
+ 
+   int get _bookSpreadCount => math.max(1, _bookPageCount ~/ 2);
+ 
++  int get _controlNavigationSpread {
++    final target = _focusTurnTargetPage;
++    if (target != null) return _spreadForFocusPage(target);
++    final direction = _bookFlipController.flipDirection;
++    return _bookFlipController.isAnimating && direction != null
++        ? (_bookFlipController.currentSpread +
++                  (direction == FlipDirection.forward ? 1 : -1))
++              .clamp(0, _bookSpreadCount - 1)
++        : _spreadForFocusPage(_focusPageIndex);
++  }
++
+   void _syncFocusFromSpread() {
+     if (!widget.focusMode ||
+         _syncingSpreadFromFocus ||
+@@ -560,7 +600,7 @@
+ 
+   Future<void> _syncSpreadFromFocus(int pageIndex) async {
+     if (!widget.focusMode || !widget.pageController.hasClients) {
+-      widget.onFocusPageChanged?.call(pageIndex);
++      _notifyFocusPage(pageIndex);
+       return;
+     }
+ 
+@@ -574,16 +614,45 @@
+         _syncingSpreadFromFocus = false;
+       }
+     }
+-    widget.onFocusPageChanged?.call(pageIndex);
++    _notifyFocusPage(pageIndex);
++  }
++
++  void _notifyFocusPage(int pageIndex) {
++    final callback = widget.onFocusPageChanged;
++    if (callback == null) return;
++    final epoch = ++_focusEchoEpoch;
++    _expectedFocusEcho = widget.requestedFocusPageIndex == pageIndex
++        ? null
++        : pageIndex;
++    // 부모의 다음 build 반영이 방금 시작한 연속 넘김을 새 선택으로 취소하지 않는다.
++    WidgetsBinding.instance.addPostFrameCallback((_) {
++      if (epoch == _focusEchoEpoch) _expectedFocusEcho = null;
++    });
++    callback(pageIndex);
+   }
+ 
+   Future<void> _turnFocusPage(int direction) async {
+     if (widget.allPages.isEmpty ||
++        ModalRoute.of(context)?.isCurrent == false ||
+         (_singlePageFocusActive && _pendingSingleFocusRequest != null) ||
+-        _isTurningWithControl ||
+         _isAnimatingToRequestedSpread ||
+-        _openSpreadPointer != null ||
+-        _bookFlipController.isAnimating) {
++        _openSpreadPointer != null) {
++      return;
++    }
++    if (_isTurningWithControl || _bookFlipController.isAnimating) {
++      // 새 입력은 하나만 보존해 오래된 연타가 나중에 계속 재생되지 않게 한다.
++      _queuedTurnDirection = direction;
++      if (_isPanningFocus && !_focusPanFinishingSoon) {
++        _focusPanFinishingSoon = true;
++        unawaited(
++          _settleFocusPan(
++            commit: _focusPanCommit,
++            duration: const Duration(milliseconds: 80),
++          ),
++        );
++      } else {
++        _bookFlipController.finishTurnSoon();
++      }
+       return;
+     }
+     _requestedPreparationSpread = null;
+@@ -1111,6 +1180,7 @@
+               : sourcePage
+         : _focusPageForSpread(spread);
+     if (!mounted) return;
++    final queuedDirection = _queuedTurnDirection;
+     setState(() {
+       _focusPageIndex = target;
+       _isTurningWithControl = false;
+@@ -1121,6 +1191,9 @@
+     });
+     unawaited(_syncSpreadFromFocus(target));
+     _clearFlipEndWaiter();
++    if (queuedDirection != null) {
++      unawaited(_turnFocusPage(queuedDirection));
++    }
+   }
+ 
+   void _requestPreparedSpread(int spread) {
+@@ -1218,12 +1291,30 @@
+ 
+   void _handleOpenSpreadPointerDown(PointerDownEvent event, double pageWidth) {
+     if (_singlePageFocusActive && _pendingSingleFocusRequest != null) return;
+-    if (_isTurningWithControl && !_bookFlipController.isAnimating) {
++    if (_isTurningWithControl &&
++        !_isPanningFocus &&
++        !_bookFlipController.isAnimating) {
+       return;
+     }
+     if (_isAnimatingToRequestedSpread) return;
+     if (_openSpreadPointer != null) return;
++    final regrabPan = _isPanningFocus;
++    _canContinueSettledTurn =
++        widget.singlePageFocus &&
++        (regrabPan
++            ? _focusPanController.isAnimating &&
++                  _focusPanCommit &&
++                  _focusPanController.value >= .8
++            : _bookFlipController.settlingDirection != null &&
++                  _bookFlipController.flipProgress >= .8);
++    _openSpreadPanStartProgress = regrabPan ? _focusPanController.value : 0;
++    if (regrabPan) {
++      _focusPanEpoch++;
++      _focusPanController.stop();
++      _focusPanFinishingSoon = false;
++    }
+     _pendingControlDirection = null;
++    _queuedTurnDirection = null;
+     _requestedPreparationSpread = null;
+     final focusedSpread = _spreadForFocusPage(_focusPageIndex);
+     final currentSpread = _bookFlipController.isAnimating
+@@ -1236,10 +1327,11 @@
+     final ready = _bookFlipController.isReady;
+     final started =
+         reducedMotion ||
++        regrabPan ||
+         !ready ||
+         _bookFlipController.dragStart(event.localPosition);
+     if (!started || !mounted) return;
+-    _bookDragStarted = !reducedMotion && ready;
++    _bookDragStarted = !reducedMotion && !regrabPan && ready;
+     _waitingForDragPages = false;
+     _openSpreadPointer = event.pointer;
+     _openSpreadLocalPosition = event.localPosition;
+@@ -1252,7 +1344,9 @@
+     _openSpreadStartSpread = currentSpread;
+     _openSpreadPageWidth = math.max(1, pageWidth);
+     _openSpreadReducedMotion = reducedMotion;
+-    _openSpreadDirection = reducedMotion
++    _openSpreadDirection = regrabPan
++        ? ((_focusTurnTargetPage ?? _focusPageIndex) - _focusPageIndex).sign
++        : reducedMotion
+         ? 0
+         : switch (_bookFlipController.flipDirection) {
+             FlipDirection.forward => 1,
+@@ -1266,6 +1360,39 @@
+     });
+   }
+ 
++  void _continueFromSettledTurn() {
++    final direction = _openSpreadDirection;
++    final spread = (_openSpreadStartSpread + direction).clamp(
++      0,
++      _bookSpreadCount - 1,
++    );
++    final page = _singlePageFocusActive
++        ? _focusTurnTargetPage ?? _focusPageIndex
++        : _focusPageForSpread(spread);
++    final targetSpread = _spreadForFocusPage(page);
++    // 거의 착지한 이전 동작을 끝낸 뒤 현재 손가락의 이동을 다음 쪽에 연결한다.
++    _isJumpingFocus = true;
++    try {
++      _bookFlipController.goToSpread(targetSpread);
++    } finally {
++      _isJumpingFocus = false;
++    }
++    _clearFlipEndWaiter();
++    setState(() {
++      _clearFocusCamera();
++      _focusPageIndex = page;
++      _isTurningWithControl = false;
++      _isCoverFlipActive = false;
++      _coverFlipDirection = 0;
++      _openSpreadStartSpread = targetSpread;
++      _openSpreadDirection = 0;
++      _openSpreadPanStartProgress = 0;
++      _bookDragStarted = false;
++      _waitingForDragPages = false;
++    });
++    unawaited(_syncSpreadFromFocus(page));
++  }
++
+   void _handleOpenSpreadPointerMove(PointerMoveEvent event) {
+     if (!_isDraggingOpenSpread || event.pointer != _openSpreadPointer) return;
+     _openSpreadLocalPosition = event.localPosition;
+@@ -1282,6 +1409,12 @@
+     _openSpreadTotalDx += dx;
+     if (_openSpreadTotalDx.abs() > (widget.singlePageFocus ? 5 : 8)) {
+       _suppressNextTapUp = true;
++    }
++    if (_canContinueSettledTurn && _openSpreadTotalDx.abs() > 5) {
++      _canContinueSettledTurn = false;
++      if (-_openSpreadDirection * _openSpreadTotalDx > 0) {
++        _continueFromSettledTurn();
++      }
+     }
+     if (_openSpreadDirection == 0 &&
+         _openSpreadTotalDx.abs() > (widget.singlePageFocus ? 5 : 14)) {
+@@ -1323,10 +1456,11 @@
+       if (_isPanningFocus) {
+         if (!_openSpreadReducedMotion) {
+           _focusPanController.value =
+-              (-_openSpreadDirection *
+-                      _openSpreadTotalDx *
+-                      _openSpreadMotionScale /
+-                      _openSpreadPageWidth)
++              (_openSpreadPanStartProgress +
++                      -_openSpreadDirection *
++                          _openSpreadTotalDx *
++                          _openSpreadMotionScale /
++                          _openSpreadPageWidth)
+                   .clamp(0.0, 1.0);
+         }
+         return;
+@@ -1836,11 +1970,12 @@
+                 bottom: bottomInset + 8,
+                 child: _SinglePageReaderControls(
+                   currentPage: _focusPageIndex,
++                  navigationPage: _focusTurnTargetPage ?? _focusPageIndex,
+                   pageCount: math.max(0, widget.allPages.length - 1),
+                   busy:
+-                      _isTurningWithControl ||
+-                      _isDraggingOpenSpread ||
+-                      _bookFlipController.isAnimating,
++                      _openSpreadPointer != null ||
++                      _pendingSingleFocusRequest != null ||
++                      _isAnimatingToRequestedSpread,
+                   onPrevious: () => _turnFocusPage(-1),
+                   onNext: () => _turnFocusPage(1),
+                   onTogglePageList: widget.onTogglePageList,
+@@ -1856,14 +1991,9 @@
+                   child: SizedBox(
+                     width: math.min(326.0, screen.width - railInset - 48),
+                     child: _FocusReaderControls(
+-                      canGoBack:
+-                          _spreadForFocusPage(_focusPageIndex) > 0 ||
+-                          _bookFlipController.currentSpread > 0,
++                      canGoBack: _controlNavigationSpread > 0,
+                       canGoForward:
+-                          _spreadForFocusPage(_focusPageIndex) <
+-                              _bookSpreadCount - 1 ||
+-                          _bookFlipController.currentSpread <
+-                              _bookSpreadCount - 1,
++                          _controlNavigationSpread < _bookSpreadCount - 1,
+                       onPrevious: () => _turnFocusPage(-1),
+                       canEdit: vm.album?.allowsEditing != false,
+                       onEdit: _openFocusEditor,
+@@ -1881,14 +2011,9 @@
+                   child: SizedBox(
+                     width: math.min(342.0, screen.width - 48),
+                     child: _FocusReaderControls(
+-                      canGoBack:
+-                          _spreadForFocusPage(_focusPageIndex) > 0 ||
+-                          _bookFlipController.currentSpread > 0,
++                      canGoBack: _controlNavigationSpread > 0,
+                       canGoForward:
+-                          _spreadForFocusPage(_focusPageIndex) <
+-                              _bookSpreadCount - 1 ||
+-                          _bookFlipController.currentSpread <
+-                              _bookSpreadCount - 1,
++                          _controlNavigationSpread < _bookSpreadCount - 1,
+                       onPrevious: () => _turnFocusPage(-1),
+                       canEdit: vm.album?.allowsEditing != false,
+                       onEdit: _openFocusEditor,
+@@ -2606,6 +2731,7 @@
+ class _SinglePageReaderControls extends StatelessWidget {
+   const _SinglePageReaderControls({
+     required this.currentPage,
++    required this.navigationPage,
+     required this.pageCount,
+     required this.busy,
+     required this.onPrevious,
+@@ -2615,6 +2741,7 @@
+   });
+ 
+   final int currentPage;
++  final int navigationPage;
+   final int pageCount;
+   final bool busy;
+   final VoidCallback onPrevious;
+@@ -2634,7 +2761,7 @@
+           children: [
+             IconButton(
+               tooltip: '이전 페이지',
+-              onPressed: !busy && currentPage > 0 ? onPrevious : null,
++              onPressed: !busy && navigationPage > 0 ? onPrevious : null,
+               icon: const Icon(Icons.chevron_left_rounded),
+             ),
+             SizedBox(
+@@ -2657,7 +2784,7 @@
+             ),
+             IconButton(
+               tooltip: '다음 페이지',
+-              onPressed: !busy && currentPage < pageCount ? onNext : null,
++              onPressed: !busy && navigationPage < pageCount ? onNext : null,
+               icon: const Icon(Icons.chevron_right_rounded),
+             ),
+           ],
+--- a/packages/book_page_flip/lib/src/api.dart
++++ b/packages/book_page_flip/lib/src/api.dart
+@@ -556,6 +556,19 @@
+ 
+   /// Whether a flip is in progress (dragging or animating).
+   bool get isAnimating => _state?._scene.active ?? false;
++
++  /// Direction of a released leaf completing its turn, excluding held/cancelled
++  /// drags. A host can distinguish another page request from a reverse re-grab.
++  FlipDirection? get settlingDirection {
++    final state = _state;
++    return state != null && !state._dragging && state._target == 1
++        ? flipDirection
++        : null;
++  }
++
++  /// Shortens only the current released turn when another input arrives.
++  /// Repeated requests do not restart this short completion animation.
++  bool finishTurnSoon() => _state?._finishTurnSoon() ?? false;
+ 
+   /// Whether the book has finished preparing its page texture and can turn.
+   bool get isReady =>
+--- a/packages/book_page_flip/lib/src/state.dart
++++ b/packages/book_page_flip/lib/src/state.dart
+@@ -17,6 +17,7 @@
+   int _spread = 0;
+   int _target = 0; // spring target (0 settle-back, 1 commit)
+   bool _dragging = false;
++  bool _finishingSoon = false;
+   bool _atBoundary = false;
+   bool _armed =
+       false; // grabbed but not yet moved → leaf idle (long-press inert)
+@@ -37,7 +38,7 @@
+       widget.curl?.profile == BookFlipCurveProfile.albumPreview;
+ 
+   // 승인한 미리보기와 같은 시간 곡선으로 남은 거리를 정착시킨다.
+-  void _settleAlbumPreview() {
++  void _settleAlbumPreview({Duration? duration}) {
+     final start = _scene.t;
+     final target = _target.toDouble();
+     if ((target - start).abs() < 1e-10) {
+@@ -47,11 +48,20 @@
+     _ctl.value = start;
+     unawaited(_ctl.animateTo(
+       target,
+-      duration: Duration(
+-        microseconds: ((330 + (target - start).abs() * 170) * 1000).round(),
+-      ),
++      duration: duration ??
++          Duration(
++            microseconds: ((330 + (target - start).abs() * 170) * 1000).round(),
++          ),
+       curve: BookFlipCurl.albumPreviewTiming,
+     ));
++  }
++
++  bool _finishTurnSoon() {
++    if (!_usesAlbumPreview || !_scene.active || _dragging) return false;
++    if (_finishingSoon) return true;
++    _finishingSoon = true;
++    _settleAlbumPreview(duration: const Duration(milliseconds: 80));
++    return true;
+   }
+ 
+   int get _maxSpread => (_pageCount ~/ 2) - 1;
+@@ -360,6 +370,7 @@
+     final canGo = dir > 0 ? _canForward(_spread) : _canBackward(_spread);
+     if (!canGo) return false;
+     if (!_hasTurnPages(dir)) return false;
++    _finishingSoon = false;
+     _ctl.stop();
+     _dragging = false;
+     _atBoundary = false;
+@@ -517,6 +528,7 @@
+ 
+   void _finishAnimation() {
+     _ctl.stop();
++    _finishingSoon = false;
+     final dir = _scene.dir;
+     if (_target == 1 && !_atBoundary) {
+       // COMMIT — seamless: at t=1 the leaf lies flat on the far half showing its
+@@ -547,6 +559,7 @@
+   void _onDragStart(Offset local) {
+     if (_scene.w <= 0 || _scene.h <= 0) return;
+     _ctl.stop();
++    _finishingSoon = false;
+     _dragging = true;
+     _dragStartT = _scene.active ? _scene.t : 0;
+     _dragStartDir = _scene.active ? _scene.dir : 0;
+--- a/test/widget/reader_first_interaction_test.dart
++++ b/test/widget/reader_first_interaction_test.dart
+@@ -22,12 +22,18 @@
+   FutureOr<AlbumEditorState> build() => const AlbumEditorState();
+ }
+ 
+-Future<void> _coldReader(WidgetTester tester) async {
++Future<void> _coldReader(
++  WidgetTester tester, {
++  int initialPage = 0,
++  bool echoFocus = false,
++}) async {
+   tester.view.physicalSize = _viewport;
+   tester.view.devicePixelRatio = 1;
+   addTearDown(tester.view.resetPhysicalSize);
+   addTearDown(tester.view.resetDevicePixelRatio);
+ 
++  final parentFocus = ValueNotifier(initialPage);
++  addTearDown(parentFocus.dispose);
+   final pageController = PageController();
+   final canvas = coverCanvasBaseSize(defaultCoverSize);
+   final interaction = LayerInteractionManager.printPreview(() => canvas);
+@@ -66,19 +72,26 @@
+       child: ScreenUtilInit(
+         designSize: _viewport,
+         builder: (_, child) => MaterialApp(home: Scaffold(body: child)),
+-        child: AlbumReaderSinglePageView(
+-          allPages: pages,
+-          selectedCover: defaultCoverSize,
+-          coverTheme: CoverTheme.classic,
+-          pageController: pageController,
+-          interaction: interaction,
+-          layerBuilder: LayerBuilder(interaction, () => canvas),
+-          canvasKey: GlobalKey(),
+-          onCanvasSizeChanged: (_) {},
+-          onPageChanged: (_) {},
+-          onStateChanged: () {},
+-          focusMode: true,
+-          singlePageFocus: true,
++        child: ValueListenableBuilder<int>(
++          valueListenable: parentFocus,
++          builder: (_, focus, _) => AlbumReaderSinglePageView(
++            allPages: pages,
++            selectedCover: defaultCoverSize,
++            coverTheme: CoverTheme.classic,
++            pageController: pageController,
++            interaction: interaction,
++            layerBuilder: LayerBuilder(interaction, () => canvas),
++            canvasKey: GlobalKey(),
++            onCanvasSizeChanged: (_) {},
++            onPageChanged: (_) {},
++            onStateChanged: () {},
++            focusMode: true,
++            singlePageFocus: true,
++            requestedFocusPageIndex: focus,
++            onFocusPageChanged: echoFocus
++                ? (page) => parentFocus.value = page
++                : null,
++          ),
+         ),
+       ),
+     ),
+@@ -145,6 +158,32 @@
+   }
+   expect(_position(tester), '1 / ${_innerPages}쪽');
+   expect(_controller(tester)?.isAnimating, isNot(true));
++  expect(tester.takeException(), isNull);
++}
++
++Future<BookFlipController> _warmReader(WidgetTester tester, int page) async {
++  await _coldReader(tester, initialPage: page, echoFocus: true);
++  for (var frame = 0; frame < 100; frame++) {
++    await _frame(tester);
++    if (_controller(tester)?.isReady == true) break;
++  }
++  expect(_controller(tester)?.isReady, isTrue);
++  // 인접한 다음 지면도 준비해 연속 입력 자체의 처리만 검사한다.
++  for (var frame = 0; frame < 30; frame++) {
++    await _frame(tester);
++  }
++  return _controller(tester)!;
++}
++
++Future<void> _settleAt(WidgetTester tester, int page) async {
++  for (var frame = 0; frame < 90; frame++) {
++    await _frame(tester);
++  }
++  expect(
++    _position(tester),
++    page == 0 ? '표지 / ${_innerPages}쪽' : '$page / ${_innerPages}쪽',
++  );
++  expect(_controller(tester)?.isAnimating, isFalse);
+   expect(tester.takeException(), isNull);
+ }
+ 
+@@ -230,4 +269,166 @@
+     );
+     await _expectFirstPage(tester);
+   });
+-}
++
++  for (final page in [3, 4]) {
++    testWidgets(
++      'a repeated button promptly starts the following page from $page',
++      (tester) async {
++        final controller = await _warmReader(tester, page);
++        await tester.tap(find.byTooltip('다음 페이지'));
++        await tester.pump();
++        await tester.pump(const Duration(milliseconds: 100));
++        final next = find.widgetWithIcon(
++          IconButton,
++          Icons.chevron_right_rounded,
++        );
++        expect(
++          tester.widget<IconButton>(next).onPressed,
++          isNotNull,
++          reason: 'A moving page must keep accepting the next turn.',
++        );
++        await tester.tap(find.byTooltip('다음 페이지'));
++        await tester.pump();
++        for (var frame = 0; frame < 8; frame++) {
++          await tester.pump(const Duration(milliseconds: 16));
++        }
++        expect(
++          _position(tester),
++          '${page + 1} / ${_innerPages}쪽',
++          reason: 'The first turn must yield to the next input within 128ms.',
++        );
++        if (page == 3) {
++          expect(
++            controller.isAnimating,
++            isTrue,
++            reason: 'The following paper turn starts without another tap.',
++          );
++        } else {
++          final bookWidth = tester
++              .getSize(find.byKey(const ValueKey('reader-focus-book')))
++              .width;
++          expect(_cameraX(tester), lessThan(bookWidth / 4 - .5));
++        }
++        await _settleAt(tester, page + 2);
++      },
++    );
++  }
++
++  for (final page in [3, 4]) {
++    testWidgets(
++      'a new same-direction swipe continues past the landed page from $page',
++      (tester) async {
++        final controller = await _warmReader(tester, page);
++        await tester.tap(find.byTooltip('다음 페이지'));
++        await tester.pump();
++        await tester.pump(const Duration(milliseconds: 300));
++        final viewport = tester.getRect(
++          find.byKey(const ValueKey('reader-page-viewport')),
++        );
++        final gesture = await tester.startGesture(viewport.center);
++        await gesture.moveBy(Offset(-viewport.width * .45, 0));
++        await tester.pump();
++        expect(
++          _position(tester),
++          '${page + 1} / ${_innerPages}쪽',
++          reason: 'A fresh forward swipe must act on the following page.',
++        );
++        if (page == 3) expect(controller.isAnimating, isTrue);
++        await gesture.up();
++        await _settleAt(tester, page + 2);
++      },
++    );
++  }
++
++  testWidgets('a settling pan is immediately grabbable and reversible', (
++    tester,
++  ) async {
++    await _warmReader(tester, 3);
++    await tester.tap(find.byTooltip('다음 페이지'));
++    await tester.pump();
++    await tester.pump(const Duration(milliseconds: 100));
++    final before = _cameraX(tester);
++    final viewport = tester.getRect(
++      find.byKey(const ValueKey('reader-page-viewport')),
++    );
++    final gesture = await tester.startGesture(viewport.center);
++    await tester.pump();
++    expect(_cameraX(tester), closeTo(before, .001));
++    await gesture.moveBy(Offset(viewport.width * .4, 0));
++    await tester.pump();
++    expect(_cameraX(tester), greaterThan(before + .5));
++    await tester.pump(const Duration(milliseconds: 160));
++    await gesture.up();
++    await _settleAt(tester, 3);
++  });
++
++  testWidgets('the next button can reverse a settling pan without being lost', (
++    tester,
++  ) async {
++    await _warmReader(tester, 3);
++    await tester.tap(find.byTooltip('다음 페이지'));
++    await tester.pump();
++    await tester.pump(const Duration(milliseconds: 100));
++    await tester.tap(find.byTooltip('이전 페이지'));
++    await _settleAt(tester, 3);
++  });
++
++  for (final page in [4, 5]) {
++    testWidgets(
++      'a new backward swipe continues from a nearly landed page $page',
++      (tester) async {
++        await _warmReader(tester, page);
++        await tester.tap(find.byTooltip('이전 페이지'));
++        await tester.pump();
++        await tester.pump(const Duration(milliseconds: 300));
++        final viewport = tester.getRect(
++          find.byKey(const ValueKey('reader-page-viewport')),
++        );
++        final gesture = await tester.startGesture(viewport.center);
++        await gesture.moveBy(Offset(viewport.width * .45, 0));
++        await tester.pump();
++        expect(_position(tester), '${page - 1} / ${_innerPages}쪽');
++        await gesture.up();
++        await _settleAt(tester, page - 2);
++      },
++    );
++  }
++
++  testWidgets('a fresh reverse input wins while a turn is finishing quickly', (
++    tester,
++  ) async {
++    await _warmReader(tester, 3);
++    await tester.tap(find.byTooltip('다음 페이지'));
++    await tester.pump();
++    await tester.pump(const Duration(milliseconds: 100));
++    await tester.tap(find.byTooltip('다음 페이지'));
++    await tester.pump();
++    await tester.pump(const Duration(milliseconds: 16));
++    await tester.tap(find.byTooltip('이전 페이지'));
++    await _settleAt(tester, 3);
++  });
++
++  for (final page in [0, _innerPages]) {
++    testWidgets('boundary turn can immediately accept its reverse from $page', (
++      tester,
++    ) async {
++      await _warmReader(tester, page);
++      final outward = page == 0 ? '다음 페이지' : '이전 페이지';
++      final reverse = page == 0 ? '이전 페이지' : '다음 페이지';
++      await tester.tap(find.byTooltip(outward));
++      await tester.pump();
++      await tester.pump(const Duration(milliseconds: 100));
++      final icon = page == 0
++          ? Icons.chevron_left_rounded
++          : Icons.chevron_right_rounded;
++      expect(
++        tester
++            .widget<IconButton>(find.widgetWithIcon(IconButton, icon))
++            .onPressed,
++        isNotNull,
++      );
++      await tester.tap(find.byTooltip(reverse));
++      await _settleAt(tester, page);
++    });
++  }
++}

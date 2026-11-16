@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/navigation/web_app_location.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../views/referral_screen.dart';
+import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 class ReferralEntryCard extends StatelessWidget {
   const ReferralEntryCard({super.key});
@@ -13,18 +15,13 @@ class ReferralEntryCard extends StatelessWidget {
       key: const ValueKey('referral-entry'),
       borderRadius: BorderRadius.circular(16),
       onTap: () => Navigator.of(context).push<void>(
-        MaterialPageRoute<void>(
-          settings: const WebAppRouteSettings(WebAppLocation.referral),
-          builder: (_) => const ReferralScreen(),
-        ),
+        snapFitRoute<void>(page: const ReferralScreen(), settings: const WebAppRouteSettings(WebAppLocation.referral)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            Icon(
-              Icons.people_outline,
-              color: ExperienceFormStyle.selectionInk(context),
+            ExperienceIcon('Users2', color: ExperienceFormStyle.selectionInk(context),
               size: 25,
             ),
             const SizedBox(width: 12),
@@ -53,9 +50,7 @@ class ReferralEntryCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Icon(
-              Icons.chevron_right_rounded,
-              color: ExperienceFormStyle.selectionInk(context),
+            ExperienceIcon('ChevronRight', color: ExperienceFormStyle.selectionInk(context),
             ),
           ],
         ),

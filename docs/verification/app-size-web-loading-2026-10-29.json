@@ -1,0 +1,210 @@
+{
+  "status": "web_deployed_android_verification_build_complete",
+  "verifiedAt": "2026-10-28T18:51:14.416948+00:00",
+  "scope": [
+    "Lossless PNG/JPEG entropy and filter optimization with original paths, pixels, alpha, ICC and metadata retained",
+    "Fresh Android APK packaging removes obsolete incremental ZIP space",
+    "Parallel browser code/engine preparation and bounded exact legacy-worker retirement",
+    "Original TTF/OTF bytes served at content hashes and preloaded without changing font families or weights",
+    "Long-term hashed-font caching and three distinct font-generation compatibility"
+  ],
+  "android": {
+    "passed": true,
+    "beforeBytes": 903248486,
+    "afterBytes": 850596226,
+    "savedBytes": 52652260,
+    "savedPercent": 5.82921098856954,
+    "legacyAssetPathsPreserved": 1072,
+    "changedImagesPixelProven": 547,
+    "unchangedAssetBytes": 525,
+    "nativeFontManifestByteIdentical": true,
+    "webFontPackExcludedFromApp": true,
+    "note": "Same arm64 debug verification build type before and after. These are APK file bytes, not a measured store download or installed disk footprint.",
+    "signingCertificateUnchanged": true,
+    "artifact": {
+      "path": "/Users/devsheep/SnapFit/SnapFit/build/app/outputs/flutter-apk/app-debug.apk",
+      "bytes": 850596226,
+      "sha256": "c8f299bc300baf207666777f99a86d7aa3dd4c88763db0e285e3709466d234b1",
+      "target": "android-arm64",
+      "flutterEngineArchitectures": [
+        "arm64-v8a"
+      ],
+      "type": "Android debug verification APK",
+      "phoneInstallVerified": false,
+      "storeRolloutPerformed": false,
+      "signatureEvidence": "output/performance-android-signature.log",
+      "signatureVerified": true
+    },
+    "buildCommand": "PATH=/Users/devsheep/flutter/bin:$PATH python3 tool/build_android.py --mode debug --target-platform android-arm64"
+  },
+  "webTiming": {
+    "browser": "Chrome 156.0.8078.48",
+    "url": "https://snapfit-c719d.web.app/feed",
+    "profile": {
+      "cache": "disabled",
+      "latencyMs": 50,
+      "downloadMbps": 10,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    "runsPerCondition": 2,
+    "metric": "navigation start to Flutter first frame; does not assert that every later feed request has completed",
+    "beforeMeanMs": 33478.89999999851,
+    "afterMeanMs": 32702.650000002235,
+    "savedMs": 776.2499999962747,
+    "savedPercent": 2.318624566506992,
+    "beforeFirstFrameBytesMean": 36049813.5,
+    "afterFirstFrameBytesMean": 36060186.5,
+    "beforeEvidence": "output/performance-browser-before-final.json",
+    "afterEvidence": "output/performance-browser-final-production.json",
+    "interpretation": "A small observed startup-time improvement; initial font content transfer is essentially unchanged because original font bytes are retained."
+  },
+  "fastNetworkNonregressionControl": {
+    "profile": {
+      "cache": "disabled",
+      "latencyMs": 50,
+      "downloadMbps": 100,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    "control": "Original fonts with the updated bootstrap before the final font-preload step; not a measurement of the untouched historical release.",
+    "beforeMeanMs": 8377.95000000298,
+    "candidateMeanMs": 7947.25,
+    "candidateURL": "https://snapfit-c719d--performance-20261029-ecir6ix1.web.app/feed",
+    "candidateBytesMatchFinalRelease": true,
+    "evidence": [
+      "output/performance-fast-ttf.json",
+      "output/performance-original-preload-fast.json"
+    ]
+  },
+  "quality": {
+    "changedImagePaths": 547,
+    "rawImageBytesSaved": 11482047,
+    "uniqueImageCodecsCompared": 528,
+    "webImagePixelsAndDimensionsEqual": true,
+    "nativeLegacyAssetPathsPreserved": 1072,
+    "webLegacyAssetPathsPreserved": 1089,
+    "nativeFontManifestByteIdentical": true,
+    "originalWebFontFilesByteIdentical": 40,
+    "fontFamilyWeightAliasMetadataPreserved": true,
+    "applicationMainCodeByteIdentical": true,
+    "oldPackedFontURLsPreserved": 40,
+    "previouslySignedProvenanceImagesLeftByteIdentical": 169,
+    "evidence": [
+      "output/asset-lossless-postflight.json",
+      "output/performance-android-compatibility.json",
+      "output/performance-web-compatibility.json",
+      "output/web-image-rendering-check.json"
+    ]
+  },
+  "checks": {
+    "nativeAlbumPrintPersistenceAndCatalogTests": {
+      "passed": 35,
+      "log": "output/performance-album-quality-regression.log"
+    },
+    "webStartupReleaseAndFontRetentionTests": {
+      "passed": 34,
+      "log": "output/performance-web-startup-tests.log"
+    },
+    "imageOptimizationToolTests": {
+      "passed": 8,
+      "log": "output/performance-image-tool-tests.log"
+    },
+    "fontToolTests": {
+      "passed": 18,
+      "log": "output/web-font-pack-tests.log"
+    },
+    "androidPackageScopeTests": {
+      "passed": 3,
+      "log": "output/performance-android-tool-tests.log"
+    },
+    "realLegacyWorkerBrowserTests": {
+      "passed": 1,
+      "log": "output/performance-legacy-browser-final.log"
+    },
+    "sourcePythonSyntaxAndDiffChecksPassed": true
+  },
+  "webDeployment": {
+    "release": "projects/360727043538/sites/snapfit-c719d/versions/2981e2999934a504",
+    "build": {
+      "main_sha256": "70c5246b7f225bd759a80f7b9f339d75cf6ea0a372eddb0d707be95c2355f5b1",
+      "main_file": "main.70c5246b7f225bd759a8.dart.js",
+      "bootstrap_sha256": "ea6d5c42952c1a5f3c89fc1cdc966f43d88b44ceb69bd71698e11f0bacae6b91",
+      "bootstrap_file": "flutter_bootstrap.ea6d5c42952c1a5f3c89.js"
+    },
+    "checks": [
+      {
+        "path": "/feed",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      },
+      {
+        "path": "/me",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      },
+      {
+        "path": "/account/safety",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      },
+      {
+        "path": "/account/safety/reports",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      },
+      {
+        "path": "/users/00000000-0000-4000-8000-000000000001/months/2026-10",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      },
+      {
+        "path": "/snapfit-web-build.json",
+        "status": 200,
+        "matchesLocal": true
+      },
+      {
+        "path": "/flutter_bootstrap.ea6d5c42952c1a5f3c89.js",
+        "status": 200,
+        "sha256": "ea6d5c42952c1a5f3c89fc1cdc966f43d88b44ceb69bd71698e11f0bacae6b91"
+      },
+      {
+        "path": "/main.70c5246b7f225bd759a8.dart.js",
+        "status": 200,
+        "sha256": "70c5246b7f225bd759a80f7b9f339d75cf6ea0a372eddb0d707be95c2355f5b1"
+      }
+    ],
+    "fontManifestMatchesLocal": true,
+    "fontDeliveryMetadataMatchesLocal": true,
+    "uniqueFontHTTPResponses": 43,
+    "fontWireBytes": 31930386,
+    "evidence": "output/performance-deployment-check.json"
+  },
+  "rejectedWoff2Delivery": {
+    "usedByFinalFontManifest": false,
+    "reason": "Smaller transfer was offset by decoding cost; the 100Mbps control worsened from about 8.38s to 11.11s. Original font delivery was restored.",
+    "controlMeanMs": 8377.95000000298,
+    "woff2MeanMs": 11106.25,
+    "evidence": "output/performance-fast-woff2.json"
+  },
+  "customerAlbumsOrUploadedPhotosModified": false,
+  "productionDatabaseMigrated": false,
+  "phoneInstallVerified": false,
+  "storeRolloutPerformed": false,
+  "limitations": [
+    "Timing is a two-run desktop Chrome cold-cache comparison under a 10Mbps/50ms synthetic network profile; device, CPU, network and CDN conditions affect actual time.",
+    "Only a modest measured startup-time improvement is claimed; the final version deliberately retains every original font and does not reduce the font character set.",
+    "Physical phone installation and rendering were not tested because the phone is unavailable.",
+    "Three pre-existing malformed or format-mismatched source image files were preserved unchanged and recorded in the image audit; active template references to the two malformed JPEG files were not found.",
+    "Original local assets are backed up in output/asset-lossless-20261029/originals; original font files and customer storage were not edited."
+  ]
+}

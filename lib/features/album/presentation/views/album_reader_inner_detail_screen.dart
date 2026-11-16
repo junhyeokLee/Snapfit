@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/navigation/web_app_location.dart';
+import '../../../../core/utils/context_extensions.dart';
 
 import '../../../../core/constants/cover_size.dart';
 import '../../../../shared/web/web_design.dart';
@@ -10,12 +11,17 @@ import '../../domain/entities/album.dart';
 import '../../domain/entities/layer.dart';
 import '../controllers/layer_builder.dart';
 import '../controllers/layer_interaction_manager.dart';
+import '../providers/album_edit_session_provider.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import '../widgets/reader/album_reader_more_options_sheet.dart';
 import '../widgets/reader/reader_page_gallery.dart';
 import '../widgets/web/web_album_workspace.dart';
 import 'page_editor_screen.dart';
 import 'album_invite_screen.dart';
+import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
+
+enum AlbumReaderInnerDetailAction { prepareBook }
 
 class AlbumReaderInnerDetailScreen extends ConsumerStatefulWidget {
   const AlbumReaderInnerDetailScreen({
@@ -26,12 +32,14 @@ class AlbumReaderInnerDetailScreen extends ConsumerStatefulWidget {
     required this.singlePageH,
     required this.interaction,
     required this.layerBuilder,
+    this.onPageFocused,
   });
   final List<AlbumPage> innerPages;
   final int initialPageIndex;
   final double singlePageW, singlePageH;
   final LayerInteractionManager interaction;
   final LayerBuilder layerBuilder;
+  final ValueChanged<String>? onPageFocused;
   @override
   ConsumerState<AlbumReaderInnerDetailScreen> createState() =>
       _AlbumReaderInnerDetailScreenState();
@@ -59,6 +67,18 @@ class _AlbumReaderInnerDetailScreenState
     super.dispose();
   }
 
+  void _notifyFocusedPage() {
+    if (_current < 0 || _current >= _visible.length) return;
+    final id = _visible[_current].id;
+    if (id.isNotEmpty) widget.onPageFocused?.call(id);
+  }
+
+  void _selectPage(int index) {
+    if (index < 0 || index >= _visible.length) return;
+    setState(() => _current = index);
+    _notifyFocusedPage();
+  }
+
   Future<void> _editCurrentPage() async {
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     if (vm.album?.allowsEditing == false || _visible.isEmpty) return;
@@ -66,19 +86,26 @@ class _AlbumReaderInnerDetailScreenState
     final target = vm.pages.indexWhere((p) => p.id == viewedId);
     if (target < 1) return;
     final albumId = vm.album?.id;
+    final albumOwner = vm.album?.userId;
+    final session = vm.editSessionIdentity;
+    final owner = ref.read(albumEditorOwnerReaderProvider)();
     await Navigator.push<bool>(
       context,
-      MaterialPageRoute(
-        settings: albumId != null && albumId > 0
-            ? WebAppRouteSettings(WebAppLocation(WebAppPage.editor, '$albumId'))
-            : null,
-        builder: (_) => PageEditorScreen(
+      snapFitRoute(page: PageEditorScreen(
           initialPageIndex: target,
           returnToPreviousOnSave: true,
-        ),
-      ),
+        ), settings: albumId != null && albumId > 0
+            ? WebAppRouteSettings(WebAppLocation(WebAppPage.editor, '$albumId'))
+            : null),
     );
     if (!mounted) return;
+    if (!identical(ref.read(albumEditorViewModelProvider.notifier), vm) ||
+        !identical(vm.editSessionIdentity, session) ||
+        vm.album?.id != albumId ||
+        vm.album?.userId != albumOwner ||
+        ref.read(albumEditorOwnerReaderProvider)() != owner) {
+      return;
+    }
     final updated = vm.pages.skip(1).toList();
     final retained = updated.indexWhere((p) => p.id == viewedId);
     final next = retained >= 0
@@ -89,6 +116,7 @@ class _AlbumReaderInnerDetailScreenState
       _current = next;
     });
     if (_pages.hasClients && updated.isNotEmpty) _pages.jumpToPage(next);
+    _notifyFocusedPage();
   }
 
   void _inviteMembers() {
@@ -96,22 +124,18 @@ class _AlbumReaderInnerDetailScreenState
     if (album == null || album.id <= 0 || !album.allowsManagement) return;
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => AlbumInviteScreen(
+      snapFitRoute(page: AlbumInviteScreen(
           album: album,
           albumId: album.id,
           albumTitle: album.title.isEmpty ? '스냅핏 앨범' : album.title,
-        ),
-      ),
+        )),
     );
   }
 
   void _showMoreOptions() {
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     if (vm.album?.allowsEditing == false) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('보기 전용 앨범이에요. 편집은 앨범 소유자에게 요청해 주세요.')),
-      );
+      context.showSnack('보기 전용 앨범이에요. 편집은 앨범 소유자에게 요청해 주세요.');
       return;
     }
     Widget sheet(BuildContext ctx, bool compact) => AlbumReaderMoreOptionsSheet(
@@ -122,9 +146,7 @@ class _AlbumReaderInnerDetailScreenState
       },
       onConfirm: () {
         Navigator.pop(ctx);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('제작 확정은 메인 리더 화면에서 진행해주세요.')),
-        );
+        Navigator.pop(context, AlbumReaderInnerDetailAction.prepareBook);
       },
       onInvite: vm.album?.allowsManagement == false
           ? null
@@ -180,7 +202,7 @@ class _AlbumReaderInnerDetailScreenState
       onEdit: album?.allowsEditing == false || _visible.isEmpty
           ? null
           : () => _editCurrentPage(),
-      onPageChanged: (index) => setState(() => _current = index),
+      onPageChanged: _selectPage,
       pageBuilder: (context, index) => ReaderDetailPageArtwork(
         page: _visible[index],
         ratio: ratio,
@@ -201,18 +223,13 @@ class _AlbumReaderInnerDetailScreenState
       realSize: vm.selectedCover.realSize,
       productId: vm.selectedCover.productId,
     );
-    void select(int index) {
-      if (index < 0 || index >= _visible.length) return;
-      setState(() => _current = index);
-    }
-
     Widget rail({bool horizontal = false}) => WebAlbumPageRail(
       pages: _visible,
       selectedIndex: _current,
       cover: cover,
       theme: vm.selectedTheme,
       previewBuilder: previewBuilder,
-      onSelected: select,
+      onSelected: _selectPage,
       horizontal: horizontal,
       includesCover: false,
     );
@@ -232,15 +249,15 @@ class _AlbumReaderInnerDetailScreenState
       onEdit: album?.allowsEditing == false || _visible.isEmpty
           ? null
           : _editCurrentPage,
-      onPrevious: _current > 0 ? () => select(_current - 1) : null,
+      onPrevious: _current > 0 ? () => _selectPage(_current - 1) : null,
       onNext: _current + 1 < _visible.length
-          ? () => select(_current + 1)
+          ? () => _selectPage(_current + 1)
           : null,
       managementMenu: album?.allowsManagement == true
           ? IconButton(
               tooltip: '멤버 초대',
               onPressed: _inviteMembers,
-              icon: const Icon(Icons.group_add_outlined, size: 19),
+              icon: const ExperienceIcon('UserPlus', size: 19),
             )
           : null,
       canvas: _visible.isEmpty

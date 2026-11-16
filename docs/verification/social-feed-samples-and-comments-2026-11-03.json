@@ -1,0 +1,92 @@
+{
+  "date": "2026-11-03",
+  "timezone": "Asia/Seoul",
+  "samples": {
+    "count": 10,
+    "originalPhotos": 10,
+    "dimensions": {
+      "width": 1122,
+      "height": 1402
+    },
+    "generator": "built-in image_gen",
+    "contentFile": "posts.json",
+    "promptSet": "provenance.json",
+    "gallery": "index.html",
+    "published": false,
+    "productionAccountsCreated": 0,
+    "productionEngagementCreated": 0,
+    "visibleAiOrEditorBadges": false
+  },
+  "ui": {
+    "features": [
+      "Photo-first feed and compact identity/reaction rows",
+      "Original image ratios retained",
+      "Refined detail typography",
+      "Persistent threaded replies with parent context",
+      "Reply target/cancel controls preserving drafts",
+      "Debounced @handle autocomplete from real profiles",
+      "Server-resolved mention profile links",
+      "Reply and mention notifications",
+      "Keyboard-safe composer, narrow large-text and dark layouts"
+    ],
+    "screenshots": [
+      "ui/feed-preview.png",
+      "ui/detail-preview.png",
+      "ui/comments-light.png",
+      "ui/comments-dark.png"
+    ],
+    "screenshotComments": "Local UI fixtures only"
+  },
+  "validation": {
+    "appRegressionChecks": 112,
+    "photoVisibilityAndResponsiveChecks": 4,
+    "finalCommentAndCaptureRerun": {
+      "passed": 8,
+      "commentCasesAlreadyIncludedInRegression": 7,
+      "visualCaptureCase": 1
+    },
+    "uniqueAppChecks": 117,
+    "serverChecks": 7,
+    "analyzer": "No issues found",
+    "whitespaceCheck": "passed",
+    "galleryBrowserChecks": [
+      "10 photos displayed",
+      "Full photo dialog",
+      "Next/previous navigation",
+      "Escape close",
+      "Topic filter"
+    ],
+    "fullApplicationBuild": false,
+    "clientDeployment": false
+  },
+  "backend": {
+    "project": "rrbhxdtriummqpztpjrk",
+    "migration": "20261103123536_social_threaded_comments_and_mentions.sql",
+    "applied": true,
+    "verified": {
+      "threadColumns": true,
+      "mentionLedgerRls": true,
+      "anonMentionRead": false,
+      "authenticatedMentionRead": false,
+      "directCommentInsert": false,
+      "anonymousUnavailableWorkPage": {
+        "items": [],
+        "hasMore": false,
+        "nextOffset": 0
+      }
+    },
+    "securityAdvisors": {
+      "scopedWarnings": [],
+      "expectedInfo": "Private RPC-only comment_mentions has RLS enabled and no direct client policies; table privileges are revoked.",
+      "reference": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    }
+  },
+  "maintenance": {
+    "migrationFilenameAlignedToProductionLedger": true,
+    "incidentalCompileFix": "Disambiguated StudioPage milestone helpers from existing StoryPage helpers and updated studio-only call sites; template content and original media preserved."
+  },
+  "limits": [
+    "Samples are for review and have not been published to the production feed.",
+    "Client source was updated and verified through focused Flutter tests; no new app build or release was run."
+  ]
+}

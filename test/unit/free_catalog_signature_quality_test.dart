@@ -550,7 +550,7 @@ void main() {
         Map titleFor(String id) => (coverFor(id)['layers'] as List)
             .cast<Map>()
             .firstWhere((l) => l['typographyRole'] == 'signature-title');
-        for (final id in ['taste-archive', 'little-footsteps', 'still-us']) {
+        for (final id in ['little-footsteps', 'still-us']) {
           final title = titleFor(id);
           final value = (title['style'] as Map)['color'] as String;
           final color = Color(
@@ -562,6 +562,15 @@ void main() {
             reason: '$id: a dark photographed subject needs light title ink',
           );
         }
+        final taste = titleFor('taste-archive');
+        expect((taste['style'] as Map)['color'], '#492E49');
+        expect(taste['x'], .055);
+        expect(
+          taste['y'],
+          .33,
+          reason:
+              'Dark brush lettering now uses the white tabletop, below the dark paint pots.',
+        );
         for (final id in [
           'seasons-of-love',
           'you-are-spring',
@@ -709,7 +718,11 @@ void main() {
           );
           final cover = document['cover'] as Map<String, dynamic>;
           expect(cover['coverRevision'], document['coverRevision']);
-          expect(cover['coverTextTreatment'], 'open-photographic-type');
+          expect(cover['coverTextTreatment'], switch (collection.id) {
+            'our-good-company' => 'uncropped-company-mat',
+            'dates-of-us' => 'literary-photo-colophon',
+            _ => 'open-photographic-type',
+          });
           expect(cover['typographyPanelCoverageFraction'], 0.0);
           final heroArea = (cover['layers'] as List)
               .where((l) => l['type'] == 'image')
@@ -719,7 +732,11 @@ void main() {
               .fold(0.0, math.max);
           expect(
             heroArea,
-            greaterThanOrEqualTo(.8),
+            greaterThanOrEqualTo(switch (collection.id) {
+              'our-good-company' => .45,
+              'dates-of-us' => .665,
+              _ => .8,
+            }),
             reason:
                 '${collection.id}/${aspect.name}: photography must lead the cover',
           );

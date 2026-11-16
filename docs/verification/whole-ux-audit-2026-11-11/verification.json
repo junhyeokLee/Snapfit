@@ -1,0 +1,43 @@
+{
+  "date": "2026-11-11",
+  "method": "Current Flutter widgets, local synthetic providers, real bundled catalog fonts and photos",
+  "capture_cases": {
+    "home": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
+    "print": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    "publish": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "accepted_images": 8,
+  "source_files_modified": false,
+  "findings": [
+    "Monthly challenge is represented by seven days rather than the whole month",
+    "Checkout readiness does not prevent collecting delivery details before the blocked order review",
+    "20-page public review requires 11.5 viewport lengths to reach the publish action"
+  ],
+  "source_sha256": {
+    "lib/features/album/presentation/widgets/home/home_moment_summary_card.dart": "7dcfa34ecfbe7c3b44e2f9bfe020b4d1b584f6e6517b9f1321c82ab2c1476c2f",
+    "lib/features/album/presentation/widgets/home/home_album_destination.dart": "933edd3c65adc59659d79978d913cde3ec5143a92907bf0ea0b8074bd8a831b0",
+    "lib/features/store/presentation/widgets/store_design_discovery.dart": "3de84e2cf40bba00de94a75e7f5b39976ed4a8b5e96a999ca8932780a9c8a23d",
+    "lib/features/album/presentation/views/print_order_preview_screen.dart": "4b3b35c7382b999e0b8fb2c0d67ba82697098237f4eebf299cd52977883b1945",
+    "lib/features/album/presentation/views/print_order_checkout_screen.dart": "bfc414853f87a3c1e0ecea69f472388b8a644d1264253f3c366ccfa84d6e3c41",
+    "lib/features/social/presentation/views/social_publish_screen.dart": "5ec702b9c8501dd25918cf0dd03954a71718d2b201f2a3f27674a08052aa6a7d",
+    "lib/features/profile/presentation/views/support_inquiry_screen.dart": "4f225a4ab1e9ca95298dd5de799eec202cb790ab9cb9c0714e439b20d9b8c359"
+  },
+  "limits": [
+    "No production readiness or data queried",
+    "No upload, publication, order creation or payment executed",
+    "No full app/device build",
+    "No browser runtime or screen reader/contrast certification"
+  ]
+}

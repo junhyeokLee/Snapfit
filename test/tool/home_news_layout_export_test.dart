@@ -377,7 +377,7 @@ void main() {
           final image = await boundary.toImage(pixelRatio: 2);
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
           final file = File(
-            'output/home-news-20261027/${item.kind.name}-${layout.name}.png',
+            'output/home-news-20261028/${item.kind.name}-${layout.name}.png',
           );
           await file.parent.create(recursive: true);
           await file.writeAsBytes(bytes!.buffer.asUint8List());
@@ -387,12 +387,17 @@ void main() {
           find.byKey(const ValueKey('home-news-page-controls')).hitTestable(),
           findsOneWidget,
         );
+        expect(
+          find.byKey(const ValueKey('home-news-hide-today')).hitTestable(),
+          findsOneWidget,
+        );
         await tester.tap(
           find.byKey(const ValueKey('home-news-close')).hitTestable(),
         );
         await tester.pumpAndSettle();
         final closed = await result;
         expect(closed?.action, isFalse);
+        expect(closed?.hideForToday, isFalse);
         expect(closed?.item.id, item.id);
       }
     }

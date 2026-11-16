@@ -38,6 +38,7 @@ import 'package:snap_fit/features/moments/presentation/views/moments_screen.dart
 
 import '../support/point_purchase_fakes.dart';
 import 'ai_album_start_step_test.dart' show loadCreationFonts;
+import '../helpers/notification_async_fixture.dart';
 
 const _owner = '11111111-1111-4111-8111-111111111111';
 const _user = UserInfo(id: _owner, name: '알림 검수', provider: 'EMAIL');
@@ -235,6 +236,7 @@ void main() {
         },
       }),
     );
+    await FcmNotificationService.syncSession();
   });
 
   setUp(() {
@@ -355,43 +357,55 @@ void main() {
   testWidgets(
     'actual MoaEditorApp opens a terminated template notification after its real splash',
     (tester) async {
-      links.initial = null;
-      await mount(tester);
-      expect(messaging.launchReads, 1);
-      await expectDestination(tester, 12);
+      try {
+        links.initial = null;
+        await mount(tester);
+        expect(messaging.launchReads, 1);
+        await expectDestination(tester, 12);
+      } finally {
+        await drainNotificationFixture(tester);
+      }
     },
   );
 
   testWidgets(
     'actual MoaEditorApp opens an external initial template URI through AppLinks after splash',
     (tester) async {
-      links.initial = Uri.parse('snapfit://template?templateId=13');
-      await mount(tester);
-      await expectDestination(tester, 13);
+      try {
+        links.initial = Uri.parse('snapfit://template?templateId=13');
+        await mount(tester);
+        await expectDestination(tester, 13);
+      } finally {
+        await drainNotificationFixture(tester);
+      }
     },
   );
 
   testWidgets('private journal reminder destination survives native splash', (
     tester,
   ) async {
-    links.initial = Uri.parse('snapfit://moments');
-    await mount(tester);
-    for (
-      var frame = 0;
-      frame < 30 && find.byType(MomentsScreen).evaluate().isEmpty;
-      frame++
-    ) {
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 10)),
-      );
-      await tester.pump(const Duration(milliseconds: 100));
+    try {
+      links.initial = Uri.parse('snapfit://moments');
+      await mount(tester);
+      for (
+        var frame = 0;
+        frame < 30 && find.byType(MomentsScreen).evaluate().isEmpty;
+        frame++
+      ) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 10)),
+        );
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.byType(MomentsScreen), findsOneWidget);
+      expect(templateReads, isEmpty);
+      expect(find.byType(SplashScreen), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump(const Duration(milliseconds: 400));
+    } finally {
+      await drainNotificationFixture(tester);
     }
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(find.byType(MomentsScreen), findsOneWidget);
-    expect(templateReads, isEmpty);
-    expect(find.byType(SplashScreen), findsNothing);
-    expect(tester.takeException(), isNull);
-    await tester.pumpWidget(const SizedBox());
-    await tester.pump(const Duration(milliseconds: 400));
   });
 }

@@ -1,0 +1,191 @@
+{
+  "date": "2026-11-16",
+  "verified_at_utc": "2026-11-16T06:30:45.053622+00:00",
+  "product_files_changed": [
+    "lib/features/album/presentation/widgets/home/home_album_slider.dart",
+    "lib/features/album/presentation/widgets/home/home_moment_summary_card.dart",
+    "lib/features/profile/presentation/views/account_settings_screen.dart",
+    "lib/features/profile/presentation/views/my_page_screen.dart",
+    "lib/features/store/presentation/views/template_detail_screen.dart"
+  ],
+  "files_analyzed": 12,
+  "analysis_issues": 0,
+  "verified_source_hashes_match": true,
+  "related_test_results": {
+    "home_summary": {
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0
+    },
+    "account": {
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0
+    },
+    "store": {
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    "home_chrome": {
+      "passed": 22,
+      "failed": 0,
+      "skipped": 0
+    },
+    "detail_existing": {
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0
+    },
+    "detail_screen": {
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    "home_screen": {
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0
+    },
+    "navigation": {
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0
+    },
+    "paper_context": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "related_tests_passed": 114,
+  "capture_scenarios_passed": 9,
+  "additional_focus_capture_passed": 1,
+  "screens": {
+    "before": 17,
+    "after": 18
+  },
+  "measurements": {
+    "template_cover_320_before_dp": 62.04,
+    "template_cover_320_after_dp": 126.04000000000002,
+    "ratio": 2.0315925209542236,
+    "source_before": "logs/red-store.log",
+    "source_after": "logs/after-cap_store.log"
+  },
+  "references": [
+    {
+      "title": "Material 3 Expressive research",
+      "url": "https://design.google/library/expressive-material-design-google-research",
+      "accessed": "2026-11-16"
+    },
+    {
+      "title": "Apple HIG Materials",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/materials",
+      "accessed": "2026-11-16"
+    }
+  ],
+  "limitations": [
+    "Local Flutter VM/widget verification with local auth/repository doubles; not live user data.",
+    "No physical-device, web-browser, full screen-reader, production payment, full app build, or deployment checks.",
+    "Some Pretendard capture names use bundled NotoSansKR; store detail additionally loads bundled FontManifest fonts.",
+    "Not the entire repository test suite.",
+    "Focus capture is an extra scrolled after-only state; comparison uses matching filenames/viewport/states."
+  ],
+  "live_server_changes": false,
+  "artifacts": {
+    "after/account-profile-dark.png": "efe0a501a52fb6fd0dc3773488511e3859aa22458cc0cd7733be7f8af3b99b51",
+    "after/account-profile-light.png": "4b99cb175c18f7527f54732cf62c396bfc7de99718671396a45c3ec3b23db3ef",
+    "after/account-profile-narrow-large.png": "2db15e8bce77e22fae8f255c62b8c6f4314d105667bdfe28fac65fb3c7715447",
+    "after/account-settings-dark.png": "8fcb977f819c3a37afd94743b56d343ba9effa7be314372ee7b83cbc30590f6d",
+    "after/account-settings-light.png": "3c1e93db656c4a2744f605ebad9f87cb1c0f74230c210f512e79da4d6294fbcd",
+    "after/account-settings-narrow-large.png": "3ab3c085e3e98fc2689abb1967c4fdc3e6b56202c726245b0cd2f3c27ad0f673",
+    "after/home-320-large-album.png": "fccaaa296833094741eed382e6dd662ce102e018a2a171b01c4f976a6a607219",
+    "after/home-320-large-record.png": "efd025b8d82efb8ab974d3f87d57d555b366a971a5b5a8e9796225eb189c7dd5",
+    "after/home-320-large-top.png": "765d4fe80c04196a82957f2b6e99597e08de98af6a777315e487c190160b86cb",
+    "after/home-390-dark-album.png": "d8f75d95fdbaa14b408b3f5c16909d208fbc99f8bf000a31cfeb73bedc21be21",
+    "after/home-390-dark-top.png": "93a74efdc77ec5b0296d9df45de834f47f3a0e4fa90412a3156cac3ce7278fee",
+    "after/home-390-light-album.png": "15bf6e6f61544e000b616692bc309a78f053d4cb20774c7e63f43a67d6b6d220",
+    "after/home-390-light-top.png": "5b51f1fd1c299cc07dcdf91695b58c8d09ba6faa5a67ada7d34985bd18cb4cec",
+    "after/store-detail-320.png": "0e5fe7238d3c44ef2390fcf4e6d6ca41b0cc6fd1d96f3159899ae54e9108f440",
+    "after/store-detail-390-information.png": "bfc00975b422e1cc3fba3b90c4cd6566633e907925513cfe84deb85d947e1fb8",
+    "after/store-detail-390-interior.png": "591688d4b167aed3845643cac6b9949b77c21a7c45e1ef406f15521d2f6abc65",
+    "after/store-detail-390.png": "e272213daec7c36f2d18a3b7aadc61b837c399b27d78aacb7cb1ddc8f7137938",
+    "after/store-detail-landscape.png": "96797a9377b8ed3d331f80927e66fd1bff73f2c287948f27aca228d92bfc86fb",
+    "before/account-profile-dark.png": "b9e4dbc013d28c124cd0f56103991b6973e7fa87a3d209c852295a797c1472b5",
+    "before/account-profile-light.png": "f5aa1e3dd329de788fe7e5bf134f3a53a74b8ad3a73e7c29d938d842fe971130",
+    "before/account-profile-narrow-large.png": "e6a7638fc433f910c56a76df11e3ee75c4316198b6aeb9d93076d7f83bca6c12",
+    "before/account-settings-dark.png": "561e5165ed1beabacadeecd1d54073f7cb951b0fc6b55788b22388deb81ff0ab",
+    "before/account-settings-light.png": "e53f4f9cf08af6659f328f6ea3949307a03691ae589db2b7277146926873e2af",
+    "before/account-settings-narrow-large.png": "2430a94c1cc55046160a65b1122fabca1c4f646a384e28ea1edf43f518bbd9b2",
+    "before/home-320-large-album.png": "1d501b986f2e8f903e515f340526807234d66679a3687d036ff63b12b9bfdc52",
+    "before/home-320-large-top.png": "de444e473c350906ef8dbe195c1c4e657856ce480640853655b0915c60a193bc",
+    "before/home-390-dark-album.png": "9c5c98d0c8b0866870e1dc6789b1d1c4de0d8df9718aecc0c21b2b58c0b15b06",
+    "before/home-390-dark-top.png": "1dba28802e3f4d3e925c3509608fe0265ff4ccd232ea6d7058c1ff520352d2d4",
+    "before/home-390-light-album.png": "a001dd23bbecb0e69a92f74a71c80977a811999d7c08e4e6394809114a66ea93",
+    "before/home-390-light-top.png": "0adef964faadc58af89103cd82561a7d40246d320b715a04133b35db60015dd5",
+    "before/store-detail-320.png": "d50af60347c935fc8873d249ccf26b769bfe16c94b054f1096ac52f066d868c6",
+    "before/store-detail-390-information.png": "bfc00975b422e1cc3fba3b90c4cd6566633e907925513cfe84deb85d947e1fb8",
+    "before/store-detail-390-interior.png": "c6b04a3b4ae5e1eaab2020f3c71e4d50eeb45f7aa96343d2014a47280a91fac4",
+    "before/store-detail-390.png": "7714c554149894c2e2d40064e8d628b68d1815934179958fe21537c324cb31a2",
+    "before/store-detail-landscape.png": "45c1cda615b980ea65f4c2b2e95f72350189d0f4e8226b5a270636f207c51a3d",
+    "logs/account.log": "322aa6247248fc67e5dda3aeda4a82cbd2580d8cc1cd15beec68643a4a97dfa9",
+    "logs/after-cap_account.log": "6e0015d24f57e22eff441a3b73a0549979e36f2bf7b70c9edb66277edc76b113",
+    "logs/after-cap_home-focus.log": "fae2bc08448a74bc872ed08e0ebf4351d2aaee127043dc0df46423a4cef4dc2f",
+    "logs/after-cap_home-full.log": "77632dd24c6bab1420143235944587a82049c22e11ae89c4dba279013fd12c9a",
+    "logs/after-cap_home.log": "77632dd24c6bab1420143235944587a82049c22e11ae89c4dba279013fd12c9a",
+    "logs/after-cap_store.log": "9edd8bc0779ee2e4e561aecc4606d1934a03fb6fc740c38f6641e0058bd10f07",
+    "logs/analyze-product.log": "1221fd12b4fec9dbb2d4406e360c8634e419345797c3b852274bb028fff24a6f",
+    "logs/before-cap_account.log": "6e0015d24f57e22eff441a3b73a0549979e36f2bf7b70c9edb66277edc76b113",
+    "logs/before-cap_home.log": "77632dd24c6bab1420143235944587a82049c22e11ae89c4dba279013fd12c9a",
+    "logs/before-cap_store.log": "8a965bfedea53af51f6d623e8c03d098f20298172bcd42b3bd22bb7d723f4f70",
+    "logs/before-compile.log": "f442e7bd7e28681c8c4f892351e1dc55391900aeb43b31ff4396145ff3d73f79",
+    "logs/capture-final-compile.log": "94ee387f5109d044019640bf400e037af006bc306ce2cdf0c46f3341fa4f6214",
+    "logs/detail_existing.log": "47c2883008b2b4109f6f3d7ac0b9fe317ad0c433fc46976669d2163ca70366ee",
+    "logs/detail_screen.log": "a51f2cd479b31fe7aef544095d86cd58f0057f1422928be3b0291c56625e8a2f",
+    "logs/final-compile.log": "ce289b01fdbb4fbb6ee8f76ff0521e72021e196fd637135d652a55f5383d4183",
+    "logs/first-green-account.log": "ee9bf860111e9a193bb1a136bdd8b3fe0cfa96e0a0594e8fbf283c0e9709bb68",
+    "logs/first-green-home_chrome.log": "cca80417d18c0c09a889384bc8a868126bea0a22c027120d5e433f3856e5cfbd",
+    "logs/first-green-home_summary.log": "82969d8fce9f552ddbc91df40ba2c8000e063da14867957296a7e2b8c891effc",
+    "logs/first-green-store.log": "9c6c4ec20479e17b5f9bea55709b8a4a8f7678985a5e2ed7f31dd099c6fb4f53",
+    "logs/format.log": "1661ff0e1b42206beae751050036a5df15133612018a8bc91908b7f3ed268cc7",
+    "logs/green-compile.log": "cf0b46b6d2e22d8e7c22f755075fc893827dda87e232f1adb240df92f2aa7f9b",
+    "logs/home-green-compile.log": "460cc93c2da24d05376ca803803887ad16b01e3521af1a949cf88138326999d6",
+    "logs/home_chrome.log": "cca80417d18c0c09a889384bc8a868126bea0a22c027120d5e433f3856e5cfbd",
+    "logs/home_screen.log": "59674bf754c4b2d7b3bdf8c991c8b33b4af97e86a0cfeb65756baf00239a5f25",
+    "logs/home_summary.log": "e105a0dfcac6d83b1730c73087fcd5c2db46ed9a34bc299b19e9f353d2232973",
+    "logs/navigation.log": "f07fe769bbcb28528482be33f1bc6f564516acad95298477093ed9b4db046498",
+    "logs/paper_context.log": "9548df0f53d871648a6a2ff09b49c011177ea374cf535a777ce8360ac2beeb61",
+    "logs/red-account.log": "5e20d9edab8d503178e7c3841ad9c0884ef79608d4fa44038bbea51ce45f7ece",
+    "logs/red-compile.log": "2c03dd0d190af1ee47d5e5dc6a60a13c32bf8a8bc861cd86974b829bf1f57f26",
+    "logs/red-home_chrome.log": "ac41fbadaebfd174092db18f543615468043ce0148a8f60d914d940009411f31",
+    "logs/red-home_summary.log": "3bb4ba1736621c6f95faddaefcbfb08f343af04b2a1c6fb4b0cca137c6bb4e06",
+    "logs/red-large-account.log": "f9a90d6bc4276390d548852fa46b29771fe8c9f1b583f22d13b5c23fd2892a0f",
+    "logs/red-store.log": "659fed1d145c74c56ae6a760b6815ab25df2bbfe085061361f7c84c694444bc1",
+    "logs/store.log": "9c6c4ec20479e17b5f9bea55709b8a4a8f7678985a5e2ed7f31dd099c6fb4f53",
+    "probes/cap_account.dart": "bba3608e69fe50ed4797f12b598547796a36053f0d7966e3da3695eba376d72a",
+    "probes/cap_home.dart": "703b85826b06c1453a39764e5dd0f52204056fe8739c4de4b09021c670cf8082",
+    "probes/cap_store.dart": "694d26072026f5edc312423f430a13bc3b51403c655dad54a3262277f7846d0c",
+    "probes/capture_support.dart": "ab5196e1b3c03b493694735d7fe720c14f6e33a5cfe830009dacf1f6633e99c3",
+    "probes/run.py": "28dc6d991f5219d55fc1173b3293f22637ae734eedb3beb143210cb411f87977",
+    "probes/runner.dart": "22907d10552505e605de8a72503f5e24edebf2518eb27bf2595782aed908e1f4",
+    "source-after.json": "3293555351abb9eef9909c72a13bbd7a52f91e6bb7450aad91eb36c00cae2135",
+    "source-before.json": "0e8c00e508130934f06232c1fd2f97d065dab6d1bf0e27d93f60a829c8ca03aa",
+    "source-snapshots/lib/features/album/presentation/widgets/home/home_album_slider.dart": "cdc8d07b884b69ea05318cb612dbf8c7cf2dbd9fcf674d8c711cedc0f7b9bc6b",
+    "source-snapshots/lib/features/album/presentation/widgets/home/home_moment_summary_card.dart": "0ffa24f6b64243b9fa719c1536a6925c7d0044d28873afd81c729dfb7ec3ba7f",
+    "source-snapshots/lib/features/profile/presentation/views/account_settings_screen.dart": "54dc90e9ad59460faabd1ebe12d77ef2432dc96cafd83a70220d620be2312b4e",
+    "source-snapshots/lib/features/profile/presentation/views/my_page_screen.dart": "006aa7a43100214dd9e6599467b702533c68575e7162df7e010ad8d6a3530451",
+    "source-snapshots/lib/features/store/presentation/views/template_detail_screen.dart": "b6671075928d8d94c53debd69337bce375ffb3ad713e7d29f0abbb2f8be149fa",
+    "test-snapshots/test/widget/experience_detail_redesign_test.dart": "877113060b4ab0d78299904dccbd1f0dd29254096c47c44acb995f15be0a20fc",
+    "test-snapshots/test/widget/home_album_chrome_test.dart": "58918323db2108bedae42da5a48a93d3372c6cf4970a3f973c0d4e89ed8a7ff2",
+    "test-snapshots/test/widget/home_moment_summary_test.dart": "af486524cbb14b651ce33fb11e3938806ed1619ffff35b7f493ca62e2f3a265d",
+    "test-snapshots/test/widget/my_page_screen_test.dart": "978b32d6ca14bf18916984387e64c55a88164969b16f3fc3e22a57178ee30c61",
+    "test-snapshots/test/widget/template_detail_preview_hierarchy_test.dart": "fa38ba12f71c641fed64e8f50b824b48eb33896a66ad2abc59ecd515427f2ca4",
+    "test-snapshots/test/widget/template_detail_screen_test.dart": "8cf730ed9cd1dc8176160cb870a5aaccf11aaee9901433d2f6e9cc283b97ad49",
+    "test-snapshots/test/widget/web_account_order_flow_test.dart": "71475a89689a8984cfea6ae7c77ed3d459f3dc4ab56713087a8b103c3d018fb7",
+    "verified-source.json": "f1618f11ea07b7c650e73550bacf70d319df63c613ec75d8e44bdfeb84e74a28",
+    "수정전_전체.png": "7e9152776bb0bd84a279b80b8027a95a5f01f0d865988fb59dc788fa3849def3",
+    "수정후_전체.png": "d22f7c91ccf2b5f6a60de24d976541994e8f9f203b4dfb23e6f5026c1e0f65e4",
+    "적용_결과.md": "22f574afb5694ac448f264cf3931914a915b55a07587ed5edc441f2ea6b7d528",
+    "전후_비교.png": "55c547d839e0e090c648a2828b28dd5275090922d70e6c10aa99e35e05340e7b"
+  }
+}

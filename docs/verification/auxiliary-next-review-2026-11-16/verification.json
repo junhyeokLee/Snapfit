@@ -1,0 +1,32 @@
+{
+  "date": "2026-11-16",
+  "kind": "read-only UX review",
+  "production_code_modified": false,
+  "tests": {
+    "points": 3,
+    "referral": 3,
+    "saved": 1,
+    "failed": 0
+  },
+  "screenshots": [
+    "points-redesign-390-light.png",
+    "points-redesign-selected-390-light.png",
+    "points-history-390-light.png",
+    "points-history-spent-390-light.png",
+    "referral-eligible.png",
+    "referral-expired.png",
+    "referral-code-entry.png",
+    "referral-incoming-link.png",
+    "referral-incoming-entry.png",
+    "saved-gallery-phone-light.png",
+    "saved-gallery-phone-dark.png",
+    "saved-gallery-desktop-light.png"
+  ],
+  "real_mutations_executed": false,
+  "source_sha256": {
+    "lib/features/referral/presentation/views/referral_screen.dart": "39df7d4dccd5d872e5b61e4dda78041faafd944610351c42497ecc5ab275456c",
+    "lib/features/social/presentation/views/social_saved_works_screen.dart": "370d3c374cedc74f7fa64c37a5aaa5c01a39d22945124bf3813a687a70c69333",
+    "lib/features/profile/presentation/views/billing_management_screen.dart": "ebe21e18a48e00d194ac66130885c0c83d305c6aeaa8db057226679134c54594",
+    "lib/features/billing/data/billing_repository.dart": "89f0f5e411afd1cbd130b89396a485a1600fafbc298056981095012c1e76b023"
+  }
+}

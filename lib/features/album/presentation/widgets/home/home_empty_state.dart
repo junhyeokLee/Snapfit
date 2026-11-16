@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../../../shared/widgets/experience_icon.dart';
 import '../../../../../shared/widgets/snapfit_motion.dart';
@@ -10,9 +11,13 @@ class HomeEmptyState extends StatelessWidget {
     super.key,
     required this.onCreate,
     this.scrollController,
+    this.leadingContent,
+    this.footer,
   });
   final VoidCallback onCreate;
   final ScrollController? scrollController;
+  final Widget? leadingContent;
+  final Widget? footer;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -48,43 +53,50 @@ class HomeEmptyState extends StatelessWidget {
             icon: const ExperienceIcon(
               'BookOpen',
               size: 20,
-              color: Colors.white,
+              color: SnapFitColors.onAccent,
             ),
             label: const Text('앨범 만들기'),
           ),
         ],
       );
+      final empty = Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: wide ? 740 : 420),
+          child: SnapFitFadeIn(
+            child: wide
+                ? Row(
+                    children: [
+                      Expanded(child: preview),
+                      const SizedBox(width: 32),
+                      Expanded(child: content),
+                    ],
+                  )
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [preview, const SizedBox(height: 28), content],
+                  ),
+          ),
+        ),
+      );
       return SingleChildScrollView(
         controller: scrollController,
         primary: false,
-        padding: const EdgeInsets.all(24),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: math.max(0, constraints.maxHeight - 48),
-          ),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: wide ? 740 : 420),
-              child: SnapFitFadeIn(
-                child: wide
-                    ? Row(
-                        children: [
-                          Expanded(child: preview),
-                          const SizedBox(width: 32),
-                          Expanded(child: content),
-                        ],
-                      )
-                    : Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          preview,
-                          const SizedBox(height: 28),
-                          content,
-                        ],
-                      ),
+        child: Column(
+          children: [
+            if (leadingContent != null) leadingContent!,
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: leadingContent == null && footer == null
+                      ? math.max(0, constraints.maxHeight - 48)
+                      : 0,
+                ),
+                child: empty,
               ),
             ),
-          ),
+            if (footer != null) footer!,
+          ],
         ),
       );
     },
@@ -110,27 +122,41 @@ class _FirstAlbumPreview extends StatelessWidget {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  Transform.translate(
-                    offset: const Offset(-70, 8),
-                    child: Transform.rotate(
-                      angle: -.12,
-                      child: const SizedBox(
-                        width: 148,
-                        child: StoryAlbumCover(edition: 1),
+                  SnapFitFadeIn(
+                    duration: const Duration(milliseconds: 200),
+                    delay: const Duration(milliseconds: 100),
+                    beginOffset: Offset.zero,
+                    child: Transform.translate(
+                      offset: const Offset(-70, 8),
+                      child: Transform.rotate(
+                        angle: -.12,
+                        child: const SizedBox(
+                          width: 148,
+                          child: StoryAlbumCover(edition: 1),
+                        ),
                       ),
                     ),
                   ),
-                  Transform.translate(
-                    offset: const Offset(70, 8),
-                    child: Transform.rotate(
-                      angle: .12,
-                      child: const SizedBox(
-                        width: 148,
-                        child: StoryAlbumCover(edition: 2),
+                  SnapFitFadeIn(
+                    duration: const Duration(milliseconds: 200),
+                    delay: const Duration(milliseconds: 50),
+                    beginOffset: Offset.zero,
+                    child: Transform.translate(
+                      offset: const Offset(70, 8),
+                      child: Transform.rotate(
+                        angle: .12,
+                        child: const SizedBox(
+                          width: 148,
+                          child: StoryAlbumCover(edition: 2),
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 184, child: StoryAlbumCover()),
+                  const SnapFitFadeIn(
+                    duration: Duration(milliseconds: 200),
+                    beginOffset: Offset.zero,
+                    child: SizedBox(width: 184, child: StoryAlbumCover()),
+                  ),
                 ],
               ),
             ),

@@ -11,6 +11,7 @@ import '../core/cache/storage_image_url_cache.dart';
 import '../core/cache/memory_pressure_caches.dart';
 import '../core/cache/photo_failure_versions.dart';
 import 'photo_preparation.dart';
+import '../shared/widgets/experience_icon.dart';
 
 typedef _PhotoFailureScope = (int, int?, int?, int?, int?);
 typedef _PreferredPhoto = ({
@@ -88,11 +89,20 @@ class SnapfitImage extends StatelessWidget {
       unawaited(_storageAuth?.cancel());
       _storageClient = client;
       _setStorageOwner(client.auth.currentUser?.id, replaceClient: true);
-      _storageAuth = client.auth.onAuthStateChange.listen((_) {
-        if (identical(client, _storageClient)) {
-          _setStorageOwner(client.auth.currentUser?.id);
-        }
-      });
+      _storageAuth = client.auth.onAuthStateChange.listen(
+        (_) {
+          if (identical(client, _storageClient)) {
+            _setStorageOwner(client.auth.currentUser?.id);
+          }
+        },
+        onError: (Object _, StackTrace __) {
+          // Offline refresh errors are not sign-outs. Preserve an unchanged
+          // owner's image metadata, while still honoring the SDK's live owner.
+          if (identical(client, _storageClient)) {
+            _setStorageOwner(client.auth.currentUser?.id);
+          }
+        },
+      );
     } catch (_) {
       // Standalone previews/tests can display public or bundled images.
     }
@@ -773,7 +783,7 @@ class _RecoveringPhotoState extends State<_RecoveringPhoto>
                 key: key,
                 tooltip: '사진 다시 불러오기',
                 onPressed: action,
-                icon: const Icon(Icons.refresh, size: 20),
+                icon: const ExperienceIcon('RefreshCw', size: 20),
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 padding: const EdgeInsets.all(4),
               );
@@ -781,7 +791,7 @@ class _RecoveringPhotoState extends State<_RecoveringPhoto>
             return TextButton.icon(
               key: key,
               onPressed: action,
-              icon: const Icon(Icons.refresh, size: 18),
+              icon: const ExperienceIcon('RefreshCw', size: 18),
               label: const Text('사진 다시 불러오기', style: TextStyle(fontSize: 12)),
             );
           },

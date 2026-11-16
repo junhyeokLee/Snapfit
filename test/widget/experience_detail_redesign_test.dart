@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -33,6 +34,7 @@ import 'package:snap_fit/features/store/presentation/views/template_detail_scree
 import 'package:snap_fit/features/store/presentation/views/template_full_screen_view.dart';
 import 'package:snap_fit/features/store/presentation/widgets/store_detail_gallery.dart';
 import 'package:snap_fit/features/store/presentation/widgets/material_application_preview.dart';
+import 'package:snap_fit/features/store/presentation/widgets/template_catalog_tile.dart';
 import 'package:snap_fit/shared/widgets/catalog_artwork_hero.dart';
 import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
 import 'package:snap_fit/shared/widgets/studio_decoration.dart';
@@ -45,6 +47,7 @@ Widget reviewApp(
   Set<String> owned = const {},
   PointShopAccessGate? gate,
   Future<List<PointShopProduct>> Function()? catalog,
+  List<Override> overrides = const [],
 }) => ProviderScope(
   key: UniqueKey(),
   overrides: [
@@ -76,6 +79,7 @@ Widget reviewApp(
     myOrderSummaryProvider.overrideWith(
       (ref) async => OrderSummaryResult.fromJson({}),
     ),
+    ...overrides,
   ],
   child: ScreenUtilInit(
     designSize: const Size(390, 844),
@@ -339,7 +343,9 @@ void main() {
         reviewApp(RepaintBoundary(key: key, child: const MyPageScreen())),
       );
       await settleStoreDetail(tester);
-      expect(find.text('설정 및 도움말'), findsOneWidget);
+      for (final group in ['계정 및 안전', '앱 설정', '도움말']) {
+        expect(find.text(group), findsOneWidget);
+      }
       expect(find.text('2,400 P'), findsNothing);
       expect(
         find.byKey(const ValueKey('profile-album-collection')),
@@ -356,6 +362,14 @@ void main() {
 
   final supportedMaterial = studioDecorations.first;
   final supportedMaterialKey = 'sticker:${supportedMaterial.id}';
+  final freeMaterialResponse = PointShopProduct(
+    productKey: supportedMaterialKey,
+    kind: 'sticker',
+    assetId: supportedMaterial.id,
+    title: '테스트 소재',
+    pointPrice: 0,
+    isActive: true,
+  );
   MaterialDetailScreen materialDetail() => MaterialDetailScreen(
     productKey: supportedMaterialKey,
     favoriteKey: 'qa',
@@ -430,7 +444,7 @@ void main() {
           materialDetail(),
           catalog: () async {
             if (++requests == 1) throw StateError('offline');
-            return [];
+            return [freeMaterialResponse];
           },
           gate: (context, ref, {required productKey, required title}) async {
             accessCalls++;
@@ -496,13 +510,24 @@ void main() {
       await tester.pumpWidget(reviewApp(const StoreScreen(embedded: true)));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
-      final tile = find
-          .byWidgetPredicate(
-            (widget) =>
-                widget is Semantics &&
-                widget.key.toString().contains('store-template-'),
+      final tiles = find.byType(TemplateCatalogTile);
+      final catalogScroll = find
+          .descendant(
+            of: find.byType(CustomScrollView).first,
+            matching: find.byType(Scrollable),
           )
           .first;
+      // 탐색 영역 아래의 지연 그리드는 실제 세로 스크롤로 먼저 마운트한다.
+      for (
+        var attempt = 0;
+        attempt < 20 && tiles.evaluate().isEmpty;
+        attempt++
+      ) {
+        await tester.drag(catalogScroll, const Offset(0, -240));
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      expect(tiles, findsWidgets);
+      final tile = tiles.first;
       await tester.ensureVisible(tile);
       await tester.pump(const Duration(milliseconds: 300));
       await tester.tap(tile);
@@ -531,7 +556,7 @@ void main() {
       await tester.pump();
       final action = find.byKey(const ValueKey('material-access'));
       expect(tester.widget<FilledButton>(action).onPressed, isNull);
-      catalog.complete([]);
+      catalog.complete([freeMaterialResponse]);
       await settleStoreDetail(tester);
       expect(tester.widget<FilledButton>(action).onPressed, isNotNull);
     },

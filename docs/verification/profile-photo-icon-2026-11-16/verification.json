@@ -1,0 +1,44 @@
+{
+  "date": "2026-11-16",
+  "change": "Restore profile photo camera icon and previous placement",
+  "changed_files": [
+    "lib/features/profile/presentation/views/account_settings_screen.dart",
+    "test/widget/my_page_screen_test.dart"
+  ],
+  "previous_other_changes_preserved": true,
+  "tests": {
+    "account": {
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_account": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "analysis_issues": 0,
+  "source_hashes": {
+    "lib/features/profile/presentation/views/account_settings_screen.dart": "693cfec034198534ef904b75c58f28faeb3680d908de16e2dd3b618de556db66",
+    "test/widget/my_page_screen_test.dart": "81d01ee8cd66e954d57e83b0c1cce33f7dca1abcc966087301102f51f70e62ee"
+  },
+  "limitations": [
+    "Local Flutter widget and account doubles only; no live upload, device validation, or deployment."
+  ],
+  "artifacts": {
+    "logs/account.log": "221be111499166e1d51f0de9af06df5084ff09b1a5bf2bb89f1455d6697bc9ca",
+    "logs/analysis.log": "1e9cca14efa55995393f466396af07f5101d9e33ddc0b00bc63c66425437dd01",
+    "logs/cap_account.log": "6e0015d24f57e22eff441a3b73a0549979e36f2bf7b70c9edb66277edc76b113",
+    "logs/compile.log": "f14920126a5b18288e9e5e7f8d202afe5e90a632ce4c9fb2c34d35c05dc4c610",
+    "logs/format.log": "cc9de622d76e6d0880b835c9acf2fbddbf5fe02cb6c1dc623445ef6bd204ece7",
+    "screens/account-profile-dark.png": "0999ba395dcb9d33b6d97d4fd8e64fcacd73cba278fafeec025da6bd7e1f5a4b",
+    "screens/account-profile-light.png": "c227d8bfd0c713648dcb0acc51871aeaaa6c80c79bfaa2308c830681cd2ceab7",
+    "screens/account-profile-narrow-large.png": "a9dca40580d1680ea9cdb5db8ec4fc4a6ca10dd19a68cb639103a7b8094a117e",
+    "screens/account-settings-dark.png": "8fcb977f819c3a37afd94743b56d343ba9effa7be314372ee7b83cbc30590f6d",
+    "screens/account-settings-light.png": "3c1e93db656c4a2744f605ebad9f87cb1c0f74230c210f512e79da4d6294fbcd",
+    "screens/account-settings-narrow-large.png": "3ab3c085e3e98fc2689abb1967c4fdc3e6b56202c726245b0cd2f3c27ad0f673",
+    "복원_화면.png": "c227d8bfd0c713648dcb0acc51871aeaaa6c80c79bfaa2308c830681cd2ceab7",
+    "적용_결과.md": "671ad8e0c600699faa5fef06b19852ad5ca64e65d192e5722650689067381b84"
+  }
+}

@@ -67,7 +67,7 @@ void main() {
   });
 
   testWidgets(
-    'desktop journal places progress beside photos, compact after first photo',
+    'desktop journal keeps progress beside records and compact month tools before records',
     (tester) async {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -79,7 +79,10 @@ void main() {
             home: Scaffold(
               body: SingleChildScrollView(
                 child: WebMomentsJournalLayout(
-                  monthNavigation: const Text('2026년 10월'),
+                  monthNavigation: const Text(
+                    '2026년 10월',
+                    key: ValueKey('month-tools'),
+                  ),
                   records: const [
                     SizedBox(key: ValueKey('photo'), height: 300),
                     SizedBox(height: 200),
@@ -90,12 +93,15 @@ void main() {
             ),
           ),
         );
-        final photo = tester.getTopLeft(find.byKey(const ValueKey('photo')));
-        final week = tester.getTopLeft(find.byKey(const ValueKey('weekly')));
+        await tester.pumpAndSettle();
+        final photo = tester.getRect(find.byKey(const ValueKey('photo')));
+        final week = tester.getRect(find.byKey(const ValueKey('weekly')));
+        final month = tester.getRect(find.byKey(const ValueKey('month-tools')));
         if (width > 880) {
-          expect(week.dx, greaterThan(photo.dx + 300));
+          expect(week.left, greaterThanOrEqualTo(photo.right + 30));
         } else {
-          expect(week.dy, greaterThan(photo.dy + 299));
+          expect(week.bottom, lessThanOrEqualTo(month.top));
+          expect(month.bottom, lessThanOrEqualTo(photo.top));
         }
         expect(tester.takeException(), isNull);
       }
@@ -143,65 +149,69 @@ void main() {
     },
   );
 
-  testWidgets(
-    'desktop photograph height is bounded without changing native ratio',
-    (tester) async {
-      tester.view.physicalSize = const Size(1100, 1000);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      final record = MomentRecord(
-        id: 'portrait',
-        recordDate: DateTime.utc(2026, 10, 26),
-        caption: '',
-        photos: const [
-          MomentPhoto(
-            id: 'photo',
-            path: 'fixture/photo.jpg',
-            url: 'asset:assets/cover/cover1.png',
-            width: 600,
-            height: 800,
+  testWidgets('expanded desktop photograph stays bounded in its album frame', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1100, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final record = MomentRecord(
+      id: 'portrait',
+      recordDate: DateTime.utc(2026, 10, 26),
+      caption: '',
+      photos: const [
+        MomentPhoto(
+          id: 'photo',
+          path: 'fixture/photo.jpg',
+          url: 'asset:assets/cover/cover1.png',
+          width: 600,
+          height: 800,
+        ),
+      ],
+      revision: 1,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: MomentRecordCard(
+              record: record,
+              initiallyExpanded: true,
+              onEdit: () {},
+              maxPhotoHeight: 560,
+            ),
           ),
-        ],
-        revision: 1,
-      );
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
+        ),
+      ),
+    );
+    expect(
+      tester
+          .getSize(find.byKey(const ValueKey('moment-photo-frame-portrait')))
+          .height,
+      closeTo(560, .1),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: SizedBox(
+              width: 390,
               child: MomentRecordCard(
                 record: record,
+                initiallyExpanded: true,
                 onEdit: () {},
-                maxPhotoHeight: 560,
               ),
             ),
           ),
         ),
-      );
-      expect(
-        tester
-            .getSize(find.byKey(const ValueKey('moment-photo-frame-portrait')))
-            .height,
-        closeTo(560, .1),
-      );
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: SizedBox(
-                width: 390,
-                child: MomentRecordCard(record: record, onEdit: () {}),
-              ),
-            ),
-          ),
-        ),
-      );
-      expect(
-        tester
-            .getSize(find.byKey(const ValueKey('moment-photo-frame-portrait')))
-            .height,
-        closeTo(520, .1),
-      );
-    },
-  );
+      ),
+    );
+    expect(
+      tester
+          .getSize(find.byKey(const ValueKey('moment-photo-frame-portrait')))
+          .height,
+      closeTo(390 / momentPhotoAspect(record.photos.first), .1),
+    );
+  });
 }

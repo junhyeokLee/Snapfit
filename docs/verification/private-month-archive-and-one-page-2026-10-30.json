@@ -1,0 +1,175 @@
+{
+  "date": "2026-10-30",
+  "scope": [
+    "Private photo-first monthly archive in My, separate public profile",
+    "One unfinished album page followed by confirmed-save next/done flow",
+    "Collapsible photo calendar and private weekly photo candidates reused by monthly preview"
+  ],
+  "database": {
+    "projectId": "rrbhxdtriummqpztpjrk",
+    "migration": "20261030093518_private_moment_archive_and_weekly_choices.sql",
+    "applied": true,
+    "existingRecordsAndAlbumsPreserved": true,
+    "before": {
+      "albums": 18,
+      "works": 1,
+      "records": 1
+    },
+    "after": {
+      "albums": 18,
+      "works": 1,
+      "records": 1
+    },
+    "privateStorageBucket": true,
+    "allPrivateTablesRlsAndNoDirectGuestOrMemberReads": true,
+    "guestExecuteDeniedForAllNewFunctions": true,
+    "publicWrappersAreSecurityInvokers": true,
+    "liveNegativeProbe": {
+      "customerRowsChanged": false,
+      "nonexistentActorDenied": 4
+    },
+    "advisorsBefore": [
+      {
+        "name": "rls_enabled_no_policy",
+        "level": "INFO",
+        "count": 63
+      },
+      {
+        "name": "function_search_path_mutable",
+        "level": "WARN",
+        "count": 2
+      },
+      {
+        "name": "anon_security_definer_function_executable",
+        "level": "WARN",
+        "count": 8
+      },
+      {
+        "name": "authenticated_security_definer_function_executable",
+        "level": "WARN",
+        "count": 13
+      },
+      {
+        "name": "auth_leaked_password_protection",
+        "level": "WARN",
+        "count": 1
+      }
+    ],
+    "advisorsAfter": [
+      {
+        "name": "rls_enabled_no_policy",
+        "level": "INFO",
+        "count": 64
+      },
+      {
+        "name": "function_search_path_mutable",
+        "level": "WARN",
+        "count": 2
+      },
+      {
+        "name": "anon_security_definer_function_executable",
+        "level": "WARN",
+        "count": 8
+      },
+      {
+        "name": "authenticated_security_definer_function_executable",
+        "level": "WARN",
+        "count": 13
+      },
+      {
+        "name": "auth_leaked_password_protection",
+        "level": "WARN",
+        "count": 1
+      }
+    ],
+    "advisorNotes": "Existing warnings unchanged. One expected default-deny table INFO added. No customer records rewritten or customer account used for tests."
+  },
+  "verification": {
+    "coreNativeFeatures": {
+      "passed": 114,
+      "failed": 0,
+      "log": "output/personal-journal-20261030/feature-tests-final.log"
+    },
+    "extendedRegression": {
+      "initialPassed": 144,
+      "initialLayoutFailures": 2,
+      "remainingFailures": 0,
+      "resolution": "Month tools moved into header, first-photo <280px preserved; rerun passed in journal-final-and-captures.log"
+    },
+    "journalProfileAndCaptureRun": {
+      "passed": 67,
+      "failed": 0,
+      "log": "output/personal-journal-20261030/journal-final-and-captures.log"
+    },
+    "sqlAccessAndIsolation": {
+      "passed": 10,
+      "failed": 0,
+      "log": "output/personal-journal-20261030/archive-sql-tests-final.log"
+    },
+    "chromeArchiveAndExistingEditor": {
+      "passed": 20,
+      "skippedNativeOnly": 1,
+      "failed": 0,
+      "log": "output/personal-journal-20261030/browser-regressions.log"
+    },
+    "chromeCalendarAndMy": {
+      "passed": 26,
+      "failed": 0,
+      "log": "output/personal-journal-20261030/browser-feature-tests-final.log",
+      "notes": "Additional three one-page cases in this run used a native-only locator; repaired test helper and reran all three separately successfully."
+    },
+    "chromeOnePageSaving": {
+      "passed": 3,
+      "failed": 0,
+      "log": "output/personal-journal-20261030/browser-one-page-final.log"
+    },
+    "sourceAnalysis": {
+      "errors": 0,
+      "warnings": 0,
+      "info": 3,
+      "notes": "Existing intentional deferred-font createState entry wrappers.",
+      "log": "output/personal-journal-20261030/analysis-final.log"
+    },
+    "sampleUi": {
+      "count": 11,
+      "directory": "output/personal-journal-20261030/ui",
+      "notes": "Production widgets with isolated sample data. Wide native captures of WebMomentsJournalLayout are component evidence, not a complete browser shell screenshot."
+    }
+  },
+  "deployment": {
+    "web": {
+      "url": "https://snapfit-c719d.web.app/feed",
+      "hostingVersion": "19c4ccecf1c85d01",
+      "mainFile": "main.5e1bf05c2449620a214e.dart.js",
+      "sha256": "5e1bf05c2449620a214ee763267d92a4e2c5090064cabc1c08e69c50a1c99059",
+      "deployed": true,
+      "productionEntryBootstrapMainAndFullFontManifestMatchBuild": true,
+      "actualGuestMyRoutesToLogin": true,
+      "log": "output/personal-journal-20261030/production-web-assets.json"
+    },
+    "android": {
+      "built": true,
+      "mode": "debug",
+      "flutterEngineTarget": "arm64-v8a",
+      "apk": "build/app/outputs/flutter-apk/app-debug.apk",
+      "bytes": 846837930,
+      "sha256": "9e49abc1d4d298d45f208d20de6a038c91026f950c5a2ac7c9166cd5b81e5bb1",
+      "signatureVerified": true,
+      "sourceAssetsIdentical": 1072,
+      "fontFilesIdentical": 40,
+      "evidence": "output/personal-journal-20261030/apk-assets.json",
+      "physicalInstallVerified": false,
+      "reason": "Phone unavailable as already stated by user."
+    }
+  },
+  "behaviorGuaranteesChecked": [
+    "Other account, guest, banned/deleted/nonexistent actors denied",
+    "Explicit public self profile never mounts My archive",
+    "A to B to A session transitions discard pending private results",
+    "Weekly selection 0–3, explicit clear, other weeks preserved, removed/moved originals pruned",
+    "Late monthly candidates cannot replace user-edited selection or cover",
+    "No album creation or publication merely by browsing or choosing candidates",
+    "Next/done offered only after confirmed save, never on failed save or newer local edits"
+  ],
+  "evidenceDirectory": "output/personal-journal-20261030"
+}

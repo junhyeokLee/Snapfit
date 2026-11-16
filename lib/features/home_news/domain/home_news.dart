@@ -182,7 +182,7 @@ class HomeNewsExposure {
   final String? deliveryId;
 }
 
-/// Quotas are calculated by the server, using Korean dates and Monday weeks.
+/// Server-dated delivery activity and the account's Korean-day hide preference.
 class HomeNewsExposureState {
   const HomeNewsExposureState({
     required this.serverNow,
@@ -196,6 +196,10 @@ class HomeNewsExposureState {
     this.hasReferralReward = false,
     this.campaigns = defaultHomeNewsCampaigns,
     this.deliveries = const [],
+    this.hiddenForToday = false,
+    this.hiddenUntil,
+    this.omittedDailyCount = 0,
+    this.omittedWeeklyCount = 0,
   });
 
   factory HomeNewsExposureState.fromJson(Map<String, dynamic> json) {
@@ -204,14 +208,21 @@ class HomeNewsExposureState {
     final weekStart = _date(json['weekStart']);
     final dailyCount = json['dailyCount'];
     final weeklyCount = json['weeklyCount'];
+    final hiddenForToday = json['hiddenForToday'] ?? false;
+    final hiddenUntil = _optionalInstant(json['hiddenUntil']);
+    final omittedDailyCount = json['omittedDailyCount'] ?? 0;
+    final omittedWeeklyCount = json['omittedWeeklyCount'] ?? 0;
     final rows = json['history'];
     if (json['timezone'] != 'Asia/Seoul' ||
         dailyCount is! int ||
         dailyCount < 0 ||
-        dailyCount > 1 ||
         weeklyCount is! int ||
         weeklyCount < dailyCount ||
-        weeklyCount > 2 ||
+        hiddenForToday is! bool ||
+        omittedDailyCount is! int ||
+        omittedDailyCount < 0 ||
+        omittedWeeklyCount is! int ||
+        omittedWeeklyCount < omittedDailyCount ||
         rows is! List ||
         json['hasAttendanceEver'] is! bool ||
         json['hasReferralReward'] is! bool) {
@@ -261,8 +272,12 @@ class HomeNewsExposureState {
     );
     final dayStart = expectedDate.subtract(const Duration(hours: 9));
     final weekInstant = expectedWeek.subtract(const Duration(hours: 9));
+    final nextReset = expectedDate.add(const Duration(hours: 15));
     if (serverDate != expectedDate ||
         weekStart != expectedWeek ||
+        (hiddenForToday &&
+            (hiddenUntil != nextReset || !hiddenUntil!.isAfter(serverNow))) ||
+        (!hiddenForToday && hiddenUntil != null) ||
         history.map((row) => row.id).toSet().length != history.length ||
         campaigns.length != HomeNewsKind.values.length ||
         campaigns.map((row) => row.kind).toSet().length != campaigns.length ||
@@ -289,7 +304,8 @@ class HomeNewsExposureState {
                     .length +
                 deliveries
                     .where((row) => !row.shownAt.isBefore(dayStart))
-                    .length ||
+                    .length +
+                omittedDailyCount ||
         weeklyCount !=
             history
                     .where(
@@ -300,7 +316,8 @@ class HomeNewsExposureState {
                     .length +
                 deliveries
                     .where((row) => !row.shownAt.isBefore(weekInstant))
-                    .length) {
+                    .length +
+                omittedWeeklyCount) {
       throw const FormatException('최신 새 소식 상태를 다시 확인해 주세요.');
     }
     return HomeNewsExposureState(
@@ -314,6 +331,10 @@ class HomeNewsExposureState {
       hasReferralReward: json['hasReferralReward'] as bool,
       campaigns: List.unmodifiable(campaigns),
       deliveries: List.unmodifiable(deliveries),
+      hiddenForToday: hiddenForToday,
+      hiddenUntil: hiddenUntil,
+      omittedDailyCount: omittedDailyCount,
+      omittedWeeklyCount: omittedWeeklyCount,
     );
   }
 
@@ -330,8 +351,12 @@ class HomeNewsExposureState {
   final bool hasReferralReward;
   final List<HomeNewsCampaign> campaigns;
   final List<HomeNewsDeliveryRecord> deliveries;
+  final bool hiddenForToday;
+  final DateTime? hiddenUntil;
+  final int omittedDailyCount;
+  final int omittedWeeklyCount;
 
-  bool get canAutoShow => dailyCount < 1 && weeklyCount < 2;
+  bool get canAutoShow => !hiddenForToday;
 
   bool hasSeen(String campaignId) => history.any((row) => row.id == campaignId);
 

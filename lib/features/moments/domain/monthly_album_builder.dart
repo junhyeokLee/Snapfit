@@ -3,11 +3,14 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/cover_size.dart';
+import '../../../core/constants/cover_size.dart';
 import '../../album/data/dto/request/create_album_request.dart';
 import '../../album/domain/entities/layer.dart';
 import '../../album/domain/entities/layer_export_mapper.dart';
 import 'moment_record.dart';
+
+/// Preparing these exact families is required before fitting and saving text.
+const monthlyMomentFontFamilies = ['NotoSans', 'Poppins', 'Eulyoo'];
 
 const monthlyMomentCanvasSize = Size(500, 500);
 const monthlyMomentAlbumCoverSize = defaultCoverSize;
@@ -65,6 +68,79 @@ CreateAlbumRequest buildMonthlyMomentAlbum({
   required List<String> selectedPhotoIds,
   String? title,
 }) {
+  final selected = _selectedPhotos(
+    month: month,
+    records: records,
+    selectedPhotoIds: selectedPhotoIds,
+  );
+  final albumTitle = _singleLine(title ?? '');
+  final effectiveTitle = albumTitle.isEmpty
+      ? '${month.year}년 ${month.month}월의 순간들'
+      : albumTitle;
+  if (effectiveTitle.characters.length > 60) {
+    throw ArgumentError.value(title, 'title', '제목은 60자까지 입력해 주세요.');
+  }
+  final firstPhoto = selected.first.photo;
+  final cover = _page(
+    index: 0,
+    isCover: true,
+    background: _mint,
+    layers: [
+      _text(
+        id: 'moment-cover-date',
+        text: '${month.year} / ${month.month.toString().padLeft(2, '0')}',
+        rect: const Rect.fromLTWH(42, 25, 420, 24),
+        fontSize: 15,
+        fontFamily: 'Poppins',
+        color: _secondaryInk,
+        tracking: 1.5,
+      ),
+      _text(
+        id: 'moment-cover-title',
+        text: effectiveTitle,
+        rect: const Rect.fromLTWH(42, 53, 420, 77),
+        fontSize: 33,
+        fontFamily: 'Eulyoo',
+        lineHeight: 1.22,
+      ),
+      ..._photoOrDesignLayers(
+        id: 'moment-cover-photo',
+        photo: firstPhoto,
+        bounds: const Rect.fromLTWH(38, 143, 438, 331),
+      ),
+    ],
+  );
+  final pages = <Map<String, dynamic>>[
+    cover,
+    for (var index = 0; index < selected.length; index++)
+      _innerPage(
+        entry: selected[index],
+        selectionIndex: index,
+        pageIndex: index + 1,
+        canvasSize: monthlyMomentCanvasSize,
+      ),
+  ];
+  return CreateAlbumRequest(
+    ratio: monthlyMomentAlbumCoverSize.ratio.toString(),
+    title: effectiveTitle,
+    targetPages: pages.length - 1,
+    coverLayersJson: jsonEncode({
+      'printProduct': monthlyMomentAlbumCoverSize.printProduct,
+      'pages': pages,
+    }),
+    coverImageUrl: firstPhoto.storageUri,
+    coverThumbnailUrl: firstPhoto.storageUri,
+    coverOriginalUrl: firstPhoto.storageUri,
+    coverPreviewUrl: firstPhoto.storageUri,
+    coverTheme: 'classic',
+  );
+}
+
+List<({MomentRecord record, MomentPhoto photo})> _selectedPhotos({
+  required DateTime month,
+  required List<MomentRecord> records,
+  required List<String> selectedPhotoIds,
+}) {
   if (selectedPhotoIds.isEmpty || selectedPhotoIds.length > 9) {
     throw ArgumentError.value(selectedPhotoIds, 'selectedPhotoIds', '1~9장');
   }
@@ -90,139 +166,7 @@ CreateAlbumRequest buildMonthlyMomentAlbum({
   if (photos.length != selectedPhotoIds.length) {
     throw ArgumentError('선택한 달에 없는 사진이 포함되어 있습니다.');
   }
-  final albumTitle = _singleLine(title ?? '');
-  final effectiveTitle = albumTitle.isEmpty
-      ? '${month.year}년 ${month.month}월의 순간들'
-      : albumTitle;
-  if (effectiveTitle.characters.length > 60) {
-    throw ArgumentError.value(title, 'title', '제목은 60자까지 입력해 주세요.');
-  }
-  final selected = selectedPhotoIds.map((id) => photos[id]!).toList();
-  final firstPhoto = selected.first.photo;
-  final cover = _page(
-    index: 0,
-    isCover: true,
-    background: _mint,
-    layers: [
-      _text(
-        id: 'moment-cover-date',
-        text: '${month.year} / ${month.month.toString().padLeft(2, '0')}',
-        rect: const Rect.fromLTWH(42, 25, 420, 24),
-        fontSize: 15,
-        fontFamily: 'Poppins',
-        color: _secondaryInk,
-        tracking: 1.5,
-      ),
-      _text(
-        id: 'moment-cover-title',
-        text: effectiveTitle,
-        rect: const Rect.fromLTWH(42, 53, 420, 77),
-        fontSize: 33,
-        fontFamily: 'Eulyoo',
-        lineHeight: 1.22,
-      ),
-      _photo(
-        id: 'moment-cover-photo',
-        photo: firstPhoto,
-        bounds: const Rect.fromLTWH(38, 143, 438, 331),
-      ),
-    ],
-  );
-  final pages = <Map<String, dynamic>>[cover];
-  final captionedRecords = <String>{};
-  for (var index = 0; index < selected.length; index++) {
-    final entry = selected[index];
-    // A record may contain three selected photos. Keep its note once, beside
-    // the first selected photo, rather than repeating it on three pages.
-    final caption = captionedRecords.add(entry.record.id)
-        ? _singleLine(entry.record.caption)
-        : '';
-    if (caption.characters.length > 200) {
-      throw ArgumentError('기록 문장은 200자까지 사용할 수 있습니다.');
-    }
-    final hasShortCaption =
-        caption.isNotEmpty && caption.characters.length <= 80;
-    final date = entry.record.recordDate;
-    pages.add(
-      _page(
-        index: pages.length,
-        background: index.isEven ? _cream : _mint,
-        layers: [
-          _text(
-            id: 'moment-${entry.photo.id}-date',
-            text: '${date.month}월 ${date.day}일',
-            rect: const Rect.fromLTWH(25, 20, 300, 24),
-            fontSize: 13,
-            color: _secondaryInk,
-          ),
-          _text(
-            id: 'moment-${entry.photo.id}-number',
-            text: (index + 1).toString().padLeft(2, '0'),
-            rect: const Rect.fromLTWH(420, 20, 55, 24),
-            fontSize: 13,
-            fontFamily: 'Poppins',
-            color: _secondaryInk,
-            align: TextAlign.right,
-          ),
-          _photo(
-            id: 'moment-${entry.photo.id}-photo',
-            photo: entry.photo,
-            bounds: Rect.fromLTWH(25, 59, 450, hasShortCaption ? 343 : 416),
-          ),
-          if (hasShortCaption)
-            _text(
-              id: 'moment-${entry.photo.id}-caption',
-              text: caption,
-              rect: const Rect.fromLTWH(25, 417, 450, 61),
-              fontSize: 14,
-              lineHeight: 1.4,
-            ),
-        ],
-      ),
-    );
-    if (caption.isNotEmpty && !hasShortCaption) {
-      pages.add(
-        _page(
-          index: pages.length,
-          background: _cream,
-          layers: [
-            _text(
-              id: 'moment-${entry.photo.id}-note-date',
-              text:
-                  '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}',
-              rect: const Rect.fromLTWH(43, 43, 414, 28),
-              fontSize: 15,
-              fontFamily: 'Poppins',
-              color: _secondaryInk,
-              tracking: 1,
-            ),
-            _text(
-              id: 'moment-${entry.photo.id}-caption',
-              text: caption,
-              rect: const Rect.fromLTWH(43, 108, 414, 330),
-              fontSize: 25,
-              fontFamily: 'Eulyoo',
-              lineHeight: 1.65,
-            ),
-          ],
-        ),
-      );
-    }
-  }
-  return CreateAlbumRequest(
-    ratio: monthlyMomentAlbumCoverSize.ratio.toString(),
-    title: effectiveTitle,
-    targetPages: pages.length - 1,
-    coverLayersJson: jsonEncode({
-      'printProduct': monthlyMomentAlbumCoverSize.printProduct,
-      'pages': pages,
-    }),
-    coverImageUrl: firstPhoto.storageUri,
-    coverThumbnailUrl: firstPhoto.storageUri,
-    coverOriginalUrl: firstPhoto.storageUri,
-    coverPreviewUrl: firstPhoto.storageUri,
-    coverTheme: 'classic',
-  );
+  return selectedPhotoIds.map((id) => photos[id]!).toList();
 }
 
 /// Creates only new inner pages; the server appends them to the locked current
@@ -231,17 +175,242 @@ List<Map<String, dynamic>> buildMonthlyMomentAppendPages({
   required DateTime month,
   required List<MomentRecord> records,
   required List<String> selectedPhotoIds,
+  Size canvasSize = monthlyMomentCanvasSize,
 }) {
-  final built = buildMonthlyMomentAlbum(
+  if (!canvasSize.width.isFinite ||
+      !canvasSize.height.isFinite ||
+      canvasSize.width <= 0 ||
+      canvasSize.height <= 0) {
+    throw ArgumentError.value(canvasSize, 'canvasSize');
+  }
+  final selected = _selectedPhotos(
     month: month,
     records: records,
     selectedPhotoIds: selectedPhotoIds,
   );
-  final document = jsonDecode(built.coverLayersJson!) as Map<String, dynamic>;
-  return (document['pages'] as List)
-      .skip(1)
-      .map((page) => Map<String, dynamic>.from(page as Map))
-      .toList(growable: false);
+  return [
+    for (var index = 0; index < selected.length; index++)
+      _innerPage(
+        entry: selected[index],
+        selectionIndex: index,
+        pageIndex: index + 1,
+        canvasSize: canvasSize,
+      ),
+  ];
+}
+
+Map<String, dynamic> _innerPage({
+  required ({MomentRecord record, MomentPhoto photo}) entry,
+  required int selectionIndex,
+  required int pageIndex,
+  required Size canvasSize,
+}) {
+  final photo = entry.photo;
+  if (photo.design != null) {
+    return _page(
+      index: pageIndex,
+      background: _cream,
+      canvasSize: canvasSize,
+      layers: _photoOrDesignLayers(
+        id: 'moment-${photo.id}-photo',
+        photo: photo,
+        bounds: Offset.zero & canvasSize,
+      ),
+    );
+  }
+  final sx = canvasSize.width / monthlyMomentCanvasSize.width;
+  final sy = canvasSize.height / monthlyMomentCanvasSize.height;
+  final textScale = math.min(sx, sy);
+  Rect resize(Rect rect) => Rect.fromLTWH(
+    rect.left * sx,
+    rect.top * sy,
+    rect.width * sx,
+    rect.height * sy,
+  );
+  final date = entry.record.recordDate;
+  return _page(
+    index: pageIndex,
+    background: selectionIndex.isEven ? _cream : _mint,
+    canvasSize: canvasSize,
+    layers: [
+      _text(
+        id: 'moment-${photo.id}-date',
+        text: '${date.month}월 ${date.day}일',
+        rect: resize(const Rect.fromLTWH(25, 20, 300, 24)),
+        fontSize: 13 * textScale,
+        color: _secondaryInk,
+      ),
+      _text(
+        id: 'moment-${photo.id}-number',
+        text: (selectionIndex + 1).toString().padLeft(2, '0'),
+        rect: resize(const Rect.fromLTWH(420, 20, 55, 24)),
+        fontSize: 13 * textScale,
+        fontFamily: 'Poppins',
+        color: _secondaryInk,
+        align: TextAlign.right,
+      ),
+      _photo(
+        id: 'moment-${photo.id}-photo',
+        photo: photo,
+        bounds: resize(const Rect.fromLTWH(25, 59, 450, 416)),
+      ),
+    ],
+  );
+}
+
+/// An authored feed canvas travels as editable layers, independently of the
+/// post's caption. Uniform fitting retains every layer's shape and relative
+/// position when a differently shaped album is selected.
+List<LayerModel> _photoOrDesignLayers({
+  required String id,
+  required MomentPhoto photo,
+  required Rect bounds,
+}) {
+  final design = photo.design;
+  if (design == null) return [_photo(id: id, photo: photo, bounds: bounds)];
+  final canvas = design.canvasSize;
+  final scale = math.min(
+    bounds.width / canvas.width,
+    bounds.height / canvas.height,
+  );
+  final origin = Offset(
+    bounds.left + (bounds.width - canvas.width * scale) / 2,
+    bounds.top + (bounds.height - canvas.height * scale) / 2,
+  );
+  final layers = design.layersForPhoto(photo.storageUri);
+  final artboard = origin & Size(canvas.width * scale, canvas.height * scale);
+  final sourceBounds = Offset.zero & canvas;
+  Rect fitClip(Rect clip) => Rect.fromLTWH(
+    origin.dx + clip.left * scale,
+    origin.dy + clip.top * scale,
+    clip.width * scale,
+    clip.height * scale,
+  );
+  final backgroundZ =
+      layers.fold<int>(0, (z, layer) => math.min(z, layer.zIndex)) - 1;
+  double? dimension(double? value, double reference) {
+    if (value == null || value <= 1) return value;
+    final pixels = value * scale;
+    // Values <=1 mean relative dimensions in the saved layer format. Keep
+    // subpixel absolute strokes from being reinterpreted as large percentages.
+    return pixels > 1 ? pixels : math.min(1, value / reference);
+  }
+
+  return [
+    LayerModel(
+      id: '$id-design-background',
+      type: LayerType.decoration,
+      position: origin,
+      width: canvas.width * scale,
+      height: canvas.height * scale,
+      zIndex: backgroundZ,
+      canvasClip: artboard,
+      decorationFillColor:
+          '#${design.backgroundColor.toARGB32().toRadixString(16).padLeft(8, '0')}',
+    ),
+    for (final indexed in layers.indexed)
+      (() {
+        final sourceClip = (indexed.$2.canvasClip ?? sourceBounds).intersect(
+          sourceBounds,
+        );
+        return indexed.$2.copyWith(
+          id: '$id-design-${indexed.$1}-${indexed.$2.id}',
+          position: origin + indexed.$2.position * scale,
+          width: indexed.$2.width * scale,
+          height: indexed.$2.height * scale,
+          // Format changes can leave intentional margins around an older
+          // canvas. Carry that crop into the album instead of revealing it.
+          canvasClip: sourceClip.isEmpty ? artboard : fitClip(sourceClip),
+          opacity: sourceClip.isEmpty ? 0 : indexed.$2.opacity,
+          imageOffset: indexed.$2.imageOffset == null
+              ? null
+              : indexed.$2.imageOffset! * scale,
+          decorationBorderWidth: dimension(
+            indexed.$2.decorationBorderWidth,
+            indexed.$2.width,
+          ),
+          decorationCornerRadius: dimension(
+            indexed.$2.decorationCornerRadius,
+            math.min(indexed.$2.width, indexed.$2.height),
+          ),
+          textStyle: indexed.$2.textStyle?.copyWith(
+            fontSize: indexed.$2.textStyle?.fontSize == null
+                ? null
+                : indexed.$2.textStyle!.fontSize! * scale,
+            letterSpacing: indexed.$2.textStyle?.letterSpacing == null
+                ? null
+                : indexed.$2.textStyle!.letterSpacing! * scale,
+            wordSpacing: indexed.$2.textStyle?.wordSpacing == null
+                ? null
+                : indexed.$2.textStyle!.wordSpacing! * scale,
+            shadows: indexed.$2.textStyle?.shadows
+                ?.map(
+                  (shadow) => Shadow(
+                    color: shadow.color,
+                    offset: shadow.offset * scale,
+                    blurRadius: shadow.blurRadius * scale,
+                  ),
+                )
+                .toList(),
+          ),
+        );
+      })(),
+  ];
+}
+
+/// An unsaved view of the exact pages that would be appended. Existing page
+/// maps, including custom layers and metadata, are kept verbatim and in order.
+class MonthlyMomentAppendPreview {
+  const MonthlyMomentAppendPreview._(this.existingPages, this.pendingPages);
+
+  final List<Map<String, dynamic>> existingPages;
+  final List<Map<String, dynamic>> pendingPages;
+  List<Map<String, dynamic>> get pages => [...existingPages, ...pendingPages];
+}
+
+MonthlyMomentAppendPreview buildMonthlyMomentAppendPreview({
+  required String existingDocumentJson,
+  required DateTime month,
+  required List<MomentRecord> records,
+  required List<String> selectedPhotoIds,
+  required Size canvasSize,
+}) {
+  final Object? document;
+  try {
+    document = jsonDecode(existingDocumentJson);
+  } on FormatException {
+    throw ArgumentError('저장한 앨범의 페이지를 확인할 수 없어요.');
+  }
+  if (document is! Map ||
+      document['pages'] is! List ||
+      (document['pages'] as List).isEmpty) {
+    throw ArgumentError('저장한 앨범의 페이지를 확인할 수 없어요.');
+  }
+  final saved = <Map<String, dynamic>>[];
+  for (final value in document['pages'] as List) {
+    if (value is! Map || value['layers'] is! List) {
+      throw ArgumentError('저장한 앨범의 페이지를 확인할 수 없어요.');
+    }
+    saved.add(Map<String, dynamic>.from(value));
+  }
+  final pending = selectedPhotoIds.isEmpty
+      ? <Map<String, dynamic>>[]
+      : buildMonthlyMomentAppendPages(
+          month: month,
+          records: records,
+          selectedPhotoIds: selectedPhotoIds,
+          canvasSize: canvasSize,
+        );
+  if (saved.length + pending.length > 81) {
+    throw ArgumentError('한 앨범에는 내지를 80쪽까지 담을 수 있어요. 사진을 줄여 주세요.');
+  }
+  return MonthlyMomentAppendPreview._(
+    List.unmodifiable(saved),
+    List.unmodifiable([
+      for (var index = 0; index < pending.length; index++)
+        {...pending[index], 'index': saved.length + index},
+    ]),
+  );
 }
 
 String _singleLine(String value) =>
@@ -267,6 +436,7 @@ Map<String, dynamic> _page({
   required Color background,
   required List<LayerModel> layers,
   bool isCover = false,
+  Size canvasSize = monthlyMomentCanvasSize,
 }) => {
   'index': index,
   'isCover': isCover,
@@ -275,7 +445,7 @@ Map<String, dynamic> _page({
       .map(
         (layer) => LayerExportMapper.toJson(
           layer,
-          canvasSize: monthlyMomentCanvasSize,
+          canvasSize: canvasSize,
           isCover: isCover,
         ),
       )

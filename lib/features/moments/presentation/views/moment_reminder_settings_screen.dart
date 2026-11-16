@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/utils/context_extensions.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 import '../../../../shared/widgets/experience_style.dart';
 import '../../../profile/presentation/views/notification_settings_screen.dart';
 import '../../../social/presentation/widgets/social_web_frame.dart';
@@ -11,6 +13,7 @@ import '../../domain/moment_record.dart';
 import '../providers/moment_engagement_providers.dart';
 import '../providers/moments_providers.dart';
 import '../widgets/moments_widgets.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 class MomentReminderSettingsScreen extends ConsumerStatefulWidget {
   const MomentReminderSettingsScreen({super.key});
@@ -108,16 +111,12 @@ class _MomentReminderSettingsScreenState
         _saved = result;
         _draft = result.reminder;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            result.reminder.enabled
-                ? result.canRemind
-                      ? '선택한 시간에 주 1회 알려드릴게요.'
-                      : '시간을 저장했어요. 전체 알림을 켜면 받을 수 있어요.'
-                : '주간 기록 알림을 껐어요.',
-          ),
-        ),
+      context.showSnack(
+        result.reminder.enabled
+            ? result.canRemind
+                  ? '선택한 시간에 주 1회 알려드릴게요.'
+                  : '시간을 저장했어요. 전체 알림을 켜면 받을 수 있어요.'
+            : '주간 기록 알림을 껐어요.',
       );
     } catch (error) {
       if (!_current(generation)) return;
@@ -251,7 +250,7 @@ class _MomentReminderSettingsScreenState
                   OutlinedButton.icon(
                     key: const ValueKey('moments-reminder-time'),
                     onPressed: enabled && _draft.enabled ? _time : null,
-                    icon: const Icon(Icons.schedule_outlined),
+                    icon: const ExperienceIcon('Clock', size: 24),
                     label: Text(
                       '${_draft.hour.toString().padLeft(2, '0')}:${_draft.minute.toString().padLeft(2, '0')} · 한국 시간',
                     ),
@@ -281,12 +280,9 @@ class _MomentReminderSettingsScreenState
                       onPressed: _busy
                           ? null
                           : () => Navigator.of(context).push<void>(
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    const NotificationSettingsScreen(),
-                              ),
+                              snapFitRoute(page: const NotificationSettingsScreen()),
                             ),
-                      icon: const Icon(Icons.notifications_outlined, size: 18),
+                      icon: const ExperienceIcon('Bell', size: 18),
                       label: const Text('기기 알림 설정'),
                     ),
                   ),

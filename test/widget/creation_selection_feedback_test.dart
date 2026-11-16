@@ -16,6 +16,7 @@ import 'package:snap_fit/features/album/presentation/widgets/create_flow/print_c
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/template_photo_fill_step.dart';
 
 import 'ai_album_start_step_test.dart' show wrapCreation;
+import 'album_settings_redesign_test.dart' show openAlbumSettingsSection;
 
 Widget _reduced(Widget child) => Builder(
   builder: (context) => MediaQuery(
@@ -192,6 +193,7 @@ void main() {
       await tester.ensureVisible(hard);
       await tester.tap(hard);
       await tester.pumpAndSettle();
+      await openAlbumSettingsSection(tester, 'pages');
       await tester.ensureVisible(find.byTooltip('페이지 늘리기'));
       await tester.tap(find.byTooltip('페이지 늘리기'));
       await tester.pumpAndSettle();
@@ -201,6 +203,7 @@ void main() {
       );
       // An accepted value can also arrive during title editing. The status
       // update must keep that input's focus instead of focusing its message.
+      await openAlbumSettingsSection(tester, 'name');
       final titleFocus = tester
           .widget<EditableText>(find.byType(EditableText))
           .focusNode;

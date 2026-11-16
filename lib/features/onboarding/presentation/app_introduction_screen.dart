@@ -9,6 +9,7 @@ import '../../../../shared/widgets/snapfit_motion.dart';
 import 'first_visit_controller.dart';
 import 'widgets/intro_artwork_cache.dart';
 import 'widgets/story_album_artwork.dart';
+import '../../../shared/widgets/experience_icon.dart';
 
 class AppIntroductionScreen extends ConsumerStatefulWidget {
   const AppIntroductionScreen({
@@ -187,7 +188,7 @@ class _AppIntroductionScreenState extends ConsumerState<AppIntroductionScreen> {
                                   onPressed: _finishing
                                       ? null
                                       : () => _goTo(_index - 1),
-                                  icon: const Icon(Icons.arrow_back, size: 21),
+                                  icon: const ExperienceIcon('ArrowLeft', size: 21),
                                 ),
                                 const SizedBox(width: 8),
                               ],
@@ -222,7 +223,7 @@ class _AppIntroductionScreenState extends ConsumerState<AppIntroductionScreen> {
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      const Icon(Icons.arrow_forward, size: 18),
+                                      const ExperienceIcon('ArrowRight', size: 18),
                                     ],
                                   ),
                                 ),
@@ -250,9 +251,9 @@ const _chapters = [
     description: '흩어져 있던 소중한 순간을\n나만의 앨범으로 간직해요.',
   ),
   (
-    eyebrow: 'FIND YOUR DESIGN',
-    title: '마음에 드는\n디자인부터 골라요.',
-    description: '표지부터 내지까지 둘러보고\n우리의 이야기에 어울리는 디자인을 찾아요.',
+    eyebrow: 'START YOUR STORY',
+    title: '한 장씩 모으거나,\n바로 앨범을 만들어요.',
+    description: '오늘 사진부터 기록해도 좋아요.\n디자인을 골라 앨범부터 시작할 수도 있어요.',
   ),
   (
     eyebrow: 'MAKE IT YOURS',

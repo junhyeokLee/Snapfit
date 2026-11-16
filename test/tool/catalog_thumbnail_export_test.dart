@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:snap_fit/core/data/catalog_preview.dart';
 import 'package:snap_fit/core/templates/frame_preview_photos.dart';
 import 'package:snap_fit/core/templates/catalog_preview_assets.g.dart';
 import 'package:snap_fit/core/templates/studio_decoration_catalog.dart';
@@ -35,6 +37,18 @@ void main() {
       tester.view.devicePixelRatio = 3;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
+      final imageCache = PaintingBinding.instance.imageCache;
+      final previousSize = imageCache.maximumSize;
+      final previousBytes = imageCache.maximumSizeBytes;
+      imageCache.maximumSize = 8;
+      imageCache.maximumSizeBytes = 24 * 1024 * 1024;
+      addTearDown(() {
+        imageCache.clear();
+        imageCache.clearLiveImages();
+        imageCache.maximumSize = previousSize;
+        imageCache.maximumSizeBytes = previousBytes;
+        CatalogPreviews.clearCache();
+      });
       const materialsOnly = bool.fromEnvironment('EXPORT_MATERIALS_ONLY');
       final selectedIds = const String.fromEnvironment(
         'EXPORT_TEMPLATE_IDS',
@@ -49,6 +63,7 @@ void main() {
           ...imageFrameStyles
               .where((f) => f.key.isNotEmpty)
               .map((f) => 'frame:${f.key}'),
+          ...studioWordArts.map((art) => art.productKey),
         }),
         isEmpty,
       );
@@ -86,13 +101,29 @@ void main() {
               cacheWidth: 768,
             ),
           ),
-        for (final art in materialsOnly || partial ? [] : studioWordArts)
+        for (final art in studioWordArts.where(
+          (art) =>
+              !materialsOnly &&
+              (!partial || selectedMaterials.contains(art.productKey)),
+        ))
           art.productKey: () => StudioWordArtPreview(art: art),
       };
       final assets = <String, String>{if (partial) ...catalogPreviewAssets};
       Directory('assets/catalog_thumbnails').createSync(recursive: true);
       for (final entry in entries.entries) {
         final cover = entry.key.startsWith('template:');
+        if (cover) {
+          final id = int.parse(entry.key.substring('template:'.length));
+          final template = publishedCreationTemplateById(id)!;
+          // The worker runs outside the widget-test clock. pumpAndSettle can
+          // finish while its static loading skeleton is still being shown.
+          await tester.runAsync(() async {
+            final preview = await CatalogPreviews.request(template);
+            expect(preview, isNotNull, reason: entry.key);
+            preview!.prepareParts(cover: true);
+            expect(preview.cover, isNotEmpty, reason: entry.key);
+          });
+        }
         final size = cover ? 220.0 : 96.0;
         final boundary = GlobalKey();
         await tester.pumpWidget(const SizedBox.shrink());
@@ -115,6 +146,15 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
+        if (cover) {
+          expect(
+            find.byKey(
+              ValueKey('catalog-cover-skeleton-${entry.key.substring(9)}'),
+            ),
+            findsNothing,
+            reason: 'Never publish a loading placeholder as a book cover.',
+          );
+        }
         final imageWidgets = tester
             .widgetList<Image>(find.byType(Image))
             .toList();
@@ -134,18 +174,38 @@ void main() {
           expect(raw.image, isNotNull, reason: entry.key);
         }
         expect(tester.takeException(), isNull, reason: entry.key);
-        final path =
-            'assets/catalog_thumbnails/${entry.key.replaceAll(':', '_')}.png';
+        final stem = entry.key.replaceAll(':', '_');
+        var path = 'assets/catalog_thumbnails/$stem.png';
         await tester.runAsync(() async {
           final image =
               await (boundary.currentContext!.findRenderObject()
                       as RenderRepaintBoundary)
                   .toImage(pixelRatio: cover ? 3 : 4);
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          File(path).writeAsBytesSync(bytes!.buffer.asUint8List());
+          final png = bytes!.buffer.asUint8List();
+          // These revised originals need a new URL: hosting caches images for
+          // an hour, while the editable source ships in the new app entrypoint.
+          // Other catalog paths and the stable commerce keys remain untouched.
+          if ((cover &&
+                  const bool.fromEnvironment(
+                    'FINGERPRINT_TEMPLATE_THUMBNAILS',
+                  )) ||
+              const {
+                'phrase:collage-bold-cut',
+                'phrase:collage-ticket-label',
+                'phrase:collage-hand-note',
+                'phrase:collage-diecut',
+              }.contains(entry.key)) {
+            final fingerprint = sha256.convert(png).toString().substring(0, 12);
+            path = 'assets/catalog_thumbnails/$stem.$fingerprint.png';
+          }
+          File(path).writeAsBytesSync(png);
           image.dispose();
         });
         assets[entry.key] = path;
+        await tester.pumpWidget(const SizedBox.shrink());
+        imageCache.clear();
+        imageCache.clearLiveImages();
         // Progress is useful when regenerating the full catalog.
         debugPrint('Exported: ${entry.key}');
       }

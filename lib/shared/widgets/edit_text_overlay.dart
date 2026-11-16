@@ -11,6 +11,7 @@ import 'font_picker_list.dart';
 import 'experience_form_style.dart';
 import 'no_glow.dart';
 import 'studio_phrase_picker.dart';
+import '../../shared/widgets/experience_icon.dart';
 
 /// 인스타그램 스타일 텍스트 편집 오버레이 (C. 전체 리팩토링)
 /// ----------------------------------------------------------------
@@ -780,7 +781,7 @@ class _EditTextOverlayState extends State<EditTextOverlay> {
                       TextButton.icon(
                         key: const ValueKey('text-edit-outline-tool'),
                         onPressed: _toggleBackground,
-                        icon: const Icon(Icons.auto_awesome_outlined, size: 18),
+                        icon: const ExperienceIcon('Sparkles', size: 18),
                         label: Text(
                           _textStyleType == TextStyleType.none
                               ? '글자 윤곽선 없음'
@@ -793,7 +794,7 @@ class _EditTextOverlayState extends State<EditTextOverlay> {
                       OutlinedButton.icon(
                         key: const ValueKey('studio-phrase-tool'),
                         onPressed: _choosePhrase,
-                        icon: const Icon(Icons.format_quote_outlined, size: 18),
+                        icon: const ExperienceIcon('FileText', size: 18),
                         label: const Text('문구 찾아보기'),
                       ),
                     ],
@@ -856,7 +857,7 @@ class _EditTextOverlayState extends State<EditTextOverlay> {
           key: const ValueKey('text-edit-cancel'),
           tooltip: '문구 편집 취소',
           onPressed: _finishing ? null : _cancel,
-          icon: const Icon(Icons.close, size: 20),
+          icon: const ExperienceIcon('X', size: 20),
         ),
         const SizedBox(width: 4),
         Expanded(

@@ -21,6 +21,8 @@ class _Editor extends AlbumEditorViewModel {
   Album? prepared;
   var restored = false;
   var prepareCount = 0;
+  var hasNextPhotoSlot = false;
+  var allComplete = false;
   @override
   AlbumEditorState build() => const AlbumEditorState();
   @override
@@ -53,7 +55,25 @@ class _Editor extends AlbumEditorViewModel {
             ]
           : [],
     ),
-    AlbumPage(id: 'second', pageIndex: 2, layers: []),
+    AlbumPage(
+      id: 'second',
+      pageIndex: 2,
+      layers: [
+        if (hasNextPhotoSlot)
+          LayerModel(
+            id: 'next-photo',
+            type: LayerType.image,
+            position: Offset.zero,
+          )
+        else if (allComplete)
+          LayerModel(
+            id: 'personal-note',
+            type: LayerType.text,
+            position: Offset.zero,
+            text: '완성한 쪽',
+          ),
+      ],
+    ),
   ];
 }
 
@@ -172,6 +192,59 @@ void main() {
       await fixture.close(tester);
     }
   });
+
+  testWidgets(
+    'one-page entry selects the first unfilled photo in the fresh document',
+    (tester) async {
+      final fixture = _Fixture()..editor.hasNextPhotoSlot = true;
+      when(
+        () => fixture.repository.fetchAlbum('73'),
+      ).thenAnswer((_) async => fresh);
+      await fixture.mount(tester);
+      try {
+        await HomeAlbumActions.onEditSelected(
+          fixture.context,
+          fixture.ref,
+          listed,
+          startAtFirstIncompletePage: true,
+          onePageGoal: true,
+        );
+        final screen =
+            fixture.routes.opened.single.builder(fixture.context)
+                as PageEditorScreen;
+        expect(screen.initialPageIndex, 2);
+        expect(screen.initialSelectedLayerId, 'next-photo');
+        expect(screen.onePageGoal, isTrue);
+      } finally {
+        await fixture.close(tester);
+      }
+    },
+  );
+
+  testWidgets(
+    'a book completed since the home response is never opened as an unfinished goal',
+    (tester) async {
+      final fixture = _Fixture()..editor.allComplete = true;
+      when(
+        () => fixture.repository.fetchAlbum('73'),
+      ).thenAnswer((_) async => fresh);
+      await fixture.mount(tester);
+      try {
+        await HomeAlbumActions.onEditSelected(
+          fixture.context,
+          fixture.ref,
+          listed,
+          startAtFirstIncompletePage: true,
+          onePageGoal: true,
+        );
+        expect(fixture.routes.opened, isEmpty);
+        await tester.pump();
+        expect(find.text('이 앨범의 내지는 이미 완성됐어요.'), findsOneWidget);
+      } finally {
+        await fixture.close(tester);
+      }
+    },
+  );
 
   testWidgets('account change during fresh lookup never enters the old book', (
     tester,

@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'entities/premium_template.dart';
+import 'store_template_editorial_selection.dart';
 
 // Store discovery order, deliberately independent of the stable authoring order
 // used by template layouts. This is a broad-use editorial order, not an asserted
@@ -8,14 +9,15 @@ import 'entities/premium_template.dart';
 const storeTemplateTopicOrder = [
   '일상',
   '여행',
-  '가족·친구',
-  '커플·기념일',
-  '성장·육아',
-  '반려동물',
-  '동아리',
   '스포츠·도전',
-  '졸업·새출발',
+  '반려동물',
+  '커플·기념일',
+  '동아리',
   '웨딩',
+  '졸업·새출발',
+  '성장·육아',
+  '가족·친구',
+  '취미·기록',
 ];
 const storeRecommendedCategory = '추천';
 const storeRecommendationLimit = 24;
@@ -55,6 +57,7 @@ List<PremiumTemplate> recommendStoreTemplates(
         isPaid(template),
         featuredIds.contains(template.id),
         favoriteIds.contains(template.id),
+        reviewedStoreTemplateIds.contains(template.id),
       ),
     );
   }
@@ -68,7 +71,9 @@ List<PremiumTemplate> recommendStoreTemplates(
     );
     (candidate.paid ? pool.paid : pool.free).add(candidate);
   }
-  final topics = storeTemplateCategories(pools.keys).skip(2).toList();
+  final topics = storeTemplateCategories(pools.keys)
+      .where((topic) => topic != '전체' && topic != storeRecommendedCategory)
+      .toList();
   final selected = <PremiumTemplate>[];
   for (var round = 0; selected.length < limit; round++) {
     var added = false;
@@ -91,10 +96,11 @@ class _Candidate {
     this.paid,
     this.featured,
     this.favorite,
+    this.reviewed,
   );
   final PremiumTemplate template;
   final int index;
-  final bool paid, featured, favorite;
+  final bool paid, featured, favorite, reviewed;
 }
 
 int _compare(_Candidate a, _Candidate b) {
@@ -102,6 +108,8 @@ int _compare(_Candidate a, _Candidate b) {
   var order = flag(a.favorite, b.favorite);
   if (order != 0) return order;
   order = flag(a.featured, b.featured);
+  if (order != 0) return order;
+  order = flag(a.reviewed, b.reviewed);
   if (order != 0) return order;
   order = b.template.weeklyScore.compareTo(a.template.weeklyScore);
   if (order != 0) return order;

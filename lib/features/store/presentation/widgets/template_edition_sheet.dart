@@ -232,7 +232,7 @@ class _TemplateEditionSheetState extends State<TemplateEditionSheet> {
                       IconButton(
                         tooltip: '분량 선택 닫기',
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close, size: 22),
+                        icon: const ExperienceIcon('X', size: 22),
                       ),
                     ],
                   ),

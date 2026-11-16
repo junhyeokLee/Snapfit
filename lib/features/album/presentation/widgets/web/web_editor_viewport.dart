@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../../shared/web/web_design.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 /// Lets selection chrome keep a constant screen size while the document view
 /// zooms. This value is presentation state and never changes layer geometry.
@@ -253,13 +254,13 @@ class _WebEditorViewportState extends State<WebEditorViewport>
         onPressed: widget.enabled && _zoom < _maximumZoom
             ? () => _zoomAt(_viewportSize.center(Offset.zero), _zoom + .25)
             : null,
-        icon: const Icon(Icons.add, size: 18),
+        icon: const ExperienceIcon('Plus', size: 18),
       ),
       const SizedBox(width: 6),
       TextButton.icon(
         key: const ValueKey('web-editor-zoom-fit'),
         onPressed: widget.enabled ? _fit : null,
-        icon: const Icon(Icons.fit_screen, size: 18),
+        icon: const ExperienceIcon('Maximize2', size: 18),
         label: const Text('화면 맞춤'),
       ),
     ],

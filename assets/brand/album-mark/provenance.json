@@ -31,14 +31,16 @@
       "width": 941,
       "height": 1672,
       "prompt": "Use case: ads-marketing with photorealistic-natural photography.\nAsset type: a finished portrait splash-screen IMAGE for SnapFit, an elegant app for making personal photo albums. Exactly one full-bleed final screen, not a phone mockup or concept board.\nReference image: brand wordmark reference only. Reproduce the reference's open-album two-leaf emblem and exact lowercase \"snapfit\" wordmark in pure white, as one crisp, modest horizontal logo centered at 22% down the image, about 57% of image width. No other text or UI.\nScene: a stunning but believable candid travel photograph from the Mediterranean coast, a quiet seaside path above clear aquamarine water, soft weathered pale stone walls, small pastel buildings clustered on distant cliffs, a few deep green cypress shapes, airy blue sky. Visible fine stone, sea ripples and distant architecture, not blurred.\nSubjects: one adult couple, seen from behind at a medium-long distance, strolling close together toward the sea down the path, natural relaxed gestures, one in a lightweight ivory shirt and charcoal trousers and the other in a pale blue summer dress, no conspicuous accessories or logos. Couple occupies roughly 20% of canvas height, centered horizontally around lower 70%, both full bodies visible. Correct natural anatomy.\nComposition: upright 9:16, ideally 1152x2048 or highest available. Premium contemporary travel editorial, authentic camera perspective, foreground path from lower edge leads toward the couple and the view. Upper third has deep enough clean blue sky for the white logo to read. The photograph itself supplies contrast, NOT a dark overlay or artificial gradient. Landscape and couple occupy lower two thirds. Screen edges are pure photograph, no frame, no rounded corners.\nLight: fresh soft morning daylight, natural accurate colors, delicate warm highlights and cool sea, restrained contrast, no oversaturated postcard look, no sepia/teal LUT, no sunset orange wash. Sharp high-end photography with real detail. No bokeh blobs, no blur, no grain effect, no lens flare, no orbs.\nNo marketing headline, no tagline, no buttons, no progress indicator, no system status bar. The sole graphic is the flat white reference emblem + snapfit wordmark.",
-      "source": "exec-c659ab61-52ac-4a8c-bc45-76ab503b36b4.png"
+      "source": "exec-c659ab61-52ac-4a8c-bc45-76ab503b36b4.png",
+      "status": "Historical generation record. Bitmap replaced on 2026-10-29; current source and prompts are in splash-provenance-20261029.json."
     },
     {
       "file": "splash-landscape.png",
       "width": 1672,
       "height": 941,
       "prompt": "Use case: compositing / outpainting.\nAsset type: landscape companion splash image for the SnapFit photo-album app.\nInput 1: the portrait splash screen is the image to adapt.\nInput 2: logo artwork is a supporting brand reference.\nCreate the LANDSCAPE 16:9 version, ideally 2048x1152. Expand and recompose the SAME scene into a wide photograph. Keep the couple's clothing, adult appearance, relaxed back-facing walking pose, the sunny Mediterranean path, clear sea and cliffside village, the natural color grade and crisp editorial photographic quality. Keep both bodies and feet completely in frame, placed at x=40%, lower half of canvas, about 33% of canvas height. Extend the coastal view toward the right; authentic stone walls at the sides. This should feel like the same moment with a wider lens, not a different trip.\nThe ONLY graphic should be the exact same open album emblem + lowercase \"snapfit\" wordmark in flat pure white, horizontal, centered in clear blue sky at x=50%, y=22%, about 27% of canvas width. Readable with abundant natural sky around it. Preserve the relative logo silhouette and typography from reference 2. Do not stretch the logo.\nEntire image full bleed, no phone/device frame, no corners, no additional text or UI. No dark overlay, blur, glow, lens flare, bokeh, artificial gradient, oversized typography or heavy color filters. Bright restrained natural daylight, clear distant buildings, fine ripples in water, real camera photographic detail.",
-      "source": "exec-a66d1a69-7be2-4b0b-87ef-0501caaf7a72.png"
+      "source": "exec-a66d1a69-7be2-4b0b-87ef-0501caaf7a72.png",
+      "status": "Historical generation record. Bitmap replaced on 2026-10-29; current source and prompts are in splash-provenance-20261029.json."
     },
     {
       "file": "wordmark-cyan.png",
@@ -67,5 +69,6 @@
     "deepCharcoal": "#121212",
     "pureWhite": "#FFFFFF",
     "note": "Match actual constant values, not the older #00C2E0 / #E3F9FD values in comments. Generated raster pixels may vary slightly; these are the exact design targets and preview CSS tokens."
-  }
+  },
+  "splashReplacementRecord": "splash-provenance-20261029.json"
 }

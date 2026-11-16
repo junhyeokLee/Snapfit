@@ -199,14 +199,30 @@ void main() {
         }
         if (request.method == 'POST' &&
             request.url.path.endsWith('/push_preferences')) {
+          expect(jsonDecode(request.body), {
+            'user_id': client.auth.currentUser!.id,
+          });
+          expect(
+            request.headers['prefer'],
+            contains('resolution=ignore-duplicates'),
+          );
+          return http.Response('', 204, request: request);
+        }
+        if (request.method == 'PATCH' &&
+            request.url.path.endsWith('/push_preferences')) {
           final started = writeStarted;
           if (started != null && !started.isCompleted) started.complete();
           await writeGate?.future;
+          if (writeStatus == 204) {
+            remotePreferences.addAll(
+              jsonDecode(request.body) as Map<String, dynamic>,
+            );
+          }
           return http.Response(
             writeStatus == 204
-                ? ''
+                ? jsonEncode({'user_id': client.auth.currentUser!.id})
                 : '{"code":"unavailable","message":"fixture offline"}',
-            writeStatus,
+            writeStatus == 204 ? 200 : writeStatus,
             headers: {'content-type': 'application/json'},
             request: request,
           );
@@ -365,7 +381,7 @@ void main() {
       final preferenceWrites = requests
           .where(
             (request) =>
-                request.method == 'POST' &&
+                request.method == 'PATCH' &&
                 request.url.path.endsWith('/push_preferences'),
           )
           .map((request) => jsonDecode(request.body) as Map<String, dynamic>)
@@ -481,7 +497,7 @@ void main() {
       final rows = requests
           .where(
             (request) =>
-                request.method == 'POST' &&
+                request.method == 'PATCH' &&
                 request.url.path.endsWith('/push_preferences'),
           )
           .map((request) => jsonDecode(request.body) as Map)
@@ -489,6 +505,104 @@ void main() {
       expect(rows.last['all_enabled'], false);
       expect(rows.last['order_enabled'], false);
       expect(rows.last['night_mute'], true);
+      expect(prefs.getBool('push_prefs_dirty_$_alice'), false);
+    },
+  );
+
+  test(
+    'one switch preserves a second device opt-out made after loading',
+    () async {
+      await _session(client, _alice);
+      final displayed = await FcmNotificationService.loadSettings(
+        refresh: true,
+      );
+      expect(displayed.order, true);
+      // A second device changes unrelated fields after this form was displayed.
+      remotePreferences.addAll({'all_enabled': false, 'order_enabled': false});
+      requests.clear();
+      await FcmNotificationService.updateSetting(
+        FcmNotificationService.kComment,
+        false,
+        expectedOwnerId: _alice,
+      );
+      final patches = requests
+          .where(
+            (request) =>
+                request.method == 'PATCH' &&
+                request.url.path.endsWith('/push_preferences'),
+          )
+          .toList();
+      expect(patches, hasLength(1));
+      expect(jsonDecode(patches.single.body), {'comment_enabled': false});
+      expect(remotePreferences['all_enabled'], false);
+      expect(remotePreferences['order_enabled'], false);
+      final refreshed = await FcmNotificationService.loadSettings(
+        refresh: true,
+      );
+      expect(refreshed.all, false);
+      expect(refreshed.order, false);
+      expect(refreshed.comment, false);
+    },
+  );
+
+  test(
+    'reopening settings requires a fresh remote read even after prior success',
+    () async {
+      await _session(client, _alice);
+      await FcmNotificationService.loadSettings(refresh: true);
+      preferenceStatus = 503;
+      remotePreferences = {'code': 'unavailable', 'message': 'fixture offline'};
+      await expectLater(
+        FcmNotificationService.loadSettings(refresh: true),
+        throwsA(isA<Object>()),
+      );
+      preferenceStatus = 200;
+      remotePreferences = {'all_enabled': false};
+      expect(
+        (await FcmNotificationService.loadSettings(refresh: true)).all,
+        false,
+      );
+    },
+  );
+
+  test(
+    'offline one-field retry does not restore unrelated stale preferences',
+    () async {
+      await _session(client, _alice);
+      await FcmNotificationService.loadSettings(refresh: true);
+      writeStatus = 503;
+      await expectLater(
+        FcmNotificationService.updateSetting(
+          FcmNotificationService.kComment,
+          false,
+          expectedOwnerId: _alice,
+        ),
+        throwsA(isA<Object>()),
+      );
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getStringList('push_prefs_dirty_keys_$_alice'), [
+        FcmNotificationService.kComment,
+      ]);
+      remotePreferences.addAll({
+        'all_enabled': false,
+        'marketing_enabled': false,
+      });
+      writeStatus = 204;
+      requests.clear();
+      await FcmNotificationService.syncSession();
+      final patches = requests
+          .where(
+            (request) =>
+                request.method == 'PATCH' &&
+                request.url.path.endsWith('/push_preferences'),
+          )
+          .toList();
+      expect(patches, isNotEmpty);
+      for (final request in patches) {
+        expect(jsonDecode(request.body), {'comment_enabled': false});
+      }
+      expect(remotePreferences['all_enabled'], false);
+      expect(remotePreferences['marketing_enabled'], false);
       expect(prefs.getBool('push_prefs_dirty_$_alice'), false);
     },
   );
@@ -504,7 +618,7 @@ void main() {
       final before = requests
           .where(
             (request) =>
-                request.method == 'POST' &&
+                request.method == 'PATCH' &&
                 request.url.path.endsWith('/push_preferences'),
           )
           .length;

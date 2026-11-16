@@ -1,0 +1,134 @@
+{
+  "date": "2026-10-30",
+  "automation_id": "snapfit",
+  "trigger_time": "2026-10-30T01:55:12.749Z",
+  "finished_time": "2026-10-30T02:03:01.220535+00:00",
+  "scope": "Editor decoration async completion must apply only to the page/edit session selected before access approval. Preserve valid same-target edits and inline panel reuse.",
+  "previous_reports": [
+    "docs/verification/heartbeat-editor-picker-readonly-2026-10-26.json",
+    "docs/verification/editor-tools-fixes-2026-10-25.json",
+    "docs/verification/album-create-and-safety-2026-10-29.json",
+    "docs/verification/app-size-web-loading-2026-10-29.json"
+  ],
+  "findings": [
+    {
+      "id": "decoration-stale-editor-target",
+      "priority": "P2",
+      "status": "fixed",
+      "before": "Decoration insertion awaited access, then its parent callback read the current editor/page. In a still-mounted panel, a page change or resetForCreate during approval inserted the old selection into that different page/new draft and closed the panel. The new draft intentionally reused cover_page, so matching only a page ID would not be sufficient.",
+      "evidence": "Two controlled tests using the actual editor view model, real decoration panel and a delayed access gate failed before the fix: changed page and changed draft. Valid same-page edits, page changes before the tap, and closing before approval already passed.",
+      "fix": [
+        "DecorateStickerTab optionally captures a lightweight approval guard at selection time, before its access await. Check it before changing the selected decoration or invoking the insertion callback.",
+        "DecoratePanel supplies the guard, checking notifier identity, editSessionIdentity, current page ID and editing album ID. Capture occurs per tap, so intentionally changing the page before choosing a material still works.",
+        "Keep the existing finally-based single-flight lock release, including a rejected stale approval. Standalone catalog previews need no editor provider or guard. No ownership/server access check is bypassed."
+      ]
+    },
+    {
+      "id": "studio-decoration-layer-fixture-null-sort",
+      "priority": "P3",
+      "status": "test_fixture_fixed",
+      "before": "The old _Interaction mock in the artwork-name/thumbnail fixture did not implement sortByZ. The current layer panel called it and received null instead of a layer list. This failure was unrelated to the async insertion change.",
+      "fix": "Use a real read-only LayerInteractionManager.printPreview for that fixture and dispose it at teardown; retain the existing rendering-only mocks in other tests."
+    }
+  ],
+  "production_files_changed_this_run": [
+    "lib/features/album/presentation/widgets/editor/decorate_panel.dart",
+    "lib/features/album/presentation/widgets/editor/decorate_sticker_tab.dart"
+  ],
+  "new_test_files": [
+    "test/widget/editor_decoration_target_lifecycle_test.dart"
+  ],
+  "updated_test_files": [
+    "test/widget/studio_decorations_test.dart"
+  ],
+  "verification": {
+    "initial_fixture_attempt": {
+      "passed": 3,
+      "failed": 3,
+      "log": "output/heartbeat-editor-decoration-target-2026-10-30/baseline-tests.log",
+      "classification": "Two reproduced target failures plus one invalid replacement fixture. That fixture called invalidate on a real notifier, rerunning its build/late-final initialization rather than replacing its instance. Removed that fixture, and made no production change on its basis. No production invalidate/refresh call for this notifier was found in the scoped search."
+    },
+    "controlled_baseline": {
+      "passed": 3,
+      "failed": 2,
+      "log": "output/heartbeat-editor-decoration-target-2026-10-30/controlled-baseline-tests.log",
+      "classification": "Intentional before-fix reproduction for page and reused-ID draft changes; three valid/lifecycle behaviors pass."
+    },
+    "first_related": {
+      "passed": 380,
+      "failed": 1,
+      "log": "output/heartbeat-editor-decoration-target-2026-10-30/related-tests.log",
+      "classification": "All new target cases passed after the production fix; the remaining failure was the old null-sort test mock subsequently repaired."
+    },
+    "final_related": {
+      "passed": 382,
+      "failed": 0,
+      "log": "output/heartbeat-editor-decoration-target-2026-10-30/final-tests.log",
+      "single_process": true,
+      "concurrency": 1,
+      "command": "flutter test --no-test-assets --no-pub --concurrency=1 --reporter expanded test/widget/editor_decoration_target_lifecycle_test.dart test/widget/editor_point_shop_gate_test.dart test/review/editor_tools_verification_test.dart test/widget/web_editor_tool_dialog_test.dart test/widget/studio_decorations_test.dart"
+    },
+    "new_cases": [
+      "Changed page during delayed approval does not insert or close the panel.",
+      "New draft during delayed approval does not insert despite reusing the same page ID.",
+      "Rejected stale approval releases the lock and a fresh selection can apply exactly once.",
+      "Edits to layers on the same target survive and do not cancel valid insertion; duplicate taps remain single flight.",
+      "A still-mounted inline panel captures the target at material selection, preserving page changes before the tap.",
+      "Closing while access is pending never inserts, closes again or leaves transient callbacks."
+    ],
+    "static_analysis": {
+      "items": 4,
+      "issues": 0,
+      "log": "output/heartbeat-editor-decoration-target-2026-10-30/analysis.log"
+    },
+    "scoped_git_diff_check": "passed; source/test trailing whitespace also checked",
+    "resources": {
+      "initial_free_disk": "18 GiB",
+      "final_free_disk_bytes": 15361409024,
+      "handling": "One test process at a time with concurrency=1. No other Flutter test process observed in prelaunch checks. Regenerated the missing test asset bundle in the initial test run, then reused it with --no-test-assets. No user/shared caches or other tasks were stopped/deleted."
+    },
+    "external_effects": "No app build/device run, deployment, operational database access or customer data mutation."
+  },
+  "review": {
+    "remaining_blocking_findings_in_changed_scope": [],
+    "checked": [
+      "The guard is captured once per user selection, not during list building, scrolling or thumbnail decoding. It holds only notifier/session/scalar target references for the existing single pending operation.",
+      "No new cache, listener, timer, worker, image decode, document copy or background task is added. The existing insertion lock still releases in finally.",
+      "A disposed tab short-circuits before consulting the parent guard; a changed notifier short-circuits before accessing the old editor target.",
+      "The guard compares target identity instead of layer revision, preserving content edits to the same page. The callback still uses fresh current layers and computes the existing canvas size.",
+      "Stale approval changes neither selected material state nor target layers and does not close the tool. A subsequent valid tap remains usable.",
+      "Existing paid/free/cancel/duplicate/disposal gating, frame and phrase pickers, undo/reorder, more-menu dialog handoff, responsive material picker cases and actual material artwork consistency regressions pass.",
+      "Default point-shop access/purchase logic, prices, ownership, saved document format, material keys, cover artwork, main/store layout and existing photo/cache behavior are unchanged."
+    ],
+    "protected_sources_unchanged": {
+      "lib/features/album/presentation/viewmodels/album_editor_view_model.dart": true,
+      "lib/features/point_shop/presentation/point_shop_access.dart": true,
+      "lib/shared/widgets/image_frame_style_picker.dart": true,
+      "lib/features/album/presentation/widgets/home/home_album_shelf.dart": true
+    },
+    "no_extra_changed_existing_files_in_scope": true,
+    "trailing_whitespace_check": "passed",
+    "source_patch": "output/heartbeat-editor-decoration-target-2026-10-30/source.patch",
+    "final_sha256": {
+      "lib/features/album/presentation/widgets/editor/decorate_panel.dart": "5632f4d00d1f198231b19d8433586f0fc0868bd57246577ed6179d790a992735",
+      "lib/features/album/presentation/widgets/editor/decorate_sticker_tab.dart": "0a9856b4b871930c548655435eb05d1c3485331424352a721b389104252d479b",
+      "test/widget/editor_decoration_target_lifecycle_test.dart": "8dd6053aa49a6c8fb650bde2df660f0e43d97b535ec0aac1bbebd4f9b2155cc2",
+      "test/widget/studio_decorations_test.dart": "50e0c287596cb474b648813b62064842606fdbc041401498ae73f319165d1f6d"
+    },
+    "shared_workspace": "Preserved all prior dirty workspace changes. Wrote only the listed files and this new run evidence/report."
+  },
+  "follow_up": {
+    "automation_remains_useful": true,
+    "next_candidates": [
+      "Review page insertion/deletion/reordering and stable target-ID handling before extending asynchronous target guards to other editor tools; reproduce a concrete failure before editing.",
+      "Review pending phrase/frame application at their editor caller boundaries with the same target-change cases, while preserving current gate and route-close guards.",
+      "Continue main/store/reader hidden-resume checks against the newest verification records rather than repeating the completed shelf/controller changes."
+    ]
+  },
+  "limits": [
+    "The controlled fixture uses a delayed access gate and local fake services with the real editor VM/panel. It does not execute a real payment, authentication change or production server request.",
+    "The fix prevents stale application; it does not cancel an already submitted purchase. Existing server-confirmed material ownership and purchase behavior remain authoritative.",
+    "No physical-device FPS, peak native/app memory, heap snapshot or device leak profile was measured. Constant-size target checks and absence of new background/cached work are code-review properties, not measured performance guarantees.",
+    "Target checks retain the existing page/session identity model. Exhaustive page-ID reuse during every insertion/deletion/undo sequence is not claimed by these six cases."
+  ]
+}

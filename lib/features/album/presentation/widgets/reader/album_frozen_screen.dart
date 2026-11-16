@@ -8,6 +8,7 @@ import '../../../../../shared/web/web_design.dart';
 import '../../../domain/entities/album.dart';
 import '../home/home_album_cover_thumbnail.dart';
 import '../web/web_saved_album_artwork.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 class AlbumFrozenScreen extends StatelessWidget {
   final Album? album;
@@ -93,7 +94,7 @@ class AlbumFrozenScreen extends StatelessWidget {
     actions: [
       TextButton.icon(
         onPressed: onClose,
-        icon: const Icon(Icons.close, size: 17),
+        icon: const ExperienceIcon('X', size: 17),
         label: const Text('닫기'),
       ),
     ],
@@ -114,10 +115,7 @@ class AlbumFrozenScreen extends StatelessWidget {
                   height: 380,
                   child: album == null
                       ? Center(
-                          child: Icon(
-                            Icons.auto_stories_outlined,
-                            size: 42,
-                            color: WebPalette.of(context).muted,
+                          child: ExperienceIcon('BookOpen', size: 42, color: WebPalette.of(context).muted,
                           ),
                         )
                       : Center(child: WebSavedAlbumArtwork(album: album!)),
@@ -129,10 +127,7 @@ class AlbumFrozenScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(
-                          Icons.check_circle_outline,
-                          size: 20,
-                          color: WebPalette.of(context).brandInk,
+                        ExperienceIcon('CheckCircle2', size: 20, color: WebPalette.of(context).brandInk,
                         ),
                         SizedBox(width: 10),
                         Text(
@@ -187,7 +182,7 @@ class AlbumFrozenScreen extends StatelessWidget {
                     const SizedBox(height: 26),
                     FilledButton.icon(
                       onPressed: onOrder,
-                      icon: const Icon(Icons.auto_stories_outlined, size: 18),
+                      icon: const ExperienceIcon('BookOpen', size: 18),
                       label: const Text('책 주문 준비하기'),
                     ),
                     const SizedBox(height: 12),
@@ -219,7 +214,7 @@ class AlbumFrozenScreen extends StatelessWidget {
   Widget _cover(double height, double width) {
     final value = album;
     if (value == null) {
-      return const Center(child: Icon(Icons.auto_stories_outlined, size: 48));
+      return const Center(child: ExperienceIcon('BookOpen', size: 48));
     }
     return Center(
       child: HomeAlbumCoverThumbnail(
@@ -238,10 +233,7 @@ class AlbumFrozenScreen extends StatelessWidget {
     children: [
       Row(
         children: [
-          Icon(
-            Icons.check_circle_outline,
-            size: 20,
-            color: ExperienceFormStyle.selectionInk(context),
+          ExperienceIcon('CheckCircle2', size: 20, color: ExperienceFormStyle.selectionInk(context),
           ),
           const SizedBox(width: 8),
           Text(
@@ -270,7 +262,7 @@ class AlbumFrozenScreen extends StatelessWidget {
         child: FilledButton.icon(
           onPressed: onOrder,
           style: ExperienceFormStyle.primary(context),
-          icon: const Icon(Icons.auto_stories_outlined, size: 19),
+          icon: const ExperienceIcon('BookOpen', size: 19),
           label: const Text('인쇄 검토하기'),
         ),
       ),

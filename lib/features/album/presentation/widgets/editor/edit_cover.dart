@@ -20,6 +20,8 @@ import '../../../../../core/constants/cover_theme.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/utils/screen_logger.dart';
 import '../../../domain/entities/album.dart';
+import '../../../domain/entities/album_edit_failure.dart';
+import '../../providers/album_edit_session_provider.dart';
 import '../../../domain/entities/layer.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../viewmodels/album_view_model.dart';
@@ -32,6 +34,7 @@ import './text_style_picker_sheet.dart';
 import './edit_cover_top_bar.dart';
 import './page_editor_overlays.dart';
 import '../../../../../core/utils/context_extensions.dart';
+import '../../../../../shared/widgets/snapfit_motion.dart';
 
 class EditCover extends ConsumerStatefulWidget {
   /// 편집 모드: 홈에서 앨범 선택 후 열었을 때 전달 (저장 성공 시 홈으로 pop)
@@ -42,6 +45,7 @@ class EditCover extends ConsumerStatefulWidget {
 
   /// 앨범 생성 완료 콜백 (플로우에서 사용)
   final Function(int albumId)? onAlbumCreated;
+  final Future<void> Function(int albumId)? onCreationConflict;
 
   /// 플로우 AppBar '완료' 버튼용 액션 등록 (등록된 콜백이 _onCreateAlbum 호출)
   final void Function(Future<void> Function())? onRegisterCompleteAction;
@@ -76,6 +80,7 @@ class EditCover extends ConsumerStatefulWidget {
     this.editAlbum,
     this.isFromCreateFlow = false,
     this.onAlbumCreated,
+    this.onCreationConflict,
     this.onRegisterCompleteAction,
     this.initialCoverSize,
     this.albumTitle,
@@ -371,14 +376,15 @@ class EditCoverState extends ConsumerState<EditCover> {
         if (widget.isFromCreateFlow) {
           // 앨범 생성 플로우: 생성 완료 후 콜백 호출
           if (widget.onAlbumCreated != null) {
-            widget.onAlbumCreated!(createdAlbumId);
+            await widget.onAlbumCreated!(createdAlbumId);
+            // A linked local checkpoint can fail after server creation. The
+            // flow keeps this screen open and offers a local-only retry.
+            if (mounted) setState(() => _isSaving = false);
           } else {
             context.showSnack('앨범이 성공적으로 생성되었습니다!');
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(
-                builder: (_) => const PageEditorScreen(initialPageIndex: 1),
-              ),
+              snapFitRoute(page: const PageEditorScreen(initialPageIndex: 1)),
             );
           }
         } else if (widget.editAlbum == null) {
@@ -393,7 +399,7 @@ class EditCoverState extends ConsumerState<EditCover> {
           context.showSnack('저장되었습니다.');
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const PageEditorScreen()),
+            snapFitRoute(page: const PageEditorScreen()),
           );
         }
       } else {
@@ -401,15 +407,67 @@ class EditCoverState extends ConsumerState<EditCover> {
         if (mounted) setState(() => _isSaving = false);
       }
     } catch (e) {
+      _progressTimer?.cancel();
       debugPrint('Error in _onCreateAlbum: $e');
       if (mounted) {
         setState(() => _isSaving = false);
+        final knownId = editorVm.editingAlbumId;
+        if (e is AlbumRevisionConflict &&
+            knownId != null &&
+            widget.isFromCreateFlow &&
+            widget.onCreationConflict != null) {
+          final session = editorVm.editSessionIdentity;
+          final actor = ref.read(albumEditorOwnerReaderProvider)();
+          final navigator = Navigator.of(context);
+          var decided = false;
+          late final DialogRoute<bool> decisionRoute;
+          void decide(bool value) {
+            if (decided || !decisionRoute.isCurrent) return;
+            decided = true;
+            navigator.pop(value);
+          }
+
+          decisionRoute = DialogRoute<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('이미 만들어진 앨범이 있어요'),
+              content: const Text(
+                '저장된 내용과 이 기기의 작업이 달라 덮어쓰지 않았어요. '
+                '내 작업을 유지한 채 편집 화면에서 저장된 앨범을 확인할 수 있어요.',
+              ),
+              actions: [
+                TextButton(
+                  key: const ValueKey('creation-conflict-keep'),
+                  onPressed: () => decide(false),
+                  child: const Text('내 작업 유지'),
+                ),
+                FilledButton(
+                  key: const ValueKey('creation-conflict-review'),
+                  onPressed: () => decide(true),
+                  child: const Text('저장된 앨범 확인'),
+                ),
+              ],
+            ),
+          );
+          final open = await navigator.push(decisionRoute);
+          if (!mounted ||
+              open != true ||
+              actor == null ||
+              ref.read(albumEditorOwnerReaderProvider)() != actor ||
+              !identical(session, editorVm.editSessionIdentity))
+            return;
+          try {
+            await widget.onCreationConflict!(knownId);
+          } catch (_) {
+            if (mounted)
+              context.showErrorSnack('내 작업은 유지돼요. 편집 화면을 다시 열어 주세요.');
+          }
+          return;
+        }
         final message = e is Exception
             ? e.toString().replaceFirst('Exception: ', '')
             : '$e';
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('앨범 생성 실패: $message')));
+        context.showErrorSnack('앨범 생성 실패: $message');
       }
     } finally {
       // 성공 시에는 네비게이션이 일어나므로 _isSaving을 false로 돌리지 않음 (오버레이 유지)
@@ -476,9 +534,7 @@ class EditCoverState extends ConsumerState<EditCover> {
             final message = err is Exception
                 ? err.toString().replaceFirst('Exception: ', '')
                 : '$err';
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('$prefix$message')));
+            context.showSnack('$prefix$message');
           }
         },
         loading: () {},

@@ -66,6 +66,7 @@ class _Repository implements TemplateRepository {
 }
 
 class _Fixture {
+  static final eligibleCount = storeTemplateTopicOrder.length * 4;
   final repository = _Repository();
   int localCatalogLoads = 0;
   final built = <int>{};
@@ -74,7 +75,7 @@ class _Fixture {
       for (var n = 0; n < 4; n++) _item(topicIndex * 4 + n, topic),
     // These must never be advertised as recommendations, even with strong
     // editorial/usage signals. Their product rows are disabled, unpriced or absent.
-    for (var n = 40; n < 43; n++) _item(n, '일상'),
+    for (var n = eligibleCount; n < eligibleCount + 3; n++) _item(n, '일상'),
   ];
   PremiumTemplate _item(int n, String topic) => PremiumTemplate(
     id: 10000 + n,
@@ -83,8 +84,8 @@ class _Fixture {
     coverImageUrl: '',
     previewImages: const [],
     pageCount: 24,
-    userCount: n >= 40 ? 10000 : 0,
-    isPremium: n.isOdd || n >= 40,
+    userCount: n >= eligibleCount ? 10000 : 0,
+    isPremium: n.isOdd || n >= eligibleCount,
     documentBuilder: () {
       built.add(n);
       return jsonEncode({
@@ -120,7 +121,7 @@ class _Fixture {
                   title: '오래 간직하고 싶은 장면들',
                   subtitle: '사진이 한 권의 이야기가 되는 디자인',
                   productKeys: [
-                    ...items.skip(40).map(pointShopTemplateKey),
+                    ...items.skip(eligibleCount).map(pointShopTemplateKey),
                     ...items.take(4).map(pointShopTemplateKey),
                   ],
                 ),
@@ -132,18 +133,18 @@ class _Fixture {
                   .map(PointShopProduct.fromJson)
                   .toList()
             : [
-                for (final t in items.take(42))
+                for (final t in items.take(eligibleCount + 2))
                   PointShopProduct(
                     productKey: pointShopTemplateKey(t),
                     kind: 'template',
                     assetId: '${t.id}',
                     title: t.title,
-                    pointPrice: t.id == 10041
+                    pointPrice: t.id == 10000 + eligibleCount + 1
                         ? null
                         : t.isPremium
                         ? 1800
                         : 0,
-                    isActive: t.id != 10040,
+                    isActive: t.id != 10000 + eligibleCount,
                   ),
               ],
       ),
@@ -190,6 +191,19 @@ Future<void> _topic(WidgetTester tester, String topic) async {
   if (chip.evaluate().isEmpty) {
     _scroll(tester).jumpTo(0);
     await tester.pumpAndSettle();
+    // The editorial artwork and material shelf may put the topic row beyond
+    // the outer sliver's cache, especially at larger text sizes. Reach the
+    // row before asking ensureVisible to reveal its horizontal chip.
+    await tester.scrollUntilVisible(
+      find.byType(StoreTopicShelf),
+      240,
+      scrollable: find
+          .descendant(
+            of: find.byType(CustomScrollView).first,
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
   }
   await tester.ensureVisible(chip);
   await tester.pumpAndSettle();
@@ -199,6 +213,16 @@ Future<void> _topic(WidgetTester tester, String topic) async {
 }
 
 Future<void> _price(WidgetTester tester, String label) async {
+  final menu = find.byKey(const ValueKey('catalog-price-filter'));
+  if (menu.evaluate().isNotEmpty) {
+    await tester.ensureVisible(menu);
+    await tester.pumpAndSettle();
+    await tester.tap(menu);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(label).last);
+    await tester.pumpAndSettle();
+    return;
+  }
   final segment = find.descendant(
     of: find.byType(SegmentedButton<String>),
     matching: find.text(label),
@@ -218,7 +242,7 @@ void main() {
   tearDown(() => CatalogFavorites.instance.dispose());
 
   testWidgets(
-    'all and recommendations precede broad-use topics; large hero remains',
+    'all precedes broad-use topics and recommendations follow; large hero remains',
     (tester) async {
       _viewport(tester);
       final fixture = _Fixture();
@@ -230,7 +254,7 @@ void main() {
       );
       expect(
         tester.widget<StoreTopicShelf>(find.byType(StoreTopicShelf)).categories,
-        ['전체', '추천', ...storeTemplateTopicOrder],
+        ['전체', ...storeTemplateTopicOrder, '추천'],
       );
       await _topic(tester, '추천');
       expect(find.text('지금 둘러보기 좋은 디자인'), findsOneWidget);
@@ -248,10 +272,18 @@ void main() {
       _scroll(tester).jumpTo(_scroll(tester).position.maxScrollExtent);
       await tester.pumpAndSettle();
       expect(find.text('전체 템플릿 보기'), findsOneWidget);
-      expect(find.text('Design 40'), findsNothing);
-      expect(find.text('Design 41'), findsNothing);
-      expect(find.text('Design 42'), findsNothing);
-      expect(fixture.built.intersection({40, 41, 42}), isEmpty);
+      final unavailable = {
+        for (
+          var n = _Fixture.eligibleCount;
+          n < _Fixture.eligibleCount + 3;
+          n++
+        )
+          n,
+      };
+      for (final n in unavailable) {
+        expect(find.text('Design $n'), findsNothing);
+      }
+      expect(fixture.built.intersection(unavailable), isEmpty);
       expect(tester.takeException(), isNull);
     },
   );
@@ -272,7 +304,10 @@ void main() {
         await tester.pumpAndSettle();
         await _topic(tester, '추천');
         await _price(tester, '유료');
-        expect(find.text('20개의 디자인'), findsOneWidget);
+        expect(
+          find.text('${_Fixture.eligibleCount ~/ 2}개의 디자인'),
+          findsOneWidget,
+        );
         expect(_count(tester), 12);
         final favorites = find.byTooltip('즐겨찾기만 보기');
         await tester.ensureVisible(favorites);
@@ -463,7 +498,10 @@ void main() {
         expect(chipRect.right, lessThanOrEqualTo(shelfRect.right + .5));
         expect(find.text('모든 템플릿'), findsOneWidget);
         await _price(tester, '무료');
-        expect(find.text('20개의 디자인'), findsOneWidget);
+        expect(
+          find.text('${_Fixture.eligibleCount ~/ 2}개의 디자인'),
+          findsOneWidget,
+        );
         expect(
           tester
               .widgetList<TemplateCatalogTile>(find.byType(TemplateCatalogTile))

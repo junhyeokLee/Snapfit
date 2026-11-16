@@ -65,6 +65,7 @@ void main() {
         createdAt: '2026-10-08',
       ),
     );
+    when(() => auth.onAuthStateChange).thenAnswer((_) => const Stream.empty());
     client = _Client(
       auth,
       MockClient((request) async {
@@ -88,7 +89,8 @@ void main() {
           );
         }
         if (responseGate != null) await responseGate!.future;
-        if (request.url.path.endsWith('save_album_document') &&
+        if ((request.url.path.endsWith('save_album_document') ||
+                request.url.path.endsWith('create_album_document')) &&
             rpcError != null) {
           return http.Response(
             jsonEncode(rpcError),
@@ -108,6 +110,129 @@ void main() {
     repository = SupabaseAlbumRepository(client, tokenStorage: _Tokens());
   });
   tearDown(() async => client.dispose());
+
+  const seed = CreateAlbumRequest(
+    ratio: '1.0',
+    title: '첫 앨범',
+    coverLayersJson: '{"layers":[]}',
+    coverImageUrl: '',
+    coverThumbnailUrl: '',
+  );
+  const creationId = '11111111-1111-4111-8111-111111111111';
+  test(
+    'creation refuses an unpersisted identity without a network insert',
+    () async {
+      await expectLater(
+        repository.createAlbum(seed),
+        throwsA(isA<AlbumCreationRecoveryRequired>()),
+      );
+      expect(requests, isEmpty);
+    },
+  );
+  test(
+    'creation only sends fixed seed and owner to idempotent RPC, preserving raw revision',
+    () async {
+      albums = _row(71, owner: _userId);
+      final created = await repository.createAlbum(
+        seed,
+        requestId: creationId,
+        expectedUserId: _userId,
+      );
+      final repeated = await repository.createAlbum(
+        seed,
+        requestId: creationId,
+        expectedUserId: _userId,
+      );
+      expect(created.id, 71);
+      expect(repeated.updatedAt, '2026-10-25T01:02:03.123456Z');
+      expect(requests, hasLength(2));
+      expect(
+        requests.every(
+          (request) => request.url.path.endsWith('/rpc/create_album_document'),
+        ),
+        isTrue,
+      );
+      final body = jsonDecode(requests.first.body) as Map;
+      expect(body['p_request_id'], creationId);
+      expect(body['p_expected_actor_id'], _userId);
+      expect((body['p_album'] as Map)['title'], seed.title);
+      expect((body['p_album'] as Map).containsKey('owner_id'), isFalse);
+      expect(requests.first.body, requests.last.body);
+    },
+  );
+  test(
+    'creation keeps deleted and conflicting identities as explicit recovery errors',
+    () async {
+      for (final (code, message, matcher) in [
+        (
+          'PT409',
+          'album_creation_request_conflict',
+          isA<AlbumCreationRequestConflict>(),
+        ),
+        ('PT410', 'album_creation_deleted', isA<AlbumCreationDeleted>()),
+      ]) {
+        rpcError = {'code': code, 'message': message};
+        await expectLater(
+          repository.createAlbum(
+            seed,
+            requestId: creationId,
+            expectedUserId: _userId,
+          ),
+          throwsA(matcher),
+        );
+      }
+      expect(requests, hasLength(2));
+    },
+  );
+  test(
+    'creation directly fences A to B to A even without an active UI provider',
+    () async {
+      final events = StreamController<AuthState>.broadcast(sync: true);
+      addTearDown(events.close);
+      User user(String id) => User(
+        id: id,
+        appMetadata: {},
+        userMetadata: {},
+        aud: 'authenticated',
+        createdAt: '2026-10-29',
+      );
+      var current = user(_userId);
+      when(() => auth.currentUser).thenAnswer((_) => current);
+      when(() => auth.onAuthStateChange).thenAnswer((_) => events.stream);
+      albums = _row(71, owner: _userId);
+      responseGate = Completer<void>();
+      final saving = repository.createAlbum(
+        seed,
+        requestId: creationId,
+        expectedUserId: _userId,
+      );
+      final rejected = expectLater(
+        saving,
+        throwsA(isA<AlbumEditSessionChanged>()),
+      );
+      for (var i = 0; i < 100 && requests.isEmpty; i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
+      expect(requests, hasLength(1));
+      current = user('00000000-0000-0000-0000-000000000002');
+      events.add(
+        AuthState(
+          AuthChangeEvent.signedIn,
+          Session(accessToken: 'fixture-b', tokenType: 'bearer', user: current),
+        ),
+      );
+      current = user(_userId);
+      events.add(
+        AuthState(
+          AuthChangeEvent.signedIn,
+          Session(accessToken: 'fixture-a', tokenType: 'bearer', user: current),
+        ),
+      );
+      responseGate!.complete();
+      await rejected;
+      expect(requests, hasLength(1));
+    },
+  );
 
   test(
     'my albums includes accepted shared albums and their real access roles',

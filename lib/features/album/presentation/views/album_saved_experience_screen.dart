@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../shared/web/web_design.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 import '../../../social/data/social_album_snapshot.dart';
 import '../../../social/presentation/widgets/social_web_frame.dart';
 import '../../domain/entities/album.dart';
@@ -48,6 +50,11 @@ class _AlbumSavedExperienceScreenState
       mounted &&
       !_sessionChanged &&
       ref.read(albumEditorOwnerReaderProvider)() == widget.ownerId;
+
+  bool get _canResumeEditing =>
+      _album?.allowsEditing == true &&
+      _progress?.hasTarget == true &&
+      _progress?.isCompleted == false;
 
   @override
   void initState() {
@@ -202,6 +209,39 @@ class _AlbumSavedExperienceScreenState
     }
   }
 
+  Future<void> _resumeEditing() async {
+    if (!_current ||
+        _loading ||
+        _opening ||
+        _exporting ||
+        !_canResumeEditing ||
+        ModalRoute.of(context)?.isCurrent == false)
+      return;
+    setState(() {
+      _opening = true;
+      _error = null;
+    });
+    try {
+      await HomeAlbumActions.onEditSelected(
+        context,
+        ref,
+        _album!,
+        startAtFirstIncompletePage: true,
+        returnToPreviousOnSave: true,
+        canContinue: () => _current,
+        onEditorClosed: () {
+          if (_current) unawaited(_load());
+        },
+      );
+      // A revoked permission can stop preparation before a route is opened.
+      if (_current && ModalRoute.of(context)?.isCurrent != false) await _load();
+    } catch (_) {
+      if (_current) setState(() => _error = '편집을 열지 못했어요. 다시 시도해 주세요.');
+    } finally {
+      if (_current) setState(() => _opening = false);
+    }
+  }
+
   void _select(int index) {
     if (_exporting || _opening || !_pages.hasClients) return;
     _pages.animateToPage(
@@ -308,7 +348,7 @@ class _AlbumSavedExperienceScreenState
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   _details(context, headingOnly: true),
-                                  const SizedBox(height: 24),
+                                  const SizedBox(height: 16),
                                   _gallery(context, snapshot),
                                   const SizedBox(height: 28),
                                   _details(context, actionsOnly: true),
@@ -374,7 +414,7 @@ class _AlbumSavedExperienceScreenState
                   onPressed: _selected > 0 && !_exporting && !_opening
                       ? () => _select(_selected - 1)
                       : null,
-                  icon: const Icon(Icons.chevron_left_rounded),
+                  icon: const ExperienceIcon('ChevronLeft', size: 24),
                 ),
                 Text(
                   '${selected.isCover ? '표지' : '$_selected쪽'}  ·  ${_selected + 1}/${snapshot.pages.length}',
@@ -393,7 +433,7 @@ class _AlbumSavedExperienceScreenState
                           !_opening
                       ? () => _select(_selected + 1)
                       : null,
-                  icon: const Icon(Icons.chevron_right_rounded),
+                  icon: const ExperienceIcon('ChevronRight', size: 24),
                 ),
               ],
             ),
@@ -451,7 +491,7 @@ class _AlbumSavedExperienceScreenState
         foregroundColor: SnapFitColors.onAccent,
         minimumSize: const Size.fromHeight(52),
       ),
-      icon: const Icon(Icons.auto_stories_outlined, size: 20),
+      icon: const ExperienceIcon('BookOpen', size: 20),
       label: Text(_opening ? '앨범을 열고 있어요…' : '앨범 감상하기'),
     );
   }
@@ -469,38 +509,50 @@ class _AlbumSavedExperienceScreenState
       children: [
         if (!actionsOnly) ...[
           Text(
-            complete ? '한 권의 기록, 완성' : '차곡차곡 담긴 나의 순간',
+            '앨범을 저장했어요',
             style: TextStyle(
               color: colors.brandInk,
               fontSize: 13,
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
             _album!.title.trim().isEmpty ? '나의 앨범' : _album!.title,
             style: TextStyle(
-              fontSize: 30,
+              fontSize: 24,
               height: 1.25,
               letterSpacing: -.7,
               color: colors.ink,
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            complete
-                ? '사진과 이야기가 한 권에 모였어요.\n마음에 드는 페이지를 골라 간직해 보세요.'
-                : '지금까지 만든 내용을 안전하게 저장했어요.\n큰 화면으로 넘겨 보고, 마음에 드는 한 장을 간직해 보세요.',
-            style: TextStyle(fontSize: 15, height: 1.65, color: colors.muted),
-          ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           if (_progress case final progress? when progress.hasTarget)
-            Text(
-              complete
-                  ? '${progress.targetPages}쪽에 담은 나의 기록'
-                  : '${progress.completedPages}/${progress.targetPages}쪽 작성 · 언제든 이어 만들 수 있어요',
-              style: TextStyle(fontSize: 13, color: colors.muted),
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 4,
+              children: [
+                Text(
+                  complete
+                      ? '${progress.targetPages}쪽 완성'
+                      : '${progress.completedPages}/${progress.targetPages}쪽 작성',
+                  style: TextStyle(fontSize: 13, color: colors.muted),
+                ),
+                if (_canResumeEditing)
+                  TextButton.icon(
+                    key: const ValueKey('saved-album-edit'),
+                    onPressed: busy ? null : _resumeEditing,
+                    style: TextButton.styleFrom(
+                      foregroundColor: colors.brandInk,
+                      minimumSize: const Size(48, 48),
+                    ),
+                    icon: const ExperienceIcon('Pencil', size: 18),
+                    label: const Text('이어서 편집'),
+                  ),
+              ],
             ),
         ],
         if (!headingOnly) ...[
@@ -517,7 +569,7 @@ class _AlbumSavedExperienceScreenState
               foregroundColor: colors.ink,
               side: BorderSide(color: colors.line),
             ),
-            icon: const Icon(Icons.ios_share_rounded, size: 19),
+            icon: const ExperienceIcon('Share2', size: 19),
             label: Text(
               _exporting
                   ? '선택한 페이지를 준비하고 있어요…'
@@ -529,16 +581,10 @@ class _AlbumSavedExperienceScreenState
             TextButton.icon(
               key: const ValueKey('saved-album-publish'),
               onPressed: busy ? null : () => _open(publish: true),
-              icon: const Icon(Icons.public_rounded, size: 18),
-              label: const Text('공개할 페이지 골라 피드에 올리기'),
+              icon: const ExperienceIcon('Globe', size: 18),
+              label: const Text('프로필에 앨범 공개'),
             ),
           ],
-          const SizedBox(height: 16),
-          Text(
-            '이미지는 선택한 한 페이지만 준비해요.\n피드 공개는 페이지와 공개 내용을 확인한 뒤 진행돼요.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: colors.muted, fontSize: 12, height: 1.6),
-          ),
           if (_error != null) ...[
             const SizedBox(height: 16),
             Text(

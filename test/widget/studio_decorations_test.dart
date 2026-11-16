@@ -101,14 +101,15 @@ void main() {
           ),
         )
         .toList();
+    final interaction = LayerInteractionManager.printPreview(
+      () => const Size(500, 500),
+    );
+    addTearDown(interaction.dispose);
     await tester.pumpWidget(
       ProviderScope(
         child: wrapCreation(
           Scaffold(
-            body: LayerManagerPanel(
-              layers: layers,
-              interaction: _Interaction(),
-            ),
+            body: LayerManagerPanel(layers: layers, interaction: interaction),
           ),
         ),
       ),

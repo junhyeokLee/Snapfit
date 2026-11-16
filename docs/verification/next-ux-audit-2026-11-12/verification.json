@@ -1,0 +1,49 @@
+{
+  "date": "2026-11-12",
+  "mode": "read-only UX audit and prioritized proposals",
+  "productCodeModified": false,
+  "captureTests": {
+    "passed": 6,
+    "failed": 0,
+    "imageCount": 8
+  },
+  "acceptedScreenshots": [
+    "intro/01-introduction-story-390x844.png",
+    "intro/02-introduction-designs-390x844.png",
+    "first-home/390x844-01-initial.png",
+    "collab/01-invite-editor.png",
+    "collab/02-invite-viewer.png",
+    "collab/03-members-owner.png",
+    "collab/04-members-viewer.png"
+  ],
+  "excludedScreenshots": {
+    "intro/04-introduction-finish-390x844.png": "Fixed header omitted in software offscreen capture; not used for layout verdict"
+  },
+  "sourceChecks": {
+    "lib/features/onboarding/presentation/app_introduction_screen.dart": true,
+    "lib/features/onboarding/presentation/widgets/first_home_guide.dart": true,
+    "lib/features/album/presentation/views/album_members_screen.dart": true,
+    "lib/features/album/presentation/views/album_invite_screen.dart": true,
+    "lib/features/album/presentation/views/album_invite_accept_screen.dart": true
+  },
+  "findings": [
+    "First-home creation guide covers monthly progress and competes with daily recording",
+    "Successful invite screen lacks explicit same-role new-link action despite one-use guidance"
+  ],
+  "retained": [
+    "Large album and small selector",
+    "Invite role distinction",
+    "Owner/viewer member action boundaries"
+  ],
+  "notVerified": [
+    "Full signup-to-home journey",
+    "Small-screen/large-text/dark/browser/device accessibility",
+    "Actual invitations or external writes"
+  ],
+  "appBuiltOrDeployed": false,
+  "independentOwnerRecapture": {
+    "passed": 1,
+    "failed": 0,
+    "reason": "Fresh scene accepted after header omission in earlier software capture"
+  }
+}

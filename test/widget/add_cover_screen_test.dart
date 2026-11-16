@@ -3,16 +3,43 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:snap_fit/core/constants/cover_size.dart';
+import 'package:snap_fit/features/album/data/api/album_provider.dart';
 import 'package:snap_fit/features/album/domain/entities/layer.dart';
 import 'package:snap_fit/features/album/presentation/views/add_cover_screen.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/editor_bottom_menu.dart';
 import 'package:snap_fit/features/album/presentation/controllers/layer_interaction_manager.dart';
 import 'package:snap_fit/features/album/presentation/controllers/text_editor_manager.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
+import 'package:snap_fit/features/album/presentation/providers/album_edit_session_provider.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/layer_action_panel.dart';
+import 'package:snap_fit/features/album/service/album_editor_service.dart';
+import '../helpers/mock_repositories.dart';
+import '../unit/album_editor_view_model_test.dart'
+    show FakeStorageService, FakeAlbumPersistenceService;
 
-Widget _wrap(Widget child) {
-  return ProviderScope(
+Future<Widget> _wrap(Widget child) async {
+  final container = ProviderContainer(
+    overrides: [
+      albumRepositoryProvider.overrideWithValue(MockAlbumRepository()),
+      storageServiceProvider.overrideWithValue(FakeStorageService()),
+      albumPersistenceServiceProvider.overrideWithValue(
+        FakeAlbumPersistenceService(),
+      ),
+      albumEditorServiceProvider.overrideWithValue(const AlbumEditorService()),
+      albumEditorOwnerReaderProvider.overrideWithValue(
+        () => 'cover-test-owner',
+      ),
+      albumEditorOwnerChangesProvider.overrideWith(
+        (_) => const Stream<String?>.empty(),
+      ),
+    ],
+  );
+  addTearDown(container.dispose);
+  // Exercise the real editor initialization before AddCover's reset microtask.
+  // These layout fixtures do not have a live SDK session or cloud dependencies.
+  await container.read(albumEditorViewModelProvider.future);
+  return UncontrolledProviderScope(
+    container: container,
     child: ScreenUtilInit(
       designSize: const Size(390, 844),
       minTextAdapt: true,
@@ -66,7 +93,7 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(
-        _wrap(
+        await _wrap(
           MediaQuery(
             data: const MediaQueryData(
               size: viewport,
@@ -109,7 +136,7 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(
-        _wrap(
+        await _wrap(
           MediaQuery(
             data: const MediaQueryData(
               size: viewport,
@@ -170,7 +197,7 @@ void main() {
       LayerInteractionManager? interaction;
 
       await tester.pumpWidget(
-        _wrap(
+        await _wrap(
           MediaQuery(
             data: const MediaQueryData(
               size: viewport,
@@ -301,7 +328,7 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(
-        _wrap(
+        await _wrap(
           AddCoverScreen(
             isFromCreateFlow: true,
             initialCoverSize: coverSizes.firstWhere((s) => s.name == '정사각형'),
@@ -318,7 +345,7 @@ void main() {
       expect(find.text('사진'), findsOneWidget);
       expect(find.text('레이아웃'), findsOneWidget);
       expect(find.text('템플릿'), findsOneWidget);
-      expect(find.text('재배치'), findsOneWidget);
+      expect(find.text('겹침 순서'), findsOneWidget);
       expect(find.text('꾸미기'), findsOneWidget);
       expect(find.text('배경'), findsOneWidget);
       expect(find.text('편집 시작'), findsOneWidget);
@@ -335,7 +362,7 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(
-        _wrap(
+        await _wrap(
           AddCoverScreen(
             isFromCreateFlow: true,
             initialCoverSize: coverSizes.firstWhere((s) => s.name == '정사각형'),
@@ -362,7 +389,7 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(
-        _wrap(
+        await _wrap(
           AddCoverScreen(
             isFromCreateFlow: true,
             initialCoverSize: coverSizes.firstWhere((s) => s.name == '정사각형'),

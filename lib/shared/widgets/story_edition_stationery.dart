@@ -2,6 +2,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../core/templates/story_edition_catalog.dart';
 
+part 'hobby_expansion_stationery.dart';
+
 /// Resolution independent print artwork. No texture bitmaps, blur layers,
 /// animation controllers, image listeners or caches are allocated here.
 class StoryEditionStationery extends StatelessWidget {
@@ -22,6 +24,10 @@ class _StoryStationeryPainter extends CustomPainter {
     if (size.isEmpty) return;
     final e = storyMaterialsById[id];
     if (e == null) return;
+    if (e.qualityRevision == hobbyExpansionRevision) {
+      _paintHobbyExpansionStationery(canvas, size, id, e);
+      return;
+    }
     canvas.save();
     canvas.scale(size.width / 300, size.height / 240);
     Color color(String value) =>
@@ -37,7 +43,9 @@ class _StoryStationeryPainter extends CustomPainter {
     void line(double x, double y, double xx, double yy, {Paint? paint}) =>
         canvas.drawLine(Offset(x, y), Offset(xx, yy), paint ?? stroke);
     if (id == e.paperId) {
-      final paperStyle = e.exclusivePhotography
+      final paperStyle = e.qualityRevision == readingEditionRevision
+          ? 1
+          : e.exclusivePhotography
           ? (e.coverStyle - 5) % 5
           : e.coverStyle;
       const rect = Rect.fromLTWH(7, 6, 286, 228);
@@ -286,6 +294,34 @@ class _StoryStationeryPainter extends CustomPainter {
 
     if (e.activity != null) {
       _activityMotif(c, e, p);
+      return;
+    }
+    if (e.qualityRevision == readingEditionRevision) {
+      // A complete open book, with a loose bookmark and independently drawn
+      // page lines. The same print artwork is used on the card and cutout.
+      path([
+        const Offset(42, 61),
+        const Offset(143, 79),
+        const Offset(150, 193),
+        const Offset(48, 172),
+      ], close: true);
+      path([
+        const Offset(143, 79),
+        const Offset(255, 52),
+        const Offset(249, 170),
+        const Offset(150, 193),
+      ], close: true);
+      for (var n = 0; n < 4; n++) {
+        line(65, 89 + n * 19, 123, 100 + n * 19);
+        line(173, 101 + n * 19, 225, 88 + n * 19);
+      }
+      path([
+        const Offset(202, 66),
+        const Offset(218, 62),
+        const Offset(214, 122),
+        const Offset(206, 115),
+        const Offset(198, 126),
+      ], close: true);
       return;
     }
     final style = e.coverStyle;

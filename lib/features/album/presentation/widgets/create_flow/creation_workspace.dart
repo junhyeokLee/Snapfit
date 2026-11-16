@@ -27,10 +27,13 @@ class CreationWorkspace extends StatefulWidget {
     required this.actions,
     this.keyboardOpen = false,
     this.portraitStageHeight,
+    this.compactForm = false,
   });
   final Widget stage, fields, actions;
   final bool keyboardOpen;
   final double? portraitStageHeight;
+  // Compact settings use the same pinned actions across native and web.
+  final bool compactForm;
   @override
   State<CreationWorkspace> createState() => _CreationWorkspaceState();
 }
@@ -102,7 +105,7 @@ class _CreationWorkspaceState extends State<CreationWorkspace> {
         final inputOnly = keyboardOpen && wide && box.maxHeight < 180;
         final stage = KeyedSubtree(key: _stageKey, child: widget.stage);
         final fields = KeyedSubtree(key: _fieldsKey, child: widget.fields);
-        if (kIsWeb) {
+        if (kIsWeb && !widget.compactForm) {
           return _webWorkspace(box, stage: stage, fields: fields);
         }
         final actions = DecoratedBox(
@@ -149,7 +152,7 @@ class _CreationWorkspaceState extends State<CreationWorkspace> {
                                 ScrollViewKeyboardDismissBehavior.onDrag,
                             padding: EdgeInsets.fromLTRB(
                               20,
-                              inputOnly ? 8 : 16,
+                              inputOnly || widget.compactForm ? 8 : 16,
                               20,
                               20,
                             ),
@@ -189,7 +192,9 @@ class _CreationWorkspaceState extends State<CreationWorkspace> {
                           child: stage,
                         ),
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 22, 24, 24),
+                          padding: widget.compactForm
+                              ? const EdgeInsets.fromLTRB(20, 4, 20, 16)
+                              : const EdgeInsets.fromLTRB(24, 22, 24, 24),
                           child: fields,
                         ),
                       ],

@@ -258,9 +258,9 @@ void main() {
           expect(delete.width, greaterThanOrEqualTo(44));
           expect(delete.height, greaterThanOrEqualTo(44));
           await _capture(tester, key, 'editor-pages-$suffix');
-          await tester.ensureVisible(find.byTooltip('재배치'));
+          await tester.ensureVisible(find.byTooltip('겹침 순서'));
           await tester.pumpAndSettle();
-          await tester.tap(find.byTooltip('재배치'));
+          await tester.tap(find.byTooltip('겹침 순서'));
           await _paint(tester);
           final panel = find.byType(LayerManagerPanel);
           expect(panel, findsOneWidget);
@@ -459,9 +459,9 @@ void main() {
         );
         expect(addRect.width, greaterThanOrEqualTo(44));
         expect(addRect.bottom, lessThanOrEqualTo(size.height - 24));
-        await tester.ensureVisible(find.byTooltip('재배치'));
+        await tester.ensureVisible(find.byTooltip('겹침 순서'));
         await tester.pumpAndSettle();
-        await tester.tap(find.byTooltip('재배치'));
+        await tester.tap(find.byTooltip('겹침 순서'));
         await _paint(tester);
         final panel = find.byType(LayerManagerPanel);
         expect(panel, findsOneWidget);

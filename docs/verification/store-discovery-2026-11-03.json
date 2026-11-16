@@ -1,0 +1,215 @@
+{
+  "date": "2026-11-03",
+  "scope": [
+    "Store visibility for the two sensory books and sixteen materials",
+    "Verified NEW and BEST criteria",
+    "Requested store navigation order"
+  ],
+  "cause": {
+    "newTemplatesAvailableButBuried": true,
+    "bundledTemplateNewFlagsAlwaysTrue": true
+  },
+  "criteria": {
+    "NEW": {
+      "firstPublicationDays": 14,
+      "unknownHistoricalDatesHidden": true,
+      "updateOrReinstallDoesNotReset": true,
+      "clockRefreshMinutes": 1
+    },
+    "BEST": {
+      "windowDays": 30,
+      "minimumDistinctPointAcquirers": 10,
+      "maximumPerKind": 5,
+      "source": "ledger-backed public.point_shop_ownership",
+      "kinds": [
+        "template",
+        "frame",
+        "sticker",
+        "phrase"
+      ],
+      "unqualifiedHidden": true,
+      "smallCountsAndOwnerIdsNeverExposed": true,
+      "metadataRefreshMinutes": 15,
+      "currentQualified": 0,
+      "offlineBestHidden": true
+    },
+    "both": "NEW takes precedence"
+  },
+  "navigation": {
+    "requestedDuplicateTravelCollapsed": true,
+    "public": [
+      "전체",
+      "일상",
+      "여행",
+      "스포츠·도전",
+      "반려동물",
+      "커플·기념일",
+      "동아리",
+      "웨딩",
+      "졸업·새출발",
+      "성장·육아",
+      "가족·친구"
+    ],
+    "authenticatedAdditionalLastTab": "추천",
+    "authoringTopicIndicesPreserved": true
+  },
+  "production": {
+    "migration": "20261103024536_store_discovery_badge_rules.sql",
+    "snapshot": {
+      "before": {
+        "products": "b5217850a410dec4c37894080d6e8810",
+        "ownership": "ff1beaed8455af0f51865ec1bcbabd81",
+        "wallets": "8ebb5878dccd65ff3da04969ac398e18"
+      },
+      "after": {
+        "products": "b5217850a410dec4c37894080d6e8810",
+        "ownership": "ff1beaed8455af0f51865ec1bcbabd81",
+        "wallets": "8ebb5878dccd65ff3da04969ac398e18",
+        "discovery": {
+          "total": 504,
+          "knownPublications": 18,
+          "new": 18,
+          "best": 0
+        },
+        "migration": [
+          {
+            "version": "20261103024536",
+            "name": "store_discovery_badge_rules"
+          }
+        ]
+      },
+      "advisors": [
+        {
+          "name": "rls_enabled_no_policy",
+          "level": "INFO",
+          "metadata": {
+            "name": "product_publications",
+            "type": "table",
+            "schema": "store_private"
+          },
+          "intended": "Deny direct reads/writes; only private definer aggregate is public."
+        }
+      ]
+    },
+    "curations": [
+      {
+        "placement": "materials",
+        "title": "한 끗을 더하는 소재",
+        "subtitle": "종이의 결부터 작은 매듭까지",
+        "enabled": true,
+        "product_keys": [
+          "sticker:cafeRoastedLeaf",
+          "sticker:story-night-city-archive-motif",
+          "frame:cafeGlassine",
+          "frame:nocturneDuplex",
+          "frame:materialLinenOval",
+          "sticker:atelierColorSlips",
+          "sticker:atelierRibbonPlate",
+          "phrase:collage-atelier-ribbon"
+        ],
+        "version": 2
+      },
+      {
+        "placement": "templates",
+        "title": "오래 간직하고 싶은 장면들",
+        "subtitle": "사진이 한 권의 이야기가 되는 디자인",
+        "enabled": true,
+        "product_keys": [
+          "template:story-coffee-notebook",
+          "template:story-night-city-archive",
+          "template:alley-afternoon",
+          "template:story-coast-address",
+          "template:our-family-year",
+          "template:story-club-run-together",
+          "template:a-day-with-you",
+          "template:story-evening-for-two"
+        ],
+        "version": 3
+      }
+    ],
+    "pricesWalletsOwnershipUnchanged": true
+  },
+  "checks": [
+    {
+      "file": "focused-tests.log",
+      "passed": 18,
+      "scope": "first-release window, future/unknown/expired cases, stable order, category normalization, all identities retained, public mobile pagination/search/compare"
+    },
+    {
+      "file": "app-store-tests.log",
+      "passed": 1,
+      "scope": "actual app StoreScreen:135 books,48 free87 paid, new books searched and shown with NEW"
+    },
+    {
+      "file": "material-tests-final.log",
+      "passed": 1,
+      "scope": "actual material search catalog: new materials lead; new free and400P frames searchable with NEW",
+      "initialHarnessIssue": "Initial harness targeted browse mode while expecting an inline search field. Retargeted the actual search screen; final case passes."
+    },
+    {
+      "file": "sql-tests.log",
+      "passed": 3,
+      "scope": "private permissions, actual acquisition threshold/ranking/window/inactive exclusions, immutable publication routine access"
+    },
+    {
+      "file": "public-browser-test.log",
+      "passed": 1,
+      "scope": "isolated anonymous Chrome live production RPC; release dates match18 keys; no private data/purchases"
+    },
+    {
+      "file": "analyze.log",
+      "result": "No issues found"
+    },
+    {
+      "file": "final-analyze.log",
+      "result": "No issues found"
+    }
+  ],
+  "liveUI": {
+    "surface": "ChatGPT in-app browser, public anonymous store",
+    "firstTwoTemplateIds": [
+      -9762,
+      -9761
+    ],
+    "onlyNewFirstTwo": true,
+    "categoriesVerified": true,
+    "badgeCriteriaDialogOpensAndDismisses": true,
+    "dailyCategoryLeadsFreeCoffee": true,
+    "travelCategoryLeads1800PointNight": true,
+    "screenshots": [
+      "store-after.png",
+      "store-after-full-cards.png",
+      "badge-rules-live.png"
+    ],
+    "customerWrites": false
+  },
+  "web": {
+    "deployment": "success",
+    "hostingVersion": "abd21fe553add83a",
+    "buildSeconds": 70.1,
+    "mainFile": "main.99802f8e16175c468d13.dart.js",
+    "mainSha256": "99802f8e16175c468d13c453b529b31d3fb0241348a3e2b5fece795e264d5d54",
+    "publicBuildFileChecks": 6,
+    "allPublicBuildFilesMatch": true,
+    "publicFileEvidence": "hosting-check.json"
+  },
+  "review": {
+    "performedBy": "primary agent",
+    "independentAgentReviewClaimed": false,
+    "focus": [
+      "first-release dates independent of editable flags",
+      "client fallback cannot invent BEST",
+      "private aggregate permissions and no owner identities",
+      "pagination identity conservation",
+      "metadata-only ordering, no new document/font generation on scroll",
+      "preserved user selections and price/ownership logic"
+    ]
+  },
+  "limitations": [
+    "No native app package build/installation was requested or performed; common app source is updated.",
+    "BEST measures point acquisitions rather than album creation or free material usage.",
+    "No actual paid purchase or point debit was initiated.",
+    "Unknown historical publication dates are intentionally unbadged."
+  ],
+  "evidenceBase": "output/store-discovery-20261103/"
+}

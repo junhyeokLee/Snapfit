@@ -1,0 +1,91 @@
+{
+  "date": "2026-11-03",
+  "timezone": "Asia/Seoul",
+  "feature": "Edit each moment/feed photograph before publishing and reuse its editable artwork in an album.",
+  "behavior": {
+    "editor": [
+      "Text overlays",
+      "Eight free stickers",
+      "Existing frame access checks",
+      "Photo crop and position",
+      "Background color",
+      "Layer selection and order",
+      "Undo and redo"
+    ],
+    "reuse": "Editable layers, font styles, framing, crop, rotation and artboard clipping transfer proportionally to newly created or appended album pages.",
+    "caption": "The separate record/feed caption remains below the photo and is not automatically placed into new album pages.",
+    "existingData": "Existing saved album pages, captions, original photo objects and current album edit sessions are preserved.",
+    "drafts": "Photo artwork persists through local drafts and retries; browser recovery indexes retain compact summaries while full draft records retain artwork."
+  },
+  "validation": {
+    "appChecks": 147,
+    "sqlChecks": 5,
+    "initialAppBatch": {
+      "passed": 139,
+      "failed": 3,
+      "remainingFailuresResolvedByFocusedReruns": true
+    },
+    "editorFocused": {
+      "passed": 4
+    },
+    "composeFinal": {
+      "passed": 3
+    },
+    "uiRerun": {
+      "passed": 40,
+      "failed": 1,
+      "narrowComposeFailureResolvedInComposeFinal": true
+    },
+    "captureFinal": {
+      "passed": 1,
+      "image": "output/moment-photo-editor-20261103/editor-preview.png"
+    },
+    "analyzer": "No issues found!",
+    "whitespace": "passed",
+    "newCoverage": [
+      "Original pixels and separate captions survive repeated decoration",
+      "Cancel and account changes preserve the correct draft",
+      "Existing album draft and undo history remain isolated",
+      "Saved photo design metadata round trips",
+      "Bounded private metadata and material entitlements",
+      "Raster-only public feed and correct artwork ratio",
+      "New album and append exclude feed captions",
+      "Clip geometry survives save, resize, cover spine and print",
+      "Off-artboard content remains hidden across different album ratios"
+    ]
+  },
+  "server": {
+    "project": "rrbhxdtriummqpztpjrk",
+    "migration": "20261103134741_moment_photo_editable_designs.sql",
+    "applied": true,
+    "privateValidatorDirectAccess": {
+      "anon": false,
+      "authenticated": false
+    },
+    "preservation": {
+      "before": {
+        "albums": 20,
+        "records": 1
+      },
+      "after": {
+        "albums": 20,
+        "records": 1
+      }
+    },
+    "anonymousFeedRpc": "responds",
+    "commentPaginationRpc": "responds",
+    "scopedSecurityAdvisories": [],
+    "productionTestAccountsCreated": 0,
+    "productionPostsCreated": 0
+  },
+  "delivery": {
+    "clientSourceUpdated": true,
+    "fullApplicationBuildRun": false,
+    "clientDeploymentRun": false,
+    "preview": "output/moment-photo-editor-20261103/editor-preview.png"
+  },
+  "limitations": [
+    "The client changes require a subsequent app build/release before appearing in the distributed app.",
+    "The editor currently uses eight free sticker styles and existing gated frames; it does not expose the entire paid sticker catalog."
+  ]
+}

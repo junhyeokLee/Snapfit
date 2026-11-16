@@ -42,6 +42,9 @@ class BookFlipPageRasterizer extends StatefulWidget {
     required this.onCaptured,
     this.pixelRatio = 1.0,
     this.preparePage,
+    this.isPagePrepared,
+    this.nextPageIndex,
+    this.onPageCaptured,
     this.cover = const SizedBox.expand(),
     this.onError,
     super.key,
@@ -71,6 +74,11 @@ class BookFlipPageRasterizer extends StatefulWidget {
   /// prepared at a time; a fresh painted frame follows completion.
   final Future<void> Function(BuildContext context, int pageIndex)? preparePage;
 
+  // Progressive hosts prepare a small window together and retain each image.
+  final bool Function(int pageIndex)? isPagePrepared;
+  final int? Function()? nextPageIndex;
+  final void Function(int pageIndex, ui.Image image)? onPageCaptured;
+
   /// Painted on top of the (hidden) capture layer while rasterising — typically
   /// the loading view, so the user never sees the pages being captured.
   final Widget cover;
@@ -94,11 +102,13 @@ class _BookFlipPageRasterizerState extends State<BookFlipPageRasterizer>
   bool _preparing = false;
   bool _rasterizing = false;
   int? _preparedPage;
+  final Set<int> _capturedPages = <int>{};
 
   bool get _active {
     // Keep the local package's Flutter 3.22 compatibility.
     // ignore: deprecated_member_use
     final lifecycle = WidgetsBinding.instance.lifecycleState;
+    // ignore: deprecated_member_use
     return TickerMode.of(context) &&
         (lifecycle == null || lifecycle == AppLifecycleState.resumed);
   }
@@ -111,6 +121,7 @@ class _BookFlipPageRasterizerState extends State<BookFlipPageRasterizer>
   @override
   void initState() {
     super.initState();
+    _pageIndex = widget.nextPageIndex?.call() ?? 0;
     WidgetsBinding.instance.addObserver(this);
     // Capture AFTER the first frame is painted (post-frame), so every boundary's
     // layer exists. A handful of retries covers the rare not-yet-laid-out frame.
@@ -134,11 +145,13 @@ class _BookFlipPageRasterizerState extends State<BookFlipPageRasterizer>
     if (_captured || _preparing || _rasterizing || !mounted || !_active) {
       return;
     }
-    if (_images.length > _pageIndex) {
+    if (_capturedPages.contains(_pageIndex)) {
       _advanceCapturedPage();
       return;
     }
-    if (widget.preparePage != null && _preparedPage != _pageIndex) {
+    if (widget.preparePage != null &&
+        _preparedPage != _pageIndex &&
+        !(widget.isPagePrepared?.call(_pageIndex) ?? false)) {
       _preparing = true;
       try {
         await widget.preparePage!(context, _pageIndex);
@@ -189,7 +202,17 @@ class _BookFlipPageRasterizerState extends State<BookFlipPageRasterizer>
 
     try {
       _rasterizing = true;
-      _images.add(await object.toImage(pixelRatio: widget.pixelRatio));
+      final image = await object.toImage(pixelRatio: widget.pixelRatio);
+      if (!mounted) {
+        image.dispose();
+        return;
+      }
+      _capturedPages.add(_pageIndex);
+      if (widget.onPageCaptured != null) {
+        widget.onPageCaptured!(_pageIndex, image);
+      } else {
+        _images.add(image);
+      }
     } on Object catch (error, stack) {
       if (!mounted || !_active) return;
       _captured = true;
@@ -221,6 +244,17 @@ class _BookFlipPageRasterizerState extends State<BookFlipPageRasterizer>
   }
 
   void _advanceCapturedPage() {
+    if (widget.nextPageIndex != null) {
+      final next = widget.nextPageIndex!();
+      if (next != null) {
+        setState(() => _pageIndex = next);
+        _scheduleCapture();
+        return;
+      }
+      _captured = true;
+      widget.onCaptured(const <ui.Image>[]);
+      return;
+    }
     if (_images.length < widget.pages.length) {
       setState(() => _pageIndex += 1);
       _scheduleCapture();

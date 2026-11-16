@@ -9,6 +9,10 @@ import 'keepsake_photo_frame.dart';
 import 'atelier_edition_frame.dart';
 import 'atelier_signature_frame.dart';
 import 'atelier_story_frame.dart';
+import 'sensory_photo_frame.dart';
+import 'diversity_photo_frame.dart';
+import 'milestone_expansion_frame.dart';
+import 'premium_quartet_frame.dart';
 
 /// Normalized paths keep the same cut edge in thumbnails, editor and reader.
 class StudioMaterial extends StatelessWidget {
@@ -35,6 +39,14 @@ class StudioMaterial extends StatelessWidget {
   };
 
   static EdgeInsets photoInsets(String style, Size size) {
+    if (premiumQuartetPhotoFrames.contains(style))
+      return PremiumQuartetFrame.insets(style, size);
+    if (diversityPhotoFrames.contains(style))
+      return DiversityPhotoFrame.insets(style, size);
+    if (milestoneExpansionPhotoFrames.contains(style))
+      return MilestoneExpansionFrame.insets(style, size);
+    if (sensoryPhotoFrames.contains(style))
+      return SensoryPhotoFrame.insets(style, size);
     if (atelierStoryPhotoFrames.contains(style)) {
       return AtelierStoryFrame.insets(style, size);
     }
@@ -79,6 +91,14 @@ class StudioMaterial extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
+      if (premiumQuartetPhotoFrames.contains(style))
+        return PremiumQuartetFrame(style: style, child: child);
+      if (diversityPhotoFrames.contains(style))
+        return DiversityPhotoFrame(style: style, child: child);
+      if (milestoneExpansionPhotoFrames.contains(style))
+        return MilestoneExpansionFrame(style: style, child: child);
+      if (sensoryPhotoFrames.contains(style))
+        return SensoryPhotoFrame(style: style, child: child);
       if (atelierStoryPhotoFrames.contains(style)) {
         return AtelierStoryFrame(style: style, child: child);
       }
@@ -158,6 +178,14 @@ class StudioMaterialClipper extends CustomClipper<Path> {
 
   @override
   Path getClip(Size size) {
+    if (premiumQuartetPhotoFrames.contains(style))
+      return PremiumQuartetFrame.outer(style, size);
+    if (diversityPhotoFrames.contains(style))
+      return DiversityPhotoFrame.outer(style, size);
+    if (milestoneExpansionPhotoFrames.contains(style))
+      return MilestoneExpansionFrame.outer(style, size);
+    if (sensoryPhotoFrames.contains(style))
+      return SensoryPhotoFrame.outer(style, size);
     if (atelierStoryPhotoFrames.contains(style)) {
       return AtelierStoryFrame.outer(style, size);
     }

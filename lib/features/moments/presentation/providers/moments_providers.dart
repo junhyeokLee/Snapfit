@@ -53,11 +53,13 @@ final momentDraftSummariesForOwnerProvider = FutureProvider.autoDispose
     });
 
 final momentsMonthProvider = FutureProvider.autoDispose
-    .family<MomentJournal, DateTime>((ref, month) {
+    .family<MomentJournal, DateTime?>((ref, month) {
       ref.watch(momentsSessionProvider);
       final owner = ref.watch(momentsCurrentUserIdProvider);
       if (owner == null) {
         throw const MomentException('로그인한 뒤 기록을 다시 열어 주세요.');
       }
-      return ref.watch(momentsRepositoryProvider).listMonth(momentMonth(month));
+      return ref
+          .watch(momentsRepositoryProvider)
+          .listMonth(month == null ? null : momentMonth(month));
     });

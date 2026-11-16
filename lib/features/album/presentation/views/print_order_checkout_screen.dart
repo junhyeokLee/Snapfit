@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +26,11 @@ import '../../../profile/presentation/views/print_order_request_screen.dart';
 import '../../../profile/presentation/views/order_history_screen.dart';
 import '../../../profile/presentation/views/terms_policy_screen.dart';
 import '../../printing/print_vendor_spec.dart';
+import '../../domain/entities/album.dart';
+import '../widgets/home/home_album_cover_thumbnail.dart';
 import 'print_order_complete_screen.dart';
+import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 /// Keeps delivery details in this route until a supported payment is submitted.
 class PrintOrderCheckoutScreen extends ConsumerStatefulWidget {
@@ -58,6 +63,9 @@ class _PrintOrderCheckoutScreenState
     extends ConsumerState<PrintOrderCheckoutScreen>
     with WidgetsBindingObserver {
   final _formKey = GlobalKey<FormState>();
+  final _reviewConsentAnchor = GlobalKey();
+  final _policyConsentAnchor = GlobalKey();
+  final _customConsentAnchor = GlobalKey();
   final _name = TextEditingController();
   final _phone = TextEditingController();
   final _zip = TextEditingController();
@@ -66,6 +74,7 @@ class _PrintOrderCheckoutScreenState
   final _memo = TextEditingController();
   final _scroll = ScrollController();
   late OrderQuoteResult _quote = widget.initialQuote;
+  Album? _previewAlbum;
   PrintCheckoutReadiness? _readiness;
   bool _loading = false;
   bool _paying = false;
@@ -116,6 +125,11 @@ class _PrintOrderCheckoutScreenState
             _testSession?.verifiedTest != true
       : _readiness?.canPay == true;
 
+  // 기존 주문 복구는 신규 주문 가용 여부와 별도로 계속 열어 둔다.
+  bool get _deliveryAvailable => widget.testMode
+      ? _testCapability != null || _testSession != null || _testRecoveryUnknown
+      : _readiness?.canPay == true || _pendingPayment;
+
   PrintCheckoutConsent get _consent => PrintCheckoutConsent(
     orderReviewed: _agreed,
     policyAccepted: _policyAccepted,
@@ -149,7 +163,7 @@ class _PrintOrderCheckoutScreenState
     });
   }
 
-  bool get _canPay =>
+  bool get _canConfirmOrder =>
       _ownerCurrent &&
       !_loading &&
       !_paying &&
@@ -160,8 +174,45 @@ class _PrintOrderCheckoutScreenState
       !_reviewChanged &&
       _error == null &&
       _paymentAvailable &&
-      _quote.hasPlannedRetailPrice &&
-      _consent.complete;
+      _quote.hasPlannedRetailPrice;
+
+  bool get _canPay => _canConfirmOrder && _consent.complete;
+
+  int get _remainingConsentCount => [
+    _agreed,
+    _policyAccepted,
+    _customProductionAccepted,
+  ].where((accepted) => !accepted).length;
+
+  GlobalKey? get _nextConsentAnchor => !_agreed
+      ? _reviewConsentAnchor
+      : !_policyAccepted
+      ? _policyConsentAnchor
+      : !_customProductionAccepted
+      ? _customConsentAnchor
+      : null;
+
+  Future<void> _revealNextConsent() async {
+    if (!_reviewing || !_canConfirmOrder || _consent.complete) return;
+    if (_nextConsentAnchor?.currentContext == null && _scroll.hasClients) {
+      // 마지막 주문 확인 영역이 아직 지연 생성되지 않았다면 먼저 화면에 붙인다.
+      await _scroll.animateTo(
+        _scroll.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+      );
+      await WidgetsBinding.instance.endOfFrame;
+    }
+    if (!mounted || !_reviewing || !_canConfirmOrder) return;
+    final target = _nextConsentAnchor?.currentContext;
+    if (target == null || !target.mounted) return;
+    await Scrollable.ensureVisible(
+      target,
+      alignment: .15,
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOut,
+    );
+  }
 
   @override
   void initState() {
@@ -251,6 +302,12 @@ class _PrintOrderCheckoutScreenState
         _readiness = readiness;
         _testCapability = testCapability;
         _reviewChanged = changed || specChanged;
+        // 표지는 검토한 문서에서만 가져온다. 표시용 데이터는 결제 판단에 쓰지 않는다.
+        _previewAlbum = changed || specChanged
+            ? null
+            : snapshot == null
+            ? _previewAlbum
+            : _albumFromSnapshot(snapshot);
         if (changed || specChanged || priceChanged) _clearConsent();
         _notice = changed || specChanged
             ? '앨범 내용이나 제작 구성이 바뀌었어요. 인쇄 미리보기를 다시 확인해주세요.'
@@ -264,6 +321,7 @@ class _PrintOrderCheckoutScreenState
       if (mounted && _ownerCurrent) {
         setState(() {
           _readiness = null;
+          _previewAlbum = null;
           _testCapability = null;
           _error = '주문 준비 상태를 확인하지 못했습니다. 다시 확인해주세요.';
         });
@@ -272,6 +330,33 @@ class _PrintOrderCheckoutScreenState
       return false;
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Album? _albumFromSnapshot(Map<String, dynamic> snapshot) {
+    final row = snapshot['album'];
+    if (row is! Map) return null;
+    String? string(String key) =>
+        row[key] is String ? row[key] as String : null;
+    try {
+      final layers = row['cover_layers_json'];
+      return Album(
+        id: widget.albumId,
+        title: widget.albumTitle,
+        ratio: string('ratio') ?? '',
+        coverLayersJson: layers is Map
+            ? jsonEncode(layers)
+            : layers is String
+            ? layers
+            : '',
+        coverTheme: string('cover_theme'),
+        coverThumbnailUrl: string('cover_thumbnail_url'),
+        coverPreviewUrl: string('cover_preview_url'),
+        coverImageUrl: string('cover_image_url'),
+      );
+    } catch (_) {
+      // 미리보기 메타데이터 오류가 배송지 입력이나 주문 상태 확인을 막지 않게 한다.
+      return null;
     }
   }
 
@@ -284,7 +369,8 @@ class _PrintOrderCheckoutScreenState
   }
 
   Future<void> _searchAddress() async {
-    if (_paying || _deliveryLocked || !_ownerCurrent) return;
+    if (_paying || _deliveryLocked || !_ownerCurrent || !_deliveryAvailable)
+      return;
     final selected = kIsWeb
         ? await showWebAwareDialog<AddressSearchItem>(
             context: context,
@@ -300,7 +386,8 @@ class _PrintOrderCheckoutScreenState
             constraints: const BoxConstraints(maxWidth: 640),
             builder: (_) => const _AddressSearchSheet(),
           );
-    if (!mounted || !_ownerCurrent || selected == null) return;
+    if (!mounted || !_ownerCurrent || !_deliveryAvailable || selected == null)
+      return;
     setState(() {
       _zip.text = selected.zipCode;
       _address.text = selected.roadAddressPart1.isNotEmpty
@@ -312,32 +399,32 @@ class _PrintOrderCheckoutScreenState
 
   Future<void> _review() async {
     FocusScope.of(context).unfocus();
-    if (!_ownerCurrent || _loading || _paying) return;
-    if (kIsWeb) {
-      final invalidFields = _formKey.currentState!.validateGranularly();
-      if (invalidFields.isNotEmpty) {
-        final firstInvalid = invalidFields.first;
-        // Error labels change field heights. Reveal the first existing
-        // validator error after the updated web form has finished layout.
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted || !_ownerCurrent || !firstInvalid.mounted || _reviewing)
-            return;
-          unawaited(
-            Scrollable.ensureVisible(
-              firstInvalid.context,
-              alignment: .25,
-              duration: const Duration(milliseconds: 180),
-              alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
-            ),
-          );
-        });
-        return;
-      }
-    } else if (!_formKey.currentState!.validate()) {
+    if (!_ownerCurrent || _loading || _paying || !_deliveryAvailable) return;
+    final invalidFields = _formKey.currentState!.validateGranularly();
+    if (invalidFields.isNotEmpty) {
+      final firstInvalid = invalidFields.first;
+      // 오류 문구로 입력칸 높이가 바뀐 뒤 이동해야 작은 화면에서도 안내가 보인다.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_ownerCurrent || !firstInvalid.mounted || _reviewing)
+          return;
+        unawaited(
+          Scrollable.ensureVisible(
+            firstInvalid.context,
+            alignment: .25,
+            duration: const Duration(milliseconds: 180),
+            alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
+          ),
+        );
+      });
       return;
     }
     final refreshed = await _refresh();
-    if (!mounted || !_ownerCurrent || !refreshed || _reviewChanged) return;
+    if (!mounted ||
+        !_ownerCurrent ||
+        !refreshed ||
+        _reviewChanged ||
+        !_deliveryAvailable)
+      return;
     setState(() => _reviewing = true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _ownerCurrent && _scroll.hasClients) _scroll.jumpTo(0);
@@ -443,21 +530,22 @@ class _PrintOrderCheckoutScreenState
           receipt.amount != _quote.amount) {
         throw StateError('payment_receipt_unverified');
       }
-      final verifiedReceipt = await ref
-          .read(orderRepositoryProvider)
-          .fetchPrintPaidReceipt(
-            orderId: receipt.orderId,
-            albumId: widget.albumId,
-            expectedAmount: _quote.amount,
-          );
+      // 서비스가 검증한 성공 결과를 추가 조회 실패로 잃지 않는다. 주입 경로는 검증한다.
+      final verifiedReceipt = widget.onPay == null
+          ? receipt
+          : await ref
+                .read(orderRepositoryProvider)
+                .fetchPrintPaidReceipt(
+                  orderId: receipt.orderId,
+                  albumId: widget.albumId,
+                  expectedAmount: _quote.amount,
+                );
       if (!mounted || !_ownerCurrent) return;
       ref.invalidate(myOrderHistoryProvider);
       ref.invalidate(myOrderSummaryProvider);
       await Navigator.pushReplacement<void, void>(
         context,
-        MaterialPageRoute(
-          builder: (_) => PrintOrderCompleteScreen(receipt: verifiedReceipt),
-        ),
+        snapFitRoute(page: PrintOrderCompleteScreen(receipt: verifiedReceipt)),
       );
     } catch (_) {
       if (mounted && _ownerCurrent) {
@@ -768,9 +856,7 @@ class _PrintOrderCheckoutScreenState
         ref.invalidate(myOrderSummaryProvider);
         await Navigator.pushReplacement<void, void>(
           context,
-          MaterialPageRoute(
-            builder: (_) => PrintOrderCompleteScreen(receipt: result.receipt!),
-          ),
+          snapFitRoute(page: PrintOrderCompleteScreen(receipt: result.receipt!)),
         );
       }
     } catch (_) {
@@ -874,7 +960,11 @@ class _PrintOrderCheckoutScreenState
           : Scaffold(
               backgroundColor: SnapFitColors.backgroundOf(context),
               appBar: ExperienceHeader(
-                title: _reviewing ? '주문 내용 확인' : '배송지 입력',
+                title: _reviewing
+                    ? '주문 내용 확인'
+                    : _deliveryAvailable
+                    ? '배송지 입력'
+                    : '주문 안내',
                 showNotifications: false,
                 onBack: _paying
                     ? () {}
@@ -889,7 +979,7 @@ class _PrintOrderCheckoutScreenState
                   IconButton(
                     onPressed: _loading || _paying ? null : _refresh,
                     tooltip: '최신 주문 정보 확인',
-                    icon: const Icon(Icons.refresh, size: 20),
+                    icon: const ExperienceIcon('RefreshCw', size: 20),
                   ),
                 ],
               ),
@@ -932,19 +1022,9 @@ class _PrintOrderCheckoutScreenState
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            _albumSummary(compact: true),
-                                            const SizedBox(height: 8),
-                                            _priceDetails(compact: true),
+                                            _albumSummary(),
                                             const SizedBox(height: 16),
-                                            Divider(
-                                              color: ExperienceFormStyle.line(
-                                                context,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 8),
-                                            _configuration(
-                                              includeProduct: true,
-                                            ),
+                                            _orderSummary(compact: true),
                                           ],
                                         ),
                                       ),
@@ -1015,13 +1095,13 @@ class _PrintOrderCheckoutScreenState
     actions: [
       TextButton.icon(
         onPressed: _paying ? null : _webBack,
-        icon: const Icon(Icons.arrow_back, size: 18),
+        icon: const ExperienceIcon('ArrowLeft', size: 18),
         label: Text(_reviewing ? '배송지 수정' : '이전'),
       ),
       IconButton(
         onPressed: _loading || _paying ? null : _refresh,
         tooltip: '최신 주문 정보 확인',
-        icon: const Icon(Icons.refresh, size: 20),
+        icon: const ExperienceIcon('RefreshCw', size: 20),
       ),
     ],
     child: ListView(
@@ -1030,10 +1110,16 @@ class _PrintOrderCheckoutScreenState
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       children: [
         WebPageHeading(
-          title: _reviewing ? '주문 확인' : '배송지 입력',
+          title: _reviewing
+              ? '주문 확인'
+              : _deliveryAvailable
+              ? '배송지 입력'
+              : '주문 안내',
           description: _reviewing
               ? '앨범 사양, 배송지와 최종 금액을 확인하세요.'
-              : '책을 받을 분과 배송지 정보를 입력하세요.',
+              : _deliveryAvailable
+              ? '책을 받을 분과 배송지 정보를 입력하세요.'
+              : '주문 가능 여부를 확인한 뒤 배송지를 입력할 수 있어요.',
           trailing: widget.testMode
               ? Container(
                   padding: const EdgeInsets.symmetric(
@@ -1056,7 +1142,7 @@ class _PrintOrderCheckoutScreenState
               : null,
         ),
         const SizedBox(height: 20),
-        _steps(),
+        if (_deliveryAvailable || _reviewing) _steps(),
         const SizedBox(height: 24),
         CustomerWebColumns(
           breakpoint: 980,
@@ -1066,7 +1152,13 @@ class _PrintOrderCheckoutScreenState
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 ..._orderNotices(),
-                _heading(_reviewing ? '배송 정보' : '받는 분과 주소'),
+                _heading(
+                  _reviewing
+                      ? '배송 정보'
+                      : _deliveryAvailable
+                      ? '받는 분과 주소'
+                      : '주문 가능 여부',
+                ),
                 const SizedBox(height: 24),
                 if (_reviewing) _reviewDetails(wide: true) else _deliveryForm(),
               ],
@@ -1085,26 +1177,20 @@ class _PrintOrderCheckoutScreenState
                   ),
                 ),
                 const SizedBox(height: 18),
-                _albumSummary(compact: true),
-                const SizedBox(height: 24),
-                Divider(color: WebPalette.of(context).line),
-                const SizedBox(height: 18),
-                _configuration(includeProduct: true),
-                const SizedBox(height: 24),
-                Divider(color: WebPalette.of(context).line),
-                const SizedBox(height: 18),
-                _priceDetails(compact: true),
+                _albumSummary(),
+                const SizedBox(height: 16),
+                _orderSummary(compact: true),
                 const SizedBox(height: 24),
                 if (_reviewing)
                   _paymentActions(wide: false)
                 else ...[
-                  Icon(
-                    Icons.local_shipping_outlined,
-                    color: WebPalette.of(context).brandInk,
+                  ExperienceIcon('Truck', color: WebPalette.of(context).brandInk,
                     size: 24,
                   ),
                   _note(
-                    '배송지 입력 후 주문 내용을 확인합니다. 결제 가능 여부와 최종 금액은 주문 확인 단계에서 안내합니다.',
+                    _deliveryAvailable
+                        ? '배송지 입력 후 앨범 사양과 최종 금액을 확인합니다.'
+                        : '현재 주문 상태를 확인하고 앨범은 계속 수정할 수 있어요.',
                   ),
                 ],
                 const SizedBox(height: 16),
@@ -1130,7 +1216,7 @@ class _PrintOrderCheckoutScreenState
         : const EdgeInsets.fromLTRB(24, 20, 24, 28),
     keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
     children: [
-      _steps(),
+      if (_deliveryAvailable || _reviewing) _steps(),
       if (!wide) ...[const SizedBox(height: 24), _albumSummary()],
       ..._orderNotices(),
       const SizedBox(height: 24),
@@ -1138,34 +1224,104 @@ class _PrintOrderCheckoutScreenState
     ],
   );
 
-  Widget _albumSummary({bool compact = false}) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      if (!compact) ...[
-        Text(
-          '제작할 앨범',
-          style: ExperienceFormStyle.text(context, 12, secondary: true),
+  Widget _albumSummary() => Container(
+    key: const ValueKey('print-checkout-album-summary'),
+    width: double.infinity,
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: ExperienceFormStyle.surface(context),
+      borderRadius: BorderRadius.circular(SnapFitRadius.lg),
+      border: Border.all(color: ExperienceFormStyle.line(context)),
+    ),
+    child: LayoutBuilder(
+      builder: (context, bounds) {
+        final stacked =
+            bounds.maxWidth < 240 ||
+            MediaQuery.textScalerOf(context).scale(14) > 20;
+        final cover = Semantics(
+          label: '앨범 표지',
+          image: true,
+          child: SizedBox(
+            width: 100,
+            height: 92,
+            child: Center(
+              child: _previewAlbum == null
+                  ? ExperienceIcon('Bookmark', size: 42, color: ExperienceFormStyle.muted(context),
+                    )
+                  : HomeAlbumCoverThumbnail(
+                      album: _previewAlbum!,
+                      height: 92,
+                      maxWidth: 100,
+                      showShadow: false,
+                      showBookDepth: false,
+                    ),
+            ),
+          ),
+        );
+        final details = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '제작할 앨범',
+              style: ExperienceFormStyle.text(context, 12, secondary: true),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              widget.albumTitle,
+              style: ExperienceFormStyle.text(
+                context,
+                18,
+                weight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _productLabel(),
+              style: ExperienceFormStyle.text(context, 13, secondary: true),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '내지 ${_quote.pageCount}페이지 · 1권',
+              style: ExperienceFormStyle.text(context, 13, secondary: true),
+            ),
+          ],
+        );
+        return stacked
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [cover, const SizedBox(height: 12), details],
+              )
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  cover,
+                  const SizedBox(width: 16),
+                  Expanded(child: details),
+                ],
+              );
+      },
+    ),
+  );
+
+  Widget _orderSummary({bool compact = false}) => Container(
+    key: const ValueKey('print-checkout-order-summary'),
+    width: double.infinity,
+    padding: const EdgeInsets.all(18),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(SnapFitRadius.lg),
+      border: Border.all(color: ExperienceFormStyle.line(context)),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _configuration(),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Divider(height: 1, color: ExperienceFormStyle.line(context)),
         ),
-        const SizedBox(height: 6),
+        _priceDetails(compact: compact),
       ],
-      Text(
-        widget.albumTitle,
-        maxLines: compact ? 2 : null,
-        overflow: compact ? TextOverflow.ellipsis : null,
-        style: ExperienceFormStyle.text(
-          context,
-          compact ? 16 : 24,
-          weight: compact ? FontWeight.w600 : FontWeight.w700,
-        ),
-      ),
-      if (!compact) ...[
-        const SizedBox(height: 6),
-        Text(
-          '${_productLabel()} · 내지 ${_quote.pageCount}페이지 · 1권',
-          style: ExperienceFormStyle.text(context, 13, secondary: true),
-        ),
-      ],
-    ],
+    ),
   );
 
   List<Widget> _orderNotices() => [
@@ -1185,7 +1341,7 @@ class _PrintOrderCheckoutScreenState
             onPressed: _paying || _recoveringPayment
                 ? null
                 : _recoverTestPayment,
-            icon: const Icon(Icons.refresh, size: 17),
+            icon: const ExperienceIcon('RefreshCw', size: 17),
             label: const Text('TEST 주문 상태 확인'),
           ),
         ),
@@ -1219,7 +1375,7 @@ class _PrintOrderCheckoutScreenState
         alignment: Alignment.centerLeft,
         child: OutlinedButton.icon(
           onPressed: _loading || _paying ? null : _refresh,
-          icon: const Icon(Icons.refresh, size: 17),
+          icon: const ExperienceIcon('RefreshCw', size: 17),
           label: const Text('다시 확인'),
         ),
       ),
@@ -1251,8 +1407,7 @@ class _PrintOrderCheckoutScreenState
               : () async {
                   final result = await Navigator.push<String>(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => PrintOrderRequestScreen(
+                    snapFitRoute(page: PrintOrderRequestScreen(
                         target: _pendingTarget!,
                         albumTitle: _pendingCanResume
                             ? widget.albumTitle
@@ -1263,8 +1418,7 @@ class _PrintOrderCheckoutScreenState
                             ? '인쇄 파일을 다시 준비하기 위해 기존 주문 취소를 요청합니다.'
                             : null,
                         returnToAlbumEditing: !_pendingSdkStarted,
-                      ),
-                    ),
+                      )),
                   );
                   if (!mounted || !_ownerCurrent) return;
                   await _recoverPayment();
@@ -1282,7 +1436,7 @@ class _PrintOrderCheckoutScreenState
         ),
       OutlinedButton.icon(
         onPressed: _paying || _recoveringPayment ? null : _recoverPayment,
-        icon: const Icon(Icons.refresh),
+        icon: const ExperienceIcon('RefreshCw'),
         label: const Text('결제 결과 다시 확인'),
       ),
       if (_pendingOrderId != null)
@@ -1291,10 +1445,7 @@ class _PrintOrderCheckoutScreenState
               ? null
               : () => Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        OrderHistoryScreen(initialOrderId: _pendingOrderId),
-                  ),
+                  snapFitRoute(page: OrderHistoryScreen(initialOrderId: _pendingOrderId)),
                 ),
           child: const Text('이전 주문 확인하기'),
         ),
@@ -1304,7 +1455,7 @@ class _PrintOrderCheckoutScreenState
         onPressed: _paying
             ? null
             : () => Navigator.pop(context, 'review_again'),
-        icon: const Icon(Icons.menu_book_outlined, size: 18),
+        icon: const ExperienceIcon('BookOpen', size: 18),
         label: const Text('인쇄 미리보기 다시 확인'),
       ),
   ];
@@ -1347,7 +1498,7 @@ class _PrintOrderCheckoutScreenState
     runSpacing: 8,
     children: [
       _step('1', '배송지', !_reviewing),
-      const Icon(Icons.chevron_right, size: 18),
+      const ExperienceIcon('ChevronRight', size: 18),
       _step('2', '주문 확인', _reviewing),
     ],
   );
@@ -1375,105 +1526,139 @@ class _PrintOrderCheckoutScreenState
     ],
   );
 
-  Widget _deliveryForm() => Form(
-    key: _formKey,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _field(
-          label: '받는 분',
-          key: const ValueKey('print-recipient-name'),
-          controller: _name,
-          maxLength: 40,
-          autofillHints: const [AutofillHints.name],
-          validator: (v) =>
-              (v?.trim().isEmpty ?? true) ? '받는 분 이름을 입력해주세요.' : null,
-        ),
-        _field(
-          label: '휴대폰 번호',
-          key: const ValueKey('print-recipient-phone'),
-          controller: _phone,
-          hint: '01012345678',
-          keyboardType: TextInputType.phone,
-          maxLength: 11,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          autofillHints: const [AutofillHints.telephoneNumberNational],
-          validator: (v) => RegExp(r'^010\d{8}$').hasMatch(v?.trim() ?? '')
-              ? null
-              : '010으로 시작하는 휴대폰 번호 11자리를 입력해주세요.',
-        ),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                '배송 주소',
-                style: ExperienceFormStyle.text(
-                  context,
-                  14,
-                  weight: FontWeight.w600,
+  Widget _deliveryForm() {
+    if (!_deliveryAvailable) {
+      return Column(
+        key: const ValueKey('print-checkout-unavailable'),
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (!_loading && _error == null) ...[
+            _message(
+              widget.testMode
+                  ? '이 앨범의 TEST 주문 권한을 확인하지 못했어요.'
+                  : _readiness?.message.isNotEmpty == true
+                  ? _readiness!.message
+                  : '주문 가능 여부를 확인하고 있어요.',
+            ),
+            if (_readiness != null || widget.testMode)
+              _note('지금은 배송지를 입력하지 않아도 돼요. 앨범은 계속 수정할 수 있어요.'),
+            if (!_recoveringPayment)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  onPressed: _refresh,
+                  icon: const ExperienceIcon('RefreshCw', size: 17),
+                  label: const Text('다시 확인'),
                 ),
               ),
-            ),
-            OutlinedButton.icon(
-              onPressed: _paying || _deliveryLocked ? null : _searchAddress,
-              icon: const Icon(Icons.search, size: 17),
-              label: const Text('주소 검색'),
-            ),
           ],
-        ),
-        _note('검색이 어려우면 우편번호와 도로명 주소를 직접 입력해주세요.'),
-        const SizedBox(height: 12),
-        _field(
-          label: '우편번호',
-          key: const ValueKey('print-zip-code'),
-          controller: _zip,
-          hint: '5자리 우편번호',
-          keyboardType: TextInputType.number,
-          maxLength: 5,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          autofillHints: const [AutofillHints.postalCode],
-          validator: (v) => RegExp(r'^\d{5}$').hasMatch(v?.trim() ?? '')
-              ? null
-              : '우편번호 5자리를 입력해주세요.',
-        ),
-        _field(
-          label: '도로명 주소',
-          key: const ValueKey('print-address-line1'),
-          controller: _address,
-          maxLength: 150,
-          autofillHints: const [AutofillHints.streetAddressLine1],
-          validator: (v) =>
-              (v?.trim().isEmpty ?? true) ? '도로명 주소를 입력해주세요.' : null,
-        ),
-        _field(
-          label: '상세 주소',
-          key: const ValueKey('print-address-line2'),
-          controller: _detail,
-          hint: '동·호수 등',
-          maxLength: 100,
-          autofillHints: const [AutofillHints.streetAddressLine2],
-        ),
-        _field(
-          label: '배송 요청 사항 (선택)',
-          key: const ValueKey('print-delivery-memo'),
-          controller: _memo,
-          hint: '배송 기사님께 전할 내용을 입력해주세요.',
-          maxLength: 100,
-          textInputAction: TextInputAction.done,
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: _loading || _paying || _reviewChanged ? null : _review,
-            style: ExperienceFormStyle.primary(context),
-            child: const Text('주문 내용 확인하기'),
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'edit_album'),
+            child: const Text('앨범 계속 편집하기'),
           ),
-        ),
-        _note('배송지는 주문 요청 시 제작과 배송에 필요한 정보로 전달됩니다.'),
-      ],
-    ),
-  );
+        ],
+      );
+    }
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _field(
+            label: '받는 분',
+            key: const ValueKey('print-recipient-name'),
+            controller: _name,
+            maxLength: 40,
+            autofillHints: const [AutofillHints.name],
+            validator: (v) =>
+                (v?.trim().isEmpty ?? true) ? '받는 분 이름을 입력해주세요.' : null,
+          ),
+          _field(
+            label: '휴대폰 번호',
+            key: const ValueKey('print-recipient-phone'),
+            controller: _phone,
+            hint: '01012345678',
+            keyboardType: TextInputType.phone,
+            maxLength: 11,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            autofillHints: const [AutofillHints.telephoneNumberNational],
+            validator: (v) => RegExp(r'^010\d{8}$').hasMatch(v?.trim() ?? '')
+                ? null
+                : '010으로 시작하는 휴대폰 번호 11자리를 입력해주세요.',
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '배송 주소',
+                  style: ExperienceFormStyle.text(
+                    context,
+                    14,
+                    weight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              OutlinedButton.icon(
+                onPressed: _paying || _deliveryLocked ? null : _searchAddress,
+                icon: const ExperienceIcon('Search', size: 17),
+                label: const Text('주소 검색'),
+              ),
+            ],
+          ),
+          _note('검색이 어려우면 우편번호와 도로명 주소를 직접 입력해주세요.'),
+          const SizedBox(height: 12),
+          _field(
+            label: '우편번호',
+            key: const ValueKey('print-zip-code'),
+            controller: _zip,
+            hint: '5자리 우편번호',
+            keyboardType: TextInputType.number,
+            maxLength: 5,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            autofillHints: const [AutofillHints.postalCode],
+            validator: (v) => RegExp(r'^\d{5}$').hasMatch(v?.trim() ?? '')
+                ? null
+                : '우편번호 5자리를 입력해주세요.',
+          ),
+          _field(
+            label: '도로명 주소',
+            key: const ValueKey('print-address-line1'),
+            controller: _address,
+            maxLength: 150,
+            autofillHints: const [AutofillHints.streetAddressLine1],
+            validator: (v) =>
+                (v?.trim().isEmpty ?? true) ? '도로명 주소를 입력해주세요.' : null,
+          ),
+          _field(
+            label: '상세 주소',
+            key: const ValueKey('print-address-line2'),
+            controller: _detail,
+            hint: '동·호수 등',
+            maxLength: 100,
+            autofillHints: const [AutofillHints.streetAddressLine2],
+          ),
+          _field(
+            label: '배송 요청 사항 (선택)',
+            key: const ValueKey('print-delivery-memo'),
+            controller: _memo,
+            hint: '배송 기사님께 전할 내용을 입력해주세요.',
+            maxLength: 100,
+            textInputAction: TextInputAction.done,
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: _loading || _paying || _reviewChanged ? null : _review,
+              style: ExperienceFormStyle.primary(context),
+              child: const Text('주문 내용 확인하기'),
+            ),
+          ),
+          _note('배송지는 주문 요청 시 제작과 배송에 필요한 정보로 전달됩니다.'),
+        ],
+      ),
+    );
+  }
 
   Widget _field({
     required String label,
@@ -1541,76 +1726,9 @@ class _PrintOrderCheckoutScreenState
         style: ExperienceFormStyle.text(context, 14),
       ),
       if (_memo.text.trim().isNotEmpty) _note(_memo.text.trim()),
-      if (!wide) ...[
-        const SizedBox(height: 24),
-        Divider(color: ExperienceFormStyle.line(context)),
-        const SizedBox(height: 16),
-        _configuration(),
-        const SizedBox(height: 24),
-        _priceDetails(),
-      ],
-      const SizedBox(height: 16),
-      CheckboxListTile(
-        key: const ValueKey('print-checkout-agreement'),
-        contentPadding: EdgeInsets.zero,
-        controlAffinity: ListTileControlAffinity.leading,
-        value: _agreed,
-        onChanged: _paying || _loading || _reviewChanged
-            ? null
-            : (v) => setState(() => _agreed = v == true),
-        title: Text(
-          PrintCheckoutConsent.reviewNotice,
-          style: ExperienceFormStyle.text(context, 13),
-        ),
-      ),
-      Wrap(
-        spacing: 8,
-        runSpacing: 4,
-        children: [
-          TextButton(
-            onPressed: _paying
-                ? null
-                : () => Navigator.pop(context, 'review_again'),
-            child: const Text('최종 인쇄 미리보기 다시 확인'),
-          ),
-          _policyLink('이용약관', TermsPolicyDocType.terms),
-          _policyLink('취소·환불 정책', TermsPolicyDocType.refund),
-          _policyLink('제작·배송 안내', TermsPolicyDocType.shipping),
-          _policyLink('개인정보 처리방침', TermsPolicyDocType.privacy),
-        ],
-      ),
-      CheckboxListTile(
-        key: const ValueKey('print-checkout-policy-agreement'),
-        contentPadding: EdgeInsets.zero,
-        controlAffinity: ListTileControlAffinity.leading,
-        value: _policyAccepted,
-        onChanged: _paying || _loading || _reviewChanged
-            ? null
-            : (v) => setState(() => _policyAccepted = v == true),
-        title: Text(
-          '[필수] 이용약관과 취소·환불·제작·배송 정책을 확인하고 동의합니다.',
-          style: ExperienceFormStyle.text(context, 13),
-        ),
-      ),
-      const SizedBox(height: 8),
-      Text(
-        '주문제작 상품의 청약철회 안내',
-        style: ExperienceFormStyle.text(context, 13, weight: FontWeight.w600),
-      ),
-      _note(CommercePolicy.customProductionConsent),
-      CheckboxListTile(
-        key: const ValueKey('print-checkout-custom-production-agreement'),
-        contentPadding: EdgeInsets.zero,
-        controlAffinity: ListTileControlAffinity.leading,
-        value: _customProductionAccepted,
-        onChanged: _paying || _loading || _reviewChanged
-            ? null
-            : (v) => setState(() => _customProductionAccepted = v == true),
-        title: Text(
-          '[필수·별도 동의] 위 주문제작 상품의 청약철회 제한 안내를 확인하고 동의합니다.',
-          style: ExperienceFormStyle.text(context, 13),
-        ),
-      ),
+      if (!wide) ...[const SizedBox(height: 24), _orderSummary()],
+      const SizedBox(height: 24),
+      _consentDetails(),
       if (!widget.testMode && _readiness?.canPay != true)
         _note('현재 정책은 판매 준비용 초안입니다. 실제 결제와 제작 요청은 열리지 않습니다.'),
       const SizedBox(height: 8),
@@ -1633,14 +1751,152 @@ class _PrintOrderCheckoutScreenState
     ],
   );
 
+  Widget _consentDetails() => Container(
+    key: const ValueKey('print-checkout-consents'),
+    width: double.infinity,
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(SnapFitRadius.lg),
+      border: Border.all(color: ExperienceFormStyle.line(context)),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _heading('결제 전 확인'),
+        const SizedBox(height: 6),
+        Text(
+          '필수 확인 3가지 · 각 항목을 직접 선택해주세요.',
+          style: ExperienceFormStyle.text(context, 12, secondary: true),
+        ),
+        const SizedBox(height: 12),
+        KeyedSubtree(
+          key: _reviewConsentAnchor,
+          child: CheckboxListTile(
+            key: const ValueKey('print-checkout-agreement'),
+            contentPadding: EdgeInsets.zero,
+            controlAffinity: ListTileControlAffinity.leading,
+            value: _agreed,
+            onChanged: _paying || _loading || _reviewChanged
+                ? null
+                : (v) => setState(() => _agreed = v == true),
+            title: Text(
+              '[필수] 앨범·제작 구성·배송지·금액 확인',
+              style: ExperienceFormStyle.text(context, 13),
+            ),
+          ),
+        ),
+        _disclosure(
+          key: 'print-checkout-review-details',
+          title: '확인 항목 자세히 보기',
+          children: [_note(PrintCheckoutConsent.reviewNotice)],
+        ),
+        TextButton(
+          onPressed: _paying
+              ? null
+              : () => Navigator.pop(context, 'review_again'),
+          child: const Text('최종 인쇄 미리보기 다시 확인'),
+        ),
+        Divider(color: ExperienceFormStyle.line(context)),
+        KeyedSubtree(
+          key: _policyConsentAnchor,
+          child: CheckboxListTile(
+            key: const ValueKey('print-checkout-policy-agreement'),
+            contentPadding: EdgeInsets.zero,
+            controlAffinity: ListTileControlAffinity.leading,
+            value: _policyAccepted,
+            onChanged: _paying || _loading || _reviewChanged
+                ? null
+                : (v) => setState(() => _policyAccepted = v == true),
+            title: Text(
+              '[필수] 이용약관·주문 정책 동의',
+              style: ExperienceFormStyle.text(context, 13),
+            ),
+          ),
+        ),
+        _disclosure(
+          key: 'print-checkout-policy-details',
+          title: '주문 정책 자세히 보기',
+          children: [
+            _note('이용약관과 취소·환불·제작·배송 정책을 확인하고 동의합니다.'),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                _policyLink('이용약관', TermsPolicyDocType.terms),
+                _policyLink('취소·환불 정책', TermsPolicyDocType.refund),
+                _policyLink('제작·배송 안내', TermsPolicyDocType.shipping),
+                _policyLink('개인정보 처리방침', TermsPolicyDocType.privacy),
+              ],
+            ),
+          ],
+        ),
+        Divider(color: ExperienceFormStyle.line(context)),
+        const SizedBox(height: 8),
+        Text(
+          '주문제작 상품의 청약철회 안내',
+          style: ExperienceFormStyle.text(context, 13, weight: FontWeight.w600),
+        ),
+        _note(
+          '내 앨범으로 개별 제작됩니다. 제작이 시작되어 회복하기 어려운 중대한 손해가 예상되는 경우 단순 변심에 따른 청약철회가 제한될 수 있습니다. 제작 전 취소 요청과 불량·오배송 등 법정 권리는 별도로 보장됩니다.',
+        ),
+        _disclosure(
+          key: 'print-checkout-custom-production-details',
+          title: '청약철회 제한 안내 전문',
+          children: [_note(CommercePolicy.customProductionConsent)],
+        ),
+        KeyedSubtree(
+          key: _customConsentAnchor,
+          child: CheckboxListTile(
+            key: const ValueKey('print-checkout-custom-production-agreement'),
+            contentPadding: EdgeInsets.zero,
+            controlAffinity: ListTileControlAffinity.leading,
+            value: _customProductionAccepted,
+            onChanged: _paying || _loading || _reviewChanged
+                ? null
+                : (v) => setState(() => _customProductionAccepted = v == true),
+            title: Text(
+              '[필수·별도] 청약철회 제한 동의',
+              style: ExperienceFormStyle.text(context, 13),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+
+  Widget _disclosure({
+    required String key,
+    required String title,
+    required List<Widget> children,
+  }) => Theme(
+    key: ValueKey(key),
+    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+    child: ExpansionTile(
+      // 스크롤 위치(double)와 펼침 상태(bool)의 저장 키가 겹치지 않게 한다.
+      key: PageStorageKey(key),
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: const EdgeInsets.only(bottom: 12),
+      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+      iconColor: ExperienceFormStyle.muted(context),
+      collapsedIconColor: ExperienceFormStyle.muted(context),
+      title: Text(
+        title,
+        style: ExperienceFormStyle.text(
+          context,
+          12,
+          color: ExperienceFormStyle.selectionInk(context),
+        ),
+      ),
+      children: children,
+    ),
+  );
+
   Widget _policyLink(String label, TermsPolicyDocType type) => TextButton(
     onPressed: _paying
         ? null
         : () => Navigator.push<void>(
             context,
-            MaterialPageRoute(
-              builder: (_) => TermsPolicyScreen(initialDocType: type),
-            ),
+            snapFitRoute(page: TermsPolicyScreen(initialDocType: type)),
           ),
     child: Text(label),
   );
@@ -1689,7 +1945,7 @@ class _PrintOrderCheckoutScreenState
       onPressed: _paying ? null : () => Navigator.pop(context, 'edit_album'),
       child: const Text('앨범 계속 편집하기'),
     );
-    return wide
+    final buttons = wide
         ? IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1705,13 +1961,36 @@ class _PrintOrderCheckoutScreenState
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [payment, const SizedBox(height: 8), edit],
           );
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (_canConfirmOrder && !_consent.complete)
+          Semantics(
+            liveRegion: true,
+            child: TextButton(
+              key: const ValueKey('print-checkout-consent-help'),
+              onPressed: _revealNextConsent,
+              style: TextButton.styleFrom(
+                minimumSize: const Size(0, 44),
+                padding: const EdgeInsets.all(8),
+              ),
+              child: Text(
+                '필수 확인 $_remainingConsentCount개 남음 · 확인하기',
+                textAlign: TextAlign.center,
+                style: ExperienceFormStyle.text(context, 13),
+              ),
+            ),
+          ),
+        buttons,
+      ],
+    );
   }
 
-  Widget _configuration({bool includeProduct = false}) => Column(
+  Widget _configuration() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       _heading('제작 구성'),
-      if (includeProduct) _note(_productLabel()),
       _note('표지와 내지 ${_quote.pageCount}페이지 · 1권'),
       _note(
         _quote.addedBlankPageCount > 0
@@ -1881,7 +2160,7 @@ class _AddressSearchSheetState extends ConsumerState<_AddressSearchSheet> {
                 IconButton(
                   onPressed: () => Navigator.pop(context),
                   tooltip: '닫기',
-                  icon: const Icon(Icons.close, size: 22),
+                  icon: const ExperienceIcon('X', size: 22),
                 ),
               ],
             ),

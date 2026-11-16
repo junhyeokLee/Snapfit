@@ -14,6 +14,8 @@ import 'package:snap_fit/features/attendance/domain/attendance_status.dart';
 import 'package:snap_fit/features/attendance/presentation/providers/attendance_providers.dart';
 import 'package:snap_fit/features/attendance/presentation/views/attendance_screen.dart';
 import 'package:snap_fit/features/home_news/data/home_news_repository.dart';
+import 'package:snap_fit/features/home_news/data/home_news_today_store.dart';
+import 'package:snap_fit/features/home_news/presentation/providers/home_news_today_providers.dart';
 import 'package:snap_fit/features/home_news/domain/home_news.dart';
 import 'package:snap_fit/features/home_news/presentation/home_news_navigation.dart';
 import 'package:snap_fit/features/home_news/presentation/providers/home_news_providers.dart';
@@ -36,7 +38,9 @@ final _today = DateTime.utc(2026, 10, 27);
 final _month = DateTime.utc(2026, 10);
 const _asset = 'asset:assets/snapfit_home_square.jpg';
 
-HomeNewsExposureState _state() => HomeNewsExposureState(
+HomeNewsExposureState _state({bool hidden = false}) => HomeNewsExposureState(
+  hiddenForToday: hidden,
+  hiddenUntil: hidden ? _today.add(const Duration(hours: 15)) : null,
   serverNow: _today.add(const Duration(hours: 3)),
   serverDate: _today,
   weekStart: DateTime.utc(2026, 10, 26),
@@ -75,12 +79,25 @@ HomeNewsItem _item(HomeNewsKind kind) => HomeNewsItem(
 );
 
 class _NewsRepository
-    implements HomeNewsRepository, HomeNewsDeliveryRepository {
+    implements
+        HomeNewsRepository,
+        HomeNewsDeliveryRepository,
+        HomeNewsTodayRepository {
   String? owner = 'owner';
   final claims = <String>[];
   final interactions = <({String id, HomeNewsInteraction interaction})>[];
   final views = <({String deliveryId, String campaignId})>[];
   Completer<bool>? pendingView;
+  int hides = 0;
+  bool hideFails = false;
+  Completer<HomeNewsExposureState>? pendingHide;
+
+  @override
+  Future<HomeNewsExposureState> hideForToday() async {
+    hides++;
+    if (hideFails) throw StateError('offline');
+    return pendingHide?.future ?? _state(hidden: true);
+  }
 
   @override
   Future<HomeNewsDeliveryClaim> claimDelivery(List<String> campaignIds) async =>
@@ -224,7 +241,7 @@ class _MomentsRepository implements MomentsRepository {
   @override
   Stream<String?> get authChanges => const Stream.empty();
   @override
-  Future<MomentJournal> listMonth(DateTime month) async {
+  Future<MomentJournal> listMonth(DateTime? month) async {
     reads++;
     return journal;
   }
@@ -324,6 +341,20 @@ class _Harness extends ConsumerWidget {
   );
 }
 
+class _TodayStore implements HomeNewsTodayStore {
+  final values = <String, DateTime>{};
+  final writes = <String>[];
+  @override
+  Future<DateTime?> readUntil(String owner) async => values[owner];
+  @override
+  void rememberUntil(String owner, DateTime until) => values[owner] = until;
+  @override
+  Future<void> persistUntil(String owner, DateTime until) async {
+    values[owner] = until;
+    writes.add(owner);
+  }
+}
+
 class _Fixture {
   _Fixture(this.item, {List<HomeNewsItem>? items, this.automatic = false}) {
     catalog = List.of(items ?? [item]);
@@ -333,6 +364,7 @@ class _Fixture {
           (ref) => ref.watch(_ownerProvider),
         ),
         homeNewsRepositoryProvider.overrideWithValue(news),
+        homeNewsTodayStoreProvider.overrideWithValue(todayStore),
         homeNewsExposureStateProvider.overrideWith((ref) async => _state()),
         homeNewsCatalogProvider.overrideWith((ref) async {
           await ref.watch(homeNewsExposureStateProvider.future);
@@ -358,6 +390,7 @@ class _Fixture {
   final bool automatic;
   late List<HomeNewsItem> catalog;
   final news = _NewsRepository();
+  final todayStore = _TodayStore();
   final attendance = _AttendanceRepository();
   final referral = _ReferralRepository();
   final moments = _MomentsRepository();
@@ -682,6 +715,78 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets(
+    'today text closes immediately, persists to server and device, and manual replay stays available',
+    (tester) async {
+      final fixture = _Fixture(_item(HomeNewsKind.attendance));
+      await fixture.mount(tester);
+      await tester.tap(find.text('오늘 하루 안 보기').hitTestable());
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('home-news-action')), findsNothing);
+      expect(fixture.news.hides, 1);
+      expect(
+        fixture.todayStore.values['owner'],
+        _today.add(const Duration(hours: 15)),
+      );
+      expect(
+        await fixture.container.read(homeNewsTodayHiddenProvider.future),
+        isTrue,
+      );
+      expect(fixture.news.interactions, isEmpty);
+      expect(
+        fixture.container.read(homeNewsPresentationCoordinatorProvider).busy,
+        isFalse,
+      );
+      await tester.tap(find.byKey(const ValueKey('open-manual-home-news')));
+      await _settleImages(tester);
+      expect(find.text('오늘 하루 안 보기').hitTestable(), findsOneWidget);
+      fixture.expectReadOnly();
+    },
+  );
+
+  testWidgets(
+    'offline today-hide still suppresses locally without delaying closing',
+    (tester) async {
+      final fixture = _Fixture(_item(HomeNewsKind.attendance));
+      fixture.news.hideFails = true;
+      await fixture.mount(tester);
+      await tester.tap(find.text('오늘 하루 안 보기').hitTestable());
+      await tester.pumpAndSettle();
+      expect(
+        await fixture.container.read(homeNewsTodayHiddenProvider.future),
+        isTrue,
+      );
+      expect(find.byKey(const ValueKey('home-news-action')), findsNothing);
+      expect(
+        fixture.container.read(homeNewsPresentationCoordinatorProvider).busy,
+        isFalse,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('late hide response cannot suppress a replacement account', (
+    tester,
+  ) async {
+    final fixture = _Fixture(_item(HomeNewsKind.attendance));
+    final pending = Completer<HomeNewsExposureState>();
+    fixture.news.pendingHide = pending;
+    await fixture.mount(tester);
+    await tester.tap(find.text('오늘 하루 안 보기').hitTestable());
+    await tester.pumpAndSettle();
+    fixture.news.owner = 'replacement';
+    fixture.container.read(_ownerProvider.notifier).state = 'replacement';
+    pending.complete(_state(hidden: true));
+    await tester.pumpAndSettle();
+    expect(fixture.todayStore.values['owner'], isNotNull);
+    expect(fixture.todayStore.values['replacement'], isNull);
+    expect(
+      await fixture.container.read(homeNewsTodayHiddenProvider.future),
+      isFalse,
+    );
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
     'changing accounts removes the manual private sheet immediately',

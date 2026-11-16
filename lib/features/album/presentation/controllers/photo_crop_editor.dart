@@ -13,11 +13,14 @@ import '../../../../core/utils/context_extensions.dart';
 ({PhotoCropPageContext context, VoidCallback dispose}) _pageCropContext(
   AlbumEditorViewModel vm,
   WidgetRef ref,
-  LayerModel original,
-) {
+  LayerModel original, {
+  Size? logicalCanvasSize,
+}) {
   final page = vm.currentPage!;
   final ratio = vm.selectedCover.ratio > 0 ? vm.selectedCover.ratio : 1.0;
-  final canvas = Size(kCoverReferenceWidth, kCoverReferenceWidth / ratio);
+  final canvas =
+      logicalCanvasSize ??
+      Size(kCoverReferenceWidth, kCoverReferenceWidth / ratio);
   final interaction = LayerInteractionManager.preview(ref, () => canvas);
   final snapshot = interaction.sortByZ(List<LayerModel>.of(page.layers));
   final builder = LayerBuilder(interaction, () => canvas);
@@ -65,13 +68,19 @@ Future<void> editPhotoCrop(
   WidgetRef ref,
   LayerModel layer, {
   LayerBuilder? layerBuilder,
+  Size? logicalCanvasSize,
 }) async {
   if (ModalRoute.of(context)?.isCurrent == false) return;
   final vm = ref.read(albumEditorViewModelProvider.notifier);
   final pageId = vm.currentPage?.id;
   final original = vm.findLayerById(layer.id);
   if (pageId == null || original?.type != LayerType.image) return;
-  final pagePreview = _pageCropContext(vm, ref, original!);
+  final pagePreview = _pageCropContext(
+    vm,
+    ref,
+    original!,
+    logicalCanvasSize: logicalCanvasSize,
+  );
   LayerModel? result;
   try {
     result = await showPhotoCropSheet(

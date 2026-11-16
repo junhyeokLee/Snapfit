@@ -1,0 +1,258 @@
+{
+  "status": "production_web_deployed_performance_and_artwork_quality_verified_one_unclassified_probe_timeout_recorded",
+  "recordDate": "2026-10-30",
+  "url": "https://snapfit-c719d.web.app/feed",
+  "changes": [
+    "Keep the public full FontManifest complete for printing, publication and already-open older tabs",
+    "Use a small immutable interface-only font manifest during engine initialization; exact GET mapping restored in finally before app main",
+    "Preload interface fonts only and fetch original immutable document fonts when the album needs them",
+    "Gate document text measurement, editor state initialization, monthly album persistence, word art, print and snapshot capture until fonts are ready",
+    "Catalog metadata comes from the shipped canonical snapshots without eagerly constructing font-measured books",
+    "Retry failed document font and print preparation without caching a rejected Future"
+  ],
+  "performance": {
+    "metric": "navigation start to flutter-first-frame; not a measurement of completion of every later feed/photo request",
+    "browser": "156.0.8078.74",
+    "pairedSuccessfulGroups": [
+      {
+        "profile": {
+          "cache": "disabled",
+          "latencyMs": 50,
+          "downloadMbps": 10,
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          }
+        },
+        "runsPerSuccessfulGroup": 3,
+        "before": {
+          "meanFirstFrameMs": 34050.03333333259,
+          "minFirstFrameMs": 33365.89999999851,
+          "maxFirstFrameMs": 34452.29999999888,
+          "meanBytesBeforeFirstFrame": 36126332.666666664,
+          "meanFontBytesBeforeFirstFrame": 32481924.333333332,
+          "fontRequestsBeforeFirstFrame": [
+            48,
+            48,
+            48
+          ]
+        },
+        "after": {
+          "meanFirstFrameMs": 11522.899999999752,
+          "minFirstFrameMs": 11343.10000000149,
+          "maxFirstFrameMs": 11686.099999997765,
+          "meanBytesBeforeFirstFrame": 11838211.333333334,
+          "meanFontBytesBeforeFirstFrame": 8258754.333333333,
+          "fontRequestsBeforeFirstFrame": [
+            18,
+            18,
+            18
+          ]
+        },
+        "savedMs": 22527.133333332837,
+        "savedPercent": 66.15891712293967,
+        "evidence": [
+          "output/web-lazy-startup-20261030/before-10mbps.json",
+          "output/web-lazy-startup-20261030/after-10mbps.json"
+        ]
+      },
+      {
+        "profile": {
+          "cache": "disabled",
+          "latencyMs": 50,
+          "downloadMbps": 100,
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          }
+        },
+        "runsPerSuccessfulGroup": 3,
+        "before": {
+          "meanFirstFrameMs": 7101.600000000249,
+          "minFirstFrameMs": 6563.5,
+          "maxFirstFrameMs": 8155.5,
+          "meanBytesBeforeFirstFrame": 36056045.333333336,
+          "meanFontBytesBeforeFirstFrame": 32481197.666666668,
+          "fontRequestsBeforeFirstFrame": [
+            48,
+            48,
+            48
+          ]
+        },
+        "after": {
+          "meanFirstFrameMs": 2909.200000000497,
+          "minFirstFrameMs": 2829.099999997765,
+          "maxFirstFrameMs": 3018.900000002235,
+          "meanBytesBeforeFirstFrame": 11839532,
+          "meanFontBytesBeforeFirstFrame": 8260069.333333333,
+          "fontRequestsBeforeFirstFrame": [
+            18,
+            18,
+            18
+          ]
+        },
+        "savedMs": 4192.399999999752,
+        "savedPercent": 59.03458375576778,
+        "evidence": [
+          "output/web-lazy-startup-20261030/before-100mbps.json",
+          "output/web-lazy-startup-20261030/after-100mbps.json"
+        ]
+      }
+    ],
+    "initialFailedFastProbe": {
+      "status": "failed_probe_preserved",
+      "url": "https://snapfit-c719d.web.app/feed",
+      "profile": {
+        "downloadMbps": 100,
+        "latencyMs": 50,
+        "cache": "disabled",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      "requestedRuns": 3,
+      "error": "page.waitForFunction: Timeout 120000ms exceeded. tool/measure_web_startup.cjs:49:15",
+      "diagnosticsAvailable": false,
+      "affectedRunIndexKnown": false,
+      "note": "Original probe wrote only after the entire group, so completed measurements and failure-page state were not retained. Failure diagnostics were then added to the measurement tool before fresh verification. No timings from the failed group are included as successes."
+    },
+    "subsequentFastChecks": {
+      "diagnosticRuns": 1,
+      "pairedRuns": 3,
+      "additionalStabilityRuns": 10,
+      "additionalStabilityMinMs": 2834.800000000745,
+      "additionalStabilityMeanMs": 3032.8199999999256,
+      "additionalStabilityMaxMs": 3481.599999997765,
+      "allCompletedWithoutPageErrors": true,
+      "causeOfInitialTimeout": "unconfirmed; no failed timings were silently converted into successful measurements",
+      "evidence": "output/web-lazy-startup-20261030/stability-100mbps.json"
+    }
+  },
+  "quality": {
+    "originalAssetFilesByteExact": 1072,
+    "originalFontFilesByteExact": 40,
+    "publicFontFilesByteExact": 40,
+    "fullFontFamilies": 31,
+    "initialFontFamilies": 7,
+    "fontParagraphComparisons": 840,
+    "fontFamiliesCompared": 28,
+    "originalFontFacesCompared": 40,
+    "fontMetricsWrappingAndRGBAEqual": true,
+    "savedDocumentComparisons": 16,
+    "savedJSONGeometryPhotosCanvasPDFAndPublicationEqual": true,
+    "originalSamplePhoto": {
+      "asset": "assets/templates/wedding_editorial/images/approved_stock/bouquet_hand.jpg",
+      "bytes": 741734,
+      "sha": "79f4126377ec6060df836d19702035913550fa59aad49a95076e1a5682f0904f",
+      "width": 2425,
+      "height": 1655
+    },
+    "samplePDFsPhysicallyRenderedAndVisuallyReviewed": true,
+    "samplePDFRenderPaths": [
+      "output/pdf/web-lazy-startup-20261030/cover-1.png",
+      "output/pdf/web-lazy-startup-20261030/interior-1.png",
+      "output/pdf/web-lazy-startup-20261030/interior-2.png"
+    ],
+    "evidence": [
+      "output/web-lazy-startup-20261030/asset-preservation.json",
+      "output/web-lazy-startup-20261030/production-fonts-check.json",
+      "output/web-lazy-startup-20261030/font-rendering.json",
+      "output/web-lazy-startup-20261030/document-quality/report.json"
+    ]
+  },
+  "checks": {
+    "nativeRegression": {
+      "passed": 155,
+      "skippedWebOnlyCases": 6,
+      "initialPreviewFailures": 4,
+      "initialLog": "output/web-lazy-startup-20261030/native-quality-tests.log",
+      "previewFailuresFixedInProductCode": true,
+      "finalTargetedRecheckPassed": 10,
+      "recheckLog": "output/web-lazy-startup-20261030/preview-recheck.log",
+      "note": "The four worker cases were not weakened or changed; the eager document now avoids initializing the authored registry in a compute isolate."
+    },
+    "chromeEditing": {
+      "passed": 7,
+      "skippedNativeOnlyCases": 1,
+      "log": "output/web-lazy-startup-20261030/chrome-editing-final.log",
+      "note": "Two old UI expectations updated to the existing explicit-edit action and current photo button label. Transform, undo, zoom and crop assertions retained."
+    },
+    "webPackagerTests": {
+      "total": 60,
+      "passed": 55,
+      "skippedGenerationOnlyFontToolsCases": 5,
+      "log": "output/web-lazy-startup-20261030/python-tests.log"
+    },
+    "legacyWorkerBrowser": {
+      "passed": 1,
+      "log": "output/web-lazy-startup-20261030/legacy-worker-test.log"
+    },
+    "sourceAnalysis": {
+      "errors": 0,
+      "warnings": 0,
+      "informationalLints": 5,
+      "note": "Intentional createState selection between font-entry wrapper and the original State.",
+      "log": "output/web-lazy-startup-20261030/analysis.log"
+    },
+    "catalogMetadataMatchesShippedSnapshots": true,
+    "changedScopeWhitespaceCheckPassed": true,
+    "productionDesktopAndMobileGuestScreens": {
+      "passed": true,
+      "browser": "156.0.8078.74",
+      "checks": [
+        {
+          "route": "feed",
+          "size": {
+            "width": 1440,
+            "height": 900
+          },
+          "pageErrors": [],
+          "failedFonts": [],
+          "capture": "output/web-lazy-startup-20261030/production-feed.png"
+        },
+        {
+          "route": "designs",
+          "size": {
+            "width": 390,
+            "height": 844
+          },
+          "pageErrors": [],
+          "failedFonts": [],
+          "capture": "output/web-lazy-startup-20261030/production-designs.png"
+        },
+        {
+          "route": "albums",
+          "size": {
+            "width": 1440,
+            "height": 900
+          },
+          "pageErrors": [],
+          "failedFonts": [],
+          "capture": "output/web-lazy-startup-20261030/production-albums.png"
+        }
+      ]
+    }
+  },
+  "deployment": {
+    "hosting": "projects/360727043538/sites/snapfit-c719d/versions/14ec91f94c26bd66",
+    "build": {
+      "main_sha256": "576e6325473f5222cd83ae57744fdf92b1139dfaf4cf7ee7c44e04ee5213e5bc",
+      "main_file": "main.576e6325473f5222cd83.dart.js",
+      "bootstrap_sha256": "9cc4910fd53a2d5978340a90dd32f972df26b0b87bf278b6e80d4771904828b6",
+      "bootstrap_file": "flutter_bootstrap.9cc4910fd53a2d597834.js"
+    },
+    "fileAndRouteCheckEvidence": "output/web-lazy-startup-20261030/production-deployment-check.json"
+  },
+  "productionDatabaseChanged": false,
+  "customerAlbumOrPhotoDataModified": false,
+  "customerAccountUsed": false,
+  "actualPrintOrderPlaced": false,
+  "nativeApplicationBuilt": false,
+  "limitations": [
+    "Timing uses desktop Chrome, cold browser cache, 50ms synthetic latency and 3 completed runs per condition. Real devices, networks and CDN behavior vary.",
+    "One initial 100Mbps probe timed out before its failure page was recorded. It did not recur in 14 subsequent fast runs; its cause remains unconfirmed. The measurement tool now saves failure-page screenshots, console/network details and completed measurements.",
+    "Visual and PDF comparison uses an isolated saved-album-format sample and a real existing bundled photo, not private customer albums. The small two-page browser PDF stock is not a new production print-vendor certification. Existing native regression also generated a real 20-page PDF.",
+    "The isolated fixture supplies an inert unused Google Sign-In script; authentication and payments were not exercised there."
+  ]
+}

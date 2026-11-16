@@ -5,12 +5,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../../shared/widgets/album_stage_style.dart';
 import '../../../../../shared/widgets/deferred_content.dart';
 import '../../../../../shared/widgets/snapfit_shimmer.dart';
+import '../../../../../core/navigation/web_app_location.dart';
 import '../../../../auth/presentation/viewmodels/auth_view_model.dart';
+import '../../../../auth/presentation/views/login_screen.dart';
 import '../../../../notification/presentation/providers/notification_provider.dart';
 import '../../../../onboarding/presentation/widgets/first_home_guide.dart';
 import '../../../../moments/presentation/moments_navigation.dart';
-import '../../../../moments/presentation/widgets/first_book_next_step_card.dart';
-import '../../../data/album_creation_draft_store.dart';
+import '../../../../moments/presentation/providers/moment_entry_refresh_provider.dart';
+import '../../../../moments/presentation/providers/moments_providers.dart';
 import '../../../domain/entities/album.dart';
 import '../../../domain/entities/album_creation_draft.dart';
 import '../../providers/home_ui_state_provider.dart';
@@ -21,7 +23,8 @@ import 'home_album_tab_screen.dart';
 import 'home_album_header.dart';
 import 'home_empty_state.dart';
 import 'home_error_state.dart';
-import 'home_album_actions.dart';
+import 'home_moment_summary_card.dart';
+import '../../../../../shared/widgets/snapfit_motion.dart';
 
 /// Album responses and local preferences update this destination, not the
 /// navigation shell or an unrelated store destination.
@@ -86,8 +89,35 @@ class _HomeAlbumDestinationState extends ConsumerState<HomeAlbumDestination> {
 
   Future<void> _refresh() async {
     ref.invalidate(notificationUnreadCountProvider);
+    ref.invalidate(momentsMonthProvider);
+    ref.invalidate(momentEntryJournalProvider);
     await ref.read(homeViewModelProvider.notifier).refresh();
   }
+
+  // Temporary bodies and the collection footer must not consume the guide.
+  Widget _journalSummary({bool showFirstUseGuide = true}) =>
+      HomeMomentSummaryCard(
+        onRecord: () => openMomentCompose(context, ref),
+        firstUseGuide: showFirstUseGuide
+            ? FirstHomeGuide(
+                onRecord: () => openMomentCompose(context, ref),
+                onCreate: widget.onCreateAlbum,
+              )
+            : null,
+        onOpenMonth: () => openMoments(
+          context,
+          initialMonth: ref
+              .read(momentEntryJournalProvider)
+              .asData
+              ?.value
+              ?.month,
+        ),
+        onSignIn: () => Navigator.of(context).push<void>(
+          snapFitRoute<void>(page: const LoginScreen(), settings: const WebAppRouteSettings(WebAppLocation.login)),
+        ),
+        onOpenDate: (date) =>
+            openMoments(context, initialMonth: date, initialDate: date),
+      );
 
   HomeAlbumsPreparedData _prepare(List<Album> albums, String owner) {
     if (!identical(albums, _preparedSource) || owner != _preparedOwner) {
@@ -113,9 +143,6 @@ class _HomeAlbumDestinationState extends ConsumerState<HomeAlbumDestination> {
       homeUiStateProvider.select((state) => state.albumTabIndex),
     );
     final active = TickerMode.of(context);
-    final draft = active
-        ? ref.watch(albumCreationDraftProvider).asData?.value
-        : null;
     final activeScroll = widget.showCollection
         ? widget.collectionScrollController
         : widget.coverScrollController;
@@ -143,33 +170,7 @@ class _HomeAlbumDestinationState extends ConsumerState<HomeAlbumDestination> {
                     ? widget.onShowAlbumCovers
                     : widget.onOpenAlbumTab,
                 onCreateAlbum: widget.onCreateAlbum,
-                createButtonBuilder: (button) => FirstHomeGuide(
-                  onCreate: widget.onCreateAlbum,
-                  child: button,
-                ),
               ),
-              if (owner.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
-                  child: FirstBookNextStepCard(
-                    compact: true,
-                    ownerId: owner,
-                    albums: albums.asData?.value ?? const [],
-                    creationDraftTitle: draft?.title,
-                    onResumeCreation: draft == null
-                        ? null
-                        : () => widget.onResumeDraft(draft),
-                    onMoments: () => openMoments(context),
-                    onDraft: (draft) =>
-                        openMoments(context, draftRecordId: draft.recordId),
-                    onContinueAlbum: (album) => HomeAlbumActions.onEditSelected(
-                      context,
-                      ref,
-                      album,
-                      startAtFirstIncompletePage: true,
-                    ),
-                  ),
-                ),
               Expanded(
                 child: albums.when(
                   data: (albums) {
@@ -188,6 +189,9 @@ class _HomeAlbumDestinationState extends ConsumerState<HomeAlbumDestination> {
                                   ? SnapFitShimmerHomeSlider(
                                       scrollController:
                                           widget.coverScrollController,
+                                      leadingContent: _journalSummary(
+                                        showFirstUseGuide: false,
+                                      ),
                                     )
                                   : SingleChildScrollView(
                                       controller:
@@ -212,12 +216,16 @@ class _HomeAlbumDestinationState extends ConsumerState<HomeAlbumDestination> {
                                           .setAlbumTabIndex,
                                       onToggleFavorite: _toggleFavorite,
                                       onRefresh: _refresh,
+                                      footer: _journalSummary(
+                                        showFirstUseGuide: false,
+                                      ),
                                     )
                                   : prepared.myRecordsAlbums.isEmpty
                                   ? HomeEmptyState(
                                       scrollController:
                                           widget.coverScrollController,
                                       onCreate: widget.onCreateAlbum,
+                                      leadingContent: _journalSummary(),
                                     )
                                   : HomeAlbumSlider(
                                       showHeader: false,
@@ -226,18 +234,29 @@ class _HomeAlbumDestinationState extends ConsumerState<HomeAlbumDestination> {
                                       albums: prepared.myRecordsAlbums,
                                       onCreateAlbum: widget.onCreateAlbum,
                                       onOpenAlbumTab: widget.onOpenAlbumTab,
+                                      // Keep daily recording first, then the
+                                      // full-size album and its compact selector.
+                                      leadingContent: Padding(
+                                        padding: const EdgeInsets.only(
+                                          bottom: 24,
+                                        ),
+                                        child: _journalSummary(),
+                                      ),
                                     ),
                             ),
                           ),
                       ],
                     );
                   },
-                  loading: () =>
-                      SnapFitShimmerHomeSlider(scrollController: activeScroll),
+                  loading: () => SnapFitShimmerHomeSlider(
+                    scrollController: activeScroll,
+                    leadingContent: _journalSummary(showFirstUseGuide: false),
+                  ),
                   error: (error, _) => HomeErrorState(
                     error: error,
                     onRetry: _refresh,
                     scrollController: activeScroll,
+                    leadingContent: _journalSummary(showFirstUseGuide: false),
                   ),
                 ),
               ),

@@ -1,0 +1,85 @@
+{
+  "review_date": "2026-11-16",
+  "verified_at_utc": "2026-11-16T05:09:02.916718+00:00",
+  "mode": "read-only UX review with real Flutter widgets and local repository doubles",
+  "product_changes": false,
+  "live_server_actions": false,
+  "compilation_errors": 0,
+  "reproductions": {
+    "cap_record": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_invite": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_reader": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "total_reproductions": 4,
+  "screen_count": 9,
+  "screen_logical_size": [
+    390,
+    844
+  ],
+  "screen_pixel_size": [
+    780,
+    1688
+  ],
+  "lib_dart_files_unchanged": 821,
+  "source_hashes_match": true,
+  "diagnostic_analysis": {
+    "errors": 0,
+    "visible_for_testing_warnings": 2,
+    "unnecessary_import_info": 1
+  },
+  "pretendard_capture_font_substitute": "NotoSansKR",
+  "limitations": [
+    "No live server, real user account, publication, invite acceptance, printing, or payment performed.",
+    "Signed-out used-link and signed-in original-member captures are separate response fixtures, not a completed login transition.",
+    "31-second delayed response is virtual-time repository simulation, not a production latency measurement or proof of an infinite wait.",
+    "Unintended photo removal observed in editor and local draft only; original record still has three photos.",
+    "Probe runner references session-local SDK/package/assets paths."
+  ],
+  "source_refs_sha256": {
+    "lib/features/moments/presentation/views/moment_compose_screen.dart": "0cf05e441718e9a3cbd016a2b778c9739e7b6483a2aea05078dfa6e058bde4f4",
+    "lib/features/album/presentation/views/album_invite_accept_screen.dart": "be286cad904c10adfb09a3867c42685186ebd7a65948696b8c0b04c49f1d8850",
+    "lib/features/album/service/album_invite_failure.dart": "79cfca1a3be55cfdc8efe858d897d6e4300d5dfa9c710f35682b19ddda316618",
+    "lib/features/album/presentation/views/album_reader_inner_detail_screen.dart": "7ca4b7ae66b1f57a4deb813692694f30c6429255dfa1b97940e8df58e889cd59",
+    "lib/features/album/data/repositories/supabase_album_member_repository.dart": "d659f91a7296a3fb1ab7e7f8fc4452bedd12ad7a0d747a2920ba1198da0a6d99",
+    "lib/core/supabase/auth_request_http_client.dart": "56dbfb8cdf660eed7c984eab0f466ffe596316d6f693fce56c5048d5649df0bc",
+    "supabase/functions/album-invites/index.ts": "581f92d899f07c37693646447140c50bba1a18dc09e756cb8ccc6c8665427ae6"
+  },
+  "artifacts": {
+    "logs/analyze-probes.log": "546f7c845d0c954c27bc3ade8b41e548991d1031d2711b9adb6e87c7d392f842",
+    "logs/cap_invite.log": "3565e70615a04cdf75ac3bedb367f90cdf66831af132eb0eecd6bb0db27faad0",
+    "logs/cap_reader.log": "30cd5dba94a62f883f8d82810b286027ee12baa40f2e2895db8d4178888cc669",
+    "logs/cap_record.log": "8a48c18bf9a5ffb905f548d228dbfacb1196e5ebd0e892e7f9456c4a77342568",
+    "logs/compile.log": "53694dafd4e7668845c7bb0770d84969438d89770ecf87daa2ef2f88fb95240b",
+    "probes/audit_support.dart": "ab5196e1b3c03b493694735d7fe720c14f6e33a5cfe830009dacf1f6633e99c3",
+    "probes/cap_invite.dart": "aa3588cebaaa06988bd0496394d453a4688e962a29edfa228773ac26913440fb",
+    "probes/cap_reader.dart": "2b12dd5e9c92369b3f4c7b5ef11d6108e9cf2d83632fc269c45f0674d2ff2378",
+    "probes/cap_record.dart": "e74f0383abe8c9735ae77a169d8759b52d92736eb917edce2386518d95b6fcb6",
+    "probes/run.py": "04a5e72daf1c9de162abc8f12e205ea104d5f4bc657f6df213f71722af1c2c02",
+    "probes/runner.dart": "bb94c1d3659a96ac807a66dc2f3f9355540db2237eb853e62b272c3bed170c13",
+    "screens/10-invite-used-signed-out-no-login.png": "77e8252c55572c8601993b295a5e378509503433f2e6d8e7d846648b07ab9d07",
+    "screens/11-invite-original-member-signed-in-separate-fixture.png": "1af6018fe59c3bc0ed6f151695eaa88e8d6eeb6defb81591c6da7bcbae8e5be8",
+    "screens/12-invite-accept-pending-31s-no-dismiss.png": "da642dc2e74b5041bc4443f29e7082abb41cc780fbd8c73c6e0ea9fb91873147",
+    "screens/20-reader-inner-detail.png": "6baa02dbcd8e97fb7c0a55c68d3a6f73893e93fa88163bfa478603dae242c678",
+    "screens/21-reader-detail-book-menu.png": "635f09f7a28a431421267e9d77126d7f4409bda7f67d858b3377e01b3e555168",
+    "screens/22-reader-book-action-instruction.png": "9201bba98932bdf40baedfdd7a4d28520fbf66ee731358d20752b9ac6f8ce753",
+    "screens/record-01-three-photos-before-removal.png": "2f80cbd341bdd2fa4300334bd04cf4367b4ee9fd0f35b5d71b4e0c0f6505ddfc",
+    "screens/record-02-same-button-two-date-checks-pending.png": "06a9dbc529928af1a80f6aef7db28aabcdd60e6b636ff87a76484125b3614f7b",
+    "screens/record-03-only-third-photo-remains.png": "c23e9ca916dcc9ce2df12b1b264e0aab48a89c196f78536981418b2de26552b5",
+    "source-after.json": "714da9a95ae52bb280ce9a1380da94d9417663b6a850bb6efe2cde75c1424257",
+    "source-before.json": "28f92cebbaf78c69e5de639dad3c7dcf6f10713f5cc980dfe222d91275eaf2c7",
+    "검토_결과.md": "e3d68dc3aecdb1d9131f0588a7dfa8f48b4f562711ebf3109ceacd6bf655a855",
+    "검토_화면.png": "d931fae805da4cd8fb19cbd7103d44911e2ebb96d8c660750bcd1cad8998d77a"
+  }
+}

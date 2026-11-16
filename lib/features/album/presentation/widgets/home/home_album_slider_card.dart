@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import '../../../../../core/utils/context_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../domain/entities/album.dart';
@@ -317,9 +318,7 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
     } catch (e) {
       if (mounted) _tapController.reverse();
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('앨범 편집을 열 수 없습니다: $e')));
+        context.showErrorSnack('앨범 편집을 열 수 없습니다: $e');
       }
     }
   }

@@ -11,6 +11,7 @@ import '../../../profile/presentation/widgets/customer_web_page.dart';
 import '../../domain/home_news.dart';
 import '../home_news_navigation.dart';
 import '../providers/home_news_providers.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 /// A manual catalogue: opening it never consumes an automatic home impression.
 class HomeNewsScreen extends ConsumerWidget {
@@ -40,7 +41,7 @@ class HomeNewsScreen extends ConsumerWidget {
         title: '새 소식을 불러오지 못했어요',
         action: TextButton.icon(
           onPressed: () => _refresh(ref),
-          icon: const Icon(Icons.refresh_rounded, size: 18),
+          icon: const ExperienceIcon('RefreshCw', size: 18),
           label: const Text('다시 불러오기'),
         ),
       ),
@@ -73,7 +74,7 @@ class HomeNewsScreen extends ConsumerWidget {
         actions: [
           OutlinedButton.icon(
             onPressed: catalog.isLoading ? null : () => _refresh(ref),
-            icon: const Icon(Icons.refresh_rounded, size: 18),
+            icon: const ExperienceIcon('RefreshCw', size: 18),
             label: const Text('새로고침'),
           ),
         ],
@@ -92,7 +93,7 @@ class HomeNewsScreen extends ConsumerWidget {
           IconButton(
             tooltip: '새 소식 새로고침',
             onPressed: catalog.isLoading ? null : () => _refresh(ref),
-            icon: const Icon(Icons.refresh_rounded),
+            icon: const ExperienceIcon('RefreshCw'),
           ),
         ],
       ),
@@ -201,10 +202,7 @@ class _NewsCardState extends State<_NewsCard> {
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
             else
-              Icon(
-                Icons.arrow_forward_rounded,
-                size: 18,
-                color: ExperienceFormStyle.ink(context),
+              ExperienceIcon('ArrowRight', size: 18, color: ExperienceFormStyle.ink(context),
               ),
           ],
         ),

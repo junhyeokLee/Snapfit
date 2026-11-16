@@ -1,7 +1,10 @@
+import '../widgets/store_product_badge.dart';
+import '../../data/store_discovery_provider.dart';
+import '../../domain/store_product_discovery.dart';
 import 'dart:math' show min;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, listEquals;
 import '../../../../shared/web/web_design.dart';
 import '../../../../core/navigation/web_app_location.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
@@ -15,6 +18,7 @@ import '../../../../shared/widgets/catalog_empty_result.dart';
 import '../../../../shared/widgets/snapfit_shimmer.dart';
 import '../../../../shared/widgets/catalog_skeleton_shimmer.dart';
 import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../core/utils/context_extensions.dart';
 import 'material_catalog_screen.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,12 +29,15 @@ import '../widgets/template_curation.dart';
 import '../widgets/store_material_discovery.dart';
 import '../widgets/template_editorial_list.dart';
 import '../widgets/store_topic_shelf.dart';
+import '../widgets/store_design_discovery.dart';
+import '../widgets/store_featured_template_shelf.dart';
 import '../widgets/web/web_catalog_toolbar.dart';
 import '../widgets/template_catalog_tile.dart';
 import '../widgets/template_design_comparison.dart';
 import '../widgets/public_template_information.dart';
 import '../../data/store_curation_provider.dart';
 import '../../domain/store_template_recommendations.dart';
+import '../../domain/store_template_discovery.dart';
 import '../../../point_shop/domain/point_shop_template_key.dart';
 import '../../../point_shop/domain/point_shop_product.dart';
 import '../../data/api/template_provider.dart';
@@ -39,6 +46,7 @@ import '../../../album/data/bundled_creation_templates.dart'
 import '../../domain/entities/premium_template.dart';
 import 'template_detail_screen.dart';
 import '../../../point_shop/data/point_shop_provider.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 class StoreScreen extends ConsumerStatefulWidget {
   const StoreScreen({
@@ -48,12 +56,14 @@ class StoreScreen extends ConsumerStatefulWidget {
     this.editorial = false,
     this.onBrowseMaterials,
     this.searchMode = false,
+    this.comparisonController,
   });
   final bool ownedOnly;
   final bool embedded;
   final bool editorial;
   final bool searchMode;
   final VoidCallback? onBrowseMaterials;
+  final TemplateDesignComparisonController? comparisonController;
   @override
   ConsumerState<StoreScreen> createState() => _StoreScreenState();
 }
@@ -68,10 +78,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   int? _paginationFrame;
   String _lastSearchText = '';
   String _priceFilter = '전체';
-  String _sort = '추천순';
-  TemplateDesignComparisonSelection _comparison =
-      const TemplateDesignComparisonSelection.empty();
-  final _comparisonTemplates = <int, PremiumTemplate>{};
+  String _sort = '최신순';
+  String? _selectedStyle;
+  final _localComparisonController = TemplateDesignComparisonController();
+  TemplateDesignComparisonController get _comparisonController =>
+      widget.comparisonController ?? _localComparisonController;
+  TemplateDesignComparisonSelection get _comparison =>
+      _comparisonController.selection;
   Widget? _catalogContent;
   late final _categories = storeTemplateCategories(
     publishedCreationTemplates.map((t) => t.category ?? ''),
@@ -93,45 +106,20 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   void _toggleComparison(PremiumTemplate template) {
     FocusManager.instance.primaryFocus?.unfocus();
     if (_comparison.contains(template.id)) {
-      setState(() {
-        _comparison = _comparison.remove(template.id);
-        _comparisonTemplates.remove(template.id);
-      });
+      _comparisonController.remove(template.id);
     } else if (_comparison.isFull) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(TemplateDesignComparisonSelection.limitMessage),
-        ),
-      );
+      context.showSnack(TemplateDesignComparisonSelection.limitMessage);
     } else {
-      setState(() {
-        _comparison = _comparison.add(template.id);
-        _comparisonTemplates[template.id] = template;
-      });
+      _comparisonController.add(template);
     }
   }
 
   Widget _withComparison(List<PremiumTemplate> catalog, Widget content) {
     // Selected products remain available across filters without starting a
     // second, full-catalog request just to display the comparison tray.
-    final selected = <PremiumTemplate>[];
-    for (final id in _comparison.ids) {
-      final template =
-          catalog.where((item) => item.id == id).firstOrNull ??
-          _comparisonTemplates[id];
-      if (template != null) {
-        _comparisonTemplates[id] = template;
-        selected.add(template);
-      }
-    }
-    void remove(PremiumTemplate template) => setState(() {
-      _comparison = _comparison.remove(template.id);
-      _comparisonTemplates.remove(template.id);
-    });
-    void clear() => setState(() {
-      _comparison = _comparison.clear();
-      _comparisonTemplates.clear();
-    });
+    final selected = _comparisonController.resolve(catalog);
+    void remove(PremiumTemplate template) =>
+        _comparisonController.remove(template.id);
     return LayoutBuilder(
       builder: (context, bounds) => Column(
         children: [
@@ -146,12 +134,12 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
               child: TemplateDesignComparisonTray(
                 designs: selected,
                 onRemove: remove,
-                onClear: clear,
+                onClear: _comparisonController.clear,
                 onCompare: () => showTemplateDesignComparison(
                   context,
                   designs: selected,
                   onRemove: remove,
-                  onClear: clear,
+                  onClear: _comparisonController.clear,
                   onOpen: _openTemplate,
                 ),
               ),
@@ -179,6 +167,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
 
   void _selectCategory(String category) {
     if (_selectedCategory == category) return;
+    FocusManager.instance.primaryFocus?.unfocus();
     _changeFilter(() => _selectedCategory = category);
     ref
         .read(storeTemplateFeedProvider.notifier)
@@ -186,6 +175,15 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
           category: category == storeRecommendedCategory ? '전체' : category,
           query: '',
         );
+  }
+
+  void _selectStyle(String? style) {
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() {
+      _selectedStyle = style;
+      _resetPage();
+      _requestCatalogReveal(atTop: true);
+    });
   }
 
   void _clearSearchFilter() {
@@ -196,6 +194,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }
 
   List<CatalogActiveFilter> get _activeFilters => [
+    if (_selectedStyle != null)
+      CatalogActiveFilter(
+        id: 'style',
+        label:
+            '분위기 · ${storeTemplateStyles.firstWhere((s) => s.id == _selectedStyle).label}',
+        onRemove: () => _selectStyle(null),
+      ),
     if (_searchController.text.trim().isNotEmpty)
       CatalogActiveFilter(
         id: 'query',
@@ -220,11 +225,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         label: '즐겨찾기만',
         onRemove: () => _changeFilter(() => _favoritesOnly = false),
       ),
-    if (_sort != '추천순')
+    if (_sort != '최신순')
       CatalogActiveFilter(
         id: 'sort',
         label: _sort,
-        onRemove: () => _changeFilter(() => _sort = '추천순'),
+        onRemove: () => _changeFilter(() => _sort = '최신순'),
       ),
   ];
 
@@ -281,17 +286,14 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     FocusManager.instance.primaryFocus?.unfocus();
     Navigator.push(
       context,
-      MaterialPageRoute(
-        settings: kIsWeb
+      snapFitRoute(page: TemplateDetailScreen(
+          template: template,
+          heroTag: (this, template.id),
+        ), settings: kIsWeb
             ? WebAppRouteSettings(
                 WebAppLocation(WebAppPage.template, '${template.id}'),
               )
-            : null,
-        builder: (_) => TemplateDetailScreen(
-          template: template,
-          heroTag: (this, template.id),
-        ),
-      ),
+            : null),
     );
   }
 
@@ -348,22 +350,44 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   Object? _cachedCatalogRef;
   Object? _cachedOwnedRef;
   Object? _cachedCurationRef;
+  Object? _cachedDiscoveryRef;
+  Object? _cachedMoodRef;
+  DateTime? _cachedDiscoveryClock;
   List<PremiumTemplate> _cachedFiltered = const [];
+  List<PremiumTemplate> _cachedStyleTemplates = const [];
   TemplateCuration? _cachedCuration;
   PremiumTemplate? _cachedSpotlight;
   List<PointShopProduct>? _pricedCatalog;
   Map<String, PointShopProduct> _prices = const {};
+  Object? _moodSource, _moodCatalog, _moodFeed;
+  List<PremiumTemplate> _moodTemplates = const [];
+  Set<int> _moodTemplateIds = const {};
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
     _scrollController.addListener(_loadNearEnd);
+    _comparisonController.addListener(_onComparisonChanged);
+  }
+
+  void _onComparisonChanged() => setState(() {});
+
+  @override
+  void didUpdateWidget(covariant StoreScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.comparisonController != widget.comparisonController) {
+      (oldWidget.comparisonController ?? _localComparisonController)
+          .removeListener(_onComparisonChanged);
+      _comparisonController.addListener(_onComparisonChanged);
+    }
   }
 
   @override
   void dispose() {
     _cancelPagination();
+    _comparisonController.removeListener(_onComparisonChanged);
+    _localComparisonController.dispose();
     _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -402,6 +426,38 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         };
       }
       final prices = _prices;
+      final moodSource = widget.ownedOnly
+          ? const <PremiumTemplate>[]
+          : ref.watch(storeTemplateDiscoveryCandidatesProvider).asData?.value ??
+                feed.items;
+      if (!identical(_moodSource, moodSource) ||
+          !identical(_moodCatalog, catalogRef) ||
+          !identical(_moodFeed, feed.items)) {
+        _moodSource = moodSource;
+        _moodCatalog = catalogRef;
+        _moodFeed = feed.items;
+        // Include already loaded public server summaries as well as the full
+        // local catalog. This never starts a second catalog request, and keeps
+        // canonical local artwork identities when the feed repeats them.
+        final candidates = <int, PremiumTemplate>{
+          for (final template in moodSource) template.id: template,
+        };
+        for (final template in feed.items) {
+          candidates.putIfAbsent(template.id, () => template);
+        }
+        _moodTemplates = candidates.values
+            .where((template) {
+              if (isRetiredStoreTemplate(template)) return false;
+              final product = prices[pointShopTemplateKey(template)];
+              return product == null
+                  ? !template.isPremium
+                  : product.isActive && product.pointPrice != null;
+            })
+            .toList(growable: false);
+        _moodTemplateIds = _moodTemplates
+            .map((template) => template.id)
+            .toSet();
+      }
       return _catalogContent = _catalogFrame(
         body: SafeArea(
           top: false,
@@ -431,6 +487,10 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             // loading state. Data is mounted again at the end of this frame.
             _scheduleCatalogReveal();
             final categories = _categories;
+            final discovery =
+                ref.watch(storeDiscoveryProvider).asData?.value ??
+                bundledStoreDiscovery;
+            final discoveryClock = ref.watch(storeDiscoveryClockProvider);
             final curation = !widget.ownedOnly
                 ? ref.watch(storeCurationsProvider).asData?.value['templates']
                 : null;
@@ -448,6 +508,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             // loadMore/setState only changes _visibleCount — skipped here.
             final ownedRef = owned?.asData?.value;
             final dataChanged =
+                !identical(_cachedDiscoveryRef, discovery) ||
+                !identical(_cachedMoodRef, _moodTemplates) ||
+                _cachedDiscoveryClock != discoveryClock ||
                 !identical(_cachedTemplateRef, templates) ||
                 !identical(_cachedCatalogRef, catalogRef) ||
                 !identical(_cachedOwnedRef, ownedRef) ||
@@ -456,11 +519,41 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             if (dataChanged) _filterVersion++;
             if (_filterVersion != _cachedFilterVersion || dataChanged) {
               _cachedFilterVersion = _filterVersion;
+              _cachedDiscoveryRef = discovery;
+              _cachedMoodRef = _moodTemplates;
+              _cachedDiscoveryClock = discoveryClock;
               _cachedTemplateRef = templates;
               _cachedCatalogRef = catalogRef;
               _cachedOwnedRef = ownedRef;
               _cachedCurationRef = curation;
               _cachedFavoritesVersion = favorites.version;
+
+              // Counts and examples reflect all active conditions except the
+              // mood itself, so selecting one mood never erases the others.
+              final styleTemplates = _moodTemplates
+                  .where((t) {
+                    if (_selectedCategory != '전체' &&
+                        !_isRecommended &&
+                        t.category != _selectedCategory) {
+                      return false;
+                    }
+                    return matchesStoreTemplateQuery(t, query) &&
+                        (_priceFilter == '전체' ||
+                            (_priceFilter == '보유'
+                                ? (ownedRef?.contains(
+                                        pointShopTemplateKey(t),
+                                      ) ??
+                                      false)
+                                : (_priceFilter == '유료') == paid(t))) &&
+                        (!_favoritesOnly ||
+                            favorites.contains(
+                              CatalogFavoriteKeys.template(t.id),
+                            ));
+                  })
+                  .toList(growable: false);
+              if (!listEquals(styleTemplates, _cachedStyleTemplates)) {
+                _cachedStyleTemplates = styleTemplates;
+              }
 
               final free = templates.where((t) => !paid(t)).toList();
               final premium = templates.where(paid).toList();
@@ -476,13 +569,10 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
               final eligible = ordered
                   .where(
                     (t) =>
-                        (query.isEmpty ||
-                            [
-                              t.title,
-                              t.subTitle ?? '',
-                              t.description ?? '',
-                              ...?t.tags,
-                            ].any((v) => v.toLowerCase().contains(query))) &&
+                        matchesStoreTemplateQuery(t, query) &&
+                        matchesStoreTemplateStyle(t, _selectedStyle) &&
+                        (_selectedStyle == null ||
+                            _moodTemplateIds.contains(t.id)) &&
                         (_priceFilter == '전체' ||
                             (_priceFilter == '보유'
                                 ? (ownedRef?.contains(
@@ -507,7 +597,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                             })()),
                   )
                   .toList();
-              final sorted = _isRecommended
+              final selected = _isRecommended
                   ? recommendStoreTemplates(
                       eligible,
                       isPaid: paid,
@@ -526,24 +616,29 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                           .toSet(),
                     )
                   : eligible;
-              if (_sort == '이름순') {
-                sorted.sort((a, b) => a.title.compareTo(b.title));
-              }
-              _cachedFiltered = _isRecommended
-                  ? sorted
-                  : favorites.arrange(
+              final sorted = sortStoreProducts(
+                selected,
+                productKey: pointShopTemplateKey,
+                discovery: discovery,
+                now: discoveryClock,
+                popularityFirst: _sort == '인기순',
+              );
+              _cachedFiltered = widget.ownedOnly
+                  ? favorites.arrange(
                       sorted,
                       (t) => CatalogFavoriteKeys.template(t.id),
                       onlyFavorites: _favoritesOnly,
-                    );
+                    )
+                  : sorted;
               _cachedSpotlight =
                   !widget.ownedOnly &&
                       !widget.searchMode &&
                       _cachedFiltered.isNotEmpty &&
                       query.isEmpty &&
+                      _selectedStyle == null &&
                       _priceFilter == '전체' &&
                       !_favoritesOnly &&
-                      _sort == '추천순'
+                      _sort == '최신순'
                   ? _cachedFiltered.where(paid).firstOrNull ??
                         _cachedFiltered.first
                   : null;
@@ -551,7 +646,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
               // changes, so resolving its products/title layout stays off that
               // frame path. Real data/filter changes still update its state.
               _cachedCuration =
-                  curation == null ||
+                  widget.editorial ||
+                      curation == null ||
                       _selectedCategory != '전체' ||
                       _cachedSpotlight == null
                   ? null
@@ -569,6 +665,39 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             final spotlight = _cachedSpotlight;
             final showDiscoveryFeatures =
                 _selectedCategory == '전체' && spotlight != null;
+            final showFeaturedTemplates =
+                !widget.ownedOnly &&
+                !widget.searchMode &&
+                query.isEmpty &&
+                _selectedStyle == null &&
+                _priceFilter == '전체' &&
+                !_favoritesOnly;
+            // A zero-match page cannot trigger near-end pagination. Keep the
+            // explicit request above the empty state, within the viewport;
+            // nonempty result pages place the same action after their designs.
+            final findMore =
+                feed.hasNext &&
+                    !feed.isLoadingMore &&
+                    !feed.isInitialLoading &&
+                    (_selectedStyle != null || query.isNotEmpty) &&
+                    (!_isRecommended ||
+                        filtered.length < storeRecommendationLimit)
+                ? Center(
+                    child: TextButton(
+                      key: const ValueKey('store-filtered-load-more'),
+                      onPressed: () => ref
+                          .read(storeTemplateFeedProvider.notifier)
+                          .loadMore(),
+                      child: const Text('다른 디자인 더 찾아보기'),
+                    ),
+                  )
+                : null;
+            final interlude =
+                widget.editorial &&
+                    showDiscoveryFeatures &&
+                    widget.onBrowseMaterials != null
+                ? StoreMaterialDiscovery(onBrowse: widget.onBrowseMaterials!)
+                : null;
             return _withComparison(
               templates,
               RefreshIndicator(
@@ -577,6 +706,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                     _resetPage();
                     _requestCatalogReveal(atTop: true);
                   });
+                  ref.invalidate(storeDiscoveryProvider);
                   ref.invalidate(storeCurationsProvider);
                   ref.invalidate(pointShopCatalogProvider);
                   ref.invalidate(publicPointShopCatalogProvider);
@@ -611,20 +741,64 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                           ),
                         ),
                       ),
-                    if (showDiscoveryFeatures && curation != null)
+                    if (!widget.ownedOnly && kIsWeb)
+                      const SliverToBoxAdapter(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: StoreBadgeRulesButton(),
+                        ),
+                      ),
+                    if (!widget.ownedOnly)
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            kIsWeb ? 0 : 20,
+                            4,
+                            kIsWeb ? 0 : 20,
+                            8,
+                          ),
+                          child: StoreDesignDiscovery(
+                            controller: _searchController,
+                            templates: _cachedStyleTemplates,
+                            resultLimit: _isRecommended
+                                ? storeRecommendationLimit
+                                : null,
+                            featured: widget.editorial && showFeaturedTemplates
+                                ? StoreFeaturedTemplateShelf(
+                                    templates: _moodTemplates,
+                                    topic:
+                                        _selectedCategory != '전체' &&
+                                            !_isRecommended
+                                        ? _selectedCategory
+                                        : null,
+                                    selection: curation,
+                                    discovery: discovery,
+                                    onOpen: _openTemplate,
+                                  )
+                                : null,
+                            topics: !kIsWeb && !widget.searchMode
+                                ? StoreTopicShelf(
+                                    categories: categories,
+                                    templates: templates,
+                                    selected: _selectedCategory,
+                                    onSelect: _selectCategory,
+                                  )
+                                : null,
+                            styleId: _selectedStyle,
+                            onStyleChanged: _selectStyle,
+                            showSearch: !kIsWeb,
+                            autofocus: widget.searchMode,
+                          ),
+                        ),
+                      ),
+                    if (!widget.editorial &&
+                        showDiscoveryFeatures &&
+                        curation != null)
                       SliverToBoxAdapter(
                         key: const ValueKey('store-curation-sliver'),
                         child: SizedBox(
                           key: const ValueKey('store-collection-spotlight'),
                           child: _cachedCuration,
-                        ),
-                      ),
-                    if (widget.editorial &&
-                        showDiscoveryFeatures &&
-                        widget.onBrowseMaterials != null)
-                      SliverToBoxAdapter(
-                        child: StoreMaterialDiscovery(
-                          onBrowse: widget.onBrowseMaterials!,
                         ),
                       ),
                     SliverPadding(
@@ -690,7 +864,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                       )
                                     : null,
                                 controller: _searchController,
-                                searchHint: '템플릿 이름, 주제, 키워드 검색',
+                                searchHint: '여행 필름, 강아지 산책, 첫돌…',
                                 onSearchChanged: (_) {},
                                 categories: categories,
                                 category: _selectedCategory,
@@ -713,14 +887,15 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                 }),
                                 filtersActive:
                                     query.isNotEmpty ||
+                                    _selectedStyle != null ||
                                     _selectedCategory != '전체' ||
                                     _priceFilter != '전체' ||
                                     _favoritesOnly ||
-                                    _sort != '추천순',
+                                    _sort != '최신순',
                                 onReset: _resetFilters,
                               )
                             else ...[
-                              if (widget.searchMode) ...[
+                              if (widget.ownedOnly && widget.searchMode) ...[
                                 TextField(
                                   controller: _searchController,
                                   autofocus: true,
@@ -737,19 +912,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                       14,
                                       color: ExperienceFormStyle.muted(context),
                                     ),
-                                    prefixIcon: const Icon(
-                                      Icons.search,
-                                      size: 21,
-                                    ),
+                                    prefixIcon: const ExperienceIcon('Search', size: 21),
                                     suffixIcon: query.isEmpty
                                         ? null
                                         : IconButton(
                                             tooltip: '검색 지우기',
                                             onPressed: _searchController.clear,
-                                            icon: const Icon(
-                                              Icons.close,
-                                              size: 20,
-                                            ),
+                                            icon: const ExperienceIcon('X', size: 20),
                                           ),
                                     filled: true,
                                     fillColor: ExperienceFormStyle.surface(
@@ -773,18 +942,22 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                     ),
                                   ),
                                 ),
-                              ] else
+                              ] else if (widget.ownedOnly && !widget.searchMode)
                                 StoreTopicShelf(
                                   categories: categories,
                                   templates: templates,
                                   selected: _selectedCategory,
                                   onSelect: _selectCategory,
                                 ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 8),
                               Semantics(
                                 header: true,
                                 child: Text(
-                                  _selectedCategory == '전체'
+                                  query.isNotEmpty
+                                      ? '검색 결과'
+                                      : _selectedStyle != null
+                                      ? '${storeTemplateStyles.firstWhere((s) => s.id == _selectedStyle).label} 디자인'
+                                      : _selectedCategory == '전체'
                                       ? '모든 템플릿'
                                       : _isRecommended
                                       ? '지금 둘러보기 좋은 디자인'
@@ -802,6 +975,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                               ],
                               const SizedBox(height: 12),
                               CatalogFilterBar(
+                                trailing: widget.ownedOnly
+                                    ? null
+                                    : const StoreBadgeRulesButton(
+                                        compact: true,
+                                      ),
                                 price: _priceFilter,
                                 onPriceChanged: (value) => setState(() {
                                   _priceFilter = value;
@@ -812,7 +990,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                   _favoritesOnly = !_favoritesOnly;
                                   _resetFilteredPage();
                                 }),
-                                resultLabel: '${filtered.length}개의 디자인',
+                                resultLabel:
+                                    MediaQuery.textScalerOf(context).scale(12) >
+                                        18
+                                    ? '${filtered.length}개'
+                                    : '${filtered.length}개의 디자인',
                                 sort: _sort,
                                 onSortChanged: (value) => setState(() {
                                   _sort = value;
@@ -829,6 +1011,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                         ),
                       ),
                     ),
+                    if (filtered.isEmpty && findMore != null)
+                      SliverToBoxAdapter(child: findMore),
                     if (filtered.isEmpty)
                       SliverFillRemaining(
                         hasScrollBody: false,
@@ -893,6 +1077,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                       ),
                       sliver: widget.editorial && spotlight != null
                           ? TemplateEditorialList(
+                              compactStart: true,
+                              interlude: interlude,
                               templates: filtered,
                               visibleCount: filtered.length,
                               onOpen: _openTemplate,
@@ -989,6 +1175,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                           ),
                         ),
                       ),
+                    if (filtered.isNotEmpty && findMore != null)
+                      SliverToBoxAdapter(child: findMore),
                     if (_isRecommended &&
                         filtered.isNotEmpty &&
                         _visibleCount >= filtered.length)
@@ -1032,9 +1220,10 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     _searchController.clear();
     setState(() {
       _selectedCategory = '전체';
+      _selectedStyle = null;
       _priceFilter = '전체';
       _favoritesOnly = false;
-      _sort = '추천순';
+      _sort = '최신순';
       _resetFilteredPage();
     });
     // The visible controls and the paginated feed must return to the same
@@ -1052,12 +1241,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     }
     Navigator.push(
       context,
-      MaterialPageRoute<void>(
-        settings: kIsWeb
+      snapFitRoute<void>(page: const MaterialCatalogScreen(library: true), settings: kIsWeb
             ? const WebAppRouteSettings(WebAppLocation.library)
-            : null,
-        builder: (_) => const MaterialCatalogScreen(library: true),
-      ),
+            : null),
     );
   }
 
@@ -1070,7 +1256,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         actions: [
           OutlinedButton.icon(
             onPressed: _openLibrary,
-            icon: const Icon(Icons.bookmark_outline, size: 18),
+            icon: const ExperienceIcon('Bookmark', size: 18),
             label: const Text('내 디자인 보관함'),
           ),
         ],

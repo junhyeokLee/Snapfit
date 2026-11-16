@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../../../shared/web/web_design.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 Future<bool> showAlbumCompletionConfirmation(BuildContext context) async {
   if (kIsWeb) {
@@ -33,9 +34,7 @@ class AlbumCompletionConfirmation extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Icon(
-                Icons.auto_stories_outlined,
-                color: WebPalette.of(context).brandInk,
+              ExperienceIcon('BookOpen', color: WebPalette.of(context).brandInk,
                 size: 28,
               ),
               const SizedBox(height: 20),
@@ -49,8 +48,8 @@ class AlbumCompletionConfirmation extends StatelessWidget {
               ),
               const SizedBox(height: 14),
               Text(
-                '앨범 전체 구성과 제작 금액을 확인한 뒤 배송지를 입력합니다. '
-                '이 단계에서는 주문이나 결제가 이루어지지 않으며, 앨범도 계속 수정할 수 있습니다.',
+                '책의 배치와 제작 금액을 확인합니다.\n'
+                '아직 주문·결제 전이며 앨범은 계속 수정할 수 있습니다.',
                 style: TextStyle(
                   color: WebPalette.of(context).muted,
                   fontSize: 14,
@@ -70,7 +69,7 @@ class AlbumCompletionConfirmation extends StatelessWidget {
                   FilledButton(
                     key: const ValueKey('album-completion-confirm'),
                     onPressed: () => Navigator.pop(context, true),
-                    child: const Text('인쇄 검토하기'),
+                    child: const Text('배치·금액 확인'),
                   ),
                 ],
               ),
@@ -86,11 +85,7 @@ class AlbumCompletionConfirmation extends StatelessWidget {
           ),
           title: Row(
             children: [
-              const Icon(
-                Icons.auto_stories_outlined,
-                color: SnapFitColors.accent,
-                size: 22,
-              ),
+              const ExperienceIcon('BookOpen', color: SnapFitColors.accent, size: 22),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -105,7 +100,7 @@ class AlbumCompletionConfirmation extends StatelessWidget {
             ],
           ),
           content: Text(
-            '앨범 전체 구성과 제작 금액을 확인한 뒤 배송지를 입력해요.\n아직 주문이나 결제가 이루어지지 않으며, 앨범은 계속 수정할 수 있어요.',
+            '책의 배치와 제작 금액을 확인해요.\n아직 주문·결제 전이며 앨범은 계속 수정할 수 있어요.',
             style: ExperienceFormStyle.text(
               context,
               14,
@@ -120,7 +115,7 @@ class AlbumCompletionConfirmation extends StatelessWidget {
             TextButton(
               key: const ValueKey('album-completion-confirm'),
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('인쇄 검토하기', style: TextStyle(fontSize: 14)),
+              child: const Text('배치·금액 확인', style: TextStyle(fontSize: 14)),
             ),
           ],
         );

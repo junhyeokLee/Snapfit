@@ -34,7 +34,7 @@ final savedAlbumPageRendererProvider = Provider<SavedAlbumPageRenderer>((ref) {
   return (page, theme) async {
     // Prepare only the explicitly selected page, never every private page.
     await renderer.prepareFonts([page]);
-    return renderer.renderPage(page, theme: theme);
+    return renderer.renderPage(page, theme: theme, watermark: true);
   };
 });
 
@@ -48,6 +48,7 @@ final savedAlbumImageWriterProvider = Provider<SavedAlbumImageWriter>((ref) {
       ShareParams(
         files: [XFile.fromData(bytes, mimeType: 'image/png')],
         fileNameOverrides: [name],
+        subject: 'SnapFit 앨범',
         downloadFallbackEnabled: true,
         sharePositionOrigin: origin,
       ),

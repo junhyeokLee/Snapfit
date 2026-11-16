@@ -9,6 +9,7 @@ import 'package:snap_fit/features/point_shop/presentation/point_shop_access.dart
 
 class _Shop extends PointShopRepository {
   String? user = 'alice';
+  String productTitle = '수제지 조각';
   int balance = 300, price = 100, charges = 0, reads = 0;
   bool owned = false, free = false, available = true;
   Object? readFailure, purchaseFailure;
@@ -34,7 +35,7 @@ class _Shop extends PointShopRepository {
     if (readFailure != null) throw readFailure!;
     return PointShopAccess(
       productKey: key,
-      title: '수제지 조각',
+      title: productTitle,
       pointPrice: price,
       available: available,
       isFree: free,
@@ -199,12 +200,19 @@ void main() {
   testWidgets(
     'recharge return reloads both balance and price and asks again before debit',
     (tester) async {
-      final shop = _Shop()..balance = 20, results = <bool>[];
+      final shop = _Shop()
+        ..balance = 20
+        ..productTitle = '최신 수제지 조각';
+      final results = <bool>[];
       await _mount(
         tester,
         shop,
         results,
-        topUp: (_) async {
+        topUp: (_, {required purchaseContext}) async {
+          expect(purchaseContext.ownerId, 'alice');
+          expect(purchaseContext.productKey, 'sticker:studioCottonRag');
+          expect(purchaseContext.title, '최신 수제지 조각');
+          expect(purchaseContext.requiredPoints, 100);
           shop.balance = 300;
           shop.price = 120;
         },
@@ -235,9 +243,118 @@ void main() {
     await _mount(tester, shop, results);
     await tester.tap(find.text('100P로 구매'));
     await tester.pumpAndSettle();
-    expect(results, [false]);
+    expect(shop.reads, 1);
     expect(shop.charges, 0);
     expect(find.text('가격이 변경됐어요. 새 가격을 확인해 주세요.'), findsOneWidget);
+    tester
+        .state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger))
+        .hideCurrentSnackBar();
+    await tester.pumpAndSettle();
+    expect(results, [false]);
+    expect(shop.reads, 1);
+  });
+
+  testWidgets(
+    'price change offers an explicit action that reloads the same product before purchase',
+    (tester) async {
+      final shop = _Shop()
+        ..purchaseFailure = const PointShopException(
+          'point_shop_price_changed',
+        );
+      final results = <bool>[];
+      await _mount(tester, shop, results);
+      await tester.tap(find.text('100P로 구매'));
+      await tester.pumpAndSettle();
+      expect(shop.reads, 1);
+      expect(shop.charges, 0);
+      final retry = find.widgetWithText(SnackBarAction, '새 가격 확인');
+      expect(retry, findsOneWidget);
+      shop.purchaseFailure = null;
+      shop.price = 120;
+      await tester.tap(retry);
+      await tester.pumpAndSettle();
+      expect(shop.reads, 2);
+      expect(shop.charges, 0);
+      expect(find.text('120P로 구매'), findsOneWidget);
+      await tester.tap(find.text('120P로 구매'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('소재 사용하기'));
+      await tester.pumpAndSettle();
+      // The original caller still receives approval and can apply its selection.
+      expect(results, [true]);
+      expect(shop.pricesSent, [100, 120]);
+      expect(shop.charges, 1);
+    },
+  );
+
+  testWidgets('price retry never reopens for another account', (tester) async {
+    final shop = _Shop()
+      ..purchaseFailure = const PointShopException('point_shop_price_changed');
+    final results = <bool>[];
+    await _mount(tester, shop, results);
+    await tester.tap(find.text('100P로 구매'));
+    await tester.pumpAndSettle();
+    shop.user = 'bob';
+    await tester.tap(find.widgetWithText(SnackBarAction, '새 가격 확인'));
+    await tester.pumpAndSettle();
+    expect(results, [false]);
+    expect(shop.reads, 1);
+    expect(shop.charges, 0);
+    expect(find.text('구매 가격'), findsNothing);
+  });
+
+  testWidgets('price retry never reopens after leaving its route', (
+    tester,
+  ) async {
+    final shop = _Shop()
+      ..purchaseFailure = const PointShopException('point_shop_price_changed');
+    final results = <bool>[];
+    await _mount(tester, shop, results);
+    await tester.tap(find.text('100P로 구매'));
+    await tester.pumpAndSettle();
+    final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+    unawaited(
+      navigator.push<void>(
+        MaterialPageRoute(
+          builder: (_) => const Scaffold(body: Center(child: Text('다른 화면'))),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(SnackBarAction, '새 가격 확인'));
+    await tester.pumpAndSettle();
+    expect(results, [false]);
+    expect(shop.reads, 1);
+    expect(shop.charges, 0);
+    expect(find.text('다른 화면'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('repeated selection while price retry waits keeps one flow', (
+    tester,
+  ) async {
+    final shop = _Shop()
+      ..purchaseFailure = const PointShopException('point_shop_price_changed');
+    final results = <bool>[];
+    await _mount(tester, shop, results);
+    await tester.tap(find.text('100P로 구매'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('선택'));
+    await tester.pumpAndSettle();
+    expect(results, [false]);
+    expect(shop.reads, 1);
+    shop.purchaseFailure = null;
+    shop.price = 120;
+    await tester.tap(find.widgetWithText(SnackBarAction, '새 가격 확인'));
+    await tester.pumpAndSettle();
+    expect(shop.reads, 2);
+    expect(shop.charges, 0);
+    await tester.tap(find.text('120P로 구매'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('소재 사용하기'));
+    await tester.pumpAndSettle();
+    expect(results, [false, true]);
+    expect(shop.charges, 1);
   });
 
   testWidgets(

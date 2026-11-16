@@ -5,6 +5,7 @@ import '../web/web_design.dart';
 import '../../core/constants/image_templates.dart';
 import '../../core/constants/snapfit_colors.dart';
 import 'experience_form_style.dart';
+import '../../shared/widgets/experience_icon.dart';
 
 class ImageTemplatePicker extends StatefulWidget {
   final String? selectedKey;
@@ -118,7 +119,7 @@ class _ImageTemplatePickerState extends State<ImageTemplatePicker> {
                       key: const ValueKey('photo-ratio-close'),
                       tooltip: '닫기',
                       onPressed: () => _finish(),
-                      icon: const Icon(Icons.close, size: 22),
+                      icon: const ExperienceIcon('X', size: 22),
                     ),
                   ],
                 ),
@@ -205,11 +206,7 @@ class _ImageTemplatePickerState extends State<ImageTemplatePicker> {
                                         ),
                                         const Spacer(),
                                         if (selected)
-                                          Icon(
-                                            Icons.check,
-                                            size: 18,
-                                            color: color,
-                                          ),
+                                          ExperienceIcon('Check', size: 18, color: color),
                                       ],
                                     ),
                                   ),

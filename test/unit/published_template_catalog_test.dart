@@ -58,11 +58,18 @@ const _publishedIds = [
   -9473,
   -9474,
   -9475,
+  -9761,
   -9721,
   -9722,
   -9723,
   -9724,
   -9725,
+  -9771,
+  -9772,
+  -9773,
+  -9775,
+  -9781,
+  -9782,
   -9501,
   -9502,
   -9503,
@@ -89,6 +96,51 @@ const _publishedIds = [
   -9533,
   -9534,
   -9535,
+  -9801,
+  -9802,
+  -9803,
+  -9804,
+  -9805,
+  -9806,
+  -9807,
+  -9808,
+  -9809,
+  -9810,
+  -9811,
+  -9812,
+  -9813,
+  -9814,
+  -9815,
+  -9816,
+  -9817,
+  -9818,
+  -9819,
+  -9820,
+  -9821,
+  -9822,
+  -9823,
+  -9824,
+  -9825,
+  -9826,
+  -9827,
+  -9828,
+  -9829,
+  -9830,
+  -9831,
+  -9832,
+  -9833,
+  -9834,
+  -9835,
+  -9836,
+  -9837,
+  -9838,
+  -9839,
+  -9840,
+  -9841,
+  -9842,
+  -9843,
+  -9844,
+  -9762,
   -9601,
   -9602,
   -9603,
@@ -149,6 +201,15 @@ const _publishedIds = [
   -9753,
   -9754,
   -9755,
+  -9774,
+  -9776,
+  -9777,
+  -9778,
+  -9779,
+  -9780,
+  -9783,
+  -9784,
+  -9785,
 ];
 
 void main() {
@@ -156,7 +217,7 @@ void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   test(
-    'all 133 released identities retain their tier after stale server metadata',
+    'all 194 released identities retain their tier after stale server metadata',
     () {
       final rows = {
         for (final row in pointShopPriceApplicationRows())
@@ -168,9 +229,9 @@ void main() {
             .map((t) => t.copyWith(isPremium: !t.isPremium))
             .toList(),
       );
-      expect(merged, hasLength(133));
-      expect(merged.where((t) => !t.isPremium), hasLength(47));
-      expect(merged.where((t) => t.isPremium), hasLength(86));
+      expect(merged, hasLength(194));
+      expect(merged.where((t) => !t.isPremium), hasLength(54));
+      expect(merged.where((t) => t.isPremium), hasLength(140));
       for (final t in merged) {
         final canonical = publishedCreationTemplates.singleWhere(
           (p) => p.id == t.id,
@@ -233,9 +294,9 @@ void main() {
       expect(result.map((t) => t.id), _publishedIds);
       expect(result.first.title, source.title);
       expect(result.first.templateJson, source.templateJson);
-      // The fixed first 47 IDs identify the original free collection. A
+      // The fixed first 54 IDs identify the approved free collection. A
       // presentation flag is not a server price or a collection membership.
-      final freeOriginalIds = _publishedIds.take(47).toList();
+      final freeOriginalIds = _publishedIds.take(54).toList();
       expect(bundledCreationTemplates.map((t) => t.id), freeOriginalIds);
       expect(
         result.where((t) => freeOriginalIds.contains(t.id)).map((t) => t.id),
@@ -243,7 +304,7 @@ void main() {
       );
       expect(
         result.where((t) => !freeOriginalIds.contains(t.id)).map((t) => t.id),
-        _publishedIds.skip(47),
+        _publishedIds.skip(54),
       );
       for (final template in bundledCreationTemplates) {
         expect(
@@ -266,7 +327,7 @@ void main() {
 
   for (final offline in [false, true]) {
     test(
-      'store, feed, runtime and editor expose all 133, offline=$offline',
+      'store, feed, runtime and editor expose all 194, offline=$offline',
       () async {
         final scope = container(offline: offline);
         final subscription = scope.listen(
@@ -274,7 +335,7 @@ void main() {
           (_, __) {},
         );
         addTearDown(subscription.close);
-        expect(scope.read(storeTemplateFeedProvider).items.length, 133);
+        expect(scope.read(storeTemplateFeedProvider).items.length, 194);
         for (var refresh = 0; refresh < 3; refresh++) {
           final catalog = await scope.read(templateListProvider.future);
           expect(catalog.map((t) => t.id), _publishedIds);

@@ -381,48 +381,123 @@ class SnapFitShimmerOrderList extends StatelessWidget {
 
 /// Skeleton placeholder for the home album slider screen.
 class SnapFitShimmerHomeSlider extends StatelessWidget {
-  const SnapFitShimmerHomeSlider({super.key, this.scrollController});
+  const SnapFitShimmerHomeSlider({
+    super.key,
+    this.scrollController,
+    this.leadingContent,
+    this.footer,
+  });
   final ScrollController? scrollController;
+  final Widget? leadingContent;
+  final Widget? footer;
 
   @override
-  Widget build(BuildContext context) => SnapFitShimmer(
-    child: LayoutBuilder(
-      builder: (context, constraints) {
-        final coverSize = constraints.maxWidth.clamp(0.0, 440.0);
-        return SingleChildScrollView(
-          controller: scrollController,
-          primary: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 40, 24, 0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(SnapFitRadius.xl),
-                    child: SizedBox.square(
-                      dimension: coverSize - 48,
-                      child: const ColoredBox(color: Colors.white),
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final coverSize = constraints.maxWidth.clamp(0.0, 440.0);
+      return SingleChildScrollView(
+        controller: scrollController,
+        primary: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (leadingContent != null) leadingContent!,
+            SnapFitShimmer(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 40, 24, 0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(SnapFitRadius.xl),
+                        child: SizedBox.square(
+                          dimension: coverSize - 48,
+                          child: const ColoredBox(color: Colors.white),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SnapFitShimmerBox(height: 22, width: 180),
+                        const SizedBox(height: 10),
+                        const SnapFitShimmerBox(height: 13, width: 120),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 28),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SnapFitShimmerBox(height: 22, width: 180),
-                    const SizedBox(height: 10),
-                    const SnapFitShimmerBox(height: 13, width: 120),
-                  ],
-                ),
+            ),
+            if (footer != null) footer!,
+          ],
+        ),
+      );
+    },
+  );
+}
+
+/// Skeleton that matches a [SocialFeedCard] layout (author + image + title).
+class SnapFitShimmerSocialFeedCard extends StatelessWidget {
+  const SnapFitShimmerSocialFeedCard({super.key});
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 4, 16, 22),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            ClipOval(
+              child: const ColoredBox(
+                color: Colors.white,
+                child: SizedBox.square(dimension: 36),
               ),
-            ],
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SnapFitShimmerBox(height: 13, width: 100),
+                  SizedBox(height: 4),
+                  SnapFitShimmerBox(height: 11, width: 60),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        AspectRatio(
+          aspectRatio: 1,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(SnapFitRadius.lg),
+            child: const ColoredBox(color: Colors.white),
           ),
-        );
-      },
+        ),
+        const SizedBox(height: 10),
+        const SnapFitShimmerBox(height: 15, width: 180),
+        const SizedBox(height: 6),
+        const SnapFitShimmerBox(height: 12, width: 120),
+      ],
+    ),
+  );
+}
+
+/// A list of skeleton [SocialFeedCard]s for the feed first-load state.
+class SnapFitShimmerSocialFeed extends StatelessWidget {
+  const SnapFitShimmerSocialFeed({super.key, this.cards = 3});
+  final int cards;
+  @override
+  Widget build(BuildContext context) => SnapFitShimmer(
+    child: Column(
+      children: [
+        for (var i = 0; i < cards; i++) const SnapFitShimmerSocialFeedCard(),
+      ],
     ),
   );
 }

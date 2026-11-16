@@ -1,0 +1,118 @@
+{
+  "date": "2026-11-16",
+  "scope": "approved point improvements 1-5",
+  "runtime": "headless Flutter tester; actual widgets and bundled fonts, fake store/repository",
+  "suites": {
+    "wallet": {
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0
+    },
+    "completions": {
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0
+    },
+    "shop": {
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0
+    },
+    "iap": {
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0
+    },
+    "uncertainty": {
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0
+    },
+    "apple": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    "responsive": {
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0
+    },
+    "aireturn": {
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    "ledger": {
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_points": {
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_shop": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "regression_tests": 129,
+  "capture_cases": 11,
+  "screenshots": 17,
+  "analyzer": "No issues found!",
+  "kernel_compile_errors": 0,
+  "serial_heavy_processes": true,
+  "live_payments": false,
+  "live_db_writes": false,
+  "device_or_browser_validation": false,
+  "full_app_build": false,
+  "deployment": false,
+  "working_tree_note": "Existing uncommitted changes preserved; changes.patch compares task-start file snapshots, not HEAD. New files compare against /dev/null.",
+  "baseline_sha256": {
+    "lib/features/billing/data/point_purchase_service.dart": "8f09658ed7c48001aaacf35b88f10f9c7b8c521914884a687d4e207c80137eac",
+    "lib/features/billing/presentation/widgets/point_purchase_visuals.dart": "19ec34c893e2550ead42efce610f9bc5c5cf612fa219aca278c15959540674f4",
+    "lib/features/point_shop/presentation/point_shop_access.dart": "4262fcba871e485fcdf8cbe2ca4465cd31c814e90191dcc7e511cff7d6016db7",
+    "lib/features/profile/presentation/views/billing_management_screen.dart": "5495a73288b857c9dc06622f1a30e4c3a0dcafee7cb45c90655e6d06b209f8b8",
+    "test/widget/point_shop_purchase_flow_test.dart": "0644ed0ffc6bf499a9c1f95cfaa0d8522a2811c65e3308e1a5c7ce8abc8af636",
+    "test/widget/billing_responsive_refinement_test.dart": "4e1df7f9d4e834202f56c4aecdde3d0df643510ee550ef01b20bca91ac318707"
+  },
+  "final_source_sha256": {
+    "lib/features/billing/domain/point_purchase_completion.dart": "d9e2da3d3fcf15044d79e62ed151fc21419cebe05818716b17081dfb764bb74e",
+    "lib/features/billing/domain/point_top_up_context.dart": "270edbf05166ab828cdfceb7c6449b08f6733c3afc748f63398cd48c862caf0a",
+    "lib/features/billing/data/point_purchase_service.dart": "64743d5202ff3263472d4c56bcaa7684690154349592fb65651f60f9ffe2c095",
+    "lib/features/billing/presentation/widgets/point_purchase_visuals.dart": "65a096663dba41d6bdf865b124377ab6a84c132711a85a4e7d80c0f54e74dea4",
+    "lib/features/point_shop/presentation/point_shop_access.dart": "83a2166a028190f3fea193978a174e9424d04eaad06248667cb84da74f652f46",
+    "lib/features/profile/presentation/views/billing_management_screen.dart": "9bd1c0651195b0458d7846f254d0ef5e7ad70829961b199c761ee4ec64f48093",
+    "test/unit/point_purchase_completion_test.dart": "ddb0697407e854b095430ffe8b470c398730db4ce56cd1103a356c829b1c4428",
+    "test/widget/point_wallet_improvements_test.dart": "790be900f755515b75e37436c0091bb363816af8ac7ad72a14626e54cdbb2e24",
+    "test/widget/point_shop_purchase_flow_test.dart": "e53b971352b91f716200af302a2019f52c9834f9c5aeb58928f33800dd8c9100",
+    "test/widget/billing_responsive_refinement_test.dart": "2efa9f619e1c77fb134f898dd065add943a03474c7aa4feaf6e6e40efdebed3f"
+  },
+  "screens_sha256": {
+    "01-point-purpose-shortfall-390-light.png": "52dcf0c31f563c5005dbbd88db880b2db35fac24a70f27fa0de8d78c29540090",
+    "02-point-projected-balance-390-light.png": "bb380988a76c00dd57d8de3492bdccf866751d3ab96651a1222186e79e9028ba",
+    "03-point-negative-wallet-390-light.png": "5e4d8d0c73ae467f80bc27a496761f7224b1228522cedac5a6c456c69d0c164b",
+    "04-point-negative-settlement-390-light.png": "53e933eac328a6a5bc7eb699ed308a6af03c5e62e3eba2263cdaca2c008ec469",
+    "05-point-completed-purpose-390-light.png": "1e3ca7def961ee86bb1c66690097e5b2fe750033b417525691a85a793894d703",
+    "06-point-completed-history-390-light.png": "2b2948a33b31a6963fbb0c0778633c5b8807beba42da713d9e09c2075fcae4d2",
+    "07-point-ledger-390-light.png": "6f9edaffc103852d9c228e2eed18ce248278c5a59555403173b94cb18d420ca4",
+    "08-point-ledger-refund-help-390-light.png": "d283db21c6bcdb98a9c72f40322f9bfba6a8d8b8b99d57ba4dbc93701f2424b8",
+    "09-point-small-dark-balance-320-text180.png": "924b1b06a95497e66e6c59c812902bdc503d0bfa154ae4c22eafb42aea2a01d5",
+    "10-point-small-dark-projected-320-text180.png": "17207bc74ad1c584980e8059a7ca5ef06feb372dece3d51cf735a9e5d37ee1c4",
+    "11-point-landscape-dark-844-text180.png": "230fbe51368564e3b241c7da98f9c37058691e70d53b56f6650a47f5008e0c4e",
+    "12-point-price-refresh-action-390-light.png": "b9f80b0e51b8c10b20eefcd08c159cf4f9651eb960b7167a26b2464188197410",
+    "13-point-new-price-confirm-390-light.png": "521cc5f05ef2762a5f0010d61a5b1bdd59bb7fd498705028b285cd6e1aac7f57",
+    "14-point-completion-648-dark-text180.png": "05879476adce8ae219c078df444dde7b185b95ac58a82ee15d43faad8e142d6c",
+    "15-point-completion-844-dark-text180.png": "241e3e1b14590059d63661b9f990cde723e9d325aba7e9c4fede5f2921cec82d",
+    "16-point-completion-more-648-dark-text180.png": "b571da56a7e7707ea5d6735a7c7b9a35fa5099f5a20c7f2b77090c72e49fefbb",
+    "17-point-completion-more-844-dark-text180.png": "9280adb50280394376c2ec75653db2494f6f6dfec0684db65a3a46d08b98fb4d"
+  },
+  "landscape_completion_body_height_dp": {
+    "648x320_text1.8_safearea": 157,
+    "844x390_text1.8_safearea": 227
+  },
+  "dart": "Dart SDK version: 3.13.1 (stable) (Tue Aug 18 01:00:59 2026 -0700) on \"macos_arm64\""
+}

@@ -224,6 +224,225 @@ void main() {
     fixture.untouched();
   });
 
+  storeDetailTestWidgets(
+    'a stalled restored account releases entry and its late reply cannot open a draft',
+    (tester) async {
+      final account = Completer<UserInfo?>();
+      final fixture = _Fixture();
+      await tester.pumpWidget(
+        fixture.host(authRestoration: account.future, watchAuth: false),
+      );
+      await settleStoreDetail(tester);
+      await _tap(tester, _key('enter-album'));
+      await tester.pump(albumCreationEntryReadTimeout);
+      await settleStoreDetail(tester);
+      expect(await fixture.request, isNull);
+      expect(find.text('로그인 상태를 확인하지 못했어요. 다시 시도해 주세요.'), findsOneWidget);
+      expect(find.text('다시 확인'), findsOneWidget);
+      account.complete(_owner);
+      await settleStoreDetail(tester);
+      expect(fixture.store.loads, isEmpty);
+      expect(_key('album-creation-entry-dialog'), findsNothing);
+      await _tap(tester, _key('enter-album'));
+      expect(await fixture.request, isNotNull);
+      expect(fixture.store.loads, ['owner-a']);
+      fixture.untouched();
+    },
+  );
+
+  storeDetailTestWidgets(
+    'a stalled font gate stays closed, releases the button, and permits a fresh complete retry',
+    (tester) async {
+      final stalled = Completer<void>();
+      var preparations = 0;
+      final fixture = _Fixture();
+      await tester.pumpWidget(
+        fixture.host(
+          overrides: [
+            albumCreationFontPreparationProvider.overrideWithValue(
+              () => ++preparations == 1 ? stalled.future : Future.value(),
+            ),
+          ],
+        ),
+      );
+      await settleStoreDetail(tester);
+      await _tap(tester, _key('enter-album'));
+      expect(fixture.store.loads, isEmpty);
+      await tester.pump(albumCreationEntryFontsTimeout);
+      await settleStoreDetail(tester);
+      expect(await fixture.request, isNull);
+      expect(find.text('앨범 글꼴을 불러오지 못했어요. 다시 시도해 주세요.'), findsOneWidget);
+      stalled.complete();
+      await settleStoreDetail(tester);
+      expect(fixture.store.loads, isEmpty);
+      expect(_key('album-creation-entry-dialog'), findsNothing);
+      await _tap(tester, _key('enter-album'));
+      expect(preparations, 2);
+      expect(await fixture.request, isNotNull);
+      expect(fixture.store.loads, ['owner-a']);
+      fixture.untouched();
+    },
+  );
+
+  storeDetailTestWidgets(
+    'a stalled draft read fails safely and a late response cannot replace a newer retry',
+    (tester) async {
+      final stalled = Completer<AlbumCreationDraft?>();
+      var reads = 0;
+      final fixture = _Fixture();
+      fixture.store.onLoad = (_) =>
+          ++reads == 1 ? stalled.future : Future.value();
+      await tester.pumpWidget(fixture.host());
+      await settleStoreDetail(tester);
+      await _tap(tester, _key('enter-album'));
+      await tester.pump(albumCreationEntryReadTimeout);
+      await settleStoreDetail(tester);
+      expect(await fixture.request, isNull);
+      expect(find.textContaining('임시 저장한 앨범을 확인하지 못했어요'), findsOneWidget);
+      await _tap(tester, _key('enter-album'));
+      final latest = await fixture.request;
+      expect(latest, isNotNull);
+      expect(latest!.draft, isNull);
+      stalled.complete(_draft(title: '늦게 도착한 예전 원고'));
+      await settleStoreDetail(tester);
+      expect(find.text('늦게 도착한 예전 원고'), findsNothing);
+      expect(_key('album-creation-entry-dialog'), findsNothing);
+      expect(reads, 2);
+      fixture.untouched();
+    },
+  );
+
+  storeDetailTestWidgets(
+    'a stalled final draft validation never authorizes creation',
+    (tester) async {
+      final fixture = _Fixture();
+      await tester.pumpWidget(fixture.host());
+      await settleStoreDetail(tester);
+      await _tap(tester, _key('enter-album'));
+      final decision = (await fixture.request)!;
+      final stalled = Completer<AlbumCreationDraft?>();
+      fixture.store.onLoad = (_) => stalled.future;
+      final validation = validateAlbumCreationEntry(
+        fixture.entryContext,
+        fixture.ref,
+        decision,
+      );
+      await tester.pump(albumCreationEntryReadTimeout);
+      await settleStoreDetail(tester);
+      expect(await validation, isFalse);
+      stalled.complete(null);
+      await settleStoreDetail(tester);
+      expect(_key('album-creation-entry-dialog'), findsNothing);
+      fixture.untouched();
+    },
+  );
+
+  for (final leave in [false, true]) {
+    storeDetailTestWidgets(
+      'a pending font gate cannot read drafts after ${leave ? 'navigation' : 'an account switch'}',
+      (tester) async {
+        final stalled = Completer<void>();
+        final fixture = _Fixture();
+        await tester.pumpWidget(
+          fixture.host(
+            overrides: [
+              albumCreationFontPreparationProvider.overrideWithValue(
+                () => stalled.future,
+              ),
+            ],
+          ),
+        );
+        await settleStoreDetail(tester);
+        await _tap(tester, _key('enter-album'));
+        if (leave) {
+          unawaited(
+            fixture.navigator.currentState!.push<void>(
+              MaterialPageRoute(
+                builder: (_) => const Scaffold(body: Text('다른 화면')),
+              ),
+            ),
+          );
+        } else {
+          (fixture.ref.read(authViewModelProvider.notifier) as _Auth).change(
+            const UserInfo(id: 'owner-b', name: '다른 사용자', provider: 'email'),
+          );
+        }
+        await settleStoreDetail(tester);
+        stalled.complete();
+        await settleStoreDetail(tester);
+        expect(await fixture.request, isNull);
+        expect(fixture.store.loads, isEmpty);
+        expect(_key('album-creation-entry-dialog'), findsNothing);
+        fixture.untouched();
+      },
+    );
+  }
+
+  for (final phase in ['fonts', 'draft']) {
+    storeDetailTestWidgets(
+      'an SDK A B A cycle invalidates a pending $phase read even when the owner ID matches again',
+      (tester) async {
+        final fonts = Completer<void>();
+        final draft = Completer<AlbumCreationDraft?>();
+        final fixture = _Fixture();
+        if (phase == 'draft') fixture.store.onLoad = (_) => draft.future;
+        await tester.pumpWidget(
+          fixture.host(
+            overrides: [
+              if (phase == 'fonts')
+                albumCreationFontPreparationProvider.overrideWithValue(
+                  () => fonts.future,
+                ),
+            ],
+          ),
+        );
+        await settleStoreDetail(tester);
+        final session = fixture.ref.read(orderSessionOwnerProvider.notifier);
+        session.observe('owner-a');
+        await _tap(tester, _key('enter-album'));
+        session.observe('owner-b');
+        session.observe('owner-a');
+        expect(fixture.ref.read(visibleOrderOwnerProvider), 'owner-a');
+        if (phase == 'fonts') {
+          fonts.complete();
+        } else {
+          draft.complete(_draft());
+        }
+        await settleStoreDetail(tester);
+        expect(await fixture.request, isNull);
+        expect(_key('album-creation-entry-dialog'), findsNothing);
+        expect(fixture.store.loads.length, phase == 'fonts' ? 0 : 1);
+        fixture.untouched();
+      },
+    );
+  }
+
+  storeDetailTestWidgets(
+    'a decision from a previous SDK account cycle cannot authorize a later flow',
+    (tester) async {
+      final fixture = _Fixture();
+      await tester.pumpWidget(fixture.host());
+      await settleStoreDetail(tester);
+      final session = fixture.ref.read(orderSessionOwnerProvider.notifier);
+      session.observe('owner-a');
+      await _tap(tester, _key('enter-album'));
+      final decision = (await fixture.request)!;
+      final before = fixture.store.loads.length;
+      session.observe('owner-b');
+      session.observe('owner-a');
+      expect(
+        await validateAlbumCreationEntry(
+          fixture.entryContext,
+          fixture.ref,
+          decision,
+        ),
+        isFalse,
+      );
+      expect(fixture.store.loads.length, before);
+      fixture.untouched();
+    },
+  );
+
   for (final choice in ['cancel', 'resume', 'new']) {
     storeDetailTestWidgets(
       'existing work requires an explicit $choice decision',

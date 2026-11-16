@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../ai_album/domain/ai_album_models.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 class AiAlbumThemeStep extends StatelessWidget {
   const AiAlbumThemeStep({
@@ -294,10 +295,7 @@ class _TemplateStyleCard extends StatelessWidget {
                       children: [
                         Flexible(child: _ThemePill(text: style.themeLabel)),
                         SizedBox(width: 6),
-                        Icon(
-                          Icons.arrow_forward_rounded,
-                          size: compact ? 16 : 17,
-                          color: SnapFitColors.textMutedOf(context),
+                        ExperienceIcon('ArrowRight', size: compact ? 16 : 17, color: SnapFitColors.textMutedOf(context),
                         ),
                       ],
                     ),

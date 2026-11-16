@@ -11,7 +11,11 @@ class PreparedMomentPhoto {
 
 /// Decode one frame and re-encode it without location/camera metadata. Both
 /// Flutter web and native use the same bounded photo representation.
-Future<PreparedMomentPhoto> prepareMomentPhoto(Uint8List input) async {
+Future<PreparedMomentPhoto> prepareMomentPhoto(
+  Uint8List input, {
+  int maxEdge = 2560,
+  int maxOutputBytes = 12 * 1024 * 1024,
+}) async {
   if (input.isEmpty || input.length > 20 * 1024 * 1024) {
     throw const MomentException('20MB 이하의 사진을 선택해 주세요.');
   }
@@ -29,16 +33,16 @@ Future<PreparedMomentPhoto> prepareMomentPhoto(Uint8List input) async {
           throw const MomentException('사진 크기가 너무 커요. 더 작은 사진을 선택해 주세요.');
         }
         final edge = width > height ? width : height;
-        final scale = edge > 2560 ? 2560 / edge : 1.0;
+        final scale = edge > maxEdge ? maxEdge / edge : 1.0;
         return ui.TargetImageSize(
-          width: (width * scale).round().clamp(1, 2560),
-          height: (height * scale).round().clamp(1, 2560),
+          width: (width * scale).round().clamp(1, maxEdge),
+          height: (height * scale).round().clamp(1, maxEdge),
         );
       },
     );
     image = (await codec.getNextFrame()).image;
     final data = await image.toByteData(format: ui.ImageByteFormat.png);
-    if (data == null || data.lengthInBytes > 12 * 1024 * 1024) {
+    if (data == null || data.lengthInBytes > maxOutputBytes) {
       throw const MomentException('사진 용량이 커요. 더 작은 사진을 선택해 주세요.');
     }
     return PreparedMomentPhoto(

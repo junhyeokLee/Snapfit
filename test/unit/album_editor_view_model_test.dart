@@ -1285,7 +1285,13 @@ void main() {
       final repo = MockAlbumRepository();
       final created = <CreateAlbumRequest>[];
       final updates = <CreateAlbumRequest>[];
-      when(() => repo.createAlbum(any())).thenAnswer((call) async {
+      when(
+        () => repo.createAlbum(
+          any(),
+          requestId: any(named: 'requestId'),
+          expectedUserId: any(named: 'expectedUserId'),
+        ),
+      ).thenAnswer((call) async {
         final request = call.positionalArguments[0] as CreateAlbumRequest;
         created.add(request);
         return fakeAlbum(id: 99, coverLayersJson: request.coverLayersJson);
@@ -1330,6 +1336,11 @@ void main() {
       await container.read(albumEditorViewModelProvider.future);
       final vm = container.read(albumEditorViewModelProvider.notifier);
       vm.resetForCreate(sourceTemplateProductKey: 'template:summer-memory');
+      vm.bindCreationDraft(
+        ownerId: 'fixture-owner',
+        draftId: 'fixture-draft',
+        persist: (_) async {},
+      );
       expect(
         await vm.saveAlbumToBackend(const Size(500, 500), title: '여름'),
         99,
@@ -1356,7 +1367,13 @@ void main() {
     'saveAlbumToBackend surfaces fatal upload errors during new album creation',
     () async {
       final mockRepo = MockAlbumRepository();
-      when(() => mockRepo.createAlbum(any())).thenAnswer((invocation) async {
+      when(
+        () => mockRepo.createAlbum(
+          any(),
+          requestId: any(named: 'requestId'),
+          expectedUserId: any(named: 'expectedUserId'),
+        ),
+      ).thenAnswer((invocation) async {
         final request = invocation.positionalArguments[0] as CreateAlbumRequest;
         return fakeAlbum(
           id: 99,
@@ -1388,6 +1405,11 @@ void main() {
       final notifier = container.read(albumEditorViewModelProvider.notifier);
       final cover = coverSizes.first;
       notifier.resetForCreate(initialCover: cover, targetPages: 3);
+      notifier.bindCreationDraft(
+        ownerId: 'fixture-owner',
+        draftId: 'fixture-draft',
+        persist: (_) async {},
+      );
 
       expect(
         () => notifier.saveAlbumToBackend(

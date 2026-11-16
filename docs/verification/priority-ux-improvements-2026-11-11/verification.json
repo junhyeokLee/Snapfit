@@ -1,0 +1,132 @@
+{
+  "date": "2026-11-11",
+  "priority_order": [
+    "Home monthly photo calendar",
+    "Order availability before delivery details",
+    "Compact album publication review"
+  ],
+  "results": {
+    "home": {
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0
+    },
+    "reward": {
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    "printPreview": {
+      "passed": 25,
+      "failed": 0,
+      "skipped": 0
+    },
+    "printCheckout": {
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0
+    },
+    "customerTest": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    "publish": {
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    "publishReliability": {
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    "printResponsive": {
+      "passed": 46,
+      "failed": 0,
+      "skipped": 0
+    },
+    "photoFormat": {
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    "archive": {
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    "webOrders": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 21
+    },
+    "captureHome": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    "capturePrint": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "capturePublish": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "native_tests_passed": 148,
+  "native_tests_failed": 0,
+  "capture_cases_passed": 8,
+  "web_tests_skipped": 21,
+  "analysis": "No issues found",
+  "accepted_after_images": [
+    "after/home/01-home-on-track-390x844.png",
+    "after/home/02-home-missed-day-390x844.png",
+    "after/home/03-home-dark-390x844.png",
+    "after/home/04-home-large-text-320x844.png",
+    "after/home/05-home-large-text-today-action.png",
+    "after/print/print-01-blocked-preview-top.png",
+    "after/print/print-04-ready-status.png",
+    "after/print/print-05-direct-blocked.png",
+    "after/print/print-06-ready-address.png",
+    "after/print/print-07-blocked-action.png",
+    "after/publish/social-publish-review-action.png",
+    "after/publish/social-publish-review-top.png"
+  ],
+  "rejected_images": {
+    "rejected/print-02-blocked-status-before-address.png": "Incomplete header in capture; not used as comparison evidence",
+    "rejected/print-03-ready-preview.png": "Incomplete header in capture; READY is evidenced by valid status and address captures"
+  },
+  "public_review_scroll": {
+    "before_px": 8693.9670781893,
+    "after_px": 205.39999999999998,
+    "viewport_px": 756.0,
+    "before_viewports": 11.499956452631348,
+    "after_viewports": 0.27169312169312165
+  },
+  "independent_review": "Two edge cases fixed: mixed text/photo records today, explicit semantic tap action. No remaining blocker in scoped review.",
+  "source_sha256": {
+    "lib/features/album/presentation/widgets/home/home_moment_summary_card.dart": "4e302bd626db4d2df203ee0f0c898a468f4a348b10aff92c667139a22019f59e",
+    "lib/features/album/presentation/widgets/home/home_moment_reward_summary.dart": "4c999a96f3daf87c1844687c43d9db50b3e31f34222e1e75a2d558295fd04de4",
+    "lib/features/moments/presentation/widgets/moment_month_calendar.dart": "5246ee7347aca774ae9a9b1b77a8b526ed4bee1edeb189f87d6d3ef6324755b6",
+    "lib/features/album/presentation/views/print_order_preview_screen.dart": "fd6051a624196388bbccb2f79af9496dbde9277eae02672003bf3608986f15ad",
+    "lib/features/album/presentation/views/print_order_checkout_screen.dart": "b86c8a143616953e8ec448de101ac9e3a816605259ee79002a10c6c0049de63f",
+    "lib/features/social/presentation/views/social_publish_screen.dart": "87a09d871f45225ebec8e2a37a33337658d4a26a4aa19b2d6fc6fe7b4f9a0735",
+    "test/widget/home_moment_summary_test.dart": "98eba56f7efea887cc80bc67108f3956e4b11adb483b9eb6d351dc707eb5721a",
+    "test/widget/home_monthly_completion_layout_test.dart": "cf2412e02897001bf854e9979dfd5cc9f93d0979fd1f29a72eda2941e8a963c0",
+    "test/widget/home_moment_archive_shelf_test.dart": "20f4e3bd67d0feea032e4be699c999d9e0304dd3e4d876b62d129bfe3d4d4e66",
+    "test/widget/moment_photo_format_display_test.dart": "ccbd71a33b18101091afa65173adfbff9e5581c3c757d509347f67f58feba62a",
+    "test/widget/print_order_preview_test.dart": "9513df1c642cae87c9c07990045482f3778c2138bc364ea5096ee0fbc041a2e6",
+    "test/widget/print_order_checkout_test.dart": "ffb52ae86db38162d5394e8824a846dc88a9cbf0abb5471728fab9f1d51cf2eb",
+    "test/widget/customer_print_test_checkout_test.dart": "3ed1028974845247ca0819f845d2b9f5bcdc4b90b0007ca41a3b4bcfb6a7d0c3",
+    "test/widget/web_account_order_flow_test.dart": "9bbeb9982058c51644c175005c4bdc97678cb871ddf12fe87a5beae3c2a8fb9f",
+    "test/widget/social_publication_flow_test.dart": "6daa894dc29bc1271faed3cf443ad947b61c9180f05a8cec1486187f29b8dcb1"
+  },
+  "full_app_build": false,
+  "deployment": false,
+  "browser_runtime_verified": false,
+  "production_db_or_payment_or_publication_executed": false
+}

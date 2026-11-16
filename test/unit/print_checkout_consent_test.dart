@@ -25,7 +25,7 @@ void main() {
       );
       expect(consent.complete, isTrue);
       expect(consent.toJson(), {
-        'version': 'PRINT_ORDER_CONSENT_2026_10_19',
+        'version': 'PRINT_ORDER_CONSENT_2026_10_30',
         'policyVersion': CommercePolicy.refundVersion,
         'orderReviewed': true,
         'policyAccepted': true,

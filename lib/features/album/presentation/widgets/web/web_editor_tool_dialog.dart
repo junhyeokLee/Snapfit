@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../shared/web/web_design.dart';
 import '../editor/editor_bottom_menu.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 /// A large web-only selector. Existing panels retain their own data, selection,
 /// and apply behavior; the shell owns only navigation and dialog dismissal.
@@ -26,7 +27,7 @@ class WebEditorToolDialog extends StatefulWidget {
 class _WebEditorToolDialogState extends State<WebEditorToolDialog>
     with SingleTickerProviderStateMixin {
   static const _tools = <({EditorMode mode, String label, IconData icon})>[
-    (mode: EditorMode.layer, label: '재배치', icon: Icons.layers_outlined),
+    (mode: EditorMode.layer, label: '겹침 순서', icon: Icons.layers_outlined),
     (mode: EditorMode.layout, label: '레이아웃', icon: Icons.dashboard_outlined),
     (mode: EditorMode.template, label: '템플릿', icon: Icons.grid_view_outlined),
     (mode: EditorMode.sticker, label: '꾸미기', icon: Icons.interests_outlined),
@@ -161,7 +162,7 @@ class _WebEditorToolDialogState extends State<WebEditorToolDialog>
                     key: const ValueKey('web-editor-tool-close'),
                     tooltip: '편집 도구 닫기',
                     onPressed: _closing ? null : _close,
-                    icon: Icon(Icons.close, color: palette.ink),
+                    icon: ExperienceIcon('X', color: palette.ink),
                   ),
                 ],
               ),

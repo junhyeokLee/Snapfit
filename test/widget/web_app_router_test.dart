@@ -705,6 +705,7 @@ void main() {
 
   for (final publicPage in [
     WebAppLocation.printProducts,
+    WebAppLocation.materials,
     const WebAppLocation(WebAppPage.policy, 'refund'),
   ]) {
     testWidgets(

@@ -18,6 +18,7 @@ class LayerActionPanel extends ConsumerStatefulWidget {
   final VoidCallback onRefresh;
   final Future<void> Function(LayerModel)? onOpenGallery;
   final Future<void> Function(LayerModel)? onOpenPhotoCrop;
+  final ValueChanged<LayerModel>? onEditText;
 
   /// Web inspectors expose actions as labelled controls; native keeps its rail.
   final bool showLabels;
@@ -34,6 +35,7 @@ class LayerActionPanel extends ConsumerStatefulWidget {
     required this.onRefresh,
     this.onOpenGallery,
     this.onOpenPhotoCrop,
+    this.onEditText,
     this.showLabels = false,
     this.initialMode = EditPanelMode.none,
     this.onOpenDecorateSheet,
@@ -147,11 +149,13 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
 
     final actions = <Widget>[
       if (layer.type == LayerType.text)
-        _buildActionButton(
-          Icons.font_download_outlined,
-          '글 수정',
-          () => widget.textEditor.openForExisting(layer),
-        ),
+        _buildActionButton(Icons.font_download_outlined, '글 수정', () {
+          if (widget.onEditText case final callback?) {
+            callback(layer);
+          } else {
+            widget.textEditor.openForExisting(layer);
+          }
+        }),
       if (layer.type == LayerType.image)
         if (widget.onOpenPhotoCrop != null &&
             (layer.asset != null ||
@@ -195,10 +199,12 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
           setState(() => _panelMode = EditPanelMode.decorate);
         }
       }),
-      _buildActionButton(Icons.delete_outline, '삭제', () {
-        widget.interaction.deleteSelected();
-        widget.onRefresh();
-      }, color: Theme.of(context).colorScheme.error),
+      if (widget.interaction.isLayerDeletable(layer))
+        _buildActionButton(Icons.delete_outline, '삭제', () {
+          if (!widget.interaction.isLayerDeletable(layer)) return;
+          widget.interaction.deleteSelected();
+          widget.onRefresh();
+        }, color: Theme.of(context).colorScheme.error),
     ];
     if (widget.showLabels) {
       return Wrap(

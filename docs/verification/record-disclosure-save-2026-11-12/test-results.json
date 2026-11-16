@@ -1,0 +1,62 @@
+[
+  {
+    "suite": "disclosure",
+    "exit": 0,
+    "result": "RESULT passed=5 failed=0 skipped=0"
+  },
+  {
+    "suite": "loading",
+    "exit": 1,
+    "result": "RESULT passed=0 failed=2 skipped=0"
+  },
+  {
+    "suite": "savedphoto",
+    "exit": 0,
+    "result": "RESULT passed=4 failed=0 skipped=0"
+  },
+  {
+    "suite": "records",
+    "exit": 1,
+    "result": "RESULT passed=48 failed=1 skipped=0"
+  },
+  {
+    "suite": "reward",
+    "exit": 1,
+    "result": "RESULT passed=27 failed=3 skipped=0"
+  },
+  {
+    "suite": "journal",
+    "exit": 1,
+    "result": "RESULT passed=12 failed=1 skipped=0"
+  },
+  {
+    "suite": "sharing",
+    "exit": 0,
+    "result": "RESULT passed=11 failed=0 skipped=0"
+  },
+  {
+    "suite": "webcontent",
+    "exit": 1,
+    "result": "RESULT passed=4 failed=1 skipped=0"
+  },
+  {
+    "suite": "choices",
+    "exit": 1,
+    "result": "RESULT passed=7 failed=1 skipped=0"
+  },
+  {
+    "suite": "draft",
+    "exit": 0,
+    "result": "RESULT passed=12 failed=0 skipped=0"
+  },
+  {
+    "suite": "format",
+    "exit": 0,
+    "result": "RESULT passed=8 failed=0 skipped=0"
+  },
+  {
+    "suite": "entry",
+    "exit": 0,
+    "result": "RESULT passed=1 failed=0 skipped=0"
+  }
+]

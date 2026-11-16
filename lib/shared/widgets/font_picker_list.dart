@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../web/web_design.dart';
 import 'catalog_favorite_widgets.dart';
 import 'no_glow.dart';
+import '../../shared/widgets/experience_icon.dart';
 
 /// 폰트 리스트 (옵션 영역)
 class FontPickerList extends StatefulWidget {
@@ -42,7 +43,7 @@ class FontPickerListState extends State<FontPickerList> {
               child: FilterChip(
                 selected: _favoritesOnly,
                 label: const Text('즐겨찾는 글꼴'),
-                avatar: const Icon(Icons.star_outline, size: 16),
+                avatar: const ExperienceIcon('Star', size: 16),
                 onSelected: (value) => setState(() => _favoritesOnly = value),
               ),
             ),
@@ -110,8 +111,8 @@ class FontPickerListState extends State<FontPickerList> {
             IconButton(
               tooltip: _favoritesOnly ? '전체 폰트 보기' : '즐겨찾는 폰트만 보기',
               isSelected: _favoritesOnly,
-              icon: const Icon(Icons.star_outline_rounded),
-              selectedIcon: const Icon(Icons.star_rounded),
+              icon: const ExperienceIcon('Star'),
+              selectedIcon: const ExperienceIcon('Star'),
               onPressed: () => setState(() => _favoritesOnly = !_favoritesOnly),
             ),
             Expanded(

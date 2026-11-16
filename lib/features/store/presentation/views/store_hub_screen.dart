@@ -13,6 +13,8 @@ import 'store_screen.dart';
 import '../../data/api/template_provider.dart';
 import '../../../../shared/widgets/deferred_content.dart';
 import '../../../../shared/widgets/snapfit_shimmer.dart';
+import '../widgets/template_design_comparison.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 /// Both departments retain search and scroll position, and mount on demand.
 class StoreHubScreen extends StatefulWidget {
@@ -30,14 +32,22 @@ class StoreHubScreen extends StatefulWidget {
 class _StoreHubScreenState extends State<StoreHubScreen> {
   late int _index = widget.initialMaterials ? 1 : 0;
   late final Set<int> _visited = {_index};
+  final _comparisonController = TemplateDesignComparisonController();
   bool _searchOpen = false;
   // The department shell changes selection; its mounted catalog widgets do
   // not need new identities or callbacks on every navigation update.
   late final _templates = StoreScreen(
     embedded: true,
     editorial: true,
+    comparisonController: _comparisonController,
     onBrowseMaterials: () => _selectCatalog(1),
   );
+
+  @override
+  void dispose() {
+    _comparisonController.dispose();
+    super.dispose();
+  }
 
   @override
   void didUpdateWidget(covariant StoreHubScreen oldWidget) {
@@ -66,12 +76,9 @@ class _StoreHubScreenState extends State<StoreHubScreen> {
       scope.onNavigate(6);
     } else {
       Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          settings: kIsWeb
+        snapFitRoute<void>(page: const MaterialCatalogScreen(library: true), settings: kIsWeb
               ? const WebAppRouteSettings(WebAppLocation.library)
-              : null,
-          builder: (_) => const MaterialCatalogScreen(library: true),
-        ),
+              : null),
       );
     }
   }
@@ -94,7 +101,10 @@ class _StoreHubScreenState extends State<StoreHubScreen> {
                       StoreTemplateFeedNotifier.new,
                     ),
                   ],
-                  child: const StoreScreen(searchMode: true),
+                  child: StoreScreen(
+                    searchMode: true,
+                    comparisonController: _comparisonController,
+                  ),
                 )
               : const MaterialCatalogScreen(searchMode: true),
         ),
@@ -162,9 +172,10 @@ class _StoreHubScreenState extends State<StoreHubScreen> {
                         ),
                         const SizedBox(height: 6),
                         AnimatedContainer(
-                          duration: MediaQuery.disableAnimationsOf(context)
-                              ? Duration.zero
-                              : const Duration(milliseconds: 200),
+                          duration: SnapFitMotion.duration(
+                            context,
+                            SnapFitMotion.fast,
+                          ),
                           width: _index == index ? 24 : 0,
                           height: 3,
                           decoration: BoxDecoration(
@@ -239,7 +250,7 @@ class _StoreHubScreenState extends State<StoreHubScreen> {
         actions: [
           OutlinedButton.icon(
             onPressed: _openLibrary,
-            icon: const Icon(Icons.bookmark_outline, size: 18),
+            icon: const ExperienceIcon('Bookmark', size: 18),
             label: const Text('내 디자인 보관함'),
           ),
         ],

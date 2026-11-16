@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:snap_fit/shared/widgets/catalog_cover_skeleton.dart';
 import 'package:snap_fit/core/constants/cover_size.dart';
 import 'package:snap_fit/core/templates/data_template_engine.dart';
 import 'package:snap_fit/core/templates/template_document_pages.dart';
@@ -24,6 +25,10 @@ import 'package:snap_fit/features/album/domain/entities/album_creation_template.
 import 'package:snap_fit/features/album/domain/entities/layer.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_album_start_step.dart';
 import 'package:snap_fit/features/album/presentation/views/album_create_flow_screen.dart';
+import 'package:snap_fit/features/album/presentation/views/page_editor_screen.dart';
+import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
+import 'package:snap_fit/features/album/presentation/providers/album_edit_session_provider.dart';
+import 'package:snap_fit/features/album/presentation/widgets/editor/edit_cover.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_template_brief_step.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_album_point_confirmation_step.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_template_generating_step.dart';
@@ -40,9 +45,14 @@ import 'package:snap_fit/features/point_shop/data/point_shop_provider.dart';
 import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
 import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
 import 'package:snap_fit/features/billing/data/billing_provider.dart';
+import 'package:snap_fit/features/store/data/store_curation_provider.dart';
+import 'package:snap_fit/features/store/data/store_discovery_provider.dart';
+import 'package:snap_fit/features/store/domain/store_product_discovery.dart';
 import 'package:snap_fit/features/store/presentation/widgets/template_page_renderer.dart';
 import '../fixtures/ai_template_design_fixture.dart';
 import '../helpers/creation_draft_fixtures.dart' show MemoryCreationDraftStore;
+import '../helpers/unified_creation_fixtures.dart';
+import 'album_settings_redesign_test.dart' show openAlbumSettingsSection;
 
 class _Binding extends AutomatedTestWidgetsFlutterBinding {
   @override
@@ -114,6 +124,15 @@ void main() {
   }
 
   void reset(WidgetTester tester) {
+    // Release image streams in their own fake-clock zone before the next case.
+    addTearDown(() async {
+      FocusManager.instance.primaryFocus?.unfocus();
+      if (tester.testTextInput.isRegistered) tester.testTextInput.hide();
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+      PaintingBinding.instance.imageCache.clear();
+      PaintingBinding.instance.imageCache.clearLiveImages();
+    });
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPadding);
@@ -128,10 +147,14 @@ void main() {
   }) async {
     await tester.pumpWidget(const SizedBox());
     await tester.pump();
+    final albums = RecordingCreationAlbums(owner: 'creation-workshop-owner');
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           authViewModelProvider.overrideWith(_Auth.new),
+          albumEditorOwnerReaderProvider.overrideWithValue(() => 'creation-workshop-owner'),
+          albumEditorOwnerChangesProvider.overrideWith((ref) => const Stream.empty()),
+          ...unifiedCreationBackendOverrides(albums: albums),
           albumCreationDraftStoreProvider.overrideWithValue(
             MemoryCreationDraftStore(),
           ),
@@ -148,12 +171,23 @@ void main() {
           ),
           pointShopCatalogProvider.overrideWith((ref) async => []),
           ownedPointShopKeysProvider.overrideWith((ref) async => <String>{}),
+          storeDiscoveryProvider.overrideWith(
+            (ref) async => const <String, StoreProductDiscovery>{},
+          ),
+          storeDiscoveryClockProvider.overrideWithValue(
+            DateTime.utc(2026, 11, 11),
+          ),
+          storeCurationsProvider.overrideWith(
+            (ref) async => const <String, StoreCuration>{},
+          ),
         ],
         child: ScreenUtilInit(
           designSize: const Size(390, 844),
           builder: (_, __) => MaterialApp(
             debugShowCheckedModeBanner: false,
-            theme: dark ? SnapFitTheme.dark() : SnapFitTheme.light(),
+            theme: (dark ? SnapFitTheme.dark() : SnapFitTheme.light()).copyWith(
+              splashFactory: NoSplash.splashFactory,
+            ),
             builder: (context, child) => MediaQuery(
               data: MediaQuery.of(
                 context,
@@ -235,10 +269,22 @@ void main() {
     bool dark, {
     bool pending = false,
   }) async {
-    await tester.runAsync(() async {
-      for (final element in find.byType(Image).evaluate())
-        await precacheImage((element.widget as Image).image, element);
-    });
+    // Decode native images while pumping frames; precache alone can wait forever
+    // for artwork that schedules its next frame outside the fake clock.
+    var stable = 0;
+    for (var frame = 0; frame < 160; frame++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 25)),
+      );
+      await tester.pump(const Duration(milliseconds: 32));
+      final ready =
+          PaintingBinding.instance.imageCache.pendingImageCount == 0 &&
+          find.byType(CatalogCoverSkeleton).evaluate().isEmpty;
+      stable = ready && frame >= 12 ? stable + 1 : 0;
+      if (stable == 4) break;
+      if (frame == 159)
+        fail('Workshop artwork did not settle within 160 frames.');
+    }
     if (pending) {
       await tester.pump(const Duration(milliseconds: 100));
     } else {
@@ -293,23 +339,63 @@ void main() {
         reset(tester);
         metrics(tester, size);
         var manual = 0, selected = 0, use = 0, next = 0;
+        final startTemplates = publishedCreationTemplates.take(8).toList();
         await mount(
           tester,
           AiAlbumStartStep(
-            templates: AsyncData(publishedCreationTemplates.take(8).toList()),
+            templates: AsyncData(startTemplates),
             onManualStart: () => manual++,
             onTemplateSelected: (_) => selected++,
           ),
           dark: dark,
         );
         await capture(tester, 'creation-atelier-start', size, dark);
-        await tap(tester, find.text('직접 만들기'));
-        await tap(tester, key('creation-collection-showcase'));
+        await tap(tester, key('creation-manual-start'));
         expect(manual, 1);
+        expect(selected, 0);
+        await tap(tester, key('creation-open-catalog'));
+        expect(selected, 0, reason: 'Browsing never selects or buys a design');
+        final firstCard = key('creation-template-${startTemplates.first.id}');
+        await tester.scrollUntilVisible(
+          firstCard,
+          120,
+          scrollable: find
+              .descendant(
+                of: find.byType(CustomScrollView),
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        );
+        await tap(tester, firstCard);
         expect(selected, 1);
-        await tap(tester, find.text('템플릿 고르기'));
-        expect(find.text('템플릿').hitTestable(), findsOneWidget);
-        expect(selected, 1, reason: 'Browsing never selects or buys a design');
+        // Profile insertion moves the grid. Korean titles may also deliberately
+        // wrap at a word boundary, while retaining the original semantic label.
+        final selectedTitle = find.descendant(
+          of: firstCard,
+          matching: find.byWidgetPredicate(
+            (widget) =>
+                widget is Text &&
+                widget.semanticsLabel == startTemplates.first.title,
+          ),
+        );
+        await tester.scrollUntilVisible(
+          selectedTitle,
+          120,
+          scrollable: find
+              .descendant(
+                of: find.byType(CustomScrollView),
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        );
+        expect(selectedTitle, findsOneWidget);
+        expect(
+          tester
+              .widget<Text>(selectedTitle)
+              .data!
+              .replaceAll(RegExp(r'\s+'), ' '),
+          startTemplates.first.title,
+        );
         await capture(tester, 'creation-atelier-catalog', size, dark);
         await mount(
           tester,
@@ -481,7 +567,7 @@ void main() {
         expect(tester.takeException(), isNull);
       });
       testWidgets(
-        'real creation shell setup to photos and back $size dark=$dark',
+        'real creation shell enters a linked editor and keeps work when exit is cancelled $size dark=$dark',
         (tester) async {
           reset(tester);
           metrics(tester, size);
@@ -509,22 +595,56 @@ void main() {
             greaterThanOrEqualTo(64),
           );
           await capture(tester, 'creation-atelier-shell-settings', size, dark);
+          final acceptedCover = tester.widget<AlbumCreateStep1>(find.byType(AlbumCreateStep1)).coverLayers!;
           await tap(tester, key('creation-setup-next'));
-          expect(find.byType(TemplatePhotoFillStep), findsOneWidget);
+          expect(find.byType(PageEditorScreen), findsOneWidget);
+          final container = ProviderScope.containerOf(
+            tester.element(find.byType(PageEditorScreen)),
+          );
+          final vm = container.read(albumEditorViewModelProvider.notifier);
+          final session = vm.editSessionIdentity;
+          expect(vm.editingAlbumId, 71);
+          expect(vm.currentPageIndex, 0);
+          expect(vm.pages.length, pages.length);
+          final preservedCover = vm.pages.first.layers.where((layer) => layer.id != 'creation-edited-background').toList();
+          expect(preservedCover.map((layer) => layer.id), acceptedCover.map((layer) => layer.id));
+          for (var index = 0; index < acceptedCover.length; index++) {
+            final original = acceptedCover[index], preserved = preservedCover[index];
+            expect(preserved.type, original.type);
+            expect(preserved.text, original.text);
+            expect(preserved.imageUrl, original.imageUrl);
+            expect(preserved.imageBackground, original.imageBackground);
+            expect(preserved.decorationFillColor, original.decorationFillColor);
+            expect(preserved.imageZoom, original.imageZoom);
+            expect(preserved.imageOffset, original.imageOffset);
+          }
+          final background = vm.pages.first.layers.singleWhere((layer) => layer.id == 'creation-edited-background');
+          expect(background.type, LayerType.decoration);
+          expect(background.zIndex, -100);
+          expect(background.decorationFillColor, matches(RegExp(r'^#[0-9a-fA-F]{8}$')));
+          expect(background.width, closeTo(500, .001));
+          expect(background.height, closeTo(500 / vm.selectedCover.ratio, .001));
+          final draft = (container.read(albumCreationDraftStoreProvider) as MemoryCreationDraftStore).draft!;
+          expect(draft.title, template.title);
+          expect(draft.createdAlbumId, 71);
+          expect(draft.editorCheckpoint!.pages.length, pages.length);
+          expect(draft.editorCheckpoint!.pages.first.layers.first.decorationFillColor, background.decorationFillColor);
           expect(
-            tester.getSize(key('template-book-cover')).height,
+            tester.getSize(find.byType(EditCover)).height,
             greaterThanOrEqualTo(64),
           );
-          await capture(tester, 'creation-atelier-shell-photos', size, dark);
-          await tap(tester, find.byTooltip('뒤로가기'));
-          expect(find.byType(AlbumCreateStep1), findsOneWidget);
-          expect(
-            tester
-                .widget<TextField>(key('creation-album-title'))
-                .controller!
-                .text,
-            template.title,
-          );
+          await capture(tester, 'creation-atelier-shell-editor', size, dark);
+          final addPage = key('addInnerPagesButton');
+          await tap(tester, addPage);
+          expect(vm.pages.length, pages.length + 2);
+          expect(vm.hasUnsavedChanges, isTrue);
+          await tap(tester, find.byTooltip('편집 마치기'));
+          expect(find.byType(AlertDialog), findsOneWidget);
+          await tap(tester, find.text('계속 편집'));
+          expect(find.byType(PageEditorScreen), findsOneWidget);
+          expect(vm.editSessionIdentity, same(session));
+          expect(vm.pages.length, pages.length + 2);
+          expect(draft.title, template.title);
           expect(tester.takeException(), isNull);
         },
       );
@@ -646,22 +766,40 @@ void main() {
           dark: dark,
           scale: 1.3,
         );
-        await tap(tester, find.text('직접 만들기'));
+        await tap(tester, key('creation-manual-start'));
+        await openAlbumSettingsSection(tester, 'name');
         final title = key('creation-album-title');
         await tester.ensureVisible(title);
         await tester.enterText(title, '우리의 주말 기록');
         FocusManager.instance.primaryFocus?.unfocus();
         await tester.pumpAndSettle();
+        await openAlbumSettingsSection(tester, 'book');
         await tap(tester, key('print-cover-hard'));
+        await openAlbumSettingsSection(tester, 'pages');
         await tap(tester, find.byTooltip('페이지 늘리기'));
-        await tap(tester, find.byTooltip('시작 방식 변경'));
+        await tap(tester, key('creation-change-design'));
         expect(find.text('AI 템플릿'), findsNothing);
-        await tap(tester, key('creation-collection-showcase'));
+        await tap(tester, key('creation-open-catalog'));
+        final firstCard = key(
+          'creation-template-${publishedCreationTemplates.first.id}',
+        );
+        await tester.scrollUntilVisible(
+          firstCard,
+          120,
+          scrollable: find
+              .descendant(
+                of: find.byType(CustomScrollView),
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        );
+        await tap(tester, firstCard);
         await settleStoreDetail(tester);
         expect(find.byType(TemplateDetailScreen), findsOneWidget);
         expect(find.text('이 디자인 선택'), findsOneWidget);
         await tap(tester, find.byType(BackButton));
-        await tap(tester, find.text('직접 만들기'));
+        await tap(tester, key('creation-hub-back'));
+        await tap(tester, key('creation-manual-start'));
         final manual = tester.widget<AlbumCreateStep1>(
           find.byType(AlbumCreateStep1),
         );
@@ -669,6 +807,7 @@ void main() {
         expect(manual.selectedPageCount, 22);
         expect(manual.selectedCover!.coverType, PrintCoverType.hard);
         expect(manual.templateTitle, isNull);
+        await openAlbumSettingsSection(tester, 'name');
         final input = tester.widget<TextField>(title).controller!;
         final other = size.width > size.height
             ? const Size(390, 844)
@@ -743,24 +882,49 @@ void main() {
   }
 
   testWidgets(
-    'filtered catalog removes the featured artwork and unavailable templates never become AI output',
+    'catalog filters follow entry and unavailable templates never become AI output',
     (tester) async {
       reset(tester);
       metrics(tester, const Size(390, 844));
+      final unlistedPaid = template.copyWith(isPremium: true);
       await mount(
         tester,
         AiAlbumStartStep(
-          templates: AsyncData([template]),
+          templates: AsyncData([unlistedPaid]),
           onManualStart: () {},
         ),
       );
-      await tap(tester, find.text('유료').first);
-      expect(key('creation-collection-showcase'), findsNothing);
+      expect(key('creation-manual-start'), findsOneWidget);
+      expect(key('creation-search'), findsNothing);
+      await tap(tester, key('creation-open-catalog'));
+      await tap(tester, key('creation-price-무료'));
+      final paidCard = key('creation-template-${unlistedPaid.id}');
+      expect(paidCard, findsNothing);
+      expect(find.text('검색 결과가 없어요'), findsOneWidget);
+      await tap(tester, key('creation-price-유료'));
+      await tester.scrollUntilVisible(
+        paidCard,
+        120,
+        scrollable: find
+            .descendant(
+              of: find.byType(CustomScrollView),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await tester.pumpAndSettle();
+      expect(paidCard.hitTestable(), findsOneWidget);
+      expect(find.text('판매 준비 중'), findsOneWidget);
+      expect(find.byType(AiTemplateGeneratingStep), findsNothing);
       await mount(
         tester,
         AiAlbumStartStep(templates: const AsyncLoading(), onManualStart: () {}),
       );
-      expect(key('creation-collection-showcase'), findsNothing);
+      await tester.tap(key('creation-open-catalog'));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(paidCard, findsNothing);
+      expect(find.byType(AiTemplateGeneratingStep), findsNothing);
       expect(find.byType(TemplatePageRenderer), findsNothing);
       expect(tester.takeException(), isNull);
     },

@@ -19,6 +19,7 @@ import '../cover/cover.dart';
 import '../cover/album_spine_image.dart';
 import 'home_cover_frame.dart';
 import 'home_album_helpers.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 /// Share only immutable cover data, never widgets, refs or interaction state.
 class _ParsedHomeCover {
@@ -485,11 +486,7 @@ class _HomeAlbumCoverThumbnailState
             color: Colors.grey[300],
             child: binding
                 ? null
-                : Icon(
-                    Icons.photo_album_outlined,
-                    size: 28,
-                    color: Colors.grey[600],
-                  ),
+                : ExperienceIcon('Bookmark', size: 28, color: Colors.grey[600]),
           );
 
     return HomeCoverFrame(

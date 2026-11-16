@@ -373,7 +373,7 @@ void main() {
       await tester.pumpAndSettle();
       final topRequests = requests['asset-71'];
       final pendingBeforeClose = pending.length;
-      await tester.tap(find.byTooltip('재배치 닫기'));
+      await tester.tap(find.byTooltip('겹침 순서 닫기'));
       await tester.pumpAndSettle();
       for (final result in pending) {
         result.complete(null);
@@ -513,7 +513,7 @@ void main() {
         final controller = tester
             .widget<ReorderableListView>(find.byType(ReorderableListView))
             .scrollController!;
-        await tester.tap(find.byTooltip('재배치 닫기'));
+        await tester.tap(find.byTooltip('겹침 순서 닫기'));
         await tester.pumpAndSettle();
         expect(controller.hasClients, isFalse);
         expect(find.byType(ReorderableListView), findsNothing);

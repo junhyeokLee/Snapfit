@@ -1,0 +1,822 @@
+{
+  "bold-cut": {
+    "productKey": "phrase:collage-bold-cut",
+    "favoriteKey": "textStyle:luminous-edition:bold-cut",
+    "text": "같이 찍자!",
+    "sourceSize": [
+      500.0,
+      192.0
+    ],
+    "previewLayers": [
+      {
+        "id": "bold-cut-text",
+        "type": "TEXT",
+        "zIndex": 1,
+        "x": 0.056,
+        "y": 0.3125,
+        "width": 0.888,
+        "height": 0.375,
+        "scale": 1.0,
+        "rotation": 0.0,
+        "opacity": 1.0,
+        "templateContent": false,
+        "payload": {
+          "text": "같이 찍자!",
+          "textAlign": "center",
+          "textStyleType": "none",
+          "textBackground": null,
+          "textFillMode": "papercut",
+          "textFillImageUrl": null,
+          "bubbleColor": null,
+          "textStyle": {
+            "fontSize": 60.0,
+            "fontSizeRatio": 0.12,
+            "fontWeight": null,
+            "fontStyle": 0,
+            "fontFamily": "RiaSans",
+            "color": "#ff2451e6",
+            "letterSpacing": 0.0,
+            "height": 1.2
+          }
+        }
+      }
+    ],
+    "inserted": {
+      "square": {
+        "canvas": [
+          500.0,
+          500.0
+        ],
+        "layers": [
+          {
+            "id": "bold-cut-text",
+            "type": "TEXT",
+            "zIndex": 1,
+            "x": 0.18031999999999998,
+            "y": 0.44815999999999995,
+            "width": 0.63936,
+            "height": 0.10368,
+            "scale": 1.0,
+            "rotation": 0.0,
+            "opacity": 1.0,
+            "templateContent": true,
+            "payload": {
+              "text": "같이 찍자!",
+              "textAlign": "center",
+              "textStyleType": "none",
+              "textBackground": null,
+              "textFillMode": "papercut",
+              "textFillImageUrl": null,
+              "bubbleColor": null,
+              "textStyle": {
+                "fontSize": 43.199999999999996,
+                "fontSizeRatio": 0.08639999999999999,
+                "fontWeight": null,
+                "fontStyle": 0,
+                "fontFamily": "RiaSans",
+                "color": "#ff2451e6",
+                "letterSpacing": 0.0,
+                "height": 1.2
+              }
+            }
+          }
+        ]
+      },
+      "landscape4x3": {
+        "canvas": [
+          500.0,
+          375.0
+        ],
+        "layers": [
+          {
+            "id": "bold-cut-text",
+            "type": "TEXT",
+            "zIndex": 1,
+            "x": 0.18031999999999998,
+            "y": 0.43088,
+            "width": 0.63936,
+            "height": 0.13824,
+            "scale": 1.0,
+            "rotation": 0.0,
+            "opacity": 1.0,
+            "templateContent": true,
+            "payload": {
+              "text": "같이 찍자!",
+              "textAlign": "center",
+              "textStyleType": "none",
+              "textBackground": null,
+              "textFillMode": "papercut",
+              "textFillImageUrl": null,
+              "bubbleColor": null,
+              "textStyle": {
+                "fontSize": 43.199999999999996,
+                "fontSizeRatio": 0.08639999999999999,
+                "fontWeight": null,
+                "fontStyle": 0,
+                "fontFamily": "RiaSans",
+                "color": "#ff2451e6",
+                "letterSpacing": 0.0,
+                "height": 1.2
+              }
+            }
+          }
+        ]
+      },
+      "landscape5x4": {
+        "canvas": [
+          500.0,
+          400.0
+        ],
+        "layers": [
+          {
+            "id": "bold-cut-text",
+            "type": "TEXT",
+            "zIndex": 1,
+            "x": 0.18031999999999998,
+            "y": 0.4352,
+            "width": 0.63936,
+            "height": 0.1296,
+            "scale": 1.0,
+            "rotation": 0.0,
+            "opacity": 1.0,
+            "templateContent": true,
+            "payload": {
+              "text": "같이 찍자!",
+              "textAlign": "center",
+              "textStyleType": "none",
+              "textBackground": null,
+              "textFillMode": "papercut",
+              "textFillImageUrl": null,
+              "bubbleColor": null,
+              "textStyle": {
+                "fontSize": 43.199999999999996,
+                "fontSizeRatio": 0.08639999999999999,
+                "fontWeight": null,
+                "fontStyle": 0,
+                "fontFamily": "RiaSans",
+                "color": "#ff2451e6",
+                "letterSpacing": 0.0,
+                "height": 1.2
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "ticket-label": {
+    "productKey": "phrase:collage-ticket-label",
+    "favoriteKey": "textStyle:luminous-edition:ticket-label",
+    "text": "오늘의 기분 : 맑음",
+    "sourceSize": [
+      500.0,
+      192.0
+    ],
+    "previewLayers": [
+      {
+        "id": "ticket-label-paper",
+        "type": "DECORATION",
+        "zIndex": 0,
+        "x": 0.02,
+        "y": 0.0625,
+        "width": 0.96,
+        "height": 0.875,
+        "scale": 1.0,
+        "rotation": 0.0,
+        "opacity": 1.0,
+        "templateContent": false,
+        "payload": {
+          "imageBackground": "zineTicket",
+          "imageTemplate": null,
+          "originalUrl": null,
+          "previewUrl": null,
+          "imageUrl": null
+        }
+      },
+      {
+        "id": "ticket-label-text",
+        "type": "TEXT",
+        "zIndex": 1,
+        "x": 0.08,
+        "y": 0.4244791666666667,
+        "width": 0.648,
+        "height": 0.15104166666666666,
+        "scale": 1.0,
+        "rotation": 0.0,
+        "opacity": 1.0,
+        "templateContent": false,
+        "payload": {
+          "text": "오늘의 기분 : 맑음",
+          "textAlign": "center",
+          "textStyleType": "none",
+          "textBackground": null,
+          "textFillMode": null,
+          "textFillImageUrl": null,
+          "bubbleColor": null,
+          "textStyle": {
+            "fontSize": 24.0,
+            "fontSizeRatio": 0.048,
+            "fontWeight": null,
+            "fontStyle": 0,
+            "fontFamily": "NotoSans",
+            "color": "#ff202020",
+            "letterSpacing": 0.0,
+            "height": 1.2
+          }
+        }
+      }
+    ],
+    "inserted": {
+      "square": {
+        "canvas": [
+          500.0,
+          500.0
+        ],
+        "layers": [
+          {
+            "id": "ticket-label-paper",
+            "type": "DECORATION",
+            "zIndex": 0,
+            "x": 0.1544,
+            "y": 0.37904,
+            "width": 0.6911999999999999,
+            "height": 0.24192,
+            "scale": 1.0,
+            "rotation": 0.0,
+            "opacity": 1.0,
+            "templateContent": true,
+            "payload": {
+              "imageBackground": "zineTicket",
+              "imageTemplate": null,
+              "originalUrl": null,
+              "previewUrl": null,
+              "imageUrl": null
+            }
+          },
+          {
+            "id": "ticket-label-text",
+            "type": "TEXT",
+            "zIndex": 1,
+            "x": 0.1976,
+            "y": 0.47912,
+            "width": 0.46656,
+            "height": 0.04176,
+            "scale": 1.0,
+            "rotation": 0.0,
+            "opacity": 1.0,
+            "templateContent": true,
+            "payload": {
+              "text": "오늘의 기분 : 맑음",
+              "textAlign": "center",
+              "textStyleType": "none",
+              "textBackground": null,
+              "textFillMode": null,
+              "textFillImageUrl": null,
+              "bubbleColor": null,
+              "textStyle": {
+                "fontSize": 17.28,
+                "fontSizeRatio": 0.03456,
+                "fontWeight": null,
+                "fontStyle": 0,
+                "fontFamily": "NotoSans",
+                "color": "#ff202020",
+                "letterSpacing": 0.0,
+                "height": 1.2
+              }
+            }
+          }
+        ]
+      },
+      "landscape4x3": {
+        "canvas": [
+          500.0,
+          375.0
+        ],
+        "layers": [
+          {
+            "id": "ticket-label-paper",
+            "type": "DECORATION",
+            "zIndex": 0,
+            "x": 0.1544,
+            "y": 0.33871999999999997,
+            "width": 0.6911999999999999,
+            "height": 0.32255999999999996,
+            "scale": 1.0,
+            "rotation": 0.0,
+            "opacity": 1.0,
+            "templateContent": true,
+            "payload": {
+              "imageBackground": "zineTicket",
+              "imageTemplate": null,
+              "originalUrl": null,
+              "previewUrl": null,
+              "imageUrl": null
+            }
+          },
+          {
+            "id": "ticket-label-text",
+            "type": "TEXT",
+            "zIndex": 1,
+            "x": 0.1976,
+            "y": 0.47216,
+            "width": 0.46656,
+            "height": 0.05568,
+            "scale": 1.0,
+            "rotation": 0.0,
+            "opacity": 1.0,
+            "templateContent": true,
+            "payload": {
+              "text": "오늘의 기분 : 맑음",
+              "textAlign": "center",
+              "textStyleType": "none",
+              "textBackground": null,
+              "textFillMode": null,
+              "textFillImageUrl": null,
+              "bubbleColor": null,
+              "textStyle": {
+                "fontSize": 17.28,
+                "fontSizeRatio": 0.03456,
+                "fontWeight": null,
+                "fontStyle": 0,
+                "fontFamily": "NotoSans",
+                "color": "#ff202020",
+                "letterSpacing": 0.0,
+                "height": 1.2
+              }
+            }
+          }
+        ]
+      },
+      "landscape5x4": {
+        "canvas": [
+          500.0,
+          400.0
+        ],
+        "layers": [
+          {
+            "id": "ticket-label-paper",
+            "type": "DECORATION",
+            "zIndex": 0,
+            "x": 0.1544,
+            "y": 0.34879999999999994,
+            "width": 0.6911999999999999,
+            "height": 0.3024,
+            "scale": 1.0,
+            "rotation": 0.0,
+            "opacity": 1.0,
+            "templateContent": true,
+            "payload": {
+              "imageBackground": "zineTicket",
+              "imageTemplate": null,
+              "originalUrl": null,
+              "previewUrl": null,
+              "imageUrl": null
+            }
+          },
+          {
+            "id": "ticket-label-text",
+            "type": "TEXT",
+            "zIndex": 1,
+            "x": 0.1976,
+            "y": 0.4739,
+            "width": 0.46656,
+            "height": 0.052199999999999996,
+            "scale": 1.0,
+            "rotation": 0.0,
+            "opacity": 1.0,
+            "templateContent": true,
+            "payload": {
+              "text": "오늘의 기분 : 맑음",
+              "textAlign": "center",
+              "textStyleType": "none",
+              "textBackground": null,
+              "textFillMode": null,
+              "textFillImageUrl": null,
+              "bubbleColor": null,
+              "textStyle": {
+                "fontSize": 17.28,
+                "fontSizeRatio": 0.03456,
+                "fontWeight": null,
+                "fontStyle": 0,
+                "fontFamily": "NotoSans",
+                "color": "#ff202020",
+                "letterSpacing": 0.0,
+                "height": 1.2
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "hand-note": {
+    "productKey": "phrase:collage-hand-note",
+    "favoriteKey": "textStyle:luminous-edition:hand-note",
+    "text": "다음 장도 함께",
+    "sourceSize": [
+      500.0,
+      192.0
+    ],
+    "previewLayers": [
+      {
+        "id": "hand-note-paper",
+        "type": "DECORATION",
+        "zIndex": 0,
+        "x": 0.09,
+        "y": 0.6822916666666666,
+        "width": 0.82,
+        "height": 0.15625,
+        "scale": 1.0,
+        "rotation": 0.0,
+        "opacity": 1.0,
+        "templateContent": false,
+        "payload": {
+          "imageBackground": "zineUnderline",
+          "imageTemplate": null,
+          "originalUrl": null,
+          "previewUrl": null,
+          "imageUrl": null
+        }
+      },
+      {
+        "id": "hand-note-text",
+        "type": "TEXT",
+        "zIndex": 1,
+        "x": 0.05,
+        "y": 0.265625,
+        "width": 0.9,
+        "height": 0.3541666666666667,
+        "scale": 1.0,
+        "rotation": 0.0,
+        "opacity": 1.0,
+        "templateContent": false,
+        "payload": {
+          "text": "다음 장도 함께",
+          "textAlign": "center",
+          "textStyleType": "none",
+          "textBackground": null,
+          "textFillMode": null,
+          "textFillImageUrl": null,
+          "bubbleColor": null,
+          "textStyle": {
+            "fontSize": 57.0,
+            "fontSizeRatio": 0.114,
+            "fontWeight": null,
+            "fontStyle": 0,
+            "fontFamily": "Yeongwol",
+            "color": "#ff202020",
+            "letterSpacing": 0.0,
+            "height": 1.2
+          }
+        }
+      }
+    ],
+    "inserted": {
+      "square": {
+        "canvas": [
+          500.0,
+          500.0
+        ],
+        "layers": [
+          {
+            "id": "hand-note-paper",
+            "type": "DECORATION",
+            "zIndex": 0,
+            "x": 0.2048,
+            "y": 0.5504,
+            "width": 0.5903999999999999,
+            "height": 0.043199999999999995,
+            "scale": 1.0,
+            "rotation": 0.0,
+            "opacity": 1.0,
+            "templateContent": true,
+            "payload": {
+              "imageBackground": "zineUnderline",
+              "imageTemplate": null,
+              "originalUrl": null,
+              "previewUrl": null,
+              "imageUrl": null
+            }
+          },
+          {
+            "id": "hand-note-text",
+            "type": "TEXT",
+            "zIndex": 1,
+            "x": 0.176,
+            "y": 0.4352,
+            "width": 0.648,
+            "height": 0.09792000000000001,
+            "scale": 1.0,
+            "rotation": 0.0,
+            "opacity": 1.0,
+            "templateContent": true,
+            "payload": {
+              "text": "다음 장도 함께",
+              "textAlign": "center",
+              "textStyleType": "none",
+              "textBackground": null,
+              "textFillMode": null,
+              "textFillImageUrl": null,
+              "bubbleColor": null,
+              "textStyle": {
+                "fontSize": 41.04,
+                "fontSizeRatio": 0.08208,
+                "fontWeight": null,
+                "fontStyle": 0,
+                "fontFamily": "Yeongwol",
+                "color": "#ff202020",
+                "letterSpacing": 0.0,
+                "height": 1.2
+              }
+            }
+          }
+        ]
+      },
+      "landscape4x3": {
+        "canvas": [
+          500.0,
+          375.0
+        ],
+        "layers": [
+          {
+            "id": "hand-note-paper",
+            "type": "DECORATION",
+            "zIndex": 0,
+            "x": 0.2048,
+            "y": 0.5671999999999999,
+            "width": 0.5903999999999999,
+            "height": 0.05759999999999999,
+            "scale": 1.0,
+            "rotation": 0.0,
+            "opacity": 1.0,
+            "templateContent": true,
+            "payload": {
+              "imageBackground": "zineUnderline",
+              "imageTemplate": null,
+              "originalUrl": null,
+              "previewUrl": null,
+              "imageUrl": null
+            }
+          },
+          {
+            "id": "hand-note-text",
+            "type": "TEXT",
+            "zIndex": 1,
+            "x": 0.176,
+            "y": 0.41359999999999997,
+            "width": 0.648,
+            "height": 0.13056,
+            "scale": 1.0,
+            "rotation": 0.0,
+            "opacity": 1.0,
+            "templateContent": true,
+            "payload": {
+              "text": "다음 장도 함께",
+              "textAlign": "center",
+              "textStyleType": "none",
+              "textBackground": null,
+              "textFillMode": null,
+              "textFillImageUrl": null,
+              "bubbleColor": null,
+              "textStyle": {
+                "fontSize": 41.04,
+                "fontSizeRatio": 0.08208,
+                "fontWeight": null,
+                "fontStyle": 0,
+                "fontFamily": "Yeongwol",
+                "color": "#ff202020",
+                "letterSpacing": 0.0,
+                "height": 1.2
+              }
+            }
+          }
+        ]
+      },
+      "landscape5x4": {
+        "canvas": [
+          500.0,
+          400.0
+        ],
+        "layers": [
+          {
+            "id": "hand-note-paper",
+            "type": "DECORATION",
+            "zIndex": 0,
+            "x": 0.2048,
+            "y": 0.563,
+            "width": 0.5903999999999999,
+            "height": 0.05399999999999999,
+            "scale": 1.0,
+            "rotation": 0.0,
+            "opacity": 1.0,
+            "templateContent": true,
+            "payload": {
+              "imageBackground": "zineUnderline",
+              "imageTemplate": null,
+              "originalUrl": null,
+              "previewUrl": null,
+              "imageUrl": null
+            }
+          },
+          {
+            "id": "hand-note-text",
+            "type": "TEXT",
+            "zIndex": 1,
+            "x": 0.176,
+            "y": 0.419,
+            "width": 0.648,
+            "height": 0.12240000000000001,
+            "scale": 1.0,
+            "rotation": 0.0,
+            "opacity": 1.0,
+            "templateContent": true,
+            "payload": {
+              "text": "다음 장도 함께",
+              "textAlign": "center",
+              "textStyleType": "none",
+              "textBackground": null,
+              "textFillMode": null,
+              "textFillImageUrl": null,
+              "bubbleColor": null,
+              "textStyle": {
+                "fontSize": 41.04,
+                "fontSizeRatio": 0.08208,
+                "fontWeight": null,
+                "fontStyle": 0,
+                "fontFamily": "Yeongwol",
+                "color": "#ff202020",
+                "letterSpacing": 0.0,
+                "height": 1.2
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "diecut": {
+    "productKey": "phrase:collage-diecut",
+    "favoriteKey": "textStyle:luminous-edition:diecut",
+    "text": "반짝반짝",
+    "sourceSize": [
+      500.0,
+      192.0
+    ],
+    "previewLayers": [
+      {
+        "id": "diecut-text",
+        "type": "TEXT",
+        "zIndex": 1,
+        "x": 0.06,
+        "y": 0.3697916666666667,
+        "width": 0.88,
+        "height": 0.2604166666666667,
+        "scale": 1.0,
+        "rotation": 0.0,
+        "opacity": 1.0,
+        "templateContent": false,
+        "payload": {
+          "text": "반짝반짝",
+          "textAlign": "center",
+          "textStyleType": "none",
+          "textBackground": null,
+          "textFillMode": "sticker",
+          "textFillImageUrl": null,
+          "bubbleColor": null,
+          "textStyle": {
+            "fontSize": 42.0,
+            "fontSizeRatio": 0.084,
+            "fontWeight": null,
+            "fontStyle": 0,
+            "fontFamily": "Samlip",
+            "color": "#ffa42e4a",
+            "letterSpacing": 0.0,
+            "height": 1.2
+          }
+        }
+      }
+    ],
+    "inserted": {
+      "square": {
+        "canvas": [
+          500.0,
+          500.0
+        ],
+        "layers": [
+          {
+            "id": "diecut-text",
+            "type": "TEXT",
+            "zIndex": 1,
+            "x": 0.1832,
+            "y": 0.464,
+            "width": 0.6336,
+            "height": 0.072,
+            "scale": 1.0,
+            "rotation": 0.0,
+            "opacity": 1.0,
+            "templateContent": true,
+            "payload": {
+              "text": "반짝반짝",
+              "textAlign": "center",
+              "textStyleType": "none",
+              "textBackground": null,
+              "textFillMode": "sticker",
+              "textFillImageUrl": null,
+              "bubbleColor": null,
+              "textStyle": {
+                "fontSize": 30.24,
+                "fontSizeRatio": 0.06048,
+                "fontWeight": null,
+                "fontStyle": 0,
+                "fontFamily": "Samlip",
+                "color": "#ffa42e4a",
+                "letterSpacing": 0.0,
+                "height": 1.2
+              }
+            }
+          }
+        ]
+      },
+      "landscape4x3": {
+        "canvas": [
+          500.0,
+          375.0
+        ],
+        "layers": [
+          {
+            "id": "diecut-text",
+            "type": "TEXT",
+            "zIndex": 1,
+            "x": 0.1832,
+            "y": 0.452,
+            "width": 0.6336,
+            "height": 0.096,
+            "scale": 1.0,
+            "rotation": 0.0,
+            "opacity": 1.0,
+            "templateContent": true,
+            "payload": {
+              "text": "반짝반짝",
+              "textAlign": "center",
+              "textStyleType": "none",
+              "textBackground": null,
+              "textFillMode": "sticker",
+              "textFillImageUrl": null,
+              "bubbleColor": null,
+              "textStyle": {
+                "fontSize": 30.24,
+                "fontSizeRatio": 0.06048,
+                "fontWeight": null,
+                "fontStyle": 0,
+                "fontFamily": "Samlip",
+                "color": "#ffa42e4a",
+                "letterSpacing": 0.0,
+                "height": 1.2
+              }
+            }
+          }
+        ]
+      },
+      "landscape5x4": {
+        "canvas": [
+          500.0,
+          400.0
+        ],
+        "layers": [
+          {
+            "id": "diecut-text",
+            "type": "TEXT",
+            "zIndex": 1,
+            "x": 0.1832,
+            "y": 0.455,
+            "width": 0.6336,
+            "height": 0.09,
+            "scale": 1.0,
+            "rotation": 0.0,
+            "opacity": 1.0,
+            "templateContent": true,
+            "payload": {
+              "text": "반짝반짝",
+              "textAlign": "center",
+              "textStyleType": "none",
+              "textBackground": null,
+              "textFillMode": "sticker",
+              "textFillImageUrl": null,
+              "bubbleColor": null,
+              "textStyle": {
+                "fontSize": 30.24,
+                "fontSizeRatio": 0.06048,
+                "fontWeight": null,
+                "fontStyle": 0,
+                "fontFamily": "Samlip",
+                "color": "#ffa42e4a",
+                "letterSpacing": 0.0,
+                "height": 1.2
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

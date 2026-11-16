@@ -17,6 +17,7 @@ import '../widgets/material_original_preview.dart';
 import '../widgets/material_album_picker.dart';
 import '../widgets/store_detail_workspace.dart';
 import '../widgets/store_detail_gallery.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 typedef _MaterialPreviewInputs = ({
   ThemeData theme,
@@ -138,7 +139,7 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
                     IconButton(
                       onPressed: () => Navigator.pop(dialogContext),
                       tooltip: '미리보기 닫기',
-                      icon: const Icon(Icons.close),
+                      icon: const ExperienceIcon('X'),
                     ),
                   ],
                 ),
@@ -181,7 +182,7 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
                 leading: IconButton(
                   tooltip: '닫기',
                   onPressed: () => Navigator.pop(ctx),
-                  icon: const Icon(Icons.close),
+                  icon: const ExperienceIcon('X'),
                 ),
               ),
               body: SafeArea(
@@ -461,10 +462,7 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
               style: IconButton.styleFrom(
                 backgroundColor: ExperienceFormStyle.surface(context),
               ),
-              icon: Icon(
-                Icons.refresh,
-                size: 20,
-                color: ExperienceFormStyle.ink(context),
+              icon: ExperienceIcon('RefreshCw', size: 20, color: ExperienceFormStyle.ink(context),
               ),
             ),
           ),
@@ -593,7 +591,7 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
         actions: [
           TextButton.icon(
             onPressed: () => Navigator.maybePop(context),
-            icon: const Icon(Icons.arrow_back, size: 18),
+            icon: const ExperienceIcon('ArrowLeft', size: 18),
             label: const Text('목록으로'),
           ),
         ],

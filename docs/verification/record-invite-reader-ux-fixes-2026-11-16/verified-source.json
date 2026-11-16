@@ -1,0 +1,11 @@
+{
+  "lib/features/moments/presentation/views/moment_compose_screen.dart": "58bea51d4c39dd0b5d8585472cb91427255c3e4c4c4d4e05ff5f45cfa39b66e9",
+  "lib/features/album/presentation/views/album_invite_accept_screen.dart": "10911a5496aefb486b71a46ac0b4d054d4dafb9f12f5c88646806c02192a7efe",
+  "lib/features/album/service/album_invite_failure.dart": "9b7eef5b605101ab07a7499cfb41b8c035b147299856b33f6f5fee35a2f1b619",
+  "lib/features/album/presentation/views/album_reader_screen.dart": "ebd07bd2d58683ff1e5e5252ec4e446f6145ad1b12161bad1f169cac9f69e7d3",
+  "lib/features/album/presentation/views/album_reader_inner_detail_screen.dart": "f140dee3624138075cdf75dcc0170715a778444f139a3c14c2dcc28b56191d90",
+  "lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart": "d6633b62b34a61a69f78c6b8fd0b9ec84c5fcf398f9968c1466d46fc7eb9b482",
+  "test/widget/moment_photo_removal_recovery_test.dart": "239b30e5a713e82d8b9e247c521b639746532c4e42ac9d420327ea99c20a75ad",
+  "test/widget/album_invite_accept_test.dart": "cb857e800e38bec0e0b337ffe98ebfb462e982deecb149815cfc685406ba346e",
+  "test/widget/reader_navigation_continuity_test.dart": "610753056e75ed6caf93eb715624d03b4163b2e48f9c2a4745001257676b3449"
+}

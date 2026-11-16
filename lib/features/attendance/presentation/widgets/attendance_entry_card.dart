@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/navigation/web_app_location.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../views/attendance_screen.dart';
+import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 /// A private entry point only; opening a profile never performs a check-in.
 class AttendanceEntryCard extends StatelessWidget {
@@ -15,10 +17,7 @@ class AttendanceEntryCard extends StatelessWidget {
       key: const ValueKey('attendance-entry'),
       borderRadius: BorderRadius.circular(16),
       onTap: () => Navigator.of(context).push<void>(
-        MaterialPageRoute<void>(
-          settings: const WebAppRouteSettings(WebAppLocation.attendance),
-          builder: (_) => const AttendanceScreen(),
-        ),
+        snapFitRoute<void>(page: const AttendanceScreen(), settings: const WebAppRouteSettings(WebAppLocation.attendance)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -55,9 +54,7 @@ class AttendanceEntryCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Icon(
-              Icons.chevron_right_rounded,
-              color: ExperienceFormStyle.selectionInk(context),
+            ExperienceIcon('ChevronRight', color: ExperienceFormStyle.selectionInk(context),
             ),
           ],
         ),

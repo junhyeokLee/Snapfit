@@ -4,6 +4,7 @@ import '../../../../../shared/web/web_design.dart';
 
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../ai_album/domain/ai_album_models.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 class AiAlbumPhotoRangeStep extends StatelessWidget {
   const AiAlbumPhotoRangeStep({
@@ -147,10 +148,7 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.arrow_forward,
-                size: 20,
-                color: WebPalette.of(context).brandInk,
+              ExperienceIcon('ArrowRight', size: 20, color: WebPalette.of(context).brandInk,
               ),
             ],
           ),
@@ -207,7 +205,7 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: TextButton.icon(
             onPressed: onBack,
-            icon: const Icon(Icons.arrow_back, size: 18),
+            icon: const ExperienceIcon('ArrowLeft', size: 18),
             label: const Text('이전'),
           ),
         ),

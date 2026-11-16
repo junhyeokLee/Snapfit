@@ -27,6 +27,7 @@ import '../../../../shared/widgets/experience_icon.dart';
 import '../../../../shared/widgets/snapfit_shimmer.dart';
 import '../../../../shared/web/web_design.dart';
 import 'customer_print_test_order_history.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 class OrderHistoryScreen extends ConsumerStatefulWidget {
   const OrderHistoryScreen({
@@ -428,7 +429,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
                   description: '앨범 제작과 배송 진행 상황을 확인하세요.',
                   trailing: OutlinedButton.icon(
                     onPressed: _refreshOrders,
-                    icon: const Icon(Icons.refresh, size: 18),
+                    icon: const ExperienceIcon('RefreshCw', size: 18),
                     label: const Text('새로고침'),
                   ),
                 ),
@@ -1011,7 +1012,7 @@ class _LiveOrderDetailState extends ConsumerState<_LiveOrderDetail>
                   IconButton(
                     tooltip: '닫기',
                     onPressed: () => Navigator.pop(ctx),
-                    icon: const Icon(Icons.close, size: 22),
+                    icon: const ExperienceIcon('X', size: 22),
                   ),
                 ],
               ),
@@ -1093,10 +1094,7 @@ class _LiveOrderDetailState extends ConsumerState<_LiveOrderDetail>
                         OutlinedButton.icon(
                           onPressed: () =>
                               _copy(order.trackingNumber!.trim(), '송장번호'),
-                          icon: const Icon(
-                            Icons.local_shipping_outlined,
-                            size: 17,
-                          ),
+                          icon: const ExperienceIcon('Truck', size: 17),
                           label: const Text('송장 복사'),
                         ),
                     ],
@@ -1242,12 +1240,9 @@ class _LiveOrderDetailState extends ConsumerState<_LiveOrderDetail>
                                     unawaited(
                                       Navigator.push(
                                         navigationContext,
-                                        MaterialPageRoute(
-                                          builder: (_) =>
-                                              PrintOrderCompleteScreen(
+                                        snapFitRoute(page: PrintOrderCompleteScreen(
                                                 receipt: receipt,
-                                              ),
-                                        ),
+                                              )),
                                       ),
                                     );
                                   } else {
@@ -1274,12 +1269,10 @@ class _LiveOrderDetailState extends ConsumerState<_LiveOrderDetail>
                                   unawaited(
                                     Navigator.push(
                                       navigationContext,
-                                      MaterialPageRoute(
-                                        builder: (_) => PrintOrderPreviewScreen(
+                                      snapFitRoute(page: PrintOrderPreviewScreen(
                                           albumId: pending.albumId,
                                           albumTitle: order.title,
-                                        ),
-                                      ),
+                                        )),
                                     ),
                                   );
                                 } else {
@@ -1291,12 +1284,9 @@ class _LiveOrderDetailState extends ConsumerState<_LiveOrderDetail>
                                     unawaited(
                                       Navigator.push(
                                         navigationContext,
-                                        MaterialPageRoute(
-                                          builder: (_) =>
-                                              PrintOrderCompleteScreen(
+                                        snapFitRoute(page: PrintOrderCompleteScreen(
                                                 receipt: result.receipt!,
-                                              ),
-                                        ),
+                                              )),
                                       ),
                                     );
                                   } else {
@@ -1333,7 +1323,7 @@ class _LiveOrderDetailState extends ConsumerState<_LiveOrderDetail>
                       );
                       widget.onChanged();
                     },
-                    icon: const Icon(Icons.chat_bubble_outline),
+                    icon: const ExperienceIcon('MessageCircle'),
                     label: const Text('주문 문의 · 취소 · 환불 요청'),
                   ),
                   if (order.trackingNumber?.trim().isNotEmpty == true) ...[
@@ -1341,7 +1331,7 @@ class _LiveOrderDetailState extends ConsumerState<_LiveOrderDetail>
                     FilledButton.icon(
                       onPressed: _openTracking,
                       style: ExperienceFormStyle.primary(ctx),
-                      icon: const Icon(Icons.local_shipping_outlined, size: 19),
+                      icon: const ExperienceIcon('Truck', size: 19),
                       label: const Text('배송 조회'),
                     ),
                   ],
@@ -1624,7 +1614,7 @@ class _OrderPagedTabState extends ConsumerState<_OrderPagedTab> {
                   SizedBox(height: 10),
                   OutlinedButton.icon(
                     onPressed: _loadFirst,
-                    icon: const Icon(Icons.refresh_rounded),
+                    icon: const ExperienceIcon('RefreshCw'),
                     label: const Text('다시 시도'),
                   ),
                 ],
@@ -1678,7 +1668,7 @@ class _OrderPagedTabState extends ConsumerState<_OrderPagedTab> {
                 onPressed: () => _failedRefresh
                     ? _loadFirst(preserveItems: true)
                     : _loadMore(),
-                icon: const Icon(Icons.refresh),
+                icon: const ExperienceIcon('RefreshCw'),
                 label: const Text('최신 주문 상태를 다시 확인하기'),
               );
             }

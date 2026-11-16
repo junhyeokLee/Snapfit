@@ -238,7 +238,10 @@ Future<void> _capture(WidgetTester tester, GlobalKey key, String name) async {
         await (key.currentContext!.findRenderObject() as RenderRepaintBoundary)
             .toImage();
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-    final file = File('output/store-selection-qa/$name.png');
+    final directory =
+        Platform.environment['SNAPFIT_STORE_REVIEW_OUTPUT'] ??
+        'output/store-selection-qa';
+    final file = File('$directory/$name.png');
     await file.parent.create(recursive: true);
     await file.writeAsBytes(bytes!.buffer.asUint8List());
     image.dispose();
@@ -441,7 +444,7 @@ void main() {
       );
 
       storeDetailTestWidgets(
-        'template materials include real paid artwork and lazy list $suffix',
+        'template materials show every item inline and open its detail $suffix',
         (tester) async {
           _size(tester, size);
           final key = GlobalKey();
@@ -450,6 +453,7 @@ void main() {
               TemplateDetailScreen(template: _template),
               dark: dark,
               captureKey: key,
+              textScale: size.width == 320 ? 2 : 1,
             ),
           );
           await _paint(tester);
@@ -457,8 +461,6 @@ void main() {
             const ValueKey('template-gallery-materials'),
           );
           await tester.ensureVisible(materialsSection);
-          await tester.tap(find.text('함께 사용한 꾸밈 소재'));
-          await settleStoreDetail(tester);
           final materialPreviews = find.byWidgetPredicate(
             (widget) =>
                 widget.key is ValueKey<String> &&
@@ -479,36 +481,33 @@ void main() {
           await settleStoreDetail(tester);
           expect(material, findsOneWidget);
           await _capture(tester, key, 'included-$suffix');
-          await tester.tap(material);
-          await _paint(tester);
-          expect(find.text('사용한 꾸밈 소재'), findsOneWidget);
           final keys = templateVisualMaterialKeys(
             jsonDecode(_template.templateJson!),
           );
-          final list = tester.widget<ListView>(
-            find.byKey(const ValueKey('template-material-list')),
-          );
+          expect(materialPreviews, findsNWidgets(keys.length));
           expect(
-            (list.childrenDelegate as SliverChildBuilderDelegate).childCount,
-            keys.length + 1,
-          );
-          await _capture(tester, key, 'inventory-$suffix');
-          await tester.scrollUntilVisible(
-            find.byKey(ValueKey('template-material-row-${keys.last}')),
-            180,
-            scrollable: find.descendant(
-              of: find.byKey(const ValueKey('template-material-list')),
-              matching: find.byType(Scrollable),
+            find.descendant(
+              of: materialsSection,
+              matching: find.byType(ExpansionTile),
             ),
+            findsNothing,
           );
-          // Price/ownership labels can relayout the last lazily built row.
+          final last = find.byKey(
+            ValueKey('template-material-preview-${keys.last}'),
+          );
+          await tester.ensureVisible(last);
           await settleStoreDetail(tester);
-          expect(
-            find
-                .byKey(ValueKey('template-material-row-${keys.last}'))
-                .hitTestable(),
-            findsOneWidget,
-          );
+          expect(last.hitTestable(), findsOneWidget);
+          await _capture(tester, key, 'inventory-$suffix');
+          final relatedHeading = find.text('비슷한 분위기');
+          await tester.ensureVisible(relatedHeading);
+          await _paint(tester);
+          await _capture(tester, key, 'related-$suffix');
+          await tester.ensureVisible(last);
+          await settleStoreDetail(tester);
+          await tester.tap(last);
+          await _paint(tester);
+          expect(find.byType(MaterialDetailScreen), findsOneWidget);
           expect(tester.takeException(), isNull);
         },
       );

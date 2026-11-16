@@ -1,0 +1,1518 @@
+--- a/lib/features/album/presentation/views/album_category_screen.dart
++++ b/lib/features/album/presentation/views/album_category_screen.dart
+@@ -184,13 +184,7 @@
+     }
+   }
+ 
+-  List<String> get _tabs {
+-    switch (widget.category) {
+-      case AlbumCategory.recent:
+-      case AlbumCategory.shared:
+-        return const ['진행 중', '완료', '즐겨찾기'];
+-    }
+-  }
++  List<String> get _tabs => const ['전체', '즐겨찾기'];
+ 
+   Color get _tabAccent {
+     return SnapFitColors.accent;
+@@ -217,16 +211,7 @@
+       return title.contains(q) || theme.contains(q) || album.id.toString() == q;
+     }).toList();
+ 
+-    switch (_selectedTab) {
+-      case 0:
+-        return searched.where((a) => !isCompletedAlbum(a)).toList();
+-      case 1:
+-        return searched.where((a) => isCompletedAlbum(a)).toList();
+-      case 2:
+-        return searched.where(_isFavorite).toList();
+-      default:
+-        return searched;
+-    }
++    return _selectedTab == 1 ? searched.where(_isFavorite).toList() : searched;
+   }
+ 
+   String _ownerLabel(Album album) {
+@@ -511,31 +496,34 @@
+                                   crossAxisAlignment: CrossAxisAlignment.start,
+                                   children: [
+                                     Expanded(
+-                                      child: Center(
+-                                        child: WebSavedAlbumArtwork(
+-                                          album: album,
+-                                        ),
++                                      child: Stack(
++                                        fit: StackFit.expand,
++                                        children: [
++                                          Center(
++                                            child: WebSavedAlbumArtwork(
++                                              album: album,
++                                            ),
++                                          ),
++                                          Positioned(
++                                            top: 0,
++                                            right: 0,
++                                            child: _favoriteButton(album),
++                                          ),
++                                        ],
+                                       ),
+                                     ),
+                                     const SizedBox(height: 18),
+-                                    Row(
+-                                      children: [
+-                                        Expanded(
+-                                          child: Text(
+-                                            album.title.isEmpty
+-                                                ? '제목 없음'
+-                                                : album.title,
+-                                            maxLines: 1,
+-                                            overflow: TextOverflow.ellipsis,
+-                                            style: TextStyle(
+-                                              fontSize: 15,
+-                                              fontWeight: FontWeight.w700,
+-                                              color: WebPalette.of(context).ink,
+-                                            ),
+-                                          ),
+-                                        ),
+-                                        _favoriteButton(album),
+-                                      ],
++                                    Text(
++                                      album.title.isEmpty
++                                          ? '제목 없음'
++                                          : album.title,
++                                      maxLines: 2,
++                                      overflow: TextOverflow.ellipsis,
++                                      style: TextStyle(
++                                        fontSize: 15,
++                                        fontWeight: FontWeight.w700,
++                                        color: WebPalette.of(context).ink,
++                                      ),
+                                     ),
+                                     Text(
+                                       _albumSubtitle(album),
+@@ -621,30 +609,33 @@
+                         SizedBox(
+                           height: stage,
+                           width: double.infinity,
+-                          child: SavedAlbumArtwork(
+-                            key: shared
+-                                ? ValueKey('shared-cover-${album.id}')
+-                                : null,
+-                            album: album,
++                          child: Stack(
++                            fit: StackFit.expand,
++                            children: [
++                              SavedAlbumArtwork(
++                                key: shared
++                                    ? ValueKey('shared-cover-${album.id}')
++                                    : null,
++                                album: album,
++                              ),
++                              Positioned(
++                                top: 4,
++                                right: 4,
++                                child: _favoriteButton(album),
++                              ),
++                            ],
+                           ),
+                         ),
+                         const SizedBox(height: 10),
+-                        Row(
+-                          children: [
+-                            Expanded(
+-                              child: Text(
+-                                album.title.isEmpty ? '제목 없음' : album.title,
+-                                maxLines: 2,
+-                                overflow: TextOverflow.ellipsis,
+-                                style: ExperienceFormStyle.text(
+-                                  context,
+-                                  14,
+-                                  weight: FontWeight.w600,
+-                                ),
+-                              ),
+-                            ),
+-                            _favoriteButton(album),
+-                          ],
++                        Text(
++                          album.title.isEmpty ? '제목 없음' : album.title,
++                          maxLines: 2,
++                          overflow: TextOverflow.ellipsis,
++                          style: ExperienceFormStyle.text(
++                            context,
++                            14,
++                            weight: FontWeight.w600,
++                          ),
+                         ),
+                         Text(
+                           _albumSubtitle(album),
+@@ -686,6 +677,11 @@
+   Widget _favoriteButton(Album album) => IconButton(
+     tooltip: _isFavorite(album) ? '즐겨찾기 해제' : '즐겨찾기',
+     onPressed: () => _toggleFavorite(album),
++    // 제목 폭을 보존하면서 사진 위에서도 상태와 터치 영역을 구분한다.
++    constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
++    style: IconButton.styleFrom(
++      backgroundColor: SnapFitColors.surfaceOf(context).withValues(alpha: .94),
++    ),
+     color: _isFavorite(album)
+         ? ExperienceFormStyle.selectionInk(context)
+         : ExperienceFormStyle.muted(context),
+--- a/lib/features/store/presentation/views/store_screen.dart
++++ b/lib/features/store/presentation/views/store_screen.dart
+@@ -54,12 +54,14 @@
+     this.editorial = false,
+     this.onBrowseMaterials,
+     this.searchMode = false,
++    this.comparisonController,
+   });
+   final bool ownedOnly;
+   final bool embedded;
+   final bool editorial;
+   final bool searchMode;
+   final VoidCallback? onBrowseMaterials;
++  final TemplateDesignComparisonController? comparisonController;
+   @override
+   ConsumerState<StoreScreen> createState() => _StoreScreenState();
+ }
+@@ -76,9 +78,11 @@
+   String _priceFilter = '전체';
+   String _sort = '최신순';
+   String? _selectedStyle;
+-  TemplateDesignComparisonSelection _comparison =
+-      const TemplateDesignComparisonSelection.empty();
+-  final _comparisonTemplates = <int, PremiumTemplate>{};
++  final _localComparisonController = TemplateDesignComparisonController();
++  TemplateDesignComparisonController get _comparisonController =>
++      widget.comparisonController ?? _localComparisonController;
++  TemplateDesignComparisonSelection get _comparison =>
++      _comparisonController.selection;
+   Widget? _catalogContent;
+   late final _categories = storeTemplateCategories(
+     publishedCreationTemplates.map((t) => t.category ?? ''),
+@@ -100,10 +104,7 @@
+   void _toggleComparison(PremiumTemplate template) {
+     FocusManager.instance.primaryFocus?.unfocus();
+     if (_comparison.contains(template.id)) {
+-      setState(() {
+-        _comparison = _comparison.remove(template.id);
+-        _comparisonTemplates.remove(template.id);
+-      });
++      _comparisonController.remove(template.id);
+     } else if (_comparison.isFull) {
+       ScaffoldMessenger.of(context).showSnackBar(
+         const SnackBar(
+@@ -111,34 +112,16 @@
+         ),
+       );
+     } else {
+-      setState(() {
+-        _comparison = _comparison.add(template.id);
+-        _comparisonTemplates[template.id] = template;
+-      });
++      _comparisonController.add(template);
+     }
+   }
+ 
+   Widget _withComparison(List<PremiumTemplate> catalog, Widget content) {
+     // Selected products remain available across filters without starting a
+     // second, full-catalog request just to display the comparison tray.
+-    final selected = <PremiumTemplate>[];
+-    for (final id in _comparison.ids) {
+-      final template =
+-          catalog.where((item) => item.id == id).firstOrNull ??
+-          _comparisonTemplates[id];
+-      if (template != null) {
+-        _comparisonTemplates[id] = template;
+-        selected.add(template);
+-      }
+-    }
+-    void remove(PremiumTemplate template) => setState(() {
+-      _comparison = _comparison.remove(template.id);
+-      _comparisonTemplates.remove(template.id);
+-    });
+-    void clear() => setState(() {
+-      _comparison = _comparison.clear();
+-      _comparisonTemplates.clear();
+-    });
++    final selected = _comparisonController.resolve(catalog);
++    void remove(PremiumTemplate template) =>
++        _comparisonController.remove(template.id);
+     return LayoutBuilder(
+       builder: (context, bounds) => Column(
+         children: [
+@@ -153,12 +136,12 @@
+               child: TemplateDesignComparisonTray(
+                 designs: selected,
+                 onRemove: remove,
+-                onClear: clear,
++                onClear: _comparisonController.clear,
+                 onCompare: () => showTemplateDesignComparison(
+                   context,
+                   designs: selected,
+                   onRemove: remove,
+-                  onClear: clear,
++                  onClear: _comparisonController.clear,
+                   onOpen: _openTemplate,
+                 ),
+               ),
+@@ -390,11 +373,26 @@
+     super.initState();
+     _searchController.addListener(_onSearchChanged);
+     _scrollController.addListener(_loadNearEnd);
++    _comparisonController.addListener(_onComparisonChanged);
++  }
++
++  void _onComparisonChanged() => setState(() {});
++
++  @override
++  void didUpdateWidget(covariant StoreScreen oldWidget) {
++    super.didUpdateWidget(oldWidget);
++    if (oldWidget.comparisonController != widget.comparisonController) {
++      (oldWidget.comparisonController ?? _localComparisonController)
++          .removeListener(_onComparisonChanged);
++      _comparisonController.addListener(_onComparisonChanged);
++    }
+   }
+ 
+   @override
+   void dispose() {
+     _cancelPagination();
++    _comparisonController.removeListener(_onComparisonChanged);
++    _localComparisonController.dispose();
+     _searchController.dispose();
+     _scrollController.dispose();
+     super.dispose();
+--- a/lib/features/store/presentation/views/store_hub_screen.dart
++++ b/lib/features/store/presentation/views/store_hub_screen.dart
+@@ -13,6 +13,7 @@
+ import '../../data/api/template_provider.dart';
+ import '../../../../shared/widgets/deferred_content.dart';
+ import '../../../../shared/widgets/snapfit_shimmer.dart';
++import '../widgets/template_design_comparison.dart';
+ 
+ /// Both departments retain search and scroll position, and mount on demand.
+ class StoreHubScreen extends StatefulWidget {
+@@ -30,14 +31,22 @@
+ class _StoreHubScreenState extends State<StoreHubScreen> {
+   late int _index = widget.initialMaterials ? 1 : 0;
+   late final Set<int> _visited = {_index};
++  final _comparisonController = TemplateDesignComparisonController();
+   bool _searchOpen = false;
+   // The department shell changes selection; its mounted catalog widgets do
+   // not need new identities or callbacks on every navigation update.
+   late final _templates = StoreScreen(
+     embedded: true,
+     editorial: true,
++    comparisonController: _comparisonController,
+     onBrowseMaterials: () => _selectCatalog(1),
+   );
++
++  @override
++  void dispose() {
++    _comparisonController.dispose();
++    super.dispose();
++  }
+ 
+   @override
+   void didUpdateWidget(covariant StoreHubScreen oldWidget) {
+@@ -94,7 +103,10 @@
+                       StoreTemplateFeedNotifier.new,
+                     ),
+                   ],
+-                  child: const StoreScreen(searchMode: true),
++                  child: StoreScreen(
++                    searchMode: true,
++                    comparisonController: _comparisonController,
++                  ),
+                 )
+               : const MaterialCatalogScreen(searchMode: true),
+         ),
+--- a/lib/features/store/presentation/widgets/template_design_comparison.dart
++++ b/lib/features/store/presentation/widgets/template_design_comparison.dart
+@@ -51,6 +51,60 @@
+ 
+   TemplateDesignComparisonSelection clear() =>
+       const TemplateDesignComparisonSelection.empty();
++}
++
++/// 한 스토어의 탐색·검색 화면만 공유하며 선택한 디자인 최대 세 개를 보관한다.
++class TemplateDesignComparisonController extends ChangeNotifier {
++  TemplateDesignComparisonSelection _selection =
++      const TemplateDesignComparisonSelection.empty();
++  final _templates = <int, PremiumTemplate>{};
++
++  TemplateDesignComparisonSelection get selection => _selection;
++
++  void add(PremiumTemplate template) {
++    if (_selection.addResult(template.id) !=
++        TemplateDesignComparisonAddResult.added) {
++      return;
++    }
++    _selection = _selection.add(template.id);
++    _templates[template.id] = template;
++    notifyListeners();
++  }
++
++  void remove(int id) {
++    if (!_selection.contains(id)) return;
++    _selection = _selection.remove(id);
++    _templates.remove(id);
++    notifyListeners();
++  }
++
++  void clear() {
++    if (_selection.ids.isEmpty) return;
++    _selection = _selection.clear();
++    _templates.clear();
++    notifyListeners();
++  }
++
++  List<PremiumTemplate> resolve(List<PremiumTemplate> catalog) {
++    final selected = <PremiumTemplate>[];
++    for (final id in _selection.ids) {
++      // 현재 목록에서 사라진 후보도 추가 조회 없이 비교할 수 있게 유지한다.
++      final template =
++          catalog.where((item) => item.id == id).firstOrNull ?? _templates[id];
++      if (template != null) {
++        _templates[id] = template;
++        selected.add(template);
++      }
++    }
++    return selected;
++  }
++
++  @override
++  void dispose() {
++    _selection = _selection.clear();
++    _templates.clear();
++    super.dispose();
++  }
+ }
+ 
+ /// A controlled tray shared by the app and web catalog.
+--- a/lib/shared/widgets/browser_photo_selection_sheet.dart
++++ b/lib/shared/widgets/browser_photo_selection_sheet.dart
+@@ -266,11 +266,41 @@
+   Widget build(BuildContext context) {
+     ref.watch(visibleOrderOwnerProvider);
+     if (!_ownerCurrent || _repository == null) {
+-      return const SizedBox(
+-        height: 220,
+-        child: Center(child: Text('로그인한 계정이 변경됐어요. 사진 선택창을 닫고 다시 열어주세요.')),
++      return Padding(
++        padding: const EdgeInsets.all(24),
++        child: Column(
++          mainAxisSize: MainAxisSize.min,
++          crossAxisAlignment: CrossAxisAlignment.stretch,
++          children: [
++            Text(
++              _repository == null ? '사진 선택창을 열 수 없어요' : '로그인한 계정이 변경됐어요',
++              style: ExperienceFormStyle.text(
++                context,
++                20,
++                weight: FontWeight.w600,
++              ),
++            ),
++            const SizedBox(height: 12),
++            Text(
++              '사진 선택창을 닫고 다시 열어주세요.',
++              style: ExperienceFormStyle.text(context, 14, secondary: true),
++            ),
++            const SizedBox(height: 24),
++            Align(
++              alignment: Alignment.centerRight,
++              child: FilledButton(
++                // 계정이 바뀐 요청은 결과를 사용할 수 없으므로 읽기 완료를 기다리지 않고 닫는다.
++                onPressed: () => Navigator.pop(context),
++                child: const Text('닫기'),
++              ),
++            ),
++          ],
++        ),
+       );
+     }
++    final selectionOrder = {
++      for (final (index, id) in _selected.indexed) id: index + 1,
++    };
+     return SizedBox(
+       height: MediaQuery.sizeOf(context).height * .88,
+       child: Column(
+@@ -421,10 +451,12 @@
+                       itemCount: _photos.length,
+                       itemBuilder: (context, index) {
+                         final photo = _photos[index],
+-                            selected = _selected.contains(_photos[index].id);
++                            number = selectionOrder[photo.id] ?? 0,
++                            selected = number > 0;
+                         return Semantics(
+                           label:
+-                              '${photo.title ?? '사진'} ${photo.width}×${photo.height}',
++                              '${photo.title ?? '사진'} ${photo.width}×${photo.height}'
++                              '${selected ? ', $number번째 선택' : ''}',
+                           selected: selected,
+                           button: true,
+                           child: InkWell(
+@@ -478,9 +510,19 @@
+                                     color: Colors.black26,
+                                     alignment: Alignment.topRight,
+                                     padding: const EdgeInsets.all(8),
+-                                    child: const Icon(
+-                                      Icons.check_circle,
+-                                      color: Colors.white,
++                                    child: ExcludeSemantics(
++                                      child: CircleAvatar(
++                                        radius: 12,
++                                        backgroundColor: Colors.white,
++                                        foregroundColor: Colors.black87,
++                                        child: Text(
++                                          '$number',
++                                          style: const TextStyle(
++                                            fontSize: 12,
++                                            fontWeight: FontWeight.w700,
++                                          ),
++                                        ),
++                                      ),
+                                     ),
+                                   ),
+                               ],
+@@ -521,8 +563,9 @@
+                       : () {
+                           if (!_ownerCurrent) return;
+                           Navigator.pop(context, <AssetEntity>[
+-                            for (final photo in _photos)
+-                              if (_selected.contains(photo.id)) photo,
++                            // 선택 순서는 자동 채우기의 지면 순서로 이어진다.
++                            for (final id in _selected)
++                              _photos.firstWhere((photo) => photo.id == id),
+                           ]);
+                         },
+                   child: Text('${_selected.length}장 선택 완료'),
+--- a/test/widget/personal_workshop_journey_test.dart
++++ b/test/widget/personal_workshop_journey_test.dart
+@@ -597,13 +597,9 @@
+           viewport(tester, size);
+           await mount(tester, albumPage(), dark: dark);
+           await capture(tester, 'personal-atelier-albums', size, dark);
+-          await tap(tester, find.text('완료'));
+-          await capture(
+-            tester,
+-            'personal-atelier-albums-completed',
+-            size,
+-            dark,
+-          );
++          expect(find.text('전체'), findsOneWidget);
++          expect(find.text('진행 중'), findsNothing);
++          expect(find.text('완료'), findsNothing);
+           await tap(tester, find.text('즐겨찾기'));
+           await capture(
+             tester,
+@@ -719,11 +715,11 @@
+         FocusManager.instance.primaryFocus?.unfocus();
+         viewport(tester, size);
+         await mount(tester, albumPage(), scale: 1.8);
+-        await tap(tester, find.text('완료'));
++        await tap(tester, find.text('즐겨찾기'));
+         viewport(tester, other);
+         await paint(tester);
+-        expect(key('personal-record-4'), findsOneWidget);
+-        expect(key('personal-record-1'), findsNothing);
++        expect(key('personal-record-1'), findsOneWidget);
++        expect(key('personal-record-4'), findsNothing);
+         await mount(tester, const OrderHistoryScreen(), scale: 1.8);
+         await tap(tester, key('personal-order-${orders.first.orderId}'));
+         final info = find
+--- a/test/widget/template_design_comparison_test.dart
++++ b/test/widget/template_design_comparison_test.dart
+@@ -1,4 +1,6 @@
+ import 'dart:ui' as ui;
++
++import '../support/catalog_preview_loading.dart';
+ 
+ import 'package:flutter/material.dart';
+ import 'package:flutter/services.dart';
+@@ -171,6 +173,11 @@
+           },
+         ),
+       );
++      await tester.pumpAndSettle();
++      // 편집 가능한 미리보기는 가상 프레임 밖의 작업도 완료되어야 나타난다.
++      for (final design in designs) {
++        await loadCatalogPreview(tester, design);
++      }
+       await tester.pumpAndSettle();
+       expect(find.byType(CreationCatalogCover), findsNWidgets(3));
+       expect(find.byType(CatalogSpreadPreview), findsNWidgets(3));
+--- /dev/null
++++ b/test/widget/album_collection_unified_test.dart
+@@ -0,0 +1,248 @@
++import 'dart:convert';
++
++import 'package:flutter/material.dart';
++import 'package:flutter_riverpod/flutter_riverpod.dart';
++import 'package:flutter_screenutil/flutter_screenutil.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:shared_preferences/shared_preferences.dart';
++import 'package:snap_fit/core/theme/snapfit_theme.dart';
++import 'package:snap_fit/features/album/domain/entities/album.dart';
++import 'package:snap_fit/features/album/presentation/views/album_category_screen.dart';
++import 'package:snap_fit/features/album/service/album_collaboration_session.dart';
++
++import 'ai_album_start_step_test.dart' show loadCreationFonts;
++
++// 실제 작성 provenance를 포함하므로 할당된 쪽수만으로 완료를 흉내 내지 않는다.
++Album _album(
++  int id,
++  String title, {
++  required bool completed,
++  String owner = 'qa',
++}) => Album(
++  id: id,
++  userId: owner,
++  title: title,
++  coverTheme: 'classic',
++  ratio: '1',
++  totalPages: 3,
++  targetPages: 2,
++  createdAt: '2026-11-${(15 - id).toString().padLeft(2, '0')}T10:00:00',
++  coverLayersJson: jsonEncode({
++    'pages': [
++      {'index': 0, 'isCover': true, 'layers': []},
++      for (var index = 1; index <= 2; index++)
++        {
++          'index': index,
++          'isCover': false,
++          'layers': completed || index == 1
++              ? [
++                  {
++                    'type': 'TEXT',
++                    'templateContent': false,
++                    'payload': {'text': '직접 남긴 기록 $index'},
++                  },
++                ]
++              : [],
++        },
++    ],
++  }),
++);
++
++class _Actor extends Notifier<String?> {
++  @override
++  String? build() => 'qa';
++
++  void change(String? owner) => state = owner;
++}
++
++final _actorProvider = NotifierProvider<_Actor, String?>(_Actor.new);
++
++Finder _record(int id) => find.byKey(ValueKey('personal-record-$id'));
++
++Future<ProviderContainer> _mount(
++  WidgetTester tester,
++  List<Album> albums, {
++  AlbumCategory category = AlbumCategory.recent,
++  Size size = const Size(390, 844),
++  double textScale = 1,
++}) async {
++  tester.view.physicalSize = size;
++  tester.view.devicePixelRatio = 1;
++  addTearDown(tester.view.resetPhysicalSize);
++  addTearDown(tester.view.resetDevicePixelRatio);
++  final container = ProviderContainer(
++    overrides: [
++      // SDK 세션 대신 화면이 실제로 구독하는 계정 경계만 제어한다.
++      albumCollaborationActorProvider.overrideWith(
++        (ref) => ref.watch(_actorProvider),
++      ),
++    ],
++  );
++  addTearDown(container.dispose);
++  await tester.pumpWidget(
++    UncontrolledProviderScope(
++      container: container,
++      child: ScreenUtilInit(
++        designSize: const Size(390, 844),
++        builder: (_, __) => MaterialApp(
++          theme: SnapFitTheme.light(),
++          builder: (context, child) => MediaQuery(
++            data: MediaQuery.of(
++              context,
++            ).copyWith(textScaler: TextScaler.linear(textScale)),
++            child: child!,
++          ),
++          home: AlbumCategoryScreen(
++            category: category,
++            initialAlbums: albums,
++            currentUserId: 'qa',
++          ),
++        ),
++      ),
++    ),
++  );
++  await tester.pumpAndSettle();
++  return container;
++}
++
++void main() {
++  setUpAll(loadCreationFonts);
++  setUp(() => SharedPreferences.setMockInitialValues({}));
++
++  testWidgets(
++    'album collection first entry keeps completed and working albums together',
++    (tester) async {
++      await _mount(tester, [
++        _album(1, '완성한 가을 여행', completed: true),
++        _album(2, '만드는 중인 겨울 여행', completed: false),
++      ]);
++
++      expect(_record(1), findsOneWidget);
++      expect(_record(2), findsOneWidget);
++      expect(find.text('전체'), findsOneWidget);
++      expect(find.text('진행 중'), findsNothing);
++      expect(find.text('완료'), findsNothing);
++      expect(find.text('표시할 앨범이 없습니다.'), findsNothing);
++      expect(tester.takeException(), isNull);
++    },
++  );
++
++  testWidgets(
++    'album search includes both states and respects the favorites scope',
++    (tester) async {
++      SharedPreferences.setMockInitialValues({
++        'album_favorite_ids_v1': ['1', '3'],
++      });
++      await _mount(tester, [
++        _album(1, '가을 여행 완성본', completed: true),
++        _album(2, '가을 여행 초안', completed: false),
++        _album(3, '봄 소풍 완성본', completed: true),
++      ]);
++      await tester.tap(find.byTooltip('앨범 검색'));
++      await tester.pumpAndSettle();
++      await tester.enterText(find.byType(TextField), '가을 여행');
++      await tester.pumpAndSettle();
++      expect(_record(1), findsOneWidget);
++      expect(_record(2), findsOneWidget);
++      expect(_record(3), findsNothing);
++
++      await tester.tap(find.text('즐겨찾기'));
++      await tester.pumpAndSettle();
++      expect(_record(1), findsOneWidget);
++      expect(_record(2), findsNothing);
++      await tester.enterText(find.byType(TextField), '봄');
++      await tester.pumpAndSettle();
++      expect(_record(3), findsOneWidget);
++      expect(_record(1), findsNothing);
++
++      await tester.enterText(find.byType(TextField), '가을 여행');
++      await tester.tap(find.text('전체'));
++      await tester.pumpAndSettle();
++      expect(_record(1), findsOneWidget);
++      expect(_record(2), findsOneWidget);
++      expect(tester.takeException(), isNull);
++    },
++  );
++
++  testWidgets('shared collection keeps its ownership and session boundaries', (
++    tester,
++  ) async {
++    final container = await _mount(tester, [
++      _album(1, '내가 만든 앨범', completed: true),
++      _album(2, '함께 만드는 앨범', completed: false, owner: 'friend'),
++      _album(3, '함께 완성한 앨범', completed: true, owner: 'friend'),
++      _album(4, '소유자 미확인', completed: false, owner: ''),
++    ], category: AlbumCategory.shared);
++
++    expect(_record(1), findsNothing);
++    expect(_record(2), findsOneWidget);
++    expect(_record(3), findsOneWidget);
++    expect(_record(4), findsNothing);
++    container.read(_actorProvider.notifier).change('other-account');
++    await tester.pumpAndSettle();
++    expect(_record(2), findsNothing);
++    expect(_record(3), findsNothing);
++    expect(find.textContaining('계정이 변경되었어요.'), findsOneWidget);
++    expect(find.byTooltip('앨범 검색'), findsNothing);
++    expect(tester.takeException(), isNull);
++  });
++
++  for (final (size, scale) in [
++    (const Size(320, 568), 1.0),
++    (const Size(844, 390), 1.0),
++    (const Size(390, 844), 1.8),
++  ]) {
++    testWidgets('album collection stays usable at $size textScale=$scale', (
++      tester,
++    ) async {
++      await _mount(
++        tester,
++        [
++          _album(1, '함께 남긴 긴 제목의 여행 기록을 다시 찾아보는 앨범', completed: true),
++          _album(2, '만드는 중인 두 번째 이야기', completed: false),
++        ],
++        size: size,
++        textScale: scale,
++      );
++      expect(_record(1), findsOneWidget);
++      expect(find.text('전체').hitTestable(), findsOneWidget);
++      final favorite = find.descendant(
++        of: _record(1),
++        matching: find.byTooltip('즐겨찾기'),
++      );
++      await tester.ensureVisible(favorite);
++      await tester.pumpAndSettle();
++      expect(favorite.hitTestable(), findsOneWidget);
++      expect(tester.getSize(favorite).width, greaterThanOrEqualTo(44));
++      expect(tester.getSize(favorite).height, greaterThanOrEqualTo(44));
++      await tester.tap(favorite);
++      await tester.pumpAndSettle();
++      expect(
++        find.descendant(of: _record(1), matching: find.byTooltip('즐겨찾기 해제')),
++        findsOneWidget,
++      );
++      expect(
++        (await SharedPreferences.getInstance()).getStringList(
++          'album_favorite_ids_v1',
++        ),
++        ['1'],
++      );
++      expect(
++        ModalRoute.of(
++          tester.element(find.byType(AlbumCategoryScreen)),
++        )?.isCurrent,
++        isTrue,
++        reason: '즐겨찾기는 부모 카드의 앨범 열기를 실행하면 안 된다.',
++      );
++      // 표지를 드러내며 화면 밖으로 밀린 탭도 찾아 스크롤을 되돌린다.
++      // 제스처 새로고침 없이 돌아가므로 저장소 요청을 만들지 않는다.
++      await tester.ensureVisible(find.text('즐겨찾기', skipOffstage: false));
++      await tester.pumpAndSettle();
++      await tester.tap(find.text('즐겨찾기'));
++      await tester.pumpAndSettle();
++      expect(_record(1), findsOneWidget);
++      expect(_record(2), findsNothing);
++      expect(tester.takeException(), isNull);
++    });
++  }
++}
+--- /dev/null
++++ b/test/widget/store_comparison_continuity_test.dart
+@@ -0,0 +1,356 @@
++import 'dart:async';
++
++import 'package:flutter/material.dart';
++import 'package:flutter/services.dart';
++import 'package:flutter_riverpod/flutter_riverpod.dart';
++import 'package:flutter_screenutil/flutter_screenutil.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:shared_preferences/shared_preferences.dart';
++import 'package:snap_fit/core/theme/snapfit_theme.dart';
++import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
++import 'package:snap_fit/features/point_shop/data/point_shop_provider.dart';
++import 'package:snap_fit/features/point_shop/domain/point_shop_product.dart';
++import 'package:snap_fit/features/point_shop/domain/point_shop_template_key.dart';
++import 'package:snap_fit/features/store/data/api/template_provider.dart';
++import 'package:snap_fit/features/store/data/store_curation_provider.dart';
++import 'package:snap_fit/features/store/data/store_discovery_provider.dart';
++import 'package:snap_fit/features/store/domain/entities/premium_template.dart';
++import 'package:snap_fit/features/store/domain/store_product_discovery.dart';
++import 'package:snap_fit/features/store/presentation/views/store_hub_screen.dart';
++import 'package:snap_fit/features/store/presentation/views/store_screen.dart';
++import 'package:snap_fit/features/store/presentation/widgets/public_template_information.dart';
++import 'package:snap_fit/features/store/presentation/widgets/template_design_comparison.dart';
++import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
++
++import '../support/catalog_preview_loading.dart';
++import 'ai_album_start_step_test.dart' show loadCreationFonts;
++
++final _designs = publishedCreationTemplates.take(4).toList();
++
++Future<GlobalKey<NavigatorState>> _mount(
++  WidgetTester tester, {
++  Widget screen = const StoreHubScreen(),
++}) async {
++  tester.view.physicalSize = const Size(390, 844);
++  tester.view.devicePixelRatio = 1;
++  addTearDown(tester.view.resetPhysicalSize);
++  addTearDown(tester.view.resetDevicePixelRatio);
++  final navigator = GlobalKey<NavigatorState>();
++  final products = [
++    for (final design in _designs)
++      PointShopProduct(
++        productKey: pointShopTemplateKey(design),
++        kind: 'template',
++        assetId: '${design.id}',
++        title: design.title,
++        pointPrice: 0,
++        isActive: true,
++      ),
++  ];
++  await tester.pumpWidget(
++    ProviderScope(
++      retry: (_, __) => null,
++      overrides: [
++        mockTemplateList(() => _designs),
++        templateRepositoryProvider.overrideWith(
++          (_) => throw StateError('Use the supplied public catalog'),
++        ),
++        pointShopRepositoryProvider.overrideWith(
++          (_) => throw StateError('Comparison must not read private data'),
++        ),
++        pointShopCatalogProvider.overrideWith((_) async => products),
++        publicPointShopCatalogProvider.overrideWith((_) async => products),
++        ownedPointShopKeysProvider.overrideWith((_) async => <String>{}),
++        storeCurationsProvider.overrideWith(
++          (_) async => <String, StoreCuration>{},
++        ),
++        storeDiscoveryProvider.overrideWith(
++          (_) async => <String, StoreProductDiscovery>{},
++        ),
++        storeDiscoveryClockProvider.overrideWithValue(
++          DateTime.utc(2026, 11, 16),
++        ),
++      ],
++      child: ScreenUtilInit(
++        designSize: const Size(390, 844),
++        builder: (_, __) => MaterialApp(
++          navigatorKey: navigator,
++          debugShowCheckedModeBanner: false,
++          theme: SnapFitTheme.light(),
++          builder: (context, child) => MediaQuery(
++            data: MediaQuery.of(context).copyWith(disableAnimations: true),
++            child: child!,
++          ),
++          home: screen,
++        ),
++      ),
++    ),
++  );
++  await tester.pumpAndSettle();
++  for (final design in _designs) {
++    await loadCatalogPreview(tester, design);
++  }
++  await tester.pumpAndSettle();
++  return navigator;
++}
++
++List<int> _selected(WidgetTester tester) => tester
++    .widget<TemplateDesignComparisonTray>(
++      find.byType(TemplateDesignComparisonTray),
++    )
++    .designs
++    .map((design) => design.id)
++    .toList();
++
++Future<void> _searchFor(WidgetTester tester, PremiumTemplate design) async {
++  // 긴 결과를 본 뒤에는 lazy sliver의 검색창을 먼저 다시 마운트한다.
++  tester
++      .widget<CustomScrollView>(find.byType(CustomScrollView))
++      .controller!
++      .jumpTo(0);
++  await tester.pumpAndSettle();
++  final search = find.byType(TextField);
++  await tester.ensureVisible(search);
++  await tester.pumpAndSettle();
++  await tester.enterText(search, design.title);
++  FocusManager.instance.primaryFocus?.unfocus();
++  await tester.pumpAndSettle();
++}
++
++Future<void> _compare(WidgetTester tester, PremiumTemplate design) async {
++  final button = find.byKey(ValueKey('compare-template-${design.id}'));
++  final scroll = find
++      .descendant(
++        of: find.byType(CustomScrollView),
++        matching: find.byType(Scrollable),
++      )
++      .first;
++  await tester.scrollUntilVisible(button, 200, scrollable: scroll);
++  await tester.ensureVisible(button);
++  await tester.pumpAndSettle();
++  expect(button.hitTestable(), findsOneWidget);
++  await tester.tap(button);
++  await tester.pumpAndSettle();
++}
++
++Future<void> _openSearch(WidgetTester tester) async {
++  await tester.tap(find.byTooltip('스토어 검색'));
++  await tester.pumpAndSettle();
++  expect(
++    tester.widget<StoreScreen>(find.byType(StoreScreen)).searchMode,
++    isTrue,
++  );
++}
++
++Future<void> _back(WidgetTester tester) async {
++  Navigator.of(tester.element(find.byType(StoreScreen))).pop();
++  await tester.pumpAndSettle();
++}
++
++void main() {
++  setUpAll(() async {
++    await loadCreationFonts();
++    await (FontLoader(
++      'BookMyungjo',
++    )..addFont(rootBundle.load('assets/fonts/BookkMyungjo_Bold.ttf'))).load();
++  });
++  setUp(() async {
++    SharedPreferences.setMockInitialValues({});
++    CatalogFavorites.instance = CatalogFavorites();
++    await CatalogFavorites.instance.load();
++  });
++  tearDown(() => CatalogFavorites.instance.dispose());
++
++  testWidgets('header search keeps the same comparison and independent query', (
++    tester,
++  ) async {
++    await _mount(tester);
++    final first = _designs[0], second = _designs[1];
++    await _searchFor(tester, first);
++    await _compare(tester, first);
++    final mainQuery = tester
++        .widget<TextField>(find.byType(TextField))
++        .controller!;
++    final mainScroll = tester
++        .widget<CustomScrollView>(find.byType(CustomScrollView))
++        .controller!;
++    final mainOffset = mainScroll.offset;
++    expect(_selected(tester), [first.id]);
++
++    await _openSearch(tester);
++    expect(_selected(tester), [first.id]);
++    expect(
++      tester.widget<TextField>(find.byType(TextField)).controller!.text,
++      '',
++    );
++    await _searchFor(tester, second);
++    await _compare(tester, second);
++    expect(_selected(tester), [first.id, second.id]);
++    await _back(tester);
++
++    expect(_selected(tester), [first.id, second.id]);
++    expect(
++      tester.widget<TextField>(find.byType(TextField)).controller,
++      same(mainQuery),
++    );
++    expect(mainQuery.text, first.title);
++    expect(mainScroll.offset, closeTo(mainOffset, .5));
++    // 검색을 새로 열어도 비교 후보만 이어지고 이전 검색어는 섞이지 않는다.
++    await _openSearch(tester);
++    expect(_selected(tester), [first.id, second.id]);
++    expect(
++      tester.widget<TextField>(find.byType(TextField)).controller!.text,
++      '',
++    );
++    await _back(tester);
++    expect(tester.takeException(), isNull);
++  });
++
++  testWidgets('removing and clearing in search updates the main comparison', (
++    tester,
++  ) async {
++    await _mount(tester);
++    final first = _designs[0], second = _designs[1];
++    await _compare(tester, first);
++    await _compare(tester, second);
++    await _openSearch(tester);
++    expect(_selected(tester), [first.id, second.id]);
++    await tester.tap(
++      find.byKey(ValueKey('comparison-selected-remove-${first.id}')),
++    );
++    await tester.pumpAndSettle();
++    expect(_selected(tester), [second.id]);
++    await _back(tester);
++    expect(_selected(tester), [second.id]);
++
++    await _openSearch(tester);
++    await tester.tap(find.byKey(const ValueKey('template-comparison-clear')));
++    await tester.pumpAndSettle();
++    expect(_selected(tester), isEmpty);
++    await _back(tester);
++    expect(_selected(tester), isEmpty);
++    expect(
++      find.byKey(const ValueKey('template-comparison-tray')),
++      findsNothing,
++    );
++    expect(tester.takeException(), isNull);
++  });
++
++  testWidgets(
++    'shared comparison preserves the three design limit and toggles',
++    (tester) async {
++      await _mount(tester);
++      await _compare(tester, _designs[0]);
++      await _openSearch(tester);
++      for (final design in _designs.skip(1).take(2)) {
++        await _searchFor(tester, design);
++        await _compare(tester, design);
++      }
++      expect(
++        _selected(tester),
++        _designs.take(3).map((design) => design.id).toList(),
++      );
++      // 메인에서 이미 고른 카드를 검색에서 다시 누르면 중복 추가하지 않고 해제한다.
++      await _searchFor(tester, _designs[0]);
++      await _compare(tester, _designs[0]);
++      expect(_selected(tester), [_designs[1].id, _designs[2].id]);
++      await _compare(tester, _designs[0]);
++      final full = [_designs[1].id, _designs[2].id, _designs[0].id];
++      expect(_selected(tester), full);
++      await _searchFor(tester, _designs[3]);
++      await _compare(tester, _designs[3]);
++      expect(_selected(tester), full);
++      expect(
++        find.text(TemplateDesignComparisonSelection.limitMessage),
++        findsOneWidget,
++      );
++      await _back(tester);
++      expect(_selected(tester), full);
++      expect(tester.takeException(), isNull);
++    },
++  );
++
++  testWidgets('separate hubs and standalone catalogs do not share comparison', (
++    tester,
++  ) async {
++    final navigator = await _mount(tester);
++    await _compare(tester, _designs[0]);
++    unawaited(
++      navigator.currentState!.push<void>(
++        MaterialPageRoute<void>(builder: (_) => const StoreHubScreen()),
++      ),
++    );
++    await tester.pumpAndSettle();
++    expect(_selected(tester), isEmpty);
++    await _compare(tester, _designs[1]);
++    expect(_selected(tester), [_designs[1].id]);
++    await _back(tester);
++    expect(_selected(tester), [_designs[0].id]);
++
++    unawaited(
++      navigator.currentState!.push<void>(
++        MaterialPageRoute<void>(
++          builder: (_) => const StoreScreen(searchMode: true),
++        ),
++      ),
++    );
++    await tester.pumpAndSettle();
++    expect(_selected(tester), isEmpty);
++    await _searchFor(tester, _designs[2]);
++    await _compare(tester, _designs[2]);
++    expect(_selected(tester), [_designs[2].id]);
++    await _back(tester);
++    expect(_selected(tester), [_designs[0].id]);
++
++    // 종료된 두 번째 허브의 선택은 다음 허브에 남지 않는다.
++    unawaited(
++      navigator.currentState!.push<void>(
++        MaterialPageRoute<void>(builder: (_) => const StoreHubScreen()),
++      ),
++    );
++    await tester.pumpAndSettle();
++    expect(_selected(tester), isEmpty);
++    await _back(tester);
++    expect(_selected(tester), [_designs[0].id]);
++    expect(tester.takeException(), isNull);
++  });
++
++  testWidgets(
++    'replacing a controller detaches listeners without taking ownership',
++    (tester) async {
++      final first = TemplateDesignComparisonController()..add(_designs[0]);
++      final second = TemplateDesignComparisonController()..add(_designs[1]);
++      final current = ValueNotifier(first);
++      addTearDown(() {
++        current.dispose();
++        first.dispose();
++        second.dispose();
++      });
++      await _mount(
++        tester,
++        screen: ValueListenableBuilder<TemplateDesignComparisonController>(
++          valueListenable: current,
++          builder: (_, controller, __) =>
++              StoreScreen(comparisonController: controller),
++        ),
++      );
++      expect(_selected(tester), [_designs[0].id]);
++      current.value = second;
++      await tester.pumpAndSettle();
++      expect(_selected(tester), [_designs[1].id]);
++      first.clear();
++      second.add(_designs[2]);
++      await tester.pumpAndSettle();
++      expect(_selected(tester), [_designs[1].id, _designs[2].id]);
++
++      // 화면을 닫아도 외부 소유 controller는 계속 사용할 수 있어야 한다.
++      await tester.pumpWidget(const SizedBox.shrink());
++      first.add(_designs[0]);
++      second.clear();
++      await tester.pump();
++      expect(first.selection.ids, [_designs[0].id]);
++      expect(second.selection.ids, isEmpty);
++      expect(tester.takeException(), isNull);
++    },
++  );
++}
+--- /dev/null
++++ b/test/widget/browser_photo_selection_continuity_test.dart
+@@ -0,0 +1,361 @@
++import 'dart:async';
++
++import 'package:flutter/material.dart';
++import 'package:flutter_riverpod/flutter_riverpod.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:photo_manager/photo_manager.dart';
++import 'package:snap_fit/features/album/data/api/album_provider.dart';
++import 'package:snap_fit/features/album/data/gallery/browser_gallery_repository.dart';
++import 'package:snap_fit/features/album/data/gallery/browser_photo_files.dart';
++import 'package:snap_fit/features/album/domain/entities/layer.dart';
++import 'package:snap_fit/features/album/domain/repositories/gallery_repository.dart';
++import 'package:snap_fit/features/album/presentation/widgets/create_flow/template_photo_fill_plan.dart';
++import 'package:snap_fit/features/profile/domain/order_visibility_owner.dart';
++import 'package:snap_fit/shared/widgets/browser_photo_selection_sheet.dart';
++
++import '../unit/browser_photo_import_test.dart' show browserPhotoFixture;
++
++class _Owner extends Notifier<String?> {
++  @override
++  String? build() => 'owner-a';
++  void change(String? owner) => state = owner;
++}
++
++class _NativeGallery extends Fake implements GalleryRepository {}
++
++final _ownerProvider = NotifierProvider<_Owner, String?>(_Owner.new);
++
++BrowserPhotoFile _file(String name) {
++  // 다른 너비는 사진별 해시를 구분한다. 네트워크와 기기 사진첩은 사용하지 않는다.
++  final bytes = browserPhotoFixture(width: 20 + name.codeUnitAt(0) - 65);
++  return BrowserPhotoFile(
++    name: '$name.png',
++    size: bytes.length,
++    readBytes: () async => bytes,
++  );
++}
++
++class _Fixture {
++  _Fixture(this.container, this.repository);
++  final ProviderContainer container;
++  final BrowserGalleryRepository repository;
++  List<AssetEntity>? result;
++  bool completed = false;
++
++  Finder photo(String name) => find.byKey(
++    ValueKey(
++      'browser-photo-${repository.photos.singleWhere((photo) => photo.title == '$name.png').id}',
++    ),
++  );
++}
++
++Future<_Fixture> _mount(
++  WidgetTester tester, {
++  int maxSelection = 10,
++  bool nativeRepository = false,
++  Future<List<BrowserPhotoFile>> Function()? selectFiles,
++}) async {
++  tester.view.physicalSize = const Size(1000, 800);
++  tester.view.devicePixelRatio = 1;
++  addTearDown(tester.view.resetPhysicalSize);
++  addTearDown(tester.view.resetDevicePixelRatio);
++  late ProviderContainer container;
++  final repository = BrowserGalleryRepository(
++    currentOwner: () => container.read(_ownerProvider),
++  );
++  container = ProviderContainer(
++    overrides: [
++      galleryRepositoryProvider.overrideWithValue(
++        nativeRepository ? _NativeGallery() : repository,
++      ),
++      visibleOrderOwnerProvider.overrideWith(
++        (ref) => ref.watch(_ownerProvider),
++      ),
++    ],
++  );
++  final fixture = _Fixture(container, repository);
++  addTearDown(() async {
++    await tester.pumpWidget(const SizedBox.shrink());
++    container.dispose();
++  });
++  if (!nativeRepository) {
++    await tester.runAsync(
++      () => repository.importFiles([
++        for (final name in ['A', 'B', 'C']) _file(name),
++      ]),
++    );
++  }
++  await tester.pumpWidget(
++    UncontrolledProviderScope(
++      container: container,
++      child: MaterialApp(
++        home: Scaffold(
++          body: Builder(
++            builder: (context) => TextButton(
++              onPressed: () async {
++                // 순서와 복구는 실제 공개 모달 API를 사용한다. 파일 가져오기만 공개 주입점을 쓴다.
++                fixture.result = selectFiles == null
++                    ? await showBrowserPhotosSelectionSheet(
++                        context,
++                        maxSelection: maxSelection,
++                      )
++                    : await showDialog<List<AssetEntity>>(
++                        context: context,
++                        barrierDismissible: false,
++                        builder: (_) => Dialog(
++                          child: ConstrainedBox(
++                            constraints: const BoxConstraints(
++                              maxWidth: 1040,
++                              maxHeight: 820,
++                            ),
++                            child: BrowserPhotoSelectionSheet(
++                              maxSelection: maxSelection,
++                              selectFiles: selectFiles,
++                            ),
++                          ),
++                        ),
++                      );
++                fixture.completed = true;
++              },
++              child: const Text('사진 열기'),
++            ),
++          ),
++        ),
++      ),
++    ),
++  );
++  await tester.tap(find.text('사진 열기'));
++  await tester.pumpAndSettle();
++  return fixture;
++}
++
++Future<void> _confirm(WidgetTester tester) async {
++  // 선택 직후의 활성화 상태를 반영한 뒤 실제 완료 버튼을 누른다.
++  await tester.pumpAndSettle();
++  await tester.tap(
++    find.byKey(const ValueKey('confirm-browser-photo-selection')),
++  );
++  await tester.pumpAndSettle();
++}
++
++Future<void> _importFiles(WidgetTester tester) async {
++  await tester.tap(find.byKey(const ValueKey('browser-photo-pick-files')));
++  // 실제 이미지 코덱의 완료를 기다린다. 테스트의 가상 시간만 진행하면 디코딩이 끝나지 않는다.
++  for (var frame = 0; frame < 80; frame++) {
++    await tester.runAsync(
++      () => Future<void>.delayed(const Duration(milliseconds: 5)),
++    );
++    await tester.pump();
++    if (find.text('사진 읽는 중').evaluate().isEmpty) {
++      await tester.pumpAndSettle();
++      return;
++    }
++  }
++  fail('Local photo import did not complete');
++}
++
++void main() {
++  testWidgets(
++    'returns tapped C then A and fills template slots in that order',
++    (tester) async {
++      final fixture = await _mount(tester);
++      await tester.tap(fixture.photo('C'));
++      await tester.tap(fixture.photo('A'));
++      await _confirm(tester);
++      expect(fixture.completed, isTrue);
++      expect(fixture.result!.map((photo) => photo.title), ['C.png', 'A.png']);
++      final plan = TemplatePhotoFillPlan.create(
++        pages: [
++          for (var page = 0; page < 2; page++)
++            [
++              LayerModel(
++                id: 'empty-$page',
++                type: LayerType.image,
++                position: Offset.zero,
++                width: 100,
++                height: 100,
++              ),
++            ],
++        ],
++        photos: fixture.result!,
++      );
++      expect(plan.placements.map((placement) => placement.photo.title), [
++        'C.png',
++        'A.png',
++      ]);
++    },
++  );
++
++  testWidgets(
++    'selection badges and spoken order follow deselect and reselect',
++    (tester) async {
++      final semantics = tester.ensureSemantics();
++      try {
++        final fixture = await _mount(tester);
++        await tester.tap(fixture.photo('C'));
++        await tester.tap(fixture.photo('A'));
++        await tester.tap(fixture.photo('C'));
++        await tester.tap(fixture.photo('C'));
++        await tester.pumpAndSettle();
++        expect(
++          find.descendant(of: fixture.photo('A'), matching: find.text('1')),
++          findsOneWidget,
++        );
++        expect(
++          find.descendant(of: fixture.photo('C'), matching: find.text('2')),
++          findsOneWidget,
++        );
++        expect(
++          find.bySemanticsLabel(RegExp(r'A\.png.*1번째 선택')),
++          findsOneWidget,
++        );
++        expect(
++          find.bySemanticsLabel(RegExp(r'C\.png.*2번째 선택')),
++          findsOneWidget,
++        );
++        await _confirm(tester);
++        expect(fixture.result!.map((photo) => photo.title), ['A.png', 'C.png']);
++      } finally {
++        // 위젯 테스트 종료 불변식 검사 전에 접근성 핸들을 해제한다.
++        semantics.dispose();
++      }
++    },
++  );
++
++  testWidgets('imports append auto-selected photos after existing choices', (
++    tester,
++  ) async {
++    final fixture = await _mount(
++      tester,
++      selectFiles: () async => [_file('D'), _file('E')],
++    );
++    await tester.tap(fixture.photo('C'));
++    await _importFiles(tester);
++    expect(find.text('3장 선택 완료'), findsOneWidget);
++    await _confirm(tester);
++    expect(fixture.result!.map((photo) => photo.title), [
++      'C.png',
++      'D.png',
++      'E.png',
++    ]);
++  });
++
++  testWidgets(
++    'import and manual selection respect the maximum without losing order',
++    (tester) async {
++      final fixture = await _mount(
++        tester,
++        maxSelection: 2,
++        selectFiles: () async => [_file('D'), _file('E')],
++      );
++      await tester.tap(fixture.photo('C'));
++      await _importFiles(tester);
++      expect(find.text('2장 선택 완료'), findsOneWidget);
++      await tester.tap(fixture.photo('A'));
++      await tester.pumpAndSettle();
++      expect(find.textContaining('한 번에 최대 2장'), findsOneWidget);
++      await _confirm(tester);
++      expect(fixture.result!.map((photo) => photo.title), ['C.png', 'D.png']);
++    },
++  );
++
++  testWidgets('busy file selection keeps close and photo actions disabled', (
++    tester,
++  ) async {
++    final pending = Completer<List<BrowserPhotoFile>>();
++    final fixture = await _mount(tester, selectFiles: () => pending.future);
++    await tester.tap(fixture.photo('C'));
++    await tester.tap(find.byKey(const ValueKey('browser-photo-pick-files')));
++    await tester.pump();
++    expect(
++      tester
++          .widget<IconButton>(
++            find.byWidgetPredicate(
++              (widget) => widget is IconButton && widget.tooltip == '사진 선택 닫기',
++            ),
++          )
++          .onPressed,
++      isNull,
++    );
++    expect(
++      tester
++          .widget<FilledButton>(
++            find.byKey(const ValueKey('confirm-browser-photo-selection')),
++          )
++          .onPressed,
++      isNull,
++    );
++    expect(tester.widget<InkWell>(fixture.photo('A')).onTap, isNull);
++    pending.complete(const []);
++    await tester.pumpAndSettle();
++    await _confirm(tester);
++    expect(fixture.result!.map((photo) => photo.title), ['C.png']);
++  });
++
++  testWidgets('account change hides photos and explicit close returns null', (
++    tester,
++  ) async {
++    final fixture = await _mount(tester);
++    await tester.tap(fixture.photo('C'));
++    fixture.container.read(_ownerProvider.notifier).change('owner-b');
++    await tester.pumpAndSettle();
++    expect(find.byType(Image), findsNothing);
++    expect(
++      find.byKey(const ValueKey('confirm-browser-photo-selection')),
++      findsNothing,
++    );
++    expect(find.textContaining('로그인한 계정이 변경됐어요'), findsOneWidget);
++    expect(
++      tester.widget<ModalBarrier>(find.byType(ModalBarrier).last).dismissible,
++      isFalse,
++    );
++    await tester.tap(find.text('닫기'));
++    await tester.pumpAndSettle();
++    expect(fixture.completed, isTrue);
++    expect(fixture.result, isNull);
++    expect(find.byType(BrowserPhotoSelectionSheet), findsNothing);
++  });
++
++  testWidgets(
++    'account change can close a pending chooser without importing its late result',
++    (tester) async {
++      final pending = Completer<List<BrowserPhotoFile>>();
++      final fixture = await _mount(tester, selectFiles: () => pending.future);
++      await tester.tap(fixture.photo('C'));
++      await tester.tap(find.byKey(const ValueKey('browser-photo-pick-files')));
++      await tester.pump();
++      fixture.container.read(_ownerProvider.notifier).change('owner-b');
++      await tester.pumpAndSettle();
++      expect(find.byType(Image), findsNothing);
++      await tester.tap(find.text('닫기'));
++      await tester.pumpAndSettle();
++      expect(fixture.completed, isTrue);
++      expect(fixture.result, isNull);
++      // 닫힌 이전 계정의 파일 선택 결과가 도착해도 새 계정의 보관 목록에 들어가면 안 된다.
++      pending.complete([_file('D')]);
++      await tester.pumpAndSettle();
++      expect(fixture.repository.photos, isEmpty);
++      expect(fixture.result, isNull);
++      expect(find.byType(Image), findsNothing);
++      expect(find.byType(BrowserPhotoSelectionSheet), findsNothing);
++      expect(tester.takeException(), isNull);
++    },
++  );
++
++  testWidgets(
++    'unavailable browser repository can be closed without returning photos',
++    (tester) async {
++      final fixture = await _mount(tester, nativeRepository: true);
++      expect(find.byType(Image), findsNothing);
++      expect(
++        find.byKey(const ValueKey('browser-photo-pick-files')),
++        findsNothing,
++      );
++      await tester.tap(find.text('닫기'));
++      await tester.pumpAndSettle();
++      expect(fixture.completed, isTrue);
++      expect(fixture.result, isNull);
++      expect(find.byType(BrowserPhotoSelectionSheet), findsNothing);
++    },
++  );
++}

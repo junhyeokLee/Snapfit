@@ -8,7 +8,7 @@ Map<String, dynamic> storyEditionDocument(
 ) {
   final cover = storyEditionCover(edition, aspect);
   final pages = <Map<String, dynamic>>[];
-  for (var i = 0; i < 12; i++) {
+  for (var i = 0; i < edition.innerPages ~/ 2; i++) {
     final pair = _storySpread(edition, aspect, i);
     for (final p in pair) {
       p.folio(edition.title, color: p.ink);
@@ -44,8 +44,11 @@ Map<String, dynamic> storyEditionDocument(
         : 'bundled-editorial-samples',
     if (edition.exclusivePhotography) 'photoReusePolicy': 'edition-exclusive',
     'accessTier': edition.isPremium ? 'premium' : 'free',
-    'catalogPublishable': false,
-    'publicationStatus': edition.activity != null
+    'catalogPublishable': edition.qualityRevision == premiumQuartetRevision,
+    'publicationStatus':
+        edition.qualityRevision == premiumQuartetRevision ||
+            edition.activity != null ||
+            edition.qualityRevision == sensoryEditionRevision
         ? 'bundled'
         : edition.isPremium
         ? 'local-design-review'
@@ -61,12 +64,12 @@ Map<String, dynamic> storyEditionDocument(
     if (!edition.isPremium)
       'materialPolicyRevision': freeTemplateMaterialPolicyRevision,
     'includedMaterialKeys': edition.includedMaterialKeys,
-    'innerPageCount': StoryEdition.innerPageCount,
+    'innerPageCount': edition.innerPages,
     'aspect': aspect.name,
     'designWidth': aspect.canvas.width,
     'designHeight': aspect.canvas.height,
     'chapters': [
-      for (var i = 0; i < 12; i++)
+      for (var i = 0; i < edition.innerPages ~/ 2; i++)
         {'title': edition.chapters[i], 'from': i * 2 + 1, 'to': i * 2 + 2},
     ],
     'cover': cover,
@@ -170,6 +173,26 @@ class _StoryPage extends _Sheet {
 
 void _storyCover(_StoryPage p) {
   final e = p.edition;
+  if (e.qualityRevision == premiumQuartetRevision) {
+    _premiumQuartetCover(p);
+    return;
+  }
+  if (e.qualityRevision == hobbyExpansionRevision) {
+    _hobbyExpansionCover(p);
+    return;
+  }
+  if (e.qualityRevision == milestoneExpansionRevision) {
+    _milestoneExpansionCover(p);
+    return;
+  }
+  if (e.qualityRevision == readingEditionRevision) {
+    _readingCover(p);
+    return;
+  }
+  if (e.qualityRevision == sensoryEditionRevision) {
+    _sensoryCover(p);
+    return;
+  }
   if (e.activity != null) {
     _activityStoryCover(p);
     return;
@@ -289,30 +312,42 @@ void _storyCover(_StoryPage p) {
 }
 
 // Each book has a different sequence and density. Opening/closing remain bookends.
-List<int> _storySequence(StoryEdition e) => switch (e.coverStyle) {
-  20 || 25 => const [0, 1, 2, 3, 5, 6, 7, 8, 4, 10, 9, 11],
-  21 || 26 => const [0, 5, 2, 6, 3, 1, 7, 8, 4, 10, 9, 11],
-  22 || 27 => const [0, 1, 2, 7, 5, 6, 3, 8, 4, 10, 9, 11],
-  23 || 28 => const [0, 6, 2, 1, 3, 5, 7, 8, 4, 10, 9, 11],
-  24 || 29 => const [0, 1, 2, 5, 7, 6, 3, 8, 4, 10, 9, 11],
-  10 || 15 => const [0, 1, 2, 6, 7, 5, 3, 8, 4, 10, 9, 11],
-  11 || 16 => const [0, 2, 7, 5, 1, 6, 9, 3, 4, 8, 10, 11],
-  12 || 17 => const [0, 6, 1, 3, 5, 2, 8, 7, 4, 9, 10, 11],
-  13 || 18 => const [0, 5, 3, 1, 6, 2, 7, 9, 4, 10, 8, 11],
-  14 || 19 => const [0, 7, 6, 2, 1, 5, 3, 10, 4, 8, 9, 11],
-  0 => const [0, 1, 4, 2, 7, 5, 3, 6, 8, 9, 10, 11],
-  1 => const [0, 4, 2, 6, 1, 9, 5, 3, 10, 7, 8, 11],
-  2 => const [0, 3, 1, 7, 6, 2, 8, 4, 5, 10, 9, 11],
-  3 => const [0, 5, 4, 1, 9, 6, 2, 8, 7, 3, 10, 11],
-  5 => const [0, 1, 5, 2, 7, 6, 3, 4, 8, 10, 9, 11],
-  6 => const [0, 2, 6, 1, 5, 7, 4, 3, 10, 8, 9, 11],
-  7 => const [0, 5, 1, 3, 6, 2, 7, 8, 4, 9, 10, 11],
-  8 => const [0, 6, 2, 5, 1, 4, 8, 7, 9, 3, 10, 11],
-  9 => const [0, 7, 3, 1, 2, 5, 6, 9, 4, 10, 8, 11],
-  _ => const [0, 7, 6, 9, 2, 4, 10, 5, 3, 8, 1, 11],
-};
+List<int> _storySequence(StoryEdition e) => e.spreadOrder.isNotEmpty
+    ? e.spreadOrder
+    : switch (e.coverStyle) {
+        20 || 25 => const [0, 1, 2, 3, 5, 6, 7, 8, 4, 10, 9, 11],
+        21 || 26 => const [0, 5, 2, 6, 3, 1, 7, 8, 4, 10, 9, 11],
+        22 || 27 => const [0, 1, 2, 7, 5, 6, 3, 8, 4, 10, 9, 11],
+        23 || 28 => const [0, 6, 2, 1, 3, 5, 7, 8, 4, 10, 9, 11],
+        24 || 29 => const [0, 1, 2, 5, 7, 6, 3, 8, 4, 10, 9, 11],
+        10 || 15 => const [0, 1, 2, 6, 7, 5, 3, 8, 4, 10, 9, 11],
+        11 || 16 => const [0, 2, 7, 5, 1, 6, 9, 3, 4, 8, 10, 11],
+        12 || 17 => const [0, 6, 1, 3, 5, 2, 8, 7, 4, 9, 10, 11],
+        13 || 18 => const [0, 5, 3, 1, 6, 2, 7, 9, 4, 10, 8, 11],
+        14 || 19 => const [0, 7, 6, 2, 1, 5, 3, 10, 4, 8, 9, 11],
+        0 => const [0, 1, 4, 2, 7, 5, 3, 6, 8, 9, 10, 11],
+        1 => const [0, 4, 2, 6, 1, 9, 5, 3, 10, 7, 8, 11],
+        2 => const [0, 3, 1, 7, 6, 2, 8, 4, 5, 10, 9, 11],
+        3 => const [0, 5, 4, 1, 9, 6, 2, 8, 7, 3, 10, 11],
+        5 => const [0, 1, 5, 2, 7, 6, 3, 4, 8, 10, 9, 11],
+        6 => const [0, 2, 6, 1, 5, 7, 4, 3, 10, 8, 9, 11],
+        7 => const [0, 5, 1, 3, 6, 2, 7, 8, 4, 9, 10, 11],
+        8 => const [0, 6, 2, 5, 1, 4, 8, 7, 9, 3, 10, 11],
+        9 => const [0, 7, 3, 1, 2, 5, 6, 9, 4, 10, 8, 11],
+        _ => const [0, 7, 6, 9, 2, 4, 10, 5, 3, 8, 1, 11],
+      };
 
 List<_StoryPage> _storySpread(StoryEdition e, CollectionAspect aspect, int i) {
+  if (e.qualityRevision == premiumQuartetRevision)
+    return _premiumQuartetSpread(e, aspect, i);
+  if (e.qualityRevision == hobbyExpansionRevision)
+    return _hobbyExpansionSpread(e, aspect, i);
+  if (e.qualityRevision == milestoneExpansionRevision)
+    return _milestoneExpansionSpread(e, aspect, i);
+  if (e.qualityRevision == readingEditionRevision)
+    return _readingSpread(e, aspect, i);
+  if (e.qualityRevision == sensoryEditionRevision)
+    return _sensorySpread(e, aspect, i);
   if (e.activity != null) return _activityStorySpread(e, aspect, i);
   if (e.category == '동아리') return _clubStorySpread(e, aspect, i);
   if (e.exclusivePhotography) return _exclusiveStorySpread(e, aspect, i);

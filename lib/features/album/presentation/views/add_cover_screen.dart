@@ -1,3 +1,5 @@
+import '../../../../core/fonts/document_font_gate.dart';
+import '../../../../core/fonts/document_fonts.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +12,7 @@ import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/utils/screen_logger.dart';
 import '../../data/api/album_provider.dart';
 import '../../domain/entities/album.dart';
+import '../../domain/entities/album_creation_attempt.dart';
 import '../../domain/entities/layer.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import '../viewmodels/cover_view_model.dart';
@@ -55,6 +58,8 @@ double coverLayerActionPanelBottom({
 ///
 /// 참고: 앨범 내부 페이지 편집은 AlbumSpreadScreen 사용
 class AddCoverScreen extends ConsumerStatefulWidget {
+  final bool _fontsPrepared;
+
   /// 편집 모드: 홈에서 앨범 선택 후 이 화면으로 올 때 전달 (이미 prepareAlbumForEdit 호출됨)
   final Album? editAlbum;
 
@@ -88,6 +93,10 @@ class AddCoverScreen extends ConsumerStatefulWidget {
   /// 플로우 AppBar의 '완료' 버튼이 눌렸을 때 호출할 액션 등록 (플로우에서만 사용)
   final void Function(Future<void> Function())? onRegisterCompleteAction;
   final VoidCallback? onReviewBeforeCreate;
+  final String? creationDraftOwner, creationDraftId;
+  final AlbumCreationAttempt? creationAttempt;
+  final Future<void> Function(AlbumCreationAttempt)? onPersistCreationAttempt;
+  final Future<void> Function(int albumId)? onCreationConflict;
 
   const AddCoverScreen({
     super.key,
@@ -104,10 +113,40 @@ class AddCoverScreen extends ConsumerStatefulWidget {
     this.debugInitialSelectedLayerId,
     this.onRegisterCompleteAction,
     this.onReviewBeforeCreate,
-  });
+    this.creationDraftOwner,
+    this.creationDraftId,
+    this.creationAttempt,
+    this.onPersistCreationAttempt,
+    this.onCreationConflict,
+  }) : _fontsPrepared = false;
+
+  AddCoverScreen._withFontsReady(AddCoverScreen original)
+    : _fontsPrepared = true,
+      editAlbum = original.editAlbum,
+      albumId = original.albumId,
+      isFromCreateFlow = original.isFromCreateFlow,
+      initialCoverSize = original.initialCoverSize,
+      albumTitle = original.albumTitle,
+      targetPages = original.targetPages,
+      initialTemplateCoverLayers = original.initialTemplateCoverLayers,
+      initialTemplateCanvasSize = original.initialTemplateCanvasSize,
+      sourceTemplateProductKey = original.sourceTemplateProductKey,
+      onAlbumCreated = original.onAlbumCreated,
+      debugInitialSelectedLayerId = original.debugInitialSelectedLayerId,
+      onRegisterCompleteAction = original.onRegisterCompleteAction,
+      onReviewBeforeCreate = original.onReviewBeforeCreate,
+      creationDraftOwner = original.creationDraftOwner,
+      creationDraftId = original.creationDraftId,
+      creationAttempt = original.creationAttempt,
+      onPersistCreationAttempt = original.onPersistCreationAttempt,
+      onCreationConflict = original.onCreationConflict;
 
   @override
-  ConsumerState<AddCoverScreen> createState() => _AddCoverScreenState();
+  ConsumerState<AddCoverScreen> createState() =>
+      // ignore: no_logic_in_create_state — intentional: selects a different State subtype for deferred font loading
+      DocumentFonts.deferred && !_fontsPrepared
+      ? DocumentFontEntryState<AddCoverScreen>(AddCoverScreen._withFontsReady)
+      : _AddCoverScreenState();
 }
 
 class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
@@ -160,7 +199,7 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
 
     // Provider 수정은 build 사이클 이후에 일어나야 하므로 항상 비동기로 처리한다.
     Future.microtask(() async {
-      if (_initialized) return;
+      if (!mounted || _initialized) return;
 
       if (widget.editAlbum == null && widget.albumId == null) {
         // 생성 플로우(신규 생성): 선택된 커버로 바로 초기화
@@ -170,6 +209,16 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
           initialCover: _selectedCover,
           targetPages: widget.targetPages ?? AlbumPagePolicy.minInnerPages,
         );
+        if (widget.creationDraftOwner != null &&
+            widget.creationDraftId != null &&
+            widget.onPersistCreationAttempt != null) {
+          vm.bindCreationDraft(
+            ownerId: widget.creationDraftOwner!,
+            draftId: widget.creationDraftId!,
+            attempt: widget.creationAttempt,
+            persist: widget.onPersistCreationAttempt!,
+          );
+        }
         _applyTemplateCoverIfNeeded();
       } else if (widget.editAlbum != null) {
         // 편집 모드: 에디터에 이미 로드됨 → 커버 VM만 동기화
@@ -375,6 +424,7 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                         fallbackTemplateCanvasSize:
                             widget.initialTemplateCanvasSize,
                         onAlbumCreated: widget.onAlbumCreated,
+                        onCreationConflict: widget.onCreationConflict,
                         onRegisterCompleteAction:
                             widget.onRegisterCompleteAction,
                         initialCoverSize: _selectedCover,
@@ -516,6 +566,7 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
           fallbackTemplateCoverLayers: widget.initialTemplateCoverLayers,
           fallbackTemplateCanvasSize: widget.initialTemplateCanvasSize,
           onAlbumCreated: widget.onAlbumCreated,
+          onCreationConflict: widget.onCreationConflict,
           onRegisterCompleteAction: widget.onRegisterCompleteAction,
           initialCoverSize: _selectedCover,
           showAppBar: false,
@@ -618,10 +669,7 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                           onPressed: () => _toolbarActionHandler.addPhoto(
                             coverCanvasBaseSize(_selectedCover),
                           ),
-                          icon: const Icon(
-                            Icons.add_photo_alternate_outlined,
-                            size: 18,
-                          ),
+                          icon: const ExperienceIcon('ImagePlus', size: 18),
                           label: const Text('사진 추가'),
                           style: toolStyle,
                         ),
@@ -629,7 +677,7 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                         TextButton.icon(
                           onPressed: () =>
                               _toolbarActionHandler.openCoverTheme(),
-                          icon: const Icon(Icons.style_outlined, size: 18),
+                          icon: const ExperienceIcon('Shapes', size: 18),
                           label: const Text('표지 테마'),
                           style: toolStyle,
                         ),
@@ -681,7 +729,7 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                               setState(() {});
                             }
                           : null,
-                      icon: const Icon(Icons.undo, size: 19),
+                      icon: const ExperienceIcon('Undo2', size: 19),
                     ),
                     IconButton(
                       tooltip: '다시 실행',
@@ -694,7 +742,7 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                               setState(() {});
                             }
                           : null,
-                      icon: const Icon(Icons.redo, size: 19),
+                      icon: const ExperienceIcon('Redo2', size: 19),
                     ),
                   ],
                 ),

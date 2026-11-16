@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import '../../../../core/fonts/document_font_gate.dart';
+import '../../../../core/fonts/document_fonts.dart';
 import '../../../../core/utils/text_shadow_codec.dart';
 import '../../../../core/utils/outline_text_style.dart';
 import '../../../../core/constants/snapfit_colors.dart';
@@ -14,12 +16,14 @@ import '../../../../core/utils/image_url_policy.dart';
 import '../../../../core/utils/text_image_shader.dart';
 import '../../../../core/utils/preview_image_decode.dart';
 import '../../../album/domain/entities/layer.dart';
+import '../../../album/presentation/widgets/layer_canvas_clip.dart';
 import '../../../album/presentation/widgets/cover/album_spine_image.dart';
 import '../../../../shared/snapfit_image.dart';
 import '../../../../core/cache/snapfit_cache_manager.dart';
 import 'template_preview_frame.dart';
 import '../../../album/data/gallery/browser_photo_asset.dart';
 import '../../../album/data/gallery/photo_asset_image_provider.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 class TemplatePageRenderer extends StatelessWidget {
   final List<LayerModel> layers;
@@ -42,6 +46,7 @@ class TemplatePageRenderer extends StatelessWidget {
   final VoidCallback? onImageTap;
   final Function(String layerId)? onLayerTap;
   final String? selectedLayerId;
+  final Color? backgroundColor;
 
   const TemplatePageRenderer({
     super.key,
@@ -60,10 +65,27 @@ class TemplatePageRenderer extends StatelessWidget {
     this.onImageTap,
     this.onLayerTap,
     this.selectedLayerId,
+    this.backgroundColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    final families = <String>{
+      for (final layer in layers)
+        if (layer.textStyle?.fontFamily case final String family) family,
+      for (final layer in layers) ...?layer.textStyle?.fontFamilyFallback,
+    };
+    if (!DocumentFonts.areReady(families)) {
+      return DocumentFontGate(
+        families: families,
+        placeholder: SizedBox(width: width, height: height),
+        builder: _buildPrepared,
+      );
+    }
+    return _buildPrepared(context);
+  }
+
+  Widget _buildPrepared(BuildContext context) {
     final ordered = [...layers]..sort((a, b) => a.zIndex.compareTo(b.zIndex));
     final bounds = normalizeToContentBounds
         ? _contentBounds(ordered)
@@ -80,7 +102,11 @@ class TemplatePageRenderer extends StatelessWidget {
       return SizedBox(
         width: width,
         height: height,
-        child: ClipRect(child: stack),
+        child: ClipRect(
+          child: backgroundColor == null
+              ? stack
+              : ColoredBox(color: backgroundColor!, child: stack),
+        ),
       );
     }
 
@@ -89,7 +115,7 @@ class TemplatePageRenderer extends StatelessWidget {
       height: height,
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: backgroundColor ?? Colors.white,
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4),
         ],
@@ -145,6 +171,28 @@ class TemplatePageRenderer extends StatelessWidget {
   }
 
   Widget _buildLayerWidget(
+    LayerModel layer,
+    double canvasW,
+    double canvasH,
+    Rect bounds,
+  ) {
+    final child = _buildUnclippedLayerWidget(layer, canvasW, canvasH, bounds);
+    final clip = layer.canvasClip;
+    if (clip == null) return child;
+    final sx = canvasW / bounds.width;
+    final sy = canvasH / bounds.height;
+    return clipPositionedLayerToCanvas(
+      child,
+      Rect.fromLTWH(
+        (clip.left - bounds.left) * sx,
+        (clip.top - bounds.top) * sy,
+        clip.width * sx,
+        clip.height * sy,
+      ),
+    );
+  }
+
+  Widget _buildUnclippedLayerWidget(
     LayerModel layer,
     double canvasW,
     double canvasH,
@@ -307,8 +355,8 @@ class TemplatePageRenderer extends StatelessWidget {
             : ColoredBox(
                 color: slotColor,
                 child: Center(
-                  child: Icon(
-                    Icons.add_photo_alternate_outlined,
+                  child: ExperienceIcon(
+                    'ImagePlus',
                     size: math.min(24, math.min(drawW, drawH) * .16),
                     color: slotColor.computeLuminance() > .5
                         ? Colors.black38
@@ -383,8 +431,6 @@ class TemplatePageRenderer extends StatelessWidget {
               layer: layer,
               drawWidth: drawW,
               drawHeight: drawH,
-              canvasWidth: canvasW,
-              canvasHeight: canvasH,
             ),
             layer.opacity,
           ),
@@ -511,8 +557,6 @@ class TemplatePageRenderer extends StatelessWidget {
     required LayerModel layer,
     required double drawWidth,
     required double drawHeight,
-    required double canvasWidth,
-    required double canvasHeight,
   }) {
     final bg = layer.imageBackground ?? '';
     final photoShade = photoCoverShadeForStyle(bg);
@@ -531,14 +575,12 @@ class TemplatePageRenderer extends StatelessWidget {
     final radiusPx = rawRadius == null
         ? null
         : (rawRadius <= 1.0
-              ? rawRadius * math.min(canvasWidth, canvasHeight)
+              ? rawRadius * math.min(drawWidth, drawHeight)
               : rawRadius);
     final borderWidthRaw = layer.decorationBorderWidth;
     final borderWidth = borderWidthRaw == null
         ? null
-        : (borderWidthRaw <= 1.0
-              ? borderWidthRaw * canvasWidth
-              : borderWidthRaw);
+        : (borderWidthRaw <= 1.0 ? borderWidthRaw * drawWidth : borderWidthRaw);
     final fillOverride = _parseHexColor(layer.decorationFillColor);
     final borderOverride = _parseHexColor(layer.decorationBorderColor);
 

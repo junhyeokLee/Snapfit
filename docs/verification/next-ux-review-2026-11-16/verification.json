@@ -1,0 +1,77 @@
+{
+  "date": "2026-11-16",
+  "scope": "new UX/UI review after point improvements 1-5",
+  "runtime": "headless Flutter engine; actual native screens and web photo dialog widget; local fixtures",
+  "viewport_dp": "390x844",
+  "suites": {
+    "cap_library": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_store": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_create": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "capture_scenarios": 3,
+  "screenshots": 8,
+  "product_dart_files_unchanged": 821,
+  "kernel_compile_errors": 0,
+  "real_browser_validation": false,
+  "device_validation": false,
+  "live_payments": false,
+  "live_db_writes": false,
+  "full_app_build": false,
+  "deployment": false,
+  "source_sha256": {
+    "lib/features/album/presentation/views/album_category_screen.dart": "e4466645747ca67a897f95eb24c1c0f0008fb5c29e30475890f91470cd2b2f95",
+    "lib/features/social/presentation/widgets/social_profile_personal_area.dart": "fe1f7854a8d9bae8d53b6af21006ac27b2f267b8451f3f67c75861700c6aa920",
+    "lib/features/store/presentation/views/store_screen.dart": "2e1dfe9311da63a3048083480d22e2b6045146dd5772448d0013376b29e0876d",
+    "lib/features/store/presentation/views/store_hub_screen.dart": "f3169c206c26bbf3bbc382cb192803042702d108181b9243c04d21c066a1447d",
+    "lib/shared/widgets/browser_photo_selection_sheet.dart": "d3d32280ee7ccac1217b4dd6f9da2bad3b8a0f70f8796a52b4b9f01852c3d1be",
+    "lib/shared/widgets/album_bottom_sheet.dart": "679cf2aa307815dab9cc4943a61e0ccc7a18b2eceba37b89d2755f9ea17237a1",
+    "lib/features/album/presentation/widgets/create_flow/template_photo_fill_step.dart": "2b435d6b9b960a517ce1003bd21aede2e2d7118f7ca7cc78e368c3df21443067",
+    "lib/features/album/presentation/widgets/create_flow/template_photo_fill_plan.dart": "f9e1a0ca882944d731acd1c87d234df1d5a8b454c49de8ae0847e7e269181af6"
+  },
+  "screens_sha256": {
+    "01-library-default-completed-only.png": "12a1cdfdd00923242ba6d910950f7c0818894f7563de2c61cfe14b90c69979d1",
+    "02-library-completed-tab.png": "8bda57fdc67529febc1d5b113ef2e0ddb05f5564d04559fb0a8966bc16ee0f31",
+    "03-library-default-mixed.png": "223851062ee962dbb1bf297e2e03e8b8667b9779a8a7424e971a7c89ab4fdf22",
+    "04-store-main-comparison-selected.png": "4673ede4db2266d9d7993b0561c7b9cd45a81e7eff0b9e96613116984637c529",
+    "05-store-search-comparison-isolated.png": "5241766fa9b2b90da533cae1ff49868f1219645177e64a18cfd5e93f1cdaab70",
+    "06-store-main-search-selection-discarded.png": "4673ede4db2266d9d7993b0561c7b9cd45a81e7eff0b9e96613116984637c529",
+    "07-web-photo-selection-order.png": "a43bb64bae73524886fdeb54a8d51c88b9f1f0432ce3f29de380ea8fa6b800fe",
+    "08-web-photo-account-changed.png": "57ed47a1b3978927ddc0c80edb226e0949c5251561ba99847b0a32f8daf9e953"
+  },
+  "behavior": {
+    "completed_only_album_initially_empty": true,
+    "completed_tab_reveals_existing_albums": true,
+    "store_main_selection": [
+      -9301
+    ],
+    "store_search_selection": [
+      -9302
+    ],
+    "store_main_after_back": [
+      -9301
+    ],
+    "web_photo_tap_order": [
+      "C",
+      "A"
+    ],
+    "web_photo_return_and_autofill_order": [
+      "A",
+      "C"
+    ],
+    "web_photo_account_change_explicit_close_control": false,
+    "web_photo_account_change_barrier_dismissible": false,
+    "browser_escape_tested": false
+  }
+}

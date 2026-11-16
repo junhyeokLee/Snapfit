@@ -1,0 +1,346 @@
+--- before/lib/features/store/presentation/views/store_screen.dart
++++ after/lib/features/store/presentation/views/store_screen.dart
+@@ -188,7 +188,6 @@
+     if (_selectedCategory == category) return;
+     FocusManager.instance.primaryFocus?.unfocus();
+     _changeFilter(() => _selectedCategory = category);
+-    if (!kIsWeb && !widget.ownedOnly) _requestCatalogReveal(atTop: true);
+     ref
+         .read(storeTemplateFeedProvider.notifier)
+         .setFilters(
+--- before/lib/features/album/presentation/widgets/home/home_moment_summary_card.dart
++++ after/lib/features/album/presentation/widgets/home/home_moment_summary_card.dart
+@@ -284,7 +284,7 @@
+             children: [
+               const Icon(Icons.add_rounded, size: 17),
+               const SizedBox(width: 5),
+-              Flexible(child: Text(record == null ? '오늘 기록하기' : '새 기록 남기기')),
++              Flexible(child: Text(record == null ? '오늘 기록하기' : '오늘 한 장 더')),
+             ],
+           ),
+         ),
+--- before/lib/features/moments/presentation/views/moments_screen.dart
++++ after/lib/features/moments/presentation/views/moments_screen.dart
+@@ -393,10 +393,7 @@
+                             children: [
+                               if (journal != null &&
+                                   journal.records.isNotEmpty) ...[
+-                                MomentWeekCard(
+-                                  photoCount: journal.weekPhotoCount,
+-                                  onRecord: () => _compose(journal),
+-                                ),
++                                _weekCard(journal),
+                                 const SizedBox(height: 12),
+                               ],
+                               _monthNavigation(journal),
+@@ -567,8 +564,6 @@
+               ).copyWith(letterSpacing: -.6),
+             ),
+           ),
+-          if (journal != null && journal.currentWeekRecords.isNotEmpty)
+-            _recapCard(journal),
+           IconButton(
+             key: const ValueKey('moments-previous-month'),
+             tooltip: '이전 달',
+@@ -607,6 +602,7 @@
+             }
+           },
+         ),
++        if (journal.currentWeekRecords.isNotEmpty) _recapCard(journal),
+         if (journal.monthlyReward != null)
+           MomentMonthlyRewardSummary(reward: journal.monthlyReward!),
+         MomentMonthlyAlbumEntry(
+@@ -668,20 +664,30 @@
+           ],
+           weekly: journal.records.isEmpty
+               ? const SizedBox.shrink()
+-              : MomentWeekCard(
+-                  photoCount: journal.weekPhotoCount,
+-                  onRecord: () => _compose(journal),
+-                ),
++              : _weekCard(journal),
+         ),
+     ],
+   );
+ 
+-  Widget _recapCard(MomentJournal journal) => IconButton(
++  Widget _weekCard(MomentJournal journal) => MomentWeekCard(
++    photoCount: journal.weekPhotoCount,
++    // 다른 달을 보는 중에도 서버가 돌려준 이번 주 기록에서 오늘 여부를 판단한다.
++    hasTodayRecord: journal.currentWeekRecords.any(
++      (record) => momentDate(record.recordDate) == momentDate(journal.today),
++    ),
++    onRecord: () => _compose(journal),
++  );
++
++  Widget _recapCard(MomentJournal journal) => TextButton.icon(
+     key: const ValueKey('moments-week-recap'),
+-    tooltip: '이번 주 돌아보기',
+-    constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+-    padding: EdgeInsets.zero,
++    style: TextButton.styleFrom(
++      minimumSize: const Size(44, 44),
++      alignment: Alignment.centerLeft,
++      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
++      textStyle: ExperienceFormStyle.text(context, 13, weight: FontWeight.w600),
++    ),
+     onPressed: () => _recap(journal),
+     icon: const Icon(Icons.auto_awesome_motion_outlined, size: 20),
++    label: const Text('이번 주 돌아보기'),
+   );
+ }
+--- before/lib/features/moments/presentation/widgets/moments_widgets.dart
++++ after/lib/features/moments/presentation/widgets/moments_widgets.dart
+@@ -192,10 +192,12 @@
+     required this.photoCount,
+     required this.onRecord,
+     this.onRecap,
++    this.hasTodayRecord = false,
+   });
+   final int photoCount;
+   final VoidCallback onRecord;
+   final VoidCallback? onRecap;
++  final bool hasTodayRecord;
+ 
+   @override
+   Widget build(BuildContext context) => Container(
+@@ -240,7 +242,7 @@
+             ),
+           ),
+           icon: const Icon(Icons.add_rounded, size: 18),
+-          label: const Text('한 장 남기기'),
++          label: Text(hasTodayRecord ? '오늘 한 장 더' : '오늘 기록하기'),
+         );
+         if (constraints.maxWidth < 290 ||
+             MediaQuery.textScalerOf(context).scale(1) > 1.5) {
+--- before/test/widget/home_moment_summary_test.dart
++++ after/test/widget/home_moment_summary_test.dart
+@@ -254,6 +254,7 @@
+     (name: 'empty today', recorded: false, scale: 1.0),
+     (name: 'recorded today', recorded: true, scale: 1.0),
+     (name: 'large text', recorded: false, scale: 2.0),
++    (name: 'recorded large text', recorded: true, scale: 2.0),
+   ]) {
+     testWidgets(
+       'short home has one record action after the compact week: ${sample.name}',
+@@ -289,7 +290,7 @@
+         expect(
+           find.descendant(
+             of: entry,
+-            matching: find.text(sample.recorded ? '새 기록 남기기' : '오늘 기록하기'),
++            matching: find.text(sample.recorded ? '오늘 한 장 더' : '오늘 기록하기'),
+           ),
+           findsOneWidget,
+         );
+--- before/test/widget/moments_retention_layout_test.dart
++++ after/test/widget/moments_retention_layout_test.dart
+@@ -505,6 +505,35 @@
+       }
+     },
+   );
++  for (final recordedToday in [false, true]) {
++    testWidgets(
++      'daily action identifies adding another photo today=$recordedToday',
++      (tester) async {
++        final repo = _Repository()
++          ..records = [
++            _record(
++              'sample',
++              recordedToday ? _today : _today.subtract(const Duration(days: 1)),
++            ),
++          ];
++        final container = await _mount(tester, repo, const MomentsScreen());
++        try {
++          expect(
++            find.descendant(
++              of: find.byKey(const ValueKey('moments-add')),
++              matching: find.text(recordedToday ? '오늘 한 장 더' : '오늘 기록하기'),
++            ),
++            findsOneWidget,
++          );
++          expect(repo.mutations, 0);
++          expect(tester.takeException(), isNull);
++        } finally {
++          await _close(tester, container, repo);
++        }
++      },
++    );
++  }
++
+   testWidgets(
+     'weekly recap includes cross month photos and excludes outside current server week',
+     (tester) async {
+@@ -528,6 +557,19 @@
+         capture: capture,
+       );
+       try {
++        final recap = find.byKey(const ValueKey('moments-week-recap'));
++        expect(find.widgetWithText(TextButton, '이번 주 돌아보기'), findsOneWidget);
++        expect(tester.getSize(recap).height, greaterThanOrEqualTo(44));
++        expect(
++          tester.getTopLeft(recap).dy,
++          greaterThanOrEqualTo(
++            tester
++                .getBottomLeft(
++                  find.byKey(const ValueKey('moments-photo-calendar')),
++                )
++                .dy,
++          ),
++        );
+         await tester.ensureVisible(
+           find.byKey(const ValueKey('moments-week-recap')),
+         );
+--- before/test/widget/store_filter_continuity_test.dart
++++ after/test/widget/store_filter_continuity_test.dart
+@@ -176,35 +176,41 @@
+ Finder _topic(String value) => kIsWeb
+     ? find.widgetWithText(ChoiceChip, value)
+     : find.byKey(ValueKey('store-topic-$value'));
+-Finder _filters() => find.byKey(
+-  ValueKey(kIsWeb ? 'web-catalog-toolbar' : 'store-topic-filters'),
+-);
++Finder _filters() =>
++    find.byKey(ValueKey(kIsWeb ? 'web-catalog-toolbar' : 'catalog-sort'));
+ 
+ Future<void> _reachFilters(
+   WidgetTester tester, {
+   bool fromResults = false,
+ }) async {
+   await tester.scrollUntilVisible(
+-    _topic('여행'),
++    _filters(),
+     fromResults ? -240 : 240,
+     scrollable: _scrollable(),
+   );
+-  await tester.ensureVisible(_topic('여행'));
++  await tester.ensureVisible(_filters());
+   await tester.pumpAndSettle();
+ }
+ 
+ Future<void> _tapTopic(WidgetTester tester, String value) async {
+   // Move along the horizontal subject strip if necessary. Once revealed, the
+   // filter must never need another vertical trip past the collection hero.
++  if (_topic(value).evaluate().isEmpty) {
++    await tester.scrollUntilVisible(
++      _topic(value),
++      -240,
++      scrollable: _scrollable(),
++    );
++  }
+   await tester.ensureVisible(_topic(value));
+   await tester.pumpAndSettle();
+   expect(_topic(value).hitTestable(), findsOneWidget);
+   await tester.tap(_topic(value));
+   await tester.pumpAndSettle();
+   expect(
+-    _topic(value).hitTestable(),
++    _filters().hitTestable(),
+     findsOneWidget,
+-    reason: 'The chosen subject stays in the viewport',
++    reason: 'Category selection reveals result controls without another scroll',
+   );
+ }
+ 
+@@ -309,6 +315,26 @@
+     await CatalogFavorites.instance.load();
+   });
+   tearDown(() => CatalogFavorites.instance.dispose());
++
++  testWidgets('native editorial category jumps directly to its results', (
++    tester,
++  ) async {
++    _viewport(tester, const Size(390, 844));
++    final fixture = _Fixture();
++    await tester.pumpWidget(fixture.host(editorial: true));
++    await tester.pumpAndSettle();
++    await tester.ensureVisible(_topic('여행'));
++    await tester.pumpAndSettle();
++    await tester.tap(_topic('여행'));
++    await tester.pumpAndSettle();
++    // 선택 후 테스트가 스크롤하지 않아야 실제 결과 영역의 자동 이동을 확인한다.
++    expect(find.text('여행 템플릿').hitTestable(), findsOneWidget);
++    expect(_filters().hitTestable(), findsOneWidget);
++    expect(find.text('주제 · 여행').hitTestable(), findsOneWidget);
++    expect(fixture.catalogLoads, 1);
++    expect(tester.takeException(), isNull);
++    await tester.pumpWidget(const SizedBox.shrink());
++  }, skip: kIsWeb);
+ 
+   testWidgets(
+     'compact filter summary retains hero size, local filtering and reset',
+@@ -340,7 +366,7 @@
+         find.byKey(const ValueKey('catalog-reset-filters')),
+       );
+       await tester.pumpAndSettle();
+-      expect(tester.widget<ChoiceChip>(_topic('전체')).selected, isTrue);
++      expect(find.text('주제 · 여행'), findsNothing);
+       expect(_filters().hitTestable(), findsOneWidget);
+       expect(find.byKey(const ValueKey('catalog-reset-filters')), findsNothing);
+       expect(find.text('36개의 디자인'), findsOneWidget);
+@@ -465,7 +491,7 @@
+       await tester.pumpAndSettle();
+       await tester.tap(find.text('인기순').last);
+       await tester.pumpAndSettle();
+-      expect(_topic('일상').hitTestable(), findsOneWidget);
++      expect(find.text('주제 · 일상').hitTestable(), findsOneWidget);
+       expect(_count(tester), 1);
+       expect(selected, findsOneWidget);
+       expect(tester.takeException(), isNull);
+@@ -566,6 +592,9 @@
+       );
+       await _reachFilters(tester);
+       await _tapTopic(tester, '추천');
++      // 결과 이동을 확인한 뒤 위로 돌아가 추천 구성이 보존됐는지 확인한다.
++      _controller(tester).jumpTo(0);
++      await tester.pumpAndSettle();
+       final recommendedShelf = tester.widget<StoreFeaturedTemplateShelf>(
+         find.byType(StoreFeaturedTemplateShelf),
+       );
+@@ -580,6 +609,8 @@
+         isNotEmpty,
+       );
+       await _tapTopic(tester, '여행');
++      _controller(tester).jumpTo(0);
++      await tester.pumpAndSettle();
+       expect(find.byKey(const ValueKey('store-curation-sliver')), findsNothing);
+       expect(find.byType(StoreFeaturedTemplateShelf), findsOneWidget);
+       final shelf = tester.widget<StoreFeaturedTemplateShelf>(
+--- before/test/widget/store_main_experience_test.dart
++++ after/test/widget/store_main_experience_test.dart
+@@ -449,33 +449,9 @@
+           await _paint(tester);
+           await tester.tap(find.byKey(const ValueKey('store-topic-여행')));
+           await _paint(tester);
+-          // A topic selection scopes the shelf and the following products.
+-          expect(
+-            find.byKey(const ValueKey('store-featured-templates')),
+-            findsOneWidget,
+-          );
+-          expect(
+-            find.byKey(const ValueKey('store-topic-여행')).hitTestable(),
+-            findsOneWidget,
+-          );
+-          await tester.scrollUntilVisible(
+-            find.byKey(const ValueKey('store-topic-여행')),
+-            180,
+-            scrollable: find
+-                .descendant(
+-                  of: find.byType(CustomScrollView).first,
+-                  matching: find.byType(Scrollable),
+-                )
+-                .first,
+-          );
+-          expect(
+-            tester
+-                .widget<ChoiceChip>(
+-                  find.byKey(const ValueKey('store-topic-여행')),
+-                )
+-                .selected,
+-            isTrue,
+-          );
++          // 주제를 고른 뒤 추가 스크롤 없이 필터와 결과가 먼저 보여야 한다.
++          expect(find.text('여행 템플릿').hitTestable(), findsOneWidget);
++          expect(find.text('주제 · 여행'), findsOneWidget);
+           for (
+             var attempt = 0;
+             find.byType(TemplateCatalogTile).evaluate().isEmpty && attempt < 20;

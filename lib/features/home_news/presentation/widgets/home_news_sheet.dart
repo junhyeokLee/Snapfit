@@ -7,6 +7,7 @@ import '../../../../core/theme/snapfit_design_tokens.dart';
 import '../../../../shared/snapfit_image.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../domain/home_news.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 /// A single home story. The caller records exposure and handles the destination.
 Future<bool?> showHomeNewsSheet(
@@ -25,10 +26,15 @@ Future<bool?> showHomeNewsSheet(
 );
 
 class HomeNewsSheetResult {
-  const HomeNewsSheetResult({required this.item, required this.action});
+  const HomeNewsSheetResult({
+    required this.item,
+    required this.action,
+    this.hideForToday = false,
+  });
 
   final HomeNewsItem item;
   final bool action;
+  final bool hideForToday;
 }
 
 Future<HomeNewsSheetResult?> showHomeNewsCarousel(
@@ -54,6 +60,9 @@ Future<HomeNewsSheetResult?> showHomeNewsCarousel(
       onClose: (item) => Navigator.of(
         sheetContext,
       ).pop(HomeNewsSheetResult(item: item, action: false)),
+      onHideForToday: (item) => Navigator.of(
+        sheetContext,
+      ).pop(HomeNewsSheetResult(item: item, action: false, hideForToday: true)),
     ),
   );
 }
@@ -120,6 +129,7 @@ class HomeNewsCarouselContent extends StatefulWidget {
     required this.onClose,
     this.initialIndex = 0,
     this.onItemViewed,
+    this.onHideForToday,
     this.desktop = false,
   }) : assert(items.length > 0);
 
@@ -128,6 +138,7 @@ class HomeNewsCarouselContent extends StatefulWidget {
   final ValueChanged<HomeNewsItem> onAction;
   final ValueChanged<HomeNewsItem> onClose;
   final ValueChanged<HomeNewsItem>? onItemViewed;
+  final ValueChanged<HomeNewsItem>? onHideForToday;
   final bool desktop;
 
   @override
@@ -202,11 +213,13 @@ class _HomeNewsCarouselContentState extends State<HomeNewsCarouselContent> {
     }
   }
 
-  void _finish(bool action, {int? index}) {
+  void _finish(bool action, {int? index, bool hideForToday = false}) {
     if (_finishing || (index != null && index != _index)) return;
     _finishing = true;
     final item = widget.items[_index];
-    if (action) {
+    if (hideForToday && widget.onHideForToday != null) {
+      widget.onHideForToday!(item);
+    } else if (action) {
       widget.onAction(item);
     } else {
       widget.onClose(item);
@@ -222,6 +235,9 @@ class _HomeNewsCarouselContentState extends State<HomeNewsCarouselContent> {
         desktop: widget.desktop,
         onAction: () => _finish(true),
         onClose: () => _finish(false),
+        onHideForToday: widget.onHideForToday == null
+            ? null
+            : () => _finish(false, hideForToday: true),
       );
     }
     final media = MediaQuery.of(context);
@@ -253,6 +269,9 @@ class _HomeNewsCarouselContentState extends State<HomeNewsCarouselContent> {
               pageControls: _pageControls(context),
               onAction: () => _finish(true, index: index),
               onClose: () => _finish(false),
+              onHideForToday: widget.onHideForToday == null
+                  ? null
+                  : () => _finish(false, index: index, hideForToday: true),
             );
           },
         ),
@@ -278,7 +297,7 @@ class _HomeNewsCarouselContentState extends State<HomeNewsCarouselContent> {
             tooltip: '이전 소식',
             style: buttonStyle,
             onPressed: _index == 0 ? null : () => _goTo(_index - 1),
-            icon: const Icon(Icons.chevron_left_rounded, size: 22),
+            icon: const ExperienceIcon('ChevronLeft', size: 22),
           ),
         for (var index = 0; index < widget.items.length; index++)
           Semantics(
@@ -323,7 +342,7 @@ class _HomeNewsCarouselContentState extends State<HomeNewsCarouselContent> {
             onPressed: _index == widget.items.length - 1
                 ? null
                 : () => _goTo(_index + 1),
-            icon: const Icon(Icons.chevron_right_rounded, size: 22),
+            icon: const ExperienceIcon('ChevronRight', size: 22),
           ),
       ],
     );
@@ -339,6 +358,7 @@ class HomeNewsSheetContent extends StatelessWidget {
     required this.onClose,
     this.desktop = false,
     this.pageControls,
+    this.onHideForToday,
   });
 
   final HomeNewsItem item;
@@ -346,6 +366,7 @@ class HomeNewsSheetContent extends StatelessWidget {
   final VoidCallback onClose;
   final bool desktop;
   final Widget? pageControls;
+  final VoidCallback? onHideForToday;
 
   String get _eyebrow => switch (item.kind) {
     HomeNewsKind.monthlyDesign => '이달의 디자인',
@@ -357,8 +378,9 @@ class HomeNewsSheetContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
+    final shortViewport = media.size.height < 480;
     final horizontal = media.size.width < 360 ? 20.0 : 28.0;
-    final bottom = math.max(media.padding.bottom, 18.0);
+    final bottom = math.max(media.padding.bottom, shortViewport ? 8.0 : 18.0);
     final maxHeight = math.max(
       120.0,
       media.size.height - media.padding.top - (desktop ? 48 : 16),
@@ -389,21 +411,23 @@ class HomeNewsSheetContent extends StatelessWidget {
               padding: EdgeInsets.only(
                 left: horizontal,
                 right: horizontal - 10,
-                top: desktop ? 14 : 0,
-                bottom: 6,
+                top: desktop && !shortViewport ? 14 : 0,
+                bottom: shortViewport ? 4 : 6,
               ),
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      _eyebrow,
-                      style: ExperienceFormStyle.text(
-                        context,
-                        13,
-                        weight: FontWeight.w600,
-                        secondary: true,
-                      ),
-                    ),
+                    child: shortViewport && pageControls != null
+                        ? Semantics(label: _eyebrow, child: pageControls)
+                        : Text(
+                            _eyebrow,
+                            style: ExperienceFormStyle.text(
+                              context,
+                              13,
+                              weight: FontWeight.w600,
+                              secondary: true,
+                            ),
+                          ),
                   ),
                   IconButton(
                     key: const ValueKey('home-news-close'),
@@ -420,7 +444,7 @@ class HomeNewsSheetContent extends StatelessWidget {
                     ),
                     visualDensity: VisualDensity.standard,
                     iconSize: 21,
-                    icon: const Icon(Icons.close_rounded),
+                    icon: const ExperienceIcon('X'),
                   ),
                 ],
               ),
@@ -435,7 +459,7 @@ class HomeNewsSheetContent extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _NewsArtwork(item: item, desktop: desktop),
-                    const SizedBox(height: 24),
+                    SizedBox(height: shortViewport ? 16 : 24),
                     Semantics(
                       header: true,
                       child: Text(
@@ -462,26 +486,70 @@ class HomeNewsSheetContent extends StatelessWidget {
                 ),
               ),
             ),
-            if (pageControls != null)
+            if (pageControls != null && !shortViewport)
               Padding(
                 padding: EdgeInsets.fromLTRB(horizontal, 6, horizontal, 0),
                 child: pageControls,
               ),
             Padding(
-              padding: EdgeInsets.fromLTRB(horizontal, 20, horizontal, bottom),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  key: const ValueKey('home-news-action'),
-                  onPressed: onAction,
-                  style: ExperienceFormStyle.primary(context).copyWith(
-                    minimumSize: const WidgetStatePropertyAll(Size(0, 52)),
-                    padding: const WidgetStatePropertyAll(
-                      EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              padding: EdgeInsets.fromLTRB(
+                horizontal,
+                shortViewport
+                    ? 4
+                    : pageControls == null
+                    ? 20
+                    : 8,
+                horizontal,
+                bottom,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  FilledButton(
+                    key: const ValueKey('home-news-action'),
+                    onPressed: onAction,
+                    style: ExperienceFormStyle.primary(context).copyWith(
+                      minimumSize: WidgetStatePropertyAll(
+                        Size(0, shortViewport ? 48 : 52),
+                      ),
+                      padding: WidgetStatePropertyAll(
+                        EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: shortViewport ? 10 : 15,
+                        ),
+                      ),
                     ),
+                    child: Text(item.actionLabel, textAlign: TextAlign.center),
                   ),
-                  child: Text(item.actionLabel, textAlign: TextAlign.center),
-                ),
+                  if (onHideForToday != null) ...[
+                    SizedBox(height: shortViewport ? 0 : 4),
+                    Align(
+                      alignment: Alignment.center,
+                      child: TextButton(
+                        key: const ValueKey('home-news-hide-today'),
+                        onPressed: onHideForToday,
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: ExperienceFormStyle.muted(context),
+                          minimumSize: const Size(44, 44),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: shortViewport ? 4 : 8,
+                          ),
+                          side: BorderSide.none,
+                          shape: const RoundedRectangleBorder(),
+                          textStyle: ExperienceFormStyle.text(
+                            context,
+                            13,
+                            secondary: true,
+                          ),
+                        ),
+                        child: const Text('오늘 하루 안 보기'),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ],
@@ -628,10 +696,7 @@ class _AttendanceArtwork extends StatelessWidget {
         Positioned(
           right: 28,
           top: 30,
-          child: Icon(
-            Icons.auto_awesome_rounded,
-            size: 22,
-            color: SnapFitColors.accent.withValues(alpha: .6),
+          child: ExperienceIcon('Sparkles', size: 22, color: SnapFitColors.accent.withValues(alpha: .6),
           ),
         ),
         Transform.translate(
@@ -666,11 +731,7 @@ class _AttendanceArtwork extends StatelessWidget {
                       color: SnapFitColors.actionAccent,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.check_rounded,
-                      size: 42,
-                      color: Colors.white,
-                    ),
+                    child: const ExperienceIcon('Check', size: 42, color: Colors.white),
                   ),
                 ],
               ),
@@ -747,7 +808,7 @@ class _ReferralArtwork extends StatelessWidget {
               width: 4,
             ),
           ),
-          child: const Icon(Icons.add_rounded, color: Colors.white, size: 24),
+          child: const ExperienceIcon('Plus', color: Colors.white, size: 24),
         ),
       ],
     );
@@ -831,11 +892,7 @@ class _ReviewArtwork extends StatelessWidget {
                   color: dark
                       ? const Color(0xFFBFD2D4)
                       : const Color(0xFFDDECEE),
-                  child: const Icon(
-                    Icons.add_photo_alternate_outlined,
-                    size: 48,
-                    color: SnapFitColors.actionAccent,
-                  ),
+                  child: const ExperienceIcon('ImagePlus', size: 48, color: SnapFitColors.actionAccent),
                 ),
               ),
             ),
@@ -952,10 +1009,7 @@ class _CoverFallback extends StatelessWidget {
   Widget build(BuildContext context) => ColoredBox(
     color: ExperienceFormStyle.selection(context),
     child: Center(
-      child: Icon(
-        Icons.photo_album_outlined,
-        size: 40,
-        color: ExperienceFormStyle.selectionInk(context),
+      child: ExperienceIcon('Bookmark', size: 40, color: ExperienceFormStyle.selectionInk(context),
       ),
     ),
   );

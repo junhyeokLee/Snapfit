@@ -11,7 +11,7 @@ class AlbumInviteFailure {
   final bool retryable;
   final bool needsLogin;
 
-  factory AlbumInviteFailure.from(Object error) {
+  factory AlbumInviteFailure.from(Object error, {bool signedIn = true}) {
     final status = error is FunctionException ? error.status : null;
     final details = error is FunctionException ? error.details : null;
     final code = details is Map ? details['error'] : null;
@@ -23,9 +23,17 @@ class AlbumInviteFailure {
       );
     }
     if (code == 'invite_used' || status == 409) {
+      if (!signedIn) {
+        return const AlbumInviteFailure(
+          '로그인 후 초대를 확인해 주세요',
+          '이미 참여한 초대일 수 있어요. 로그인하면 현재 계정의 참여 상태를 확인할 수 있어요.',
+          retryable: false,
+          needsLogin: true,
+        );
+      }
       return const AlbumInviteFailure(
         '이미 사용된 초대예요',
-        '다른 사람이 참여한 링크예요. 새 초대 링크를 요청해 주세요.',
+        '이미 사용되었거나 현재 계정으로 참여할 수 없는 초대예요. 새 초대 링크를 요청해 주세요.',
         retryable: false,
       );
     }

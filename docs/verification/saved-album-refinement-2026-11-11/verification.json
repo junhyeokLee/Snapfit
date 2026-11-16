@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-11",
+  "tests": [
+    {
+      "suite": "saved",
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "firstBook",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "momentsEdit",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "onePage",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "savedCapture",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "source_sha256": {
+    "lib/features/album/presentation/views/album_saved_experience_screen.dart": "16b721476b7ebb84156981353669e53d8f35f36c9d682a4e2368eaa9d6f765d9",
+    "lib/features/album/presentation/widgets/home/home_album_actions.dart": "0e5a8a8aa25ac4a52311196c0ad4dafe1361e6ba3abbd567c0aa9b584264b6c0",
+    "test/widget/album_saved_experience_screen_test.dart": "037d5b57ecc81fed5015ae4eb19c61a871e351f31fab9f0baf0858e602f29b36"
+  }
+}

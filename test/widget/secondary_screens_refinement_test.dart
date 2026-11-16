@@ -17,6 +17,8 @@ import 'package:snap_fit/features/album/presentation/widgets/home/home_album_cov
 import 'package:snap_fit/features/album/presentation/widgets/reader/album_frozen_screen.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/text_style_picker_sheet.dart';
 import 'package:snap_fit/features/billing/data/billing_provider.dart';
+import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
+import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
 import 'package:snap_fit/features/notification/domain/entities/app_notification_item.dart';
 import 'package:snap_fit/features/notification/presentation/providers/notification_provider.dart';
 import 'package:snap_fit/features/notification/presentation/views/notification_screen.dart';
@@ -32,6 +34,12 @@ import 'ai_album_start_step_test.dart' show loadCreationFonts;
 class _Members extends Mock implements AlbumMemberRepository {}
 
 class _Support extends Mock implements SupportInquiryRepository {}
+
+// 게스트 화면 검증에서 실제 인증 복구 요청과 25초 제한 타이머를 만들지 않는다.
+class _GuestAuth extends AuthViewModel {
+  @override
+  FutureOr<UserInfo?> build() => null;
+}
 
 Widget _app(Widget screen, {bool dark = false, double scale = 1}) =>
     ScreenUtilInit(
@@ -314,7 +322,10 @@ void main() {
       );
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [albumMemberRepositoryProvider.overrideWithValue(members)],
+          overrides: [
+            authViewModelProvider.overrideWith(_GuestAuth.new),
+            albumMemberRepositoryProvider.overrideWithValue(members),
+          ],
           child: _app(const AlbumInviteScreen(albumId: 7, albumTitle: '우리 앨범')),
         ),
       );
@@ -357,7 +368,10 @@ void main() {
     });
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [albumMemberRepositoryProvider.overrideWithValue(members)],
+        overrides: [
+          authViewModelProvider.overrideWith(_GuestAuth.new),
+          albumMemberRepositoryProvider.overrideWithValue(members),
+        ],
         child: _app(const AlbumInviteScreen(albumId: 7, albumTitle: '우리 앨범')),
       ),
     );
@@ -473,6 +487,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authViewModelProvider.overrideWith(_GuestAuth.new),
           notificationInboxProvider.overrideWith(
             (ref) async => [
               AppNotificationItem(
@@ -519,6 +534,7 @@ void main() {
       ProviderScope(
         retry: (_, __) => null,
         overrides: [
+          authViewModelProvider.overrideWith(_GuestAuth.new),
           notificationInboxProvider.overrideWith((ref) async {
             if (requests++ == 0) throw Exception('offline');
             return <AppNotificationItem>[];
@@ -532,6 +548,6 @@ void main() {
     await tester.tap(find.text('다시 불러오기'));
     await tester.pumpAndSettle();
     expect(requests, 2);
-    expect(find.text('알림이 없습니다.'), findsOneWidget);
+    expect(find.text('아직 도착한 알림이 없어요.'), findsOneWidget);
   });
 }

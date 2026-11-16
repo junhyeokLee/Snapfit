@@ -8,3 +8,6 @@ Future<void> launchWebPointPayment(WebPointSdkRequest request) =>
     platform.launch(request);
 void ensureWebPointPaymentSupported() => platform.ensureSupported();
 Future<void> prepareWebPointPaymentSdk() => platform.prepareSdk();
+bool get hasUnresolvedWebPointPaymentWindow => platform.hasUnresolvedWindow;
+void acknowledgeConfirmedWebPointPayment(WebPointTopup row) =>
+    platform.confirmTerminal(row);

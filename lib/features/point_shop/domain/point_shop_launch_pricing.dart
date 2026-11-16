@@ -1,4 +1,5 @@
 import '../../../core/templates/authored_collections.dart';
+import '../../../core/templates/diversity_frame_specs.dart';
 import '../../../core/templates/free_template_material_policy.dart';
 import '../../../core/templates/studio_decoration_catalog.dart';
 import '../../../core/templates/studio_photo_frame_catalog.dart';
@@ -16,6 +17,14 @@ class PointShopLaunchPrice {
 
 const pointShopPricingRevision = pointShopCatalogApprovalRevision;
 
+const _milestoneFrameLaunchPrices = <String, int>{
+  'milestoneConfettiMat': 0,
+  'milestoneBlueprintMount': 0,
+  'milestonePortfolioTab': 300,
+  'milestoneLinenMedal': 300,
+  'milestoneGalleryLabel': 400,
+};
+
 bool isPendingAtelierMaterialProduct(String key) =>
     !ownerApprovedCatalogProductKeys.contains(key) &&
     !freeTemplateMaterialProductKeys.contains(key) &&
@@ -24,7 +33,9 @@ bool isPendingAtelierMaterialProduct(String key) =>
             (atelierEditionMaterialPrices[key.substring(8)] ?? 0) > 0) ||
         (key.startsWith('frame:') &&
             (atelierSignaturePhotoFrames.contains(key.substring(6)) ||
-                atelierStoryPhotoFrames.contains(key.substring(6)))));
+                atelierStoryPhotoFrames.contains(key.substring(6)) ||
+                diversityFramePrices.containsKey(key.substring(6)) ||
+                _milestoneFrameLaunchPrices.containsKey(key.substring(6)))));
 
 bool pointShopRequiresFreePrice(String productKey) =>
     freeTemplateMaterialProductKeys.contains(productKey) ||
@@ -33,13 +44,53 @@ bool pointShopRequiresFreePrice(String productKey) =>
       (collection) => pointShopAuthoredTemplateKey(collection) == productKey,
     );
 
+String _storyEditionLaunchPriceReason(StoryEdition edition) {
+  if (edition.qualityRevision == premiumQuartetRevision) {
+    return '${edition.title} 전용 아트 디렉션 · 32쪽 사진·수집·관찰·편지 지면과 독립 프레임·종이·스티커·문구 8종';
+  }
+  if (edition.qualityRevision == hobbyExpansionRevision) {
+    return '${edition.isPremium ? '취미별 완성 에디션' : '무료 완성 취미 기록집'} · '
+        '${edition.title}의 과정·관찰·수집 지면과 전용 프레임·종이·모티프·타이틀을 엮은 24쪽';
+  }
+  if (edition.qualityRevision == milestoneExpansionRevision) {
+    return '${edition.isPremium ? '새출발 완성 에디션' : '무료 완성 새출발 기록집'} · '
+        '${edition.title}의 사진·편지·계획 지면과 독립 프레임·기록지·문구를 갖춘 24쪽';
+  }
+  if (edition.isPremium) {
+    return edition.qualityRevision == sensoryEditionRevision
+        ? '야간 도시 전용 조판·경로 수집 지면·독립 프레임과 제목 조합을 갖춘 24쪽 아카이브'
+        : '전용 표지·24쪽 내지와 인쇄 5가지 크기의 스토리 에디션 책정가';
+  }
+  if (edition.qualityRevision == sensoryEditionRevision) {
+    return '무료 완성 카페 기록 · 24쪽과 전용 기본 소재 8종';
+  }
+  if (edition.id == 'story-reading-room') {
+    return '무료 독서 기록집 · 사진·인용·독서 노트 24쪽과 편집 가능한 기본 소재';
+  }
+  return '무료 동아리 완성 템플릿 · 인쇄 5가지 크기와 기본 소재 포함';
+}
+
+String _diversityFramePriceReason(String frame) => switch (frame) {
+  'clayContour' => '점토 비대칭 윤곽과 유약 표식 · 사진 전체를 보존하는 독립 매트',
+  'leafHerbarium' => '표본 절개·잎맥 인덱스와 투명 사진 창을 가진 허브 슬리브',
+  'filmContactRail' => '세로 퍼포레이션·노출 색인·독립 직사각 사진 창',
+  'bakeRecipe' => '체크 제본 띠·물결 재단·레시피 기록 포켓',
+  'knitStitch' => '스캘럽 재단과 교차 스티치·실 고리를 엮은 직조 매트',
+  'musicSleeve' => '음반 슬리브의 손가락 절개·그루브·트랙 라벨 조합',
+  'paperNotch' => '접힌 종이 노치·콜라주 탭과 비대칭 메모 띠',
+  'galleryRegistration' => '독립 재단 등록표·회색조 색인·정밀 이중 사진 마운트',
+  _ => '아일릿·봉제·등고선 수집 띠를 갖춘 캠프 지도 포켓',
+};
+
 final pointShopLaunchPrices = Map<String, PointShopLaunchPrice>.unmodifiable({
   for (final edition in storyEditions) ...{
     edition.productKey: PointShopLaunchPrice(
-      edition.isPremium ? 1800 : 0,
-      edition.isPremium
-          ? '전용 표지·24쪽 내지와 인쇄 5가지 크기의 스토리 에디션 책정가'
-          : '무료 동아리 완성 템플릿 · 인쇄 5가지 크기과 기본 소재 포함',
+      edition.qualityRevision == premiumQuartetRevision
+          ? 2500
+          : edition.isPremium
+          ? 1800
+          : 0,
+      _storyEditionLaunchPriceReason(edition),
     ),
     'sticker:${edition.paperId}': PointShopLaunchPrice(
       edition.isPremium ? 100 : 0,
@@ -54,11 +105,62 @@ final pointShopLaunchPrices = Map<String, PointShopLaunchPrice>.unmodifiable({
       '영문·한글 제목과 구분선을 개별 수정하는 타이틀 조합',
     ),
   },
+  for (final entry in diversityFramePrices.entries)
+    'frame:${entry.key}': PointShopLaunchPrice(
+      entry.value,
+      _diversityFramePriceReason(entry.key),
+    ),
+  for (final edition in premiumQuartetEditions) ...{
+    'sticker:${edition.id}-vellum': const PointShopLaunchPrice(
+      150,
+      '주제별 접지와 가장자리 결을 살린 두 번째 편집 기록지',
+    ),
+    'sticker:${edition.id}-keepsake': const PointShopLaunchPrice(
+      300,
+      '전용으로 촬영한 듯한 재료 수집품 · 투명 배경과 원본 질감',
+    ),
+    'phrase:collage-${edition.id}-caption': const PointShopLaunchPrice(
+      300,
+      '독립적으로 편집 가능한 한글 문장과 보조 레터링 조합',
+    ),
+    'frame:${edition.photoFrames[0]}': const PointShopLaunchPrice(
+      300,
+      '전체 사진 비율을 보존하는 주제별 재단·제본·색인 마운트',
+    ),
+    'frame:${edition.photoFrames[1]}': const PointShopLaunchPrice(
+      400,
+      '두 번째 독립 마운트 · 절개·스티치·접지 구조와 온전한 사진 창',
+    ),
+  },
+  for (final entry in _milestoneFrameLaunchPrices.entries)
+    'frame:${entry.key}': PointShopLaunchPrice(entry.value, switch (entry.key) {
+      'milestoneConfettiMat' => '색종이 재단과 축하 띠·전체 얼굴을 보존하는 졸업 사진 창',
+      'milestoneBlueprintMount' => '입주 도면의 눈금과 동선 표식·첫 집 기록용 비대칭 마운트',
+      'milestonePortfolioTab' => '포트폴리오 탭·금속 클립·새 과정의 색인 띠',
+      'milestoneLinenMedal' => '직조 결·기념 메달·여백을 갖춘 은퇴 편지 사진 매트',
+      _ => '전시 작품 라벨·행잉 인장·등록 색인이 분리된 정밀 마운트',
+    }),
   for (final frame in atelierStoryPhotoFrames)
     'frame:$frame': PointShopLaunchPrice(
       frame.startsWith('storyVow') ? 400 : 300,
       '사진 교체 가능한 컨셉 전용 절개·접지 구조',
     ),
+  'frame:nocturneTransit': const PointShopLaunchPrice(
+    300,
+    '환승 절개와 넓은 사진 창·코발트 승차 띠',
+  ),
+  'frame:nocturneDuplex': const PointShopLaunchPrice(
+    400,
+    '이중 청색 매트·은빛 스터드와 독립 포토 창',
+  ),
+  'sticker:nocturneGlassine': const PointShopLaunchPrice(
+    200,
+    '원본 투명도를 보존한 실사 글라신 접힘과 금속 가장자리',
+  ),
+  'phrase:collage-sensory-night-index': const PointShopLaunchPrice(
+    300,
+    '제목·야간 노선·날짜 안내를 각각 수정하는 색인 문구',
+  ),
   for (final frame in atelierSignaturePhotoFrames)
     'frame:$frame': const PointShopLaunchPrice(400, '컨셉 전용 포켓·절개·봉제 구조'),
   for (final key in freeTemplateMaterialProductKeys)
@@ -182,6 +284,24 @@ final pointShopLaunchPrices = Map<String, PointShopLaunchPrice>.unmodifiable({
   'frame:atelierDeco': const PointShopLaunchPrice(400, '계단형 외곽과 세 겹 장식 윤곽'),
   'frame:atelierAccordion': const PointShopLaunchPrice(300, '연속된 세 창과 접지'),
   'frame:atelierCornerFold': const PointShopLaunchPrice(200, '사선 절개와 접힌 뒷면'),
+  // These existing starter phrases retain their free access after refinement.
+  // Registration makes the server catalog explicit; it is not a new paid tier.
+  'phrase:collage-bold-cut': const PointShopLaunchPrice(
+    0,
+    '기존 무료 기본 문구 유지 · 편집 가능한 컷아웃 타이포 조합 개선',
+  ),
+  'phrase:collage-ticket-label': const PointShopLaunchPrice(
+    0,
+    '기존 무료 기본 문구 유지 · 편집 가능한 티켓 라벨 조판 개선',
+  ),
+  'phrase:collage-hand-note': const PointShopLaunchPrice(
+    0,
+    '기존 무료 기본 문구 유지 · 편집 가능한 손글씨 메모 조판 개선',
+  ),
+  'phrase:collage-diecut': const PointShopLaunchPrice(
+    0,
+    '기존 무료 기본 문구 유지 · 편집 가능한 겹인쇄 타이포 조합 개선',
+  ),
   'phrase:collage-atelier-vow': const PointShopLaunchPrice(
     400,
     '압인판·제목·날짜의 다층 조판',

@@ -6,6 +6,7 @@ import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../ai_album/domain/ai_album_models.dart';
 import 'creation_workspace.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 class AiAlbumPointConfirmationStep extends StatelessWidget {
   const AiAlbumPointConfirmationStep({
@@ -296,7 +297,7 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
           IconButton(
             tooltip: '요청 수정',
             onPressed: onBack,
-            icon: const Icon(Icons.arrow_back, size: 21),
+            icon: const ExperienceIcon('ArrowLeft', size: 21),
           ),
           const SizedBox(width: 12),
           Expanded(

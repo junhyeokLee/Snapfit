@@ -15,6 +15,11 @@ part 'authored_story_materials.dart';
 part 'authored_exclusive_story_editions.dart';
 part 'authored_club_story_editions.dart';
 part 'authored_activity_story_editions.dart';
+part 'authored_sensory_editions.dart';
+part 'authored_reading_edition.dart';
+part 'authored_hobby_expansion.dart';
+part 'authored_milestone_expansion.dart';
+part 'authored_premium_quartets.dart';
 
 part 'authored_petal.dart';
 part 'authored_wander.dart';

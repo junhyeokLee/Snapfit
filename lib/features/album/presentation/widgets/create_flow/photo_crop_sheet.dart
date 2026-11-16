@@ -13,6 +13,7 @@ import '../../../../store/presentation/widgets/template_page_renderer.dart';
 import '../../../domain/entities/layer.dart';
 import '../../../data/gallery/photo_asset_image_provider.dart';
 import '../../utils/photo_crop_geometry.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 /// A read-only page built from the caller's snapshot and the current crop draft.
 class PhotoCropPageContext {
@@ -215,7 +216,7 @@ class _PhotoCropSheetState extends State<PhotoCropSheet> {
           ),
           TextButton.icon(
             onPressed: _retryPhoto,
-            icon: const Icon(Icons.refresh),
+            icon: const ExperienceIcon('RefreshCw'),
             label: const Text('다시 시도'),
           ),
         ],
@@ -474,7 +475,7 @@ class _PhotoCropSheetState extends State<PhotoCropSheet> {
     children: [
       IconButton(
         tooltip: '사진 축소',
-        icon: const Icon(Icons.zoom_out),
+        icon: const ExperienceIcon('ZoomOut'),
         onPressed: !_photoReady || _draft.imageZoom <= 1
             ? null
             : () => setState(
@@ -498,7 +499,7 @@ class _PhotoCropSheetState extends State<PhotoCropSheet> {
       ),
       IconButton(
         tooltip: '사진 확대',
-        icon: const Icon(Icons.zoom_in),
+        icon: const ExperienceIcon('ZoomIn'),
         onPressed: !_photoReady || _draft.imageZoom >= 4
             ? null
             : () => setState(
@@ -649,7 +650,7 @@ class _PhotoCropSheetState extends State<PhotoCropSheet> {
                             ),
                             IconButton(
                               tooltip: '닫기',
-                              icon: const Icon(Icons.close),
+                              icon: const ExperienceIcon('X'),
                               onPressed: () => _finish(),
                             ),
                           ],

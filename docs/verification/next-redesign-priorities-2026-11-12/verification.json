@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-12",
+  "scope": "Read-only current native support journey audit and next redesign priorities",
+  "captureScenariosPassed": 1,
+  "screenshots": 5,
+  "productCodeChanged": false,
+  "contactedLiveServer": false,
+  "viewport": [
+    390,
+    844
+  ],
+  "pixelRatio": 2,
+  "observations": {
+    "logicalSize": [
+      390,
+      844
+    ],
+    "pixelRatio": 2,
+    "fakeSubmissionCount": 1,
+    "returnedToSettingsAfterSubmit": true,
+    "reentryShowsNewBlankForm": true,
+    "contactedLiveServer": false
+  },
+  "sourceSha256": {
+    "lib/features/profile/presentation/views/my_page_screen.dart": "790d4eedc32015b430a1ec76e292494ad9babfa4a12d14b935810ae3a55bf419",
+    "lib/features/profile/presentation/views/support_inquiry_screen.dart": "4f225a4ab1e9ca95298dd5de799eec202cb790ab9cb9c0714e439b20d9b8c359",
+    "lib/features/profile/data/support_inquiry_repository.dart": "e86f4aea1b5462c6e64ce5844c5100df025d6bb64cb32f66047658d874f9b223"
+  },
+  "limits": [
+    "Synthetic owner and fake submission repository; no connected-device or production inquiry delivery claim.",
+    "Editor wording candidate was inspected in code only, not captured."
+  ],
+  "highestPriority": "Customer support inquiry history and durable submission result"
+}

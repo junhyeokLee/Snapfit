@@ -1,0 +1,801 @@
+{
+  "date": "2026-11-02",
+  "scope": "Existing store template and material quality; shared Flutter app/web source",
+  "templates": {
+    "catalogIds": [
+      -9422,
+      -9443,
+      -9451
+    ],
+    "canonicalProductKeys": [
+      "template:taste-archive",
+      "template:our-good-company",
+      "template:dates-of-us"
+    ],
+    "revisedPages": [
+      "cover",
+      "3",
+      "4"
+    ],
+    "physicalRatios": [
+      "square",
+      "landscape4x3",
+      "landscape5x4"
+    ],
+    "nativeBeforeImages": 18,
+    "nativeAfterImages": 18,
+    "other130CatalogDocumentsExactHashesPreserved": true,
+    "remaining22InteriorPagesPerBookPreserved": true,
+    "onlySevenReviewedSamplePhotoPairsChanged": true,
+    "newPhotoOrFontAssets": false
+  },
+  "materials": {
+    "existingEditableWordArtIds": [
+      "bold-cut",
+      "ticket-label",
+      "hand-note",
+      "diecut"
+    ],
+    "newProductKeys": false,
+    "editableTextAndShapes": true,
+    "legacyFullSavedJSONPixelEqualityPassed": true,
+    "editorAndSavedPreviewNativeExports": 24,
+    "storyPreviewSourceRatioCorrected": true,
+    "storyMotifBoundsBefore": [
+      103,
+      103
+    ],
+    "storyMotifBoundsAfter": [
+      208,
+      208
+    ],
+    "versionedNativePreviewAssets": {
+      "phrase:collage-bold-cut": {
+        "path": "assets/catalog_thumbnails/phrase_collage-bold-cut.e7296f27173a.png",
+        "bytes": 11291,
+        "sha256": "e7296f27173a74d848ff207caccde54412063ab857f740e2579b4dab5895d22a"
+      },
+      "phrase:collage-ticket-label": {
+        "path": "assets/catalog_thumbnails/phrase_collage-ticket-label.ee4dd0979f7f.png",
+        "bytes": 8374,
+        "sha256": "ee4dd0979f7f5d911db18e71a488645627c5e77dccc17ef012667ee39d361797"
+      },
+      "phrase:collage-hand-note": {
+        "path": "assets/catalog_thumbnails/phrase_collage-hand-note.41e6aba5c7b9.png",
+        "bytes": 12022,
+        "sha256": "41e6aba5c7b9264bd562674b700d912d13c7aa6e1442a50544a6388ce21673a8"
+      },
+      "phrase:collage-diecut": {
+        "path": "assets/catalog_thumbnails/phrase_collage-diecut.d59a22753bc3.png",
+        "bytes": 18013,
+        "sha256": "d59a22753bc3af104ca64a65d04e5cca10c04f606cb511717edd7b30f18af943"
+      }
+    },
+    "legacyUnversionedAssetsPreserved": true
+  },
+  "presentation": {
+    "largerArtworkAndQuieterStage": true,
+    "discoveryArtworkBefore": [
+      148,
+      138
+    ],
+    "discoveryArtworkAfter": [
+      164,
+      164
+    ],
+    "lightArtboardInDarkModeForOriginalContrast": true,
+    "labelAndBookmarkContrastChecked": true,
+    "cached320PixelImagesAndOffscreenDisposalPreserved": true,
+    "newPerScrollDocumentOrFontMeasurement": false
+  },
+  "checks": [
+    {
+      "log": "final-quality-tests.log",
+      "passed": 265,
+      "failed": 0,
+      "scope": "Native fonts, print preflight, 42 free books, saved geometry and unrelated catalog hashes"
+    },
+    {
+      "log": "final-store-regressions.log",
+      "passed": 73,
+      "failedInitially": 2,
+      "scope": "Catalog paging, commerce, material application, cached UI, new live documents; two legacy interaction fixtures corrected below"
+    },
+    {
+      "log": "material-editor-flow-final.log",
+      "passed": 2,
+      "failed": 0,
+      "scope": "Final actual narrow/landscape search, hittable favorite, apply/undo; resolves both remaining fixture failures"
+    },
+    {
+      "log": "photo-provenance-final.log",
+      "passed": 1,
+      "failed": 0,
+      "scope": "Only seven exact reviewed sample substitutions accepted"
+    },
+    {
+      "log": "catalog-preview-regenerate.log",
+      "passed": 1,
+      "failed": 0,
+      "scope": "Regenerate actual native compact documents; only three entries changed"
+    },
+    {
+      "log": "template-after-export-final.log",
+      "passed": 1,
+      "failed": 0,
+      "scope": "Export final 18 actual covers/spreads"
+    },
+    {
+      "log": "template-thumbnails-final.log",
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "log": "editorial-export-final.log",
+      "passed": 1,
+      "failed": 0,
+      "scope": "Partial existing bitmap export preserves live-only editions without unrelated work"
+    },
+    {
+      "log": "material-after-export-versioned.log",
+      "passed": 1,
+      "failed": 0,
+      "scope": "Final four source-rendered, content-addressed original previews"
+    },
+    {
+      "log": "final-pricing-registration-tests.log",
+      "passed": 29,
+      "failed": 0,
+      "scope": "Explicit zero prices, real active release rows, unchanged other launch prices and free-material policies"
+    },
+    {
+      "log": "cold-entry-recovery-tests.log",
+      "passed": 91,
+      "failed": 0,
+      "scope": "Cold public materials entry, route account fences, default-provider account/price deadline recovery and initial token races"
+    },
+    {
+      "log": "detail-originals-final-tests.log",
+      "passed": 18,
+      "failed": 0,
+      "scope": "All 145 full detail documents match canonical; three real asset loaders match root and sale variants; legacy originals remain identical"
+    },
+    {
+      "log": "catalog-facts-final-tests.log",
+      "passed": 4,
+      "failed": 0,
+      "scope": "133 catalog metadata profiles and all 145 complete documents remain synchronized"
+    },
+    {
+      "log": "catalog-metadata-python-tests.log",
+      "passed": 1,
+      "failed": 0,
+      "scope": "Metadata generator reads the content-addressed original while preserving old decoy assets"
+    },
+    {
+      "log": "google-login-start-tests.log",
+      "passed": 80,
+      "failed": 0,
+      "scope": "Optional OAuth provider lookup timeout, provider schema validation, official PKCE start, callback/session ownership and login UI"
+    },
+    {
+      "log": "bounded-cron-history-tests.log",
+      "passed": 7,
+      "failed": 0,
+      "scope": "Exact command preservation, managed SELECT-only metadata/DELETE-only history permissions, bounded daily retention, actual transaction-scoped timeouts, compatibility patch and atomic rejection of unknown definitions"
+    },
+    {
+      "log": "public-browser-final-recovery.log",
+      "passed": 2,
+      "failed": 0,
+      "scope": "Final real isolated Chrome Auth health/settings, live anonymous catalog and four free access quotes after all server changes"
+    }
+  ],
+  "fixtureCorrections": [
+    "ProviderScope recreated per quoted product instead of retaining the first fake price",
+    "Existing platform tap target minimum is 44px, actual padded size is 48px",
+    "Search by stable item identity instead of assuming catalog order/count",
+    "Separate search field from rendered product label",
+    "Await scrolling and verify real hit testing before favorite tap"
+  ],
+  "codeReview": "Template and material sources independently reviewed; no unresolved findings within this scope",
+  "analysis": {
+    "productionAndFocusedTests": "analyze.log",
+    "exportTools": "export-analyze.log",
+    "result": "No issues found",
+    "pricing": "pricing-analyze.log",
+    "coldEntry": "cold-entry-analyze.log",
+    "fullDetailOriginals": "detail-originals-analyze.log",
+    "oauthStart": "google-login-start-analyze.log"
+  },
+  "productionCatalogRead": {
+    "mode": "Public anonymous verification after explicit catalog registration",
+    "canonicalKeys": [
+      "template:taste-archive",
+      "template:our-good-company",
+      "template:dates-of-us",
+      "phrase:collage-bold-cut",
+      "phrase:collage-ticket-label",
+      "phrase:collage-hand-note",
+      "phrase:collage-diecut"
+    ],
+    "products": [
+      {
+        "product_key": "phrase:collage-bold-cut",
+        "kind": "phrase",
+        "asset_id": "collage-bold-cut",
+        "title": "볼드 컷아웃",
+        "point_price": 0,
+        "is_active": true
+      },
+      {
+        "product_key": "phrase:collage-diecut",
+        "kind": "phrase",
+        "asset_id": "collage-diecut",
+        "title": "겹인쇄 스티커",
+        "point_price": 0,
+        "is_active": true
+      },
+      {
+        "product_key": "phrase:collage-hand-note",
+        "kind": "phrase",
+        "asset_id": "collage-hand-note",
+        "title": "손글씨 밑줄",
+        "point_price": 0,
+        "is_active": true
+      },
+      {
+        "product_key": "phrase:collage-ticket-label",
+        "kind": "phrase",
+        "asset_id": "collage-ticket-label",
+        "title": "티켓 라벨",
+        "point_price": 0,
+        "is_active": true
+      },
+      {
+        "product_key": "template:dates-of-us",
+        "kind": "template",
+        "asset_id": "dates-of-us",
+        "title": "너와 나의 날짜들",
+        "point_price": 0,
+        "is_active": true
+      },
+      {
+        "product_key": "template:our-good-company",
+        "kind": "template",
+        "asset_id": "our-good-company",
+        "title": "우리의 좋은 사이",
+        "point_price": 0,
+        "is_active": true
+      },
+      {
+        "product_key": "template:taste-archive",
+        "kind": "template",
+        "asset_id": "taste-archive",
+        "title": "취향 보관함",
+        "point_price": 0,
+        "is_active": true
+      }
+    ],
+    "anonymousAccess": {
+      "template:taste-archive": {
+        "owned": false,
+        "title": "취향 보관함",
+        "is_free": true,
+        "available": true,
+        "point_price": 0,
+        "product_key": "template:taste-archive",
+        "remaining_balance": 0
+      },
+      "template:our-good-company": {
+        "owned": false,
+        "title": "우리의 좋은 사이",
+        "is_free": true,
+        "available": true,
+        "point_price": 0,
+        "product_key": "template:our-good-company",
+        "remaining_balance": 0
+      },
+      "template:dates-of-us": {
+        "owned": false,
+        "title": "너와 나의 날짜들",
+        "is_free": true,
+        "available": true,
+        "point_price": 0,
+        "product_key": "template:dates-of-us",
+        "remaining_balance": 0
+      },
+      "phrase:collage-bold-cut": {
+        "owned": false,
+        "title": "볼드 컷아웃",
+        "is_free": true,
+        "available": true,
+        "point_price": 0,
+        "product_key": "phrase:collage-bold-cut",
+        "remaining_balance": 0
+      },
+      "phrase:collage-ticket-label": {
+        "owned": false,
+        "title": "티켓 라벨",
+        "is_free": true,
+        "available": true,
+        "point_price": 0,
+        "product_key": "phrase:collage-ticket-label",
+        "remaining_balance": 0
+      },
+      "phrase:collage-hand-note": {
+        "owned": false,
+        "title": "손글씨 밑줄",
+        "is_free": true,
+        "available": true,
+        "point_price": 0,
+        "product_key": "phrase:collage-hand-note",
+        "remaining_balance": 0
+      },
+      "phrase:collage-diecut": {
+        "owned": false,
+        "title": "겹인쇄 스티커",
+        "is_free": true,
+        "available": true,
+        "point_price": 0,
+        "product_key": "phrase:collage-diecut",
+        "remaining_balance": 0
+      }
+    },
+    "sameFreeAccessAndPrices": true,
+    "existingTemplateRowsPreserved": true,
+    "newlyRegisteredExistingFreeWordArts": 4,
+    "otherCatalogRowsUnchanged": "Checked by transaction fingerprint guard",
+    "schemaWalletOwnershipOrCustomerRowsWritten": false
+  },
+  "databaseMutations": {
+    "registeredExistingFreeWordArts": 4,
+    "newPricePerItem": 0,
+    "otherCatalogRowsChanged": false,
+    "guardedIdempotentStatement": "register-existing-free-word-art.sql",
+    "schemaWalletOwnershipOrCustomerDataChanges": false,
+    "operationalCron": {
+      "workerCommandsRefined": 2,
+      "newDailyHistoryJob": 1,
+      "customerDataOrWalletOrOwnershipChanges": false,
+      "activeChoicesAndWorkerSchedulesPreserved": true,
+      "migrations": [
+        {
+          "name": "bounded_daily_cron_history_retention",
+          "version": "20261101180044"
+        },
+        {
+          "name": "cron_history_background_worker_compatibility",
+          "version": "20261101180338"
+        }
+      ]
+    }
+  },
+  "nativeBuildAndPhoneInstallation": "Not requested or performed; shared native widgets and actual renderers verified through Flutter tests",
+  "limitations": [
+    "Physical print output and a connected phone were not exercised",
+    "This is a targeted quality pass on three existing books, four editable word arts and material presentation; it does not claim all 491 materials were redesigned",
+    "Signed-in Google login, catalog prices, template setup and free-material album selection were verified after recovery. No paid purchase or edit to an existing customer album was performed.",
+    "The new daily retention job is scheduled for 04:17 KST; its first scheduled production run has not yet occurred. PostgreSQL execution under restricted permissions was verified locally. Six ordinary worker runs after the change succeeded, with a maximum of 0.0783 seconds."
+  ],
+  "followUpArtDirection": [
+    "Sparse outline-only paid motifs and ruled papers need differentiated material texture/composition; preserve old saved render identities when revising",
+    "Improve actual underlying artwork rather than just adding more catalog items or recoloring thumbnails"
+  ],
+  "evidence": [
+    "template-after-square.jpg",
+    "template-after-landscape4x3.jpg",
+    "template-after-landscape5x4.jpg",
+    "word-art-before-after.jpg",
+    "templates/art-direction-notes.md",
+    "template-covers-after.jpg",
+    "after-material-detail.jpg",
+    "after-template-detail.jpg",
+    "after-template-spread.jpg",
+    "before-full-detail-mismatch.jpg",
+    "production-release-auth-start-check.json",
+    "auth-server-resource-pressure.png",
+    "after-login-template-free.jpg",
+    "after-login-template-start.jpg",
+    "after-login-material-free.jpg",
+    "auth-cron-diagnostic-before.json",
+    "auth-cron-diagnostic-after.json"
+  ],
+  "existingPricesOwnershipAndWalletsModified": false,
+  "liveFindingsFixed": [
+    "Four existing base phrases had a free server quote but no explicit product row, so their list badge said preparation; registered four active 0P rows without masking unknown products as free"
+  ],
+  "build": {
+    "command": "python3 tool/build_web.py --output build/review-web",
+    "log": "web-build-auth-start.log",
+    "compiledSeconds": 98.1,
+    "mainFile": "main.9027939f6275d289603f.dart.js",
+    "bootstrapFile": "flutter_bootstrap.6cc2737f0c986d601813.js"
+  },
+  "coldEntryRecovery": {
+    "materialsRoutePublic": true,
+    "authCheckAutomaticBuildRetriesDisabledOnlyOnAuthProvider": true,
+    "catalogAutomaticBuildRetriesDisabledOnlyOnCatalogProvider": true,
+    "explicitRetryPreserved": true,
+    "ownedPurchaseAndTopupBehaviorUnchanged": true,
+    "regressionsPassed": 91,
+    "logs": [
+      "cold-entry-recovery-tests.log",
+      "cold-entry-analyze.log"
+    ],
+    "backgroundObservation": "The browser review tab had been in the background; artwork is intentionally released by CatalogArtworkVisibility there. Empty background captures do not prove missing assets. Final live verification must use the foreground tab."
+  },
+  "production": {
+    "hostingVersion": "projects/360727043538/sites/snapfit-c719d/versions/18cd92faa26be354",
+    "checkedAtUtc": "2026-11-01T17:50:04.892331+00:00",
+    "main_sha256": "9027939f6275d289603f08b1a9047231562a55d4c6d32f1d85eaae29e1a59e22",
+    "main_file": "main.9027939f6275d289603f.dart.js",
+    "bootstrap_sha256": "6cc2737f0c986d60181389cd28826eb9c2c3e8d79845a4a23195313ba3edb2ac",
+    "bootstrap_file": "flutter_bootstrap.6cc2737f0c986d601813.js",
+    "startupReferences": {
+      "indexReferencesBootstrap": true,
+      "bootstrapReferencesMain": true
+    },
+    "assets": {
+      "html": {
+        "matchesBuild": true,
+        "httpStatus": 200,
+        "sslVerifyResult": 0,
+        "bytes": 4771,
+        "sha256": "970d3b9e4252af35463ed74185a35a2100ed42943d595a5e48c5ffa17868b70b",
+        "buildSha256": "970d3b9e4252af35463ed74185a35a2100ed42943d595a5e48c5ffa17868b70b",
+        "path": "designs",
+        "effectiveUrl": "https://snapfit-c719d.web.app/designs",
+        "cacheControl": "no-store",
+        "contentType": "text/html; charset=utf-8"
+      },
+      "materialsEntry": {
+        "matchesBuild": true,
+        "httpStatus": 200,
+        "sslVerifyResult": 0,
+        "bytes": 4771,
+        "sha256": "970d3b9e4252af35463ed74185a35a2100ed42943d595a5e48c5ffa17868b70b",
+        "buildSha256": "970d3b9e4252af35463ed74185a35a2100ed42943d595a5e48c5ffa17868b70b",
+        "path": "designs/materials",
+        "effectiveUrl": "https://snapfit-c719d.web.app/designs/materials",
+        "cacheControl": "no-store",
+        "contentType": "text/html; charset=utf-8"
+      },
+      "main": {
+        "matchesBuild": true,
+        "httpStatus": 200,
+        "sslVerifyResult": 0,
+        "bytes": 9973491,
+        "sha256": "9027939f6275d289603f08b1a9047231562a55d4c6d32f1d85eaae29e1a59e22",
+        "buildSha256": "9027939f6275d289603f08b1a9047231562a55d4c6d32f1d85eaae29e1a59e22",
+        "path": "main.9027939f6275d289603f.dart.js",
+        "effectiveUrl": "https://snapfit-c719d.web.app/main.9027939f6275d289603f.dart.js",
+        "cacheControl": "public,max-age=31536000,immutable",
+        "contentType": "text/javascript; charset=utf-8"
+      },
+      "bootstrap": {
+        "matchesBuild": true,
+        "httpStatus": 200,
+        "sslVerifyResult": 0,
+        "bytes": 20074,
+        "sha256": "6cc2737f0c986d60181389cd28826eb9c2c3e8d79845a4a23195313ba3edb2ac",
+        "buildSha256": "6cc2737f0c986d60181389cd28826eb9c2c3e8d79845a4a23195313ba3edb2ac",
+        "path": "flutter_bootstrap.6cc2737f0c986d601813.js",
+        "effectiveUrl": "https://snapfit-c719d.web.app/flutter_bootstrap.6cc2737f0c986d601813.js",
+        "cacheControl": "no-cache",
+        "contentType": "text/javascript; charset=utf-8"
+      },
+      "fullFonts": {
+        "matchesBuild": true,
+        "httpStatus": 200,
+        "sslVerifyResult": 0,
+        "bytes": 3892,
+        "sha256": "97fae7966753c52f4ab20f336be38f95b26df5bf71f2175dd7c0a063a541e778",
+        "buildSha256": "97fae7966753c52f4ab20f336be38f95b26df5bf71f2175dd7c0a063a541e778",
+        "path": "assets/FontManifest.json",
+        "effectiveUrl": "https://snapfit-c719d.web.app/assets/FontManifest.json",
+        "cacheControl": "no-cache",
+        "contentType": "application/json"
+      },
+      "phrase:collage-bold-cut": {
+        "matchesBuild": true,
+        "httpStatus": 200,
+        "sslVerifyResult": 0,
+        "bytes": 11291,
+        "sha256": "e7296f27173a74d848ff207caccde54412063ab857f740e2579b4dab5895d22a",
+        "buildSha256": "e7296f27173a74d848ff207caccde54412063ab857f740e2579b4dab5895d22a",
+        "path": "assets/assets/catalog_thumbnails/phrase_collage-bold-cut.e7296f27173a.png",
+        "effectiveUrl": "https://snapfit-c719d.web.app/assets/assets/catalog_thumbnails/phrase_collage-bold-cut.e7296f27173a.png",
+        "cacheControl": "max-age=3600",
+        "contentType": "image/png"
+      },
+      "phrase:collage-ticket-label": {
+        "matchesBuild": true,
+        "httpStatus": 200,
+        "sslVerifyResult": 0,
+        "bytes": 8374,
+        "sha256": "ee4dd0979f7f5d911db18e71a488645627c5e77dccc17ef012667ee39d361797",
+        "buildSha256": "ee4dd0979f7f5d911db18e71a488645627c5e77dccc17ef012667ee39d361797",
+        "path": "assets/assets/catalog_thumbnails/phrase_collage-ticket-label.ee4dd0979f7f.png",
+        "effectiveUrl": "https://snapfit-c719d.web.app/assets/assets/catalog_thumbnails/phrase_collage-ticket-label.ee4dd0979f7f.png",
+        "cacheControl": "max-age=3600",
+        "contentType": "image/png"
+      },
+      "phrase:collage-hand-note": {
+        "matchesBuild": true,
+        "httpStatus": 200,
+        "sslVerifyResult": 0,
+        "bytes": 12022,
+        "sha256": "41e6aba5c7b9264bd562674b700d912d13c7aa6e1442a50544a6388ce21673a8",
+        "buildSha256": "41e6aba5c7b9264bd562674b700d912d13c7aa6e1442a50544a6388ce21673a8",
+        "path": "assets/assets/catalog_thumbnails/phrase_collage-hand-note.41e6aba5c7b9.png",
+        "effectiveUrl": "https://snapfit-c719d.web.app/assets/assets/catalog_thumbnails/phrase_collage-hand-note.41e6aba5c7b9.png",
+        "cacheControl": "max-age=3600",
+        "contentType": "image/png"
+      },
+      "phrase:collage-diecut": {
+        "matchesBuild": true,
+        "httpStatus": 200,
+        "sslVerifyResult": 0,
+        "bytes": 18013,
+        "sha256": "d59a22753bc3af104ca64a65d04e5cca10c04f606cb511717edd7b30f18af943",
+        "buildSha256": "d59a22753bc3af104ca64a65d04e5cca10c04f606cb511717edd7b30f18af943",
+        "path": "assets/assets/catalog_thumbnails/phrase_collage-diecut.d59a22753bc3.png",
+        "effectiveUrl": "https://snapfit-c719d.web.app/assets/assets/catalog_thumbnails/phrase_collage-diecut.d59a22753bc3.png",
+        "cacheControl": "max-age=3600",
+        "contentType": "image/png"
+      },
+      "fullDetail:-9422": {
+        "matchesBuild": true,
+        "httpStatus": 200,
+        "sslVerifyResult": 0,
+        "bytes": 21313,
+        "sha256": "34b847d7c4acd86e3a7f34cac45459b1ba9b6156dd0b228b4fccb589cf2a281c",
+        "buildSha256": "34b847d7c4acd86e3a7f34cac45459b1ba9b6156dd0b228b4fccb589cf2a281c",
+        "path": "assets/assets/templates/detail_documents/-9422.redp-five-sizes-v1.791c7c2f8939cfa3.json.gz",
+        "effectiveUrl": "https://snapfit-c719d.web.app/assets/assets/templates/detail_documents/-9422.redp-five-sizes-v1.791c7c2f8939cfa3.json.gz",
+        "cacheControl": "max-age=3600",
+        "contentType": "application/gzip"
+      },
+      "fullDetail:-9443": {
+        "matchesBuild": true,
+        "httpStatus": 200,
+        "sslVerifyResult": 0,
+        "bytes": 20113,
+        "sha256": "be92710fc9b2508fe4de1a081bcca0df74447140f83c3e4406223ca2f8fce732",
+        "buildSha256": "be92710fc9b2508fe4de1a081bcca0df74447140f83c3e4406223ca2f8fce732",
+        "path": "assets/assets/templates/detail_documents/-9443.redp-five-sizes-v1.5427b480998c71fb.json.gz",
+        "effectiveUrl": "https://snapfit-c719d.web.app/assets/assets/templates/detail_documents/-9443.redp-five-sizes-v1.5427b480998c71fb.json.gz",
+        "cacheControl": "max-age=3600",
+        "contentType": "application/gzip"
+      },
+      "fullDetail:-9451": {
+        "matchesBuild": true,
+        "httpStatus": 200,
+        "sslVerifyResult": 0,
+        "bytes": 20106,
+        "sha256": "98c918dfdc4bd56da7b11691522b8efa3ac171338b69bc3953808cc3d1adf936",
+        "buildSha256": "98c918dfdc4bd56da7b11691522b8efa3ac171338b69bc3953808cc3d1adf936",
+        "path": "assets/assets/templates/detail_documents/-9451.redp-five-sizes-v1.666f434eb7c0cae7.json.gz",
+        "effectiveUrl": "https://snapfit-c719d.web.app/assets/assets/templates/detail_documents/-9451.redp-five-sizes-v1.666f434eb7c0cae7.json.gz",
+        "cacheControl": "max-age=3600",
+        "contentType": "application/gzip"
+      },
+      "cover:-9422": {
+        "matchesBuild": true,
+        "httpStatus": 200,
+        "sslVerifyResult": 0,
+        "bytes": 4412,
+        "sha256": "132ec87e92ae6a2bf05a1362b0d3b1688347bd08b129fb248a5316ad69331e7b",
+        "buildSha256": "132ec87e92ae6a2bf05a1362b0d3b1688347bd08b129fb248a5316ad69331e7b",
+        "path": "assets/assets/catalog_thumbnails/template_-9422.png",
+        "effectiveUrl": "https://snapfit-c719d.web.app/assets/assets/catalog_thumbnails/template_-9422.png",
+        "cacheControl": "max-age=3600",
+        "contentType": "image/png"
+      },
+      "cover:-9443": {
+        "matchesBuild": true,
+        "httpStatus": 200,
+        "sslVerifyResult": 0,
+        "bytes": 4412,
+        "sha256": "132ec87e92ae6a2bf05a1362b0d3b1688347bd08b129fb248a5316ad69331e7b",
+        "buildSha256": "132ec87e92ae6a2bf05a1362b0d3b1688347bd08b129fb248a5316ad69331e7b",
+        "path": "assets/assets/catalog_thumbnails/template_-9443.png",
+        "effectiveUrl": "https://snapfit-c719d.web.app/assets/assets/catalog_thumbnails/template_-9443.png",
+        "cacheControl": "max-age=3600",
+        "contentType": "image/png"
+      },
+      "cover:-9451": {
+        "matchesBuild": true,
+        "httpStatus": 200,
+        "sslVerifyResult": 0,
+        "bytes": 4412,
+        "sha256": "132ec87e92ae6a2bf05a1362b0d3b1688347bd08b129fb248a5316ad69331e7b",
+        "buildSha256": "132ec87e92ae6a2bf05a1362b0d3b1688347bd08b129fb248a5316ad69331e7b",
+        "path": "assets/assets/catalog_thumbnails/template_-9451.png",
+        "effectiveUrl": "https://snapfit-c719d.web.app/assets/assets/catalog_thumbnails/template_-9451.png",
+        "cacheControl": "max-age=3600",
+        "contentType": "image/png"
+      }
+    },
+    "tlsVerification": "Default curl certificate verification retained; no insecure option, credentials, cookies or browser session used",
+    "scope": "Public Firebase Hosting assets only"
+  },
+  "liveVerification": {
+    "browserMainMatchesFinalBuild": true,
+    "materialOriginalAndPhotoApplicationVisible": true,
+    "fullScreenPreviewVisible": true,
+    "photoExampleCanChange": true,
+    "actualCurrentAccountPriceQuoteUIVerified": true,
+    "currentAccountUseAndPurchaseNotClaimedVerified": true,
+    "reason": "After the official project restart, Google OAuth returned to SnapFit and the 15-album authenticated home was visible. The revised template displayed free access and opened its setup wizard. The revised phrase displayed free access and opened the authenticated album picker. Both review flows were closed without saving or editing customer albums. Actual existing-album material mutation and purchases were not performed.",
+    "purchasesAlbumWritesAndPointDebitsInitiated": false,
+    "userExistingAlbumCreationTabPreserved": true,
+    "finalLargeCoverMatchesNewCompactCover": true,
+    "finalLargeSpreadHasBothMatchingNewFriendPhotos": true,
+    "evidence": [
+      "after-template-detail.jpg",
+      "after-template-spread.jpg",
+      "after-login-template-free.jpg",
+      "after-login-template-start.jpg",
+      "after-login-material-free.jpg"
+    ],
+    "currentAccountUsePickerVerified": true,
+    "templateStartWizardVerified": true
+  },
+  "publicConnectionDiagnostics": {
+    "serverHealthAndSettingsRead": "public-auth-service-check.json",
+    "publicProductQuotesAndActiveRows": "production-prices-after.json",
+    "preflight": "cors-preflight-headers.txt",
+    "serverPublicReadAndPreflightSuccessful": true,
+    "isolatedBrowserDiagnostic": "public-browser-transport.log",
+    "latestIsolatedProbePassed": 0,
+    "latestIsolatedProbeTimedOut": 2,
+    "plainHTTPAlsoTimedOut": true,
+    "noTransportOrAuthPolicyRewriteBasedOnSpeculation": true,
+    "recoveryBrowserDiagnostic": "public-browser-after-restart.log",
+    "recoveryProbePassed": 2,
+    "recoveryProbeFailed": 0,
+    "combinedRecoveryTestReportedSeconds": 1,
+    "previousEachTestDeadlineSeconds": 12,
+    "finalBrowserDiagnostic": "public-browser-final-recovery.log",
+    "finalProbePassed": 2,
+    "finalProbeFailed": 0,
+    "finalCombinedReportedSeconds": 1
+  },
+  "fullDetailOriginals": {
+    "cause": "Compact cards had been updated but the separate full-detail compressed documents were old",
+    "contentAddressedDocuments": {
+      "-9422": {
+        "path": "assets/templates/detail_documents/-9422.redp-five-sizes-v1.791c7c2f8939cfa3.json.gz",
+        "sha256": "34b847d7c4acd86e3a7f34cac45459b1ba9b6156dd0b228b4fccb589cf2a281c",
+        "artworkRevision": "791c7c2f8939cfa3"
+      },
+      "-9443": {
+        "path": "assets/templates/detail_documents/-9443.redp-five-sizes-v1.5427b480998c71fb.json.gz",
+        "sha256": "be92710fc9b2508fe4de1a081bcca0df74447140f83c3e4406223ca2f8fce732",
+        "artworkRevision": "5427b480998c71fb"
+      },
+      "-9451": {
+        "path": "assets/templates/detail_documents/-9451.redp-five-sizes-v1.666f434eb7c0cae7.json.gz",
+        "sha256": "98c918dfdc4bd56da7b11691522b8efa3ac171338b69bc3953808cc3d1adf936",
+        "artworkRevision": "666f434eb7c0cae7"
+      }
+    },
+    "otherFullDocumentsMatchCanonical": 142,
+    "oldOriginalFilesPreserved": 145,
+    "actualAssetAcquireRootAndThreeVariantParity": true,
+    "log": "detail-originals-final-tests.log",
+    "passed": 18
+  },
+  "catalogFacts": {
+    "photoSlotCounts": {
+      "-9422": 30,
+      "-9443": 33,
+      "-9451": 31
+    },
+    "updatedProfileFields": 9,
+    "other130ProfilesPreserved": true,
+    "generatorReadsFingerprintedFullOriginalAndChecksSourceDigest": true,
+    "freshnessCheck": "python3 tool/generate_catalog_template_metadata.py --check",
+    "nativeChecksPassed": 4,
+    "log": "catalog-facts-final-tests.log"
+  },
+  "webLoginIncident": {
+    "callbackHost": "rrbhxdtriummqpztpjrk.supabase.co",
+    "callbackPath": "/auth/v1/callback",
+    "actualCallbackStatus": 504,
+    "authLogCode": "request_timeout",
+    "authLogClass": "context deadline exceeded",
+    "authFailuresInReviewedWindow": 4,
+    "publicRestAlsoTimedOut": true,
+    "projectStatusBefore": "ACTIVE_HEALTHY",
+    "connectionOrLockExhaustionNotObserved": true,
+    "dashboard": {
+      "cpuHeaderPercent": 100.31,
+      "memoryCommitmentGiB": 1.41,
+      "memoryCommitmentWarning": "SEVERE",
+      "memoryCommitmentCapacityGiB": 1.42,
+      "swapMiB": 512.6,
+      "screenshot": "auth-server-resource-pressure.png"
+    },
+    "confirmedExpensiveStatement": {
+      "category": "cron.job_run_details DELETE with jobid and end_time filters",
+      "calls": 25943,
+      "meanMs": 3363.6,
+      "maxMs": 97763,
+      "totalMs": 87261839
+    },
+    "frontendPrecheck": {
+      "networkOnlyUnknownAvailabilityAllowsOfficialPKCEStart": true,
+      "deadlineSeconds": 3,
+      "responseOrProviderRejectionsStayClosed": true,
+      "callbackAndSessionValidationPreserved": true,
+      "testsPassed": 80,
+      "deployedHostingVersion": "18cd92faa26be354"
+    },
+    "recovery": {
+      "officialProjectRestartRequestedUtc": "2026-11-01T17:48:55Z",
+      "dataDeletion": false,
+      "costOrSecuritySettingsChanged": false,
+      "callbackLoginCompletionConfirmed": true,
+      "projectHealthyAgainUtc": "2026-11-01T17:52:05Z",
+      "signedInAlbumListVisible": 15,
+      "productFreePriceVisible": true,
+      "templateStartWizardVisible": true,
+      "materialFreeAccessAlbumPickerVisible": true,
+      "materialAppliedToExistingAlbum": false,
+      "finalObservedHealthyWorkerRuns": 6
+    },
+    "retentionChange": {
+      "appliedAtUtc": "2026-11-01T18:00:44Z",
+      "migration": "20261101180044_bounded_daily_cron_history_retention.sql",
+      "workerSchedulesUnchanged": true,
+      "workerActiveFlagsPreserved": true,
+      "historyScanFrequencyBeforePerDay": 2160,
+      "historyScanFrequencyAfterPerDay": 1,
+      "retentionDays": 7,
+      "maximumRowsPerRun": 10000,
+      "localStatementDeadlineSeconds": 5,
+      "localLockWaitSeconds": 1,
+      "newDailyScheduleUTC": "17 19 * * *",
+      "backgroundWorkerModeCurrent": "off",
+      "firstApplyFailedWithoutMutation": "Managed extension metadata does not grant UPDATE/FOR UPDATE; corrected to supported API operations without ACL changes",
+      "executionVerification": [
+        {
+          "runs": 4,
+          "status": "succeeded",
+          "jobname": "snapfit-ai-template-worker",
+          "max_seconds": 0.0783,
+          "mean_seconds": 0.0414
+        },
+        {
+          "runs": 2,
+          "status": "succeeded",
+          "jobname": "snapfit-print-order-scheduler",
+          "max_seconds": 0.0307,
+          "mean_seconds": 0.0305
+        }
+      ],
+      "compatibilityMigration": "20261101180338_cron_history_background_worker_compatibility.sql",
+      "compatibilityAppliedAtUtc": "2026-11-01T18:03:38Z",
+      "productionMigrations": [
+        {
+          "name": "bounded_daily_cron_history_retention",
+          "version": "20261101180044"
+        },
+        {
+          "name": "cron_history_background_worker_compatibility",
+          "version": "20261101180338"
+        }
+      ],
+      "proof": "auth-cron-diagnostic-after.json",
+      "productionNightlyFirstRunObserved": false,
+      "nightlyExecutionVerifiedInRestrictedPostgresFixture": true,
+      "bothCronExecutionModesSupportedByJobSQL": true,
+      "directExtensionDDLOrPrivilegesChanged": false,
+      "installerAdvisoryLockScope": "Cooperating installers only; supported API lacks CAS against unrelated concurrent operators; applied as the sole operator"
+    }
+  },
+  "verifiedAtUtc": "2026-11-01T18:05:25Z"
+}

@@ -17,6 +17,7 @@ class _BookFlipState extends State<BookFlip>
   int _spread = 0;
   int _target = 0; // spring target (0 settle-back, 1 commit)
   bool _dragging = false;
+  bool _finishingSoon = false;
   bool _atBoundary = false;
   bool _armed =
       false; // grabbed but not yet moved → leaf idle (long-press inert)
@@ -27,8 +28,41 @@ class _BookFlipState extends State<BookFlip>
   int _dragStartDir = 0;
   int _bootGen =
       0; // bumped per _boot; a stale boot aborts at its post-await check
+  _BookFlipPageSource? _pageSource;
+  bool _refreshingAtlas = false;
+  int _packedRevision = -1;
 
   BookFlipPhysics get _physics => widget.physics;
+
+  bool get _usesAlbumPreview =>
+      widget.curl?.profile == BookFlipCurveProfile.albumPreview;
+
+  // 승인한 미리보기와 같은 시간 곡선으로 남은 거리를 정착시킨다.
+  void _settleAlbumPreview({Duration? duration}) {
+    final start = _scene.t;
+    final target = _target.toDouble();
+    if ((target - start).abs() < 1e-10) {
+      _finishAnimation();
+      return;
+    }
+    _ctl.value = start;
+    unawaited(_ctl.animateTo(
+      target,
+      duration: duration ??
+          Duration(
+            microseconds: ((330 + (target - start).abs() * 170) * 1000).round(),
+          ),
+      curve: BookFlipCurl.albumPreviewTiming,
+    ));
+  }
+
+  bool _finishTurnSoon() {
+    if (!_usesAlbumPreview || !_scene.active || _dragging) return false;
+    if (_finishingSoon) return true;
+    _finishingSoon = true;
+    _settleAlbumPreview(duration: const Duration(milliseconds: 80));
+    return true;
+  }
 
   int get _maxSpread => (_pageCount ~/ 2) - 1;
   bool _canForward(int s) => (2 * s + 3) <= (_pageCount - 1);
@@ -66,6 +100,8 @@ class _BookFlipState extends State<BookFlip>
     _scene.curl = widget.curl;
     _scene.effects = widget.effects;
     _scene.transparentPages = widget.transparentPages;
+    _pageSource = widget.controller?._pageSource;
+    _pageSource?.addListener(_onProgressivePagesChanged);
     unawaited(_boot());
   }
 
@@ -73,6 +109,9 @@ class _BookFlipState extends State<BookFlip>
   void didUpdateWidget(BookFlip old) {
     super.didUpdateWidget(old);
     if (!identical(old.controller, widget.controller)) {
+      _pageSource?.removeListener(_onProgressivePagesChanged);
+      _pageSource = widget.controller?._pageSource;
+      _pageSource?.addListener(_onProgressivePagesChanged);
       if (identical(old.controller?._state, this)) {
         old.controller?._spreadCache = _spread;
         old.controller?._state = null;
@@ -133,7 +172,11 @@ class _BookFlipState extends State<BookFlip>
   Future<void> _boot() async {
     final gen = ++_bootGen; // a later _boot supersedes this one
     try {
-      final pages = widget.pages;
+      final source = _pageSource;
+      final pages =
+          source == null ? widget.pages : List<ui.Image>.of(widget.pages);
+      final capturedPages = source?.captured.keys.toSet();
+      final revision = source?.revision ?? -1;
       final cols = _atlasColsFor(pages.length);
       final rows = _atlasRowsFor(pages.length);
       // Pack into one atlas with the largest cell that fits maxTextureDimension.
@@ -149,7 +192,8 @@ class _BookFlipState extends State<BookFlip>
         final (cw, ch) =
             bookFlipAtlasCell(src.width, src.height, cols, rows, cap);
         try {
-          atlas = await _packAtlas(pages, cols, cw, ch);
+          atlas =
+              await _packAtlas(pages, cols, cw, ch, pageIndices: capturedPages);
           cellW = cw;
           cellH = ch;
         } on Object {
@@ -171,15 +215,123 @@ class _BookFlipState extends State<BookFlip>
         ..cellH = cellH
         ..transparentPages = widget.transparentPages;
       _applyPageMap(); // idle map for the opening spread
-      _phase.value = _BootPhase.ready;
+      if (source != null) {
+        source.packed = capturedPages!;
+        _packedRevision = revision;
+      }
+      _phase.value = source == null || source.isSpreadPacked(_spread)
+          ? _BootPhase.ready
+          : _BootPhase.loading;
       // totalSpreads is now known: nudge a listening controller so a "page X of N"
       // indicator built before load updates from its 0 placeholder.
       widget.controller?._emit();
+      _onProgressivePagesChanged();
     } on Object catch (_) {
       // toImage can throw (e.g. GPU OOM). Surface retry, never a dead spinner.
       // Ignore a stale boot's failure so it can't clobber a newer success.
       if (mounted && gen == _bootGen) _phase.value = _BootPhase.error;
     }
+  }
+
+  void _onProgressivePagesChanged() {
+    final source = _pageSource;
+    if (source == null ||
+        _scene.atlas == null ||
+        _phase.value == _BootPhase.error ||
+        _refreshingAtlas ||
+        _scene.active ||
+        source.revision == _packedRevision) {
+      return;
+    }
+    // Batch new snapshots around a requested spread; never repack every distant
+    // page or stop a moving leaf just because another photo has finished.
+    final required = source.requiredPages(_spread);
+    if (!required.every(source.captured.containsKey) &&
+        source.captured.length != source.pageCount) {
+      return;
+    }
+    if (required.every(source.packed.contains) &&
+        source.captured.length != source.pageCount) {
+      return;
+    }
+    unawaited(_refreshProgressiveAtlas(source));
+  }
+
+  Future<void> _refreshProgressiveAtlas(_BookFlipPageSource source) async {
+    _refreshingAtlas = true;
+    final gen = _bootGen;
+    final revision = source.revision;
+    final capturedPages = source.captured.keys.toSet();
+    final pages = List<ui.Image>.of(widget.pages);
+    var cellW = _scene.cellW, cellH = _scene.cellH;
+    var cap = math.max(
+      _scene.atlasCols * cellW,
+      _atlasRowsFor(pages.length) * cellH,
+    );
+    ui.Image? atlas;
+    try {
+      while (atlas == null) {
+        try {
+          atlas = await _packAtlas(
+            pages,
+            _scene.atlasCols,
+            cellW,
+            cellH,
+            pageIndices: capturedPages,
+          );
+        } on Object {
+          if (cap <= kPageTexMin) rethrow;
+          cap = cap ~/ 2;
+          final cell = bookFlipAtlasCell(
+            pages.first.width,
+            pages.first.height,
+            _scene.atlasCols,
+            _atlasRowsFor(pages.length),
+            cap,
+          );
+          cellW = cell.$1;
+          cellH = cell.$2;
+        }
+      }
+      if (!mounted || gen != _bootGen || !identical(source, _pageSource)) {
+        return;
+      }
+      if (_scene.active) {
+        return; // Keep the turn's texture stable until it lands.
+      }
+      final previous = _scene.atlas;
+      _scene
+        ..atlas = atlas
+        ..cellW = cellW
+        ..cellH = cellH;
+      atlas = null;
+      source.packed = capturedPages;
+      _packedRevision = revision;
+      _phase.value = source.isSpreadPacked(_spread)
+          ? _BootPhase.ready
+          : _BootPhase.loading;
+      previous?.dispose();
+      _render();
+      widget.controller?._emit();
+    } on Object {
+      // Existing usable pages survive a failed background texture refresh.
+    } finally {
+      atlas?.dispose();
+      _refreshingAtlas = false;
+    }
+    if (mounted && revision != source.revision) _onProgressivePagesChanged();
+  }
+
+  bool _hasTurnPages(int dir) {
+    final source = _pageSource;
+    if (source == null) return true;
+    final first = dir > 0 ? _spread * 2 : (_spread - 1) * 2;
+    final available = <int>[
+      for (var page = first; page < first + 4; page++)
+        page.clamp(0, _pageCount - 1),
+    ].every(source.packed.contains);
+    if (!available) source.requestSpread(_spread + dir);
+    return available;
   }
 
   // Pack the caller's page images into one atlas texture (a single GPU upload,
@@ -188,12 +340,13 @@ class _BookFlipState extends State<BookFlip>
     List<ui.Image> pages,
     int cols,
     int cellW,
-    int cellH,
-  ) async {
+    int cellH, {
+    Set<int>? pageIndices,
+  }) async {
     final rec = ui.PictureRecorder();
     final canvas = Canvas(rec);
     final paint = Paint()..filterQuality = FilterQuality.high;
-    for (var p = 0; p < pages.length; p++) {
+    for (final p in pageIndices ?? Iterable<int>.generate(pages.length)) {
       final img = pages[p];
       final src =
           Rect.fromLTWH(0, 0, img.width.toDouble(), img.height.toDouble());
@@ -216,6 +369,8 @@ class _BookFlipState extends State<BookFlip>
     if (_phase.value != _BootPhase.ready || _scene.active) return false;
     final canGo = dir > 0 ? _canForward(_spread) : _canBackward(_spread);
     if (!canGo) return false;
+    if (!_hasTurnPages(dir)) return false;
+    _finishingSoon = false;
     _ctl.stop();
     _dragging = false;
     _atBoundary = false;
@@ -233,6 +388,10 @@ class _BookFlipState extends State<BookFlip>
       dir > 0 ? FlipDirection.forward : FlipDirection.backward,
     );
     _target = 1;
+    if (_usesAlbumPreview) {
+      _settleAlbumPreview();
+      return true;
+    }
     final spring = SpringDescription.withDampingRatio(
       mass: 1.0,
       stiffness: _physics.springStiffness,
@@ -251,6 +410,8 @@ class _BookFlipState extends State<BookFlip>
       // boot must not restore the older spread over the latest live-page choice.
       _spread = spread.clamp(0, math.max(0, (widget.pages.length ~/ 2) - 1));
       widget.controller?._spreadCache = _spread;
+      if (_pageCount > 0) _applyPageMap();
+      _onProgressivePagesChanged();
       return;
     }
     // Capture before the teardown: a jump that INTERRUPTS a live flip must still
@@ -269,13 +430,18 @@ class _BookFlipState extends State<BookFlip>
       ..coverBackwardEdge = false
       ..t = 0.0;
     _applyPageMap();
+    if (_pageSource?.isSpreadPacked(_spread) == false) {
+      _phase.value = _BootPhase.loading;
+    }
     _render();
     if (_spread != prevSpread) widget.onSpreadChanged?.call(_spread);
     if (wasFlipping) widget.onFlipEnd?.call(_spread);
+    _onProgressivePagesChanged();
   }
 
   @override
   void dispose() {
+    _pageSource?.removeListener(_onProgressivePagesChanged);
     if (identical(widget.controller?._state, this)) {
       widget.controller?._spreadCache = _spread;
       widget.controller?._state = null;
@@ -326,7 +492,7 @@ class _BookFlipState extends State<BookFlip>
         // the user is closing the book back to a single cover sheet.
         _scene.baseLeft = _pg(0);
         _scene.baseRight = _pg(3);
-        _scene.leafFront = _pg(1);
+        _scene.leafFront = _usesAlbumPreview ? _pg(2) : _pg(1);
         _scene.leafBack = _pg(1);
         _scene.coverBackwardEdge = true;
         return;
@@ -343,6 +509,13 @@ class _BookFlipState extends State<BookFlip>
     _scene.t = _ctl.value.clamp(0.0, 1.0);
     _render();
     if (!_dragging) {
+      if (_usesAlbumPreview) {
+        // 스프링의 근접 임계값으로 조기에 끝내지 않고 마지막 프레임까지 그린다.
+        if (!_ctl.isAnimating && (_scene.t - _target).abs() < 1e-10) {
+          _finishAnimation();
+        }
+        return;
+      }
       // Use the CLAMPED visible position (scene.t), not _ctl.value: a critically-
       // damped spring with a hard fling can momentarily overshoot the target, and
       // we want the commit to fire when the leaf is visually landed, not after the
@@ -355,6 +528,7 @@ class _BookFlipState extends State<BookFlip>
 
   void _finishAnimation() {
     _ctl.stop();
+    _finishingSoon = false;
     final dir = _scene.dir;
     if (_target == 1 && !_atBoundary) {
       // COMMIT — seamless: at t=1 the leaf lies flat on the far half showing its
@@ -374,6 +548,8 @@ class _BookFlipState extends State<BookFlip>
     _render();
     if (committed) widget.onSpreadChanged?.call(_spread);
     widget.onFlipEnd?.call(_spread);
+    _pageSource?.requestSpread(_spread);
+    _onProgressivePagesChanged();
   }
 
   // ── gestures (driven by RenderBookCanvas's HorizontalDragGestureRecognizer) ──
@@ -383,6 +559,7 @@ class _BookFlipState extends State<BookFlip>
   void _onDragStart(Offset local) {
     if (_scene.w <= 0 || _scene.h <= 0) return;
     _ctl.stop();
+    _finishingSoon = false;
     _dragging = true;
     _dragStartT = _scene.active ? _scene.t : 0;
     _dragStartDir = _scene.active ? _scene.dir : 0;
@@ -413,6 +590,7 @@ class _BookFlipState extends State<BookFlip>
         _pendingDir = dx < 0 ? 1 : -1;
       }
       final dir = _pendingDir;
+      if (!_hasTurnPages(dir)) return;
       _atBoundary = dir > 0 ? !_canForward(_spread) : !_canBackward(_spread);
       _scene
         ..grabV = _pendingGrabV
@@ -444,6 +622,7 @@ class _BookFlipState extends State<BookFlip>
 
   void _onDragDistance(Offset local, int dir, double distance) {
     if (_phase.value != _BootPhase.ready || _scene.w <= 0) return;
+    if (!_hasTurnPages(dir)) return;
 
     _dragging = true;
     _ctl.stop();
@@ -515,6 +694,11 @@ class _BookFlipState extends State<BookFlip>
               vel > _physics.commitVelocity)
           ? 1
           : 0;
+    }
+    if (_usesAlbumPreview) {
+      _lastDragDir = 0;
+      _settleAlbumPreview();
+      return;
     }
     // Critically-damped spring: starts at current t with the finger's velocity →
     // C1 hand-off (no position OR velocity jump), no overshoot past flat.

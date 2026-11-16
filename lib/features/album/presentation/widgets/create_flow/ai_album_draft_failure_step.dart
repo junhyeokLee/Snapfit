@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 class AiAlbumDraftFailureStep extends StatelessWidget {
   const AiAlbumDraftFailureStep({
@@ -49,10 +50,7 @@ class AiAlbumDraftFailureStep extends StatelessWidget {
                 children: [
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: Icon(
-                      Icons.cloud_off_outlined,
-                      size: 24,
-                      color: ExperienceFormStyle.muted(context),
+                    child: ExperienceIcon('CloudOff', size: 24, color: ExperienceFormStyle.muted(context),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -146,7 +144,7 @@ class AiAlbumDraftFailureStep extends StatelessWidget {
                         key: const ValueKey('ai-failure-primary'),
                         onPressed: isBusy ? null : onRetryRange,
                         style: ExperienceFormStyle.primary(context),
-                        icon: const Icon(Icons.refresh, size: 18),
+                        icon: const ExperienceIcon('RefreshCw', size: 18),
                         label: Text(isBusy ? '처리 결과 확인 중' : primaryActionLabel),
                       ),
                       if (showManualStart)

@@ -137,7 +137,7 @@ void _studioMilestoneCover(_StudioPage p, StudioEdition e) {
   );
 }
 
-void _milestoneLabel(
+void _studioMilestoneLabel(
   _StudioPage p,
   String text,
   double x,
@@ -145,7 +145,7 @@ void _milestoneLabel(
   double w,
 ) => p.type(text, x, y, w, .04, size: .017, font: 'Poppins', weight: 600);
 
-void _milestoneTitle(
+void _studioMilestoneTitle(
   _StudioPage p,
   String text,
   double x,
@@ -190,7 +190,7 @@ void _milestoneCaption(
 }
 
 /// Match text to the material's real aspect, not to its requested bounding box.
-void _milestoneNote(
+void _studioMilestoneNote(
   _StudioPage p,
   String key,
   String text,

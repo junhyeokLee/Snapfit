@@ -4,17 +4,46 @@ import 'package:snap_fit/core/navigation/web_app_location.dart';
 import 'package:snap_fit/core/navigation/web_app_router.dart';
 
 void main() {
+  test(
+    'monthly public routes preserve owner and calendar month without granting private access',
+    () {
+      final location = WebAppLocation.socialMomentMonth(
+        'author',
+        DateTime.utc(2026, 10, 28),
+      );
+      expect(location.uri.path, '/users/author/months/2026-10');
+      expect(location.momentMonthUserId, 'author');
+      expect(location.momentMonthDate, DateTime.utc(2026, 10));
+      expect(location.isPublic, isTrue);
+      for (final path in [
+        '/users/author/months/2026-13',
+        '/users/author/months/2026-00',
+        '/users/author/months/1899-12',
+        '/users/author/months/2026-10/records',
+        '/users/author/months/2026-10-01',
+      ]) {
+        expect(WebAppLocation.parse(Uri.parse(path)), WebAppLocation.home);
+      }
+    },
+  );
   const run = '85e8ce97-1d30-41ee-892b-4c43ee5546f3';
   final cases = <String, WebAppLocation>{
     '/': WebAppLocation.home,
     '/login': WebAppLocation.login,
     '/designs': WebAppLocation.designs,
+    '/designs/materials': WebAppLocation.materials,
     '/designs/templates/-9403': const WebAppLocation(
       WebAppPage.template,
       '-9403',
     ),
     '/albums': WebAppLocation.albums,
     '/feed': WebAppLocation.feed,
+    '/account/safety': WebAppLocation.safety,
+    '/account/safety/reports': WebAppLocation.safetyReports,
+    '/users/user_123/months/2026-10': const WebAppLocation(
+      WebAppPage.socialMomentMonth,
+      'user_123/2026-10',
+    ),
     '/works/work_123': const WebAppLocation(WebAppPage.socialWork, 'work_123'),
     '/users/user_123': const WebAppLocation(
       WebAppPage.socialProfile,
@@ -95,6 +124,23 @@ void main() {
     expect(location.uri.hasFragment, isFalse);
     expect(location.uri.hasAuthority, isFalse);
   });
+
+  test(
+    'direct and hash material links browse without account verification',
+    () {
+      for (final address in [
+        'https://snapfit-c719d.web.app/designs/materials',
+        'https://snapfit-c719d.web.app/#/designs/materials',
+      ]) {
+        final location = WebAppLocation.parse(Uri.parse(address));
+        expect(location, WebAppLocation.materials);
+        expect(location.uri.toString(), '/designs/materials');
+        expect(location.isPublic, isTrue);
+      }
+      expect(WebAppLocation.library.isPublic, isFalse);
+      expect(WebAppLocation.create.isPublic, isFalse);
+    },
+  );
 
   test('invitation capabilities stay outside normal page locations', () {
     for (final value in [
@@ -240,8 +286,10 @@ void main() {
         WebAppPage.feed,
         WebAppPage.socialWork,
         WebAppPage.socialProfile,
+        WebAppPage.socialMomentMonth,
         WebAppPage.referral,
         WebAppPage.designs,
+        WebAppPage.materials,
         WebAppPage.template,
         WebAppPage.printProducts,
         WebAppPage.policy,
@@ -250,6 +298,7 @@ void main() {
       expect(WebAppLocation(page, '69').isPublic, isFalse);
     }
     expect(WebAppLocation.designs.isPublic, isTrue);
+    expect(WebAppLocation.materials.isPublic, isTrue);
     expect(WebAppLocation.feed.isPublic, isTrue);
     expect(
       const WebAppLocation(WebAppPage.socialWork, 'work_123').isPublic,
@@ -260,6 +309,8 @@ void main() {
       isTrue,
     );
     expect(WebAppLocation.myProfile.isPublic, isFalse);
+    expect(WebAppLocation.safety.isPublic, isFalse);
+    expect(WebAppLocation.safetyReports.isPublic, isFalse);
     expect(WebAppLocation.referral.isPublic, isTrue);
     expect(WebAppLocation.socialPublish.isPublic, isFalse);
     expect(WebAppLocation.socialManage.isPublic, isFalse);

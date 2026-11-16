@@ -1,0 +1,137 @@
+{
+  "date": "2026-11-13",
+  "automation_id": "snapfit",
+  "trigger_time": "2026-11-13T00:01:36.759Z",
+  "finished_time": "2026-11-13T00:11:08.734985+00:00",
+  "scope": "Album members: refresh after returning from invitation, single pending navigation and account/route-close guards. Existing design, permissions and mutation behavior retained.",
+  "previous_reports": [
+    "docs/verification/collaboration-checkout-audit-2026-11-12/verification.json",
+    "docs/verification/auth-gallery-profile-2026-11-12/verification.json",
+    "docs/verification/heartbeat-page-identity-2026-11-06.json"
+  ],
+  "findings": [
+    {
+      "id": "members-stale-after-invite-return",
+      "priority": "P2",
+      "status": "fixed",
+      "before": "Returning from the actual invitation route left the members provider at its old value. The controlled case expected two member reads but observed one, and newly joined rows were absent. This matches the prior recommendations-only audit.",
+      "fix": "Await the existing invite route and invalidate only the captured album members provider when that same album/account/revision is still current and the members route is visible. Preserve existing rows during the pending refresh. Do not invalidate the full home catalog."
+    },
+    {
+      "id": "duplicate-invite-navigation",
+      "priority": "P2",
+      "status": "fixed",
+      "before": "Two calls of the same enabled invite-button callback before a rebuild mounted two AlbumInviteScreen routes.",
+      "fix": "Use the existing synchronous busy/revision state for the duration of navigation, releasing it in finally. One route opens and one refresh occurs on its valid return. No separate queue or transport cache."
+    }
+  ],
+  "production_files_changed_this_run": [
+    "lib/features/album/presentation/views/album_members_screen.dart"
+  ],
+  "updated_test_files": [
+    "test/widget/album_members_screen_test.dart"
+  ],
+  "verification": {
+    "baseline": {
+      "passed": 0,
+      "failed": 2,
+      "log": "output/heartbeat-member-return-2026-11-13/baseline-tests.log",
+      "classification": "Intentional reproductions: missing return refresh and two simultaneously mounted invite routes."
+    },
+    "first_fix": {
+      "passed": 8,
+      "failed": 0,
+      "log": "output/heartbeat-member-return-2026-11-13/focused-tests.log"
+    },
+    "additional_lifecycle_red": {
+      "passed": 2,
+      "failed": 1,
+      "log": "output/heartbeat-member-return-2026-11-13/lifecycle-tests.log",
+      "classification": "A new lifecycle test showed that the intermediate implementation refreshed while both invite and parent members routes were being popped. Added the post-return isCurrent check before final validation."
+    },
+    "intermediate_related": {
+      "passed": 41,
+      "failed": 1,
+      "log": "output/heartbeat-member-return-2026-11-13/final-tests.log",
+      "classification": "All functional checks passed. One teardown assertion measured a transient callback while the root fixture was still mounted. Moved the same strict zero-callback assertion after complete fixture unmount and one cleanup frame; no production change or removed assertion."
+    },
+    "final_related": {
+      "passed": 42,
+      "failed": 0,
+      "log": "output/heartbeat-member-return-2026-11-13/verified-tests.log",
+      "single_process": true,
+      "concurrency": 1,
+      "priority": "nice 10",
+      "command": "nice -n 10 flutter test --no-test-assets --no-pub --concurrency=1 --reporter expanded test/widget/album_members_screen_test.dart test/widget/album_invite_screen_test.dart test/widget/album_invite_journey_test.dart test/unit/album_invite_service_test.dart"
+    },
+    "new_regressions": 5,
+    "covered": [
+      "Return performs one member refresh; original rows remain while it is pending and a new member appears when it resolves.",
+      "Repeated entry from a captured button callback opens only one invitation route, creates one fixture invitation and refreshes once.",
+      "Changing account under the invitation route adds no return-triggered refresh and never restores old private member rows.",
+      "Popping both routes starts no hidden member request; complete fixture teardown has zero transient callbacks.",
+      "A failed return refresh shows the existing recovery UI, can retry and does not leave invitation entry locked.",
+      "Existing owner/viewer controls, lost-response reconciliation, raw UUID targeting, late account responses, invitation link creation and native responsive/inset/large-text behavior pass."
+    ],
+    "static_analysis": {
+      "items": 2,
+      "issues": 0,
+      "log": "output/heartbeat-member-return-2026-11-13/analysis.log"
+    },
+    "scoped_diff_and_whitespace_check": "passed; exact production delta checked against the before snapshot",
+    "resources": {
+      "initial_free_disk": "13 GiB",
+      "final_free_disk_bytes": 12148236288,
+      "handling": "Checked disk, highest active CPU/RSS processes and known Flutter/compiler/render jobs before starting. No competing heavy job was identified. Ran one test process at a time at nice 10/concurrency=1; analysis ran after tests at nice 10. Missing test assets were generated only by the first scoped test invocation, then reused. No other process was stopped, and no build/cache/user data was deleted."
+    },
+    "external_effects": "No app build or app/device/browser run, preview server, deployment, real member/invite mutation, message, payment, production API or customer-data request. All invitation/account/repository behaviors used memory fixtures."
+  },
+  "review": {
+    "remaining_blocking_findings_in_changed_scope": [],
+    "checked": [
+      "Only the invitation entry closure was replaced by one private method; existing members provider, actor subscription, mutation/confirmation handlers, roles and UI layout remain unchanged.",
+      "Reuse the existing busy/revision/current-account guards; capture album metadata without copying documents, layers or images.",
+      "Current-route and mounted checks prevent an obsolete invite future from starting a read after parent route exit. Existing account-change handling supersedes the captured revision.",
+      "The finally path releases the existing lock for valid returns; a disposed/changed session does not update stale UI.",
+      "One additional scoped member read per valid return is intentional reconciliation; already-started server work is not claimed to be cancelled.",
+      "No new field, listener, timer, cache, worker, periodic refresh or request on ordinary list rebuild/scroll. No full-home invalidation or catalog/price change.",
+      "Related source snapshots are unchanged. Shared dirty work was not staged, committed, reverted, cleaned or overwritten."
+    ],
+    "protected_sources_unchanged": {
+      "lib/features/album/presentation/views/album_invite_screen.dart": true,
+      "lib/features/album/presentation/viewmodels/home_view_model.dart": true,
+      "lib/features/album/domain/repositories/album_member_repository.dart": true
+    },
+    "source_assertions": {
+      "only_invite_navigation_changed": true,
+      "existing_mutations_actor_listener_and_provider_unchanged": true,
+      "no_new_state_field_cache_timer_listener_or_worker": true
+    },
+    "scoped_patch": "output/heartbeat-member-return-2026-11-13/scoped.patch",
+    "final_sha256": {
+      "lib/features/album/presentation/views/album_members_screen.dart": "fc9f30995e8f4d6f89bf2dc313d5018e915d468dad45c6bc41b0ffaf4d44242b",
+      "test/widget/album_members_screen_test.dart": "73fa88873fdea51fa5a8284faaa3f418b221c12045af32e2588099e9aa814854"
+    }
+  },
+  "applied_skills": [
+    "graphify: no existing graph; used its targeted text-lookup fallback without graph generation or installing tools",
+    "test-driven-development",
+    "debugging-and-error-recovery",
+    "incremental-implementation",
+    "git-workflow-and-versioning: isolated local before/after diff in shared dirty checkout; no branch/history/index change",
+    "frontend-ui-engineering: existing loading/error/list behavior retained",
+    "code-review-and-quality: correctness, readability, architecture, security and performance review"
+  ],
+  "follow_up": {
+    "automation_remains_useful": true,
+    "next_candidates": [
+      "The latest collaboration/checkout audit still lists first-invalid-field reveal on compact or large-text checkout as an unfixed candidate. Recheck current source before implementing it.",
+      "Continue album/store/reader/editor account and hidden-resume checks against recent records. Do not repeat the completed member-return, page-ID or decoration-approval changes without new evidence."
+    ]
+  },
+  "limits": [
+    "No real invitation was created or consumed and no actual account switched. Memory fixtures exercise the actual native widgets and navigator/provider behavior, not a production acceptance flow.",
+    "No physical-device FPS, frame timings, peak process memory, heap snapshot or native leak profile was measured. Scoped request counts, transient cleanup and absence of new recurring work are the verified bounds.",
+    "The members list refreshes on a valid invitation return; this does not add general background/live membership monitoring. Existing account-driven provider behavior remains in place."
+  ]
+}

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/widgets/experience_style.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 class ThemeSettingsSheet extends StatefulWidget {
   const ThemeSettingsSheet({
@@ -73,7 +74,7 @@ class _ThemeSettingsSheetState extends State<ThemeSettingsSheet> {
                       key: const ValueKey('theme-close'),
                       tooltip: '화면 테마 닫기',
                       onPressed: _finishing ? null : _close,
-                      icon: const Icon(Icons.close),
+                      icon: const ExperienceIcon('X'),
                     ),
                 ],
               ),

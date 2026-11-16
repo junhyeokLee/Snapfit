@@ -1,0 +1,56 @@
+part of 'studio_decoration_catalog.dart';
+
+const sensoryDecorations = [
+  StudioDecorationSpec(
+    'story-coffee-notebook-paper',
+    '한 잔의 기록지',
+    StudioDecorationCategory.paper,
+    1.6,
+    .70,
+    collection: '커피가 식기 전에',
+  ),
+  StudioDecorationSpec(
+    'story-coffee-notebook-motif',
+    '황동 클립과 작은 종이',
+    StudioDecorationCategory.sticker,
+    1,
+    .28,
+    assetPath: 'assets/sticker/sensory/cafe-clip.webp',
+    collection: '커피가 식기 전에',
+  ),
+  StudioDecorationSpec(
+    'cafeRoastedLeaf',
+    '커피나무 압화',
+    StudioDecorationCategory.sticker,
+    1,
+    .28,
+    assetPath: 'assets/sticker/sensory/cafe-leaf.webp',
+    collection: '커피가 식기 전에',
+  ),
+  StudioDecorationSpec(
+    'story-night-city-archive-paper',
+    '야간 노선 아카이브 카드',
+    StudioDecorationCategory.paper,
+    1.6,
+    .70,
+    collection: '밤의 도시 수집',
+  ),
+  StudioDecorationSpec(
+    'story-night-city-archive-motif',
+    '은박 궤도 실링',
+    StudioDecorationCategory.sticker,
+    1,
+    .25,
+    assetPath: 'assets/sticker/sensory/night-seal.webp',
+    collection: '밤의 도시 수집',
+  ),
+  StudioDecorationSpec(
+    'nocturneGlassine',
+    '접힌 코발트 글라신',
+    StudioDecorationCategory.tape,
+    1,
+    .48,
+    assetPath: 'assets/sticker/sensory/night-glassine.webp',
+    collection: '밤의 도시 수집',
+  ),
+];

@@ -5,6 +5,7 @@ import '../../features/point_shop/data/point_shop_provider.dart';
 import '../../features/point_shop/domain/point_shop_product.dart';
 import 'catalog_filter_bar.dart';
 import 'experience_form_style.dart';
+import '../../shared/widgets/experience_icon.dart';
 
 bool matchesEditorMaterial({
   required String query,
@@ -99,7 +100,7 @@ class _EditorMaterialFilterBarState
                           widget.onQueryChanged('');
                           setState(() {});
                         },
-                        icon: const Icon(Icons.close, size: 18),
+                        icon: const ExperienceIcon('X', size: 18),
                       ),
                     ),
                 onChanged: (value) {
@@ -114,7 +115,7 @@ class _EditorMaterialFilterBarState
                 ref.invalidate(pointShopCatalogProvider);
                 ref.invalidate(ownedPointShopKeysProvider);
               },
-              icon: const Icon(Icons.refresh, size: 18),
+              icon: const ExperienceIcon('RefreshCw', size: 18),
               label: Text(catalog.hasError ? '가격 정보 다시 확인' : '보유 소재 다시 확인'),
             ),
           if (widget.price == '보유' && owned.isLoading)

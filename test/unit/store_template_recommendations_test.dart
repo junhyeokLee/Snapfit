@@ -32,14 +32,15 @@ void main() {
         '추천',
         '일상',
         '여행',
-        '가족·친구',
-        '커플·기념일',
-        '성장·육아',
-        '반려동물',
-        '동아리',
         '스포츠·도전',
-        '졸업·새출발',
+        '반려동물',
+        '커플·기념일',
+        '동아리',
         '웨딩',
+        '졸업·새출발',
+        '성장·육아',
+        '가족·친구',
+        '취미·기록',
       ]);
       expect(
         templateTopicOrder.first,
@@ -64,7 +65,10 @@ void main() {
       final result = recommendStoreTemplates(items, isPaid: (t) => t.isPremium);
       expect(result, hasLength(24));
       expect(result.map((t) => t.id).toSet(), hasLength(24));
-      expect(result.take(10).map((t) => t.category), storeTemplateTopicOrder);
+      expect(
+        result.take(storeTemplateTopicOrder.length).map((t) => t.category),
+        storeTemplateTopicOrder,
+      );
       for (final topic in templateTopicOrder) {
         final selected = result.where((t) => t.category == topic).toList();
         expect(selected.length, inInclusiveRange(2, 3));
@@ -99,6 +103,26 @@ void main() {
   });
 
   test(
+    'reviewed artwork precedes popularity while favorites and live editorial picks remain first',
+    () {
+      final result = recommendStoreTemplates(
+        [
+          _item(1, '일상', score: 100000, uses: 100000),
+          _item(-9761, '일상'),
+          _item(-9422, '일상'),
+          _item(2, '일상'),
+          _item(3, '일상'),
+        ],
+        isPaid: (_) => false,
+        featuredIds: {2},
+        favoriteIds: {3},
+      );
+      expect(result.map((t) => t.id), [3, 2, -9761, -9422, 1]);
+      expect(result.every((t) => !t.isBest && !t.isNew), isTrue);
+    },
+  );
+
+  test(
     'sparse, paid-only and duplicate catalogs do not invent designs or starve topics',
     () {
       final item = _item(1, '새 주제', paid: true);
@@ -120,7 +144,11 @@ void main() {
     var checks = 0;
     final items = [
       for (var n = 0; n < 3000; n++)
-        _item(n, storeTemplateTopicOrder[n % 10], paid: n.isOdd),
+        _item(
+          n,
+          storeTemplateTopicOrder[n % storeTemplateTopicOrder.length],
+          paid: n.isOdd,
+        ),
     ];
     expect(
       recommendStoreTemplates(

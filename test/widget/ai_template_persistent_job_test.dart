@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,7 +14,11 @@ import 'package:snap_fit/features/album/ai_album/domain/ai_album_models.dart';
 import 'package:snap_fit/features/album/ai_album/domain/ai_template_job.dart';
 import 'package:snap_fit/features/album/data/api/album_provider.dart';
 import 'package:snap_fit/features/album/data/album_creation_catalog_provider.dart';
+import 'package:snap_fit/features/album/data/album_creation_draft_store.dart';
+import 'package:snap_fit/features/album/presentation/providers/album_edit_session_provider.dart';
 import 'package:snap_fit/features/album/presentation/views/album_create_flow_screen.dart';
+import 'package:snap_fit/features/album/presentation/views/page_editor_screen.dart';
+import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_template_brief_step.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_template_design_review.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_template_generating_step.dart';
@@ -25,6 +30,8 @@ import 'package:snap_fit/features/billing/data/billing_provider.dart';
 import 'package:snap_fit/features/billing/data/billing_repository.dart';
 import 'package:snap_fit/features/profile/domain/order_visibility_owner.dart';
 import '../fixtures/ai_template_v3_fixture.dart';
+import '../helpers/creation_draft_fixtures.dart' show MemoryCreationDraftStore;
+import '../helpers/unified_creation_fixtures.dart';
 
 const _requestId = '01234567-89ab-4cde-8123-456789abcdef';
 const _brief = AiTemplateBrief(
@@ -133,9 +140,28 @@ Widget _flow(
   AiTemplateDeviceStore store, {
   _Auth? auth,
   List<String>? accepted,
+  MemoryCreationDraftStore? creationStore,
+  RecordingCreationAlbums? albums,
 }) => ProviderScope(
   overrides: [
+    ...unifiedCreationBackendOverrides(
+      albums: albums ?? RecordingCreationAlbums(owner: 'owner-A'),
+    ),
     authViewModelProvider.overrideWith(() => auth ?? _Auth()),
+    albumEditorOwnerReaderProvider.overrideWith((ref) {
+      var owner = ref.read(authViewModelProvider).asData?.value?.id;
+      ref.listen(authViewModelProvider, (_, next) {
+        owner = next.asData?.value?.id;
+      });
+      // dispose 중에도 Ref에 접근하지 않는 계정 상태 스냅샷을 읽는다.
+      return () => owner;
+    }),
+    albumEditorOwnerChangesProvider.overrideWith(
+      (ref) => Stream.value(ref.watch(authViewModelProvider).asData?.value?.id),
+    ),
+    albumCreationDraftStoreProvider.overrideWithValue(
+      creationStore ?? MemoryCreationDraftStore(),
+    ),
     aiTemplateDeviceStoreProvider.overrideWithValue(store),
     myPointBalanceProvider.overrideWith((_) async => 2000),
     isFirstAiDraftFreeProvider.overrideWith((_) async => false),
@@ -166,16 +192,42 @@ Widget _flow(
     minTextAdapt: true,
     builder: (_, __) => const MaterialApp(
       home: Scaffold(
-        body: AlbumCreateFlowScreen(usesServerDraftProvider: true),
+        body: AlbumCreateFlowScreen(
+          usesServerDraftProvider: true,
+          initialAiMode: true,
+        ),
       ),
     ),
   ),
 );
 Future<void> _open(WidgetTester tester) async {
-  await tester.tap(find.text('AI 템플릿'));
+  // 실제 웹 /create/ai 진입은 initialAiMode로 요청 화면을 바로 연다.
   await tester.pumpAndSettle();
+  expect(find.byType(AiTemplateBriefStep), findsOneWidget);
 }
 
+Future<ProviderContainer> _continueToEditor(WidgetTester tester) async {
+  final container = ProviderScope.containerOf(
+    tester.element(find.byType(AlbumCreateStep1)),
+  );
+  final next = find.byKey(const ValueKey('creation-setup-next'));
+  await tester.ensureVisible(next);
+  await tester.tap(next);
+  // 서버 생성과 연결된 체크포인트 저장이 끝난 실제 편집기까지 기다린다.
+  for (var frame = 0; frame < 160; frame++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 10)),
+    );
+    await tester.pump(const Duration(milliseconds: 32));
+    if (find.byType(PageEditorScreen).evaluate().isNotEmpty) {
+      await tester.pumpAndSettle();
+      return container;
+    }
+  }
+  fail('Accepted AI design did not enter the unified editor.');
+}
+
+// 웹 /create/ai 전용: 네이티브 AI 진입 미제공으로 각 테스트를 명시적으로 건너뛴다.
 void main() {
   setUpAll(() async {
     for (final entry in {
@@ -189,13 +241,15 @@ void main() {
   });
   setUp(() => SharedPreferences.setMockInitialValues({}));
   testWidgets(
-    'reopening restores private memo, preferences and actual text edits without a new generation',
+    '웹 /create/ai 전용 · 네이티브 AI 진입 미제공 · reopening restores private memo, preferences and actual text edits without a new generation',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(390, 844));
       addTearDown(() => tester.binding.setSurfaceSize(null));
       final store = _RecordingStore();
       final jobs = _Jobs(_job(AiTemplateJobState.consumed, accepted: true));
       final accepted = <String>[];
+      final albums = RecordingCreationAlbums(owner: 'owner-A');
+      final creationStore = MemoryCreationDraftStore();
       final text = jobs.current.draft!.design!.pages.first.elements.firstWhere(
         (e) => e.kind == 'text',
       );
@@ -210,7 +264,15 @@ void main() {
           ],
         },
       });
-      await tester.pumpWidget(_flow(jobs, store, accepted: accepted));
+      await tester.pumpWidget(
+        _flow(
+          jobs,
+          store,
+          accepted: accepted,
+          albums: albums,
+          creationStore: creationStore,
+        ),
+      );
       await _open(tester);
       final brief = tester
           .widget<AiTemplateBriefStep>(find.byType(AiTemplateBriefStep))
@@ -240,22 +302,37 @@ void main() {
       await tester.pumpAndSettle();
       expect(accepted, ['same-billing-draft']);
       expect(find.byType(AlbumCreateStep1), findsOneWidget);
-      await tester.tap(find.text('사진 채우기'));
-      await tester.pumpAndSettle();
+      final container = await _continueToEditor(tester);
+      final vm = container.read(albumEditorViewModelProvider.notifier);
+      expect(find.byType(PageEditorScreen), findsOneWidget);
+      expect(find.byType(TemplatePhotoFillStep), findsNothing);
+      expect(albums.creates, 1);
+      expect(albums.requestedOwners, ['owner-A']);
+      expect(vm.editingAlbumId, albums.albumId);
+      expect(vm.pages.first.layers.any((e) => e.text == '함께'), isTrue);
+      final linked = creationStore.draft!;
+      final editor = tester.widget<PageEditorScreen>(
+        find.byType(PageEditorScreen),
+      );
+      expect(linked.createdAlbumId, albums.albumId);
+      expect(editor.creationDraftId, linked.id);
+      expect(editor.creationDraftOwner, 'owner-A');
+      expect(linked.editorCheckpoint!.sourceOwnerId, 'owner-A');
+      expect(linked.editorCheckpoint!.pages, hasLength(vm.pages.length));
       expect(
-        tester
-            .widget<TemplatePhotoFillStep>(find.byType(TemplatePhotoFillStep))
-            .pages
-            .first
-            .any((e) => e.text == '함께'),
+        linked.editorCheckpoint!.pages.first.layers.any((e) => e.text == '함께'),
         isTrue,
       );
+      expect(jobs.creates, 0);
+      expect(jobs.statuses, 1);
+      expect(accepted, ['same-billing-draft']);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     },
+    skip: !kIsWeb,
   );
   testWidgets(
-    'server waiting can pause and dispose without a duplicate request or a live observer',
+    '웹 /create/ai 전용 · 네이티브 AI 진입 미제공 · server waiting can pause and dispose without a duplicate request or a live observer',
     (tester) async {
       final jobs = _Jobs(_job(AiTemplateJobState.waiting));
       final store = AiTemplateDeviceStore();
@@ -280,9 +357,10 @@ void main() {
       expect(token.canceled, isTrue);
       expect(jobs.creates, 0);
     },
+    skip: !kIsWeb,
   );
   testWidgets(
-    'returning to the app resumes the same job after background observation stops',
+    '웹 /create/ai 전용 · 네이티브 AI 진입 미제공 · returning to the app resumes the same job after background observation stops',
     (tester) async {
       final jobs = _Jobs(_job(AiTemplateJobState.waiting));
       await tester.pumpWidget(_flow(jobs, AiTemplateDeviceStore()));
@@ -302,10 +380,11 @@ void main() {
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     },
+    skip: !kIsWeb,
   );
 
   testWidgets(
-    'fresh server state prevents a stale ready result from being reopened',
+    '웹 /create/ai 전용 · 네이티브 AI 진입 미제공 · fresh server state prevents a stale ready result from being reopened',
     (tester) async {
       final jobs = _Jobs(_job(AiTemplateJobState.ready));
       await tester.pumpWidget(_flow(jobs, AiTemplateDeviceStore()));
@@ -319,9 +398,10 @@ void main() {
       expect(find.textContaining('보관 기간이 끝났거나'), findsOneWidget);
       expect(jobs.creates, 0);
     },
+    skip: !kIsWeb,
   );
   testWidgets(
-    'late ready recovery from the previous account never exposes its artwork',
+    '웹 /create/ai 전용 · 네이티브 AI 진입 미제공 · late ready recovery from the previous account never exposes its artwork',
     (tester) async {
       final auth = _Auth();
       final jobs = _Jobs(_job(AiTemplateJobState.ready));
@@ -343,5 +423,6 @@ void main() {
       expect(jobs.creates, 0);
       expect(tester.takeException(), isNull);
     },
+    skip: !kIsWeb,
   );
 }

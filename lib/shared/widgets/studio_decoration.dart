@@ -2,6 +2,8 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import '../../core/fonts/document_font_gate.dart';
+import '../../core/fonts/document_fonts.dart';
 
 import '../../core/templates/studio_decoration_catalog.dart';
 import 'luminous_stationery.dart';
@@ -13,6 +15,9 @@ import 'atelier_composition_paper.dart';
 import 'atelier_layered_paper.dart';
 import 'life_concept_paper.dart';
 import 'story_edition_stationery.dart';
+import 'sensory_stationery.dart';
+import 'milestone_expansion_stationery.dart';
+import 'premium_quartet_stationery.dart';
 import '../../core/templates/story_edition_catalog.dart';
 
 Widget? photoCoverShadeForStyle(String? style) {
@@ -53,7 +58,27 @@ class StudioDecoration extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (storyMaterialsById.containsKey(spec.id)) {
+    const families = ['Cormorant Garamond'];
+    if (spec.assetPath == null && !DocumentFonts.areReady(families)) {
+      return DocumentFontGate(families: families, builder: _buildPrepared);
+    }
+    return _buildPrepared(context);
+  }
+
+  Widget _buildPrepared(BuildContext context) {
+    if (spec.id.startsWith('story-premium-') && spec.assetPath == null) {
+      return PremiumQuartetStationery(id: spec.id);
+    }
+    if (spec.id.startsWith('story-milestone-') && spec.assetPath == null) {
+      return MilestoneExpansionStationery(id: spec.id);
+    }
+    if (spec.id == 'story-coffee-notebook-paper' ||
+        spec.id == 'story-night-city-archive-paper') {
+      return SensoryStationery(
+        night: spec.id == 'story-night-city-archive-paper',
+      );
+    }
+    if (spec.assetPath == null && storyMaterialsById.containsKey(spec.id)) {
       return StoryEditionStationery(id: spec.id);
     }
     if (spec.assetPath case final String path) {

@@ -11,20 +11,23 @@ import '../../attendance/presentation/views/attendance_screen.dart';
 import '../../moments/presentation/providers/moments_providers.dart';
 import '../../moments/presentation/moments_navigation.dart';
 import '../data/home_news_repository.dart';
+import '../data/home_news_today_store.dart';
 import '../../moments/presentation/views/monthly_moment_preview_screen.dart';
 import '../../referral/presentation/views/referral_screen.dart';
 import '../domain/home_news.dart';
 import 'providers/home_news_providers.dart';
+import 'providers/home_news_today_providers.dart';
 import 'views/monthly_designs_screen.dart';
 import 'widgets/home_news_sheet.dart';
+import '../../../shared/widgets/snapfit_motion.dart';
 
 bool _current(WidgetRef ref, String owner) =>
     ref.context.mounted &&
     ref.read(homeNewsCurrentOwnerProvider) == owner &&
     ref.read(homeNewsRepositoryProvider).currentUserId == owner;
 
-/// Manual replay does not claim an automatic slot. Automatic callers reserve
-/// the server slot immediately before invoking this shared presentation path.
+/// Every home visit can open enabled news. Manual replay remains available
+/// after hiding today; only the explicit text action saves that preference.
 Future<void> openHomeNews(
   BuildContext context,
   WidgetRef ref,
@@ -32,6 +35,7 @@ Future<void> openHomeNews(
   bool automatic = false,
   List<HomeNewsItem>? carouselItems,
   String? deliveryId,
+  VoidCallback? onDestinationOpened,
 }) async {
   final owner = ref.read(homeNewsCurrentOwnerProvider);
   final coordinator = ref.read(homeNewsPresentationCoordinatorProvider);
@@ -59,6 +63,14 @@ Future<void> openHomeNews(
       item = available;
       items = current;
     }
+    final presentationState = await ref.read(
+      homeNewsExposureStateProvider.future,
+    );
+    if (presentationState == null ||
+        !_current(ref, owner) ||
+        origin?.isCurrent == false)
+      return;
+    final elapsed = Stopwatch()..start();
     var lastViewed = item;
     var tracking = Future<void>.value();
     final viewed = <String>{};
@@ -84,6 +96,38 @@ Future<void> openHomeNews(
       contentWrapper: (child) => _NewsOwnerBoundary(owner: owner, child: child),
     );
     if (!_current(ref, owner) || origin?.isCurrent == false) return;
+    if (selected?.hideForToday == true) {
+      final store = ref.read(homeNewsTodayStoreProvider);
+      final until = homeNewsNextKoreanMidnight(
+        presentationState.serverNow.add(elapsed.elapsed),
+      );
+      // Remember synchronously before releasing the modal's coordinator.
+      store.rememberUntil(owner, until);
+      ref.invalidate(homeNewsTodayHiddenProvider);
+      final localSave = store
+          .persistUntil(owner, until)
+          .timeout(const Duration(seconds: 2))
+          .catchError((Object _) {});
+      unawaited(
+        repository
+            .hideForToday()
+            .then((confirmed) async {
+              if (!_current(ref, owner)) return;
+              final confirmedUntil = confirmed.hiddenUntil;
+              if (confirmed.hiddenForToday && confirmedUntil != null) {
+                store.rememberUntil(owner, confirmedUntil);
+                await store.persistUntil(owner, confirmedUntil);
+              }
+              if (_current(ref, owner)) {
+                ref.invalidate(homeNewsExposureStateProvider);
+                ref.invalidate(homeNewsTodayHiddenProvider);
+              }
+            })
+            .catchError((Object _) {}),
+      );
+      await localSave;
+      return;
+    }
     item = selected?.item ?? lastViewed;
     final interactionItem = item;
     final interaction = selected?.action == true
@@ -110,24 +154,23 @@ Future<void> openHomeNews(
       return;
     }
     item = available;
+    Future<void> pushDestination(Route<void> route) async {
+      onDestinationOpened?.call();
+      await Navigator.of(context).push<void>(route);
+    }
+
     switch (item.kind) {
       case HomeNewsKind.monthlyDesign:
-        await Navigator.of(context).push<void>(
-          MaterialPageRoute(builder: (_) => const MonthlyDesignsScreen()),
+        await pushDestination(
+          snapFitRoute(page: const MonthlyDesignsScreen()),
         );
       case HomeNewsKind.attendance:
-        await Navigator.of(context).push<void>(
-          MaterialPageRoute(
-            settings: const WebAppRouteSettings(WebAppLocation.attendance),
-            builder: (_) => const AttendanceScreen(),
-          ),
+        await pushDestination(
+          snapFitRoute(page: const AttendanceScreen(), settings: const WebAppRouteSettings(WebAppLocation.attendance)),
         );
       case HomeNewsKind.referral:
-        await Navigator.of(context).push<void>(
-          MaterialPageRoute(
-            settings: const WebAppRouteSettings(WebAppLocation.referral),
-            builder: (_) => const ReferralScreen(),
-          ),
+        await pushDestination(
+          snapFitRoute(page: const ReferralScreen(), settings: const WebAppRouteSettings(WebAppLocation.referral)),
         );
       case HomeNewsKind.monthReview:
         // Re-read the month before previewing: another device might already
@@ -137,12 +180,12 @@ Future<void> openHomeNews(
         );
         if (!_current(ref, owner) || origin?.isCurrent == false) return;
         if (journal.records.every((record) => record.photos.isEmpty)) {
+          onDestinationOpened?.call();
           await openMoments(context);
           return;
         }
-        await Navigator.of(context).push<void>(
-          MaterialPageRoute(
-            builder: (_) => MonthlyMomentPreviewScreen(
+        await pushDestination(
+          snapFitRoute(page: MonthlyMomentPreviewScreen(
               month: journal.month,
               records: journal.records,
               today: journal.today,
@@ -158,8 +201,7 @@ Future<void> openHomeNews(
                   startAtFirstIncompletePage: true,
                 );
               },
-            ),
-          ),
+            )),
         );
     }
   } catch (_) {

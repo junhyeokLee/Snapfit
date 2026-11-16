@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../social/presentation/widgets/social_widgets.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 String referralPoints(int value) => value.toString().replaceAllMapped(
   RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
@@ -35,10 +36,7 @@ class ReferralRewardCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(22),
                 border: Border.all(color: SocialStyle.line(context)),
               ),
-              child: Icon(
-                Icons.people_outline,
-                size: 33,
-                color: SocialStyle.accent(context),
+              child: ExperienceIcon('Users2', size: 33, color: SocialStyle.accent(context),
               ),
             ),
           ),
@@ -166,7 +164,7 @@ class ReferralShareCard extends StatelessWidget {
             context,
           ).copyWith(minimumSize: const WidgetStatePropertyAll(Size(0, 54))),
           onPressed: busy ? null : onShare,
-          icon: const Icon(Icons.ios_share_rounded, size: 19),
+          icon: const ExperienceIcon('Share2', size: 19),
           label: const Padding(
             padding: EdgeInsets.symmetric(vertical: 5),
             child: Text('친구 초대하기', textAlign: TextAlign.center),
@@ -180,13 +178,13 @@ class ReferralShareCard extends StatelessWidget {
             TextButton.icon(
               key: const ValueKey('referral-copy-code'),
               onPressed: busy ? null : onCopyCode,
-              icon: const Icon(Icons.copy_rounded, size: 16),
+              icon: const ExperienceIcon('Copy', size: 16),
               label: const Text('코드 복사'),
             ),
             TextButton.icon(
               key: const ValueKey('referral-copy-link'),
               onPressed: busy ? null : onCopyLink,
-              icon: const Icon(Icons.link_rounded, size: 18),
+              icon: const ExperienceIcon('Link2', size: 18),
               label: const Text('링크 복사'),
             ),
           ],

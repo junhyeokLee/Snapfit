@@ -1,0 +1,62 @@
+part of 'story_edition_catalog.dart';
+
+const readingEditionRevision = '2026-11-03-reading-room-original-1';
+
+/// A new topic with its own photography and a complete free starter book.
+const readingStoryEditions = <StoryEdition>[
+  StoryEdition(
+    id: 'story-reading-room',
+    catalogId: -9771,
+    title: '책장 사이의 오후',
+    category: '취미·기록',
+    englishTitle: 'a room between\nthe pages',
+    subtitle: '책과 공간, 함께 읽은 대화를 엮는 나의 독서 사진집',
+    coverStyle: 32,
+    paperLabel: '독서 카드와 갈피',
+    motifLabel: '펼친 책과 책갈피',
+    ink: '#283D36',
+    tint: '#E8EBDD',
+    accent: '#9B6948',
+    isPremium: false,
+    exclusivePhotography: true,
+    qualityRevision: readingEditionRevision,
+    photoFrames: ['studioPhotoCorners', 'studyFloatMount'],
+    photoAspectRatios: [1.5, 1.5, 1.5, 1.5, 1.5],
+    discoveryTags: ['독서', '책', '도서관', '북클럽', '취미', '독서기록', '필사'],
+    photoAssets: [
+      'assets/templates/reading_room_2026/reading01.jpg',
+      'assets/templates/reading_room_2026/reading02.jpg',
+      'assets/templates/reading_room_2026/reading03.jpg',
+      'assets/templates/reading_room_2026/reading04.jpg',
+      'assets/templates/reading_room_2026/reading05.jpg',
+    ],
+    chapters: [
+      '한 권을 고르는 오후',
+      '책장을 넘기기 전에',
+      '머물고 싶은 문장',
+      '나의 독서 자리',
+      '같이 읽는 목소리',
+      '다르게 읽은 장면',
+      '오늘의 독서 카드',
+      '작은 갈피의 기억',
+      '책장에 남은 빛',
+      '나의 말로 적기',
+      '덮은 뒤에도 남는 것',
+      '다음 권의 첫 장',
+    ],
+    notes: [
+      '서가 사이를 걷다가 오늘의 속도와 닮은 책을 골랐다.',
+      '책과 노트를 펼쳐 놓고 잠시 휴대전화를 뒤집어 두었다.',
+      '책의 문장을 옮기기보다, 읽고 난 마음을 나의 말로 남긴다.',
+      '자주 앉는 자리에도 매번 다른 빛이 들어온다.',
+      '같은 페이지에서 서로 다른 이야기가 시작되었다.',
+      '나와 다른 시선 덕분에 한 장을 더 오래 읽었다.',
+      '제목과 날짜, 읽은 자리와 오늘의 생각을 함께 적는다.',
+      '끝까지 읽지 못한 날도 이 책의 시간으로 남겨 둔다.',
+      '집으로 돌아온 책은 익숙한 물건들 사이에 놓였다.',
+      '좋아한 이유를 설명하다 보면 내 취향도 조금 또렷해진다.',
+      '마지막 장을 덮고도 잠시 그 세계에 머물렀다.',
+      '다음에 펼칠 책과 다시 만나고 싶은 이야기를 적어 둔다.',
+    ],
+  ),
+];

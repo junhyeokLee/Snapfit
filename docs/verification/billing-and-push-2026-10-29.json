@@ -1,0 +1,140 @@
+{
+  "status": "code_reviewed_tested_and_deployed_real_store_and_device_verification_pending",
+  "verifiedAt": "2026-10-28T15:50:48.190668+00:00",
+  "scope": "Point top-up, receipts/refunds, web payment recovery, push ownership/preferences/comment routing, responsive UI",
+  "verification": {
+    "native": {
+      "passed": 230,
+      "failed": 0,
+      "log": "output/billing-push-all-native-final.log"
+    },
+    "chrome": {
+      "passed": 61,
+      "failed": 0,
+      "log": "output/billing-push-chrome-final.log"
+    },
+    "productionGate": {
+      "passed": 1,
+      "failed": 0,
+      "log": "output/billing-push-chrome-production-gate.log"
+    },
+    "server": {
+      "passed": 104,
+      "failed": 0,
+      "log": "output/billing-push-server-final.log"
+    },
+    "realWebAdapter": {
+      "passed": 1,
+      "failed": 0,
+      "log": "output/billing-push-adapter-final.log",
+      "note": "Only the compiled adapter case is counted here; 8 other SQL cases in this log are included in server count."
+    },
+    "totalAutomatedExecutions": 397,
+    "sourceAnalysis": "output/billing-push-analysis.log",
+    "diffCheckPassed": true,
+    "webBuildPassed": true,
+    "productionWebFileCheckPassed": true,
+    "nativePackageBuilt": true,
+    "phoneInstallVerified": false,
+    "crossReviewCompleted": true,
+    "lastConfirmedCodeRegressionsInChangedScope": [],
+    "capturesVisuallyReviewed": true
+  },
+  "productionDatabaseEvidence": "output/billing-push-database-check.json",
+  "secretPresenceEvidence": "output/billing-push-secret-metadata.json",
+  "serverFunctions": {
+    "iap-verify": 34,
+    "push-dispatch": 23
+  },
+  "migration": "20261028153857_push_delivery_fences_and_social_comments.sql",
+  "releaseReadiness": {
+    "webLiveCheckoutEnabled": false,
+    "iosPurchaseVerificationKeysConfigured": false,
+    "androidCredentialNamePresent": true,
+    "androidCredentialFormatAndPlayPermissionVerified": false,
+    "storeCheckoutVerified": false,
+    "devicePushReceiptVerified": false,
+    "nativePhoneInstalled": false,
+    "storeRolloutPerformed": false
+  },
+  "captures": {
+    "note": "Actual production widgets rendered with isolated sample balances and inbox entries; not customer transactions.",
+    "points": "output/all-screens-qa/points-checkout-summary-390-light.png",
+    "waiting": "output/all-screens-qa/points-verification-waiting-390-light.png",
+    "inbox": "output/all-screens-qa/notification-delivery-inbox-390-light.png"
+  },
+  "limitations": [
+    "No physical phone is available. No actual customer charge, point grant, comment or push was created for verification.",
+    "iOS server verification is missing the Issuer ID, Key ID and private key. Android credential presence does not prove Play Console permission or product readiness.",
+    "Web live top-up remains closed. TEST ledger is separate from spendable points.",
+    "An unidentified native store cancel/error cannot safely complete another checkout; matching result or existing 2-minute watchdog and recovery are required.",
+    "An unresolved physical web SDK window blocks a new invoice before preparation; closing/reloading is required if its Promise never settles.",
+    "FCM acceptance and successful empty cron jobs do not prove device receipt or exactly-once delivery. Already accepted OS notifications cannot be recalled."
+  ],
+  "webBuild": {
+    "main_sha256": "43e6e1a281a683171800daf4668899bb85a38e7cc2d05c3a82c26cbd4059f8ad",
+    "main_file": "main.43e6e1a281a683171800.dart.js",
+    "bootstrap_sha256": "8fd6645a0cf51859490d48bb6137a4ffff16b3ffad7e1f7927114d6146bb55f7",
+    "bootstrap_file": "flutter_bootstrap.8fd6645a0cf51859490d.js"
+  },
+  "webDeployment": {
+    "url": "https://snapfit-c719d.web.app",
+    "release": "projects/360727043538/sites/snapfit-c719d/versions/d2727a154679956b",
+    "checks": [
+      {
+        "path": "/feed",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      },
+      {
+        "path": "/me",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      },
+      {
+        "path": "/snapfit-web-build.json",
+        "status": 200,
+        "matchesLocal": true
+      },
+      {
+        "path": "/flutter_bootstrap.8fd6645a0cf51859490d.js",
+        "status": 200,
+        "sha256": "8fd6645a0cf51859490d48bb6137a4ffff16b3ffad7e1f7927114d6146bb55f7"
+      },
+      {
+        "path": "/main.43e6e1a281a683171800.dart.js",
+        "status": 200,
+        "sha256": "43e6e1a281a683171800daf4668899bb85a38e7cc2d05c3a82c26cbd4059f8ad"
+      },
+      {
+        "path": "/users/00000000-0000-4000-8000-000000000001/months/2026-10",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      }
+    ],
+    "evidence": "output/billing-push-deployment-check.json"
+  },
+  "androidArtifact": {
+    "path": "/Users/devsheep/SnapFit/SnapFit/build/app/outputs/flutter-apk/app-debug.apk",
+    "bytes": 903192624,
+    "sha256": "f2a5d7399adda41af55dfd508d0257fa8525fedf8b43da7e435226971b94f928",
+    "target": "android-arm64",
+    "flutterEngineArchitectures": [
+      "arm64-v8a"
+    ],
+    "type": "Android debug verification APK",
+    "manifest": [
+      "package: name='com.devsheep.snap_fit' versionCode='1' versionName='1.0.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+      "application-debuggable",
+      "native-code: 'arm64-v8a' 'armeabi-v7a' 'x86_64'"
+    ],
+    "phoneInstallVerified": false,
+    "storeRolloutPerformed": false,
+    "signatureEvidence": "output/billing-push-android-signature.log",
+    "signatureVerified": true
+  },
+  "reviewReport": "docs/BILLING_PUSH_REVIEW_2026_10_29.md"
+}

@@ -275,6 +275,67 @@ void main() {
     },
   );
   test(
+    'account replacement stays loading until its own query settles and can retry a failure',
+    () async {
+      var currentOwner = 'owner';
+      final newQuery = Completer<List<Album>>();
+      // 실패하는 구현에서도 미완료 조회를 남기지 않고 정리한다.
+      addTearDown(() {
+        if (!newQuery.isCompleted) newQuery.complete(const []);
+      });
+      when(() => mockRepo.fetchMyAlbums()).thenAnswer(
+        (_) => currentOwner == 'owner'
+            ? Future.value([fakeAlbum(id: 1)])
+            : newQuery.future,
+      );
+      final container = ProviderContainer(
+        retry: (_, _) => null,
+        overrides: [
+          albumRepositoryProvider.overrideWithValue(mockRepo),
+          albumEditorOwnerReaderProvider.overrideWithValue(() => currentOwner),
+          albumCurrentSessionOwnerProvider.overrideWith(
+            (ref) => ref.watch(_testOwner),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.listen(homeViewModelProvider, (_, _) {});
+      expect((await container.read(homeViewModelProvider.future)).single.id, 1);
+
+      currentOwner = 'new-owner';
+      container.read(_testOwner.notifier).change(currentOwner);
+      final pending = container.read(homeViewModelProvider);
+      expect(pending.isLoading, isTrue);
+      expect(pending.value, isEmpty);
+
+      // 개인정보를 비운 임시 []로 future까지 먼저 완료하면 안 된다.
+      var completed = false;
+      final failure = StateError('new account query failed');
+      final nextRead = container
+          .read(homeViewModelProvider.future)
+          .whenComplete(() => completed = true);
+      final failedRead = expectLater(nextRead, throwsA(same(failure)));
+      await container.pump();
+      await Future<void>.delayed(Duration.zero);
+      expect(completed, isFalse);
+
+      newQuery.completeError(failure);
+      await failedRead;
+      final failed = container.read(homeViewModelProvider);
+      expect(failed.hasError, isTrue);
+      expect(failed.isLoading, isFalse);
+      expect(failed.value, isEmpty);
+
+      // 같은 새 계정에서 다시 요청하면 이전 계정 자료 없이 복구한다.
+      stubFetchMyAlbums(mockRepo, [fakeAlbum(id: 9)]);
+      container.invalidate(homeViewModelProvider);
+      final recovered = await container.read(homeViewModelProvider.future);
+      expect(recovered.map((album) => album.id), [9]);
+      expect(container.read(homeViewModelProvider).hasError, isFalse);
+      expect(container.read(homeViewModelProvider).isLoading, isFalse);
+    },
+  );
+  test(
     'failed old-account delete cannot roll private albums into the new account',
     () async {
       var currentOwner = 'owner';
@@ -319,4 +380,69 @@ void main() {
     expect(await container.read(homeViewModelProvider.future), isEmpty);
     verifyNever(() => mockRepo.fetchMyAlbums());
   });
+  test(
+    'a stalled first home read stops loading and a retry ignores its late result',
+    () async {
+      final stalled = Completer<List<Album>>();
+      when(() => mockRepo.fetchMyAlbums()).thenAnswer((_) => stalled.future);
+      final container = ProviderContainer(
+        retry: (_, _) => null,
+        overrides: [
+          albumRepositoryProvider.overrideWithValue(mockRepo),
+          albumEditorOwnerReaderProvider.overrideWithValue(() => 'owner'),
+          albumCurrentSessionOwnerProvider.overrideWithValue('owner'),
+          homeAlbumReadTimeoutProvider.overrideWithValue(
+            const Duration(milliseconds: 30),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.listen(homeViewModelProvider, (_, _) {});
+      await expectLater(
+        container.read(homeViewModelProvider.future),
+        throwsA(isA<TimeoutException>()),
+      );
+      expect(container.read(homeViewModelProvider).hasError, isTrue);
+      expect(container.read(homeViewModelProvider).isLoading, isFalse);
+      stubFetchMyAlbums(mockRepo, [fakeAlbum(id: 9)]);
+      await container.read(homeViewModelProvider.notifier).refresh();
+      stalled.complete([fakeAlbum(id: 1)]);
+      await Future<void>.delayed(Duration.zero);
+      expect(container.read(homeViewModelProvider).requireValue.single.id, 9);
+    },
+  );
+
+  test(
+    'a stalled background home read retains existing albums and permits another retry',
+    () async {
+      final existing = [fakeAlbum(id: 4)];
+      stubFetchMyAlbums(mockRepo, existing);
+      final container = ProviderContainer(
+        retry: (_, _) => null,
+        overrides: [
+          albumRepositoryProvider.overrideWithValue(mockRepo),
+          albumEditorOwnerReaderProvider.overrideWithValue(() => 'owner'),
+          albumCurrentSessionOwnerProvider.overrideWithValue('owner'),
+          homeAlbumReadTimeoutProvider.overrideWithValue(
+            const Duration(milliseconds: 30),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.listen(homeViewModelProvider, (_, _) {});
+      await container.read(homeViewModelProvider.future);
+      final stalled = Completer<List<Album>>();
+      when(() => mockRepo.fetchMyAlbums()).thenAnswer((_) => stalled.future);
+      await container.read(homeViewModelProvider.notifier).refresh();
+      expect(
+        container.read(homeViewModelProvider).requireValue,
+        same(existing),
+      );
+      stubFetchMyAlbums(mockRepo, [fakeAlbum(id: 8)]);
+      await container.read(homeViewModelProvider.notifier).refresh();
+      stalled.complete([fakeAlbum(id: 1)]);
+      await Future<void>.delayed(Duration.zero);
+      expect(container.read(homeViewModelProvider).requireValue.single.id, 8);
+    },
+  );
 }

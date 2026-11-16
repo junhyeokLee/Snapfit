@@ -1,3 +1,4 @@
+import 'store_product_badge.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
@@ -7,8 +8,10 @@ import '../../../../core/theme/snapfit_design_tokens.dart'
 import '../../../../shared/widgets/catalog_favorite_widgets.dart';
 import '../../../../shared/widgets/catalog_artwork_visibility.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
+import '../../../../shared/web/web_design.dart' show WebPalette;
 import '../../../point_shop/presentation/point_shop_access.dart';
 import 'catalog_item_title.dart';
+import 'material_original_preview.dart';
 
 class MaterialCatalogTile extends StatefulWidget {
   const MaterialCatalogTile({
@@ -51,17 +54,23 @@ class _MaterialCatalogTileState extends State<MaterialCatalogTile> {
 
   @override
   Widget build(BuildContext context) {
-    final (paper, ink) = switch (widget.type) {
-      '프레임' => (const Color(0xFFE5ECE2), const Color(0xFF3D6148)),
-      '종이' => (const Color(0xFFC6D8DF), const Color(0xFF405C69)),
-      '문구' => (const Color(0xFFF3E2E8), const Color(0xFF7D4157)),
-      _ => (const Color(0xFFE6E9F1), const Color(0xFF45516B)),
-    };
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final previewPaper = dark
-        ? Color.lerp(paper, const Color(0xFF1B2324), .86)!
-        : paper;
-    final previewInk = dark ? Color.lerp(ink, Colors.white, .72)! : ink;
+    const previewInk = MaterialArtworkStage.ink;
+    final artworkTheme = Theme.of(context).copyWith(
+      brightness: Brightness.light,
+      extensions: [
+        ...Theme.of(
+          context,
+        ).extensions.values.where((extension) => extension is! WebPalette),
+        WebPalette.light,
+      ],
+      colorScheme: Theme.of(context).colorScheme.copyWith(
+        brightness: Brightness.light,
+        onSurface: MaterialArtworkStage.ink,
+        onSurfaceVariant: MaterialArtworkStage.ink,
+        onPrimaryContainer: SnapFitColors.accentInk,
+      ),
+    );
     final elevated = _hovered || _pressed;
     return Semantics(
       button: true,
@@ -89,67 +98,49 @@ class _MaterialCatalogTileState extends State<MaterialCatalogTile> {
                       borderRadius: BorderRadius.circular(SnapFitRadius.lg),
                       boxShadow: elevated ? SnapFitShadow.artwork(dark) : [],
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(SnapFitRadius.lg),
-                      child: ColoredBox(
-                        color: previewPaper,
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.fromLTRB(
-                                12,
-                                widget.compact ? 28 : 30,
-                                12,
-                                10,
-                              ),
-                              child: CatalogArtworkVisibility(
-                                child: RepaintBoundary(child: widget.preview),
+                    child: MaterialArtworkStage(
+                      productKey: widget.productKey,
+                      padding: EdgeInsets.zero,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Padding(
+                            padding: MaterialArtworkStage.artworkInsets(
+                              context,
+                              productKey: widget.productKey,
+                              type: widget.type,
+                              compact: widget.compact,
+                            ),
+                            child: CatalogArtworkVisibility(
+                              child: RepaintBoundary(child: widget.preview),
+                            ),
+                          ),
+                          Positioned(
+                            left: 9,
+                            top: 9,
+                            child: Text(
+                              widget.type,
+                              style: TextStyle(
+                                fontSize: 10,
+                                height: 1.2,
+                                fontWeight: FontWeight.w600,
+                                color: previewInk,
                               ),
                             ),
+                          ),
+                          Positioned(
+                            left: 9,
+                            bottom: 9,
+                            child: StoreProductBadge(
+                              productKey: widget.productKey,
+                            ),
+                          ),
+                          if (widget.showCommerce && widget.favoriteKey != null)
                             Positioned(
-                              left: 9,
-                              top: 9,
-                              child: Text(
-                                widget.type,
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: previewInk,
-                                ),
-                              ),
-                            ),
-                            if (widget.isNew || widget.isBest)
-                              Positioned(
-                                left: 9,
-                                bottom: 9,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: widget.isBest
-                                        ? const Color(0xFFD4A853)
-                                        : SnapFitColors.actionAccent,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    widget.isBest ? 'BEST' : 'NEW',
-                                    style: const TextStyle(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            if (widget.showCommerce &&
-                                widget.favoriteKey != null)
-                              Positioned(
-                                right: 3,
-                                top: 3,
+                              right: 3,
+                              top: 3,
+                              child: Theme(
+                                data: artworkTheme,
                                 child: CatalogFavoriteButton(
                                   itemKey: widget.favoriteKey!,
                                   label: widget.title,
@@ -157,8 +148,8 @@ class _MaterialCatalogTileState extends State<MaterialCatalogTile> {
                                   unframed: true,
                                 ),
                               ),
-                          ],
-                        ),
+                            ),
+                        ],
                       ),
                     ),
                   ),
@@ -201,6 +192,66 @@ class _MaterialCatalogTileState extends State<MaterialCatalogTile> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// A quiet support for the original artwork, shared by the grid and discovery
+/// shelf. Translucent papers retain the contrast chosen for their detail view.
+/// This widget never constructs photos, documents or fonts for scrolling.
+class MaterialArtworkStage extends StatelessWidget {
+  const MaterialArtworkStage({
+    super.key,
+    required this.productKey,
+    required this.child,
+    this.padding = const EdgeInsets.all(8),
+  });
+
+  final String productKey;
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  static const ink = Color(0xFF455953);
+
+  static EdgeInsets artworkInsets(
+    BuildContext context, {
+    required String productKey,
+    required String type,
+    bool compact = false,
+  }) {
+    final horizontal =
+        productKey.startsWith('frame:') || productKey.startsWith('phrase:')
+        ? 6.0
+        : 8.0;
+    final labelHeight = MediaQuery.textScalerOf(context).scale(10) * 1.2;
+    return EdgeInsets.fromLTRB(
+      horizontal,
+      labelHeight + (compact ? 10 : 12),
+      horizontal,
+      type == '종이' ? 8 : 7,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final base = MaterialOriginalPreview.backgroundFor(productKey);
+    // The original contains translucent paper and dark printed linework. Keep
+    // its artboard light in both themes instead of recoloring the artwork.
+    final background = Color.lerp(base, const Color(0xFFF7F8F6), .28)!;
+    final radius = BorderRadius.circular(SnapFitRadius.lg);
+    return ClipRRect(
+      borderRadius: radius,
+      child: DecoratedBox(
+        key: ValueKey('material-artwork-stage-$productKey'),
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: radius,
+          border: Border.all(
+            color: const Color(0xFF788B86).withValues(alpha: dark ? .20 : .14),
+          ),
+        ),
+        child: Padding(padding: padding, child: child),
       ),
     );
   }

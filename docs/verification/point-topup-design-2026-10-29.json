@@ -1,0 +1,116 @@
+{
+  "status": "design_reviewed_tested_web_deployed_android_built",
+  "verifiedAt": "2026-10-28T16:32:38.335422+00:00",
+  "scope": [
+    "Brand wallet card with readable white type",
+    "Compact actual store point/price selection",
+    "Compact explicit checkout CTA",
+    "Visible balance on narrow web screens",
+    "Closed web checkout app-charge notice without fake action",
+    "Narrow browser ledger filter and reachable lazy history"
+  ],
+  "tests": {
+    "native": {
+      "passed": 52,
+      "failed": 0,
+      "log": "output/points-redesign-native.log"
+    },
+    "webProduction": {
+      "passed": 11,
+      "failed": 0,
+      "log": "output/points-redesign-web-layout.log"
+    },
+    "webTestAndCustomerShell": {
+      "passed": 29,
+      "failed": 0,
+      "log": "output/points-redesign-web-functional.log"
+    }
+  },
+  "totalAutomatedExecutions": 92,
+  "analysis": "output/points-redesign-analysis.log",
+  "crossReviewCompleted": true,
+  "financialBehavior": "Existing store products, prices, owner fences, recovery and release gates retained; presentation-only changes. No database/Edge changes made in this design turn.",
+  "releaseReadinessEvidence": "docs/verification/billing-and-push-2026-10-29.json",
+  "phoneInstallVerified": false,
+  "storeRolloutPerformed": false,
+  "captures": {
+    "note": "Actual app widgets with sample balance and store data, not customer transactions.",
+    "app": "output/points-redesign-20261029/app-selected.png",
+    "appDark": "output/points-redesign-20261029/app-selected-dark.png",
+    "webPreview": "output/points-redesign-20261029/web-desktop.png",
+    "webPreviewNote": "Normal Flutter browser rendering with actual bundled fonts and sample data; captured before the final My Profile active-navigation correction. Wallet, panel and typography match the final implementation."
+  },
+  "designReferences": [
+    "https://m3.material.io/styles/typography/applying-type",
+    "https://developer.apple.com/design/human-interface-guidelines/apple-in-app-purchase"
+  ],
+  "verificationFollowUp": {
+    "activeWebSection": "myProfile",
+    "reason": "Point top-up belongs to My Profile; the default customer-page section highlighted Settings.",
+    "responsiveBrowserCasesRechecked": 10,
+    "log": "output/points-redesign-web-layout-final.log"
+  },
+  "webBuild": {
+    "main_sha256": "d1c2197d46e1eb8dc1048842cc9b21c2e66525022451a854a4760d8492b6de31",
+    "main_file": "main.d1c2197d46e1eb8dc104.dart.js",
+    "bootstrap_sha256": "f6d82efa8b280d7b12c5c58065c9fb5c94c7a19dbcc50744c81b9db22305ad1e",
+    "bootstrap_file": "flutter_bootstrap.f6d82efa8b280d7b12c5.js"
+  },
+  "webDeployment": {
+    "url": "https://snapfit-c719d.web.app",
+    "release": "projects/360727043538/sites/snapfit-c719d/versions/0c2aee8356804280",
+    "checks": [
+      {
+        "path": "/feed",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      },
+      {
+        "path": "/me",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      },
+      {
+        "path": "/snapfit-web-build.json",
+        "status": 200,
+        "matchesLocal": true
+      },
+      {
+        "path": "/flutter_bootstrap.f6d82efa8b280d7b12c5.js",
+        "status": 200,
+        "sha256": "f6d82efa8b280d7b12c5c58065c9fb5c94c7a19dbcc50744c81b9db22305ad1e"
+      },
+      {
+        "path": "/main.d1c2197d46e1eb8dc104.dart.js",
+        "status": 200,
+        "sha256": "d1c2197d46e1eb8dc1048842cc9b21c2e66525022451a854a4760d8492b6de31"
+      },
+      {
+        "path": "/users/00000000-0000-4000-8000-000000000001/months/2026-10",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      }
+    ],
+    "evidence": "output/points-redesign-deployment-check.json"
+  },
+  "sourceAnalysisPassed": true,
+  "diffCheckPassed": true,
+  "androidArtifact": {
+    "path": "/Users/devsheep/SnapFit/SnapFit/build/app/outputs/flutter-apk/app-debug.apk",
+    "bytes": 903189582,
+    "sha256": "17a2deb5fb4438235039a7ff577c72f956f32c9b78e478cdd626c458962ac6e6",
+    "target": "android-arm64",
+    "flutterEngineArchitectures": [
+      "arm64-v8a"
+    ],
+    "type": "Android debug verification APK",
+    "phoneInstallVerified": false,
+    "storeRolloutPerformed": false,
+    "signatureEvidence": "output/points-redesign-android-signature.log",
+    "signatureVerified": true
+  },
+  "nativeStoreRolloutPerformed": false
+}

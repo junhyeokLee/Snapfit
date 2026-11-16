@@ -9,7 +9,11 @@ import 'package:snap_fit/features/point_shop/presentation/point_shop_access.dart
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_album_start_step.dart';
 import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
+import 'package:snap_fit/features/store/data/store_curation_provider.dart';
+import 'package:snap_fit/features/store/data/store_discovery_provider.dart';
 import 'package:snap_fit/features/store/domain/entities/premium_template.dart';
+import 'package:snap_fit/features/store/domain/store_product_discovery.dart';
+import 'package:snap_fit/shared/widgets/catalog_cover_skeleton.dart';
 
 // Artwork and layout tests use a controlled free catalog, never a live shop.
 Widget wrapCreation(
@@ -23,6 +27,13 @@ Widget wrapCreation(
   overrides: [
     pointShopCatalogProvider.overrideWith((ref) async => shopProducts),
     ownedPointShopKeysProvider.overrideWith((ref) async => <String>{}),
+    storeDiscoveryProvider.overrideWith(
+      (ref) async => const <String, StoreProductDiscovery>{},
+    ),
+    storeDiscoveryClockProvider.overrideWithValue(DateTime.utc(2026, 11, 11)),
+    storeCurationsProvider.overrideWith(
+      (ref) async => const <String, StoreCuration>{},
+    ),
     pointShopAccessGateProvider.overrideWithValue(
       pointShopGate ??
           (context, ref, {required productKey, required title}) async => true,
@@ -32,7 +43,9 @@ Widget wrapCreation(
     designSize: const Size(390, 844),
     builder: (_, __) => MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: dark ? SnapFitTheme.dark() : SnapFitTheme.light(),
+      theme: (dark ? SnapFitTheme.dark() : SnapFitTheme.light()).copyWith(
+        splashFactory: NoSplash.splashFactory,
+      ),
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(
           context,
@@ -75,12 +88,35 @@ Future<void> loadCreationFonts() async {
 Future<List<PremiumTemplate>> creationFixtures() async =>
     List<PremiumTemplate>.unmodifiable(publishedCreationTemplates);
 
+// Allow native image decoding to finish without waiting on an image forever.
+Future<void> _settleArtwork(WidgetTester tester) async {
+  var stableFrames = 0;
+  for (var frame = 0; frame < 160; frame++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 25)),
+    );
+    await tester.pump(const Duration(milliseconds: 32));
+    final ready =
+        find.byType(CatalogCoverSkeleton).evaluate().isEmpty &&
+        PaintingBinding.instance.imageCache.pendingImageCount == 0 &&
+        !tester.binding.hasScheduledFrame;
+    stableFrames = ready && frame >= 12 ? stableFrames + 1 : 0;
+    if (stableFrames == 4) return;
+  }
+  fail('Creation artwork did not settle within 160 bounded frames.');
+}
+
 void main() {
   test(
     'creation fixtures use the current published catalog without handoffs',
     () async {
       final templates = await creationFixtures();
-      expect(templates, hasLength(68));
+      expect(templates, isNotEmpty);
+      expect(templates, hasLength(publishedCreationTemplates.length));
+      expect(
+        templates.map((template) => template.id).toSet(),
+        hasLength(templates.length),
+      );
       expect(
         templates.map((template) => template.id),
         publishedCreationTemplates.map((template) => template.id),
@@ -151,10 +187,12 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('직접 만들기'));
+      await tester.tap(find.byKey(const ValueKey('creation-manual-start')));
       expect(manual, 1);
       expect(find.text('첫 템플릿 무료'), findsNothing);
-      await tester.tap(find.text('유료').first);
+      await tester.tap(find.byKey(const ValueKey('creation-open-catalog')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('creation-price-유료')));
       await tester.pumpAndSettle();
       expect(find.text('여행 일기'), findsNothing);
       await tester.ensureVisible(
@@ -163,15 +201,15 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('creation-template-2')));
       expect(selected?.id, 2);
       expect(purchaseChecks, 0);
-      final freeFilter = find.text('무료').first;
+      final freeFilter = find.byKey(const ValueKey('creation-price-무료'));
       await tester.ensureVisible(freeFilter);
       await tester.tap(freeFilter);
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('creation-template-1')), findsOneWidget);
       expect(find.byKey(const ValueKey('creation-template-2')), findsNothing);
-      await tester.tap(find.text('검색'));
-      await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextField), '없는검색');
+      final search = find.byKey(const ValueKey('creation-search'));
+      await tester.ensureVisible(search);
+      await tester.enterText(search, '없는검색');
       tester.testTextInput.hide();
       await tester.pumpAndSettle();
       expect(find.text('검색 결과가 없어요'), findsOneWidget);
@@ -202,12 +240,14 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('무료').first);
-    await tester.tap(find.text('무료').first);
+    await tester.tap(find.byKey(const ValueKey('creation-open-catalog')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('creation-price-무료')));
+    await tester.tap(find.byKey(const ValueKey('creation-price-무료')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('creation-template-9')), findsNothing);
     expect(find.text('검색 결과가 없어요'), findsOneWidget);
-    await tester.tap(find.text('유료').first);
+    await tester.tap(find.byKey(const ValueKey('creation-price-유료')));
     await tester.pumpAndSettle();
     await tester.ensureVisible(
       find.byKey(const ValueKey('creation-template-9')),
@@ -224,7 +264,8 @@ void main() {
     testWidgets('current catalog layout, search and selection $size', (
       tester,
     ) async {
-      await loadCreationFonts();
+      // Native font registration needs real async time outside the fake clock.
+      await tester.runAsync(loadCreationFonts);
       tester.view.physicalSize = size;
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
@@ -243,34 +284,38 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
-      await tester.runAsync(() async {
-        for (final element in find.byType(Image).evaluate()) {
-          await precacheImage((element.widget as Image).image, element);
-        }
-      });
+      await _settleArtwork(tester);
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('직접 만들기'));
-      await tester.tap(find.text('직접 만들기'));
+      final manualStart = find.byKey(const ValueKey('creation-manual-start'));
+      await tester.ensureVisible(manualStart);
+      await tester.tap(manualStart);
       expect(manual, 1);
-      // The grid is lazily built below the opening artwork on short displays.
-      // Use the actual browse action before inspecting its delegate.
-      await tester.ensureVisible(find.text('템플릿 고르기'));
-      await tester.tap(find.text('템플릿 고르기'));
+      // Enter the catalog through the same action used on short displays.
+      final openCatalog = find.byKey(const ValueKey('creation-open-catalog'));
+      await tester.ensureVisible(openCatalog);
+      await tester.tap(openCatalog);
       await tester.pumpAndSettle();
       expect(
-        (tester.widget<SliverGrid>(find.byType(SliverGrid)).delegate
+        (tester
+                    .widget<SliverGrid>(
+                      find.byType(SliverGrid, skipOffstage: false),
+                    )
+                    .delegate
                 as SliverChildBuilderDelegate)
             .childCount,
-        68,
+        templates.length,
       );
-      await tester.ensureVisible(find.text('검색'));
-      await tester.tap(find.text('검색'));
-      await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextField), templates.last.title);
+      final search = find.byKey(const ValueKey('creation-search'));
+      await tester.ensureVisible(search);
+      await tester.enterText(search, templates.last.title);
       FocusManager.instance.primaryFocus?.unfocus();
       await tester.pumpAndSettle();
       expect(
-        (tester.widget<SliverGrid>(find.byType(SliverGrid)).delegate
+        (tester
+                    .widget<SliverGrid>(
+                      find.byType(SliverGrid, skipOffstage: false),
+                    )
+                    .delegate
                 as SliverChildBuilderDelegate)
             .childCount,
         1,
@@ -278,7 +323,16 @@ void main() {
       final card = find.byKey(
         ValueKey('creation-template-${templates.last.id}'),
       );
-      await tester.ensureVisible(card);
+      await tester.scrollUntilVisible(
+        card,
+        120,
+        scrollable: find
+            .descendant(
+              of: find.byType(CustomScrollView),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
       await tester.pumpAndSettle();
       expect(card.hitTestable(), findsOneWidget);
       await tester.tap(card);

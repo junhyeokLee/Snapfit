@@ -1,3 +1,5 @@
+part 'premium_quartet_frame_keys.g.dart';
+
 /// Stable document keys shared by layout-preserving editing and rendering.
 const newStudioPhotoFrames = {
   'studioCapsule',
@@ -92,7 +94,41 @@ const keepsakeFrameIncludedMaterials = {
   'materialLinenOval': 'sticker:materialLinen',
 };
 
+// Book-exclusive frames for the hobby and new-start expansion.
+const diversityPhotoFrames = {
+  'clayContour',
+  'leafHerbarium',
+  'filmContactRail',
+  'bakeRecipe',
+  'knitStitch',
+  'musicSleeve',
+  'paperNotch',
+  'galleryRegistration',
+  'campMap',
+};
+
+const milestoneExpansionPhotoFrames = {
+  'milestoneConfettiMat',
+  'milestoneBlueprintMount',
+  'milestonePortfolioTab',
+  'milestoneLinenMedal',
+  'milestoneGalleryLabel',
+};
+
+const sensoryPhotoFrames = {
+  'cafeLedgerMat',
+  'cafeReceiptFold',
+  'cafeGlassine',
+  'nocturneContact',
+  'nocturneTransit',
+  'nocturneDuplex',
+};
+
 const studioPhotoFrames = {
+  ...premiumQuartetPhotoFrames,
+  ...diversityPhotoFrames,
+  ...milestoneExpansionPhotoFrames,
+  ...sensoryPhotoFrames,
   ...atelierStoryPhotoFrames,
   ...atelierSignaturePhotoFrames,
   ...keepsakePhotoFrames,

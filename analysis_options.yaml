@@ -15,6 +15,7 @@ analyzer:
     - '**/*.freezed.dart'
     - build/**
     - output/**
+    - docs/**
     - android/**
     - ios/**
     - web/**

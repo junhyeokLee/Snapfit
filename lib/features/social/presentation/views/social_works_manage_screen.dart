@@ -6,6 +6,7 @@ import '../social_actions.dart';
 import '../social_navigation.dart';
 import '../widgets/social_widgets.dart';
 import '../widgets/social_web_frame.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 class SocialWorksManageScreen extends ConsumerStatefulWidget {
   const SocialWorksManageScreen({super.key});
@@ -63,8 +64,29 @@ class _SocialWorksManageScreenState
     invalidateSocial(ref, workId: workId);
   }
 
+  bool _restricted(SocialWork work) {
+    if (work.isRestricted) return true;
+    for (final offset in _offsets) {
+      final page = ref
+          .read(
+            socialOwnWorksPageProvider(
+              SocialOwnWorksQuery(status: _filter, offset: offset),
+            ),
+          )
+          .asData
+          ?.value;
+      for (final current in page?.items ?? const <SocialWork>[]) {
+        if (current.id == work.id) return current.isRestricted;
+      }
+    }
+    return false;
+  }
+
   Future<void> _change(SocialWork work, bool delete) async {
-    if (_busy.contains(work.id) || _confirmation != null) return;
+    if (_busy.contains(work.id) ||
+        _confirmation != null ||
+        !delete && _restricted(work))
+      return;
     final owner = ref.read(socialCurrentUserIdProvider);
     if (owner == null || owner != work.author.userId) return;
     final revision = _identityRevision;
@@ -76,16 +98,16 @@ class _SocialWorksManageScreenState
         (context) => AlertDialog(
           title: Text(
             delete
-                ? '작품을 삭제할까요?'
+                ? '공개본을 삭제할까요?'
                 : work.isPublished
-                ? '작품을 비공개로 바꿀까요?'
-                : '이 작품을 다시 공개할까요?',
+                ? '공개본을 비공개로 바꿀까요?'
+                : '이 공개본을 다시 공개할까요?',
           ),
           content: Text(
             delete
-                ? '피드에서 이 작품을 삭제해요. 원본 앨범과 인쇄 주문은 그대로 유지돼요.'
+                ? '프로필에서 이 공개 앨범을 삭제해요. 원본 앨범과 인쇄 주문은 그대로 유지돼요.'
                 : work.isPublished
-                ? '피드와 공개 프로필에서 내려가요. 원본 앨범은 그대로 유지돼요.'
+                ? '공개 프로필에서 내려가요. 원본 앨범은 그대로 유지돼요.'
                 : '처음 확인한 공개 페이지를 그대로 보여줘요. 원본의 최신 변경은 가져오지 않아요.',
           ),
           actions: [
@@ -97,7 +119,7 @@ class _SocialWorksManageScreenState
               onPressed: () => Navigator.pop(context, true),
               child: Text(
                 delete
-                    ? '작품 삭제'
+                    ? '공개본 삭제'
                     : work.isPublished
                     ? '비공개 전환'
                     : '다시 공개',
@@ -106,7 +128,10 @@ class _SocialWorksManageScreenState
           ],
         ),
       );
-      if (!_current(owner, revision) || confirm != true) return;
+      if (!_current(owner, revision) ||
+          confirm != true ||
+          !delete && _restricted(work))
+        return;
       final repo = ref.read(socialRepositoryProvider);
       if (delete) {
         await repo.deleteWork(work.id);
@@ -155,20 +180,20 @@ class _SocialWorksManageScreenState
       child: Scaffold(
         backgroundColor: SocialStyle.background(context),
         appBar: AppBar(
-          title: const Text('공개 작품 관리'),
+          title: const Text('공개 관리'),
           actions: [
             IconButton(
-              tooltip: '기존 앨범에서 새 작품 공개',
+              tooltip: '기존 앨범에서 새 공개본 만들기',
               onPressed: user == null ? null : _publish,
-              icon: const Icon(Icons.add),
+              icon: const ExperienceIcon('Plus'),
             ),
           ],
         ),
         body: SocialContent(
           child: user == null
               ? SocialEmpty(
-                  title: '내 작품을 관리하는 공간',
-                  message: '로그인하고 공개 작품을 관리해 보세요.',
+                  title: '내 공개 기록과 앨범을 관리해요.',
+                  message: '로그인하고 공개한 기록과 앨범을 관리해 보세요.',
                   action: FilledButton(
                     onPressed: () => requireSocialLogin(context, ref),
                     child: const Text('로그인'),
@@ -189,11 +214,12 @@ class _SocialWorksManageScreenState
                     }
                   },
                   child: ListView(
+                    cacheExtent: 800,
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(22),
                     children: [
                       const Text(
-                        '하나의 앨범에서 여러 작품을 공개해도 각 작품을 따로 관리할 수 있어요.',
+                        '하나의 앨범에서 여러 번 공개해도 각 공개본을 따로 관리할 수 있어요.',
                         style: TextStyle(height: 1.8),
                       ),
                       const SizedBox(height: 16),
@@ -234,14 +260,14 @@ class _SocialWorksManageScreenState
     return result.when(
       // Retain image recovery state until a refreshed signature decodes.
       skipLoadingOnRefresh: true,
-      loading: () => const SocialLoading(message: '내 작품을 불러오고 있어요.'),
+      loading: () => const SocialLoading(message: '내 공개 항목을 불러오고 있어요.'),
       error: (_, _) => SocialFailure(onRetry: retry),
       data: (page) => Column(
         children: [
           if (page.items.isEmpty && index == 0)
             SocialEmpty(
-              title: '아직 이곳에 작품이 없어요.',
-              message: '기존 앨범에서 원하는 장면을 작품으로 공개해 보세요.',
+              title: '아직 공개한 기록이나 앨범이 없어요.',
+              message: '기존 앨범에서 원하는 장면을 공개해 보세요.',
               action: FilledButton(
                 style: SocialStyle.primary(context),
                 onPressed: _publish,
@@ -262,7 +288,7 @@ class _SocialWorksManageScreenState
                     return;
                   setState(() => _offsets.add(page.nextOffset));
                 },
-                child: const Text('작품 더 보기'),
+                child: const Text('공개본 더 보기'),
               ),
             ),
         ],
@@ -286,8 +312,8 @@ class _SocialWorksManageScreenState
               decoration: BoxDecoration(color: SocialStyle.paper(context)),
               child: Padding(
                 padding: const EdgeInsets.all(6),
-                child: work.imageUrls.isEmpty
-                    ? const Icon(Icons.auto_stories_outlined)
+                child: work.isRestricted || work.imageUrls.isEmpty
+                    ? const ExperienceIcon('BookOpen')
                     : SocialWorkImage(
                         key: ValueKey('social-manage-image-${work.id}'),
                         url: work.imageUrls.first,
@@ -298,9 +324,11 @@ class _SocialWorksManageScreenState
           ),
           title: Text(work.title),
           subtitle: Text(
-            '${work.isPublished ? '공개 중' : '비공개 보관'} · ${work.imageUrls.length}쪽',
+            work.isRestricted
+                ? '공개 제한 · 원본은 그대로 보관돼요.'
+                : '${work.isPublished ? '공개 중' : '비공개 보관'} · ${work.imageUrls.length}쪽',
           ),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: const ExperienceIcon('ChevronRight'),
         ),
         const SizedBox(height: 10),
         Wrap(
@@ -308,16 +336,23 @@ class _SocialWorksManageScreenState
           runSpacing: 8,
           children: [
             OutlinedButton(
-              onPressed: _busy.contains(work.id)
+              key: ValueKey('social-manage-visibility-${work.id}'),
+              onPressed: _busy.contains(work.id) || work.isRestricted
                   ? null
                   : () => _change(work, false),
-              child: Text(work.isPublished ? '비공개로 전환' : '같은 공개본으로 다시 공개'),
+              child: Text(
+                work.isRestricted
+                    ? '공개 제한 중'
+                    : work.isPublished
+                    ? '비공개로 전환'
+                    : '같은 공개본으로 다시 공개',
+              ),
             ),
             TextButton(
               onPressed: _busy.contains(work.id)
                   ? null
                   : () => _change(work, true),
-              child: const Text('작품 삭제'),
+              child: const Text('공개본 삭제'),
             ),
           ],
         ),

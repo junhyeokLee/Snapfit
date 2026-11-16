@@ -2,13 +2,16 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/cover_size.dart';
 import '../../../../shared/snapfit_image.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../social/presentation/widgets/social_widgets.dart';
 import '../../domain/moment_record.dart';
-import '../../domain/monthly_album_builder.dart';
-import 'moment_book_cover.dart';
+import '../../domain/moment_photo_design.dart';
+import 'moment_photo_design_view.dart';
+import 'moment_daily_journal_intro.dart';
 import 'moment_visual_style.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 String momentDateLabel(DateTime date) => '${date.month}월 ${date.day}일';
 
@@ -17,28 +20,56 @@ class MomentPhotoView extends StatelessWidget {
     super.key,
     this.photo,
     this.bytes,
-    this.aspectRatio = 4 / 5,
+    this.design,
+    this.aspectRatio = 1,
     this.label = '나의 기록 사진',
     this.fit = BoxFit.contain,
     this.useIntrinsicSize = false,
     this.backgroundColor,
+    this.imageDecodeWidth = 1200,
+    this.placeholder,
+    this.error,
+    this.automaticStorageRefresh,
+    this.resolveStorageUrlForTesting,
   });
 
   final MomentPhoto? photo;
   final Uint8List? bytes;
+  final MomentPhotoDesign? design;
   final double aspectRatio;
   final String label;
   final BoxFit fit;
   final Color? backgroundColor;
+  final int imageDecodeWidth;
+  final Widget? placeholder, error;
+  final bool? automaticStorageRefresh;
+  @visibleForTesting
+  final Future<String> Function(String)? resolveStorageUrlForTesting;
 
-  /// Local photos already have a decoded intrinsic size. Let that determine
-  /// their height instead of adding a portrait-sized canvas around landscape
-  /// photos. Bounds keep extreme panoramas/tall photos usable without cropping.
+  /// Kept for callers restoring older drafts. Unformatted originals now share
+  /// the default album frame, with their complete pixels contained inside it.
   final bool useIntrinsicSize;
 
   @override
   Widget build(BuildContext context) {
-    Widget error(BuildContext context, Object error, StackTrace? stack) =>
+    final artwork = design ?? photo?.design;
+    if (artwork != null) {
+      return Semantics(
+        label: label,
+        image: true,
+        child: MomentPhotoDesignView(
+          design: artwork,
+          photoSource: photo?.storageUri ?? momentPhotoOriginalSource,
+          bytes: bytes,
+          fit: fit,
+          imageDecodeWidth: imageDecodeWidth,
+          placeholder: placeholder,
+          error: error,
+        ),
+      );
+    }
+    Widget unavailable(BuildContext context, Object error, StackTrace? stack) =>
+        this.error ??
         Center(
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -54,11 +85,11 @@ class MomentPhotoView extends StatelessWidget {
       child: bytes != null
           ? Image.memory(
               bytes!,
-              width: useIntrinsicSize ? double.infinity : null,
               fit: fit,
+              cacheWidth: imageDecodeWidth.clamp(64, 1600).toInt(),
               gaplessPlayback: true,
               semanticLabel: label,
-              errorBuilder: error,
+              errorBuilder: unavailable,
             )
           : Semantics(
               label: label,
@@ -69,31 +100,24 @@ class MomentPhotoView extends StatelessWidget {
                   if (photo?.url.isNotEmpty == true) photo!.url,
                 ],
                 fit: fit,
-                memCacheWidth: 1200,
-                error: error(context, StateError('unavailable'), null),
-                placeholder: Center(
-                  child: SizedBox.square(
-                    dimension: 22,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: SocialStyle.accent(context),
+                memCacheWidth: imageDecodeWidth.clamp(64, 1600).toInt(),
+                automaticStorageRefresh: automaticStorageRefresh,
+                resolveStorageUrlForTesting: resolveStorageUrlForTesting,
+                error: unavailable(context, StateError('unavailable'), null),
+                placeholder:
+                    placeholder ??
+                    Center(
+                      child: SizedBox.square(
+                        dimension: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: SocialStyle.accent(context),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
               ),
             ),
     );
-    if (useIntrinsicSize && bytes != null) {
-      return LayoutBuilder(
-        builder: (context, constraints) => ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: constraints.maxWidth / 1.8,
-            maxHeight: constraints.maxWidth / .7,
-          ),
-          child: content,
-        ),
-      );
-    }
     return AspectRatio(aspectRatio: aspectRatio, child: content);
   }
 }
@@ -140,10 +164,7 @@ class MomentPrivateNote extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Icon(
-        Icons.lock_outline_rounded,
-        size: 16,
-        color: SocialStyle.accent(context),
+      ExperienceIcon('Lock', size: 16, color: SocialStyle.accent(context),
       ),
       const SizedBox(width: 7),
       Expanded(
@@ -162,17 +183,19 @@ class MomentPrivateNote extends StatelessWidget {
   );
 }
 
-/// A small, optional goal keeps the photographs at the top of the journal.
+/// The daily action and real weekly count leave room for the photographs.
 class MomentWeekCard extends StatelessWidget {
   const MomentWeekCard({
     super.key,
     required this.photoCount,
     required this.onRecord,
     this.onRecap,
+    this.hasTodayRecord = false,
   });
   final int photoCount;
   final VoidCallback onRecord;
   final VoidCallback? onRecap;
+  final bool hasTodayRecord;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -189,7 +212,7 @@ class MomentWeekCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '오늘, 남겨둘 한 장',
+              '사진과 한 줄, 하루씩',
               style: ExperienceFormStyle.text(
                 context,
                 13,
@@ -197,36 +220,13 @@ class MomentWeekCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 5),
-            Semantics(
-              label: '이번 주 기록 사진 $photoCount장, 권장 목표 3장',
-              child: ExcludeSemantics(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '이번 주 사진 $photoCount장',
-                      style: ExperienceFormStyle.text(
-                        context,
-                        11,
-                        secondary: true,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    for (var index = 0; index < 3; index++)
-                      Container(
-                        width: 5,
-                        height: 5,
-                        margin: const EdgeInsets.only(right: 3),
-                        decoration: BoxDecoration(
-                          color: index < photoCount
-                              ? SocialStyle.accent(context)
-                              : MomentVisualStyle.line(context),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
+            Text(
+              '이번 주 사진 $photoCount장',
+              style: ExperienceFormStyle.text(
+                context,
+                11,
+                secondary: true,
+              ).copyWith(height: 1.5),
             ),
           ],
         );
@@ -239,8 +239,8 @@ class MomentWeekCard extends StatelessWidget {
               EdgeInsets.symmetric(horizontal: 12),
             ),
           ),
-          icon: const Icon(Icons.add_rounded, size: 18),
-          label: const Text('사진 남기기'),
+          icon: const ExperienceIcon('Plus', size: 18),
+          label: Text(hasTodayRecord ? '오늘 한 장 더' : '오늘 기록하기'),
         );
         if (constraints.maxWidth < 290 ||
             MediaQuery.textScalerOf(context).scale(1) > 1.5) {
@@ -261,92 +261,23 @@ class MomentWeekCard extends StatelessWidget {
   );
 }
 
-/// A book-shaped preview explains the result without showing a fake user photo.
+/// Kept as the existing entry API; the first experience is now a dated note,
+/// while the real monthly book appears only once photographs have been saved.
 class MomentEmptyBook extends StatelessWidget {
   const MomentEmptyBook({
     super.key,
     required this.month,
     required this.onRecord,
+    this.today,
   });
   final DateTime month;
+  final DateTime? today;
   final VoidCallback onRecord;
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, bounds) {
-      final wide =
-          bounds.maxWidth >= 560 &&
-          MediaQuery.textScalerOf(context).scale(1) <= 1.4;
-      final introduction = Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '오늘의 한 장이,\n내 앨범의 시작',
-            style: ExperienceFormStyle.text(
-              context,
-              26,
-              weight: FontWeight.w600,
-            ).copyWith(height: 1.4, letterSpacing: -.8),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            '사진 한 장과 짧은 이야기를 남겨보세요.\n모아둔 순간은 한 달의 앨범으로 만들 수 있어요.',
-            style: ExperienceFormStyle.text(
-              context,
-              14,
-              secondary: true,
-            ).copyWith(height: 1.8),
-          ),
-          const SizedBox(height: 22),
-          FilledButton.icon(
-            key: const ValueKey('moments-first-photo'),
-            onPressed: onRecord,
-            style: SocialStyle.primary(context),
-            icon: const Icon(Icons.add_photo_alternate_outlined, size: 20),
-            label: const Text('첫 사진 남기기'),
-          ),
-        ],
-      );
-      final book = Column(
-        children: [
-          SizedBox(
-            key: const ValueKey('moments-empty-book'),
-            width: wide ? 224 : bounds.maxWidth.clamp(0, 236).toDouble(),
-            child: MomentBookCover(month: month),
-          ),
-          const SizedBox(height: 18),
-          Text(
-            '앨범 구성 예시',
-            style: ExperienceFormStyle.text(context, 11, secondary: true),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            monthlyMomentAlbumCoverSize.displayName,
-            style: ExperienceFormStyle.text(context, 11, secondary: true),
-          ),
-        ],
-      );
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        child: wide
-            ? Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(child: introduction),
-                  const SizedBox(width: 32),
-                  book,
-                ],
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  introduction,
-                  const SizedBox(height: 36),
-                  Center(child: book),
-                ],
-              ),
-      );
-    },
+  Widget build(BuildContext context) => MomentDailyJournalIntro(
+    today: today ?? momentToday(),
+    onRecord: onRecord,
   );
 }
 
@@ -356,10 +287,16 @@ class MomentRecordCard extends StatefulWidget {
     required this.record,
     required this.onEdit,
     this.maxPhotoHeight,
+    this.onShare,
+    this.initiallyExpanded = false,
+    this.expandRequest,
   });
   final MomentRecord record;
   final VoidCallback onEdit;
   final double? maxPhotoHeight;
+  final ValueChanged<MomentPhoto>? onShare;
+  final bool initiallyExpanded;
+  final int? expandRequest;
 
   @override
   State<MomentRecordCard> createState() => _MomentRecordCardState();
@@ -368,10 +305,25 @@ class MomentRecordCard extends StatefulWidget {
 class _MomentRecordCardState extends State<MomentRecordCard> {
   final PageController _pages = PageController();
   int _index = 0;
+  late bool _expanded;
+
+  @override
+  void initState() {
+    super.initState();
+    _expanded = widget.initiallyExpanded;
+  }
 
   @override
   void didUpdateWidget(covariant MomentRecordCard oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.record.id != widget.record.id) {
+      _expanded = widget.initiallyExpanded;
+    } else if ((!oldWidget.initiallyExpanded && widget.initiallyExpanded) ||
+        (widget.expandRequest != null &&
+            oldWidget.expandRequest != widget.expandRequest)) {
+      // 날짜로 찾아온 기록만 펼치며, 일반 새로고침은 직접 닫은 상태를 보존한다.
+      _expanded = true;
+    }
     if (oldWidget.record.id != widget.record.id ||
         _index >= widget.record.photos.length) {
       _index = 0;
@@ -385,145 +337,220 @@ class _MomentRecordCardState extends State<MomentRecordCard> {
     super.dispose();
   }
 
+  void _toggle() {
+    // 다시 펼친 첫 사진과 공유 대상이 다른 인덱스를 가리키지 않게 함께 맞춘다.
+    if (_expanded && _index != 0) {
+      _index = 0;
+      if (_pages.hasClients) _pages.jumpToPage(0);
+    }
+    setState(() => _expanded = !_expanded);
+  }
+
   @override
   Widget build(BuildContext context) {
     final record = widget.record;
     if (record.photos.isEmpty) return const SizedBox.shrink();
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              Text(
-                record.recordDate.day.toString().padLeft(2, '0'),
-                style: ExperienceFormStyle.text(
-                  context,
-                  26,
-                  weight: FontWeight.w600,
-                ).copyWith(letterSpacing: -1),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          Semantics(
+            button: true,
+            expanded: _expanded,
+            label:
+                '${momentDateLabel(record.recordDate)} 기록, 사진 ${record.photos.length}장',
+            onTap: _toggle,
+            excludeSemantics: true,
+            child: InkWell(
+              key: ValueKey('moment-record-toggle-${record.id}'),
+              onTap: _toggle,
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Row(
                   children: [
                     Text(
-                      momentDateLabel(record.recordDate),
+                      record.recordDate.day.toString().padLeft(2, '0'),
                       style: ExperienceFormStyle.text(
                         context,
-                        12,
+                        26,
                         weight: FontWeight.w600,
+                      ).copyWith(letterSpacing: -1),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            momentDateLabel(record.recordDate),
+                            style: ExperienceFormStyle.text(
+                              context,
+                              12,
+                              weight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            '${const ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'][record.recordDate.weekday - 1]} · 사진 ${record.photos.length}장',
+                            style: ExperienceFormStyle.text(
+                              context,
+                              11,
+                              secondary: true,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Text(
-                      const [
-                        '월요일',
-                        '화요일',
-                        '수요일',
-                        '목요일',
-                        '금요일',
-                        '토요일',
-                        '일요일',
-                      ][record.recordDate.weekday - 1],
-                      style: ExperienceFormStyle.text(
-                        context,
-                        11,
-                        secondary: true,
-                      ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      _expanded
+                          ? Icons.expand_less_rounded
+                          : Icons.expand_more_rounded,
+                      color: ExperienceFormStyle.muted(context),
                     ),
                   ],
                 ),
               ),
-              IconButton(
-                key: ValueKey('moment-edit-${record.id}'),
-                tooltip: '${momentDateLabel(record.recordDate)} 기록 수정',
-                onPressed: widget.onEdit,
-                icon: const Icon(Icons.more_horiz_rounded),
-              ),
-            ],
+            ),
           ),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(18),
-            child: LayoutBuilder(
-              builder: (context, bounds) => AspectRatio(
-                key: ValueKey('moment-photo-frame-${record.id}'),
-                aspectRatio: widget.maxPhotoHeight == null
-                    ? momentPhotoAspect(record.photos[_index])
-                    : (bounds.maxWidth / widget.maxPhotoHeight!).clamp(
-                        momentPhotoAspect(record.photos[_index]),
-                        double.infinity,
+          AnimatedSize(
+            duration: MediaQuery.disableAnimationsOf(context)
+                ? Duration.zero
+                : const Duration(milliseconds: 180),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child: _expanded
+                ? Column(
+                    key: ValueKey('moment-record-content-${record.id}'),
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(18),
+                        child: LayoutBuilder(
+                          builder: (context, bounds) => AspectRatio(
+                            key: ValueKey('moment-photo-frame-${record.id}'),
+                            aspectRatio: widget.maxPhotoHeight == null
+                                ? momentPhotoAspect(record.photos[_index])
+                                : (bounds.maxWidth / widget.maxPhotoHeight!)
+                                      .clamp(
+                                        momentPhotoAspect(
+                                          record.photos[_index],
+                                        ),
+                                        double.infinity,
+                                      ),
+                            child: PageView.builder(
+                              key: ValueKey('moment-photos-${record.id}'),
+                              controller: _pages,
+                              itemCount: record.photos.length,
+                              onPageChanged: (index) =>
+                                  setState(() => _index = index),
+                              itemBuilder: (context, index) => MomentPhotoView(
+                                photo: record.photos[index],
+                                label:
+                                    '${momentDateLabel(record.recordDate)} 기록 사진 ${index + 1}',
+                                aspectRatio: momentPhotoAspect(
+                                  record.photos[index],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                child: PageView.builder(
-                  key: ValueKey('moment-photos-${record.id}'),
-                  controller: _pages,
-                  itemCount: record.photos.length,
-                  onPageChanged: (index) => setState(() => _index = index),
-                  itemBuilder: (context, index) => MomentPhotoView(
-                    photo: record.photos[index],
-                    label:
-                        '${momentDateLabel(record.recordDate)} 기록 사진 ${index + 1}',
-                    aspectRatio: momentPhotoAspect(record.photos[index]),
-                  ),
-                ),
-              ),
-            ),
+                      if (record.photos.length > 1)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            for (
+                              var index = 0;
+                              index < record.photos.length;
+                              index++
+                            )
+                              Container(
+                                width: index == _index ? 14 : 5,
+                                height: 5,
+                                margin: const EdgeInsets.only(right: 5),
+                                decoration: BoxDecoration(
+                                  color: index == _index
+                                      ? SocialStyle.accent(context)
+                                      : MomentVisualStyle.line(context),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            const Spacer(),
+                            Text(
+                              '${_index + 1} / ${record.photos.length}',
+                              style: ExperienceFormStyle.text(
+                                context,
+                                11,
+                                secondary: true,
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: '이전 기록 사진',
+                              onPressed: _index == 0
+                                  ? null
+                                  : () => _pages.previousPage(
+                                      duration: const Duration(
+                                        milliseconds: 200,
+                                      ),
+                                      curve: Curves.easeOut,
+                                    ),
+                              icon: const ExperienceIcon('ChevronLeft', size: 20),
+                            ),
+                            IconButton(
+                              tooltip: '다음 기록 사진',
+                              onPressed: _index == record.photos.length - 1
+                                  ? null
+                                  : () => _pages.nextPage(
+                                      duration: const Duration(
+                                        milliseconds: 200,
+                                      ),
+                                      curve: Curves.easeOut,
+                                    ),
+                              icon: const ExperienceIcon('ChevronRight', size: 20),
+                            ),
+                          ],
+                        ),
+                      if (record.caption.trim().isNotEmpty) ...[
+                        const SizedBox(height: 14),
+                        Text(
+                          record.caption,
+                          style: ExperienceFormStyle.text(
+                            context,
+                            15,
+                          ).copyWith(height: 1.7),
+                        ),
+                      ],
+
+                      const SizedBox(height: 8),
+                      Wrap(
+                        alignment: WrapAlignment.end,
+                        spacing: 8,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          if (widget.onShare != null)
+                            IconButton(
+                              key: ValueKey('moment-share-${record.id}'),
+                              tooltip: '${_index + 1}번째 사진 공유',
+                              onPressed: () =>
+                                  widget.onShare!(record.photos[_index]),
+                              icon: const ExperienceIcon('Share2'),
+                            ),
+                          TextButton.icon(
+                            key: ValueKey('moment-edit-${record.id}'),
+                            onPressed: widget.onEdit,
+                            icon: const ExperienceIcon('PenLine', size: 17),
+                            label: const Text('기록 다듬기'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  )
+                : const SizedBox.shrink(),
           ),
-          if (record.photos.length > 1)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                for (var index = 0; index < record.photos.length; index++)
-                  Container(
-                    width: index == _index ? 14 : 5,
-                    height: 5,
-                    margin: const EdgeInsets.only(right: 5),
-                    decoration: BoxDecoration(
-                      color: index == _index
-                          ? SocialStyle.accent(context)
-                          : MomentVisualStyle.line(context),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                const Spacer(),
-                Text(
-                  '${_index + 1} / ${record.photos.length}',
-                  style: ExperienceFormStyle.text(context, 11, secondary: true),
-                ),
-                IconButton(
-                  tooltip: '이전 기록 사진',
-                  onPressed: _index == 0
-                      ? null
-                      : () => _pages.previousPage(
-                          duration: const Duration(milliseconds: 200),
-                          curve: Curves.easeOut,
-                        ),
-                  icon: const Icon(Icons.chevron_left_rounded, size: 20),
-                ),
-                IconButton(
-                  tooltip: '다음 기록 사진',
-                  onPressed: _index == record.photos.length - 1
-                      ? null
-                      : () => _pages.nextPage(
-                          duration: const Duration(milliseconds: 200),
-                          curve: Curves.easeOut,
-                        ),
-                  icon: const Icon(Icons.chevron_right_rounded, size: 20),
-                ),
-              ],
-            ),
-          if (record.caption.trim().isNotEmpty) ...[
-            const SizedBox(height: 14),
-            Text(
-              record.caption,
-              style: ExperienceFormStyle.text(
-                context,
-                15,
-              ).copyWith(height: 1.7),
-            ),
-          ],
-          const SizedBox(height: 22),
+          const SizedBox(height: 8),
           Divider(height: 1, color: MomentVisualStyle.line(context)),
         ],
       ),
@@ -531,8 +558,7 @@ class _MomentRecordCardState extends State<MomentRecordCard> {
   }
 }
 
-/// Preserve landscape and portrait photographs within usable journal bounds.
-double momentPhotoAspect(MomentPhoto photo) {
-  if (photo.width <= 0 || photo.height <= 0) return 4 / 5;
-  return (photo.width / photo.height).clamp(.7, 1.8);
-}
+/// Artwork owns its aspect. Older originals use a complete, uncropped photo in
+/// the same default frame as a new album, without changing their saved data.
+double momentPhotoAspect(MomentPhoto photo) =>
+    photo.design?.aspectRatio ?? defaultCoverSize.ratio;

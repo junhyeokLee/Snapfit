@@ -1,24 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show ValueListenable, kIsWeb;
 import '../../../../shared/widgets/album_stage_style.dart';
+import '../../../../shared/widgets/experience_form_style.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dio/dio.dart';
 import 'dart:async';
 import '../../../../core/constants/cover_theme.dart';
-import '../../../../core/theme/snapfit_design_tokens.dart' show SnapFitMotion;
 import 'dart:math' as math;
 
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/constants/cover_size.dart';
 import '../../../../core/navigation/web_app_location.dart';
 import '../../../../core/utils/platform_ui.dart';
+import '../../../../core/utils/context_extensions.dart';
 import '../../../../shared/web/web_design.dart';
 import '../controllers/layer_builder.dart';
 import '../controllers/layer_interaction_manager.dart';
 import '../utils/reader_image_quality.dart';
 import '../viewmodels/album_editor_view_model.dart';
+import '../providers/album_edit_session_provider.dart';
 import '../../domain/entities/album_page.dart';
 import '../widgets/reader/album_reader_single_page_view.dart';
 import '../widgets/reader/album_reader_thumbnail_strip.dart';
@@ -37,6 +40,7 @@ import 'album_invite_screen.dart';
 import 'album_members_screen.dart';
 import '../../service/album_collaboration_session.dart';
 import 'print_order_preview_screen.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 class AlbumReaderScreen extends ConsumerStatefulWidget {
   final int initialSpreadIndex;
@@ -80,6 +84,13 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         ? 0
         : 1 + ((widget.initialSpreadIndex - 1) * 2);
     _coverKey = GlobalKey();
+    final initialCover = ref
+        .read(albumEditorViewModelProvider.notifier)
+        .selectedCover;
+    _baseCanvasSize = Size(
+      kCoverReferenceWidth,
+      kCoverReferenceWidth / initialCover.ratio,
+    );
     // 앨범 보기 화면: 레이어 인터랙션 완전 비활성화 (드래그/탭/핀치 모두 잠금)
     _interaction = LayerInteractionManager(
       ref: ref,
@@ -125,12 +136,13 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
 
         // [Fix] 앨범 비율에 맞게 내지 베이스 사이즈 동적 초기화
         final aspect = vm.selectedCover.ratio;
-        setState(() {
-          _baseCanvasSize = Size(
-            kCoverReferenceWidth,
-            kCoverReferenceWidth / aspect,
-          );
-        });
+        final baseSize = Size(
+          kCoverReferenceWidth,
+          kCoverReferenceWidth / aspect,
+        );
+        if (_baseCanvasSize != baseSize) {
+          setState(() => _baseCanvasSize = baseSize);
+        }
       }
     });
   }
@@ -155,13 +167,12 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     if (_isDeleting) return;
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     if (vm.album?.allowsEditing == false) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('보기 전용 앨범이에요. 편집은 앨범 소유자에게 요청해 주세요.')),
-      );
+      context.showSnack('보기 전용 앨범이에요. 편집은 앨범 소유자에게 요청해 주세요.');
       return;
     }
     Widget buildOptions(BuildContext ctx, {required bool compact}) {
       return AlbumReaderMoreOptionsSheet(
+        editLabel: _focusPageIndex == 0 ? '표지 편집' : '$_focusPageIndex쪽 편집',
         onPublish:
             vm.album == null || vm.album!.id <= 0 || !vm.album!.allowsManagement
             ? null
@@ -171,32 +182,9 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                   HomeAlbumActions.onPublishSelected(context, ref, vm.album!),
                 );
               },
-        onEdit: () async {
-          final albumId = vm.album?.id;
+        onEdit: () {
           Navigator.pop(ctx);
-          await _pushAdaptiveRoute<bool>(
-            MaterialPageRoute(
-              settings: albumId != null && albumId > 0
-                  ? WebAppRouteSettings(
-                      WebAppLocation(WebAppPage.editor, '$albumId'),
-                    )
-                  : null,
-              builder: (_) =>
-                  const PageEditorScreen(returnToPreviousOnSave: true),
-            ),
-          );
-          if (context.mounted) {
-            // [Fix] 에디터에서 돌아왔을 때, 캔버스 사이즈 재동기화 강제 트리거
-            // (에디터의 캔버스 실측 사이즈와 리더의 실측 사이즈가 미세하게 다를 수 있으므로 리더 기준으로 재조정)
-            final vm = ref.read(albumEditorViewModelProvider.notifier);
-            if (_coverSize != Size.zero) {
-              debugPrint(
-                '[AlbumReaderScreen] Returned from editor, re-syncing size: $_coverSize',
-              );
-              vm.setCoverCanvasSize(_coverSize);
-            }
-            setState(() {});
-          }
+          unawaited(_openAlbumEditor());
         },
         onConfirm: () {
           Navigator.pop(ctx);
@@ -214,21 +202,17 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                 Navigator.pop(ctx);
                 final album = vm.album;
                 if (album == null || album.id <= 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('앨범 정보를 찾을 수 없습니다.')),
-                  );
+                  context.showSnack('앨범 정보를 찾을 수 없습니다.');
                   return;
                 }
                 await _pushAdaptiveRoute<void>(
-                  MaterialPageRoute(
-                    builder: (_) => AlbumInviteScreen(
+                  snapFitRoute(page: AlbumInviteScreen(
                       album: album,
                       albumId: album.id,
                       albumTitle: album.title.isEmpty
                           ? 'SnapFit Album'
                           : album.title,
-                    ),
-                  ),
+                    )),
                 );
               },
         compact: compact,
@@ -304,11 +288,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         ),
         title: Row(
           children: [
-            Icon(
-              Icons.delete_outline_rounded,
-              color: Colors.redAccent,
-              size: 22,
-            ),
+            ExperienceIcon('Trash2', size: 22, color: Colors.redAccent),
             SizedBox(width: 8),
             Text(
               '앨범 삭제',
@@ -360,14 +340,11 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     final album = ref.read(albumEditorViewModelProvider.notifier).album;
     if (album == null || album.id <= 0) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('삭제할 앨범 정보를 찾을 수 없습니다.')));
+      context.showSnack('삭제할 앨범 정보를 찾을 수 없습니다.');
       return;
     }
 
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.clearSnackBars();
+    ScaffoldMessenger.of(context).clearSnackBars();
     if (!mounted) return;
     setState(() => _isDeleting = true);
 
@@ -394,66 +371,102 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         setState(() => _isDeleting = false);
       }
       if (!mounted) return;
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            status == 403
-                ? '인증이 만료되었거나 권한이 없습니다. 다시 로그인 후 시도해주세요.'
-                : '앨범 삭제에 실패했습니다: ${e.message}',
-          ),
-        ),
+      context.showErrorSnack(
+        status == 403
+            ? '인증이 만료되었거나 권한이 없습니다. 다시 로그인 후 시도해주세요.'
+            : '앨범 삭제에 실패했습니다: ${e.message}',
       );
     } catch (e) {
       if (mounted) {
         setState(() => _isDeleting = false);
       }
       if (!mounted) return;
-      messenger.showSnackBar(SnackBar(content: Text('앨범 삭제에 실패했습니다: $e')));
+      context.showErrorSnack('앨범 삭제에 실패했습니다: $e');
     }
   }
 
   Future<void> _openAlbumEditor() async {
-    if (_isDeleting) return;
+    if (_isDeleting || _sessionChanged) return;
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     if (vm.album?.allowsEditing == false) return;
+    if (vm.pages.isEmpty) return;
+    final session = vm.editSessionIdentity;
+    final album = vm.album;
+    final owner = ref.read(albumEditorOwnerReaderProvider)();
+    final actor = ref.read(albumCollaborationActorProvider);
+    final focus = _focusPageIndex.clamp(0, vm.pages.length - 1).toInt();
+    final pageId = vm.pages[focus].id;
     final albumId = vm.album?.id;
     await _pushAdaptiveRoute<bool>(
-      MaterialPageRoute(
-        settings: albumId != null && albumId > 0
-            ? WebAppRouteSettings(WebAppLocation(WebAppPage.editor, '$albumId'))
-            : null,
-        builder: (_) => PageEditorScreen(
-          initialPageIndex: _focusPageIndex,
+      snapFitRoute(page: PageEditorScreen(
+          initialPageIndex: focus,
           returnToPreviousOnSave: true,
-        ),
-      ),
+        ), settings: albumId != null && albumId > 0
+            ? WebAppRouteSettings(WebAppLocation(WebAppPage.editor, '$albumId'))
+            : null),
     );
-    if (!mounted) return;
+    if (!mounted || _sessionChanged) return;
     final current = ref.read(albumEditorViewModelProvider.notifier);
+    // 편집 중 계정이나 문서가 바뀌면 이전 화면의 위치를 적용하지 않는다.
+    if (!identical(current, vm) ||
+        !identical(current.editSessionIdentity, session) ||
+        current.album?.id != album?.id ||
+        current.album?.userId != album?.userId ||
+        ref.read(albumEditorOwnerReaderProvider)() != owner ||
+        ref.read(albumCollaborationActorProvider) != actor) {
+      return;
+    }
     if (_coverSize != Size.zero) current.setCoverCanvasSize(_coverSize);
-    setState(() {});
+    _restorePageFocus(current.pages, pageId, focus);
+  }
+
+  void _restorePageFocus(List<AlbumPage> pages, String pageId, int fallback) {
+    if (pages.isEmpty) return;
+    // 앞쪽 페이지가 삭제되거나 이동해도 같은 사진이 있는 페이지로 복귀한다.
+    final found = pages.indexWhere((page) => page.id == pageId);
+    final focus = found >= 0
+        ? found
+        : fallback.clamp(0, pages.length - 1).toInt();
+    setState(() {
+      // 같은 위치는 완료 콜백이 없으므로 다음 페이지 넘김을 잠그지 않는다.
+      _requestedSpreadFocus = focus == _focusPageIndex ? null : focus;
+      _focusPageIndex = focus;
+    });
   }
 
   Future<void> _prepareBookOrder() async {
-    if (_isDeleting) return;
+    if (_isDeleting || _sessionChanged) return;
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     if (vm.album?.allowsEditing == false) return;
+    final sourceAlbum = vm.album;
+    final session = vm.editSessionIdentity;
+    final owner = ref.read(albumEditorOwnerReaderProvider)();
+    final actor = ref.read(albumCollaborationActorProvider);
+    // 확인창이나 인쇄 검토를 기다리는 동안 바뀐 문서에는 이전 요청을 이어가지 않는다.
+    bool isCurrentDocument() {
+      final current = ref.read(albumEditorViewModelProvider.notifier);
+      return !_sessionChanged &&
+          identical(current, vm) &&
+          identical(current.editSessionIdentity, session) &&
+          current.album?.id == sourceAlbum?.id &&
+          current.album?.userId == sourceAlbum?.userId &&
+          ref.read(albumEditorOwnerReaderProvider)() == owner &&
+          ref.read(albumCollaborationActorProvider) == actor;
+    }
+
     final confirmed = await showAlbumCompletionConfirmation(context);
-    if (!mounted || !confirmed) return;
+    if (!mounted || !confirmed || !isCurrentDocument()) return;
     final album = ref.read(albumEditorViewModelProvider.notifier).album;
     if (album == null || album.id <= 0 || !album.allowsEditing) return;
     final result = await _pushAdaptiveRoute<String>(
-      MaterialPageRoute(
-        settings: WebAppRouteSettings(
-          WebAppLocation(WebAppPage.print, '${album.id}'),
-        ),
-        builder: (_) => PrintOrderPreviewScreen(
+      snapFitRoute(page: PrintOrderPreviewScreen(
           albumId: album.id,
           albumTitle: album.title.trim().isEmpty ? '스냅핏 앨범' : album.title,
-        ),
-      ),
+        ), settings: WebAppRouteSettings(
+          WebAppLocation(WebAppPage.print, '${album.id}'),
+        )),
     );
-    if (!mounted) return;
+    if (!mounted || !isCurrentDocument()) return;
     if (result == 'edit_album') {
       await _openAlbumEditor();
     } else {
@@ -466,13 +479,11 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     final album = ref.read(albumEditorViewModelProvider.notifier).album;
     if (album == null || album.id <= 0 || !album.allowsManagement) return;
     await _pushAdaptiveRoute<void>(
-      MaterialPageRoute(
-        builder: (_) => AlbumInviteScreen(
+      snapFitRoute(page: AlbumInviteScreen(
           album: album,
           albumId: album.id,
           albumTitle: album.title.trim().isEmpty ? '스냅핏 앨범' : album.title,
-        ),
-      ),
+        )),
     );
   }
 
@@ -482,7 +493,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     if (album == null || album.id <= 0) return;
     final actor = ref.read(albumCollaborationActorProvider);
     final left = await _pushAdaptiveRoute<bool>(
-      MaterialPageRoute(builder: (_) => AlbumMembersScreen(album: album)),
+      snapFitRoute(page: AlbumMembersScreen(album: album)),
     );
     if (mounted &&
         !_sessionChanged &&
@@ -493,23 +504,41 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
   }
 
   Future<void> _openWebPageDetail() async {
-    if (_isDeleting || _focusPageIndex <= 0) return;
+    if (_isDeleting || _sessionChanged || _focusPageIndex <= 0) return;
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     final pages = vm.pages.skip(1).toList();
     if (pages.isEmpty) return;
-    await _pushAdaptiveRoute<void>(
-      MaterialPageRoute(
-        builder: (_) => AlbumReaderInnerDetailScreen(
+    final session = vm.editSessionIdentity;
+    final album = vm.album;
+    final owner = ref.read(albumEditorOwnerReaderProvider)();
+    final actor = ref.read(albumCollaborationActorProvider);
+    final focus = _focusPageIndex.clamp(1, vm.pages.length - 1).toInt();
+    var pageId = vm.pages[focus].id;
+    final action = await _pushAdaptiveRoute<AlbumReaderInnerDetailAction>(
+      snapFitRoute<AlbumReaderInnerDetailAction>(page: AlbumReaderInnerDetailScreen(
           innerPages: pages,
           initialPageIndex: (_focusPageIndex - 1).clamp(0, pages.length - 1),
           singlePageW: kCoverReferenceWidth,
           singlePageH: kCoverReferenceWidth / vm.selectedCover.ratio,
           interaction: _interaction,
           layerBuilder: _layerBuilder,
-        ),
-      ),
+          onPageFocused: (id) => pageId = id,
+        )),
     );
-    if (mounted) setState(() {});
+    if (!mounted || _sessionChanged) return;
+    final current = ref.read(albumEditorViewModelProvider.notifier);
+    if (!identical(current, vm) ||
+        !identical(current.editSessionIdentity, session) ||
+        current.album?.id != album?.id ||
+        current.album?.userId != album?.userId ||
+        ref.read(albumEditorOwnerReaderProvider)() != owner ||
+        ref.read(albumCollaborationActorProvider) != actor) {
+      return;
+    }
+    _restorePageFocus(current.pages, pageId, focus);
+    if (action == AlbumReaderInnerDetailAction.prepareBook) {
+      await _prepareBookOrder();
+    }
   }
 
   Widget _buildWebReader({
@@ -624,7 +653,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                   ? null
                   : PopupMenuButton<String>(
                       tooltip: '앨범 관리',
-                      icon: const Icon(Icons.more_horiz),
+                      icon: ExperienceIcon('MoreHorizontal', size: 24),
                       onSelected: (action) {
                         if (action == 'publish' && album != null) {
                           unawaited(
@@ -649,7 +678,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                         if (album.allowsManagement)
                           const PopupMenuItem(
                             value: 'publish',
-                            child: Text('피드에 작품 공개'),
+                            child: Text('프로필에 앨범 공개'),
                           ),
                         if (album.allowsManagement)
                           const PopupMenuItem(
@@ -747,11 +776,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
               SizedBox(height: 24),
               Text(
                 '앨범을 생성하고 있습니다...',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: SnapFitColors.textPrimaryOf(context),
-                ),
+                style: ExperienceFormStyle.text(context, 16, weight: FontWeight.w700),
               ),
             ],
           ),
@@ -807,12 +832,12 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
       final left = isCover ? 0 : 1 + ((_focusPageIndex - 1) ~/ 2) * 2;
       final right = math.min(left + 1, totalInner);
       final label = isCover
-          ? '표지'
+          ? '표지 / $totalInner쪽'
           : '${left == right ? left : '$left–$right'}쪽 / $totalInner쪽';
       return Semantics(
         liveRegion: true,
         label: isCover
-            ? '표지'
+            ? '표지, 내지 전체 $totalInner쪽'
             : '내지 ${left == right ? '$left쪽' : '$left쪽부터 $right쪽'}, 전체 $totalInner쪽',
         excludeSemantics: true,
         child: DecoratedBox(
@@ -872,6 +897,8 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
             ? Alignment.topCenter
             : const Alignment(0, -0.16),
         focusMode: true,
+        // 한 페이지 초점은 세로에서만 켜고, 같은 종이 효과는 회전 후에도 유지한다.
+        singlePageFocus: true,
         focusBottomInset: isLandscape
             ? bottomSystemInset
             : 120 + bottomSystemInset,
@@ -879,7 +906,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         onCanvasSizeChanged: (size) {
           if (_coverSize == size) return;
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
+            if (!mounted || _coverSize == size) return;
             setState(() => _coverSize = size);
             vm.setCoverCanvasSize(size);
           });
@@ -907,6 +934,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         onStateChanged: () {
           if (mounted) setState(() {});
         },
+        onPrepareBookOrder: () => unawaited(_prepareBookOrder()),
       );
     }
 
@@ -956,7 +984,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                                   left: 10 + leftSystemInset,
                                   top: 10,
                                   child: _ReaderHeaderButton(
-                                    icon: platformBackIcon(),
+                                    icon: Icon(platformBackIcon(), size: 24, color: AlbumStageStyle.ink(context)),
                                     tooltip: '앨범 목록으로 돌아가기',
                                     onTap: _isDeleting
                                         ? () {}
@@ -968,7 +996,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                                     right: 68 + rightSystemInset,
                                     top: 10,
                                     child: _ReaderHeaderButton(
-                                      icon: Icons.group_outlined,
+                                      icon: ExperienceIcon('Users2', size: 24, color: AlbumStageStyle.ink(context)),
                                       tooltip: '함께하는 멤버',
                                       onTap: () => unawaited(_openMembers()),
                                     ),
@@ -977,7 +1005,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                                   right: 14 + rightSystemInset,
                                   top: 10,
                                   child: _ReaderHeaderButton(
-                                    icon: Icons.more_horiz_rounded,
+                                    icon: ExperienceIcon('MoreHorizontal', size: 24, color: AlbumStageStyle.ink(context)),
                                     tooltip: '앨범 메뉴',
                                     onTap: _showMoreOptions,
                                   ),
@@ -1001,7 +1029,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                                       children: [
                                         // 뒤로가기
                                         _ReaderHeaderButton(
-                                          icon: platformBackIcon(),
+                                          icon: Icon(platformBackIcon(), size: 24, color: AlbumStageStyle.ink(context)),
                                           tooltip: '앨범 목록으로 돌아가기',
                                           onTap: _isDeleting
                                               ? () {}
@@ -1009,19 +1037,44 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                                         ),
                                         Expanded(
                                           child: Center(
-                                            child: buildReaderPosition(),
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                  ),
+                                              child: Text(
+                                                (vm.album?.title
+                                                            .trim()
+                                                            .isNotEmpty ??
+                                                        false)
+                                                    ? vm.album!.title
+                                                    : '앨범',
+                                                key: const ValueKey(
+                                                  'reader-album-title',
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  color: AlbumStageStyle.ink(
+                                                    context,
+                                                  ),
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
                                           ),
                                         ),
                                         // ... 메뉴
                                         if ((vm.album?.id ?? 0) > 0)
                                           _ReaderHeaderButton(
-                                            icon: Icons.group_outlined,
+                                            icon: ExperienceIcon('Users2', size: 24, color: AlbumStageStyle.ink(context)),
                                             tooltip: '함께하는 멤버',
                                             onTap: () =>
                                                 unawaited(_openMembers()),
                                           ),
                                         _ReaderHeaderButton(
-                                          icon: Icons.more_horiz_rounded,
+                                          icon: ExperienceIcon('MoreHorizontal', size: 24, color: AlbumStageStyle.ink(context)),
                                           tooltip: '앨범 메뉴',
                                           onTap: _showMoreOptions,
                                         ),
@@ -1030,7 +1083,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                                   ),
                                 ),
 
-                                // ─── 5. 하단 썸네일 스트립 ───
+                                // 쪽 목록과 현재 위치는 읽는 동안 항상 확인할 수 있다.
                                 Positioned(
                                   left: 0,
                                   right: 0,
@@ -1355,7 +1408,7 @@ class _ReaderHeaderButton extends StatelessWidget {
     required this.tooltip,
   });
 
-  final IconData icon;
+  final Widget icon;
   final VoidCallback onTap;
   final String tooltip;
 
@@ -1365,7 +1418,7 @@ class _ReaderHeaderButton extends StatelessWidget {
       tooltip: tooltip,
       onPressed: onTap,
       constraints: const BoxConstraints.tightFor(width: 44, height: 44),
-      icon: Icon(icon, size: 24, color: AlbumStageStyle.ink(context)),
+      icon: icon,
     );
   }
 }

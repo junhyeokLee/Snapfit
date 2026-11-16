@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../../../shared/widgets/experience_icon.dart';
 import '../../../../../shared/widgets/experience_style.dart'
     show ExperienceNavigationScope;
+import '../../../../notification/presentation/providers/notification_provider.dart';
 import '../../../../notification/presentation/views/notification_screen.dart';
-import '../../../../moments/presentation/moments_navigation.dart';
+import '../../../../../shared/widgets/snapfit_motion.dart';
 
 /// Shared chrome stays mounted while the cover and collection trade places.
-class HomeAlbumHeader extends StatelessWidget {
+class HomeAlbumHeader extends ConsumerWidget {
   const HomeAlbumHeader({
     super.key,
     required this.collection,
@@ -76,17 +78,19 @@ class HomeAlbumHeader extends StatelessWidget {
     } else {
       Navigator.push<void>(
         context,
-        MaterialPageRoute(builder: (_) => const NotificationScreen()),
+        snapFitRoute(page: const NotificationScreen()),
       );
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hasUnread =
+        (ref.watch(notificationUnreadCountProvider).asData?.value ?? 0) > 0;
     final titleStyle = ExperienceFormStyle.text(
       context,
       27,
-      weight: FontWeight.w600,
+      weight: FontWeight.w700,
     ).copyWith(height: 1.25, letterSpacing: -.8);
     final wordmarkStyle = TextStyle(
       fontFamily: 'Poppins',
@@ -96,7 +100,7 @@ class HomeAlbumHeader extends StatelessWidget {
       color: ExperienceFormStyle.selectionInk(context),
     );
     final title = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
@@ -112,8 +116,9 @@ class HomeAlbumHeader extends StatelessWidget {
           header: true,
           child: Text(
             '내 앨범',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+            key: const ValueKey('home-album-title'),
+            softWrap: true,
+            overflow: TextOverflow.visible,
             style: titleStyle,
           ),
         ),
@@ -122,13 +127,6 @@ class HomeAlbumHeader extends StatelessWidget {
     final actions = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (showMomentsEntry)
-          _action(
-            key: const ValueKey('home-moments-entry'),
-            tooltip: '나의 기록',
-            onPressed: () => openMoments(context),
-            icon: const Icon(Icons.add_photo_alternate_outlined, size: 21),
-          ),
         _action(
           key: const ValueKey('home-album-view-toggle'),
           tooltip: collection ? '표지로 보기' : '앨범 목록',
@@ -143,7 +141,10 @@ class HomeAlbumHeader extends StatelessWidget {
           key: const ValueKey('home-album-notifications'),
           tooltip: '알림',
           onPressed: () => _openNotifications(context),
-          icon: const ExperienceIcon('Bell', size: 21),
+          icon: Badge(
+            isLabelVisible: hasUnread,
+            child: const ExperienceIcon('Bell', size: 21),
+          ),
         ),
       ],
     );
@@ -161,12 +162,13 @@ class HomeAlbumHeader extends StatelessWidget {
                 'snapfit',
                 wordmarkStyle,
               );
-              final labelWidth = titleWidth > wordmarkWidth
-                  ? titleWidth
-                  : wordmarkWidth;
-              final actionsWidth = showMomentsEntry ? 176.0 : 132.0;
+              // A small rounding allowance keeps the final glyph from being
+              // clipped by fractional text metrics after the real font loads.
+              final labelWidth =
+                  (titleWidth > wordmarkWidth ? titleWidth : wordmarkWidth) + 2;
+              const actionsWidth = 132.0;
               // Large text gets its own readable line instead of shrinking the
-              // title or bringing back a separate full-width journal banner.
+              // title. The daily journal now has its own labelled home entry.
               final stacked = labelWidth + actionsWidth + 8 > bounds.maxWidth;
               // Keep the action subtree mounted across rotation, including
               // the first-visit guide attached to the creation button.
@@ -178,7 +180,12 @@ class HomeAlbumHeader extends StatelessWidget {
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     SizedBox(
-                      width: stacked ? bounds.maxWidth : labelWidth,
+                      width: stacked
+                          ? bounds.maxWidth
+                          : (bounds.maxWidth - actionsWidth - 8).clamp(
+                              0.0,
+                              bounds.maxWidth,
+                            ),
                       child: title,
                     ),
                     SizedBox(

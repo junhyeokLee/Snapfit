@@ -51,27 +51,41 @@ class MaterialPreviewComposition {
         .where((a) => a.productKey == productKey)
         .firstOrNull;
     final phrase = studioPhrases.where((p) => p.id == id).firstOrNull;
-    final story = storyMaterialsById[id] ?? storyEditionsById[art?.id];
+    final story =
+        storyEditionForMaterial(id) ??
+        (art == null ? null : storyEditionForMaterial(art.id));
     if (story != null) {
-      final paper = id == story.paperId;
+      final paper = id == story.paperId || id == '${story.id}-vellum';
       final lettering = art != null;
+      final materialBounds = lettering
+          ? const Rect.fromLTWH(48, 408, 504, 248)
+          : paper
+          ? const Rect.fromLTWH(30, 62, 540, 442)
+          : const Rect.fromLTWH(344, 414, 208, 208);
+      final materialRatio =
+          art?.sourceSize.aspectRatio ?? spec?.aspectRatio ?? 1.0;
       return MaterialPreviewComposition(
         placement: paper
             ? MaterialPreviewPlacement.backing
             : lettering
             ? MaterialPreviewPlacement.lettering
             : MaterialPreviewPlacement.accent,
-        materialRect: lettering
-            ? const Rect.fromLTWH(62, 421, 476, 228)
-            : paper
-            ? const Rect.fromLTWH(30, 62, 540, 442)
-            : const Rect.fromLTWH(427, 403, 103, 103),
+        // Keep the original artwork ratio instead of putting every subject in
+        // the same short rectangle. The motif is a readable part of the page,
+        // with a separate caption column and no photograph overlap.
+        materialRect: _fit(materialRatio, materialBounds),
         photoAsset: story.photoAssets[photoIndex % story.photoAssets.length],
         photoRect: paper
-            ? const Rect.fromLTWH(73, 120, 394, 264)
+            ? const Rect.fromLTWH(73, 120, 348, 232)
+            : premiumQuartetSpecsById.containsKey(story.id)
+            ? const Rect.fromLTWH(48, 36, 504, 336)
             : const Rect.fromLTWH(48, 36, 504, 354),
         caption: story.title,
-        captionRect: lettering ? null : const Rect.fromLTWH(48, 556, 504, 76),
+        captionRect: lettering
+            ? null
+            : paper
+            ? const Rect.fromLTWH(48, 556, 504, 76)
+            : const Rect.fromLTWH(48, 462, 272, 128),
         letteringSourceSize: art?.sourceSize,
         paperColor: const Color(0xFFF7F5F2),
       );
@@ -148,6 +162,7 @@ class MaterialPreviewComposition {
         const Rect.fromLTWH(36, 28, 528, 532),
         null,
         const Rect.fromLTWH(48, 584, 504, 64),
+        aspect: 1,
       );
     }
     if (atelierLayeredDecorations.any((s) => s.id == id)) {

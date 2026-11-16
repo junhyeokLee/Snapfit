@@ -167,6 +167,104 @@ Future<void> _enter(WidgetTester tester, [String code = _friendCode]) async {
 }
 
 void main() {
+  for (final restored in [false, true]) {
+    testWidgets(
+      'received invite registration is visible before sharing restored=$restored',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(390, 844));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        final repository = _Repository();
+        final container = await _mount(
+          tester,
+          repository,
+          initialCode: restored ? null : _friendCode.toLowerCase(),
+          pendingCode: restored ? _friendCode : null,
+        );
+        try {
+          expect(
+            tester.widget<TextField>(_input).controller!.text,
+            _friendCode,
+          );
+          expect(_redeem.hitTestable(), findsOneWidget);
+          expect(
+            tester.getTopLeft(find.byType(ReferralRedeemCard)).dy,
+            lessThan(tester.getTopLeft(find.byType(ReferralRewardCard)).dy),
+          );
+          expect(
+            tester.getBottomLeft(find.textContaining('까지 등록할 수 있어요.')).dy,
+            lessThanOrEqualTo(844),
+          );
+          expect(repository.submitted, isEmpty);
+          expect(tester.takeException(), isNull);
+        } finally {
+          await _unmount(tester, container, repository);
+        }
+      },
+    );
+  }
+
+  for (final initialCode in [null, _ownCode, 'INVALID']) {
+    testWidgets('ordinary invite keeps sharing first for code $initialCode', (
+      tester,
+    ) async {
+      final repository = _Repository();
+      final container = await _mount(
+        tester,
+        repository,
+        initialCode: initialCode,
+      );
+      try {
+        expect(
+          tester.getTopLeft(find.byType(ReferralRewardCard)).dy,
+          lessThan(tester.getTopLeft(find.byType(ReferralRedeemCard)).dy),
+        );
+        expect(repository.submitted, isEmpty);
+        expect(tester.takeException(), isNull);
+      } finally {
+        await _unmount(tester, container, repository);
+      }
+    });
+  }
+
+  testWidgets('expired incoming invite does not show a registration form', (
+    tester,
+  ) async {
+    final repository = _Repository()
+      ..status = _status(eligible: false, reason: 'expired');
+    final container = await _mount(
+      tester,
+      repository,
+      initialCode: _friendCode,
+    );
+    try {
+      expect(find.byType(ReferralRedeemCard), findsNothing);
+      expect(find.byType(ReferralShareCard), findsOneWidget);
+      expect(find.text('이제 친구를 초대해 보세요'), findsOneWidget);
+      expect(repository.submitted, isEmpty);
+    } finally {
+      await _unmount(tester, container, repository);
+    }
+  });
+
+  testWidgets('typing a code does not move the focused registration form', (
+    tester,
+  ) async {
+    final repository = _Repository();
+    final container = await _mount(tester, repository);
+    try {
+      await _enter(tester);
+      expect(
+        tester.getTopLeft(find.byType(ReferralRewardCard)).dy,
+        lessThan(tester.getTopLeft(find.byType(ReferralRedeemCard)).dy),
+      );
+      expect(tester.testTextInput.isVisible, isTrue);
+      expect(repository.submitted, isEmpty);
+      expect(tester.takeException(), isNull);
+    } finally {
+      await _unmount(tester, container, repository);
+    }
+  });
+
   testWidgets(
     'guest invite explains both rewards without a private lookup or award',
     (tester) async {

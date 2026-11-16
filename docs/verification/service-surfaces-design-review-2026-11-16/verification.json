@@ -1,0 +1,68 @@
+{
+  "date": "2026-11-16",
+  "mode": "read-only native design audit",
+  "surfaces": [
+    "customer support/inquiry",
+    "customer order history/detail",
+    "album members/invite"
+  ],
+  "suites": {
+    "cap_support": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_orders": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_members": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "passed_total": 8,
+  "screen_count": 24,
+  "screens": [
+    "invite-editor-390.png",
+    "invite-viewer-320-large-dark-bottom.png",
+    "invite-viewer-320-large-dark.png",
+    "members-owner-390.png",
+    "members-owner-role-menu-390.png",
+    "members-viewer-320-large-dark-bottom.png",
+    "members-viewer-320-large-dark.png",
+    "members-viewer-390.png",
+    "orders-01-mixed-list-390.png",
+    "orders-02-shipping-detail-top-390.png",
+    "orders-03-shipping-detail-status-390.png",
+    "orders-04-shipping-detail-actions-390.png",
+    "orders-05-production-detail-status-390.png",
+    "orders-06-mixed-list-320-large-dark.png",
+    "orders-07-shipping-detail-top-320-large-dark.png",
+    "orders-08-shipping-detail-status-320-large-dark.png",
+    "support-01-history-390.png",
+    "support-02-history-expanded-390.png",
+    "support-03-compose-390.png",
+    "support-04-category-390.png",
+    "support-05-compose-filled-390.png",
+    "support-06-expanded-320-large-dark.png",
+    "support-07-compose-320-large-dark.png",
+    "support-08-compose-action-320-large-dark.png"
+  ],
+  "source_files_checked": 821,
+  "source_changes": [],
+  "recommendations": [
+    "Order detail status and shipping actions first.",
+    "Invite permission control visible before sharing.",
+    "Responsive order list title and metadata.",
+    "Reduce inquiry introduction and repeated subject."
+  ],
+  "limitations": [
+    "Local fake data and actual Flutter widgets; no production accounts or services.",
+    "No real inquiry submission, invitation sharing, member mutation, order cancellation, purchase or shipment lookup.",
+    "No device keyboard, screen reader, browser E2E, full build or deployment."
+  ],
+  "fixture_note": "An offscreen lazy member row was reached with scrollUntilVisible instead of ensureVisible; final capture passed."
+}

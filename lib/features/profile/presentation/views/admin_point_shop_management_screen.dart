@@ -10,6 +10,7 @@ import '../../../point_shop/domain/point_shop_product.dart';
 import '../../../point_shop/domain/premium_volume_registration.dart';
 import '../../../point_shop/domain/point_shop_launch_pricing.dart';
 import '../../../../core/utils/context_extensions.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 /// UI visibility follows the same app-metadata claim as public.is_admin().
 /// Product writes still require the server's RLS permission on every request.
@@ -85,7 +86,7 @@ class _AdminPointShopManagementScreenState
             IconButton(
               tooltip: '가격 새로고침',
               onPressed: () => ref.invalidate(pointShopCatalogProvider),
-              icon: const Icon(Icons.refresh),
+              icon: const ExperienceIcon('RefreshCw'),
             ),
         ],
       ),
@@ -140,7 +141,7 @@ class _AdminPointShopManagementScreenState
               TextField(
                 decoration: const InputDecoration(
                   labelText: '상품 찾기',
-                  prefixIcon: Icon(Icons.search),
+                  prefixIcon: ExperienceIcon('Search'),
                   border: OutlineInputBorder(),
                 ),
                 onChanged: (value) =>
@@ -202,7 +203,7 @@ class _AdminPointShopManagementScreenState
                         '${launch == null ? '' : '\n출시 책정가 ${launch.points}P · 현재 판매가와 별도'}'
                         '${contents == null ? '' : '\n$contents'}',
                       ),
-                      trailing: const Icon(Icons.edit_outlined),
+                      trailing: const ExperienceIcon('PenLine'),
                       onTap: () => _edit(item, configured: saved),
                     );
                   },

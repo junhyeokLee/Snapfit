@@ -1,0 +1,87 @@
+[
+  {
+    "suite": "summary",
+    "exit": 0,
+    "result": "RESULT passed=20 failed=0 skipped=0"
+  },
+  {
+    "suite": "monthly",
+    "exit": 0,
+    "result": "RESULT passed=7 failed=0 skipped=0"
+  },
+  {
+    "suite": "albumEntry",
+    "exit": 0,
+    "result": "RESULT passed=1 failed=0 skipped=0"
+  },
+  {
+    "suite": "choices",
+    "exit": 0,
+    "result": "RESULT passed=8 failed=0 skipped=0"
+  },
+  {
+    "suite": "draft",
+    "exit": 0,
+    "result": "RESULT passed=12 failed=0 skipped=0"
+  },
+  {
+    "suite": "records",
+    "exit": 1,
+    "result": "RESULT passed=47 failed=2 skipped=0"
+  },
+  {
+    "suite": "retention",
+    "exit": 0,
+    "result": "RESULT passed=13 failed=0 skipped=0"
+  },
+  {
+    "suite": "reward",
+    "exit": 0,
+    "result": "RESULT passed=30 failed=0 skipped=0"
+  },
+  {
+    "suite": "format",
+    "exit": 1,
+    "result": "RESULT passed=7 failed=1 skipped=0"
+  },
+  {
+    "suite": "creationRoutes",
+    "exit": 1,
+    "result": "RESULT passed=9 failed=2 skipped=0"
+  },
+  {
+    "suite": "creationEntry",
+    "exit": 0,
+    "result": "RESULT passed=35 failed=0 skipped=0"
+  },
+  {
+    "suite": "creationJourney",
+    "exit": 0,
+    "result": "RESULT passed=6 failed=0 skipped=0"
+  },
+  {
+    "suite": "home",
+    "exit": 1,
+    "result": "RESULT passed=7 failed=10 skipped=0"
+  },
+  {
+    "suite": "chrome",
+    "exit": 0,
+    "result": "RESULT passed=20 failed=0 skipped=0"
+  },
+  {
+    "suite": "depth",
+    "exit": 0,
+    "result": "RESULT passed=76 failed=0 skipped=0"
+  },
+  {
+    "suite": "guide",
+    "exit": 0,
+    "result": "RESULT passed=11 failed=0 skipped=0"
+  },
+  {
+    "suite": "firstflow",
+    "exit": 0,
+    "result": "RESULT passed=6 failed=0 skipped=0"
+  }
+]

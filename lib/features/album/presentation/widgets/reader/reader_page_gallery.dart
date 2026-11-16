@@ -106,7 +106,7 @@ class _ReaderPageGalleryState extends State<ReaderPageGallery> {
               final more = IconButton(
                 tooltip: '페이지 메뉴',
                 onPressed: widget.onMore,
-                icon: const Icon(Icons.more_horiz_rounded, size: 24),
+                icon: const ExperienceIcon('MoreHorizontal', size: 24),
               );
               final zoom = IconButton(
                 key: const ValueKey('reader-focus-zoom'),

@@ -6,6 +6,7 @@ import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../domain/entities/layer.dart';
 import 'creation_document_preview.dart';
 import '../../../../../shared/widgets/catalog_favorite_widgets.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 class CreationTemplatePreview extends StatelessWidget {
   const CreationTemplatePreview({
@@ -147,7 +148,7 @@ class CreationTemplatePreview extends StatelessWidget {
                           const SizedBox(height: 12),
                           TextButton.icon(
                             onPressed: onRetry,
-                            icon: const Icon(Icons.refresh),
+                            icon: const ExperienceIcon('RefreshCw'),
                             label: const Text('다시 불러오기'),
                           ),
                         ],

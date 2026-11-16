@@ -7,11 +7,12 @@ import 'package:uuid/uuid.dart';
 import '../../album/data/browser_draft_database.dart';
 import '../domain/moment_draft.dart';
 import 'moment_draft_store_base.dart';
+import 'moment_draft_index.dart';
 
 MomentDraftStore createPlatformMomentDraftStore() => BrowserMomentDraftStore();
 
-/// The account index contains metadata only. Each original-photo payload lives
-/// in a separate record, and both are committed in the same IDB transaction.
+/// The account index contains recovery summaries only. Full editable artwork
+/// and original-photo payloads live in separate records, committed atomically.
 /// Recovery cards can therefore list work without copying any photo originals.
 class BrowserMomentDraftStore extends MomentDraftStore {
   BrowserMomentDraftStore({String databaseName = 'snapfit_moment_drafts'})
@@ -82,7 +83,9 @@ class BrowserMomentDraftStore extends MomentDraftStore {
           return action(
             metadata,
             () {
-              final json = jsonEncode(metadata);
+              final json = jsonEncode(
+                metadata.map(momentDraftIndexMetadata).toList(),
+              );
               if (utf8.encode(json).length > _maximumMetadataBytes)
                 throw const MomentDraftException('임시 저장할 기록 정보가 너무 커요.');
               put(_StoredMomentIndex(owner: owner.toJS, metadata: json.toJS));
@@ -201,9 +204,9 @@ class BrowserMomentDraftStore extends MomentDraftStore {
         );
         final saved = draft.copyWith(version: const Uuid().v4());
         if (index < 0) {
-          metadata.add(saved.toMetadata());
+          metadata.add(momentDraftIndexMetadata(saved.toMetadata()));
         } else {
-          metadata[index] = saved.toMetadata();
+          metadata[index] = momentDraftIndexMetadata(saved.toMetadata());
         }
         relatedPuts[_recordKey(owner, draft.recordId)] = _encode(saved);
         put();

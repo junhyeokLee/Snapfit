@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../../core/utils/context_extensions.dart';
 
 import '../../../../core/navigation/web_app_location.dart';
 import '../../../../shared/web/web_design.dart';
@@ -15,6 +16,7 @@ import '../providers/social_providers.dart';
 import '../widgets/social_profile_widgets.dart';
 import '../widgets/social_web_frame.dart';
 import '../widgets/social_widgets.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 class SocialProfileEditScreen extends ConsumerStatefulWidget {
   const SocialProfileEditScreen({super.key, this.imagePicker});
@@ -32,6 +34,8 @@ class _SocialProfileEditScreenState
   final _name = TextEditingController();
   final _handle = TextEditingController();
   final _bio = TextEditingController();
+  late final _edits = Listenable.merge([_name, _handle, _bio]);
+  (String, String, String)? _savedText;
   String? _initializedFor;
   bool _saving = false;
   bool _photoBusy = false;
@@ -41,6 +45,98 @@ class _SocialProfileEditScreenState
   int _revision = 0;
   int _photoRevision = 0;
   DialogRoute<bool>? _photoDialog;
+  DialogRoute<bool>? _exitDialog;
+
+  // 서버에 저장하는 값과 같은 기준으로 비교해 원상복구한 입력은 막지 않는다.
+  (String, String, String) get _currentText =>
+      (_name.text.trim(), _handle.text.trim().toLowerCase(), _bio.text.trim());
+
+  bool get _hasUnsavedText =>
+      _savedText != null &&
+      _initializedFor == ref.read(socialCurrentUserIdProvider) &&
+      _currentText != _savedText;
+
+  Future<void> _requestExit() async {
+    if (!mounted ||
+        _saving ||
+        _photoBusy ||
+        _exitDialog != null ||
+        ModalRoute.of(context)?.isCurrent == false)
+      return;
+    final actor = ref.read(socialCurrentUserIdProvider);
+    final revision = _revision;
+    if (_hasUnsavedText) {
+      FocusManager.instance.primaryFocus?.unfocus();
+      var decisionMade = false;
+      late final DialogRoute<bool> route;
+      void resolve(BuildContext dialogContext, bool discard) {
+        // 계정이 바뀌거나 이미 닫힌 확인창의 콜백은 새 화면에 영향을 주지 않는다.
+        if (!mounted ||
+            decisionMade ||
+            _exitDialog != route ||
+            revision != _revision ||
+            ref.read(socialCurrentUserIdProvider) != actor ||
+            !dialogContext.mounted ||
+            !route.isCurrent)
+          return;
+        decisionMade = true;
+        Navigator.pop(dialogContext, discard);
+      }
+
+      route = DialogRoute<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          scrollable: true,
+          title: const Text('수정을 그만둘까요?'),
+          content: const Text('나가면 수정한 내용이 사라져요.'),
+          actions: [
+            TextButton(
+              autofocus: true,
+              onPressed: () => resolve(dialogContext, false),
+              child: const Text('계속 수정'),
+            ),
+            TextButton(
+              onPressed: () => resolve(dialogContext, true),
+              child: const Text('나가기'),
+            ),
+          ],
+        ),
+      );
+      _exitDialog = route;
+      bool? discard;
+      try {
+        discard = await Navigator.of(
+          context,
+          rootNavigator: true,
+        ).push<bool>(route);
+      } finally {
+        if (_exitDialog == route) _exitDialog = null;
+      }
+      if (discard != true ||
+          !mounted ||
+          _saving ||
+          _photoBusy ||
+          revision != _revision ||
+          ref.read(socialCurrentUserIdProvider) != actor ||
+          ModalRoute.of(context)?.isCurrent == false)
+        return;
+    }
+    // 확인된 이탈만 직접 닫아 PopScope의 재확인을 방지한다.
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    } else {
+      ExperienceNavigationScope.maybeOf(context)?.onBack();
+    }
+  }
+
+  void _dismissExitDialog() {
+    final route = _exitDialog;
+    _exitDialog = null;
+    if (route == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (route.isActive) route.navigator?.removeRoute(route);
+    });
+  }
 
   void _login() {
     final navigate = WebNavigationScope.maybeOf(context)?.onPublicNavigate;
@@ -63,6 +159,7 @@ class _SocialProfileEditScreenState
     _revision++;
     _photoRevision++;
     _dismissPhotoDialog();
+    _dismissExitDialog();
     _name.dispose();
     _handle.dispose();
     _bio.dispose();
@@ -75,6 +172,7 @@ class _SocialProfileEditScreenState
     _name.text = profile?.displayName ?? '';
     _handle.text = profile?.handle ?? '';
     _bio.text = profile?.bio ?? '';
+    _savedText = _currentText;
   }
 
   void _invalidateProfile(String actor) {
@@ -208,9 +306,7 @@ class _SocialProfileEditScreenState
       if (!_photoIsCurrent(actor, revision)) return;
       if (profile.userId == actor) _lastProfile = profile;
       _invalidateProfile(actor);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('공개 프로필 사진을 변경했어요.')));
+      context.showSnack('공개 프로필 사진을 변경했어요.');
     } catch (_) {
       if (!_photoIsCurrent(actor, revision)) return;
       _invalidateProfile(actor);
@@ -255,9 +351,7 @@ class _SocialProfileEditScreenState
       if (!_photoIsCurrent(actor, revision)) return;
       if (profile.userId == actor) _lastProfile = profile;
       _invalidateProfile(actor);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('공개 프로필 사진을 삭제했어요.')));
+      context.showSnack('공개 프로필 사진을 삭제했어요.');
     } catch (_) {
       if (!_photoIsCurrent(actor, revision)) return;
       _invalidateProfile(actor);
@@ -273,6 +367,7 @@ class _SocialProfileEditScreenState
       return;
     if (_formKey.currentState?.validate() != true) return;
     final revision = ++_revision;
+    final submitted = _currentText;
     setState(() {
       _saving = true;
       _error = null;
@@ -281,19 +376,18 @@ class _SocialProfileEditScreenState
       await ref
           .read(socialRepositoryProvider)
           .upsertOwnProfile(
-            displayName: _name.text.trim(),
-            handle: _handle.text.trim().toLowerCase(),
-            bio: _bio.text.trim(),
+            displayName: submitted.$1,
+            handle: submitted.$2,
+            bio: submitted.$3,
           );
       if (!mounted ||
           revision != _revision ||
           ref.read(socialCurrentUserIdProvider) != actor)
         return;
+      _savedText = submitted;
       _invalidateProfile(actor);
       setState(() => _saving = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('공개 프로필을 저장했어요.')));
+      context.showSnack('공개 프로필을 저장했어요.');
       if (Navigator.canPop(context)) Navigator.pop(context, true);
     } catch (_) {
       if (!mounted ||
@@ -315,7 +409,9 @@ class _SocialProfileEditScreenState
       _revision++;
       _photoRevision++;
       _dismissPhotoDialog();
+      _dismissExitDialog();
       _initializedFor = null;
+      _savedText = null;
       _lastProfile = null;
       _saving = false;
       _photoBusy = false;
@@ -328,12 +424,20 @@ class _SocialProfileEditScreenState
     final profile = actor == null ? null : ref.watch(ownSocialProfileProvider);
     return SocialWebFrame(
       section: WebSection.myProfile,
-      child: PopScope(
-        canPop: !_saving && !_photoBusy,
+      child: ListenableBuilder(
+        listenable: _edits,
+        builder: (context, child) => PopScope(
+          canPop: !_saving && !_photoBusy && !_hasUnsavedText,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) _requestExit();
+          },
+          child: child!,
+        ),
         child: Scaffold(
-          appBar: const ExperienceHeader(
+          appBar: ExperienceHeader(
             title: '프로필 수정',
             showNotifications: false,
+            onBack: _requestExit,
           ),
           body: SafeArea(
             top: false,
@@ -436,7 +540,7 @@ class _SocialProfileEditScreenState
             onPressed: _photoBusy
                 ? null
                 : () => ref.invalidate(ownSocialProfileProvider),
-            icon: const Icon(Icons.refresh, size: 16),
+            icon: const ExperienceIcon('RefreshCw', size: 16),
             label: const Text('프로필 다시 확인'),
           ),
         const SizedBox(height: 26),
@@ -500,7 +604,7 @@ class _SocialProfileEditScreenState
         ),
         const SizedBox(height: 20),
         Text(
-          '프로필과 팔로우 관계는 공개돼요. 원본 앨범, 저장한 작품과 포인트는 공개 프로필에 표시되지 않아요.',
+          '프로필과 팔로우 관계는 공개돼요. 원본 앨범, 저장한 기록·앨범과 포인트는 공개 프로필에 표시되지 않아요.',
           style: ExperienceFormStyle.text(context, 12, secondary: true),
         ),
         if (_error != null) ...[

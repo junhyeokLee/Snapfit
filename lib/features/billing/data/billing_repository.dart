@@ -18,6 +18,31 @@ typedef PointLedgerQuery =
       required String userId,
       required int limit,
     });
+typedef PointLedgerPageQuery =
+    Future<List<Map<String, dynamic>>> Function({
+      required String userId,
+      required PointLedgerFilter filter,
+      required int limit,
+      required PointLedgerCursor? before,
+    });
+
+enum PointLedgerFilter { all, received, spent }
+
+class PointLedgerCursor {
+  const PointLedgerCursor({required this.createdAtUtc, required this.id});
+
+  final DateTime createdAtUtc;
+  final int id;
+}
+
+class PointLedgerPage {
+  const PointLedgerPage({required this.entries, this.nextCursor});
+
+  final List<PointLedgerEntry> entries;
+  final PointLedgerCursor? nextCursor;
+
+  bool get hasMore => nextCursor != null;
+}
 
 enum AiAlbumDraftPointUsageFailure { insufficientPoints, unavailable }
 
@@ -103,9 +128,13 @@ class PointLedgerEntry {
     required this.reason,
     this.relatedEntityType,
     this.relatedEntityId,
+    this.contextTitle,
   });
 
   factory PointLedgerEntry.fromJson(Map<String, dynamic> json) {
+    final metadata = json['metadata'];
+    final storedTitle = metadata is Map ? metadata['title'] : null;
+    final contextTitle = storedTitle is String ? storedTitle.trim() : '';
     return PointLedgerEntry(
       id:
           (json['id'] as num?)?.toInt() ??
@@ -116,6 +145,7 @@ class PointLedgerEntry {
       reason: json['reason']?.toString() ?? '',
       relatedEntityType: json['related_entity_type']?.toString(),
       relatedEntityId: json['related_entity_id']?.toString(),
+      contextTitle: contextTitle.isEmpty ? null : contextTitle,
     );
   }
 
@@ -125,6 +155,17 @@ class PointLedgerEntry {
   final String reason;
   final String? relatedEntityType;
   final String? relatedEntityId;
+  final String? contextTitle;
+
+  // 거래 당시 저장한 이름만 사용해 상품 수정·생성 결과 만료 후에도 내역을 식별한다.
+  bool get hasContextTitle =>
+      contextTitle != null &&
+      contextTitle!.trim().isNotEmpty &&
+      const {
+        'DIGITAL_ITEM_PURCHASE',
+        'AI_ALBUM_DRAFT_CHARGE',
+        'AI_ALBUM_DRAFT_FREE',
+      }.contains(reason);
 
   String get amountLabel =>
       amountDelta > 0 ? '+${amountDelta}P' : '${amountDelta}P';
@@ -134,6 +175,7 @@ class PointLedgerEntry {
       'POINT_PURCHASE' => '포인트 충전',
       'POINT_PURCHASE_REFUND' => '포인트 구매 환불',
       'DAILY_ATTENDANCE' => '출석체크 적립',
+      'MONTHLY_MOMENT_COMPLETION' => '월간 기록 완주 적립',
       'REFERRAL_INVITER' => '친구 초대 적립',
       'REFERRAL_INVITEE' => '초대 코드 등록 적립',
       'SIGNUP_BONUS' => '가입 축하 포인트',
@@ -146,11 +188,13 @@ class PointLedgerEntry {
   }
 
   String get subtitle {
+    if (hasContextTitle) return contextTitle!.trim();
     return switch (reason) {
       'POINT_PURCHASE' =>
         relatedEntityType == 'web_point_topup' ? '웹 결제 확인 완료' : '스토어 결제 확인 완료',
       'POINT_PURCHASE_REFUND' => '환불된 구매의 지급 포인트 회수',
       'DAILY_ATTENDANCE' => '오늘의 출석으로 받은 무료 포인트',
+      'MONTHLY_MOMENT_COMPLETION' => '달력의 모든 날을 사진으로 채워 받은 포인트',
       'REFERRAL_INVITER' => '초대한 친구가 코드를 등록해 받은 포인트',
       'REFERRAL_INVITEE' => '친구의 초대 코드를 등록해 받은 포인트',
       'SIGNUP_BONUS' => '회원가입으로 받은 무료 포인트',
@@ -170,6 +214,7 @@ class BillingRepository {
     this.recordAiAlbumDraftSuccessRpc,
     this.pointBalanceQuery,
     this.pointLedgerQuery,
+    this.pointLedgerPageQuery,
   });
 
   final TokenStorage tokenStorage;
@@ -177,6 +222,7 @@ class BillingRepository {
   final RecordAiAlbumDraftSuccessRpc? recordAiAlbumDraftSuccessRpc;
   final PointBalanceQuery? pointBalanceQuery;
   final PointLedgerQuery? pointLedgerQuery;
+  final PointLedgerPageQuery? pointLedgerPageQuery;
 
   Future<String> _requireUserId() async {
     final userId = supabase == null
@@ -395,7 +441,7 @@ class BillingRepository {
         ? await supabase!
               .from('point_ledger')
               .select(
-                'id,created_at,amount_delta,reason,related_entity_type,related_entity_id',
+                'id,created_at,amount_delta,reason,related_entity_type,related_entity_id,metadata',
               )
               .eq('user_id', userId)
               .order('created_at', ascending: false)
@@ -404,6 +450,77 @@ class BillingRepository {
     return rows
         .map((row) => PointLedgerEntry.fromJson(Map<String, dynamic>.from(row)))
         .toList(growable: false);
+  }
+
+  Future<PointLedgerPage> getMyPointLedgerPage({
+    PointLedgerFilter filter = PointLedgerFilter.all,
+    int limit = 20,
+    PointLedgerCursor? before,
+  }) async {
+    if (before != null && before.id <= 0) {
+      throw ArgumentError.value(before.id, 'before.id', '유효한 내역 ID가 필요합니다.');
+    }
+    final userId = await _requireUserId();
+    final safeLimit = limit.clamp(1, 50);
+    final injectedQuery = pointLedgerPageQuery;
+    final client = supabase;
+    final List<Map<String, dynamic>> rows;
+    if (injectedQuery != null) {
+      rows = await injectedQuery(
+        userId: userId,
+        filter: filter,
+        limit: safeLimit + 1,
+        before: before,
+      );
+    } else if (client != null) {
+      var query = client
+          .from('point_ledger')
+          .select(
+            'id,created_at,amount_delta,reason,related_entity_type,related_entity_id,metadata',
+          )
+          .eq('user_id', userId);
+      query = switch (filter) {
+        PointLedgerFilter.all => query,
+        PointLedgerFilter.received => query.gt('amount_delta', 0),
+        PointLedgerFilter.spent => query.lt('amount_delta', 0),
+      };
+      if (before != null) {
+        final timestamp = before.createdAtUtc.toUtc().toIso8601String();
+        // 같은 시각의 내역도 ID를 경계로 삼아 다음 페이지에서 빠지지 않게 한다.
+        query = query.or(
+          'created_at.lt.$timestamp,'
+          'and(created_at.eq.$timestamp,id.lt.${before.id})',
+        );
+      }
+      rows = await query
+          .order('created_at', ascending: false)
+          .order('id', ascending: false)
+          .limit(safeLimit + 1);
+    } else {
+      throw Exception('Supabase 포인트 내역 조회 환경이 준비되지 않았습니다.');
+    }
+
+    final parsed = rows
+        .map((row) {
+          final entry = PointLedgerEntry.fromJson(row);
+          if (entry.id <= 0 || entry.createdAt == null) {
+            throw const FormatException('포인트 내역의 ID 또는 생성 시각이 올바르지 않습니다.');
+          }
+          return entry;
+        })
+        .toList(growable: false);
+    final entries = parsed.take(safeLimit).toList(growable: false);
+    // 추가 한 건은 더보기 확인용이며, 커서는 실제로 표시한 마지막 내역이다.
+    final edge = parsed.length > safeLimit ? entries.last : null;
+    return PointLedgerPage(
+      entries: entries,
+      nextCursor: edge == null
+          ? null
+          : PointLedgerCursor(
+              createdAtUtc: edge.createdAt!.toUtc(),
+              id: edge.id,
+            ),
+    );
   }
 
   Future<StorageQuotaStatus> getMyStorageQuota() async {

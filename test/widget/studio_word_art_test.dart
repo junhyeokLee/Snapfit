@@ -199,72 +199,68 @@ void main() {
         final vm = container.read(albumEditorViewModelProvider.notifier);
         vm.resetForCreate(targetPages: 2);
         vm.updatePageLayers([], recordHistory: false);
-        await tester.scrollUntilVisible(
-          find.text('블루 포켓 카메라'),
-          220,
-          scrollable: find
-              .descendant(
-                of: find.byType(GridView).first,
-                matching: find.byType(Scrollable),
-              )
-              .first,
-        );
+        // Search is the public path to a known material in the full catalog.
+        // Its insertion and identity must not depend on an item's current index.
+        await tester.tap(find.byTooltip('소재 검색'));
         await tester.pumpAndSettle();
-        await tester.tap(find.text('블루 포켓 카메라'));
+        final search = find.byKey(const ValueKey('editor-material-search'));
+        Finder materialLabel(String label) => find.byWidgetPredicate(
+          (widget) => widget is Text && widget.data == label,
+        );
+        Future<void> searchFor(String label) async {
+          await tester.enterText(search, label);
+          await tester.pumpAndSettle();
+          expect(materialLabel(label), findsOneWidget);
+        }
+
+        Future<void> favorite(StudioWordArt art) async {
+          final button = find.byKey(ValueKey('favorite-${art.favoriteKey}'));
+          await tester.ensureVisible(button);
+          // Scrolling marks the viewport for layout. Tap its new, visible
+          // position after that frame, not the previous position under the tabs.
+          await tester.pumpAndSettle();
+          expect(button.hitTestable(), findsOneWidget);
+          await tester.tap(button);
+          await tester.pumpAndSettle();
+          expect(CatalogFavorites.instance.contains(art.favoriteKey), true);
+        }
+
+        await searchFor('블루 포켓 카메라');
+        await tester.ensureVisible(materialLabel('블루 포켓 카메라'));
+        await tester.pumpAndSettle();
+        await tester.tap(materialLabel('블루 포켓 카메라'));
         await tester.pumpAndSettle();
         expect(vm.pages.first.layers.last.type, LayerType.sticker);
         expect(gates, ['sticker:zineCamera']);
+        await tester.enterText(search, '');
+        await tester.pumpAndSettle();
         await tester.ensureVisible(find.text('꾸민 문구'));
         await tester.tap(find.text('꾸민 문구'));
         await tester.pumpAndSettle();
-        await tester.tap(find.byTooltip('볼드 컷아웃 즐겨찾기 추가'));
-        await tester.pumpAndSettle();
+        final boldCut = studioWordArtById('bold-cut')!;
+        await searchFor(boldCut.label);
+        await favorite(boldCut);
         expect(
-          CatalogFavorites.instance.contains(studioWordArts.first.favoriteKey),
-          true,
+          CatalogFavoriteKeys.decoration(boldCut.insertionValue),
+          boldCut.favoriteKey,
         );
-        expect(
-          CatalogFavoriteKeys.decoration(studioWordArts.first.insertionValue),
-          studioWordArts.first.favoriteKey,
-        );
-        await tester.ensureVisible(find.text('볼드 컷아웃'));
+        await tester.ensureVisible(materialLabel(boldCut.label));
         await tester.pumpAndSettle();
-        await tester.tap(find.text('볼드 컷아웃'));
+        await tester.tap(materialLabel(boldCut.label));
         await tester.pumpAndSettle();
         expect(gates.last, 'phrase:collage-bold-cut');
         expect(closed, 2);
         expect(vm.pages.first.layers.last.textFillMode, 'papercut');
         vm.undo();
         expect(vm.pages.first.layers.length, 1);
-        await tester.scrollUntilVisible(
-          find.text('압인 청첩장 타이틀'),
-          180,
-          scrollable: find
-              .descendant(
-                of: find.byType(GridView).first,
-                matching: find.byType(Scrollable),
-              )
-              .first,
-        );
-        await tester.tap(find.byTooltip('압인 청첩장 타이틀 즐겨찾기 추가'));
+        final atelier = studioWordArtById('atelier-vow')!;
+        await searchFor(atelier.label);
+        await favorite(atelier);
+        await tester.ensureVisible(materialLabel(atelier.label));
         await tester.pumpAndSettle();
-        expect(
-          CatalogFavorites.instance.contains(atelierWordArts.first.favoriteKey),
-          true,
-        );
-        await tester.scrollUntilVisible(
-          find.text('압인 청첩장 타이틀'),
-          -180,
-          scrollable: find
-              .descendant(
-                of: find.byType(GridView).first,
-                matching: find.byType(Scrollable),
-              )
-              .first,
-        );
-        await tester.tap(find.text('압인 청첩장 타이틀'));
+        await tester.tap(materialLabel(atelier.label));
         await tester.pumpAndSettle();
-        expect(gates.last, atelierWordArts.first.productKey);
+        expect(gates.last, atelier.productKey);
         expect(
           vm.pages.first.layers.where((l) => l.type == LayerType.text),
           hasLength(3),
@@ -276,7 +272,7 @@ void main() {
     );
   }
 
-  testWidgets('word art contact sheet uses real document renderer', (
+  testWidgets('base word art contact sheet uses real document renderer', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(1100, 960));
@@ -291,7 +287,8 @@ void main() {
           child: Wrap(
             children: [
               for (final art in studioWordArts.where(
-                (a) => !a.id.startsWith('atelier-'),
+                (a) =>
+                    !a.id.startsWith('atelier-') && !a.id.startsWith('story-'),
               ))
                 SizedBox(
                   width: 360,

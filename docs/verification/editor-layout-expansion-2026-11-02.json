@@ -1,0 +1,135 @@
+{
+  "date": "2026-11-02",
+  "feature": "Expanded builtin editor page layouts and shared native/web selection UI",
+  "catalog": {
+    "before": 12,
+    "after": 36,
+    "added": 24,
+    "categories": {
+      "사진 중심": 12,
+      "균형 분할": 14,
+      "매거진": 5,
+      "사진과 기록": 5
+    },
+    "photoCounts": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "legacyIDsGeometryAndColorsPreserved": true,
+    "correctedSwappedDuoLabels": true,
+    "newStockPhotosFontsOrPaidAssets": false
+  },
+  "ui": {
+    "sharedNativeBottomSheetAndWebPanel": true,
+    "categoryPhotoCountFavoritesCombinedFilters": true,
+    "resultCountResetAndEmptyState": true,
+    "photoAndTextCountsSeparated": true,
+    "actualAlbumAspectRatioPreview": true,
+    "compactOneColumnCardsBelow360": true,
+    "filtersAndGridScrollTogetherForShortScreens": true
+  },
+  "behavior": {
+    "explicitPreviewBeforeReplace": true,
+    "replacementDisclosureRetained": true,
+    "oneStepUndo": true,
+    "placeholdersDoNotCompleteAlbumPages": true,
+    "previewGuards": [
+      "editorSessionIdentity",
+      "albumId",
+      "pageId",
+      "editingAllowed"
+    ],
+    "commitGuards": [
+      "notDisposed",
+      "notSaving",
+      "editingAllowed",
+      "sameLiveOwner"
+    ],
+    "ignoredCommitNeverMarksSuccess": true
+  },
+  "automatedChecks": [
+    {
+      "log": "editor-safety-tests.log",
+      "passed": 62,
+      "failed": 0,
+      "scope": "Editor view model, save/upload behavior, initial layout guards"
+    },
+    {
+      "log": "catalog-render-tests.log",
+      "passed": 35,
+      "failed": 0,
+      "scope": "Catalog compatibility/geometry, three physical ratios, actual Korean prompts, export/reload, final boolean guards, legacy font/print rendering"
+    },
+    {
+      "log": "layout-ui-final.log",
+      "passed": 30,
+      "failed": 0,
+      "scope": "New filters/preview/apply/cancel/undo/session switching plus existing favorites at narrow/landscape/large text"
+    }
+  ],
+  "uniqueAutomaticTestCount": 120,
+  "duplicateTestNote": "Seven layout safety cases are present in both native runs; counted once in unique total.",
+  "analysis": "No issues found in all five changed production files",
+  "format": "Eight changed/new production and test files; zero format changes required",
+  "scopedDiffCheckPassed": true,
+  "production": {
+    "hostingVersion": "projects/360727043538/sites/snapfit-c719d/versions/c80848072ab07d7e",
+    "main_sha256": "4a2bd665a6fabe478d07018d45960ecc9201ea00c9721aa5e4c1e219ae5d9c89",
+    "main_file": "main.4a2bd665a6fabe478d07.dart.js",
+    "bootstrap_sha256": "3b4a2f8d907310aabd2187e4382896d0ff8210b5d2bbe23996559472bc03da8d",
+    "bootstrap_file": "flutter_bootstrap.3b4a2f8d907310aabd21.js",
+    "assets": {
+      "html": {
+        "matchesBuild": true,
+        "bytes": 4771,
+        "sha256": "ab658d310fdddcb3da5ea9de24a1cd13ec3eeb767fea2e9f39b264ddee481a28"
+      },
+      "bootstrap": {
+        "matchesBuild": true,
+        "bytes": 20074,
+        "sha256": "3b4a2f8d907310aabd2187e4382896d0ff8210b5d2bbe23996559472bc03da8d"
+      },
+      "main": {
+        "matchesBuild": true,
+        "bytes": 9956166,
+        "sha256": "4a2bd665a6fabe478d07018d45960ecc9201ea00c9721aa5e4c1e219ae5d9c89"
+      },
+      "fullFonts": {
+        "matchesBuild": true,
+        "bytes": 3892,
+        "sha256": "97fae7966753c52f4ab20f336be38f95b26df5bf71f2175dd7c0a063a541e778"
+      }
+    },
+    "tlsVerification": "curl default verification retained"
+  },
+  "liveVerification": {
+    "actualPreviouslyAuthenticatedChromeSession": true,
+    "all36Visible": true,
+    "magazine5Visible": true,
+    "combinedMagazineTwoPhotoFilterShowsOne": true,
+    "previewReplacementDisclosureVisible": true,
+    "previewCancelPreservedPage": true,
+    "postcardLayoutAppliedToPrivateQAPage1": true,
+    "postcardTitleAndCaptionRendered": true,
+    "undoRestoredOriginalText": true,
+    "exitedWithSaveNotSelected": true,
+    "cloudAlbumSavePhotoUploadPurchasePublicationNotInitiated": true,
+    "existingQATestAlbumId": 110
+  },
+  "nativeVerification": "Shared native Flutter bottomsheet and editor logic tested; no new Android/iOS build or physical phone installation requested/performed this turn.",
+  "initialFixtureCorrection": "One new favorite-independence test scrolled its lazy header offscreen; fixed by normal scroll back to header, keeping all assertions. Final UI run passed30/30.",
+  "evidenceImages": [
+    "before-layout-picker.jpg",
+    "after-layout-all.jpg",
+    "after-layout-magazine.jpg",
+    "layout-preview.jpg",
+    "applied-postcard-layout.jpg"
+  ]
+}

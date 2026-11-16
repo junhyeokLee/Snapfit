@@ -7,24 +7,38 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/features/home_news/data/home_news_repository.dart';
 import 'package:snap_fit/features/home_news/domain/home_news.dart';
 import 'package:snap_fit/features/home_news/presentation/providers/home_news_providers.dart';
+import 'package:snap_fit/features/home_news/presentation/providers/home_news_today_providers.dart';
+import 'package:snap_fit/features/onboarding/presentation/widgets/first_home_guide.dart';
 import 'package:snap_fit/features/home_news/presentation/widgets/home_news_gate.dart';
+import 'package:snap_fit/features/home_news/presentation/views/monthly_designs_screen.dart';
 import 'package:snap_fit/features/onboarding/presentation/first_visit_controller.dart';
 
 import '../helpers/first_visit_fixtures.dart';
 
 final _ownerProvider = StateProvider<String?>((ref) => null);
+final _recoveryProvider = StateProvider<bool>((ref) => false);
+final _localHiddenProvider = StateProvider<bool>((ref) => false);
+final _exposureProvider = StateProvider<HomeNewsExposureState>(
+  (ref) => _state(),
+);
+final _catalogProvider = StateProvider<List<HomeNewsItem>>((ref) => [_item()]);
 final _monthlySheet = find.byKey(const ValueKey('home-news-monthlyDesign'));
 final _reviewSheet = find.byKey(const ValueKey('home-news-monthReview'));
 
-HomeNewsExposureState _state({int daily = 0, int weekly = 0}) =>
-    HomeNewsExposureState(
-      serverNow: DateTime.utc(2026, 10, 27, 3),
-      serverDate: DateTime.utc(2026, 10, 27),
-      weekStart: DateTime.utc(2026, 10, 26),
-      dailyCount: daily,
-      weeklyCount: weekly,
-      history: const [],
-    );
+HomeNewsExposureState _state({
+  int daily = 0,
+  int weekly = 0,
+  bool hidden = false,
+  List<HomeNewsExposure> history = const [],
+}) => HomeNewsExposureState(
+  serverNow: DateTime.utc(2026, 10, 27, 3),
+  serverDate: DateTime.utc(2026, 10, 27),
+  weekStart: DateTime.utc(2026, 10, 26),
+  dailyCount: daily,
+  weeklyCount: weekly,
+  history: history,
+  hiddenForToday: hidden,
+);
 
 HomeNewsItem _item({
   HomeNewsKind kind = HomeNewsKind.monthlyDesign,
@@ -103,11 +117,13 @@ class _Harness extends StatefulWidget {
     required this.navigatorKey,
     this.initiallyActive = true,
     this.respectFirstVisitGuide = false,
+    this.mountGuideAnchor = true,
   });
 
   final GlobalKey<NavigatorState> navigatorKey;
   final bool initiallyActive;
   final bool respectFirstVisitGuide;
+  final bool mountGuideAnchor;
 
   @override
   State<_Harness> createState() => _HarnessState();
@@ -119,6 +135,7 @@ class _HarnessState extends State<_Harness> {
 
   void setActive(bool value) => setState(() => active = value);
   void remount() => setState(() => generation++);
+  void rebuild() => setState(() {});
 
   @override
   Widget build(BuildContext context) => MaterialApp(
@@ -128,7 +145,11 @@ class _HarnessState extends State<_Harness> {
         key: ValueKey(generation),
         active: active,
         respectFirstVisitGuide: widget.respectFirstVisitGuide,
-        child: const Center(child: Text('내 앨범 메인')),
+        child: Center(
+          child: widget.respectFirstVisitGuide && widget.mountGuideAnchor
+              ? FirstHomeGuide(onRecord: () {}, onCreate: () {})
+              : const Text('내 앨범 메인'),
+        ),
       ),
     ),
   );
@@ -140,26 +161,36 @@ class _Fixture {
     HomeNewsExposureState? exposure,
     List<HomeNewsItem>? items,
     bool recoveryBlocked = false,
+    bool locallyHidden = false,
     this.initiallyActive = true,
     this.respectFirstVisitGuide = false,
+    this.mountGuideAnchor = true,
     int firstVisitFlags = 3,
   }) : repository = _Repository(owner) {
     container = ProviderContainer(
       overrides: [
         _ownerProvider.overrideWith((ref) => owner),
+        _recoveryProvider.overrideWith((ref) => recoveryBlocked),
+        _localHiddenProvider.overrideWith((ref) => locallyHidden),
+        _exposureProvider.overrideWith((ref) => exposure ?? _state()),
+        _catalogProvider.overrideWith((ref) => items ?? [_item()]),
         homeNewsCurrentOwnerProvider.overrideWith(
           (ref) => ref.watch(_ownerProvider),
         ),
         homeNewsExposureStateProvider.overrideWith((ref) async {
           ref.watch(_ownerProvider);
-          return exposure ?? _state();
+          return ref.watch(_exposureProvider);
         }),
         homeNewsCatalogProvider.overrideWith((ref) async {
           ref.watch(_ownerProvider);
-          return items ?? [_item()];
+          return ref.watch(_catalogProvider);
         }),
         homeNewsRecoveryBlockProvider.overrideWith(
-          (ref) async => recoveryBlocked,
+          (ref) async => ref.watch(_recoveryProvider),
+        ),
+        homeNewsDesignsProvider.overrideWith((ref) async => const []),
+        homeNewsTodayHiddenProvider.overrideWith(
+          (ref) async => ref.watch(_localHiddenProvider),
         ),
         homeNewsRepositoryProvider.overrideWithValue(repository),
         homeNewsReadyDelayProvider.overrideWithValue(Duration.zero),
@@ -174,6 +205,7 @@ class _Fixture {
   final _Repository repository;
   final bool initiallyActive;
   final bool respectFirstVisitGuide;
+  final bool mountGuideAnchor;
   final navigatorKey = GlobalKey<NavigatorState>();
   final harnessKey = GlobalKey<_HarnessState>();
 
@@ -199,6 +231,7 @@ class _Fixture {
           navigatorKey: navigatorKey,
           initiallyActive: initiallyActive,
           respectFirstVisitGuide: respectFirstVisitGuide,
+          mountGuideAnchor: mountGuideAnchor,
         ),
       ),
     );
@@ -229,7 +262,7 @@ void main() {
   });
 
   testWidgets(
-    'one automatic delivery includes every enabled story and tracks actual swipes',
+    'one delivery preserves configured card order and tracks actual swipes',
     (tester) async {
       final fixture = _Fixture(
         owner: 'carousel-owner',
@@ -240,9 +273,9 @@ void main() {
       );
       await fixture.mount(tester);
       expect(fixture.repository.deliveries, [
-        ['monthly-design:2026-10', 'month-review:2026-10'],
+        ['month-review:2026-10', 'monthly-design:2026-10'],
       ]);
-      expect(fixture.repository.views, ['monthly-design:2026-10']);
+      expect(fixture.repository.views, ['month-review:2026-10']);
       expect(find.text('1 / 2'), findsOneWidget);
       await tester.drag(
         find.byKey(const ValueKey('home-news-pages')),
@@ -251,19 +284,21 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('2 / 2'), findsOneWidget);
       expect(fixture.repository.views, [
-        'monthly-design:2026-10',
         'month-review:2026-10',
+        'monthly-design:2026-10',
       ]);
       expect(fixture.repository.claims.length, 1);
       await tester.tap(
         find.byKey(const ValueKey('home-news-close')).hitTestable(),
       );
       await tester.pumpAndSettle();
-      expect(fixture.repository.interactions, ['month-review:2026-10:dismiss']);
+      expect(fixture.repository.interactions, [
+        'monthly-design:2026-10:dismiss',
+      ]);
     },
   );
 
-  testWidgets('browsable stories alone do not trigger an automatic popup', (
+  testWidgets('completed or generic stories also show on main entry', (
     tester,
   ) async {
     final fixture = _Fixture(
@@ -274,11 +309,11 @@ void main() {
       ],
     );
     await fixture.mount(tester);
-    expect(fixture.repository.deliveries, isEmpty);
-    expect(find.byKey(const ValueKey('home-news-carousel')), findsNothing);
+    expect(fixture.repository.deliveries, hasLength(1));
+    expect(find.byKey(const ValueKey('home-news-carousel')), findsOneWidget);
   });
 
-  testWidgets('daily and weekly limits skip the server claim and modal', (
+  testWidgets('old daily and weekly counts do not suppress main entry', (
     tester,
   ) async {
     for (final (owner, exposure) in [
@@ -287,24 +322,140 @@ void main() {
     ]) {
       final fixture = _Fixture(owner: owner, exposure: exposure);
       await fixture.mount(tester);
-      expect(_monthlySheet, findsNothing);
-      expect(fixture.repository.claims, isEmpty);
+      expect(_monthlySheet, findsOneWidget);
+      expect(fixture.repository.claims, hasLength(1));
       await tester.pumpWidget(const SizedBox());
     }
   });
 
   testWidgets(
-    'saved-work recovery and pending first-visit guide take priority',
+    'saved-work recovery defers the same entry until recovery clears',
+    (tester) async {
+      final fixture = _Fixture(
+        owner: 'gate-recovery-owner',
+        recoveryBlocked: true,
+      );
+      await fixture.mount(tester);
+      expect(_monthlySheet, findsNothing);
+      expect(fixture.repository.claims, isEmpty);
+      fixture.container.read(_recoveryProvider.notifier).state = false;
+      await tester.pumpAndSettle();
+      expect(_monthlySheet, findsOneWidget);
+      expect(fixture.repository.claims, hasLength(1));
+    },
+  );
+
+  testWidgets(
+    'the actual first-visit guide closes before deferred news opens',
+    (tester) async {
+      final fixture = _Fixture(
+        owner: 'gate-guide-owner',
+        respectFirstVisitGuide: true,
+        firstVisitFlags: 1,
+      );
+      await fixture.mount(tester);
+      expect(find.byKey(const ValueKey('first-home-guide')), findsOneWidget);
+      expect(fixture.container.read(firstHomeGuideVisibleProvider), isTrue);
+      expect(_monthlySheet, findsNothing);
+      expect(fixture.repository.claims, isEmpty);
+      await tester.tap(find.byTooltip('안내 닫기'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('first-home-guide')), findsNothing);
+      expect(_monthlySheet, findsOneWidget);
+      expect(fixture.repository.claims, hasLength(1));
+    },
+  );
+
+  testWidgets('old introduction flags cannot suppress required main news', (
+    tester,
+  ) async {
+    final fixture = _Fixture(
+      owner: 'gate-old-intro-owner',
+      respectFirstVisitGuide: true,
+      firstVisitFlags: 0,
+    );
+    await fixture.mount(tester);
+    expect(find.byKey(const ValueKey('first-home-guide')), findsNothing);
+    expect(_monthlySheet, findsOneWidget);
+    expect(fixture.repository.claims, hasLength(1));
+  });
+
+  testWidgets(
+    'a pending guide whose anchor is not mounted cannot suppress news',
+    (tester) async {
+      final fixture = _Fixture(
+        owner: 'gate-unmounted-guide-owner',
+        respectFirstVisitGuide: true,
+        mountGuideAnchor: false,
+        firstVisitFlags: 1,
+      );
+      await fixture.mount(tester);
+      expect(
+        (await fixture.container.read(
+          firstVisitProvider.future,
+        )).shouldShowHomeGuide,
+        isTrue,
+      );
+      expect(find.byKey(const ValueKey('first-home-guide')), findsNothing);
+      expect(_monthlySheet, findsOneWidget);
+      expect(fixture.repository.claims, hasLength(1));
+    },
+  );
+
+  testWidgets(
+    'normal close stays closed through rebuilds and reopens on the next tab entry',
+    (tester) async {
+      final fixture = _Fixture(owner: 'gate-tab-entry-owner');
+      await fixture.mount(tester);
+      await tester.tap(find.byKey(const ValueKey('home-news-close')));
+      await tester.pumpAndSettle();
+      fixture.harnessKey.currentState!.rebuild();
+      await tester.pumpAndSettle();
+      expect(_monthlySheet, findsNothing);
+      expect(fixture.repository.claims, hasLength(1));
+      fixture.harnessKey.currentState!.setActive(false);
+      await tester.pumpAndSettle();
+      fixture.harnessKey.currentState!.setActive(true);
+      await tester.pumpAndSettle();
+      expect(_monthlySheet, findsOneWidget);
+      expect(fixture.repository.claims, hasLength(2));
+    },
+  );
+
+  testWidgets('main remount and external route return each get a new popup', (
+    tester,
+  ) async {
+    final fixture = _Fixture(owner: 'gate-remount-owner');
+    await fixture.mount(tester);
+    await tester.tap(find.byKey(const ValueKey('home-news-close')));
+    await tester.pumpAndSettle();
+    fixture.harnessKey.currentState!.remount();
+    await tester.pumpAndSettle();
+    expect(_monthlySheet, findsOneWidget);
+    expect(fixture.repository.claims, hasLength(2));
+    await tester.tap(find.byKey(const ValueKey('home-news-close')));
+    await tester.pumpAndSettle();
+    fixture.pushOtherRoute();
+    await tester.pumpAndSettle();
+    fixture.navigatorKey.currentState!.pop();
+    await tester.pumpAndSettle();
+    expect(_monthlySheet, findsOneWidget);
+    expect(fixture.repository.claims, hasLength(3));
+  });
+
+  testWidgets(
+    'today hidden by server or local storage suppresses later main entries',
     (tester) async {
       for (final fixture in [
-        _Fixture(owner: 'gate-recovery-owner', recoveryBlocked: true),
-        _Fixture(
-          owner: 'gate-first-guide-owner',
-          respectFirstVisitGuide: true,
-          firstVisitFlags: 1,
-        ),
+        _Fixture(owner: 'server-hidden-owner', exposure: _state(hidden: true)),
+        _Fixture(owner: 'local-hidden-owner', locallyHidden: true),
       ]) {
         await fixture.mount(tester);
+        expect(_monthlySheet, findsNothing);
+        fixture.harnessKey.currentState!.setActive(false);
+        await tester.pumpAndSettle();
+        fixture.harnessKey.currentState!.setActive(true);
+        await tester.pumpAndSettle();
         expect(_monthlySheet, findsNothing);
         expect(fixture.repository.claims, isEmpty);
         await tester.pumpWidget(const SizedBox());
@@ -313,25 +464,92 @@ void main() {
   );
 
   testWidgets(
-    'a closed sheet cannot return after tab switches or gate remounts in one session',
+    'next Korean day removes yesterday suppression on the next entry',
     (tester) async {
-      final fixture = _Fixture(owner: 'gate-remount-owner');
+      final fixture = _Fixture(
+        owner: 'next-day-owner',
+        exposure: _state(hidden: true),
+      );
       await fixture.mount(tester);
-      await tester.tap(find.byKey(const ValueKey('home-news-close')));
-      await tester.pumpAndSettle();
+      expect(_monthlySheet, findsNothing);
       fixture.harnessKey.currentState!.setActive(false);
       await tester.pumpAndSettle();
+      fixture.container.read(_exposureProvider.notifier).state = _state();
       fixture.harnessKey.currentState!.setActive(true);
-      fixture.harnessKey.currentState!.remount();
       await tester.pumpAndSettle();
-      expect(_monthlySheet, findsNothing);
+      expect(_monthlySheet, findsOneWidget);
       expect(fixture.repository.claims, hasLength(1));
     },
   );
 
-  testWidgets('a lost app/web exposure race never opens a sheet', (
+  testWidgets('background return shows once and closing does not loop', (
     tester,
   ) async {
+    final fixture = _Fixture(owner: 'gate-resume-owner');
+    await fixture.mount(tester);
+    await tester.tap(find.byKey(const ValueKey('home-news-close')));
+    await tester.pumpAndSettle();
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+    expect(_monthlySheet, findsOneWidget);
+    expect(fixture.repository.claims, hasLength(2));
+    await tester.tap(find.byKey(const ValueKey('home-news-close')));
+    await tester.pumpAndSettle();
+    expect(_monthlySheet, findsNothing);
+    expect(fixture.repository.claims, hasLength(2));
+  });
+
+  testWidgets(
+    'returning from a news destination shows one new popup and closing stays closed',
+    (tester) async {
+      final fixture = _Fixture(owner: 'gate-own-action-owner');
+      await fixture.mount(tester);
+      await tester.tap(find.byKey(const ValueKey('home-news-action')));
+      await tester.pumpAndSettle();
+      expect(find.byType(MonthlyDesignsScreen), findsOneWidget);
+      expect(fixture.repository.claims, hasLength(1));
+      fixture.navigatorKey.currentState!.pop();
+      await tester.pumpAndSettle();
+      expect(_monthlySheet, findsOneWidget);
+      expect(fixture.repository.claims, hasLength(2));
+      await tester.tap(find.byKey(const ValueKey('home-news-close')));
+      await tester.pumpAndSettle();
+      fixture.harnessKey.currentState!.rebuild();
+      await tester.pumpAndSettle();
+      expect(_monthlySheet, findsNothing);
+      expect(fixture.repository.claims, hasLength(2));
+      fixture.harnessKey.currentState!.setActive(false);
+      await tester.pumpAndSettle();
+      fixture.harnessKey.currentState!.setActive(true);
+      await tester.pumpAndSettle();
+      expect(_monthlySheet, findsOneWidget);
+      expect(fixture.repository.claims, hasLength(3));
+    },
+  );
+
+  testWidgets('a late login state still gets the first main popup', (
+    tester,
+  ) async {
+    final fixture = _Fixture(owner: 'gate-late-owner');
+    fixture.switchOwner(null);
+    await fixture.mount(tester);
+    expect(fixture.repository.claims, isEmpty);
+    fixture.switchOwner('gate-late-owner');
+    await tester.pumpAndSettle();
+    expect(_monthlySheet, findsOneWidget);
+    expect(fixture.repository.claims, hasLength(1));
+  });
+
+  testWidgets('all events switched off produce no empty popup', (tester) async {
+    final fixture = _Fixture(owner: 'all-off-owner', items: const []);
+    await fixture.mount(tester);
+    expect(_monthlySheet, findsNothing);
+    expect(fixture.repository.claims, isEmpty);
+  });
+
+  testWidgets('a server rejection never opens a sheet', (tester) async {
     final fixture = _Fixture(owner: 'gate-claim-denied-owner');
     fixture.repository.canClaim = false;
     await fixture.mount(tester);
@@ -381,7 +599,7 @@ void main() {
   );
 
   testWidgets(
-    'leaving and returning during an awaited claim cancels its late popup',
+    'leaving during an awaited claim cancels it and returning starts a fresh visit',
     (tester) async {
       final fixture = _Fixture(owner: 'gate-active-transition-owner');
       final reply = Completer<bool>();
@@ -394,26 +612,25 @@ void main() {
       await tester.pump();
       reply.complete(true);
       await tester.pumpAndSettle();
-      expect(_monthlySheet, findsNothing);
-      expect(fixture.repository.claims, hasLength(1));
+      expect(_monthlySheet, findsOneWidget);
+      expect(fixture.repository.claims, hasLength(2));
     },
   );
 
-  testWidgets(
-    'a pointer gesture cancels content arriving after the person starts using home',
-    (tester) async {
-      final fixture = _Fixture(owner: 'gate-pointer-cancel-owner');
-      final reply = Completer<bool>();
-      fixture.repository.pendingClaim = reply;
-      await fixture.mount(tester);
-      expect(fixture.repository.claims, hasLength(1));
-      await tester.tap(find.text('내 앨범 메인'));
-      reply.complete(true);
-      await tester.pumpAndSettle();
-      expect(_monthlySheet, findsNothing);
-      expect(fixture.repository.interactions, isEmpty);
-    },
-  );
+  testWidgets('a pointer gesture does not cancel required main news', (
+    tester,
+  ) async {
+    final fixture = _Fixture(owner: 'gate-pointer-cancel-owner');
+    final reply = Completer<bool>();
+    fixture.repository.pendingClaim = reply;
+    await fixture.mount(tester);
+    expect(fixture.repository.claims, hasLength(1));
+    await tester.tap(find.text('내 앨범 메인'));
+    reply.complete(true);
+    await tester.pumpAndSettle();
+    expect(_monthlySheet, findsOneWidget);
+    expect(fixture.repository.interactions, isEmpty);
+  });
 
   testWidgets(
     'account switch removes a private month-review sheet while preserving a covering route',

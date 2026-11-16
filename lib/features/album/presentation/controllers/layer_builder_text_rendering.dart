@@ -13,6 +13,16 @@ Widget _buildTextImpl(
   bool isCover = false,
 }) {
   if (builder._isEditing(layer)) return const SizedBox.shrink();
+  final families = <String>{
+    layer.textStyle?.fontFamily ?? 'NotoSans',
+    ...?layer.textStyle?.fontFamilyFallback,
+  };
+  if (!DocumentFonts.areReady(families)) {
+    return DocumentFontGate(
+      families: families,
+      builder: (_) => _buildTextImpl(builder, layer, isCover: isCover),
+    );
+  }
 
   final TextStyle baseStyle = _albumTextFallbackStyle
       .merge(

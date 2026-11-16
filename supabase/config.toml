@@ -123,3 +123,7 @@ verify_jwt = true
 [functions.print-public-catalog]
 # No user session required. Public anon JWT gateway; retail-only read projection.
 verify_jwt = true
+
+[functions.social-media]
+# Short SQL HMAC capabilities; current visibility is checked before every byte response.
+verify_jwt = false

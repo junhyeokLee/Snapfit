@@ -5,6 +5,7 @@ import 'package:flutter/semantics.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../domain/social_models.dart';
 import 'social_widgets.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 /// A shared width and safe inset for profiles on phones and wide web windows.
 class SocialProfileContent extends StatelessWidget {
@@ -164,7 +165,12 @@ class _SocialProfileAvatarState extends State<SocialProfileAvatar> {
   }
 
   void _photoUnavailable() => ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-    const SnackBar(content: Text('현재 볼 수 없는 사진이에요. 프로필을 다시 확인해 주세요.')),
+    SnackBar(
+      content: const Text('현재 볼 수 없는 사진이에요. 프로필을 다시 확인해 주세요.'),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+    ),
   );
 
   void _showPhoto(BuildContext context, Uri uri) {
@@ -184,7 +190,7 @@ class _SocialProfileAvatarState extends State<SocialProfileAvatar> {
                       tooltip: '사진 닫기',
                       color: Colors.white,
                       onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close),
+                      icon: const ExperienceIcon('X'),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -311,11 +317,7 @@ class _SocialProfileAvatarState extends State<SocialProfileAvatar> {
                           ),
                           child: const Padding(
                             padding: EdgeInsets.all(7),
-                            child: Icon(
-                              Icons.open_in_full,
-                              size: 14,
-                              color: Colors.white,
-                            ),
+                            child: ExperienceIcon('Maximize2', size: 14, color: Colors.white),
                           ),
                         ),
                       ),
@@ -350,10 +352,13 @@ class SocialProfileIdentity extends StatelessWidget {
     this.avatarUrl,
     this.privateLoginId,
     this.refreshImageUrl,
+    this.compact = false,
     this.webLayout = kIsWeb,
+    this.momentsCount,
   });
 
   final bool webLayout;
+  final bool compact;
   final String name;
   final String handle;
   final String bio;
@@ -363,6 +368,7 @@ class SocialProfileIdentity extends StatelessWidget {
   final String? privateLoginId;
   final Future<String?> Function()? refreshImageUrl;
   final int worksCount;
+  final int? momentsCount;
   final int followersCount;
   final int followingCount;
   final VoidCallback onFollowers;
@@ -371,7 +377,7 @@ class SocialProfileIdentity extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      if (webLayout) return _webIdentity(context, constraints);
+      if (webLayout && !compact) return _webIdentity(context, constraints);
       final wide = constraints.maxWidth >= 760;
       final stack =
           constraints.maxWidth < 276 ||
@@ -379,12 +385,18 @@ class SocialProfileIdentity extends StatelessWidget {
       final portrait = SocialProfileAvatar(
         name: name,
         imageUrl: avatarUrl,
-        size: wide
+        size: compact
+            ? wide
+                  ? 112
+                  : constraints.maxWidth < 340
+                  ? 80
+                  : 88
+            : wide
             ? 196
             : constraints.maxWidth < 340
             ? 148
             : 164,
-        borderRadius: BorderRadius.circular(wide ? 32 : 26),
+        borderRadius: BorderRadius.circular(compact ? 20 : (wide ? 32 : 26)),
         expandable: true,
         refreshImageUrl: refreshImageUrl,
       );
@@ -395,7 +407,7 @@ class SocialProfileIdentity extends StatelessWidget {
             name,
             style: ExperienceFormStyle.text(
               context,
-              wide ? 38 : 27,
+              compact ? (wide ? 28 : 23) : (wide ? 38 : 27),
               weight: FontWeight.w600,
             ).copyWith(height: 1.18, letterSpacing: -1),
             maxLines: 3,
@@ -439,27 +451,27 @@ class SocialProfileIdentity extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 portrait,
-                SizedBox(width: wide ? 36 : 20),
+                SizedBox(width: compact ? 16 : (wide ? 36 : 20)),
                 Expanded(child: description),
               ],
             ),
           if (bio.trim().isNotEmpty) ...[
-            const SizedBox(height: 14),
+            SizedBox(height: compact ? 8 : 14),
             Text(
               bio,
               style: ExperienceFormStyle.text(
                 context,
-                14,
-              ).copyWith(height: 1.6),
+                compact ? 13 : 14,
+              ).copyWith(height: compact ? 1.5 : 1.6),
             ),
           ],
-          const SizedBox(height: 16),
+          SizedBox(height: compact ? 8 : 16),
           DecoratedBox(
             decoration: BoxDecoration(
               border: Border(top: BorderSide(color: SocialStyle.line(context))),
             ),
             child: Padding(
-              padding: const EdgeInsets.only(top: 8),
+              padding: EdgeInsets.only(top: compact ? 0 : 8),
               child: Wrap(
                 spacing: 16,
                 runSpacing: 4,
@@ -468,7 +480,9 @@ class SocialProfileIdentity extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Text(
-                      '공개 작품 $worksCount',
+                      momentsCount == null
+                          ? '공개 앨범 $worksCount'
+                          : '공개 기록 $momentsCount',
                       style: ExperienceFormStyle.text(
                         context,
                         14,
@@ -543,7 +557,9 @@ class SocialProfileIdentity extends StatelessWidget {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text(
-              '공개 작품 $worksCount',
+              momentsCount == null
+                  ? '공개 앨범 $worksCount'
+                  : '공개 기록 $momentsCount',
               style: ExperienceFormStyle.text(
                 context,
                 13,
@@ -605,13 +621,17 @@ class SocialProfileGallery extends StatefulWidget {
     required this.works,
     required this.onOpenWork,
     this.onRetry,
+    this.headerAction,
     this.webLayout = kIsWeb,
+    this.title = '공개 앨범',
   });
 
   final bool webLayout;
+  final String title;
   final List<SocialWork> works;
   final ValueChanged<SocialWork> onOpenWork;
   final ValueChanged<SocialWork>? onRetry;
+  final Widget? headerAction;
 
   @override
   State<SocialProfileGallery> createState() => _SocialProfileGalleryState();
@@ -630,7 +650,7 @@ class _SocialProfileGalleryState extends State<SocialProfileGallery> {
               constraints.maxWidth < 270 ||
               MediaQuery.textScalerOf(context).scale(13) > 18;
           final title = Text(
-            '공개 작품',
+            widget.title,
             style: ExperienceFormStyle.text(
               context,
               21,
@@ -675,6 +695,32 @@ class _SocialProfileGalleryState extends State<SocialProfileGallery> {
               ),
             ),
           );
+          if (widget.headerAction != null) {
+            final heading = Row(
+              children: [
+                Expanded(child: title),
+                const SizedBox(width: 8),
+                widget.headerAction!,
+              ],
+            );
+            final rowWidth =
+                340 * MediaQuery.textScalerOf(context).scale(13) / 13;
+            if (constraints.maxWidth < rowWidth || stack) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [heading, const SizedBox(height: 10), modes],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(child: title),
+                const SizedBox(width: 8),
+                modes,
+                const SizedBox(width: 12),
+                widget.headerAction!,
+              ],
+            );
+          }
           if (stack) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -779,7 +825,11 @@ class SocialProfileWorkTile extends StatelessWidget {
       sortKey: semanticOrder == null
           ? null
           : OrdinalSortKey(semanticOrder!.toDouble()),
-      label: '${work.title}, ${work.imageUrls.length}쪽 작품 보기',
+      label: work.isRestricted
+          ? '${work.title}, 공개가 제한된 ${work.isMoment ? '기록' : '앨범'}'
+          : work.isMoment
+          ? '${work.title}, 한 장의 기록 보기'
+          : '${work.title}, ${work.imageUrls.length}쪽 앨범 보기',
       onTap: onTap,
       child: Material(
         color: Colors.transparent,
@@ -796,17 +846,20 @@ class SocialProfileWorkTile extends StatelessWidget {
                   aspectRatio: ratio,
                   child: ColoredBox(
                     color: SocialStyle.paper(context),
-                    child: work.imageUrls.isEmpty
+                    child: work.isRestricted || work.imageUrls.isEmpty
                         ? Center(
                             child: Icon(
-                              Icons.auto_stories_outlined,
+                              work.isMoment
+                                  ? Icons.photo_outlined
+                                  : Icons.auto_stories_outlined,
                               color: ExperienceFormStyle.muted(context),
                               size: 32,
                             ),
                           )
                         : SocialWorkImage(
                             url: work.imageUrls.first,
-                            label: '${work.title} 공개 작품 미리보기',
+                            label:
+                                '${work.title} 공개 ${work.isMoment ? '기록' : '앨범'} 미리보기',
                             excludeImageSemantics: true,
                             onRetry: onRetry,
                           ),
@@ -833,10 +886,7 @@ class SocialProfileWorkTile extends StatelessWidget {
                     const SizedBox(width: 10),
                     Padding(
                       padding: const EdgeInsets.only(top: 3),
-                      child: Icon(
-                        Icons.north_east,
-                        size: large ? 18 : 16,
-                        color: ExperienceFormStyle.muted(context),
+                      child: ExperienceIcon('ChevronRight', size: large ? 18 : 16, color: ExperienceFormStyle.muted(context),
                       ),
                     ),
                   ],
@@ -845,7 +895,11 @@ class SocialProfileWorkTile extends StatelessWidget {
               const SizedBox(height: 5),
               ExcludeSemantics(
                 child: Text(
-                  '${work.imageUrls.length}쪽 · ${work.topic}',
+                  work.isRestricted
+                      ? '공개 제한'
+                      : work.isMoment
+                      ? socialDate(work.recordDate ?? work.createdAt)
+                      : '${work.imageUrls.length}쪽 · ${work.topic}',
                   style: ExperienceFormStyle.text(context, 12, secondary: true),
                 ),
               ),

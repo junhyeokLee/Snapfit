@@ -36,16 +36,22 @@ class CommercePolicyDocument {
 }
 
 abstract final class CommercePolicy {
-  static const updatedDate = '2026.10.19';
+  static const updatedDate = '2026.10.30';
   static const effectiveDate = '운영 개시 전 확정 예정';
-  static const termsVersion = 'v1.5-prelaunch-20261019';
-  static const privacyVersion = 'v1.4-prelaunch-20261019';
-  static const refundVersion = 'v1.0-prelaunch-20261019';
+  static const bundleVersion = 'v1.1-prelaunch-20261030';
+  static const termsVersion = 'v1.6-prelaunch-20261030';
+  static const privacyVersion = 'v1.5-prelaunch-20261030';
+  static const refundVersion = bundleVersion;
+  static const businessName = '스냅핏';
+  static const representativeName = '이준혁';
+  static const businessRegistrationNumber = '219-14-74705';
+  static const businessType = '개인사업자(일반과세자)';
+  static const openingDate = '2026.11.27';
   static const contactEmail = 'junhyeoklee616@gmail.com';
 
   static const draftNotice =
-      '스냅핏은 현재 개발·서비스 준비 단계입니다. 사업자등록과 운영 계약은 아직 완료되지 않았으며, 실제 결제·유료 주문·실제 제작은 열려 있지 않습니다. '
-      '아래 문서는 운영 전 준비본이며, 확정되지 않은 판매자 정보와 시행일은 정식 판매 전에 안내합니다.';
+      '스냅핏은 사업자등록을 마쳤으며 현재 개발·서비스 준비 단계입니다. 사업자등록은 PG·카드사 심사나 제작업체 운영 계약의 완료를 뜻하지 않습니다. '
+      '실제 결제·유료 충전·유료 주문·실제 제작은 열려 있지 않습니다. 아래 문서는 운영 전 준비본이며, 시행일과 남은 운영 조건은 정식 판매 전에 안내합니다.';
   static const dispatchEstimate =
       '제작·출고 예상 영업일 5~6일이며 택배 배송 기간은 별도입니다. 정식 판매 전 실제 사양별 일정을 확인해 안내합니다.';
   static const refundSummary =
@@ -54,6 +60,11 @@ abstract final class CommercePolicy {
   static const customProductionConsent =
       '주문 확정 후 제 앨범 내용으로 개별 제작되며, 제작이 시작되어 회복하기 어려운 중대한 손해가 예상되는 경우 단순 변심에 따른 청약철회가 제한될 수 있음을 안내받고 동의합니다. '
       '제작 전 취소 요청과 불량·오배송 등 법정 권리는 별도로 보장됩니다.';
+  static const webPointUsageSummary =
+      '포인트로 스냅핏의 유료 템플릿·디자인 소재·AI 기능을 이용할 수 있습니다. 웹 포인트 충전의 실제 결제는 아직 열려 있지 않습니다.';
+  static const webPointRefundSummary =
+      '사용하지 않은 유료 충전은 결제일로부터 7일 이내 전액 환불합니다. 일부 사용했거나 7일이 지난 충전은 남은 유료 충전금액과 산정내역을 담당자가 확인해 안내합니다. '
+      '무상 적립은 현금 환불 대상에서 제외하며, 원 결제수단으로 환불을 진행합니다. 신청: $contactEmail. 자세한 기준은 취소·환불 정책을 확인해 주세요.';
 
   static const documents = <CommercePolicyDocument>[
     CommercePolicyDocument(
@@ -87,29 +98,37 @@ abstract final class CommercePolicy {
               '결제 화면의 성공 표시만으로 제작이 시작된 것으로 보지 않으며, 접수 실패·중복·금액 불일치 등이 확인되면 상태 확인과 취소·환불 절차를 안내합니다.',
         ),
         CommercePolicySection(
-          heading: '5. 인쇄 내용 확인과 변경',
+          heading: '5. 포인트와 디지털 상품',
+          content:
+              '포인트는 스냅핏이 제공하는 유료 템플릿·디자인 소재·AI 기능을 이용하기 위한 서비스 내 이용 단위입니다. 충전 상품별 결제금액과 지급 포인트, 디지털 상품의 가격을 구매 전에 표시합니다. '
+              '포인트의 회원 간 양도, 제3자 가맹점 결제나 자유로운 현금 전환은 제공하지 않으며, 결제 취소와 법령에 따른 환불 권리는 별도로 보장됩니다. '
+              '유료 충전과 무상 적립, 디지털 상품 구매의 취소·환불 기준은 취소·환불 정책에서 구분해 안내합니다. 웹 결제와 모바일 앱스토어 결제의 신청 경로도 해당 결제수단에 맞게 안내합니다. '
+              '현재 유료 충전은 열려 있지 않으며 포인트의 사용기간·소멸 조건은 설정하지 않았습니다. 정식 유료 충전을 시작하기 전에 확정한 조건을 먼저 안내하며 기존 잔액에 새로운 소멸일을 소급 적용하지 않습니다.',
+        ),
+        CommercePolicySection(
+          heading: '6. 인쇄 내용 확인과 변경',
           content:
               '주문 전 최종 미리보기에서 사진·글·페이지 순서·재단 위치·제작 사양을 확인해야 합니다. 제작은 확정된 주문의 파일을 기준으로 진행하며, 이후 앨범 편집이 이미 접수된 인쇄 파일에 자동 반영되지는 않습니다. '
               '모니터와 인쇄물의 색상 차이 등 상품 특성은 주문 전에 안내하며, 안내한 범위를 벗어난 하자나 계약과 다른 제작에 대한 책임까지 면제되는 것은 아닙니다.',
         ),
         CommercePolicySection(
-          heading: '6. 취소·환불과 배송',
+          heading: '7. 취소·환불과 배송',
           content:
               '$refundSummary 자세한 기준은 취소·환불 정책 및 제작·배송 안내를 따릅니다. '
               '법령이 정한 이용자 권리는 약관보다 우선합니다. $dispatchEstimate',
         ),
         CommercePolicySection(
-          heading: '7. 서비스 변경·제한과 탈퇴',
+          heading: '8. 서비스 변경·제한과 탈퇴',
           content:
               '점검, 보안 또는 서비스 변경으로 이용에 영향을 주는 경우 가능한 범위에서 사유와 일정을 안내합니다. '
               '불법 콘텐츠, 권리 침해, 다른 이용자에 대한 피해, 비정상적인 접근이 확인되면 필요한 범위에서 이용을 제한할 수 있으며, 긴급하지 않은 경우 사유와 이의 제기 방법을 안내합니다. '
               '이용자는 계정 설정에서 탈퇴하거나 문의 이메일로 요청할 수 있습니다. 주문·정산·분쟁 등 별도 처리가 필요한 기록은 해당 법령과 개인정보 처리방침에 따라 처리합니다.',
         ),
         CommercePolicySection(
-          heading: '8. 문의와 정책 변경',
+          heading: '9. 문의와 정책 변경',
           content:
               '문의: $contactEmail. 정책을 변경할 경우 변경 내용·적용 시점과 필요한 동의 절차를 서비스에서 안내합니다. '
-              '판매자 상호·사업자등록번호·통신판매업 신고 정보 등은 정식 판매 전에 판매자 정보 화면에 확정하여 공개합니다.',
+              '등록된 상호·대표자·사업자등록번호와 판매자 연락처는 판매자 정보에서 확인할 수 있습니다. 통신판매업 신고 또는 면제 여부와 남은 운영 조건은 정식 판매 전에 확정해 안내합니다.',
         ),
       ],
     ),
@@ -122,7 +141,7 @@ abstract final class CommercePolicy {
         CommercePolicySection(
           heading: '1. 문서 상태와 문의',
           content:
-              '$draftNotice 개인정보 관련 문의: $contactEmail. 운영 준비 담당자는 이준혁입니다. 정식 판매 전 개인정보 보호책임자와 사업자 정보를 확정합니다.',
+              '$draftNotice 개인정보 관련 문의: $contactEmail. 대표자는 $representativeName입니다. 등록된 사업자 정보는 판매자 정보에서 확인할 수 있으며 정식 판매 전 개인정보 보호책임자와 필요한 운영 고지 사항을 확정합니다.',
         ),
         CommercePolicySection(
           heading: '2. 처리하는 정보와 목적',
@@ -182,10 +201,71 @@ abstract final class CommercePolicy {
     CommercePolicyDocument(
       kind: CommercePolicyKind.refund,
       title: '취소·환불 정책',
-      summary: '제작 전 취소, 주문제작 상품의 제한 요건, 불량·오배송 처리 기준을 구분합니다.',
+      summary: '웹 포인트 충전·디지털 상품과 주문제작 포토북의 취소·환불 기준을 안내합니다.',
       version: refundVersion,
       sections: [
         CommercePolicySection(heading: '현재 주문 접수 상태', content: draftNotice),
+        // Prelaunch policy checked on 2026-10-30. Preserve statutory withdrawal
+        // and defect rights when applying the service-specific rules below.
+        // https://www.law.go.kr/법령/전자상거래등에서의소비자보호에관한법률/제17조
+        // https://www.law.go.kr/법령/전자상거래등에서의소비자보호에관한법률/제18조
+        // https://help.portone.io/content/point-service
+        CommercePolicySection(
+          heading: '웹 포인트 충전과 디지털 상품의 구분',
+          content:
+              '이하 포인트 기준은 웹에서 결제한 충전금액과 그 충전으로 지급된 포인트에 적용할 운영 전 준비 기준입니다. 실제 웹 충전 결제는 아직 제공하지 않습니다. '
+              '포인트를 충전한 거래와 포인트로 템플릿·소재·AI 기능을 이용한 거래는 나누어 확인합니다. 포토북의 주문제작 취소 제한을 포인트나 디지털 상품에 그대로 적용하지 않습니다. '
+              '법령에 따른 청약철회·계약 해제·하자에 대한 권리는 아래 기준보다 우선합니다.',
+        ),
+        CommercePolicySection(
+          heading: '사용하지 않은 유료 충전의 취소',
+          content:
+              '충전 결제일로부터 7일 이내에 신청하고 해당 충전으로 지급된 포인트를 사용하지 않았다면, 지급 포인트 회수와 함께 실제 결제금액 전액을 원 결제수단으로 환불합니다. '
+              '결제일·지급·사용 내역을 확인해 처리하며, 7일이 지났다는 이유만으로 남은 유료 충전금액이 모두 소멸하거나 환불 대상에서 제외되지는 않습니다. '
+              '관련 법령에서 다른 기산일이나 더 유리한 권리를 정한 경우에는 그 기준을 따릅니다.',
+        ),
+        CommercePolicySection(
+          heading: '일부 사용했거나 7일이 지난 충전의 환불',
+          content:
+              '담당자가 실제 결제금액, 지급 포인트와 사용 내역을 대조해 남은 유료 충전금액을 확인하고 환불 범위와 산정내역을 먼저 안내합니다. '
+              '충전 상품별 실제 결제금액과 지급 포인트의 비율을 기준으로 이미 제공·이용한 서비스에 해당하는 금액을 제외합니다. 남은 포인트를 일괄 소멸시키거나 사용분을 다른 정가로 다시 계산해 환불액을 임의로 줄이지 않습니다. '
+              '유료 충전과 무상 적립이 함께 사용된 경우에도 거래·적립·사용 내역을 확인해 환불액을 산정하고, 구매 당시 알리지 않은 차감 순서를 사후에 만들어 이용자에게 불리하게 적용하지 않습니다. '
+              '부분 환불은 담당자의 확인과 결제수단별 처리 절차를 거치며, 신청 즉시 자동으로 확정되는 기능으로 안내하지 않습니다.',
+        ),
+        CommercePolicySection(
+          heading: '무상 포인트와 충전 혜택',
+          content:
+              '가입·출석·초대·이벤트 등 결제 없이 받은 무상 포인트는 현금 환불 대상에 포함하지 않습니다. 유료 충전금액의 환불 권리는 별도로 보장됩니다. '
+              '충전에 연계된 추가 지급 혜택이 있으면 구매 당시 표시한 조건과 지급 내역을 함께 확인합니다. 취소된 충전의 지급 포인트는 환불 범위에 맞춰 회수하며, 무상 혜택을 이유로 실제 지급한 결제금액보다 큰 손실이나 고지하지 않은 수수료를 부담시키지 않습니다.',
+        ),
+        CommercePolicySection(
+          heading: '템플릿·소재·AI 기능의 취소와 하자',
+          content:
+              '템플릿·소재의 이용 권한 제공, AI 처리와 결과 제공 등 실제 디지털 서비스의 공급·이용 여부를 확인하여 처리합니다. 공급이 시작된 디지털 콘텐츠의 청약철회를 제한하는 경우에는 법정 요건에 따른 사전 고지와 필요한 조치를 갖추어야 합니다. '
+              '나누어 제공할 수 있는 서비스 중 아직 제공하지 않은 부분에 대한 청약철회 권리는 보장하며, 상품을 구매했거나 AI 처리를 요청했다는 이유만으로 모든 취소·환불을 배제하지 않습니다. '
+              '설명·계약과 다른 내용, 오류·중복 차감·제공 실패 등 하자가 확인되면 이용 내역을 확인하여 포인트 복구, 재제공 또는 적법한 환불을 안내합니다. AI 결과에 대한 요청도 제공 내용과 계약 이행 상태에 따라 개별 확인합니다. '
+              '디지털 상품 취소에 따른 포인트 조정과 이용 권한 처리는 담당자가 함께 확인하며, 자동 권한 회수나 즉시 부분 환불이 완료된 것으로 표시하지 않습니다.',
+        ),
+        CommercePolicySection(
+          heading: '결제·충전 오류와 TEST 기록',
+          content:
+              '결제 성공 화면만으로 중복 충전이나 환불 여부를 판단하지 않고 결제사 기록과 충전·지급 내역을 확인합니다. 결제가 확인됐으나 포인트가 반영되지 않은 경우 다시 결제하도록 요구하지 않고 기존 거래를 먼저 확인합니다. '
+              '중복 결제·잘못된 금액·지급 오류는 확인된 거래에 맞춰 정정하거나 원 결제수단으로 취소합니다. TEST 결제는 실제 대금 청구와 실제 포인트 지급이 없는 개발 기록이며 현금 환불 대상 거래를 발생시키지 않습니다.',
+        ),
+        CommercePolicySection(
+          heading: '포인트 환불 신청과 처리 경로',
+          content:
+              '문의 이메일 $contactEmail로 가입 이메일, 충전 결제 식별정보와 요청 내용을 보내 주세요. 담당자가 접수 후 결제·지급·사용 내역과 환불 범위를 확인하고 산정내역 및 처리 결과를 안내합니다. '
+              '환불은 원 결제수단으로 진행하는 것을 원칙으로 하며, 법정 환급 기한과 결제 취소에 필요한 조치를 준수합니다. 원 결제수단 취소가 불가능한 경우 적법한 대체 방법을 이용자와 확인합니다. '
+              '모바일 앱에서 Apple App Store 또는 Google Play로 결제한 포인트는 해당 스토어의 환불 신청·처리 경로를 먼저 안내하고, 스냅핏은 확인된 취소 결과에 따라 지급 내역을 조정합니다. '
+              '계정 삭제 요청과 환불 요청은 구분하여 접수하며, 계정 삭제만으로 남은 유료 충전금액의 권리를 일괄 포기한 것으로 처리하지 않습니다.',
+        ),
+        CommercePolicySection(
+          heading: '포인트 사용기간과 조건 변경',
+          content:
+              '현재 운영 전 단계에서는 유료 충전 포인트의 사용기간이나 자동 소멸 조건을 설정하지 않았으며, 포인트 자동 소멸 작업도 가동하지 않습니다. '
+              'PG 심사와 서비스 조건을 확인해 유료 충전 개시 전에 사용기간·환불·혜택 조건을 결제 전에 명확하게 안내합니다. 향후 정한 기간을 기존 잔액에 소급해 적용하거나 별도 고지 없이 소멸시키지 않습니다.',
+        ),
         CommercePolicySection(
           heading: '제작 시작 전 취소',
           content:
@@ -236,7 +316,7 @@ abstract final class CommercePolicy {
       kind: CommercePolicyKind.shipping,
       title: '제작·배송 안내',
       summary: '상품 구성, 제작 시작 시점, 예상 출고와 배송비 확인 방법을 안내합니다.',
-      version: 'v1.0-prelaunch-20261019',
+      version: bundleVersion,
       sections: [
         CommercePolicySection(heading: '현재 제공 상태', content: draftNotice),
         CommercePolicySection(
@@ -270,24 +350,26 @@ abstract final class CommercePolicy {
     CommercePolicyDocument(
       kind: CommercePolicyKind.seller,
       title: '판매자 정보',
-      summary: '확인된 서비스 연락처와 아직 등록되지 않은 사업자 정보를 구분합니다.',
-      version: 'v1.0-prelaunch-20261019',
+      summary: '등록된 사업자 정보, 문의 경로와 판매 개시 전 준비 상태를 안내합니다.',
+      version: bundleVersion,
       sections: [
         CommercePolicySection(heading: '서비스 준비 상태', content: draftNotice),
         CommercePolicySection(
-          heading: '확인된 정보',
-          content: '서비스명: 스냅핏\n운영 준비 담당: 이준혁\n문의 이메일: $contactEmail',
+          heading: '등록된 사업자 정보',
+          content:
+              '상호: $businessName\n대표자: $representativeName\n사업자등록번호: $businessRegistrationNumber\n사업자 유형: $businessType\n등록증상 개업일: $openingDate\n문의 이메일: $contactEmail\n'
+              '등록증상 개업일은 실제 판매 개시일이나 PG 심사 승인일을 의미하지 않습니다.',
         ),
         CommercePolicySection(
-          heading: '정식 판매 전 등록할 정보',
+          heading: '사업장·고객지원과 통신판매업 신고',
           content:
-              '사업자 상호·대표자, 사업자등록번호, 사업장 주소, 고객센터 전화번호·운영시간, 통신판매업 신고번호 또는 면제 여부, 반품 접수 주소는 사업자등록과 운영 준비 후 확정합니다. '
-              '등록되지 않은 번호나 주소를 임의로 기재하지 않습니다. 현재 준비 화면은 사업자등록 또는 PG·카드사 심사 승인을 받은 판매점이라는 의미가 아닙니다.',
+              '사업장 주소와 고객지원 연락처는 이 화면의 판매자 정보에 함께 안내합니다. 문의는 $contactEmail로 접수하며, 반품이 필요한 경우 고객지원에서 접수 방법과 반품 주소를 확인해 안내합니다. '
+              '통신판매업 신고번호 또는 적용 면제 여부는 아직 확정되지 않았으며, 정식 판매 전에 확인해 공개합니다. 미확정 신고번호나 반품 주소를 임의로 안내하지 않습니다.',
         ),
         CommercePolicySection(
           heading: '현재 결제·계약 상태',
           content:
-              '포트원과 레드프린팅은 개발 연동을 준비한 상태이며 운영 계약·운영 결제·실제 제작은 아직 활성화하지 않았습니다. '
+              '포트원 사업자 정보 등록은 완료했으며 PG·카드사 심사와 제작업체 운영 계약은 별도로 진행해야 합니다. 포트원·레드프린팅의 운영 결제와 실제 제작은 아직 활성화하지 않았습니다. '
               '문의만으로 주문이 접수되거나 요금이 청구되지 않습니다.',
         ),
       ],

@@ -16,6 +16,8 @@ import '../../../profile/presentation/widgets/customer_web_page.dart';
 import '../../../store/domain/entities/premium_template.dart';
 import '../../../store/presentation/views/template_detail_screen.dart';
 import '../providers/home_news_providers.dart';
+import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 class MonthlyDesignsScreen extends ConsumerWidget {
   const MonthlyDesignsScreen({super.key});
@@ -35,7 +37,7 @@ class MonthlyDesignsScreen extends ConsumerWidget {
         title: '디자인을 불러오지 못했어요',
         action: TextButton.icon(
           onPressed: () => ref.invalidate(homeNewsDesignsProvider),
-          icon: const Icon(Icons.refresh_rounded, size: 18),
+          icon: const ExperienceIcon('RefreshCw', size: 18),
           label: const Text('다시 불러오기'),
         ),
       ),
@@ -70,20 +72,17 @@ class MonthlyDesignsScreen extends ConsumerWidget {
                       heroTag: (this, template.id),
                       onOpen: () async {
                         await Navigator.of(context).push<void>(
-                          MaterialPageRoute<void>(
-                            settings: kIsWeb
+                          snapFitRoute<void>(page: TemplateDetailScreen(
+                              template: template,
+                              heroTag: (this, template.id),
+                            ), settings: kIsWeb
                                 ? WebAppRouteSettings(
                                     WebAppLocation(
                                       WebAppPage.template,
                                       '${template.id}',
                                     ),
                                   )
-                                : null,
-                            builder: (_) => TemplateDetailScreen(
-                              template: template,
-                              heroTag: (this, template.id),
-                            ),
-                          ),
+                                : null),
                         );
                       },
                     ),
@@ -180,10 +179,7 @@ class _MonthlyDesignCardState extends State<_MonthlyDesignCard> {
     final unavailableArtwork = ColoredBox(
       color: ExperienceFormStyle.surface(context),
       child: Center(
-        child: Icon(
-          Icons.auto_stories_outlined,
-          size: 40,
-          color: ExperienceFormStyle.muted(context),
+        child: ExperienceIcon('BookOpen', size: 40, color: ExperienceFormStyle.muted(context),
         ),
       ),
     );
@@ -241,10 +237,7 @@ class _MonthlyDesignCardState extends State<_MonthlyDesignCard> {
                     const SizedBox(width: 12),
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
-                      child: Icon(
-                        Icons.arrow_forward_rounded,
-                        size: 20,
-                        color: ExperienceFormStyle.ink(context),
+                      child: ExperienceIcon('ArrowRight', size: 20, color: ExperienceFormStyle.ink(context),
                       ),
                     ),
                   ],
@@ -281,10 +274,7 @@ class _DesignsMessage extends StatelessWidget {
     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 56),
     child: Column(
       children: [
-        Icon(
-          Icons.auto_stories_outlined,
-          size: 36,
-          color: ExperienceFormStyle.muted(context),
+        ExperienceIcon('BookOpen', size: 36, color: ExperienceFormStyle.muted(context),
         ),
         const SizedBox(height: 20),
         Text(

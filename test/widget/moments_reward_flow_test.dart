@@ -11,24 +11,34 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
 import 'package:snap_fit/core/constants/cover_size.dart';
 import 'package:snap_fit/features/album/domain/entities/album.dart';
+import 'package:snap_fit/features/album/domain/entities/layer.dart';
+import 'package:snap_fit/features/album/domain/entities/layer_export_mapper.dart';
 import 'package:snap_fit/features/moments/data/moment_engagement_repository.dart';
 import 'package:snap_fit/features/moments/data/moments_repository.dart';
+import 'package:snap_fit/features/moments/data/moment_publication_repository.dart';
 import 'package:snap_fit/features/moments/domain/moment_record.dart';
 import 'package:snap_fit/features/moments/domain/monthly_album_builder.dart';
 import 'package:snap_fit/features/moments/presentation/providers/moment_engagement_providers.dart';
 import 'package:snap_fit/features/moments/presentation/providers/moments_providers.dart';
+import 'package:snap_fit/features/moments/presentation/providers/moment_publication_providers.dart';
 import 'package:snap_fit/features/moments/presentation/views/moment_saved_preview_screen.dart';
+import 'package:snap_fit/features/moments/presentation/widgets/moments_widgets.dart';
 import 'package:snap_fit/features/moments/presentation/views/monthly_moment_preview_screen.dart';
 import 'package:snap_fit/shared/snapfit_image.dart';
 import 'package:snap_fit/features/store/presentation/widgets/template_page_renderer.dart';
+import '../helpers/memory_moment_publication_repository.dart';
 
 final _today = DateTime.utc(2026, 10, 26);
 final _month = DateTime.utc(2026, 10);
 
-MomentRecord _record(String id, {DateTime? date}) => MomentRecord(
+MomentRecord _record(
+  String id, {
+  DateTime? date,
+  String caption = '산책에서 만난 빛',
+}) => MomentRecord(
   id: id,
   recordDate: date ?? _today,
-  caption: '산책에서 만난 빛',
+  caption: caption,
   photos: [
     MomentPhoto(
       id: '$id-photo',
@@ -104,7 +114,8 @@ class _Repository implements MomentsRepository {
   }
 
   @override
-  Future<MomentJournal> listMonth(DateTime month) async {
+  Future<MomentJournal> listMonth(DateTime? requestedMonth) async {
+    final month = requestedMonth ?? _journal().month;
     reads.add(month);
     return readHandler?.call(month) ?? _journal();
   }
@@ -157,12 +168,17 @@ Future<ProviderContainer> _mount(
   Widget screen, {
   bool dark = false,
   double scale = 1,
+  Size viewport = const Size(390, 844),
+  MemoryMomentPublicationRepository? publications,
 }) async {
-  tester.view.physicalSize = const Size(390, 844);
+  tester.view.physicalSize = viewport;
   tester.view.devicePixelRatio = 1;
   final container = ProviderContainer(
     overrides: [
       momentsRepositoryProvider.overrideWithValue(repository),
+      momentPublicationRepositoryProvider.overrideWithValue(
+        publications ?? MemoryMomentPublicationRepository(),
+      ),
       momentEngagementRepositoryProvider.overrideWithValue(engagement),
     ],
   );
@@ -194,14 +210,18 @@ Future<ProviderContainer> _mount(
     ),
   );
   await tester.runAsync(() async {
-    await precacheImage(
-      ResizeImage.resizeIfNeeded(
-        1200,
-        null,
-        const AssetImage('assets/cover/cover1.png'),
-      ),
-      tester.element(find.text('화면 열기')),
-    );
+    // The grid can mount all photos in one frame after the footer is reserved.
+    // Warm the real preview and thumbnail decodes before fake-clock settling.
+    for (final width in [1200, 384]) {
+      await precacheImage(
+        ResizeImage.resizeIfNeeded(
+          width,
+          null,
+          const AssetImage('assets/cover/cover1.png'),
+        ),
+        tester.element(find.text('화면 열기')),
+      );
+    }
   });
   await tester.tap(find.text('화면 열기'));
   await tester.pump(const Duration(milliseconds: 400));
@@ -272,6 +292,34 @@ Future<void> _tap(WidgetTester tester, String key) async {
   final target = find.byKey(ValueKey(key));
   await _reveal(tester, target);
   await tester.tap(target);
+  // PageView builds the pending photo only after navigation. Decode its exact
+  // preview size outside the fake clock before waiting for loading to settle.
+  // First start the scroll ticker, then finish it. Advancing only once starts
+  // the animation at that timestamp, leaving its destination page unbuilt.
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 250));
+  await tester.runAsync(() async {
+    for (final image in tester.widgetList<SnapfitImage>(
+      find.byType(SnapfitImage),
+    )) {
+      if (!image.urlOrGs.startsWith('asset:')) continue;
+      await precacheImage(
+        ResizeImage.resizeIfNeeded(
+          image.memCacheWidth,
+          image.memCacheHeight,
+          AssetImage(image.urlOrGs.substring(6)),
+        ),
+        tester.element(find.byType(SnapfitImage).first),
+      );
+    }
+    for (final image in tester.widgetList<Image>(find.byType(Image))) {
+      await precacheImage(
+        image.image,
+        tester.element(find.byType(Image).first),
+      );
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 60));
+  });
   await tester.pumpAndSettle();
 }
 
@@ -364,31 +412,40 @@ void main() {
     });
   }
   testWidgets(
-    'saved cover uses the generated paper color instead of a stale green canvas',
+    'saved preview shows the saved photo without synthesizing a monthly cover',
     (tester) async {
       final repository = _Repository();
       final engagement = _Engagement();
+      final record = _record('saved');
       final container = await _mount(
         tester,
         repository,
         engagement,
-        MomentSavedPreviewScreen(record: _record('saved'), journal: _journal()),
+        MomentSavedPreviewScreen(record: record, journal: _journal()),
       );
       try {
-        final cover = tester.widget<Container>(
-          find.byKey(const ValueKey('moment-saved-book-cover')),
+        final hero = find.byKey(const ValueKey('moment-saved-book-cover'));
+        final photo = tester.widget<MomentPhotoView>(
+          find.byKey(const ValueKey('moment-saved-photo')),
         );
-        final generated = buildMonthlyMomentAlbum(
-          month: _month,
-          records: [_record('saved')],
-          selectedPhotoIds: const ['saved-photo'],
+        expect(photo.photo, same(record.photos.first));
+        expect(photo.aspectRatio, record.photos.first.aspectRatio);
+        expect(photo.fit, BoxFit.contain);
+        expect(
+          find.descendant(
+            of: hero,
+            matching: find.byType(TemplatePageRenderer),
+          ),
+          findsNothing,
         );
-        final document = jsonDecode(generated.coverLayersJson) as Map;
-        final color = Color(
-          ((document['pages'] as List).first as Map)['backgroundColor'] as int,
+        expect(
+          find.descendant(of: hero, matching: find.textContaining('2026년')),
+          findsNothing,
         );
-        expect((cover.decoration as BoxDecoration).color, color);
-        expect(color, const Color(0xFFE7F8FB));
+        expect(
+          find.descendant(of: hero, matching: find.textContaining('1 / 1')),
+          findsNothing,
+        );
         expect(repository.creates, isEmpty);
       } finally {
         await _close(tester, container, repository);
@@ -463,9 +520,18 @@ void main() {
           find.byKey(const ValueKey('moment-saved-book-cover')),
           findsOneWidget,
         );
+        final image = tester.widget<SnapfitImage>(
+          find
+              .descendant(
+                of: find.byKey(const ValueKey('moment-saved-book-cover')),
+                matching: find.byType(SnapfitImage),
+              )
+              .first,
+        );
+        expect(image.urlOrGs, _record('saved').photos.first.storageUri);
         expect(
-          tester.widget<SnapfitImage>(find.byType(SnapfitImage).first).urlOrGs,
-          'asset:assets/cover/cover1.png',
+          image.fallbackSources,
+          contains('asset:assets/cover/cover1.png'),
         );
         expect(repository.creates, isEmpty);
         expect(repository.appends, isEmpty);
@@ -473,6 +539,146 @@ void main() {
         expect(engagement.events.single.activity, MomentActivity.rewardViewed);
         await _tap(tester, 'moment-saved-return');
         expect(find.text('화면 열기'), findsOneWidget);
+      } finally {
+        await _close(tester, container, repository);
+      }
+    },
+  );
+
+  testWidgets(
+    'saved private record puts the monthly preview first and folds optional feed sharing',
+    (tester) async {
+      final repository = _Repository();
+      final engagement = _Engagement();
+      final publications = MemoryMomentPublicationRepository();
+      final container = await _mount(
+        tester,
+        repository,
+        engagement,
+        MomentSavedPreviewScreen(record: _record('saved'), journal: _journal()),
+        publications: publications,
+      );
+      try {
+        final primary = find.byKey(const ValueKey('moment-saved-preview'));
+        final optional = find.byKey(
+          const ValueKey('moment-saved-publication-options'),
+        );
+        await _reveal(tester, optional);
+        expect(
+          tester.getTopLeft(primary).dy,
+          lessThan(tester.getTopLeft(optional).dy),
+        );
+        expect(tester.getBottomRight(primary).dy, lessThanOrEqualTo(844));
+        expect(
+          find.byKey(const ValueKey('moment-saved-publish')),
+          findsNothing,
+        );
+        await _tap(tester, 'moment-saved-publication-options');
+        expect(
+          find.byKey(const ValueKey('moment-saved-publish')),
+          findsOneWidget,
+        );
+        expect(publications.publications, isEmpty);
+        expect(repository.creates, isEmpty);
+        expect(repository.appends, isEmpty);
+      } finally {
+        await _close(tester, container, repository);
+      }
+    },
+  );
+
+  for (final status in ['published', 'draft']) {
+    testWidgets(
+      'saved $status record keeps feed management discoverable after the monthly action',
+      (tester) async {
+        final repository = _Repository();
+        final engagement = _Engagement();
+        final record = _record('saved');
+        final publications = MemoryMomentPublicationRepository();
+        publications.states[record.id] = MomentPublicationState(
+          recordId: record.id,
+          recordRevision: record.revision,
+          sourceRevision: record.revision,
+          status: status,
+          publicationRevision: 2,
+          workId: 'public-work',
+          photoId: record.photos.single.id,
+          requestId: 'pending-request',
+        );
+        final container = await _mount(
+          tester,
+          repository,
+          engagement,
+          MomentSavedPreviewScreen(record: record, journal: _journal()),
+          publications: publications,
+        );
+        try {
+          await _reveal(
+            tester,
+            find.byKey(const ValueKey('moment-saved-publication-options')),
+          );
+          expect(
+            tester
+                .getTopLeft(find.byKey(const ValueKey('moment-saved-preview')))
+                .dy,
+            lessThan(
+              tester
+                  .getTopLeft(
+                    find.byKey(
+                      const ValueKey('moment-saved-publication-options'),
+                    ),
+                  )
+                  .dy,
+            ),
+          );
+          await _reveal(
+            tester,
+            find.byKey(const ValueKey('moment-saved-make-private')),
+          );
+          expect(
+            find.byKey(const ValueKey('moment-saved-make-private')),
+            findsOneWidget,
+          );
+          if (status == 'draft')
+            expect(
+              find.byKey(const ValueKey('moment-saved-publish')),
+              findsOneWidget,
+            );
+          expect(publications.publications, isEmpty);
+        } finally {
+          await _close(tester, container, repository);
+        }
+      },
+    );
+  }
+
+  testWidgets(
+    'failed optional feed sharing remains open for retry when no draft was created',
+    (tester) async {
+      final repository = _Repository();
+      final engagement = _Engagement();
+      final publications = MemoryMomentPublicationRepository()
+        ..publishError = const MomentException('공개 준비 실패');
+      final container = await _mount(
+        tester,
+        repository,
+        engagement,
+        MomentSavedPreviewScreen(record: _record('saved'), journal: _journal()),
+        publications: publications,
+      );
+      try {
+        await _tap(tester, 'moment-saved-publication-options');
+        await _tap(tester, 'moment-saved-publish');
+        expect(
+          find.byKey(const ValueKey('moment-saved-publish')),
+          findsOneWidget,
+        );
+        expect(
+          find.text('기록은 저장돼 있어요. 피드 공개를 다시 시도하거나 나만 보기로 바꿔 주세요.'),
+          findsOneWidget,
+        );
+        expect(publications.publications, hasLength(1));
+        expect(repository.creates, isEmpty);
       } finally {
         await _close(tester, container, repository);
       }
@@ -706,6 +912,303 @@ void main() {
   );
 
   testWidgets(
+    'existing preview keeps saved pages and synchronizes pending photo order',
+    (tester) async {
+      final repository = _Repository();
+      final engagement = _Engagement();
+      final canvas = coverCanvasBaseSize(coverSizes[1]);
+      final savedDocument = jsonEncode({
+        'printProduct': coverSizes[1].printProduct,
+        'customSettings': {'keep': true},
+        'pages': [
+          {
+            'index': 0,
+            'isCover': true,
+            'backgroundColor': 0xFF20434A,
+            'layers': [
+              LayerExportMapper.toJson(
+                LayerModel(
+                  id: 'my-authored-cover-title',
+                  type: LayerType.text,
+                  position: const Offset(30, 40),
+                  width: 220,
+                  height: 30,
+                  text: '직접 꾸민 제주',
+                  textStyle: const TextStyle(fontSize: 18, color: Colors.white),
+                ),
+                canvasSize: canvas,
+                isCover: true,
+              ),
+            ],
+          },
+          {
+            'index': 1,
+            'isCover': false,
+            'backgroundColor': 0xFFFAF7EF,
+            'custom': 'keep my existing page',
+            'layers': [],
+          },
+        ],
+      });
+      repository.stored = repository.stored.copyWith(
+        ratio: '${coverSizes[1].ratio}',
+        coverLayersJson: savedDocument,
+      );
+      final container = await _mount(
+        tester,
+        repository,
+        engagement,
+        MonthlyMomentPreviewScreen(
+          month: _month,
+          records: [_record('first'), _record('second')],
+          existingAlbumId: 73,
+        ),
+      );
+      try {
+        expect(find.text('기존 앨범 2쪽'), findsOneWidget);
+        expect(find.text('추가 예정 2쪽'), findsOneWidget);
+        expect(
+          tester
+              .widget<PageView>(
+                find.byKey(const ValueKey('monthly-moment-preview')),
+              )
+              .childrenDelegate
+              .estimatedChildCount,
+          4,
+        );
+        expect(
+          tester
+              .widgetList<TemplatePageRenderer>(
+                find.byType(TemplatePageRenderer),
+              )
+              .any(
+                (renderer) => renderer.layers.any(
+                  (layer) => layer.id == 'my-authored-cover-title',
+                ),
+              ),
+          isTrue,
+        );
+        await _tap(tester, 'monthly-preview-pending');
+        final firstPage = tester
+            .widgetList<TemplatePageRenderer>(find.byType(TemplatePageRenderer))
+            .singleWhere(
+              (renderer) => renderer.layers.any(
+                (layer) => layer.id == 'moment-first-photo-photo',
+              ),
+            );
+        final photo = firstPage.layers.singleWhere(
+          (layer) => layer.type == LayerType.image,
+        );
+        expect(firstPage.designCanvasSize, canvas);
+        expect(photo.width / photo.height, closeTo(600 / 800, .0001));
+        expect(photo.imageZoom, 1);
+        if (captureDirectory != null) {
+          await _capture(
+            tester,
+            '$captureDirectory/monthly-append-preview.png',
+          );
+        }
+
+        await _tap(tester, 'moment-photo-select-first-photo');
+        await _tap(tester, 'monthly-preview-pending');
+        expect(find.text('추가 예정 1쪽'), findsOneWidget);
+        expect(
+          tester
+              .widgetList<TemplatePageRenderer>(
+                find.byType(TemplatePageRenderer),
+              )
+              .any(
+                (renderer) => renderer.layers.any(
+                  (layer) => layer.id == 'moment-first-photo-photo',
+                ),
+              ),
+          isFalse,
+        );
+        await _tap(tester, 'moment-photo-select-second-photo');
+        await _reveal(
+          tester,
+          find.byKey(const ValueKey('monthly-moment-append')),
+        );
+        expect(
+          tester
+              .widget<FilledButton>(
+                find.byKey(const ValueKey('monthly-moment-append')),
+              )
+              .onPressed,
+          isNull,
+        );
+        await _reveal(tester, find.text('추가 예정 0쪽'));
+        expect(
+          tester
+              .widget<ChoiceChip>(
+                find.byKey(const ValueKey('monthly-preview-pending')),
+              )
+              .onSelected,
+          isNull,
+        );
+        await _tap(tester, 'moment-photo-select-second-photo');
+        await _tap(tester, 'moment-photo-select-first-photo');
+        await _tap(tester, 'monthly-preview-pending');
+        final preview = tester.widget<PageView>(
+          find.byKey(const ValueKey('monthly-moment-preview')),
+        );
+        expect(preview.controller!.page, closeTo(2, .001));
+        expect(
+          tester
+              .widgetList<TemplatePageRenderer>(
+                find.byType(TemplatePageRenderer),
+              )
+              .any(
+                (renderer) => renderer.layers.any(
+                  (layer) => layer.id == 'moment-second-photo-photo',
+                ),
+              ),
+          isTrue,
+        );
+        await _tap(tester, 'monthly-preview-saved');
+        expect(preview.controller!.page, closeTo(0, .001));
+        expect(repository.stored.coverLayersJson, savedDocument);
+        expect(repository.appends, isEmpty);
+        expect(repository.creates, isEmpty);
+        tester.state<NavigatorState>(find.byType(Navigator).first).pop();
+        await tester.pumpAndSettle();
+        expect(find.text('화면 열기'), findsOneWidget);
+        expect(repository.appends, isEmpty);
+      } finally {
+        await _close(tester, container, repository);
+      }
+    },
+  );
+
+  testWidgets(
+    'feed note stays outside the pending photo page and source changes stay synchronized',
+    (tester) async {
+      final repository = _Repository();
+      final engagement = _Engagement();
+      final caption = List.filled(100, '가').join();
+      var records = [_record('long', caption: caption)];
+      late StateSetter updateRecords;
+      final container = await _mount(
+        tester,
+        repository,
+        engagement,
+        StatefulBuilder(
+          builder: (context, setState) {
+            updateRecords = setState;
+            return MonthlyMomentPreviewScreen(
+              month: _month,
+              records: records,
+              existingAlbumId: 73,
+            );
+          },
+        ),
+      );
+      try {
+        // Feed text stays out of the album; the selected photo adds one page.
+        await _reveal(tester, find.text('추가 예정 1쪽'));
+        expect(find.text('추가 예정 1쪽'), findsOneWidget);
+        await _tap(tester, 'monthly-preview-pending');
+        final renderedLayers = tester
+            .widgetList<TemplatePageRenderer>(find.byType(TemplatePageRenderer))
+            .expand((renderer) => renderer.layers);
+        expect(
+          renderedLayers.any((layer) => layer.id == 'moment-long-photo-photo'),
+          isTrue,
+        );
+        expect(renderedLayers.any((layer) => layer.text == caption), isFalse);
+        updateRecords(() => records = []);
+        await tester.pumpAndSettle();
+        expect(
+          tester
+              .widget<MonthlyMomentPreviewScreen>(
+                find.byType(MonthlyMomentPreviewScreen),
+              )
+              .records,
+          isEmpty,
+        );
+        // Source updates can rebuild the lazy list; reveal its preview controls.
+        await _reveal(
+          tester,
+          find.byKey(const ValueKey('monthly-preview-pending')),
+        );
+        expect(find.text('추가 예정 0쪽'), findsOneWidget);
+        expect(
+          tester
+              .widget<ChoiceChip>(
+                find.byKey(const ValueKey('monthly-preview-pending')),
+              )
+              .onSelected,
+          isNull,
+        );
+        expect(
+          tester
+              .widget<PageView>(
+                find.byKey(const ValueKey('monthly-moment-preview')),
+              )
+              .controller!
+              .page,
+          closeTo(0, .001),
+        );
+        expect(
+          tester
+              .widgetList<TemplatePageRenderer>(
+                find.byType(TemplatePageRenderer),
+              )
+              .any(
+                (renderer) =>
+                    renderer.layers.any((layer) => layer.text == caption),
+              ),
+          isFalse,
+        );
+        expect(repository.appends, isEmpty);
+        expect(repository.creates, isEmpty);
+      } finally {
+        await _close(tester, container, repository);
+      }
+    },
+  );
+
+  testWidgets('another owners album cannot populate an append preview', (
+    tester,
+  ) async {
+    final repository = _Repository();
+    repository.stored = repository.stored.copyWith(userId: 'other');
+    final engagement = _Engagement();
+    final container = await _mount(
+      tester,
+      repository,
+      engagement,
+      MonthlyMomentPreviewScreen(
+        month: _month,
+        records: [_record('new')],
+        existingAlbumId: 73,
+      ),
+    );
+    try {
+      expect(find.text('내가 직접 꾸민 제주'), findsNothing);
+      expect(
+        find.byKey(const ValueKey('monthly-moment-preview')),
+        findsNothing,
+      );
+      await _reveal(
+        tester,
+        find.byKey(const ValueKey('monthly-moment-append')),
+      );
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.byKey(const ValueKey('monthly-moment-append')),
+            )
+            .onPressed,
+        isNull,
+      );
+      expect(repository.appends, isEmpty);
+    } finally {
+      await _close(tester, container, repository);
+    }
+  });
+
+  testWidgets(
     'append is explicit single flight and opens same preserved album',
     (tester) async {
       final repository = _Repository();
@@ -857,6 +1360,87 @@ void main() {
     },
   );
 
+  testWidgets('late append result does not cover a different current route', (
+    tester,
+  ) async {
+    final repository = _Repository();
+    final engagement = _Engagement();
+    final pending = Completer<Album>();
+    var opened = false;
+    repository.appendHandler = () => pending.future;
+    final container = await _mount(
+      tester,
+      repository,
+      engagement,
+      MonthlyMomentPreviewScreen(
+        month: _month,
+        records: [_record('new')],
+        existingAlbumId: 73,
+        onAlbumCreated: (_) async => opened = true,
+      ),
+    );
+    try {
+      await _tap(tester, 'monthly-moment-append');
+      final navigator = tester.state<NavigatorState>(
+        find.byType(Navigator).first,
+      );
+      unawaited(
+        navigator.push<void>(
+          MaterialPageRoute<void>(
+            builder: (_) => const Scaffold(body: Text('별도 화면')),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      pending.complete(repository.stored);
+      await tester.pumpAndSettle();
+      expect(find.text('별도 화면'), findsOneWidget);
+      expect(opened, isFalse);
+      expect(repository.appends, hasLength(1));
+      expect(repository.creates, isEmpty);
+      expect(tester.takeException(), isNull);
+    } finally {
+      await _close(tester, container, repository);
+    }
+  });
+
+  for (final layout in [
+    (viewport: const Size(320, 844), scale: 2.0, dark: true),
+    (viewport: const Size(844, 390), scale: 1.4, dark: false),
+  ]) {
+    testWidgets(
+      'append preview supports ${layout.viewport} at ${layout.scale} text',
+      (tester) async {
+        final repository = _Repository();
+        final engagement = _Engagement();
+        final container = await _mount(
+          tester,
+          repository,
+          engagement,
+          MonthlyMomentPreviewScreen(
+            month: _month,
+            records: [_record('new')],
+            existingAlbumId: 73,
+          ),
+          viewport: layout.viewport,
+          scale: layout.scale,
+          dark: layout.dark,
+        );
+        try {
+          await _tap(tester, 'monthly-preview-pending');
+          await _reveal(
+            tester,
+            find.byKey(const ValueKey('monthly-moment-append')),
+          );
+          expect(tester.takeException(), isNull);
+          expect(repository.appends, isEmpty);
+        } finally {
+          await _close(tester, container, repository);
+        }
+      },
+    );
+  }
+
   testWidgets(
     'existing album fetch error can retry without creating or appending',
     (tester) async {
@@ -888,6 +1472,135 @@ void main() {
       }
     },
   );
+
+  // A month can contain many more photographs than the nine chosen for a book.
+  // Finishing a selection must not require scrolling past every unused photo.
+  for (final sample in [
+    (size: const Size(390, 844), dark: false, scale: 1.0),
+    (size: const Size(320, 568), dark: true, scale: 1.6),
+  ]) {
+    testWidgets(
+      'monthly actions stay reachable with 36 photos at ${sample.size} scale=${sample.scale}',
+      (tester) async {
+        final repository = _Repository();
+        final engagement = _Engagement();
+        final records = [
+          for (var day = 1; day <= 18; day++)
+            MomentRecord(
+              id: 'layout-$day',
+              recordDate: DateTime.utc(2026, 10, day),
+              caption: '하루의 순간',
+              photos: [
+                for (var photo = 0; photo < 2; photo++)
+                  MomentPhoto(
+                    id: 'layout-$day-$photo',
+                    path: 'owner/moments/layout-$day/$photo.png',
+                    url: 'asset:assets/cover/cover1.png',
+                    width: 600,
+                    height: 800,
+                  ),
+              ],
+              revision: 1,
+            ),
+        ];
+        final container = await _mount(
+          tester,
+          repository,
+          engagement,
+          MonthlyMomentPreviewScreen(month: _month, records: records),
+          viewport: sample.size,
+          dark: sample.dark,
+          scale: sample.scale,
+        );
+        try {
+          final action = find.byKey(const ValueKey('monthly-moment-create'));
+          expect(action.hitTestable(), findsOneWidget);
+          final chosen = selectMonthlyMomentPhotoIds(
+            month: _month,
+            records: records,
+          ).first;
+          final photo = find.byKey(ValueKey('moment-photo-select-$chosen'));
+          await _reveal(tester, photo);
+          await tester.tap(photo);
+          await tester.pumpAndSettle();
+          expect(action.hitTestable(), findsOneWidget);
+          expect(find.text('선택한 사진 8 / 9장').hitTestable(), findsOneWidget);
+          expect(repository.creates, isEmpty);
+          expect(tester.takeException(), isNull);
+        } finally {
+          await _close(tester, container, repository);
+        }
+      },
+    );
+  }
+
+  testWidgets(
+    'existing monthly actions and retry remain visible on a small screen',
+    (tester) async {
+      final repository = _Repository()
+        ..appendHandler = () async =>
+            throw const MomentException('다시 시도해 주세요.');
+      final engagement = _Engagement();
+      final container = await _mount(
+        tester,
+        repository,
+        engagement,
+        MonthlyMomentPreviewScreen(
+          month: _month,
+          records: [_record('old'), _record('new')],
+          existingAlbumId: 73,
+          importedPhotoIds: const ['old-photo'],
+        ),
+        viewport: const Size(320, 568),
+        dark: true,
+        scale: 1.6,
+      );
+      try {
+        final append = find.byKey(const ValueKey('monthly-moment-append'));
+        final open = find.byKey(const ValueKey('monthly-moment-open-existing'));
+        expect(append.hitTestable(), findsOneWidget);
+        expect(open.hitTestable(), findsOneWidget);
+        await tester.tap(append);
+        await tester.pumpAndSettle();
+        expect(find.text('다시 시도해 주세요.').hitTestable(), findsOneWidget);
+        expect(append.hitTestable(), findsOneWidget);
+        expect(open.hitTestable(), findsOneWidget);
+        expect(repository.appends, hasLength(1));
+        expect(tester.takeException(), isNull);
+      } finally {
+        await _close(tester, container, repository);
+      }
+    },
+  );
+
+  testWidgets('monthly action stays above the keyboard on a small screen', (
+    tester,
+  ) async {
+    final repository = _Repository();
+    final engagement = _Engagement();
+    final container = await _mount(
+      tester,
+      repository,
+      engagement,
+      MonthlyMomentPreviewScreen(month: _month, records: [_record('saved')]),
+      viewport: const Size(320, 568),
+      scale: 1.6,
+    );
+    addTearDown(tester.view.resetViewInsets);
+    try {
+      // Test keyboards are not painted, so check against their occupied bounds.
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      await tester.pumpAndSettle();
+      final actions = find.byKey(const ValueKey('monthly-moment-actions'));
+      final create = find.byKey(const ValueKey('monthly-moment-create'));
+      expect(tester.getBottomLeft(actions).dy, lessThanOrEqualTo(268));
+      expect(tester.getBottomLeft(create).dy, lessThanOrEqualTo(268));
+      expect(create.hitTestable(), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    } finally {
+      await _close(tester, container, repository);
+    }
+  });
 
   testWidgets('reward supports dark theme and large text without overflow', (
     tester,

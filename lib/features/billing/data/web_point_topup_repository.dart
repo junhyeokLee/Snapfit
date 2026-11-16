@@ -120,12 +120,19 @@ class WebPointTopupRepository {
     return request;
   }
 
-  Future<WebPointTopup> status(String owner, String id) async => _session(
-    owner,
-    await _call(owner, {'action': 'status', 'paymentId': id}),
-  );
-  Future<WebPointTopup> confirm(String owner, String id) async => _session(
-    owner,
-    await _call(owner, {'action': 'confirm', 'paymentId': id}),
-  );
+  Future<WebPointTopup> _invoice(String owner, String id, String action) async {
+    final session = _session(
+      owner,
+      await _call(owner, {'action': action, 'paymentId': id}),
+    );
+    if (session.paymentId != id) {
+      throw const FormatException('web_point_invoice_identity_mismatch');
+    }
+    return session;
+  }
+
+  Future<WebPointTopup> status(String owner, String id) =>
+      _invoice(owner, id, 'status');
+  Future<WebPointTopup> confirm(String owner, String id) =>
+      _invoice(owner, id, 'confirm');
 }

@@ -7,6 +7,7 @@ import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/theme/snapfit_design_tokens.dart';
 import 'creation_workspace.dart';
 import '../../../ai_album/domain/ai_template_job.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 class AiTemplateGeneratingStep extends StatefulWidget {
   const AiTemplateGeneratingStep({
@@ -299,7 +300,7 @@ class _StatusArea extends StatelessWidget {
         TextButton.icon(
           key: const ValueKey('ai-generation-pause'),
           onPressed: onPause,
-          icon: const Icon(Icons.schedule_outlined, size: 18),
+          icon: const ExperienceIcon('Clock', size: 18),
           label: const Text('나중에 확인'),
         ),
       ],

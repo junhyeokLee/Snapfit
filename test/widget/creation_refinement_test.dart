@@ -59,17 +59,20 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    final travel = find.byKey(const ValueKey('creation-topic-여행'));
+    await tester.tap(find.byKey(const ValueKey('creation-open-catalog')));
+    await tester.pumpAndSettle();
+    final travel = find.byKey(const ValueKey('creation-category-여행'));
     await tester.ensureVisible(travel);
     await tester.pumpAndSettle();
     expect(travel.hitTestable(), findsOneWidget);
     await tester.tap(travel);
     await tester.pumpAndSettle();
-    expect(tester.widget<ChoiceChip>(travel).selected, isTrue);
+    expect(tester.widget<Semantics>(travel).properties.selected, isTrue);
     expect(find.byKey(const ValueKey('creation-template-3')), findsNothing);
-    await tester.ensureVisible(find.text('유료').first);
+    final paid = find.byKey(const ValueKey('creation-price-유료'));
+    await tester.ensureVisible(paid);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('유료').first);
+    await tester.tap(paid);
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('creation-template-1')), findsNothing);
     expect(find.byKey(const ValueKey('creation-template-2')), findsOneWidget);
@@ -78,12 +81,26 @@ void main() {
     await tester.tap(find.byTooltip('즐겨찾기만 보기'));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('creation-template-2')), findsOneWidget);
-    await tester.ensureVisible(find.byKey(const ValueKey('creation-topic-웨딩')));
+    final wedding = find.byKey(const ValueKey('creation-category-웨딩'));
+    await tester.ensureVisible(wedding);
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('creation-topic-웨딩')));
+    await tester.tap(wedding);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('전체 보기'));
+    expect(tester.widget<Semantics>(wedding).properties.selected, isTrue);
+    expect(tester.widget<Semantics>(travel).properties.selected, isFalse);
+    expect(find.text('현재 조건에 맞는 즐겨찾기가 없어요.'), findsOneWidget);
+    expect(find.byKey(const ValueKey('creation-template-2')), findsNothing);
+    final clear = find.byKey(const ValueKey('creation-clear-filters'));
+    await tester.ensureVisible(clear);
+    await tester.tap(clear);
     await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<Semantics>(find.byKey(const ValueKey('creation-category-전체')))
+          .properties
+          .selected,
+      isTrue,
+    );
     await tester.scrollUntilVisible(
       find.byKey(const ValueKey('creation-template-3')),
       120,
@@ -227,7 +244,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      for (final action in ['글', '사진', '레이아웃', '템플릿', '재배치', '꾸미기', '배경']) {
+      for (final action in ['글', '사진', '레이아웃', '템플릿', '겹침 순서', '꾸미기', '배경']) {
         await tester.ensureVisible(find.text(action));
         await tester.pumpAndSettle();
         await tester.tap(find.text(action));

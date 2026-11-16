@@ -1,0 +1,45 @@
+{
+  "date": "2026-11-11",
+  "resolvedPreviousFailures": 5,
+  "tests": {
+    "file": "test/widget/home_book_depth_test.dart",
+    "passed": 76,
+    "failed": 0,
+    "skipped": 0,
+    "complete": true
+  },
+  "analysis": "No issues found!",
+  "independentReview": "No findings; assertions retained",
+  "changedProductCode": false,
+  "changedTestFiles": [
+    "test/widget/home_book_depth_test.dart"
+  ],
+  "testSha256": "af7b53ebed518fc2e152b8c66fade7dbaea606c1514ef347df0528fa53efb1ee",
+  "productSourceMatchesPreviousResult": {
+    "lib/features/album/presentation/widgets/home/home_album_destination.dart": true,
+    "lib/features/album/presentation/widgets/home/home_album_slider.dart": true,
+    "lib/features/album/presentation/widgets/home/home_moment_summary_card.dart": true
+  },
+  "rasterizerPackageRestored": true,
+  "experiments": {
+    "before": {
+      "passed": 6,
+      "failed": 4
+    },
+    "cacheOnly": {
+      "passed": 6,
+      "failed": 4
+    },
+    "manifestOnly": {
+      "passed": 6,
+      "failed": 4
+    },
+    "both": {
+      "passed": 10,
+      "failed": 0
+    }
+  },
+  "deviceVerified": false,
+  "appBuiltOrDeployed": false,
+  "fullRepositoryTestsPassed": false
+}

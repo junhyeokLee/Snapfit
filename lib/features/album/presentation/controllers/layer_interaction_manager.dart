@@ -9,6 +9,7 @@ import '../../../../core/constants/cover_size.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
 import '../../domain/entities/layer.dart';
 import '../widgets/editor/selection_frame.dart';
+import '../widgets/layer_canvas_clip.dart';
 import 'layer_transform_geometry.dart';
 
 /// 스타일 레이어 인터랙션 관리자
@@ -26,6 +27,10 @@ class LayerInteractionManager {
 
   /// 이미지 플레이스홀더(사진 없음) 탭 시 콜백 – 페이지 편집에서 바로 갤러리 진입용
   final void Function(LayerModel layer)? onTapPlaceholder;
+
+  /// Hosts can protect required artwork while keeping the same editor tools.
+  /// Album pages allow every layer to be removed by default.
+  final bool Function(LayerModel layer)? canDeleteLayer;
 
   /// 읽기 전용 미리보기 모드 (제스처 없음, 레이어만 표시)
   final bool _isPreviewMode;
@@ -163,6 +168,7 @@ class LayerInteractionManager {
     required this.onEditText,
     this.onLayerTap,
     this.onTapPlaceholder,
+    this.canDeleteLayer,
     bool isPreviewMode = false,
     this.showSelectionControls = true,
     this.showHandles = true,
@@ -180,6 +186,7 @@ class LayerInteractionManager {
       onEditText = _noPrintEdit,
       onLayerTap = null,
       onTapPlaceholder = null,
+      canDeleteLayer = null,
       _isPreviewMode = true,
       showSelectionControls = false,
       showHandles = false,
@@ -260,8 +267,15 @@ class LayerInteractionManager {
     if (_disposed || _isPreviewMode || !isInCover(globalPoint)) return const [];
     final layers = ref.read(albumEditorViewModelProvider).value?.layers;
     if (layers == null) return const [];
+    final canvasBox = coverKey.currentContext?.findRenderObject();
+    final canvasPoint = canvasBox is RenderBox && canvasBox.attached
+        ? canvasBox.globalToLocal(globalPoint)
+        : null;
     final hits = <LayerModel>[];
     for (final layer in sortByZ(layers).reversed) {
+      if (layer.canvasClip case final clip?) {
+        if (canvasPoint == null || !clip.contains(canvasPoint)) continue;
+      }
       final box = _layerKeys[layer.id]?.currentContext?.findRenderObject();
       if (box is! RenderBox || !box.attached || !box.hasSize) continue;
       final point = box.globalToLocal(globalPoint);
@@ -863,6 +877,10 @@ class LayerInteractionManager {
   void deleteSelected() {
     final id = _selectedLayerId;
     if (id == null) return;
+    final layer = ref
+        .read(albumEditorViewModelProvider.notifier)
+        .findLayerById(id);
+    if (layer == null || !isLayerDeletable(layer)) return;
     _cancelActiveTransforms();
 
     // ViewModel에서 레이어 제거
@@ -884,6 +902,9 @@ class LayerInteractionManager {
       _imagePanMode = false;
     });
   }
+
+  bool isLayerDeletable(LayerModel layer) =>
+      canDeleteLayer?.call(layer) ?? true;
 
   /// 활성 레이어 목록과 내부 상태 동기화 (삭제된 레이어 상태 정리)
   void syncLayers(List<LayerModel> activeLayers) {
@@ -922,6 +943,23 @@ class LayerInteractionManager {
 
   /// 제스처를 처리할 수 있는 인터랙티브 레이어 위젯 생성
   Widget buildInteractiveLayer({
+    required LayerModel layer,
+    required double baseWidth,
+    required double baseHeight,
+    required Widget child,
+    bool isCover = false,
+  }) => clipPositionedLayerToCanvas(
+    _buildInteractiveLayerContent(
+      layer: layer,
+      baseWidth: baseWidth,
+      baseHeight: baseHeight,
+      child: child,
+      isCover: isCover,
+    ),
+    layer.canvasClip,
+  );
+
+  Widget _buildInteractiveLayerContent({
     required LayerModel layer,
     required double baseWidth,
     required double baseHeight,

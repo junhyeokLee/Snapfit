@@ -20,6 +20,7 @@ import '../providers/album_edit_session_provider.dart';
 import '../views/page_editor_screen.dart';
 import 'print_photo_issue.dart';
 import '../../../../core/utils/context_extensions.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 class PrintPhotoEditUnavailable implements Exception {
   const PrintPhotoEditUnavailable(this.message);
@@ -192,16 +193,13 @@ Future<bool> openPrintPhotoEditor(
       edit: (album, snapshot) async {
         if (!active()) return false;
         final saved = await Navigator.of(context).push<bool>(
-          MaterialPageRoute(
-            settings: WebAppRouteSettings(
-              WebAppLocation(WebAppPage.editor, '$albumId'),
-            ),
-            builder: (_) => PrintPhotoCorrectionEditor(
+          snapFitRoute(page: PrintPhotoCorrectionEditor(
               album: printPhotoEditableAlbum(album, snapshot),
               target: target,
               expectedOwner: startingOwner!,
-            ),
-          ),
+            ), settings: WebAppRouteSettings(
+              WebAppLocation(WebAppPage.editor, '$albumId'),
+            )),
         );
         if (active()) {
           ref.invalidate(homeViewModelProvider);

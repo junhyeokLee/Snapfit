@@ -58,19 +58,27 @@ abstract class AdminHomeNewsRepository {
 class SupabaseAdminHomeNewsRepository implements AdminHomeNewsRepository {
   SupabaseAdminHomeNewsRepository(this.client) {
     _actor = currentUserId;
-    _subscription = client.auth.onAuthStateChange.listen((event) {
-      final next = _adminId(event.session?.user);
-      if (next != _actor) {
-        _actor = next;
-        _revision++;
-      }
-    });
+    _subscription = client.auth.onAuthStateChange.listen(
+      (event) {
+        final next = _adminId(event.session?.user);
+        if (next != _actor) {
+          _actor = next;
+          _revision++;
+        }
+      },
+      onError: (Object _, StackTrace __) {
+        // A failed token refresh is not a sign-out. Invalidate pending replies
+        // while retaining the SDK's real account for a fresh authorized retry.
+        _connectionRevision++;
+      },
+    );
   }
 
   final SupabaseClient client;
   late final StreamSubscription<AuthState> _subscription;
   String? _actor;
   int _revision = 0;
+  int _connectionRevision = 0;
 
   @override
   String? get currentUserId => _adminId(client.auth.currentUser);
@@ -81,12 +89,16 @@ class SupabaseAdminHomeNewsRepository implements AdminHomeNewsRepository {
   ]) async {
     final owner = currentUserId;
     final revision = _revision;
+    final connection = _connectionRevision;
     if (owner == null) throw StateError('새 소식을 관리할 권한이 필요합니다.');
     final raw = await client
         .rpc(rpc, params: params)
         .timeout(const Duration(seconds: 15));
     if (owner != currentUserId || revision != _revision) {
       throw StateError('계정이 변경됐습니다. 운영 화면을 다시 열어주세요.');
+    }
+    if (connection != _connectionRevision) {
+      throw StateError('연결 상태를 확인하지 못했습니다. 운영 화면을 다시 열어주세요.');
     }
     if (raw is! Map || raw['userId'] != owner) {
       throw const FormatException('새 소식 운영 계정을 확인할 수 없어요.');

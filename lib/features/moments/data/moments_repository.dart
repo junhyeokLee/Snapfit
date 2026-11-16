@@ -2,10 +2,13 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/constants/cover_size.dart';
+import '../../../core/fonts/document_fonts.dart';
 import '../../album/domain/entities/album.dart';
 import '../../album/domain/repositories/album_repository.dart';
 import '../../billing/data/billing_repository.dart';
 import '../domain/moment_record.dart';
+import '../domain/moment_photo_design.dart';
 import '../domain/monthly_album_builder.dart';
 import 'moment_photo_codec.dart';
 
@@ -14,15 +17,22 @@ class MomentUpload {
     required this.id,
     required this.bytes,
     required this.filename,
+    this.design,
   });
   final String id, filename;
   final Uint8List bytes;
+  final MomentPhotoDesign? design;
+
+  MomentUpload withDesign(MomentPhotoDesign? value) =>
+      MomentUpload(id: id, bytes: bytes, filename: filename, design: value);
 }
 
 abstract class MomentsRepository {
   String? get currentUserId;
   Stream<String?> get authChanges;
-  Future<MomentJournal> listMonth(DateTime month);
+
+  /// null은 기기 날짜와 무관하게 서버가 선택한 현재 월을 읽는다.
+  Future<MomentJournal> listMonth(DateTime? month);
   Future<MomentRecord> save({
     required String id,
     required DateTime recordDate,
@@ -52,19 +62,30 @@ class SupabaseMomentsRepository implements MomentsRepository {
     this.client, {
     required this.albums,
     required this.billing,
-  }) {
+    Future<void> Function()? prepareMonthlyFonts,
+  }) : _prepareMonthlyFonts = prepareMonthlyFonts ?? _prepareFonts {
     _actor = currentUserId;
-    _subscription = client.auth.onAuthStateChange.listen((state) {
-      final next = state.session?.user.id;
-      if (next != _actor) {
-        _actor = next;
+    _subscription = client.auth.onAuthStateChange.listen(
+      (state) {
+        final next = state.session?.user.id;
+        if (next != _actor) {
+          _actor = next;
+          _revision++;
+        }
+      },
+      onError: (Object _, StackTrace __) {
+        // A failed/offline refresh invalidates pending work without becoming
+        // an unhandled auth-stream error or accepting an obsolete response.
         _revision++;
-      }
-    });
+      },
+    );
   }
   final SupabaseClient client;
   final AlbumRepository albums;
   final BillingRepository billing;
+  final Future<void> Function() _prepareMonthlyFonts;
+  static Future<void> _prepareFonts() =>
+      DocumentFonts.ensure(monthlyMomentFontFamilies);
   late final StreamSubscription<AuthState> _subscription;
   String? _actor;
   int _revision = 0;
@@ -110,10 +131,10 @@ class SupabaseMomentsRepository implements MomentsRepository {
   }
 
   @override
-  Future<MomentJournal> listMonth(DateTime month) async {
+  Future<MomentJournal> listMonth(DateTime? month) async {
     final session = _session();
     final raw = await _rpc('get_moment_journal', {
-      'p_month': momentDateKey(momentMonth(month)),
+      'p_month': month == null ? null : momentDateKey(momentMonth(month)),
     }, session);
     // Images resolve lazily through SnapfitImage's session-aware cache. A
     // preview request must not block the journal or hide its captions/actions.
@@ -216,6 +237,7 @@ class SupabaseMomentsRepository implements MomentsRepository {
             path: path,
             width: prepared.width,
             height: prepared.height,
+            design: upload.design,
           ),
         );
         continue;
@@ -249,6 +271,7 @@ class SupabaseMomentsRepository implements MomentsRepository {
           path: path,
           width: prepared.width,
           height: prepared.height,
+          design: upload.design,
         ),
       );
     }
@@ -317,6 +340,12 @@ class SupabaseMomentsRepository implements MomentsRepository {
     required String title,
   }) async {
     final session = _session();
+    await _prepareMonthlyFonts();
+    await DocumentFonts.ensure({
+      for (final record in selectedRecords)
+        for (final photo in record.photos) ...?photo.design?.fontFamilies,
+    });
+    _check(session);
     final request = buildMonthlyMomentAlbum(
       month: month,
       records: selectedRecords,
@@ -352,6 +381,11 @@ class SupabaseMomentsRepository implements MomentsRepository {
     required List<String> selectedPhotoIds,
   }) async {
     final session = _session();
+    await DocumentFonts.ensure({
+      for (final record in selectedRecords)
+        for (final photo in record.photos) ...?photo.design?.fontFamilies,
+    });
+    _check(session);
     final journal = await listMonth(month);
     _check(session);
     final albumId = journal.monthlyAlbumId;
@@ -363,10 +397,13 @@ class SupabaseMomentsRepository implements MomentsRepository {
         .where((id) => !journal.monthlyAlbumPhotoIds.contains(id))
         .toList(growable: false);
     if (pending.isEmpty) return album;
+    await _prepareMonthlyFonts();
+    _check(session);
     final pages = buildMonthlyMomentAppendPages(
       month: month,
       records: selectedRecords,
       selectedPhotoIds: pending,
+      canvasSize: coverCanvasBaseSize(album.physicalCoverSize),
     );
     await _rpc('append_moment_month_album', {
       'p_month': momentDateKey(momentMonth(month)),
@@ -385,6 +422,19 @@ class SupabaseMomentsRepository implements MomentsRepository {
 
 String momentServerError(String message, String? code) {
   message = message.toLowerCase();
+  if (message.contains('day_locked') ||
+      message.contains('day_changed') ||
+      message.contains('past_photo') ||
+      message.contains('today_only') ||
+      message.contains('record_date_immutable')) {
+    return '사진은 한국 시간 기준 당일에만 추가하거나 바꿀 수 있어요. 지난 기록은 글만 수정할 수 있어요.';
+  }
+  if (message.contains('design_material_unavailable')) {
+    return '선택한 꾸미기 소재의 사용 권한을 확인해 주세요. 사진을 열어 소재를 다시 골라 주세요.';
+  }
+  if (message.contains('invalid_design')) {
+    return '꾸민 사진 정보를 확인하지 못했어요. 사진을 다시 열어 적용해 주세요.';
+  }
   if (message.contains('month_full'))
     return '한 달에 기록을 100개까지 남길 수 있어요. 기존 기록을 다듬어 주세요.';
   if (message.contains('album_full'))
@@ -401,7 +451,7 @@ String momentServerError(String message, String? code) {
   if (message.contains('future') ||
       message.contains('date') ||
       message.contains('invalid_month'))
-    return '기록 날짜를 확인해 주세요. 오늘까지의 순간을 남길 수 있어요.';
+    return '기록 날짜를 확인해 주세요. 사진은 한국 시간 기준 오늘에만 남길 수 있어요.';
   if (message.contains('photo') || message.contains('asset'))
     return '사진을 확인하지 못했어요. 목록을 새로고침하고 다시 시도해 주세요.';
   if (message.contains('auth') || code == '42501')

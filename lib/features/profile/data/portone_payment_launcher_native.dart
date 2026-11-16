@@ -6,6 +6,7 @@ import 'package:portone_flutter/v2/model/request/payment_request.dart';
 import 'package:portone_flutter/v2/portone_payment.dart';
 
 import '../domain/portone_payment.dart';
+import '../../../shared/widgets/experience_icon.dart';
 
 bool _requestOpen = false;
 
@@ -76,7 +77,7 @@ class _PortOneTestPaymentPageState extends State<_PortOneTestPaymentPage> {
         title: Text(request.environment == 'test' ? '개발 결제 테스트' : '앨범 결제'),
         leading: IconButton(
           tooltip: '결제 창 닫기',
-          icon: const Icon(Icons.close),
+          icon: const ExperienceIcon('X'),
           onPressed: () => _finish(const PortOneSdkResult.canceled()),
         ),
       ),

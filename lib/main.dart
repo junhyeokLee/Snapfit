@@ -24,6 +24,7 @@ import 'core/theme/theme_mode_controller.dart';
 import 'core/utils/app_logger.dart';
 import 'core/utils/frame_timing_monitor.dart';
 import 'core/cache/memory_pressure_caches.dart';
+import 'core/supabase/auth_request_http_client.dart';
 import 'features/album/presentation/views/album_create_flow_screen.dart';
 import 'features/album/presentation/views/album_creation_entry_screen.dart';
 import 'features/album/presentation/utils/album_creation_entry.dart';
@@ -59,8 +60,10 @@ import 'features/profile/data/order_repository.dart';
 import 'features/album/presentation/views/print_order_complete_screen.dart';
 import 'features/profile/presentation/views/order_history_screen.dart';
 import 'features/profile/presentation/views/my_page_screen.dart';
+import 'features/profile/presentation/views/safety_management_screen.dart';
 import 'features/social/presentation/views/social_feed_screen.dart';
 import 'features/social/presentation/views/social_profile_screen.dart';
+import 'features/social/presentation/views/social_moment_month_screen.dart';
 import 'features/attendance/presentation/views/attendance_screen.dart';
 import 'features/moments/presentation/moments_navigation.dart';
 import 'features/referral/domain/referral_link.dart';
@@ -80,7 +83,7 @@ import 'shared/web/web_document_theme.dart';
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await Supabase.initialize(url: Env.supabaseUrl, anonKey: Env.supabaseAnonKey);
+  await _initializeAppSupabase();
   AppLogger.debug('[FCM] background message: ${message.messageId}');
 }
 
@@ -88,6 +91,7 @@ Future<void> _initializeAppSupabase() async {
   await Supabase.initialize(
     url: Env.supabaseUrl,
     anonKey: Env.supabaseAnonKey,
+    httpClient: AuthRequestHttpClient(supabaseUrl: Env.supabaseUrl),
     authOptions: FlutterAuthClientOptions(
       authFlowType: AuthFlowType.pkce,
       detectSessionInUriPredicate: kIsWeb
@@ -218,6 +222,7 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
             .observe(event.session?.user.id);
         ref.invalidate(myPointBalanceProvider);
         ref.invalidate(myPointLedgerProvider);
+        ref.invalidate(pointLedgerHistoryProvider);
         ref.invalidate(notificationInboxProvider);
         ref.invalidate(notificationUnreadCountProvider);
         ref.invalidate(myOrderHistoryProvider);
@@ -527,6 +532,10 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
           '${target.id}',
         ),
         NotificationContentKind.moments => WebAppLocation.moments,
+        NotificationContentKind.work => WebAppLocation.socialWork(
+          target.workId,
+          showComments: target.showComments,
+        ),
       });
       return;
     }
@@ -608,6 +617,25 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
           ),
         );
         await Future.any<void>([ready.future, opening.cancelled]);
+      } else if (opening.target.kind == NotificationContentKind.work) {
+        if (!current()) return;
+        unawaited(
+          nav.push<void>(
+            MaterialPageRoute<void>(
+              settings: WebAppRouteSettings(
+                WebAppLocation.socialWork(
+                  opening.target.workId,
+                  showComments: opening.target.showComments,
+                ),
+              ),
+              builder: (_) => SocialWorkDetailScreen(
+                workId: opening.target.workId!,
+                showComments: opening.target.showComments,
+              ),
+            ),
+          ),
+        );
+        opened = true;
       } else if (opening.target.kind == NotificationContentKind.moments) {
         if (!current()) return;
         unawaited(
@@ -705,8 +733,8 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
     if (!mounted) return;
     // The SDK owns callback exchange; the app only validates the resulting
     // session and loads this account's profile after that exchange completes.
-    await ref.read(authViewModelProvider.future).catchError((_) => null);
-    if (!mounted) return;
+    // A stalled initial restoration must not queue logout/account changes
+    // behind its future. The view model fences obsolete initial completions.
     await ref.read(authViewModelProvider.notifier).synchronizeSupabaseSession();
     if (!mounted) return;
     if (event == AuthChangeEvent.passwordRecovery) {
@@ -774,12 +802,42 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
 
   Future<void> _openPendingWebLocation() async {
     if (_webNavigationBusy || !mounted || !_appRootInstalled) return;
+    if (_pendingWebLocation == null) return;
     final owner = Supabase.instance.client.auth.currentUser?.id;
     // AuthGate must have finished a server-validated account restoration.
     if (_pendingWebLocation?.isPublic != true &&
         owner != null &&
-        ref.read(authViewModelProvider).asData?.value?.id != owner)
+        ref.read(authViewModelProvider).asData?.value?.id != owner) {
+      // A public store may sit above the account gate. Reveal its loading/error
+      // and retry UI instead of silently leaving every private menu disabled.
+      // The destination stays pending and opens only after account validation.
+      _webNavigationBusy = true;
+      final accountRevision = _webNavigationRevision;
+      try {
+        final returned = await _webRouter!.returnToRoot();
+        if (!mounted ||
+            accountRevision != _webNavigationRevision ||
+            Supabase.instance.client.auth.currentUser?.id != owner) {
+          return;
+        }
+        if (!returned) {
+          _pendingWebLocation = null;
+          _pendingWebOwner = null;
+        } else {
+          _webRouter!.restoreObservedLocation();
+        }
+      } finally {
+        _webNavigationBusy = false;
+        if (mounted &&
+            _pendingWebLocation != null &&
+            (accountRevision != _webNavigationRevision ||
+                ref.read(authViewModelProvider).asData?.value?.id ==
+                    Supabase.instance.client.auth.currentUser?.id)) {
+          _scheduleWebLocationOpen();
+        }
+      }
       return;
+    }
     var target = _pendingWebLocation;
     if (target == null) return;
     if (owner == null && !target.isPublic) {
@@ -947,14 +1005,43 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
           unawaited(nav.push(route(const OrderHistoryScreen())));
         case WebAppPage.account:
           unawaited(nav.push(route(const MyPageScreen())));
+        case WebAppPage.safety:
+        case WebAppPage.safetyReports:
+          unawaited(
+            openSafetyManagement(
+              nav,
+              reports: target.page == WebAppPage.safetyReports,
+            ),
+          );
         case WebAppPage.feed:
           unawaited(nav.push(route(const SocialFeedScreen())));
         case WebAppPage.socialWork:
           unawaited(
-            nav.push(route(SocialWorkDetailScreen(workId: target.id!))),
+            nav.push(
+              route(
+                SocialWorkDetailScreen(
+                  workId: target.id!,
+                  showComments: target.showComments,
+                ),
+              ),
+            ),
           );
         case WebAppPage.socialProfile:
           unawaited(nav.push(route(SocialProfileScreen(userId: target.id!))));
+        case WebAppPage.socialMomentMonth:
+          if (target.momentMonthUserId == null ||
+              target.momentMonthDate == null)
+            return;
+          unawaited(
+            nav.push(
+              route(
+                SocialMomentMonthScreen(
+                  userId: target.momentMonthUserId!,
+                  month: target.momentMonthDate!,
+                ),
+              ),
+            ),
+          );
         case WebAppPage.myProfile:
           unawaited(nav.push(route(const SocialProfileScreen())));
         case WebAppPage.attendance:

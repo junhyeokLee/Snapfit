@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import '../../features/store/domain/entities/premium_template.dart';
 import '../../features/store/domain/template_design_profile.dart';
 import '../templates/template_document_pages.dart';
 
@@ -24,17 +23,7 @@ Map<String, dynamic>? compactCatalogPreviewDocument(String source) {
     return null;
   }
   final pages = templateDocumentPages(document);
-  final profile = TemplateDesignProfile.of(
-    PremiumTemplate(
-      id: 0,
-      title: '',
-      coverImageUrl: '',
-      previewImages: const [],
-      pageCount: 0,
-      userCount: 0,
-      templateJson: source,
-    ),
-  );
+  final profile = TemplateDesignProfile.fromDocument(document);
   return {
     'width': width,
     'height': height,

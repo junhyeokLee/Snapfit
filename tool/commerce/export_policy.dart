@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:snap_fit/core/commerce/commerce_policy.dart';
 
 /// Frozen public documents used by the server's immutable consent evidence.
-/// Contains no registered-business assertion or private customer data.
+/// Export a new bundle for each published revision; never replace old evidence.
 void main() {
   stdout.writeln(
     jsonEncode({
-      'bundleVersion': 'v1.0-prelaunch-20261019',
+      'bundleVersion': CommercePolicy.bundleVersion,
       'stage': 'PRELAUNCH',
       'documents': [
         for (final doc in CommercePolicy.documents)

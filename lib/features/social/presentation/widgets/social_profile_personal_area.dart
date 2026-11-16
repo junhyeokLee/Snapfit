@@ -8,40 +8,36 @@ import '../../../../shared/widgets/snapfit_motion.dart';
 import '../../../album/domain/entities/album.dart';
 import '../../../album/presentation/viewmodels/home_view_model.dart';
 import '../../../album/presentation/views/album_category_screen.dart';
-import '../../../album/presentation/widgets/home/home_album_actions.dart';
 import '../../../attendance/presentation/widgets/attendance_entry_card.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../../../billing/data/billing_provider.dart';
 import '../../../billing/domain/entities/storage_quota.dart';
-import '../../../moments/presentation/moments_navigation.dart';
-import '../../../moments/presentation/widgets/moments_entry_card.dart';
-import '../../../notification/presentation/views/notification_screen.dart';
-import '../../../profile/data/order_repository.dart';
 import '../../../profile/domain/order_visibility_owner.dart';
 import '../../../profile/presentation/views/billing_management_screen.dart';
-import '../../../profile/presentation/views/order_history_screen.dart';
 import '../../../profile/presentation/widgets/my_point_balance_card.dart';
-import '../../../profile/presentation/widgets/personal_collection_shelf.dart';
-import '../../../profile/presentation/widgets/personal_order_shortcut.dart';
 import '../../../referral/presentation/widgets/referral_entry_card.dart';
 import '../../../store/presentation/views/material_catalog_screen.dart';
 import '../providers/social_providers.dart';
 import '../views/social_saved_works_screen.dart';
+import 'my_moment_archive.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
-/// Private account controls never depend on creating a public profile first.
-/// The public header/gallery are supplied separately so their large-photo
-/// layout stays identical for the owner and visitors.
+/// Personal records remain usable without creating a public profile first.
+/// Verified owners see their private archive before account controls. The
+/// supplied public gallery is only the safe fallback for a mismatched identity.
 class SocialProfilePersonalArea extends ConsumerStatefulWidget {
   const SocialProfilePersonalArea({
     super.key,
     required this.ownerId,
     required this.publicHeader,
     this.gallery,
+    this.onOpenPublicProfile,
   });
 
   final String ownerId;
   final Widget publicHeader;
   final Widget? gallery;
+  final VoidCallback? onOpenPublicProfile;
 
   @override
   ConsumerState<SocialProfilePersonalArea> createState() =>
@@ -82,30 +78,18 @@ class _SocialProfilePersonalAreaState
     if (!_current(revision)) return;
     ref.invalidate(myPointBalanceProvider);
     ref.invalidate(myPointLedgerProvider);
-  }
-
-  Future<void> _orders(int revision) async {
-    if (!_current(revision)) return;
-    final summaryState = ref.read(myOrderSummaryProvider);
-    final summary = summaryState.isLoading ? null : summaryState.asData?.value;
-    if (summary != null) {
-      try {
-        await ref
-            .read(orderRepositoryProvider)
-            .markOrderSummarySeen(userId: widget.ownerId, summary: summary);
-      } catch (_) {
-        // A local seen marker must not prevent opening the current orders.
-      }
-      if (!_current(revision)) return;
-      ref.invalidate(myOrderStatusBadgesProvider);
-    }
-    _push(const OrderHistoryScreen(), revision, WebAppLocation.orders);
+    ref.invalidate(pointLedgerHistoryProvider);
   }
 
   Future<void> _albums(int revision, {bool shared = false}) async {
     if (!_current(revision) || _openingAlbumsRevision == revision) return;
     _openingAlbumsRevision = revision;
     try {
+      // 실패한 목록을 다시 누르면 이전 오류를 반복하지 않고 새로 요청한다.
+      final albumsState = ref.read(homeViewModelProvider);
+      if (albumsState.hasError && !albumsState.isLoading) {
+        ref.invalidate(homeViewModelProvider);
+      }
       final albums = await ref
           .read(homeViewModelProvider.future)
           .timeout(const Duration(seconds: 20));
@@ -132,6 +116,9 @@ class _SocialProfilePersonalAreaState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('앨범 목록을 불러오지 못했어요. 다시 시도해 주세요.'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           action: SnackBarAction(
             label: '다시 시도',
             onPressed: () {
@@ -188,19 +175,25 @@ class _SocialProfilePersonalAreaState
       );
     }
     final albums = ref.watch(homeViewModelProvider);
-    final items = albums.isLoading
-        ? const <Album>[]
-        : albums.asData?.value ?? const <Album>[];
+    // 갱신 중 유지된 데이터는 사용하되, 확인 전·실패를 빈 앨범으로 표시하지 않는다.
+    final items = albums.hasValue ? albums.requireValue : const <Album>[];
     final shared = items
         .where(
           (album) =>
               album.userId.trim().isNotEmpty && album.userId != widget.ownerId,
         )
         .toList();
-    final orders = ref.watch(myOrderSummaryProvider);
+    final albumsFailed = albums.hasError && !albums.isLoading;
+    // 계정 교체 시 보안을 위해 비운 임시 []도 로딩·오류에 남을 수 있다.
+    final sharedSummary = albumsFailed
+        ? '확인 실패 · 다시 시도'
+        : !albums.hasValue || (albums.isLoading && items.isEmpty)
+        ? '앨범을 확인하고 있어요'
+        : '${shared.length}개의 함께 만든 앨범';
     final quota = ref.watch(myStorageQuotaProvider);
     final wallet = MyPointBalanceCard(
       compact: true,
+      ownerId: widget.ownerId,
       onCharge: () => _points(revision),
       onHistory: () => _points(revision, history: true),
     );
@@ -209,13 +202,46 @@ class _SocialProfilePersonalAreaState
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         widget.publicHeader,
-        const SizedBox(height: 20),
-        wallet,
-        const SizedBox(height: 12),
+        const SizedBox(height: 22),
+        MyMomentArchive(
+          key: ValueKey('personal-moment-archive-${widget.ownerId}'),
+          ownerId: widget.ownerId,
+        ),
+        const SizedBox(height: 18),
+        LayoutBuilder(
+          builder: (context, bounds) {
+            final public = widget.onOpenPublicProfile == null
+                ? null
+                : TextButton.icon(
+                    key: const ValueKey('profile-open-public'),
+                    onPressed: widget.onOpenPublicProfile,
+                    icon: const ExperienceIcon('Globe', size: 17),
+                    label: const Text('공개 프로필'),
+                  );
+            if (public == null) return wallet;
+            if (MediaQuery.textScalerOf(context).scale(1) > 1.4) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  wallet,
+                  Align(alignment: Alignment.centerLeft, child: public),
+                ],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(child: wallet),
+                const SizedBox(width: 8),
+                public,
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 8),
         LayoutBuilder(
           builder: (context, bounds) {
             final stack = MediaQuery.textScalerOf(context).scale(1) > 1.4;
-            final width = stack ? bounds.maxWidth : (bounds.maxWidth - 16) / 3;
+            final width = stack ? bounds.maxWidth : (bounds.maxWidth - 8) / 2;
             return Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -237,20 +263,17 @@ class _SocialProfilePersonalAreaState
                       WebAppLocation.library,
                     ),
                   ),
-                  (
-                    'orders',
-                    '주문 내역',
-                    Icons.local_shipping_outlined,
-                    () => _orders(revision),
-                  ),
                 ])
                   SizedBox(
                     width: width,
                     child: OutlinedButton(
                       key: ValueKey('profile-shortcut-${entry.$1}'),
                       style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(0, 76),
-                        padding: const EdgeInsets.all(10),
+                        minimumSize: const Size(0, 48),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                         side: BorderSide(
                           color: ExperienceFormStyle.line(context),
                         ),
@@ -259,18 +282,20 @@ class _SocialProfilePersonalAreaState
                         ),
                       ),
                       onPressed: entry.$4,
-                      child: Column(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(entry.$3, size: 21),
-                          const SizedBox(height: 6),
-                          Text(
-                            entry.$2,
-                            textAlign: TextAlign.center,
-                            style: ExperienceFormStyle.text(
-                              context,
-                              13,
-                              weight: FontWeight.w600,
+                          Icon(entry.$3, size: 20),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              entry.$2,
+                              textAlign: TextAlign.center,
+                              style: ExperienceFormStyle.text(
+                                context,
+                                13,
+                                weight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ],
@@ -281,10 +306,6 @@ class _SocialProfilePersonalAreaState
             );
           },
         ),
-        if (widget.gallery != null) ...[
-          const SizedBox(height: 28),
-          widget.gallery!,
-        ],
         const SizedBox(height: 32),
         Divider(color: ExperienceFormStyle.line(context)),
         const SizedBox(height: 20),
@@ -292,62 +313,14 @@ class _SocialProfilePersonalAreaState
           '나만 보는 활동',
           style: ExperienceFormStyle.text(context, 18, weight: FontWeight.w600),
         ),
-        const SizedBox(height: 4),
-        Text(
-          '원본 앨범은 비공개로 유지돼요.',
-          style: ExperienceFormStyle.text(context, 12, secondary: true),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '다른 사람의 프로필 화면에는 표시되지 않아요.',
-          style: ExperienceFormStyle.text(context, 12, secondary: true),
-        ),
-        const SizedBox(height: 20),
-        PersonalAlbumShelf(
-          key: const ValueKey('profile-album-collection'),
-          albums: albums,
-          onShowAll: () => _albums(revision),
-          onRetry: () {
-            if (_current(revision)) ref.invalidate(homeViewModelProvider);
-          },
-          onOpen: (album) {
-            if (!_current(revision)) return;
-            HomeAlbumActions.openAlbum(
-              context,
-              ref,
-              album,
-              onAlbumDeleted: (_) {
-                if (_current(revision)) ref.invalidate(homeViewModelProvider);
-              },
-            );
-          },
-        ),
-        const SizedBox(height: 24),
-        OwnedDesignShelf(
-          key: const ValueKey('profile-design-collection'),
-          onOpen: (type) => _push(
-            MaterialCatalogScreen(library: true, initialType: type),
-            revision,
-            WebAppLocation.library,
-          ),
-        ),
-        const SizedBox(height: 24),
-        PersonalOrderShortcut(
-          key: const ValueKey('profile-order-shortcut'),
-          summary: orders,
-          onOpen: () => _orders(revision),
-          onRetry: () {
-            if (_current(revision)) ref.invalidate(myOrderSummaryProvider);
-          },
-        ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 12),
         ListTile(
           key: const ValueKey('profile-shared-albums'),
           contentPadding: EdgeInsets.zero,
-          leading: const Icon(Icons.people_outline),
+          leading: const ExperienceIcon('Users2'),
           title: const Text('공유된 앨범'),
-          subtitle: Text('${shared.length}개의 함께 만든 앨범'),
-          trailing: const Icon(Icons.chevron_right),
+          subtitle: Text(sharedSummary),
+          trailing: Icon(albumsFailed ? Icons.refresh : Icons.chevron_right),
           onTap: () => _albums(revision, shared: true),
         ),
         _storage(quota, revision),
@@ -361,14 +334,6 @@ class _SocialProfilePersonalAreaState
               spacing: 20,
               runSpacing: 12,
               children: [
-                SizedBox(
-                  width: width,
-                  child: MomentsEntryCard(
-                    onTap: () {
-                      if (_current(revision)) openMoments(context);
-                    },
-                  ),
-                ),
                 SizedBox(width: width, child: const AttendanceEntryCard()),
                 SizedBox(width: width, child: const ReferralEntryCard()),
               ],
@@ -378,21 +343,10 @@ class _SocialProfilePersonalAreaState
         const SizedBox(height: 12),
         ListTile(
           contentPadding: EdgeInsets.zero,
-          leading: const Icon(Icons.bookmark_border),
-          title: const Text('저장한 작품'),
-          trailing: const Icon(Icons.chevron_right),
+          leading: const ExperienceIcon('Bookmark'),
+          title: const Text('저장한 기록·앨범'),
+          trailing: const ExperienceIcon('ChevronRight'),
           onTap: () => _push(const SocialSavedWorksScreen(), revision),
-        ),
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: const Icon(Icons.notifications_outlined),
-          title: const Text('알림'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => _push(
-            const NotificationScreen(),
-            revision,
-            WebAppLocation.notifications,
-          ),
         ),
       ],
     );

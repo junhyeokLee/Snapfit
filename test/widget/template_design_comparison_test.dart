@@ -1,5 +1,7 @@
 import 'dart:ui' as ui;
 
+import '../support/catalog_preview_loading.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -171,6 +173,11 @@ void main() {
           },
         ),
       );
+      await tester.pumpAndSettle();
+      // 편집 가능한 미리보기는 가상 프레임 밖의 작업도 완료되어야 나타난다.
+      for (final design in designs) {
+        await loadCatalogPreview(tester, design);
+      }
       await tester.pumpAndSettle();
       expect(find.byType(CreationCatalogCover), findsNWidgets(3));
       expect(find.byType(CatalogSpreadPreview), findsNWidgets(3));

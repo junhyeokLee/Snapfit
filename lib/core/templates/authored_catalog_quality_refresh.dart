@@ -28,6 +28,10 @@ Map<String, dynamic> _refineCatalogQualityCover(
   CollectionAspect aspect,
   Map<String, dynamic> document,
 ) {
+  if (_storeTemplateQualityIds.contains(id) &&
+      CollectionAspect.printable.contains(aspect)) {
+    return _refineStoreTemplateQuality(id, aspect, document);
+  }
   if (!_qualityCoverIds.contains(id)) return document;
   final source = Map<String, dynamic>.from(document['cover'] as Map);
   final original = (source['layers'] as List).cast<Map>();
@@ -554,4 +558,363 @@ Map<String, dynamic> _paidMaterialOpening(
     'layers': output,
     'materialStoryOpeningRevision': 'collected-objects-2026-10-25',
   };
+}
+
+const _storeTemplateQualityRevision = 'objects-company-dates-2026-11-02';
+const _storeTemplateQualityIds = {
+  'taste-archive',
+  'our-good-company',
+  'dates-of-us',
+};
+
+/// Three existing books receive a complete opening spread as well as a cover.
+/// This pass only publishes new catalog samples: source factories and customer
+/// documents retain their original IDs, photos, text and saved geometry.
+Map<String, dynamic> _refineStoreTemplateQuality(
+  String id,
+  CollectionAspect aspect,
+  Map<String, dynamic> document,
+) {
+  final art = _StoreTemplateQuality(id, aspect);
+  final pages = (document['pages'] as List).cast<Map>();
+  return {
+    ...document,
+    'coverArtDirection': _storeTemplateQualityRevision,
+    'editorialArtDirection': _storeTemplateQualityRevision,
+    'cover': art.cover(document['cover'] as Map),
+    'pages': [
+      for (final (index, page) in pages.indexed)
+        if (index == 2 || index == 3) art.spread(page, index + 1) else page,
+    ],
+  };
+}
+
+class _StoreTemplateQuality {
+  _StoreTemplateQuality(this.id, this.aspect)
+    : type = _QualityCoverType(id, aspect);
+  final String id;
+  final CollectionAspect aspect;
+  final _QualityCoverType type;
+  bool get wide => aspect.isLandscape;
+  double get ratio => aspect.canvas.aspectRatio;
+  String get ink => id == 'taste-archive'
+      ? '#492E49'
+      : id == 'our-good-company'
+      ? '#223E48'
+      : '#503C3B';
+  String get paper => id == 'taste-archive'
+      ? '#F5F1EB'
+      : id == 'our-good-company'
+      ? '#F6F7F0'
+      : '#FBF4EB';
+
+  Map<String, dynamic> image(Map source, Rect box, {String? asset}) => {
+    ...source,
+    'x': box.left,
+    'y': box.top,
+    'w': box.width,
+    'h': box.height,
+    'rotation': 0,
+    'frame': 'none',
+    if (asset != null) ...{
+      'imageUrl': 'asset:$asset',
+      'editorialSourcePhoto':
+          source['editorialSourcePhoto'] ?? source['imageUrl'],
+      'editorialPhotoAspectRatio': 1.5,
+    },
+  };
+
+  /// A photograph is fitted by its physical ratio, not by normalized page units.
+  /// Group portraits consequently retain every person in all three sale sizes.
+  Rect landscape(double x, double y, double width) =>
+      Rect.fromLTWH(x, y, width, width * ratio / 1.5);
+
+  void text(
+    List<Map<String, dynamic>> out,
+    Map source,
+    Rect box, {
+    required double size,
+    String font = 'NotoSans',
+    int weight = 400,
+    String? copy,
+    String align = 'left',
+    double leading = 1.15,
+  }) => type.place(
+    out,
+    source,
+    box,
+    size: size,
+    ink: ink,
+    font: font,
+    weight: weight,
+    text: copy,
+    align: align,
+    leading: leading,
+  );
+
+  Map<String, dynamic> cover(Map source) {
+    final original = (source['layers'] as List).cast<Map>();
+    final photos = original.where((l) => l['type'] == 'image').toList();
+    final texts = original.where((l) => l['type'] == 'text').toList();
+    final title = texts.singleWhere((l) => '${l['id']}'.endsWith('_title'));
+    final out = <Map<String, dynamic>>[
+      for (final layer in original)
+        if (layer['type'] != 'text' && layer['type'] != 'image')
+          {...layer, 'fillColor': paper},
+    ];
+    late Rect hero;
+    if (id == 'taste-archive') {
+      hero = const Rect.fromLTWH(0, 0, 1, 1);
+      out.add(image(photos.first, hero));
+      text(
+        out,
+        title,
+        const Rect.fromLTWH(.055, .33, .43, .43),
+        size: wide ? 66 : 82,
+        font: 'Arirang2',
+        copy: '취향\n보관함',
+        leading: 1.04,
+      );
+    } else if (id == 'our-good-company') {
+      final width = math.min(
+        wide ? .91 : .85,
+        (wide ? .64 : .565) * 1.5 / ratio,
+      );
+      hero = landscape((1 - width) / 2, wide ? .205 : .285, width);
+      out.add(image(photos.first, hero));
+      text(
+        out,
+        title,
+        Rect.fromLTWH(.06, wide ? .065 : .055, .74, wide ? .13 : .215),
+        size: wide ? 44 : 62,
+        font: 'Doldam',
+        copy: wide ? '우리의 좋은 사이' : '우리의\n좋은 사이',
+        leading: 1.04,
+      );
+    } else {
+      hero = const Rect.fromLTWH(0, 0, 1, .665);
+      out.add(image(photos.first, hero));
+      text(
+        out,
+        title,
+        const Rect.fromLTWH(.06, .765, .74, .14),
+        size: wide ? 35 : 43,
+        font: 'BookMyungjo',
+        copy: '너와 나의 날짜들',
+      );
+    }
+    for (final detail in texts.where((t) => t != title)) {
+      final key = '${detail['id']}';
+      final date = key.endsWith('_period');
+      final place = key.endsWith('_place');
+      final y = id == 'dates-of-us' && place
+          ? .70
+          : place
+          ? .865
+          : .927;
+      text(
+        out,
+        detail,
+        Rect.fromLTWH(date ? .60 : .06, y, date ? .345 : .54, .038),
+        size: place ? 11.5 : 9.5,
+        weight: place ? 500 : 400,
+        align: date ? 'right' : 'left',
+      );
+    }
+    out.sort((a, b) => (a['z'] as num).compareTo(b['z'] as num));
+    return {
+      ...source,
+      'coverArtDirection': _storeTemplateQualityRevision,
+      'coverTextTreatment': id == 'taste-archive'
+          ? 'open-photographic-type'
+          : id == 'our-good-company'
+          ? 'uncropped-company-mat'
+          : 'literary-photo-colophon',
+      'heroCoverageFraction': hero.width * hero.height,
+      'layers': out,
+    };
+  }
+
+  Map<String, dynamic> spread(Map source, int page) {
+    final original = (source['layers'] as List).cast<Map>();
+    final photos = original.where((l) => l['type'] == 'image').toList();
+    final texts = original.where((l) => l['type'] == 'text').toList();
+    final folio = texts.singleWhere((l) => '${l['id']}'.endsWith('_folio'));
+    final copy = texts.where((l) => l != folio).toList();
+    final out = <Map<String, dynamic>>[
+      for (final layer in original)
+        if (layer['type'] != 'text' && layer['type'] != 'image')
+          {...layer, 'fillColor': paper},
+      Map<String, dynamic>.from(folio),
+    ];
+    if (id == 'taste-archive') {
+      if (page == 3) {
+        text(
+          out,
+          copy[0],
+          const Rect.fromLTWH(.065, .065, .85, .05),
+          size: 10,
+          weight: 600,
+        );
+        final photo = landscape(.065, .17, wide ? .69 : .85);
+        out.add(
+          image(
+            photos.single,
+            photo,
+            asset: 'assets/frame_preview/studio_laptop.jpg',
+          ),
+        );
+        text(
+          out,
+          copy[1],
+          Rect.fromLTWH(
+            .065,
+            photo.bottom + (wide ? .04 : .065),
+            .85,
+            wide ? .085 : .11,
+          ),
+          size: wide ? 22 : 27,
+          font: 'BookMyungjo',
+        );
+      } else {
+        final first = landscape(.085, .09, .53);
+        final second = landscape(.635, .405, .28);
+        out.add(
+          image(
+            photos[0],
+            first,
+            asset: 'assets/frame_preview/artist_palette.jpg',
+          ),
+        );
+        out.add(
+          image(photos[1], second, asset: 'assets/frame_preview/wardrobe.jpg'),
+        );
+        text(
+          out,
+          copy[0],
+          Rect.fromLTWH(.085, wide ? .72 : .68, .85, .17),
+          size: wide ? 22 : 27,
+          font: 'BookMyungjo',
+          leading: 1.2,
+        );
+        text(
+          out,
+          copy[1],
+          const Rect.fromLTWH(.665, .09, .25, .15),
+          size: 11,
+          leading: 1.3,
+        );
+      }
+    } else if (id == 'our-good-company') {
+      if (page == 3) {
+        text(
+          out,
+          copy[0],
+          const Rect.fromLTWH(.065, .065, .85, .05),
+          size: 10,
+          weight: 600,
+        );
+        final photo = landscape(.065, wide ? .15 : .19, wide ? .71 : .87);
+        out.add(
+          image(
+            photos.single,
+            photo,
+            asset:
+                'assets/templates/original_editorial/images/daily_friends.png',
+          ),
+        );
+        text(
+          out,
+          copy[1],
+          Rect.fromLTWH(.065, photo.bottom + .045, .87, wide ? .08 : .10),
+          size: wide ? 20 : 25,
+          font: 'Yeongwol',
+        );
+      } else {
+        text(
+          out,
+          copy[0],
+          const Rect.fromLTWH(.085, .07, .85, .19),
+          size: wide ? 30 : 38,
+          font: 'Doldam',
+          leading: 1.12,
+        );
+        final photo = landscape(.085, .29, .51 * 1.5 / ratio);
+        out.add(
+          image(
+            photos.single,
+            photo,
+            asset:
+                'assets/templates/original_editorial/images/family_friends.png',
+          ),
+        );
+        text(
+          out,
+          copy[1],
+          Rect.fromLTWH(.085, photo.bottom + .035, .85, .04),
+          size: 11,
+          weight: 600,
+        );
+        text(
+          out,
+          copy[2],
+          Rect.fromLTWH(.085, photo.bottom + .085, .85, .035),
+          size: 10,
+        );
+      }
+    } else {
+      if (page == 3) {
+        text(
+          out,
+          copy[0],
+          const Rect.fromLTWH(.065, .065, .85, .05),
+          size: 10,
+          weight: 600,
+        );
+        final photo = landscape(.065, wide ? .13 : .17, wide ? .65 : .85);
+        out.add(
+          image(
+            photos.single,
+            photo,
+            asset: 'assets/templates/original_editorial/images/couple_cafe.png',
+          ),
+        );
+        text(
+          out,
+          copy[1],
+          Rect.fromLTWH(.065, photo.bottom + .035, .87, wide ? .16 : .17),
+          size: wide ? 26 : 31,
+          font: 'BookMyungjo',
+          copy: '짧은 인사가\n긴 이야기가 돼.',
+          leading: 1.25,
+        );
+      } else {
+        // No face is cropped in the narrow companion scene: this page records
+        // the shared table instead of repeating another posed couple portrait.
+        final photo = Rect.fromLTWH(.26, .095, .655, wide ? .66 : .69);
+        out.add(
+          image(
+            photos.single,
+            photo,
+            asset: 'assets/templates/original_editorial/images/travel_cafe.png',
+          ),
+        );
+        text(
+          out,
+          copy.single,
+          const Rect.fromLTWH(.085, .825, .83, .065),
+          size: wide ? 17 : 20,
+          font: 'Eulyoo',
+          align: 'right',
+        );
+      }
+    }
+    out.sort((a, b) => (a['z'] as num).compareTo(b['z'] as num));
+    return {
+      ...source,
+      'editorialArtDirection': _storeTemplateQualityRevision,
+      'editorialLayout': '$id-${page == 3 ? 'scene' : 'collection'}',
+      'layers': out,
+    };
+  }
 }

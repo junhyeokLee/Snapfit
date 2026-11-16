@@ -44,6 +44,36 @@ void main() {
   tearDown(() => container.dispose());
 
   test(
+    'recovery regression: an initial album query failure preserves its cause and recovers on retry',
+    () async {
+      final failure = StateError(
+        'permission was granted but the album query failed',
+      );
+      when(() => repository.loadAlbums()).thenThrow(failure);
+      await notifier.fetchInitialData();
+      final failed = container.read(galleryProvider);
+      expect(failed.error, same(failure));
+      expect(failed.selectedAlbum, isNull);
+      expect(failed.isLoading, isFalse);
+      expect(failed.hasMore, isFalse);
+      verifyNever(() => repository.loadImagesPaged(any(), any(), any()));
+
+      final photo = _Photo();
+      when(() => repository.loadAlbums()).thenAnswer((_) async => [first]);
+      when(
+        () => repository.loadImagesPaged(first, 0, 40),
+      ).thenAnswer((_) async => [photo]);
+      await notifier.fetchInitialData();
+      final recovered = container.read(galleryProvider);
+      expect(recovered.error, isNull);
+      expect(recovered.selectedAlbum, same(first));
+      expect(recovered.images, [photo]);
+      expect(recovered.currentPage, 1);
+      verify(() => repository.loadAlbums()).called(2);
+    },
+  );
+
+  test(
     'initial selection prefers all photos rather than the first folder',
     () async {
       when(() => second.isAll).thenReturn(true);

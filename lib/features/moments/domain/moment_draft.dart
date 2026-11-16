@@ -1,6 +1,10 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart';
+
 import 'moment_record.dart';
+import 'moment_photo_design.dart';
 
 /// An unsubmitted record kept only on this device, under its signed-in owner.
 class MomentDraft {
@@ -14,6 +18,7 @@ class MomentDraft {
     required this.updatedAt,
     this.originalRecord,
     this.version,
+    this.pendingSaveFingerprint,
   }) : recordDate = momentDate(recordDate),
        existingPhotos = List.unmodifiable(existingPhotos),
        uploads = List.unmodifiable(uploads);
@@ -23,6 +28,36 @@ class MomentDraft {
   final List<MomentPhoto> existingPhotos;
   final List<MomentDraftUpload> uploads;
   final MomentRecord? originalRecord;
+  final String? pendingSaveFingerprint;
+
+  /// 날짜가 지난 뒤에는 실제 전송했던 동일 요청만 서버에 재확인한다.
+  String get saveFingerprint => sha256
+      .convert(
+        utf8.encode(
+          jsonEncode({
+            'ownerId': ownerId,
+            'recordId': recordId,
+            'recordDate': momentDateKey(recordDate),
+            'caption': caption.trim(),
+            'photos': existingPhotos.map((photo) => photo.toJson()).toList(),
+            'uploads': uploads
+                .map(
+                  (upload) => {
+                    'id': upload.id,
+                    'bytes': sha256.convert(upload.bytes).toString(),
+                    'design': upload.design?.toJson(),
+                  },
+                )
+                .toList(),
+            'expectedRevision': originalRecord?.revision ?? 0,
+          }),
+        ),
+      )
+      .toString();
+
+  bool get hasPendingSave =>
+      pendingSaveFingerprint != null &&
+      pendingSaveFingerprint == saveFingerprint;
 
   /// An opaque compare-and-swap token assigned only after a durable write.
   final String? version;
@@ -40,6 +75,7 @@ class MomentDraft {
     List<MomentDraftUpload>? uploads,
     DateTime? updatedAt,
     String? version,
+    String? pendingSaveFingerprint,
   }) => MomentDraft(
     ownerId: ownerId,
     recordId: recordId,
@@ -50,6 +86,14 @@ class MomentDraft {
     updatedAt: updatedAt ?? this.updatedAt,
     originalRecord: originalRecord,
     version: version ?? this.version,
+    pendingSaveFingerprint:
+        pendingSaveFingerprint ??
+        (recordDate != null ||
+                caption != null ||
+                existingPhotos != null ||
+                uploads != null
+            ? null
+            : this.pendingSaveFingerprint),
   );
 
   /// Photo bytes are stored separately from JSON. Signed URLs are not retained.
@@ -66,11 +110,14 @@ class MomentDraft {
             'id': photo.id,
             'filename': photo.filename,
             'length': photo.bytes.length,
+            if (photo.design != null) 'design': photo.design!.toJson(),
           },
         )
         .toList(),
     'updatedAt': updatedAt.toUtc().toIso8601String(),
     'version': version,
+    if (pendingSaveFingerprint != null)
+      'pendingSaveFingerprint': pendingSaveFingerprint,
     if (originalRecord case final original?)
       'originalRecord': {
         'id': original.id,
@@ -90,6 +137,12 @@ class MomentDraft {
     final uploads = json['uploads'] as List;
     if (uploads.length != photoBytes.length) {
       throw const FormatException('Missing moment draft photos');
+    }
+    final pendingSaveFingerprint = json['pendingSaveFingerprint'];
+    if (pendingSaveFingerprint != null &&
+        (pendingSaveFingerprint is! String ||
+            !RegExp(r'^[0-9a-f]{64}$').hasMatch(pendingSaveFingerprint))) {
+      throw const FormatException('Invalid pending moment save');
     }
     return MomentDraft(
       ownerId: json['ownerId'] as String,
@@ -111,6 +164,11 @@ class MomentDraft {
           id: upload['id'] as String,
           filename: upload['filename'] as String,
           bytes: photoBytes[index],
+          design: upload['design'] == null
+              ? null
+              : MomentPhotoDesign.fromJson(
+                  Map<String, dynamic>.from(upload['design'] as Map),
+                ),
         );
       }),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
@@ -120,6 +178,7 @@ class MomentDraft {
               Map<String, dynamic>.from(json['originalRecord'] as Map),
             ),
       version: json['version'] as String?,
+      pendingSaveFingerprint: pendingSaveFingerprint as String?,
     );
   }
 }
@@ -129,10 +188,19 @@ class MomentDraftUpload {
     required this.id,
     required this.filename,
     required Uint8List bytes,
+    this.design,
   }) : bytes = Uint8List.fromList(bytes).asUnmodifiableView();
 
   final String id, filename;
   final Uint8List bytes;
+  final MomentPhotoDesign? design;
+
+  MomentDraftUpload withDesign(MomentPhotoDesign? value) => MomentDraftUpload(
+    id: id,
+    filename: filename,
+    bytes: bytes,
+    design: value,
+  );
 }
 
 /// Small account-scoped recovery information; this never loads photo originals.

@@ -99,6 +99,180 @@ Future<ProviderContainer> _pump(
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
   testWidgets(
+    'invite return refreshes members without dropping existing rows',
+    (tester) async {
+      final repository = _Members();
+      final refreshed = Completer<List<AlbumMemberResponse>>();
+      var fetches = 0;
+      when(() => repository.fetchMembers(7)).thenAnswer((_) {
+        fetches++;
+        return fetches == 1
+            ? Future.value([_owner, _editor])
+            : refreshed.future;
+      });
+      when(() => repository.invite(7, role: 'EDITOR')).thenAnswer(
+        (_) async => const InviteLinkResponse(
+          albumId: 7,
+          token: 'local-return-fixture',
+          link: 'snapfit://invite?token=local-return-fixture',
+        ),
+      );
+      await _pump(tester, repository);
+      await tester.tap(find.text('멤버 초대'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AlbumInviteScreen), findsOneWidget);
+      Navigator.of(tester.element(find.byType(AlbumInviteScreen))).pop();
+      await tester.pumpAndSettle();
+      expect(fetches, 2);
+      expect(find.text('참여자'), findsOneWidget);
+      refreshed.complete([
+        _owner,
+        _editor,
+        _editor.copyWith(id: 3, userUuid: 'joined-user', userName: '새로 참여한 멤버'),
+      ]);
+      await tester.pumpAndSettle();
+      expect(find.text('새로 참여한 멤버'), findsOneWidget);
+      expect(fetches, 2);
+      verify(() => repository.invite(7, role: 'EDITOR')).called(1);
+      await tester.pumpWidget(const SizedBox.shrink());
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('repeated invite entry opens only one route and refreshes once', (
+    tester,
+  ) async {
+    final repository = _Members();
+    var fetches = 0;
+    when(() => repository.fetchMembers(7)).thenAnswer((_) async {
+      fetches++;
+      return [_owner, _editor];
+    });
+    when(() => repository.invite(7, role: 'EDITOR')).thenAnswer(
+      (_) async => const InviteLinkResponse(
+        albumId: 7,
+        token: 'local-repeat-fixture',
+        link: 'snapfit://invite?token=local-repeat-fixture',
+      ),
+    );
+    await _pump(tester, repository);
+    final enter = tester
+        .widget<FilledButton>(find.widgetWithText(FilledButton, '멤버 초대'))
+        .onPressed!;
+    enter();
+    enter();
+    await tester.pumpAndSettle();
+    expect(find.byType(AlbumInviteScreen, skipOffstage: false), findsOneWidget);
+    verify(() => repository.invite(7, role: 'EDITOR')).called(1);
+    Navigator.of(tester.element(find.byType(AlbumInviteScreen))).pop();
+    await tester.pumpAndSettle();
+    expect(fetches, 2);
+    expect(find.byType(AlbumMembersScreen), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+    expect(tester.binding.transientCallbackCount, 0);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('invite return after an account change starts no extra refresh', (
+    tester,
+  ) async {
+    final repository = _Members();
+    var actor = 'owner-uuid';
+    var fetches = 0;
+    when(() => repository.fetchMembers(7)).thenAnswer((_) async {
+      fetches++;
+      return [_owner, _editor];
+    });
+    when(() => repository.invite(7, role: 'EDITOR')).thenAnswer(
+      (_) async => const InviteLinkResponse(
+        albumId: 7,
+        token: 'local-account-fixture',
+        link: 'snapfit://invite?token=local-account-fixture',
+      ),
+    );
+    final container = await _pump(tester, repository, actor: () => actor);
+    await tester.tap(find.text('멤버 초대'));
+    await tester.pumpAndSettle();
+    actor = 'another-account';
+    container.invalidate(albumCollaborationActorProvider);
+    await tester.pumpAndSettle();
+    final beforeReturn = fetches;
+    Navigator.of(tester.element(find.byType(AlbumInviteScreen))).pop();
+    await tester.pumpAndSettle();
+    expect(fetches, beforeReturn);
+    expect(find.text('계정이 변경되었어요'), findsOneWidget);
+    expect(find.text('참여자'), findsNothing);
+    await tester.pumpWidget(const SizedBox.shrink());
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('closing members together with invite starts no hidden refresh', (
+    tester,
+  ) async {
+    final repository = _Members();
+    var fetches = 0;
+    when(() => repository.fetchMembers(7)).thenAnswer((_) async {
+      fetches++;
+      return [_owner, _editor];
+    });
+    when(() => repository.invite(7, role: 'EDITOR')).thenAnswer(
+      (_) async => const InviteLinkResponse(
+        albumId: 7,
+        token: 'local-close-fixture',
+        link: 'snapfit://invite?token=local-close-fixture',
+      ),
+    );
+    await _pump(tester, repository);
+    await tester.tap(find.text('멤버 초대'));
+    await tester.pumpAndSettle();
+    Navigator.of(
+      tester.element(find.byType(AlbumInviteScreen)),
+    ).popUntil((route) => route.isFirst);
+    await tester.pumpAndSettle();
+    expect(fetches, 1);
+    expect(find.byType(AlbumMembersScreen), findsNothing);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+    expect(tester.binding.transientCallbackCount, 0);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('failed invite-return refresh can retry and enter invite again', (
+    tester,
+  ) async {
+    final repository = _Members();
+    var fetches = 0;
+    when(() => repository.fetchMembers(7)).thenAnswer((_) async {
+      if (++fetches == 2) throw StateError('fixture_refresh_failure');
+      return [_owner, _editor];
+    });
+    when(() => repository.invite(7, role: 'EDITOR')).thenAnswer(
+      (_) async => const InviteLinkResponse(
+        albumId: 7,
+        token: 'local-retry-fixture',
+        link: 'snapfit://invite?token=local-retry-fixture',
+      ),
+    );
+    await _pump(tester, repository);
+    await tester.tap(find.text('멤버 초대'));
+    await tester.pumpAndSettle();
+    Navigator.of(tester.element(find.byType(AlbumInviteScreen))).pop();
+    await tester.pumpAndSettle();
+    expect(fetches, 2);
+    expect(find.text('멤버를 확인할 수 없어요'), findsOneWidget);
+    await tester.tap(find.text('다시 확인'));
+    await tester.pumpAndSettle();
+    expect(fetches, 3);
+    expect(find.text('참여자'), findsOneWidget);
+    await tester.tap(find.text('멤버 초대'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlbumInviteScreen), findsOneWidget);
+    verify(() => repository.invite(7, role: 'EDITOR')).called(2);
+    await tester.pumpWidget(const SizedBox.shrink());
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
     'only the owner can confirm revoking unused links while members remain',
     (tester) async {
       final repository = _Members();

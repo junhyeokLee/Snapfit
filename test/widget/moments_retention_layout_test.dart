@@ -8,12 +8,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
+import 'package:snap_fit/shared/snapfit_image.dart';
 import 'package:snap_fit/core/constants/cover_size.dart';
 import 'package:snap_fit/features/moments/data/moment_engagement_repository.dart';
 import 'package:snap_fit/features/moments/data/moments_repository.dart';
 import 'package:snap_fit/features/moments/domain/moment_record.dart';
 import 'package:snap_fit/features/moments/presentation/providers/moment_engagement_providers.dart';
 import 'package:snap_fit/features/moments/presentation/providers/moments_providers.dart';
+import 'package:snap_fit/features/moments/presentation/providers/moment_publication_providers.dart';
 import 'package:snap_fit/features/moments/presentation/views/moments_screen.dart';
 import 'package:snap_fit/features/moments/presentation/views/moment_compose_screen.dart';
 import 'package:snap_fit/features/moments/presentation/views/moment_saved_preview_screen.dart';
@@ -24,6 +26,7 @@ import 'package:snap_fit/features/moments/presentation/widgets/moment_book_cover
 import 'package:snap_fit/features/moments/presentation/widgets/web_moments_journal_layout.dart';
 
 import '../helpers/memory_moment_draft_store.dart';
+import '../helpers/memory_moment_publication_repository.dart';
 
 const _assets = [
   'assets/templates/jeju_travel/images/figma_small/jeju_ocean.jpg',
@@ -74,7 +77,8 @@ class _Repository implements MomentsRepository {
   }
 
   @override
-  Future<MomentJournal> listMonth(DateTime month) async {
+  Future<MomentJournal> listMonth(DateTime? requestedMonth) async {
+    final month = requestedMonth ?? momentMonth(today);
     reads++;
     if (readHandler != null) return readHandler!(month);
     return MomentJournal(
@@ -130,6 +134,9 @@ Future<ProviderContainer> _mount(
     overrides: [
       momentDraftStoreProvider.overrideWithValue(MemoryMomentDraftStore()),
       momentsRepositoryProvider.overrideWithValue(repository),
+      momentPublicationRepositoryProvider.overrideWithValue(
+        MemoryMomentPublicationRepository(),
+      ),
       momentEngagementRepositoryProvider.overrideWithValue(
         engagement ?? _Engagement(),
       ),
@@ -159,8 +166,42 @@ Future<ProviderContainer> _mount(
       );
     }
   });
+  for (var frame = 0; frame < 2; frame++) {
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.runAsync(() async {
+      final context = tester.element(find.byType(MaterialApp));
+      for (final image in tester.widgetList<SnapfitImage>(
+        find.byType(SnapfitImage),
+      )) {
+        for (final source in [image.urlOrGs, ...image.fallbackSources]) {
+          if (!source.startsWith('asset:')) continue;
+          await precacheImage(
+            ResizeImage.resizeIfNeeded(
+              image.memCacheWidth,
+              image.memCacheHeight,
+              AssetImage(source.substring(6)),
+            ),
+            context,
+          );
+        }
+      }
+    });
+  }
   await tester.pumpAndSettle();
   return container;
+}
+
+Future<void> _expandRecord(WidgetTester tester, String id) async {
+  final toggle = find.byKey(ValueKey('moment-record-toggle-$id'));
+  await tester.ensureVisible(toggle);
+  await tester.tap(toggle);
+  for (var frame = 0; frame < 6; frame++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 20)),
+    );
+    await tester.pump(const Duration(milliseconds: 40));
+  }
+  await tester.pumpAndSettle();
 }
 
 Future<void> _close(
@@ -208,38 +249,41 @@ void main() {
   });
   for (final dark in [false, true]) {
     testWidgets(
-      'first real photograph is above the fold in ${dark ? 'dark' : 'light'} journal',
+      'month calendar and one album entry precede photos in ${dark ? 'dark' : 'light'} journal',
       (tester) async {
         final repo = _Repository();
         final capture = GlobalKey();
         final container = await _mount(
           tester,
           repo,
-          const MomentsScreen(),
+          MomentsScreen(initialMonth: momentMonth(_today)),
           dark: dark,
           capture: capture,
         );
         try {
           final photo = find.byKey(const ValueKey('moment-photo-frame-one'));
-          expect(tester.getTopLeft(photo).dy, lessThan(280));
+          final monthAction = find.byKey(
+            const ValueKey('home-monthly-album-entry'),
+          );
+          final calendar = find.byKey(const ValueKey('moments-photo-calendar'));
+          expect(monthAction, findsOneWidget);
+          expect(calendar, findsOneWidget);
+          expect(
+            find.byKey(const ValueKey('moments-monthly-album')),
+            findsNothing,
+          );
+          expect(
+            tester.getTopLeft(monthAction).dy,
+            greaterThanOrEqualTo(tester.getBottomLeft(calendar).dy),
+          );
+          expect(photo, findsNothing);
+          await _expandRecord(tester, 'one');
+          await tester.ensureVisible(photo);
+          await tester.pumpAndSettle();
           expect(tester.getSize(photo).width, greaterThan(320));
           expect(
             tester.getSize(photo).width / tester.getSize(photo).height,
-            closeTo(16 / 9, .01),
-          );
-          expect(
-            find.byKey(const ValueKey('moments-monthly-album')),
-            findsOneWidget,
-          );
-          expect(
-            tester.getTopLeft(photo).dy,
-            lessThan(
-              tester
-                  .getTopLeft(
-                    find.byKey(const ValueKey('moments-monthly-album')),
-                  )
-                  .dy,
-            ),
+            closeTo(defaultCoverSize.ratio, .01),
           );
           expect(repo.mutations, 0);
           expect(tester.takeException(), isNull);
@@ -252,7 +296,7 @@ void main() {
           await tester.pumpAndSettle();
           expect(
             tester.getSize(photo).width / tester.getSize(photo).height,
-            closeTo(.75, .01),
+            closeTo(defaultCoverSize.ratio, .01),
           );
           expect(find.text('2 / 3'), findsOneWidget);
           expect(tester.takeException(), isNull);
@@ -263,35 +307,44 @@ void main() {
     );
   }
   testWidgets(
-    'empty month shows an honest book example and first photo action',
+    'empty journal explains a dated photo and a line before offering a monthly album',
     (tester) async {
       final repo = _Repository()..records = [];
       final capture = GlobalKey();
       final container = await _mount(
         tester,
         repo,
-        const MomentsScreen(),
+        MomentsScreen(initialMonth: momentMonth(_today)),
         capture: capture,
       );
       try {
-        expect(find.text('앨범 구성 예시'), findsOneWidget);
-        expect(find.text('내 사진이 들어갈 자리'), findsOneWidget);
+        await _capture(tester, capture, 'journal-empty');
+        final action = find.byKey(const ValueKey('moments-first-photo'));
+        await tester.ensureVisible(action);
+        await tester.pumpAndSettle();
+        expect(find.text('사진 한 장 + 짧은 한 줄'), findsOneWidget);
+        expect(find.text('오늘의 기록'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byKey(const ValueKey('moments-daily-note-preview')),
+            matching: find.text('${_today.year}년 ${_today.month}월'),
+          ),
+          findsOneWidget,
+        );
+        expect(find.text('사진 아래에, 이날의 기분 한 줄'), findsOneWidget);
+        expect(find.byType(MomentBookCover), findsNothing);
+        expect(find.byType(MomentPhotoView), findsNothing);
         expect(
           find.byKey(const ValueKey('moments-first-photo')),
           findsOneWidget,
         );
-        final book = find.byKey(const ValueKey('moments-empty-book'));
-        final bookSize = tester.getSize(book);
-        expect(bookSize.width / bookSize.height, closeTo(1, .001));
-        expect(
-          tester
-              .getTopLeft(find.byKey(const ValueKey('moments-first-photo')))
-              .dy,
-          lessThan(tester.getTopLeft(book).dy),
-        );
+        final note = find.byKey(const ValueKey('moments-daily-note-preview'));
+        expect(tester.getSize(note).width, greaterThan(260));
+        expect(action.hitTestable(), findsOneWidget);
+        expect(find.text('날짜별 기록'), findsOneWidget);
+        expect(find.text('월간 앨범'), findsOneWidget);
         expect(repo.mutations, 0);
         expect(tester.takeException(), isNull);
-        await _capture(tester, capture, 'journal-empty');
       } finally {
         await _close(tester, container, repo);
       }
@@ -352,6 +405,7 @@ void main() {
                 records: [
                   MomentRecordCard(
                     record: record,
+                    initiallyExpanded: true,
                     maxPhotoHeight: 560,
                     onEdit: () {},
                   ),
@@ -421,7 +475,11 @@ void main() {
             child: WebMomentsJournalLayout(
               monthNavigation: const Text('2026년 10월'),
               records: [
-                MomentRecordCard(record: repo.records.first, onEdit: () {}),
+                MomentRecordCard(
+                  record: repo.records.first,
+                  initiallyExpanded: true,
+                  onEdit: () {},
+                ),
               ],
               weekly: MomentWeekCard(photoCount: 3, onRecord: () {}),
             ),
@@ -447,6 +505,35 @@ void main() {
       }
     },
   );
+  for (final recordedToday in [false, true]) {
+    testWidgets(
+      'daily action identifies adding another photo today=$recordedToday',
+      (tester) async {
+        final repo = _Repository()
+          ..records = [
+            _record(
+              'sample',
+              recordedToday ? _today : _today.subtract(const Duration(days: 1)),
+            ),
+          ];
+        final container = await _mount(tester, repo, const MomentsScreen());
+        try {
+          expect(
+            find.descendant(
+              of: find.byKey(const ValueKey('moments-add')),
+              matching: find.text(recordedToday ? '오늘 한 장 더' : '오늘 기록하기'),
+            ),
+            findsOneWidget,
+          );
+          expect(repo.mutations, 0);
+          expect(tester.takeException(), isNull);
+        } finally {
+          await _close(tester, container, repo);
+        }
+      },
+    );
+  }
+
   testWidgets(
     'weekly recap includes cross month photos and excludes outside current server week',
     (tester) async {
@@ -470,6 +557,19 @@ void main() {
         capture: capture,
       );
       try {
+        final recap = find.byKey(const ValueKey('moments-week-recap'));
+        expect(find.widgetWithText(TextButton, '이번 주 돌아보기'), findsOneWidget);
+        expect(tester.getSize(recap).height, greaterThanOrEqualTo(44));
+        expect(
+          tester.getTopLeft(recap).dy,
+          greaterThanOrEqualTo(
+            tester
+                .getBottomLeft(
+                  find.byKey(const ValueKey('moments-photo-calendar')),
+                )
+                .dy,
+          ),
+        );
         await tester.ensureVisible(
           find.byKey(const ValueKey('moments-week-recap')),
         );
@@ -582,7 +682,12 @@ void main() {
       final repo = _Repository();
       final container = await _mount(tester, repo, const MomentsScreen());
       try {
-        await tester.tap(find.byKey(const ValueKey('moment-edit-one')));
+        await _expandRecord(tester, 'one');
+        final edit = find.byKey(const ValueKey('moment-edit-one'));
+        await tester.ensureVisible(edit);
+        await tester.pumpAndSettle();
+        expect(edit.hitTestable(), findsOneWidget);
+        await tester.tap(edit);
         await tester.pumpAndSettle();
         expect(find.byType(MomentComposeScreen), findsOneWidget);
         Navigator.of(
@@ -634,13 +739,13 @@ void main() {
         ),
       );
       try {
-        expect(find.textContaining('10월의 사진 3장'), findsNWidgets(2));
+        expect(find.text('오늘 남긴 순간을 다시 펼쳐보세요.'), findsNWidgets(2));
         expect(repo.reads, 1);
-        expect(find.byType(MomentPhotoView), findsNWidgets(2));
+        expect(find.byType(SnapfitImage), findsNWidgets(2));
         repo.change(null);
         await tester.pumpAndSettle();
-        expect(find.text('한 장씩 모아, 한 달의 앨범으로.'), findsNWidgets(2));
-        expect(find.byType(MomentPhotoView), findsNothing);
+        expect(find.text('사진 한 장과 한 줄로, 하루씩 쌓는 나의 기록'), findsNWidgets(2));
+        expect(find.byType(SnapfitImage), findsNothing);
         expect(repo.reads, 1);
         expect(tester.takeException(), isNull);
       } finally {

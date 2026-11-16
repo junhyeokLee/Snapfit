@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../viewmodels/album_editor_view_model.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 class DecorateColorTab extends ConsumerStatefulWidget {
   final Color surfaceColor;
@@ -157,11 +158,7 @@ class _DecorateColorTabState extends ConsumerState<DecorateColorTab> {
                   width: isSelected ? 2 : 1,
                 ),
               ),
-              child: Icon(
-                Icons.block, // 빨간색 금지 아이콘
-                size: 16,
-                color: Colors.redAccent,
-              ),
+              child: ExperienceIcon('Ban', color: Colors.redAccent),
             ),
           );
         }
@@ -195,10 +192,7 @@ class _DecorateColorTabState extends ConsumerState<DecorateColorTab> {
               ),
             ),
             child: isSelected
-                ? Icon(
-                    Icons.check,
-                    size: 14,
-                    color: color.computeLuminance() > 0.5
+                ? ExperienceIcon('Check', size: 14, color: color.computeLuminance() > 0.5
                         ? Colors.black
                         : Colors.white,
                   )

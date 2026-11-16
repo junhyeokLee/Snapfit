@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-11",
+  "policy": {
+    "timezone": "Asia/Seoul",
+    "rewardPoints": 1000,
+    "frequency": "once_per_user_per_full_calendar_month",
+    "qualifyingRecord": "nondeleted_photo_record_with_server_created_date_equal_to_record_date",
+    "newRecords": "server_today_only",
+    "pastRecordPhotos": "immutable",
+    "pastRecordCaptionsAndDeletion": "preserved",
+    "monthLengths": [28, 29, 30, 31]
+  },
+  "server": {
+    "project": "rrbhxdtriummqpztpjrk",
+    "migrationVersion": "20261111025132",
+    "migration": "supabase/migrations/20261111025132_monthly_moment_completion_rewards.sql",
+    "applied": true,
+    "metadataAndAclVerified": true,
+    "rlsEnabled": true,
+    "directAuthenticatedRewardTableRead": false,
+    "directAuthenticatedAwardFunction": false,
+    "publicSaveRpcPreserved": true,
+    "existingLedgerReasonsPreserved": true,
+    "customerTestWrites": false
+  },
+  "verification": {
+    "postgresqlCompatibleTestsPassed": 22,
+    "monthlyScenarios": 9,
+    "attendanceRegressions": 13,
+    "multiSessionLoadTest": false,
+    "dartAnalysisExitCode": 0,
+    "newAnalysisErrorsOrWarnings": 0,
+    "unchangedPreexistingInfoFindings": 2,
+    "codeReview": "resolved_two_retry_and_device_clock_findings_then_rereviewed",
+    "diffWhitespaceCheck": "passed",
+    "flutterWidgetTests": "not_executed_past_compiler_phase",
+    "flutterWidgetTestLimitation": "Compilation did not finish after more than four minutes and was interrupted; no test bodies ran.",
+    "nativeVisualQa": "not_completed",
+    "applicationBuildOrDeploy": false
+  }
+}

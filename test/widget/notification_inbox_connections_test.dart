@@ -522,14 +522,14 @@ void main() {
           return 6;
         },
       );
-      expect(find.text('알림이 없습니다.'), findsOneWidget);
+      expect(find.text('아직 도착한 알림이 없어요.'), findsOneWidget);
       expect(
         tester.widget<TextButton>(key('inbox-mark-all')).onPressed,
         isNull,
       );
       await capture(tester, 'empty', const Size(390, 844), false);
       await tap(tester, key('inbox-refresh'));
-      expect(find.text('알림이 없습니다.'), findsNothing);
+      expect(find.text('아직 도착한 알림이 없어요.'), findsNothing);
       expect(key('inbox-item-101'), findsOneWidget);
       expect(inboxReads, 2);
       expect(unreadReads, 1);

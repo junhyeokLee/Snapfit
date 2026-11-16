@@ -8,6 +8,9 @@ import '../../data/api/album_provider.dart';
 part 'gallery_notifier.freezed.dart';
 part 'gallery_notifier.g.dart';
 
+/// 확인된 권한 거절·빈 목록은 일반 조회 예외와 별개의 결과로 전달한다.
+enum GalleryLoadFailure { permissionDenied, emptyLibrary }
+
 @freezed
 abstract class GalleryState with _$GalleryState {
   const factory GalleryState({
@@ -48,7 +51,7 @@ class GalleryNotifier extends _$GalleryNotifier {
           selectedAlbum: null,
           images: const [],
           hasMore: false,
-          error: '사진 접근 권한이 필요합니다. 권한을 허용해주세요.',
+          error: GalleryLoadFailure.permissionDenied,
         );
         return;
       }
@@ -62,7 +65,7 @@ class GalleryNotifier extends _$GalleryNotifier {
           selectedAlbum: null,
           images: const [],
           hasMore: false,
-          error: '이미지 앨범이 없습니다.',
+          error: GalleryLoadFailure.emptyLibrary,
         );
         return;
       }

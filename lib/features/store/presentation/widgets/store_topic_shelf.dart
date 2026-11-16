@@ -6,6 +6,7 @@ import '../../../../shared/widgets/experience_form_style.dart';
 import '../../domain/entities/premium_template.dart';
 import '../../domain/store_template_recommendations.dart';
 import 'catalog_edition_artwork.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 class StoreTopicShelf extends StatefulWidget {
   const StoreTopicShelf({
@@ -154,10 +155,7 @@ class _StoreTopicShelfState extends State<StoreTopicShelf> {
                   avatar: category == '전체'
                       ? null
                       : category == storeRecommendedCategory
-                      ? Icon(
-                          Icons.auto_awesome_outlined,
-                          size: 16,
-                          color: ExperienceFormStyle.selectionInk(context),
+                      ? ExperienceIcon('Sparkles', size: 16, color: ExperienceFormStyle.selectionInk(context),
                         )
                       : SizedBox(
                           width: 4,

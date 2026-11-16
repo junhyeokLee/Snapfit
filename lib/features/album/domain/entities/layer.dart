@@ -35,6 +35,9 @@ class LayerModel {
   final TextAlign? textAlign;
   final double width; // 레이어 기본 너비
   final double height; // 레이어 기본 높이
+  /// Optional crop in page coordinates, applied after layer rotation/scale.
+  /// Imported feed designs retain their original artboard while staying editable.
+  final Rect? canvasClip;
   final String? textBackground; // 텍스트 스타일 키 ("tag", "bubble", "note", ...)
   /// 텍스트 채움 모드 ("solid" | "imageClip" | "outline" | "textCutout")
   final String? textFillMode;
@@ -102,6 +105,7 @@ class LayerModel {
     this.textAlign,
     this.width = 120, // 기본값 (이미지 or 텍스트 크기)
     this.height = 120, // 기본값
+    this.canvasClip,
     this.textBackground,
     this.textFillMode,
     this.textFillImageUrl,
@@ -139,6 +143,8 @@ class LayerModel {
     TextAlign? textAlign,
     double? width,
     double? height,
+    Rect? canvasClip,
+    bool clearCanvasClip = false,
     String? textBackground,
     String? textFillMode,
     String? textFillImageUrl,
@@ -186,6 +192,7 @@ class LayerModel {
       textAlign: textAlign ?? this.textAlign,
       width: width ?? this.width,
       height: height ?? this.height,
+      canvasClip: clearCanvasClip ? null : canvasClip ?? this.canvasClip,
       textBackground: textBackground ?? this.textBackground,
       textFillMode: textFillMode ?? this.textFillMode,
       textFillImageUrl: textFillImageUrl ?? this.textFillImageUrl,

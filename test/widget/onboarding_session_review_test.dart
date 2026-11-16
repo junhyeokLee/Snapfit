@@ -7,6 +7,8 @@ import 'package:snap_fit/features/album/presentation/viewmodels/home_view_model.
 import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
 import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
 import 'package:snap_fit/features/auth/presentation/views/login_screen.dart';
+import 'package:snap_fit/features/moments/domain/moment_record.dart';
+import 'package:snap_fit/features/moments/presentation/providers/moment_entry_refresh_provider.dart';
 import 'package:snap_fit/features/onboarding/presentation/app_introduction_screen.dart';
 import 'package:snap_fit/features/onboarding/presentation/first_visit_controller.dart';
 import 'package:snap_fit/features/point_shop/data/point_shop_provider.dart';
@@ -31,6 +33,18 @@ Future<void> _launch(
         firstVisitStoreProvider.overrideWithValue(store),
         authViewModelProvider.overrideWith(() => auth),
         homeViewModelProvider.overrideWith(() => FakeHomeViewModel(const [])),
+        // The first-use guide belongs to a loaded private journal.
+        momentEntryJournalProvider.overrideWith((ref) async {
+          if (ref.watch(authViewModelProvider).asData?.value == null)
+            return null;
+          return MomentJournal(
+            today: DateTime.utc(2026, 11, 4),
+            weekStart: DateTime.utc(2026, 11, 2),
+            month: DateTime.utc(2026, 11),
+            records: const [],
+            weekPhotoCount: 0,
+          );
+        }),
         homeUiStateProvider.overrideWith(
           () => HomeUiStateNotifier(initialIndex: 0),
         ),

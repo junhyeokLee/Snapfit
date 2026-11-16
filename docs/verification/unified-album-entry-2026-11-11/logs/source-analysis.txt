@@ -1,0 +1,6 @@
+Analyzing album_create_flow_screen.dart, album_create_step1.dart, page_editor_screen.dart, album_editor_view_model.dart, album_photo_fill_draft.dart, album_creation_draft.dart, editor_photo_fill_screen.dart, editor_more_tools_sheet.dart, editor_context_dock.dart, editor_bottom_menu.dart, template_photo_fill_step.dart, template_photo_fill_preview.dart, template_page_renderer.dart, browser_photo_selection_sheet.dart...
+
+   info - lib/features/album/presentation/views/album_create_flow_screen.dart:139:7 - Don't put any logic in 'createState'. Try moving the logic out of 'createState'. - no_logic_in_create_state
+   info - lib/features/album/presentation/views/page_editor_screen.dart:231:7 - Don't put any logic in 'createState'. Try moving the logic out of 'createState'. - no_logic_in_create_state
+
+2 issues found.

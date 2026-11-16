@@ -1,0 +1,151 @@
+{
+  "source": "real native HomeScreen, fresh scene per screenshot, synthetic local data and actual template layers",
+  "logicalSize": {
+    "width": 320.0,
+    "height": 568.0
+  },
+  "devicePixelRatio": 2,
+  "albumCount": 3,
+  "todaySaved": true,
+  "canComplete": false,
+  "fixture": "existing-owner-saved-today-with-missed-days",
+  "momentsReads": 1,
+  "steps": [
+    {
+      "step": "01-initial",
+      "scrollOffset": 0.0,
+      "maxScrollExtent": 556.75,
+      "viewportDimension": 362.0,
+      "viewportScreenTop": 104.0,
+      "visibleScreenBottom": 466.0,
+      "sections": {
+        "header": {
+          "mounted": true,
+          "screenTop": 24.0,
+          "screenBottom": 104.0,
+          "width": 320.0,
+          "height": 80.0,
+          "contentY": -80.0,
+          "visibleHeight": 0
+        },
+        "calendar": {
+          "mounted": false
+        },
+        "week": {
+          "mounted": true,
+          "screenTop": 174.0,
+          "screenBottom": 241.0,
+          "width": 272.0,
+          "height": 67.0,
+          "contentY": 70.0,
+          "visibleHeight": 67.0
+        },
+        "monthlyReward": {
+          "mounted": false
+        },
+        "monthlyCounts": {
+          "mounted": false
+        },
+        "todayPhoto": {
+          "mounted": true,
+          "screenTop": 257.0,
+          "screenBottom": 361.0,
+          "width": 104.0,
+          "height": 104.0,
+          "contentY": 153.0,
+          "visibleHeight": 104.0
+        },
+        "firstUseGuide": {
+          "mounted": false
+        },
+        "resumeDraft": {
+          "mounted": false
+        },
+        "todayAction": {
+          "mounted": true,
+          "screenTop": 345.0,
+          "screenBottom": 393.0,
+          "width": 92.86396789550781,
+          "height": 48.0,
+          "contentY": 241.0,
+          "visibleHeight": 48.0
+        },
+        "archive": {
+          "mounted": false
+        },
+        "monthlyAlbumEntry": {
+          "mounted": false
+        },
+        "nextStory": {
+          "mounted": false
+        },
+        "albumSection": {
+          "mounted": true,
+          "screenTop": 437.0,
+          "screenBottom": 463.0,
+          "width": 254.50000381469727,
+          "height": 26.0,
+          "contentY": 333.0,
+          "visibleHeight": 26.0
+        },
+        "book": {
+          "mounted": true,
+          "screenTop": 475.0,
+          "screenBottom": 775.8,
+          "width": 320.0,
+          "height": 300.79999999999995,
+          "contentY": 371.0,
+          "visibleHeight": 0
+        },
+        "focusedTitle": {
+          "mounted": true,
+          "screenTop": 775.8,
+          "screenBottom": 802.8,
+          "width": 110.26799011230469,
+          "height": 27.0,
+          "contentY": 671.8,
+          "visibleHeight": 0
+        },
+        "albumSelector": {
+          "mounted": true,
+          "screenTop": 914.8,
+          "screenBottom": 1010.75,
+          "width": 248.0,
+          "height": 95.95000000000005,
+          "contentY": 810.8,
+          "visibleHeight": 0
+        },
+        "bottomNavigation": {
+          "mounted": true,
+          "screenTop": 466.0,
+          "screenBottom": 568.0,
+          "width": 320.0,
+          "height": 102.0,
+          "contentY": 362.0,
+          "visibleHeight": 0
+        },
+        "bottomNavigationSurface": {
+          "mounted": true,
+          "screenTop": 466.0,
+          "screenBottom": 568.0,
+          "width": 320.0,
+          "height": 102.0,
+          "contentY": 362.0,
+          "visibleHeight": 0
+        },
+        "albumViewShortcut": {
+          "mounted": true,
+          "screenTop": 42.0,
+          "screenBottom": 86.0,
+          "width": 44.0,
+          "height": 44.0,
+          "contentY": -62.0,
+          "visibleHeight": 0
+        },
+        "nextStoryFallback": {
+          "mounted": false
+        }
+      }
+    }
+  ]
+}

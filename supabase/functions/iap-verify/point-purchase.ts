@@ -255,6 +255,38 @@ export type PurchaseDependencies = {
   }) => Promise<void>;
 };
 
+async function boundedPurchaseBody(req: Request): Promise<string> {
+  const maximum = 65536;
+  const length = req.headers.get("content-length");
+  if (length !== null && (!/^\d+$/.test(length) || Number(length) > maximum)) {
+    void req.body?.cancel().catch(() => {});
+    throw new PurchaseError("request_too_large", 413);
+  }
+  if (!req.body) return "";
+  const reader = req.body.getReader();
+  const decoder = new TextDecoder("utf-8", { fatal: true });
+  let size = 0, result = "";
+  try {
+    for (;;) {
+      const chunk = await reader.read();
+      if (chunk.done) break;
+      size += chunk.value.byteLength;
+      if (size > maximum) {
+        void reader.cancel().catch(() => {});
+        throw new PurchaseError("request_too_large", 413);
+      }
+      result += decoder.decode(chunk.value, { stream: true });
+    }
+    return result + decoder.decode();
+  } catch (error) {
+    if (error instanceof PurchaseError) throw error;
+    void reader.cancel().catch(() => {});
+    throw new PurchaseError("invalid_json");
+  } finally {
+    reader.releaseLock();
+  }
+}
+
 export function createPointPurchaseHandler(
   deps: PurchaseDependencies,
   headers: Record<string, string> = {},
@@ -262,7 +294,11 @@ export function createPointPurchaseHandler(
   const json = (data: unknown, status = 200) =>
     new Response(JSON.stringify(data), {
       status,
-      headers: { ...headers, "content-type": "application/json" },
+      headers: {
+        ...headers,
+        "content-type": "application/json",
+        "Cache-Control": "private, no-store, max-age=0",
+      },
     });
   return async (req: Request): Promise<Response> => {
     if (req.method === "OPTIONS") return new Response("ok", { headers });
@@ -271,8 +307,7 @@ export function createPointPurchaseHandler(
     }
     try {
       const user = await deps.authenticate(req);
-      const raw = await req.text();
-      if (raw.length > 65536) throw new PurchaseError("request_too_large", 413);
+      const raw = await boundedPurchaseBody(req);
       let body;
       try {
         body = JSON.parse(raw);

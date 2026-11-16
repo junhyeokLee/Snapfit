@@ -1,0 +1,27 @@
+[
+  {
+    "suite": "summary",
+    "exit": 0,
+    "result": "RESULT passed=20 failed=0 skipped=0"
+  },
+  {
+    "suite": "records",
+    "exit": 0,
+    "result": "RESULT passed=49 failed=0 skipped=0"
+  },
+  {
+    "suite": "format",
+    "exit": 0,
+    "result": "RESULT passed=8 failed=0 skipped=0"
+  },
+  {
+    "suite": "creationRoutes",
+    "exit": 0,
+    "result": "RESULT passed=12 failed=0 skipped=0"
+  },
+  {
+    "suite": "home",
+    "exit": 1,
+    "result": "RESULT passed=14 failed=3 skipped=0"
+  }
+]

@@ -7,6 +7,7 @@ import '../../domain/entities/premium_template.dart';
 import '../../domain/template_design_profile.dart';
 import 'catalog_edition_artwork.dart';
 import 'public_template_information.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 enum TemplateDesignComparisonAddResult { added, alreadySelected, limitReached }
 
@@ -51,6 +52,60 @@ class TemplateDesignComparisonSelection {
 
   TemplateDesignComparisonSelection clear() =>
       const TemplateDesignComparisonSelection.empty();
+}
+
+/// 한 스토어의 탐색·검색 화면만 공유하며 선택한 디자인 최대 세 개를 보관한다.
+class TemplateDesignComparisonController extends ChangeNotifier {
+  TemplateDesignComparisonSelection _selection =
+      const TemplateDesignComparisonSelection.empty();
+  final _templates = <int, PremiumTemplate>{};
+
+  TemplateDesignComparisonSelection get selection => _selection;
+
+  void add(PremiumTemplate template) {
+    if (_selection.addResult(template.id) !=
+        TemplateDesignComparisonAddResult.added) {
+      return;
+    }
+    _selection = _selection.add(template.id);
+    _templates[template.id] = template;
+    notifyListeners();
+  }
+
+  void remove(int id) {
+    if (!_selection.contains(id)) return;
+    _selection = _selection.remove(id);
+    _templates.remove(id);
+    notifyListeners();
+  }
+
+  void clear() {
+    if (_selection.ids.isEmpty) return;
+    _selection = _selection.clear();
+    _templates.clear();
+    notifyListeners();
+  }
+
+  List<PremiumTemplate> resolve(List<PremiumTemplate> catalog) {
+    final selected = <PremiumTemplate>[];
+    for (final id in _selection.ids) {
+      // 현재 목록에서 사라진 후보도 추가 조회 없이 비교할 수 있게 유지한다.
+      final template =
+          catalog.where((item) => item.id == id).firstOrNull ?? _templates[id];
+      if (template != null) {
+        _templates[id] = template;
+        selected.add(template);
+      }
+    }
+    return selected;
+  }
+
+  @override
+  void dispose() {
+    _selection = _selection.clear();
+    _templates.clear();
+    super.dispose();
+  }
 }
 
 /// A controlled tray shared by the app and web catalog.
@@ -170,7 +225,7 @@ class TemplateDesignComparisonTray extends StatelessWidget {
                                       padding: const EdgeInsets.all(12),
                                       color: ExperienceFormStyle.ink(context),
                                       onPressed: () => onRemove(design),
-                                      icon: const Icon(Icons.close, size: 18),
+                                      icon: const ExperienceIcon('X', size: 18),
                                     ),
                                   ],
                                 ),
@@ -293,7 +348,7 @@ class _TemplateDesignComparisonViewState
           ),
           leading: IconButton(
             tooltip: '비교 닫기',
-            icon: const Icon(Icons.close),
+            icon: const ExperienceIcon('X'),
             onPressed: () => Navigator.of(context).maybePop(),
           ),
         ),
@@ -437,7 +492,7 @@ class _TemplateDesignComparisonViewState
                     key: ValueKey('comparison-remove-${design.id}'),
                     tooltip: '${design.title} 비교에서 빼기',
                     onPressed: () => widget.onRemove(design),
-                    icon: const Icon(Icons.close, size: 20),
+                    icon: const ExperienceIcon('X', size: 20),
                   ),
                 ],
               ),

@@ -54,11 +54,32 @@ void main() {
                       context,
                       MaterialPageRoute(
                         builder: (_) => Scaffold(
-                          body: HomeAlbumHeader(
-                            collection: false,
-                            onCreateAlbum: () {},
-                            createButtonBuilder: (button) =>
-                                FirstHomeGuide(onCreate: () {}, child: button),
+                          body: Column(
+                            children: [
+                              HomeAlbumHeader(
+                                collection: false,
+                                onCreateAlbum: () {},
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    const Text(
+                                      '11월의 기록',
+                                      key: ValueKey('journal-guide-target'),
+                                    ),
+                                    FirstHomeGuide(
+                                      onRecord: () {},
+                                      onCreate: () {},
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -82,7 +103,7 @@ void main() {
       for (final elapsed in [1, 8, 16, 32, 64, 140, 280]) {
         await tester.pump(Duration(milliseconds: elapsed));
         final target = tester.getRect(
-          find.byKey(const ValueKey('home-create-album')),
+          find.byKey(const ValueKey('journal-guide-target')),
         );
         if (!target.overlaps(screen)) {
           final card = find.byKey(const ValueKey('first-home-guide'));

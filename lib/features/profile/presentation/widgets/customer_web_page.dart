@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/web/web_design.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 /// Customer forms use one page scroll, while history panes keep their own
 /// bounded list. Supporting information sits beside the task on desktop.
@@ -18,6 +19,7 @@ class CustomerWebPage extends StatelessWidget {
     this.onBack,
     this.showNavigation = true,
     this.section = WebSection.account,
+    this.collapseSidebarOnNarrow = true,
   });
 
   final String title;
@@ -28,6 +30,7 @@ class CustomerWebPage extends StatelessWidget {
   final bool scrollBody, allowBack, showNavigation;
   final VoidCallback? onBack;
   final WebSection section;
+  final bool collapseSidebarOnNarrow;
 
   @override
   Widget build(BuildContext context) => SnapFitWebShell(
@@ -42,7 +45,7 @@ class CustomerWebPage extends StatelessWidget {
             OutlinedButton.icon(
               key: const ValueKey('customer-web-back'),
               onPressed: onBack ?? () => Navigator.maybePop(context),
-              icon: const Icon(Icons.arrow_back, size: 18),
+              icon: const ExperienceIcon('ArrowLeft', size: 18),
               label: const Text('이전'),
             ),
           ...actions,
@@ -86,26 +89,29 @@ class CustomerWebPage extends StatelessWidget {
                   heading,
                   const SizedBox(height: 24),
                   if (sidebar != null && bounds.maxWidth < 940) ...[
-                    WebSurface(
-                      padding: EdgeInsets.zero,
-                      child: ExpansionTile(
-                        key: const ValueKey('customer-web-context-toggle'),
-                        tilePadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 4,
+                    if (!collapseSidebarOnNarrow)
+                      sidebar!
+                    else
+                      WebSurface(
+                        padding: EdgeInsets.zero,
+                        child: ExpansionTile(
+                          key: const ValueKey('customer-web-context-toggle'),
+                          tilePadding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 4,
+                          ),
+                          childrenPadding: const EdgeInsets.fromLTRB(
+                            12,
+                            0,
+                            12,
+                            12,
+                          ),
+                          shape: const Border(),
+                          collapsedShape: const Border(),
+                          title: const Text('요약 및 안내'),
+                          children: [sidebar!],
                         ),
-                        childrenPadding: const EdgeInsets.fromLTRB(
-                          12,
-                          0,
-                          12,
-                          12,
-                        ),
-                        shape: const Border(),
-                        collapsedShape: const Border(),
-                        title: const Text('요약 및 안내'),
-                        children: [sidebar!],
                       ),
-                    ),
                     const SizedBox(height: 20),
                   ],
                 ],

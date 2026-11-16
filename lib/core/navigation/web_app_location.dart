@@ -14,9 +14,12 @@ enum WebAppPage {
   order,
   testOrder,
   account,
+  safety,
+  safetyReports,
   feed,
   socialWork,
   socialProfile,
+  socialMomentMonth,
   myProfile,
   attendance,
   referral,
@@ -37,7 +40,9 @@ enum WebAppPage {
 /// Album invitation tokens are captured separately before this normalization;
 /// they belong to the pending-invitation store, not restorable page locations.
 class WebAppLocation {
-  const WebAppLocation(this.page, [this.id]);
+  const WebAppLocation(this.page, [this.id]) : showComments = false;
+  const WebAppLocation.socialWork(this.id, {this.showComments = false})
+    : page = WebAppPage.socialWork;
   static const home = WebAppLocation(WebAppPage.home);
   static const login = WebAppLocation(WebAppPage.login);
   static const albums = WebAppLocation(WebAppPage.albums);
@@ -45,6 +50,8 @@ class WebAppLocation {
   static const aiCreate = WebAppLocation(WebAppPage.aiCreate);
   static const orders = WebAppLocation(WebAppPage.orders);
   static const account = WebAppLocation(WebAppPage.account);
+  static const safety = WebAppLocation(WebAppPage.safety);
+  static const safetyReports = WebAppLocation(WebAppPage.safetyReports);
   static const feed = WebAppLocation(WebAppPage.feed);
   static const myProfile = WebAppLocation(WebAppPage.myProfile);
   static const attendance = WebAppLocation(WebAppPage.attendance);
@@ -68,6 +75,20 @@ class WebAppLocation {
   };
   final WebAppPage page;
   final String? id;
+  final bool showComments;
+
+  factory WebAppLocation.socialMomentMonth(
+    String userId,
+    DateTime month,
+  ) => WebAppLocation(
+    WebAppPage.socialMomentMonth,
+    '$userId/${month.year.toString().padLeft(4, '0')}-${month.month.toString().padLeft(2, '0')}',
+  );
+  String? get momentMonthUserId =>
+      page == WebAppPage.socialMomentMonth ? id?.split('/').first : null;
+  DateTime? get momentMonthDate => page == WebAppPage.socialMomentMonth
+      ? DateTime.tryParse('${id?.split('/').last}-01T00:00:00Z')
+      : null;
 
   /// Only informational pages are public. Album/order identifiers still require
   /// server-validated authentication and ownership checks.
@@ -77,8 +98,10 @@ class WebAppLocation {
       page == WebAppPage.feed ||
       page == WebAppPage.socialWork ||
       page == WebAppPage.socialProfile ||
+      page == WebAppPage.socialMomentMonth ||
       page == WebAppPage.referral ||
       page == WebAppPage.designs ||
+      page == WebAppPage.materials ||
       page == WebAppPage.template ||
       page == WebAppPage.printProducts ||
       (page == WebAppPage.policy && policySlugs.contains(id));
@@ -97,9 +120,13 @@ class WebAppLocation {
       WebAppPage.order => '/orders/$id',
       WebAppPage.testOrder => '/test-orders/$id',
       WebAppPage.account => '/account',
+      WebAppPage.safety => '/account/safety',
+      WebAppPage.safetyReports => '/account/safety/reports',
       WebAppPage.feed => '/feed',
       WebAppPage.socialWork => '/works/$id',
       WebAppPage.socialProfile => '/users/$id',
+      WebAppPage.socialMomentMonth =>
+        '/users/${id?.split('/').first}/months/${id?.split('/').last}',
       WebAppPage.myProfile => '/me',
       WebAppPage.attendance => '/attendance',
       WebAppPage.moments => '/moments',
@@ -114,6 +141,9 @@ class WebAppLocation {
       WebAppPage.printProducts => '/print-products',
       WebAppPage.policy => '/policies/$id',
     },
+    queryParameters: page == WebAppPage.socialWork && showComments
+        ? const {'comments': '1'}
+        : null,
   );
 
   static WebAppLocation parse(Uri source) {
@@ -135,6 +165,13 @@ class WebAppLocation {
       return aiCreate;
     if (parts.length == 1 && parts[0] == 'orders') return orders;
     if (parts.length == 1 && parts[0] == 'account') return account;
+    if (parts.length == 2 && parts[0] == 'account' && parts[1] == 'safety')
+      return safety;
+    if (parts.length == 3 &&
+        parts[0] == 'account' &&
+        parts[1] == 'safety' &&
+        parts[2] == 'reports')
+      return safetyReports;
     if (parts.length == 1 && parts[0] == 'feed') return feed;
     if (parts.length == 1 && parts[0] == 'me') return myProfile;
     if (parts.length == 1 && parts[0] == 'attendance') return attendance;
@@ -162,10 +199,26 @@ class WebAppLocation {
       }
       return home;
     }
+    if (parts.length == 4 &&
+        parts[0] == 'users' &&
+        parts[2] == 'months' &&
+        RegExp(r'^[A-Za-z0-9_-]{1,200}$').hasMatch(parts[1]) &&
+        RegExp(r'^[0-9]{4}-(0[1-9]|1[0-2])$').hasMatch(parts[3]) &&
+        int.parse(parts[3].substring(0, 4)) >= 1900) {
+      return WebAppLocation(
+        WebAppPage.socialMomentMonth,
+        '${parts[1]}/${parts[3]}',
+      );
+    }
     if (parts.length == 2 &&
         RegExp(r'^[A-Za-z0-9_-]{1,200}$').hasMatch(parts[1])) {
       if (parts[0] == 'works') {
-        return WebAppLocation(WebAppPage.socialWork, parts[1]);
+        return WebAppLocation.socialWork(
+          parts[1],
+          showComments:
+              uri.queryParametersAll['comments']?.length == 1 &&
+              uri.queryParameters['comments'] == '1',
+        );
       }
       if (parts[0] == 'users') {
         return WebAppLocation(WebAppPage.socialProfile, parts[1]);
@@ -212,9 +265,12 @@ class WebAppLocation {
 
   @override
   bool operator ==(Object other) =>
-      other is WebAppLocation && page == other.page && id == other.id;
+      other is WebAppLocation &&
+      page == other.page &&
+      id == other.id &&
+      showComments == other.showComments;
   @override
-  int get hashCode => Object.hash(page, id);
+  int get hashCode => Object.hash(page, id, showComments);
 }
 
 /// No named route: the Router alone owns browser history. Native navigation

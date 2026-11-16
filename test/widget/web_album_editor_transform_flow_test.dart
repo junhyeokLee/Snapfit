@@ -173,7 +173,7 @@ void main() {
     (tester) async {
       await _mount(tester);
       for (final tool in <(String, Type)>[
-        ('재배치', LayerManagerPanel),
+        ('겹침 순서', LayerManagerPanel),
         ('레이아웃', TemplateSelectionPanel),
         ('템플릿', DesignTemplatePanel),
         ('꾸미기', DecoratePanel),
@@ -206,17 +206,26 @@ void main() {
   );
 
   testWidgets(
-    'layer selection and background choice close only the large tool',
+    'layer selection stays open until explicit edit and background closes the tool',
     (tester) async {
       final container = await _mount(tester);
       final vm = container.read(albumEditorViewModelProvider.notifier);
-      await tester.tap(find.widgetWithText(TextButton, '재배치'));
+      await tester.tap(find.widgetWithText(TextButton, '겹침 순서'));
       await tester.pumpAndSettle();
       await tester.tap(
         find.descendant(
           of: find.byType(LayerManagerPanel),
           matching: find.text('우리의 기록'),
         ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(WebEditorToolDialog), findsOneWidget);
+      final interaction = tester
+          .widget<PageEditorCanvas>(find.byType(PageEditorCanvas))
+          .interaction;
+      expect(interaction.selectedLayerId, 'web-text');
+      await tester.tap(
+        find.byKey(const ValueKey('editor-layer-edit-selected')),
       );
       await tester.pumpAndSettle();
       expect(find.byType(WebEditorToolDialog), findsNothing);
@@ -300,7 +309,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(WebLayerTransformInspector), findsOneWidget);
       expect(find.byKey(const ValueKey('web-layer-x')), findsNothing);
-      expect(find.text('사진 교체'), findsOneWidget);
+      expect(find.widgetWithText(TextButton, '사진 바꾸기'), findsOneWidget);
       expect(
         tester
             .getTopLeft(find.byKey(const ValueKey('web-layer-quick-actions')))

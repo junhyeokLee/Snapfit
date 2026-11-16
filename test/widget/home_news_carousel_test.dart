@@ -108,6 +108,7 @@ void main() {
     final selected = await result;
     expect(selected?.item.id, 'monthReview');
     expect(selected?.action, isTrue);
+    expect(selected?.hideForToday, isFalse);
     expect(find.byKey(const ValueKey('home-news-carousel')), findsNothing);
     expect(tester.takeException(), isNull);
   });
@@ -137,6 +138,7 @@ void main() {
     final selected = await result;
     expect(selected?.item.id, 'attendance');
     expect(selected?.action, isFalse);
+    expect(selected?.hideForToday, isFalse);
     expect(tester.takeException(), isNull);
   });
 
@@ -156,9 +158,53 @@ void main() {
     await tester.pumpAndSettle();
     expect(viewed, ['monthlyDesign']);
     expect(find.byKey(const ValueKey('home-news-page-controls')), findsNothing);
+    expect(_visibleKey('home-news-hide-today'), findsOneWidget);
     await tester.tap(_visibleKey('home-news-action'));
     await tester.pumpAndSettle();
     expect((await result)?.item.id, 'monthlyDesign');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'plain today link closes with a hide result for the active story',
+    (tester) async {
+      final context = await _mount(tester);
+      final result = showHomeNewsCarousel(context, _items, initialIndex: 2);
+      await tester.pumpAndSettle();
+      final link = _visibleKey('home-news-hide-today');
+      expect(find.text('오늘 하루 안 보기').hitTestable(), findsOneWidget);
+      expect(tester.getSize(link).height, greaterThanOrEqualTo(44));
+      final button = tester.widget<TextButton>(link);
+      expect(button.style?.backgroundColor?.resolve({}), Colors.transparent);
+      expect(button.style?.side?.resolve({}), BorderSide.none);
+      await tester.tap(link);
+      await tester.pumpAndSettle();
+      final selected = await result;
+      expect(selected?.item.id, 'referral');
+      expect(selected?.action, isFalse);
+      expect(selected?.hideForToday, isTrue);
+      expect(find.byType(BottomSheet), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('today link supports keyboard activation on a single story', (
+    tester,
+  ) async {
+    final context = await _mount(tester, size: const Size(1280, 960));
+    final result = showHomeNewsCarousel(context, [_items.first]);
+    await tester.pumpAndSettle();
+    final text = find.text('오늘 하루 안 보기').hitTestable();
+    final focus = Focus.of(tester.element(text));
+    focus.requestFocus();
+    await tester.pump();
+    expect(focus.hasFocus, isTrue);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    final selected = await result;
+    expect(selected?.item.id, 'monthlyDesign');
+    expect(selected?.action, isFalse);
+    expect(selected?.hideForToday, isTrue);
     expect(tester.takeException(), isNull);
   });
 
@@ -225,6 +271,18 @@ void main() {
         expect(_visibleKey('home-news-action'), findsOneWidget);
         expect(_visibleKey('home-news-close'), findsOneWidget);
         expect(_visibleKey('home-news-page-controls'), findsOneWidget);
+        expect(_visibleKey('home-news-hide-today'), findsOneWidget);
+        expect(
+          tester.getSize(_visibleKey('home-news-hide-today')).height,
+          greaterThanOrEqualTo(44),
+        );
+        if (layout.size.height < 480) {
+          expect(
+            tester.getSize(_visibleKey('home-news-content-scroll')).height,
+            greaterThanOrEqualTo(96),
+            reason: 'The fixed actions must leave a readable body viewport.',
+          );
+        }
         await tester.drag(
           _visibleKey('home-news-content-scroll'),
           const Offset(0, -650),

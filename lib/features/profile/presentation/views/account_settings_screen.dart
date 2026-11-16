@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/utils/context_extensions.dart';
 import '../../../../core/theme/snapfit_design_tokens.dart' show SnapFitRadius;
 import '../../../../core/utils/app_error_mapper.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
@@ -12,6 +13,7 @@ import '../../../auth/data/dto/auth_response.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../../domain/order_visibility_owner.dart';
 import '../widgets/customer_web_page.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 enum AccountSettingsResult { signedOut, deleted }
 
@@ -31,10 +33,7 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
 
   void _message(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..clearSnackBars()
-      ..removeCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+    context.showSnack(message);
   }
 
   bool _sameAccount(UserInfo user) =>
@@ -221,17 +220,14 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
         child: ColoredBox(
           color: ExperienceFormStyle.selection(context),
           child: photo.isEmpty
-              ? Icon(
-                  Icons.person_outline,
-                  size: 30,
-                  color: ExperienceFormStyle.selectionInk(context),
+              ? ExperienceIcon('UserRound', size: 30, color: ExperienceFormStyle.selectionInk(context),
                 )
               : Image.network(
                   photo,
                   fit: BoxFit.cover,
                   cacheWidth: 192,
                   errorBuilder: (_, __, ___) =>
-                      const Icon(Icons.person_outline, size: 30),
+                      const ExperienceIcon('UserRound', size: 30),
                 ),
         ),
       ),
@@ -252,10 +248,9 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
     final photoAction = user != null && widget.onChangePhoto != null
         ? IconButton(
             tooltip: '프로필 사진 변경',
-            onPressed: () => _changePhoto(user),
-            icon: Icon(
-              Icons.photo_camera_outlined,
-              color: ExperienceFormStyle.ink(context),
+            onPressed: _busy ? null : () => _changePhoto(user),
+            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+            icon: ExperienceIcon('Camera', color: ExperienceFormStyle.ink(context),
             ),
           )
         : null;
@@ -278,13 +273,27 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
         ),
         if (stackedProfile) ...[const SizedBox(height: 12), profileName],
         SizedBox(height: compact ? 12 : 24),
-        _info(
-          context,
-          '이메일',
-          email.isEmpty ? '이메일 미제공' : email,
-          selectable: true,
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+            color: ExperienceFormStyle.surface(context),
+            borderRadius: BorderRadius.circular(SnapFitRadius.lg),
+            border: Border.all(color: ExperienceFormStyle.line(context)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _info(
+                context,
+                '이메일',
+                email.isEmpty ? '이메일 미제공' : email,
+                selectable: true,
+              ),
+              Divider(height: 1, color: ExperienceFormStyle.line(context)),
+              _info(context, '로그인 방식', providerLabel),
+            ],
+          ),
         ),
-        _info(context, '로그인 방식', providerLabel),
       ],
     );
     final security = Column(
@@ -472,7 +481,7 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
                           onPressed: _busy
                               ? null
                               : () => Navigator.maybePop(context),
-                          icon: const Icon(Icons.arrow_back, size: 18),
+                          icon: const ExperienceIcon('ArrowLeft', size: 18),
                           label: const Text('설정으로'),
                         )
                       : null,
@@ -510,11 +519,8 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
                                                 color: WebPalette.of(
                                                   context,
                                                 ).softBrand,
-                                                child: Icon(
-                                                  Icons.person_outline,
-                                                  color: WebPalette.of(
-                                                    context,
-                                                  ).brandInk,
+                                                child: ExperienceIcon('UserRound', color: WebPalette.of(
+                                                    context).brandInk,
                                                 ),
                                               ),
                                         )
@@ -522,11 +528,8 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
                                           color: WebPalette.of(
                                             context,
                                           ).softBrand,
-                                          child: Icon(
-                                            Icons.person_outline,
-                                            color: WebPalette.of(
-                                              context,
-                                            ).brandInk,
+                                          child: ExperienceIcon('UserRound', color: WebPalette.of(
+                                              context).brandInk,
                                           ),
                                         ),
                                 ),
@@ -549,10 +552,7 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
                               alignment: Alignment.centerLeft,
                               child: TextButton.icon(
                                 onPressed: () => _changePhoto(user),
-                                icon: const Icon(
-                                  Icons.photo_camera_outlined,
-                                  size: 18,
-                                ),
+                                icon: const ExperienceIcon('Camera', size: 18),
                                 label: const Text('프로필 사진 변경'),
                               ),
                             ),
@@ -630,18 +630,12 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
                                       user.email?.isNotEmpty == true)
                                     OutlinedButton.icon(
                                       onPressed: () => _resetPassword(user),
-                                      icon: const Icon(
-                                        Icons.key_outlined,
-                                        size: 18,
-                                      ),
+                                      icon: const ExperienceIcon('Key', size: 18),
                                       label: const Text('비밀번호 재설정'),
                                     ),
                                   OutlinedButton.icon(
                                     onPressed: () => _endSession(user),
-                                    icon: const Icon(
-                                      Icons.logout_outlined,
-                                      size: 18,
-                                    ),
+                                    icon: const ExperienceIcon('LogOut', size: 18),
                                     label: const Text('로그아웃'),
                                   ),
                                 ],
@@ -715,13 +709,16 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
     );
   }
 
-  Widget _section(BuildContext context, String title) => Text(
-    title,
-    style: ExperienceFormStyle.text(
-      context,
-      12,
-      weight: FontWeight.w600,
-      secondary: true,
+  Widget _section(BuildContext context, String title) => Semantics(
+    header: true,
+    child: Text(
+      title,
+      style: ExperienceFormStyle.text(
+        context,
+        13,
+        weight: FontWeight.w600,
+        secondary: true,
+      ),
     ),
   );
 
@@ -741,9 +738,9 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
         ),
         const SizedBox(height: 4),
         if (selectable)
-          SelectableText(value, style: ExperienceFormStyle.text(context, 14))
+          SelectableText(value, style: ExperienceFormStyle.text(context, 15))
         else
-          Text(value, style: ExperienceFormStyle.text(context, 14)),
+          Text(value, style: ExperienceFormStyle.text(context, 15)),
       ],
     ),
   );
@@ -875,7 +872,7 @@ class _AccountActionSheetState extends State<_AccountActionSheet> {
                         key: const ValueKey('account-sheet-close'),
                         tooltip: '닫기',
                         onPressed: _finishing ? null : () => _finish(false),
-                        icon: const Icon(Icons.close, size: 20),
+                        icon: const ExperienceIcon('X', size: 20),
                       ),
                     ],
                   ),

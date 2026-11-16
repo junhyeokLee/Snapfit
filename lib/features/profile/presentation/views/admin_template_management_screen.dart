@@ -13,6 +13,8 @@ import '../../../../shared/widgets/snapfit_app_bar_back_button.dart';
 import '../../../store/data/api/template_provider.dart';
 import '../../../store/domain/entities/premium_template.dart';
 import '../../data/admin_ops_repository.dart';
+import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 class AdminTemplateManagementScreen extends ConsumerStatefulWidget {
   const AdminTemplateManagementScreen({super.key});
@@ -33,9 +35,7 @@ class _AdminTemplateManagementScreenState
   Future<void> _openEditor({AdminTemplateSummary? summary}) async {
     final changed = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(
-        builder: (_) => _AdminTemplateEditorScreen(templateId: summary?.id),
-      ),
+      snapFitRoute(page: _AdminTemplateEditorScreen(templateId: summary?.id)),
     );
     if (changed == true && mounted) {
       setState(() => _refreshSeed++);
@@ -77,12 +77,12 @@ class _AdminTemplateManagementScreenState
         actions: [
           IconButton(
             onPressed: _publishCanonicalTemplates,
-            icon: const Icon(Icons.cloud_upload_outlined),
+            icon: const ExperienceIcon('CloudUpload'),
             tooltip: '기본 6개 서버 등록',
           ),
           IconButton(
             onPressed: () => setState(() => _refreshSeed++),
-            icon: const Icon(Icons.refresh_rounded),
+            icon: const ExperienceIcon('RefreshCw'),
           ),
         ],
       ),
@@ -90,7 +90,7 @@ class _AdminTemplateManagementScreenState
         onPressed: () => _openEditor(),
         backgroundColor: SnapFitColors.actionAccent,
         foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
+        icon: const ExperienceIcon('Plus'),
         label: const Text('템플릿 추가'),
       ),
       body: FutureBuilder<AdminTemplatePage>(

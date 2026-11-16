@@ -74,6 +74,27 @@ void main() {
   );
 
   test(
+    'private safety tabs return after login without storing profile or report data',
+    () async {
+      final backing = _BrowserStore();
+      for (final location in [
+        WebAppLocation.safety,
+        WebAppLocation.safetyReports,
+      ]) {
+        final beforeLogin = backing.bind(() => instant);
+        await beforeLogin.remember(location);
+        expect(backing.value, endsWith(location.uri.toString()));
+        expect(backing.value, isNot(contains('userId')));
+        final afterLogin = backing.bind(
+          () => instant.add(const Duration(minutes: 1)),
+        );
+        expect(await afterLogin.take(), location);
+        expect(await afterLogin.take(), isNull);
+      }
+    },
+  );
+
+  test(
     'clear waits for a late save and cannot restore the old intent',
     () async {
       final backing = _BrowserStore()..writeBarrier = Completer<void>();

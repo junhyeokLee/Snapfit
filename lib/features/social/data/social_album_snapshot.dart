@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../core/fonts/document_fonts.dart';
 
 import '../../../core/templates/studio_decoration_catalog.dart';
 import '../../../core/templates/studio_photo_frame_catalog.dart';
@@ -86,14 +87,20 @@ class SocialSnapshotRenderer {
   /// Explicitly load the artwork's saved families before starting the separate
   /// render tree. First-time publication must not capture fallback glyphs.
   Future<void> prepareFonts(Iterable<PrintAlbumPage> pages) async {
+    // Stationery labels use this family without a standalone text layer.
+    await DocumentFonts.ensure(const ['Cormorant Garamond']);
+    final manifest = await loadDocumentFontManifest();
+    final known = {for (final entry in manifest) entry['family'] as String};
     final used = <String>{
       'NotoSans',
       for (final page in pages)
         for (final layer in page.layers)
           if (layer.textStyle?.fontFamily case final String family) family,
+      for (final page in pages)
+        for (final layer in page.layers)
+          for (final family in layer.textStyle?.fontFamilyFallback ?? const [])
+            if (known.contains(family)) family,
     };
-    final manifest =
-        jsonDecode(await rootBundle.loadString('FontManifest.json')) as List;
     for (final family in used) {
       final entry = manifest
           .cast<Map>()
@@ -112,6 +119,7 @@ class SocialSnapshotRenderer {
           loader.addFont(Future.value(bytes));
         }
         await loader.load();
+        DocumentFonts.markLoaded(family);
       }
 
       try {
@@ -142,6 +150,7 @@ class SocialSnapshotRenderer {
   Future<Uint8List> renderPage(
     PrintAlbumPage page, {
     required ThemeData theme,
+    bool watermark = false,
   }) async {
     final images = <String, ui.Image>{};
     final layers = <LayerModel>[];
@@ -277,8 +286,11 @@ class SocialSnapshotRenderer {
         page.canvasSize,
         1440 / math.max(page.canvasSize.width, page.canvasSize.height),
       );
+      ui.Image? stamped;
       try {
-        final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+        if (watermark) stamped = await _stampBadge(image);
+        final export = stamped ?? image;
+        final bytes = await export.toByteData(format: ui.ImageByteFormat.png);
         if (bytes == null || bytes.lengthInBytes > 8 * 1024 * 1024) {
           throw const FormatException('공개 이미지를 준비하지 못했어요. 다른 페이지로 다시 시도해 주세요.');
         }
@@ -287,12 +299,66 @@ class SocialSnapshotRenderer {
           bytes.lengthInBytes,
         );
       } finally {
+        stamped?.dispose();
         image.dispose();
       }
     } finally {
       for (final image in images.values.toSet()) {
         image.dispose();
       }
+    }
+  }
+
+  /// Composites a small SnapFit logo badge onto the bottom-right corner.
+  static Future<ui.Image> _stampBadge(ui.Image source) async {
+    final short = math.min(source.width, source.height);
+    final logoSz = (short * 0.055).clamp(36.0, 60.0).round();
+    final padding = (short * 0.018).clamp(14.0, 24.0);
+    final halo = logoSz / 2.0 + padding * 0.55;
+
+    final logoData = await rootBundle.load('assets/snapfit_logo.png');
+    ui.Codec? codec;
+    ui.Image? logo;
+    try {
+      codec = await ui.instantiateImageCodec(
+        logoData.buffer.asUint8List(),
+        targetWidth: logoSz,
+      );
+      final frame = await codec.getNextFrame();
+      logo = frame.image;
+
+      final recorder = ui.PictureRecorder();
+      final canvas = ui.Canvas(
+        recorder,
+        Rect.fromLTWH(0, 0, source.width.toDouble(), source.height.toDouble()),
+      );
+
+      // Draw original
+      canvas.drawImage(source, Offset.zero, Paint());
+
+      // White circle halo
+      final cx = source.width - halo - padding;
+      final cy = source.height - halo - padding;
+      canvas.drawCircle(
+        Offset(cx, cy),
+        halo,
+        Paint()..color = const Color(0xDDFFFFFF),
+      );
+
+      // Logo icon centred in halo
+      canvas.drawImage(
+        logo,
+        Offset(cx - logo.width / 2.0, cy - logo.height / 2.0),
+        Paint(),
+      );
+
+      final picture = recorder.endRecording();
+      final result = await picture.toImage(source.width, source.height);
+      picture.dispose();
+      return result;
+    } finally {
+      logo?.dispose();
+      codec?.dispose();
     }
   }
 }

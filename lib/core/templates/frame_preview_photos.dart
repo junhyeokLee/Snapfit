@@ -1,5 +1,41 @@
+part 'premium_quartet_preview_photos.g.dart';
+
 // Stable editorial preview assignments: one distinct photograph per frame.
 const framePreviewPhotos = <String, String>{
+  ...premiumQuartetPreviewPhotos,
+  'clayContour':
+      'assets/templates/diversity_editions_2026/story-hobby-clay/02.jpg',
+  'leafHerbarium':
+      'assets/templates/diversity_editions_2026/story-hobby-leaf/02.jpg',
+  'filmContactRail':
+      'assets/templates/diversity_editions_2026/story-hobby-film/02.jpg',
+  'bakeRecipe':
+      'assets/templates/diversity_editions_2026/story-hobby-bake/02.jpg',
+  'knitStitch':
+      'assets/templates/diversity_editions_2026/story-hobby-knit/02.jpg',
+  'musicSleeve':
+      'assets/templates/diversity_editions_2026/story-hobby-music/02.jpg',
+  'paperNotch':
+      'assets/templates/diversity_editions_2026/story-hobby-paper/02.jpg',
+  'galleryRegistration':
+      'assets/templates/diversity_editions_2026/story-hobby-gallery/02.jpg',
+  'campMap': 'assets/templates/diversity_editions_2026/story-hobby-camp/02.jpg',
+  'milestoneConfettiMat':
+      'assets/templates/diversity_editions_2026/story-milestone-little-applause/02.jpg',
+  'milestoneBlueprintMount':
+      'assets/templates/diversity_editions_2026/story-milestone-first-home/02.jpg',
+  'milestonePortfolioTab':
+      'assets/templates/diversity_editions_2026/story-milestone-second-beginning/02.jpg',
+  'milestoneLinenMedal':
+      'assets/templates/diversity_editions_2026/story-milestone-next-season/02.jpg',
+  'milestoneGalleryLabel':
+      'assets/templates/diversity_editions_2026/story-milestone-first-exhibition/02.jpg',
+  'cafeLedgerMat': 'assets/templates/sensory_editions_2026/coffee02.jpg',
+  'cafeReceiptFold': 'assets/templates/sensory_editions_2026/coffee03.jpg',
+  'cafeGlassine': 'assets/templates/sensory_editions_2026/coffee04.jpg',
+  'nocturneContact': 'assets/templates/sensory_editions_2026/night02.jpg',
+  'nocturneTransit': 'assets/templates/sensory_editions_2026/night04.jpg',
+  'nocturneDuplex': 'assets/templates/sensory_editions_2026/night05.jpg',
   'storyVowGate':
       'assets/templates/atelier_editions_2026/velvet-vow-reading.png',
   'storyVowCotton':

@@ -19,9 +19,24 @@ class _Harness extends StatefulWidget {
 
 class _HarnessState extends State<_Harness> {
   bool active = true;
-  int created = 0, generation = 0;
+  int recorded = 0, created = 0, generation = 0;
+  bool? visibleOnAction;
   void setActive(bool value) => setState(() => active = value);
   void remountAnchor() => setState(() => generation++);
+  void _create() {
+    visibleOnAction = ProviderScope.containerOf(
+      context,
+    ).read(firstHomeGuideVisibleProvider);
+    created++;
+  }
+
+  void _record() {
+    visibleOnAction = ProviderScope.containerOf(
+      context,
+    ).read(firstHomeGuideVisibleProvider);
+    recorded++;
+  }
+
   @override
   Widget build(BuildContext context) => MaterialApp(
     theme: widget.dark ? ThemeData.dark() : ThemeData.light(),
@@ -35,16 +50,32 @@ class _HarnessState extends State<_Harness> {
       body: SafeArea(
         child: TickerMode(
           enabled: active,
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: HomeAlbumHeader(
-              collection: false,
-              onCreateAlbum: () => created++,
-              createButtonBuilder: (button) => FirstHomeGuide(
-                key: ValueKey(generation),
-                onCreate: () => created++,
-                child: button,
-              ),
+          child: SingleChildScrollView(
+            primary: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                HomeAlbumHeader(collection: false, onCreateAlbum: _create),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text('11월의 기록'),
+                      FirstHomeGuide(
+                        key: ValueKey(generation),
+                        onRecord: _record,
+                        onCreate: _create,
+                      ),
+                      const SizedBox(
+                        key: ValueKey('calendar-content'),
+                        height: 1000,
+                        child: Text('달력과 기록'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -54,6 +85,105 @@ class _HarnessState extends State<_Harness> {
 }
 
 void main() {
+  testWidgets('replay reveals its inline target after retained scrolling', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(320, 568));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          firstVisitStoreProvider.overrideWithValue(MemoryFirstVisitStore(3)),
+        ],
+        child: const _Harness(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.drag(
+      find.byType(SingleChildScrollView),
+      const Offset(0, -400),
+    );
+    await tester.pumpAndSettle();
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(_Harness)),
+    );
+    container.read(firstVisitProvider.notifier).requestHomeGuide();
+    await tester.pumpAndSettle();
+    expect(_guide, findsOneWidget);
+    expect(_guide.hitTestable(), findsOneWidget);
+    expect(find.byTooltip('안내 닫기').hitTestable(), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final action in ['record', 'create']) {
+    testWidgets(
+      'the guide $action action runs once and closes before navigation',
+      (tester) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              firstVisitStoreProvider.overrideWithValue(
+                MemoryFirstVisitStore(1),
+              ),
+            ],
+            child: const _Harness(),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final harness = tester.state<_HarnessState>(find.byType(_Harness));
+        final container = ProviderScope.containerOf(
+          tester.element(find.byType(_Harness)),
+        );
+        expect(harness.recorded, 0);
+        expect(harness.created, 0);
+        final button = find.byKey(ValueKey('first-home-guide-$action'));
+        expect(button, findsOneWidget);
+        await tester.tap(button);
+        // A second tap before rebuilding must not navigate twice.
+        await tester.tap(button);
+        await tester.pumpAndSettle();
+        expect(harness.recorded, action == 'record' ? 1 : 0);
+        expect(harness.created, action == 'create' ? 1 : 0);
+        expect(harness.visibleOnAction, isFalse);
+        expect(_guide, findsNothing);
+        expect(container.read(firstHomeGuideVisibleProvider), isFalse);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets(
+    'disposing the visible guide clears its visibility without an action',
+    (tester) async {
+      final container = ProviderContainer(
+        overrides: [
+          firstVisitStoreProvider.overrideWithValue(MemoryFirstVisitStore(1)),
+        ],
+      );
+      addTearDown(container.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const _Harness(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final harness = tester.state<_HarnessState>(find.byType(_Harness));
+      expect(container.read(firstHomeGuideVisibleProvider), isTrue);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const SizedBox.shrink(),
+        ),
+      );
+      await tester.pump();
+      expect(container.read(firstHomeGuideVisibleProvider), isFalse);
+      expect(harness.recorded, 0);
+      expect(harness.created, 0);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('guide appears once; closing and remounting cannot repeat it', (
     tester,
   ) async {
@@ -66,6 +196,19 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(_guide, findsOneWidget);
+    expect(find.text('오늘의 한 장부터 시작해요'), findsOneWidget);
+    expect(find.text('오늘 기록하기'), findsOneWidget);
+    expect(find.text('앨범 바로 만들기'), findsOneWidget);
+    expect(
+      find.ancestor(of: _guide, matching: find.byType(HomeAlbumHeader)),
+      findsNothing,
+    );
+    expect(
+      tester.getRect(_guide).bottom,
+      lessThanOrEqualTo(
+        tester.getRect(find.byKey(const ValueKey('calendar-content'))).top,
+      ),
+    );
     expect(store.flags, 3);
     await tester.tap(find.byTooltip('안내 닫기'));
     await tester.pumpAndSettle();
@@ -164,7 +307,11 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  for (final size in [const Size(320, 568), const Size(844, 390)]) {
+  for (final size in [
+    const Size(320, 568),
+    const Size(390, 844),
+    const Size(844, 390),
+  ]) {
     testWidgets('guide fits dark large text and rotation at $size', (
       tester,
     ) async {

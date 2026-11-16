@@ -226,7 +226,7 @@ Widget _buildImagePlaceholderImpl(LayerBuilder builder, LayerModel layer) {
           color: Colors.black.withValues(alpha: 0.32),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: const Icon(Icons.add_a_photo, size: 16, color: Colors.white),
+        child: const ExperienceIcon('ImagePlus', size: 16, color: Colors.white),
       ),
     ),
   );

@@ -1,6 +1,14 @@
+import 'template_catalog_categories.dart';
+
 part 'story_edition_exclusive_catalog.dart';
 part 'story_edition_club_catalog.dart';
 part 'story_edition_activity_catalog.dart';
+part 'sensory_edition_catalog.dart';
+part 'reading_edition_catalog.dart';
+part 'hobby_expansion_catalog.dart';
+part 'milestone_expansion_catalog.dart';
+part 'premium_quartet_catalog.dart';
+part 'premium_quartet_catalog.g.dart';
 
 enum StoryActivity {
   running,
@@ -39,6 +47,9 @@ class StoryEdition {
     this.photoFrames = const [],
     this.photoAspectRatios = const [],
     this.preservedPhotoFrames = const [],
+    this.additionalMaterialKeys = const [],
+    this.innerPages = 24,
+    this.spreadOrder = const [],
   });
   final String id,
       title,
@@ -58,12 +69,21 @@ class StoryEdition {
   final List<String> notes;
   final List<String> discoveryTags;
 
+  List<String> get styleTags =>
+      (qualityRevision == premiumQuartetRevision
+          ? premiumQuartetCoverStyleTags[coverStyle]
+          : storyCoverStyleTags[coverStyle]) ??
+      const [];
+
   /// Existing frame products curated for the book, separate from its own kit.
   final List<String> photoFrames;
 
   /// Read from asset headers at authoring time; never opens images at runtime.
   final List<double> photoAspectRatios;
   final List<String> preservedPhotoFrames;
+  final List<String> additionalMaterialKeys;
+  final int innerPages;
+  final List<int> spreadOrder;
   static const innerPageCount = 24;
   String get productKey => 'template:$id';
   String get paperId => '$id-paper';
@@ -78,6 +98,7 @@ class StoryEdition {
   ];
   List<String> get includedMaterialKeys => [
     ...materialKeys,
+    ...additionalMaterialKeys,
     for (final frame in {...photoFrames, ...preservedPhotoFrames})
       'frame:$frame',
   ];
@@ -1573,10 +1594,15 @@ const originalStoryEditions = <StoryEdition>[
 ];
 
 const storyEditions = <StoryEdition>[
+  ...premiumQuartetEditions,
+  ...sensoryStoryEditions,
   ...originalStoryEditions,
   ...exclusiveStoryEditions,
   ...clubStoryEditions,
   ...activityStoryEditions,
+  ...readingStoryEditions,
+  ...hobbyExpansionEditions,
+  ...milestoneExpansionEditions,
 ];
 
 final photographyExclusiveStoryEditions = List<StoryEdition>.unmodifiable(

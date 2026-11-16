@@ -68,8 +68,10 @@ class _Editor extends AlbumEditorViewModel {
   AlbumPage? get currentPage =>
       AlbumPage(id: pageId, layers: [original], pageIndex: 1);
   @override
-  void applyTemplateToCurrentPage(PageTemplate template, Size size) =>
-      applied.add(template.id);
+  bool applyTemplateToCurrentPage(PageTemplate template, Size size) {
+    applied.add(template.id);
+    return true;
+  }
 }
 
 late Uint8List _photoBytes;

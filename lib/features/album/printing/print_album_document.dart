@@ -170,6 +170,9 @@ class PrintAlbumDocument {
         return isCover
             ? layer.copyWith(
                 position: layer.position - const Offset(kCoverSpineWidth, 0),
+                canvasClip: layer.canvasClip?.shift(
+                  const Offset(-kCoverSpineWidth, 0),
+                ),
               )
             : layer;
       }).toList()..sort((a, b) => a.zIndex.compareTo(b.zIndex));

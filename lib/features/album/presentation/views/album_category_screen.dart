@@ -21,6 +21,8 @@ import '../widgets/web/web_saved_album_artwork.dart';
 import 'album_create_flow_screen.dart';
 import '../../../../core/utils/context_extensions.dart';
 import '../../../profile/presentation/widgets/personal_collection_shelf.dart';
+import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 enum AlbumCategory { recent, shared }
 
@@ -64,10 +66,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
       if (!mounted || decision == null) return;
       final created = await Navigator.push(
         context,
-        MaterialPageRoute(
-          settings: const WebAppRouteSettings(WebAppLocation.create),
-          builder: (_) => AlbumCreateFlowScreen(initialDraft: decision.draft),
-        ),
+        snapFitRoute(page: AlbumCreateFlowScreen(initialDraft: decision.draft), settings: const WebAppRouteSettings(WebAppLocation.create)),
       );
       if (!mounted) return;
       ref.invalidate(albumCreationDraftProvider);
@@ -184,13 +183,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
     }
   }
 
-  List<String> get _tabs {
-    switch (widget.category) {
-      case AlbumCategory.recent:
-      case AlbumCategory.shared:
-        return const ['진행 중', '완료', '즐겨찾기'];
-    }
-  }
+  List<String> get _tabs => const ['전체', '즐겨찾기'];
 
   Color get _tabAccent {
     return SnapFitColors.accent;
@@ -217,16 +210,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
       return title.contains(q) || theme.contains(q) || album.id.toString() == q;
     }).toList();
 
-    switch (_selectedTab) {
-      case 0:
-        return searched.where((a) => !isCompletedAlbum(a)).toList();
-      case 1:
-        return searched.where((a) => isCompletedAlbum(a)).toList();
-      case 2:
-        return searched.where(_isFavorite).toList();
-      default:
-        return searched;
-    }
+    return _selectedTab == 1 ? searched.where(_isFavorite).toList() : searched;
   }
 
   String _ownerLabel(Album album) {
@@ -293,7 +277,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
           IconButton(
             tooltip: '새 앨범 만들기',
             onPressed: _creatingAlbum ? null : _createAlbum,
-            icon: const Icon(Icons.add, size: 23),
+            icon: const ExperienceIcon('Plus', size: 23),
           ),
         ],
       ),
@@ -368,7 +352,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
       actions: [
         TextButton.icon(
           onPressed: () => Navigator.maybePop(context),
-          icon: const Icon(Icons.arrow_back, size: 17),
+          icon: const ExperienceIcon('ArrowLeft', size: 17),
           label: const Text('내 앨범'),
         ),
       ],
@@ -382,7 +366,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
                 : '앨범의 진행 상황과 즐겨찾기를 한곳에서 관리하세요.',
             trailing: FilledButton.icon(
               onPressed: _creatingAlbum ? null : _createAlbum,
-              icon: const Icon(Icons.add, size: 18),
+              icon: const ExperienceIcon('Plus', size: 18),
               label: const Text('앨범 만들기'),
             ),
           ),
@@ -418,14 +402,14 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
                 onChanged: (value) => setState(() => _searchQuery = value),
                 decoration: const InputDecoration(
                   hintText: '앨범 이름 또는 테마 검색',
-                  prefixIcon: Icon(Icons.search, size: 20),
+                  prefixIcon: ExperienceIcon('Search', size: 20),
                   isDense: true,
                 ),
               );
               final refresh = IconButton(
                 tooltip: '목록 새로고침',
                 onPressed: _isRefreshing ? null : _handlePullToRefresh,
-                icon: const Icon(Icons.refresh, size: 21),
+                icon: const ExperienceIcon('RefreshCw', size: 21),
               );
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -511,31 +495,34 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Expanded(
-                                      child: Center(
-                                        child: WebSavedAlbumArtwork(
-                                          album: album,
-                                        ),
+                                      child: Stack(
+                                        fit: StackFit.expand,
+                                        children: [
+                                          Center(
+                                            child: WebSavedAlbumArtwork(
+                                              album: album,
+                                            ),
+                                          ),
+                                          Positioned(
+                                            top: 0,
+                                            right: 0,
+                                            child: _favoriteButton(album),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                     const SizedBox(height: 18),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            album.title.isEmpty
-                                                ? '제목 없음'
-                                                : album.title,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w700,
-                                              color: WebPalette.of(context).ink,
-                                            ),
-                                          ),
-                                        ),
-                                        _favoriteButton(album),
-                                      ],
+                                    Text(
+                                      album.title.isEmpty
+                                          ? '제목 없음'
+                                          : album.title,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                        color: WebPalette.of(context).ink,
+                                      ),
                                     ),
                                     Text(
                                       _albumSubtitle(album),
@@ -621,30 +608,33 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
                         SizedBox(
                           height: stage,
                           width: double.infinity,
-                          child: SavedAlbumArtwork(
-                            key: shared
-                                ? ValueKey('shared-cover-${album.id}')
-                                : null,
-                            album: album,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              SavedAlbumArtwork(
+                                key: shared
+                                    ? ValueKey('shared-cover-${album.id}')
+                                    : null,
+                                album: album,
+                              ),
+                              Positioned(
+                                top: 4,
+                                right: 4,
+                                child: _favoriteButton(album),
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                album.title.isEmpty ? '제목 없음' : album.title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: ExperienceFormStyle.text(
-                                  context,
-                                  14,
-                                  weight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                            _favoriteButton(album),
-                          ],
+                        Text(
+                          album.title.isEmpty ? '제목 없음' : album.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: ExperienceFormStyle.text(
+                            context,
+                            14,
+                            weight: FontWeight.w600,
+                          ),
                         ),
                         Text(
                           _albumSubtitle(album),
@@ -686,6 +676,11 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
   Widget _favoriteButton(Album album) => IconButton(
     tooltip: _isFavorite(album) ? '즐겨찾기 해제' : '즐겨찾기',
     onPressed: () => _toggleFavorite(album),
+    // 제목 폭을 보존하면서 사진 위에서도 상태와 터치 영역을 구분한다.
+    constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+    style: IconButton.styleFrom(
+      backgroundColor: SnapFitColors.surfaceOf(context).withValues(alpha: .94),
+    ),
     color: _isFavorite(album)
         ? ExperienceFormStyle.selectionInk(context)
         : ExperienceFormStyle.muted(context),

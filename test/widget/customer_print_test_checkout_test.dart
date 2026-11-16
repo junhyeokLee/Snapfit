@@ -240,9 +240,13 @@ void main() {
     (tester) async {
       allowed = false;
       await pump(tester);
-      await review(tester);
-      final pay = find.byKey(const ValueKey('print-checkout-payment'));
-      expect(tester.widget<FilledButton>(pay).onPressed, isNull);
+      expect(find.byKey(const ValueKey('print-recipient-name')), findsNothing);
+      expect(find.text('이 앨범의 TEST 주문 권한을 확인하지 못했어요.'), findsOneWidget);
+      expect(find.text('주문 내용 확인하기'), findsNothing);
+      expect(
+        find.byKey(const ValueKey('print-checkout-payment')),
+        findsNothing,
+      );
       expect(launches, 0);
       verifyNever(
         () => tests.prepare(

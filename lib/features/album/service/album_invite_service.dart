@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/utils/context_extensions.dart';
 import '../data/api/album_provider.dart';
 import 'kakao_share_service.dart';
 import 'album_collaboration_session.dart';
@@ -21,9 +22,7 @@ final kakaoInviteShareProvider = Provider<KakaoInviteShare>(
 class AlbumInviteService {
   static void _showMessage(BuildContext context, String message) {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context)
-      ..clearSnackBars()
-      ..showSnackBar(SnackBar(content: Text(message)));
+    context.showSnack(message);
   }
 
   static String normalizeInviteLink(String raw) {

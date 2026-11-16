@@ -114,9 +114,10 @@ void main() {
         expect(
           find.byKey(const ValueKey('web-library-moments-entry')),
           findsNothing,
-          reason: 'The desktop sidebar already exposes the journal.',
+          reason: 'The private monthly journal has a section after the albums.',
         );
-        expect(find.byTooltip('피드에 작품 공개'), findsNWidgets(2));
+        expect(find.text('오늘의 기록'), findsOneWidget);
+        expect(find.byTooltip('프로필에 앨범 공개'), findsNWidgets(2));
         expect(find.byTooltip('제작 사양과 주문 준비 확인'), findsNWidgets(2));
         await tester.tap(find.byTooltip('즐겨찾기 추가').first);
         await tester.pumpAndSettle();
@@ -160,8 +161,25 @@ void main() {
       expect(tester.getTopLeft(card).dy, lessThan(500));
       expect(
         tester.getTopLeft(card).dy,
-        lessThan(tester.getTopLeft(find.text('다음 앨범을 위한 아이디어')).dy),
+        lessThan(
+          tester
+              .getTopLeft(
+                find.byKey(const ValueKey('home-monthly-feed-summary')),
+              )
+              .dy,
+        ),
       );
+      await tester.scrollUntilVisible(
+        find.text('다음 앨범을 위한 아이디어'),
+        240,
+        scrollable: find
+            .descendant(
+              of: find.byKey(const ValueKey('web-album-library-scroll')),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await tester.pumpAndSettle();
       expect(find.text('AI로 만들기'), findsOneWidget);
       expect(find.text('내 디자인 보관함'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -238,8 +256,34 @@ void main() {
       );
       expect(
         find.byKey(const ValueKey('web-library-moments-entry')),
-        findsOneWidget,
+        findsNothing,
       );
+      final summary = find.byKey(const ValueKey('home-monthly-feed-summary'));
+      await tester.scrollUntilVisible(
+        summary,
+        240,
+        scrollable: find
+            .descendant(
+              of: find.byKey(const ValueKey('web-album-library-scroll')),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await tester.pumpAndSettle();
+      expect(summary.hitTestable(), findsOneWidget);
+      // Return to library controls before testing the view switch.
+      tester
+          .state<ScrollableState>(
+            find
+                .descendant(
+                  of: find.byKey(const ValueKey('web-album-library-scroll')),
+                  matching: find.byType(Scrollable),
+                )
+                .first,
+          )
+          .position
+          .jumpTo(0);
+      await tester.pumpAndSettle();
       expect(find.text('앨범 열기'), findsNothing);
       expect(tester.takeException(), isNull);
       await tester.tap(find.byTooltip('앨범 목록 보기'));

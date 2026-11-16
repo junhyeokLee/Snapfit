@@ -1,0 +1,72 @@
+{
+  "recordedAt": "2026-11-16T01:32:59.960356+00:00",
+  "kind": "Read-only UX audit; native headless Flutter widget captures with synthetic data",
+  "cases": 12,
+  "screenshots": 19,
+  "suites": {
+    "point_audit": {
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_shop": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_other": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "sourceSha256": {
+    "lib/features/profile/presentation/views/billing_management_screen.dart": "5495a73288b857c9dc06622f1a30e4c3a0dcafee7cb45c90655e6d06b209f8b8",
+    "lib/features/billing/presentation/widgets/point_purchase_visuals.dart": "19ec34c893e2550ead42efce610f9bc5c5cf612fa219aca278c15959540674f4",
+    "lib/features/billing/data/point_purchase_service.dart": "8f09658ed7c48001aaacf35b88f10f9c7b8c521914884a687d4e207c80137eac",
+    "lib/features/billing/data/billing_repository.dart": "06d86ad4da7aa387681c6b0e5034c2dcf5391af5dab50953189a301935fbc3e4",
+    "lib/features/billing/data/billing_provider.dart": "49d498fa92ca99894833c5b4a56d13a826ef8134159eb4b5d789acad9c04aa71",
+    "lib/features/point_shop/presentation/point_shop_access.dart": "4262fcba871e485fcdf8cbe2ca4465cd31c814e90191dcc7e511cff7d6016db7",
+    "lib/features/point_shop/presentation/point_shop_purchase_sheet.dart": "c0f959a6e6057e16bed800ccfe210d02e394ad428ea283005571f8fe2e96ad5a",
+    "lib/features/album/presentation/views/album_create_flow_screen.dart": "84387ad2c838c2aa6a981c3addbf01f8d96a98408ca5e5c55a09a330b8d07215",
+    "lib/features/album/presentation/widgets/create_flow/ai_album_point_confirmation_step.dart": "f60b28d44cf2e51bf5e8575a834ef4fc425937c5ea5c8fcf9cdedd4cf7c2da39",
+    "lib/features/notification/data/notification_repository.dart": "ff0500f826bf8832d88f3761c1eb2f9a3c88f0905329a4a6c4512dc6d542c46d",
+    "lib/features/notification/presentation/views/notification_screen.dart": "488c74cdaa0004f38d21a9a07b2722a0f5781ffeea72430282cf0fb067d90ec1",
+    "lib/features/profile/presentation/views/support_center_screen.dart": "403f30f322519ebe54b14cd82799b4817ad86713da6796d963fee8a0b0db10a7",
+    "lib/features/profile/domain/support_inquiry.dart": "580b55d49138c2f1196fa6e3b5c151c1c2e661526f23e200001638d0a85a0257"
+  },
+  "productsChanged": false,
+  "liveTransactions": false,
+  "limits": [
+    "No real iOS/Android device, live StoreKit/Google billing, charge/refund, production DB write or deployment",
+    "Web AI findings are code inspection only; the web entry and browser flow were not captured",
+    "Shop screenshots use a fixture host around the real purchase gate and billing widgets; blank host area is not an application defect",
+    "Collaboration link expiry is source-confirmed; no new live invite was issued"
+  ],
+  "captureSha256": {
+    "01-point-charge-entry-390-light.png": "9e5262b8d8982708f5586f67328e27f1e18ae21866b9a452e2845e7887b0b016",
+    "02-point-pack-selected-390-light.png": "99f042d8bdb5f239ee3c41dc2bac2da9bcb7b93c0fde3b810a794a57fe484316",
+    "03-point-charge-lower-guidance-390-light.png": "99f042d8bdb5f239ee3c41dc2bac2da9bcb7b93c0fde3b810a794a57fe484316",
+    "04-point-ledger-overview-390-light.png": "fee356f354114f910d5fbe9f3d8ffdcf0d6f059d7e8416179e9694d0dc844bc9",
+    "05-point-ledger-refund-390-light.png": "a9bc2512085e5ecf16d6c0f196dacdb291c8c5c0df410da57a73eb94b3040675",
+    "06-point-negative-balance-selected-390-light.png": "8066da48f7ff62436234b3fca02e65fe3c05009852e7979fddc18710a476629e",
+    "07-point-negative-charge-action-390-light.png": "8066da48f7ff62436234b3fca02e65fe3c05009852e7979fddc18710a476629e",
+    "08-point-charge-success-balance-390-light.png": "8437e2666c8eeab9b293bea206f6b937cbf336b6b940966f5e354a6242e23048",
+    "09-point-charge-success-status-390-light.png": "e72e6b843ea232e1226a779ea624f7189e4287553c3d7aa9ef669a9a6eaa7352",
+    "10-point-native-balance-error-390-light.png": "a998977d3f1555698e68e9ae2e45c90986608459dd5747c72594531c1a9e801a",
+    "11-point-small-dark-selected-320-dark.png": "ef2282479636611042dd477474256dc8168bdb4cef93dcb58d30a7c981ea8527",
+    "12-point-small-dark-ledger-320-dark.png": "363dda92bda1b19f31814196756ca7bd7015b58b776784847326aabacc4451fb",
+    "20-shop-insufficient-purpose-390-light.png": "91e43f60219dc3a983a4f6b45627ae98bf267a0161fdb9110908b86c286b5062",
+    "21-topup-without-original-purpose-390-light.png": "e89ba16c176531ff61375ac468928872a89fb9a5160e697d051aa934f93b9310",
+    "22-shop-return-retains-item-no-charge-390-light.png": "91e43f60219dc3a983a4f6b45627ae98bf267a0161fdb9110908b86c286b5062",
+    "23-shop-price-change-warning-390-light.png": "2128784bb2bdcb3a32adf2e968e4150e7abadcf4eb662995217085417506269d",
+    "other-inbox-sixty-read-end.png": "5c5d1e7ca4327a7ee17ab0bdf5ec9c683325d8eaa63c07b3529a8cb6de35160e",
+    "other-inbox-sixty-read-top.png": "1c62baebff01a6275e77a1321514583d6621ef573b7a6104778dda223fdf82f2",
+    "other-support-resolved-own-message.png": "253d3d0a8822467a6aaa8a5d4e9bf12d37252f073ba4fd61cae0ca99a90bc185"
+  },
+  "reportSha256": "e90719f1af77b35cbf0c44384b0c10f984784f105b2d9e52d64e8c7ba031c347",
+  "proofImageSha256": {
+    "포인트_검토_화면.png": "c7db603f6743ec8cbdcc8b7082a106493ab79573fcbe869371baf1009e7edd07",
+    "전체_캡처_검토.png": "140acdd55678168340176143491840cd484998997893db2c17c60d8e079b4da2"
+  }
+}

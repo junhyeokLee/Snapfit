@@ -1,0 +1,18 @@
+{
+  "removed": [
+    {
+      "path": "/tmp/snapfit-record-feedback.dill",
+      "bytes": 125685064
+    },
+    {
+      "path": "/tmp/snapfit-record-feedback-final.dill",
+      "bytes": 125689640
+    },
+    {
+      "path": "/tmp/snapfit-record-loading-verified.dill",
+      "bytes": 124875240
+    }
+  ],
+  "freed_bytes": 376249944,
+  "available_bytes": 9345212416
+}

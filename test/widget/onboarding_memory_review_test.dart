@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
-import 'package:snap_fit/features/album/presentation/widgets/home/home_album_header.dart';
 import 'package:snap_fit/features/onboarding/presentation/app_introduction_screen.dart';
 import 'package:snap_fit/features/onboarding/presentation/first_visit_controller.dart';
 import 'package:snap_fit/features/onboarding/presentation/widgets/first_home_guide.dart';
@@ -104,7 +103,7 @@ void main() {
   );
 
   testWidgets(
-    'replayed guides detach their overlays and leave no ongoing frame work',
+    'replayed guides close inline content and leave no ongoing frame work',
     (tester) async {
       final active = ValueNotifier(true);
       final store = MemoryFirstVisitStore(3);
@@ -119,12 +118,7 @@ void main() {
                   enabled: visible,
                   child: Align(
                     alignment: Alignment.topCenter,
-                    child: HomeAlbumHeader(
-                      collection: false,
-                      onCreateAlbum: () {},
-                      createButtonBuilder: (button) =>
-                          FirstHomeGuide(onCreate: () {}, child: button),
-                    ),
+                    child: FirstHomeGuide(onRecord: () {}, onCreate: () {}),
                   ),
                 ),
               ),
@@ -134,7 +128,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       final container = ProviderScope.containerOf(
-        tester.element(find.byType(HomeAlbumHeader)),
+        tester.element(find.byType(FirstHomeGuide)),
       );
       for (var attempt = 0; attempt < 12; attempt++) {
         container.read(firstVisitProvider.notifier).requestHomeGuide();

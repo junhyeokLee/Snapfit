@@ -1,0 +1,91 @@
+{
+  "date": "2026-11-12",
+  "regressionPassed": 158,
+  "capturePassed": 3,
+  "suites": [
+    {
+      "name": "navigation",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "kind": "regression"
+    },
+    {
+      "name": "motion",
+      "passed": 53,
+      "failed": 0,
+      "skipped": 0,
+      "kind": "regression"
+    },
+    {
+      "name": "lifecycle",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "kind": "regression"
+    },
+    {
+      "name": "thumbnails",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "kind": "regression"
+    },
+    {
+      "name": "imageCapture",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "kind": "regression"
+    },
+    {
+      "name": "imageQuality",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "kind": "regression"
+    },
+    {
+      "name": "thumbnailPerformance",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "kind": "regression"
+    },
+    {
+      "name": "home",
+      "passed": 76,
+      "failed": 0,
+      "skipped": 0,
+      "kind": "regression"
+    },
+    {
+      "name": "readerCapture",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "kind": "capture"
+    }
+  ],
+  "sourceSha256": {
+    "lib/features/album/presentation/views/album_reader_screen.dart": "5fd5d2b96018f54dccbdb872f149c86f64f9882f99495af4ebe8690d211aceb8",
+    "lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart": "3955e152b3e17a3a4a4ade268c08ea208a2101860c39d4877c16d9770450309b",
+    "test/widget/reader_navigation_continuity_test.dart": "e9898df868b2574cf671872075a3bbbcb98580a17b5052a2be5270defac642d7",
+    "test/widget/reader_paper_motion_test.dart": "7f72ddadf6c8574c07a69fe48e9209bef349657a4a45783b5a100ea3e5bd6d91",
+    "test/widget/home_book_depth_test.dart": "585bf61caa961e07ab96b98105c3530e2c1c72d3a753aa1da35fdbfc6ff7f748"
+  },
+  "limitations": [
+    "Native software widget renderer; no device install or full application build.",
+    "Static full-frame captures can omit unchanged text/icons; video presents the verified book area."
+  ],
+  "video": {
+    "path": "page-turn.mp4",
+    "crop": [
+      0,
+      400,
+      780,
+      800
+    ],
+    "source": "37 native Flutter frames at 30fps; no generated artwork"
+  }
+}

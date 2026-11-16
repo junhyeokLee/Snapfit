@@ -27,3 +27,18 @@ class AlbumEditSessionChanged extends AlbumEditFailure {
   const AlbumEditSessionChanged()
     : super('편집 중인 계정이나 앨범이 변경되어 저장을 멈췄어요. 현재 계정에서 앨범을 다시 열어 주세요.');
 }
+
+class AlbumCreationRecoveryRequired extends AlbumEditFailure {
+  const AlbumCreationRecoveryRequired()
+    : super('앨범을 안전하게 이어 만들 준비를 하지 못했어요. 이 화면을 다시 열어 시도해 주세요.');
+}
+
+class AlbumCreationRequestConflict extends AlbumEditFailure {
+  const AlbumCreationRequestConflict()
+    : super('다른 창에서 앨범 만들기 내용이 변경됐어요. 임시 저장한 앨범을 다시 열어 주세요.');
+}
+
+class AlbumCreationDeleted extends AlbumEditFailure {
+  const AlbumCreationDeleted()
+    : super('이 작업으로 만든 앨범은 삭제됐어요. 새 앨범을 만들려면 현재 만들기에서 나간 뒤 새로 시작해 주세요.');
+}

@@ -70,13 +70,20 @@ abstract class MomentEngagementRepository {
 class SupabaseMomentEngagementRepository implements MomentEngagementRepository {
   SupabaseMomentEngagementRepository(this.client) {
     _actor = client.auth.currentUser?.id;
-    _subscription = client.auth.onAuthStateChange.listen((event) {
-      final next = event.session?.user.id;
-      if (next != _actor) {
-        _actor = next;
+    _subscription = client.auth.onAuthStateChange.listen(
+      (event) {
+        final next = event.session?.user.id;
+        if (next != _actor) {
+          _actor = next;
+          _generation++;
+        }
+      },
+      onError: (Object _, StackTrace __) {
+        // Consume recoverable SDK errors without inventing a sign-out. A read
+        // or acknowledgement started before that error must be retried fresh.
         _generation++;
-      }
-    });
+      },
+    );
   }
 
   final SupabaseClient client;

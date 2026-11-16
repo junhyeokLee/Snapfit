@@ -81,7 +81,7 @@ class CatalogFilterBar extends StatelessWidget {
                   dropdownColor: ExperienceFormStyle.surface(context),
                   style: ExperienceFormStyle.text(context, 12),
                   selectedItemBuilder: (context) => [
-                    for (final value in const ['추천순', '이름순'])
+                    for (final value in const ['최신순', '인기순'])
                       Row(
                         children: [
                           const Icon(Icons.sort_rounded, size: 18),
@@ -98,17 +98,17 @@ class CatalogFilterBar extends StatelessWidget {
                   ],
                   items: const [
                     DropdownMenuItem(
-                      value: '추천순',
+                      value: '최신순',
                       child: Text(
-                        '추천순',
+                        '최신순',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     DropdownMenuItem(
-                      value: '이름순',
+                      value: '인기순',
                       child: Text(
-                        '이름순',
+                        '인기순',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),

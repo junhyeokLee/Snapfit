@@ -9,6 +9,7 @@ import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/web/web_design.dart';
 import '../../../profile/data/portone_payment_launcher.dart';
 import '../../../profile/data/print_dev_checkout.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 /// An owned album follows the actual app renderer and TEST payment SDK. This
 /// route never calls production checkout, payment confirmation, or live print.
@@ -348,7 +349,7 @@ class _PrintDevCheckoutScreenState
                         ],
                         OutlinedButton.icon(
                           onPressed: _busy ? null : _refresh,
-                          icon: const Icon(Icons.refresh),
+                          icon: const ExperienceIcon('RefreshCw'),
                           label: const Text('같은 개발 주문 상태 확인'),
                         ),
                       ],
@@ -393,7 +394,7 @@ class _PrintDevCheckoutScreenState
       actions: [
         TextButton.icon(
           onPressed: _busy ? null : () => Navigator.maybePop(context),
-          icon: const Icon(Icons.close, size: 18),
+          icon: const ExperienceIcon('X', size: 18),
           label: const Text('돌아가기'),
         ),
       ],

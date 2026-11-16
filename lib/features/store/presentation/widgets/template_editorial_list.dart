@@ -1,3 +1,4 @@
+import 'store_product_badge.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../../../core/theme/snapfit_design_tokens.dart' show SnapFitRadius;
@@ -13,15 +14,25 @@ import 'catalog_item_title.dart';
 import 'template_catalog_tile.dart';
 
 /// Five products form one full-width editorial and bounded comparison rows.
-List<List<int>> storeEditorialRows(int count, {int columns = 2}) {
+List<List<int>> storeEditorialRows(
+  int count, {
+  int columns = 2,
+  bool compactStart = false,
+}) {
   assert(columns > 0);
   final rows = <List<int>>[];
-  for (var i = 0; i < count;) {
-    if (i % 5 == 0) {
+  final firstGroup = compactStart ? math.min(columns * 3, count) : 0;
+  for (var i = 0; i < firstGroup; i += columns) {
+    rows.add([for (var j = i; j < math.min(i + columns, firstGroup); j++) j]);
+  }
+  for (var i = firstGroup; i < count;) {
+    if ((i - firstGroup) % 5 == 0) {
       rows.add([i++]);
     } else {
       final row = [i++];
-      while (row.length < columns && i < count && i % 5 != 0) row.add(i++);
+      while (row.length < columns && i < count && (i - firstGroup) % 5 != 0) {
+        row.add(i++);
+      }
       rows.add(row);
     }
   }
@@ -38,6 +49,8 @@ class TemplateEditorialList extends StatelessWidget {
     required this.scrollController,
     this.onCompare,
     this.comparisonIds = const [],
+    this.compactStart = false,
+    this.interlude,
   });
   final List<PremiumTemplate> templates;
   final int visibleCount;
@@ -46,6 +59,8 @@ class TemplateEditorialList extends StatelessWidget {
   final ScrollController scrollController;
   final ValueChanged<PremiumTemplate>? onCompare;
   final List<int> comparisonIds;
+  final bool compactStart;
+  final Widget? interlude;
   @override
   Widget build(BuildContext context) => ViewportSliverLayoutBuilder(
     builder: (context, bounds) {
@@ -53,7 +68,14 @@ class TemplateEditorialList extends StatelessWidget {
       final rows = storeEditorialRows(
         math.min(visibleCount, templates.length),
         columns: columns,
+        compactStart: compactStart,
       );
+      final firstGroup = compactStart
+          ? math.min(columns * 3, math.min(visibleCount, templates.length))
+          : 0;
+      final insertion = compactStart
+          ? (firstGroup / columns).ceil()
+          : math.min(3, rows.length);
       final wide = bounds.crossAxisExtent >= 700;
       final ratio = wide ? 1.15 : .98;
       final tileWidth = (bounds.crossAxisExtent - 16 * (columns - 1)) / columns;
@@ -74,11 +96,25 @@ class TemplateEditorialList extends StatelessWidget {
       return SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) {
-            final row = rows[index];
+            if (interlude != null && index == insertion) {
+              return Padding(
+                key: const ValueKey('store-editorial-interlude'),
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: interlude,
+              );
+            }
+            final rowIndex = interlude != null && index > insertion
+                ? index - 1
+                : index;
+            final row = rows[rowIndex];
+            final featured =
+                row.length == 1 &&
+                row.first >= firstGroup &&
+                (row.first - firstGroup) % 5 == 0;
             return RepaintBoundary(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 24),
-                child: row.first % 5 == 0
+                child: featured
                     ? _EditorialEdition(
                         template: templates[row.first],
                         onOpen: () => onOpen(templates[row.first]),
@@ -107,7 +143,7 @@ class TemplateEditorialList extends StatelessWidget {
               ),
             );
           },
-          childCount: rows.length,
+          childCount: rows.length + (interlude == null ? 0 : 1),
           addAutomaticKeepAlives: false,
         ),
       );
@@ -240,6 +276,8 @@ class _EditorialEdition extends StatelessWidget {
                     ),
                   ),
                 const SizedBox(height: 6),
+                StoreProductBadge(productKey: pointShopTemplateKey(template)),
+                const SizedBox(height: 8),
                 PointShopProductBadge(
                   productKey: pointShopTemplateKey(template),
                   compact: false,

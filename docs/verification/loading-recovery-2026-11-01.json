@@ -1,0 +1,144 @@
+{
+  "date": "2026-11-01",
+  "issue": "Private screens could remain loading or appear unresponsive while the public store stayed available.",
+  "causes": [
+    "Supabase token refresh shares one pending future across authenticated reads; an unbounded Auth HTTP request could block those reads and reuse the same stuck future.",
+    "Session synchronization could repeatedly replace a verified same-owner profile with loading, and initial restoration was awaited ahead of subsequent auth events.",
+    "A private navigation request above the public store silently returned while account validation was unavailable, hiding AuthGate's error/retry screen.",
+    "Creation entry, font requests and price/ownership reads had unbounded waits or retained failed pending work.",
+    "Eight authentication stream listeners/forwarders lacked an error handler and could propagate a refresh outage as an unhandled zone exception."
+  ],
+  "backendEvidence": {
+    "projectId": "rrbhxdtriummqpztpjrk",
+    "projectStatusWhenChecked": "ACTIVE_HEALTHY",
+    "recentTokenRefreshGateway504Count": 1,
+    "maxOriginTimeAttributeReported": 39384,
+    "window": "Last 24 hours at diagnosis; aggregated paths/status only. No customer identity/token contents queried."
+  },
+  "fixes": {
+    "authTransport": "Exact Supabase origin /auth/v1 http.Request JSON exchanges: total headers+body deadline 20s, per-request abort, late responses discarded; non-Auth/storage/rest/functions/stream/multipart lifetimes preserved.",
+    "restoration": "Whole session synchronization 25s; current-session single-flight; initial latest-result completer; same-owner transient failures keep validated data; logout/account change/explicit rejection still mask private state.",
+    "navigation": "Private menu reveals the underlying account gate and retry UI without granting private access, then resumes the pending destination only after validation; a different owner discards it.",
+    "home": "Album read deadline 25s and adjacent same-owner token refresh events deduplicated.",
+    "designEntry": "Account/draft reads 12s, strict font preparation 40s, price/ownership reads 12s; session identity and draft revision checked after async work.",
+    "fonts": "Per-file 25s and registration 12s, identity-safe cleanup, partial success retained, all faces validated before registering; no fallback editing/printing.",
+    "streamConsumers": [
+      "FCM",
+      "SnapfitImage",
+      "MomentEngagementRepository",
+      "MomentPublicationRepository",
+      "ReferralRepository",
+      "AttendanceRepository",
+      "HomeNewsRepository",
+      "AdminHomeNewsRepository"
+    ],
+    "dependency": "http 1.6.0 promoted from the same locked transitive version to an exact direct dependency; no package version upgraded."
+  },
+  "verification": [
+    {
+      "name": "Native auth/home/router/account retry",
+      "passed": 64,
+      "failed": 0,
+      "log": "auth-router-final-tests.log"
+    },
+    {
+      "name": "Native fonts/design entry/price/ownership",
+      "passed": 50,
+      "failed": 0,
+      "log": "store-entry-final-tests.log"
+    },
+    {
+      "name": "Real Supabase shared-refresh recovery and print font preflight",
+      "passed": 14,
+      "failed": 0,
+      "log": "auth-http-print-tests.log"
+    },
+    {
+      "name": "FCM SDK stream error and logout race",
+      "passed": 2,
+      "failed": 0,
+      "log": "fcm-recovery-tests.log"
+    },
+    {
+      "name": "Extended repository/visibility/publication regression",
+      "passed": 74,
+      "initialFailures": 4,
+      "remainingFailures": 0,
+      "log": "stream-repository-tests.log",
+      "resolution": "Initial replay-event and native cache fixtures were corrected; the auth-error notice test used the installed SDK named constructor. All failed tests reran in stream-recovery-final-tests.log."
+    },
+    {
+      "name": "Stream recovery, signed-image owner fences and auth messaging final",
+      "passed": 32,
+      "failed": 0,
+      "log": "stream-recovery-final-tests.log"
+    },
+    {
+      "name": "Chrome auth/creation/font behavior",
+      "passed": 69,
+      "initialFailures": 1,
+      "remainingFailures": 0,
+      "log": "browser-recovery-tests.log",
+      "resolution": "Original-bundle byte integrity is a VM-only audit; the Web test's 30s original-font hashing timed out. It is now explicitly skipped on Web, with the VM hash audit and real release-rendering comparison retained."
+    },
+    {
+      "name": "Chrome Auth HTTP and font behavior",
+      "passed": 19,
+      "skippedNativeByteAudit": 1,
+      "failed": 0,
+      "log": "browser-navigation-http-tests.log",
+      "notes": "Two additional main-navigation cases initially passed their functional assertions but failed notification fixture cleanup. All three reran cleanly in browser-navigation-final.log after real-zone fixture initialization."
+    },
+    {
+      "name": "Actual MoaEditorApp Chrome routing and retry",
+      "passed": 3,
+      "failed": 0,
+      "log": "browser-navigation-final.log"
+    },
+    {
+      "name": "Actual release artwork/geometry/photo/PDF/publication",
+      "equalComparisons": 16,
+      "totalComparisons": 16,
+      "passed": true,
+      "log": "document-quality/report.json"
+    },
+    {
+      "name": "Changed production source analysis",
+      "errors": 0,
+      "warnings": 0,
+      "info": 0,
+      "log": "analysis-final.log"
+    },
+    {
+      "name": "Production guest store/detail/start-to-login",
+      "passed": true,
+      "noUnexpectedAlbumPurchasePublicationWrites": true,
+      "log": "public-web/report.json"
+    }
+  ],
+  "production": {
+    "url": "https://snapfit-c719d.web.app/feed",
+    "hostingVersion": "3e854abcba1b2d6d",
+    "mainFile": "main.20031c723599e8e54821.dart.js",
+    "mainSha256": "20031c723599e8e54821113a7bf94a89e4b0122cfd35db82f2608379d1de97ab",
+    "htmlBootstrapMainAndFullFontManifestMatchBuild": true,
+    "resourcesEvidence": "deployed-assets.json",
+    "authenticatedRecoveryTestUses": "Isolated real app and SDK fixtures, no customer login or private account used."
+  },
+  "android": {
+    "apk": "build/app/outputs/flutter-apk/app-debug.apk",
+    "mode": "debug",
+    "flutterEngineAbi": "arm64-v8a",
+    "bytes": 846846898,
+    "sha256": "3f0f9eb9844f5e5db75436ad4cd7bc9ebdcf6acaa3376bc4cacac3083a050510",
+    "signedPackageVerified": true,
+    "originalSourceAssetsMatched": 1072,
+    "originalFontFilesMatched": 40,
+    "newRecoveryCodeIncluded": true,
+    "physicalInstallVerified": false,
+    "buildNote": "Signed package assembly completed. Gradle failed copying the APK because local disk filled; removed only this task's temporary font-fixture build, verified the signed original, and atomically replaced the incomplete final copy without rebuilding or changing the package.",
+    "evidence": "apk-verification.json"
+  },
+  "dataSafety": "No production customer login, purchase, point award, photo upload or album/publication write was initiated by verification. No database schema, permissions or point rules were changed.",
+  "evidenceDirectory": "output/loading-recovery-20261101"
+}

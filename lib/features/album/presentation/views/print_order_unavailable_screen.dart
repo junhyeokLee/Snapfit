@@ -8,6 +8,8 @@ import '../../../../shared/web/web_design.dart';
 import '../../../profile/presentation/views/order_history_screen.dart';
 import '../widgets/print_fulfillment_notice.dart';
 import 'print_order_preview_screen.dart';
+import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 class PrintOrderUnavailableScreen extends StatelessWidget {
   const PrintOrderUnavailableScreen({
@@ -70,10 +72,7 @@ class PrintOrderUnavailableScreen extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          Icons.menu_book_outlined,
-                          size: 24,
-                          color: ExperienceFormStyle.ink(context),
+                        ExperienceIcon('BookOpen', size: 24, color: ExperienceFormStyle.ink(context),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -126,14 +125,12 @@ class PrintOrderUnavailableScreen extends StatelessWidget {
                     style: ExperienceFormStyle.primary(context),
                     onPressed: () => Navigator.push<void>(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => PrintOrderPreviewScreen(
+                      snapFitRoute(page: PrintOrderPreviewScreen(
                           albumId: albumId,
                           albumTitle: albumTitle,
-                        ),
-                      ),
+                        )),
                     ),
-                    icon: const Icon(Icons.menu_book_outlined, size: 20),
+                    icon: const ExperienceIcon('BookOpen', size: 20),
                     label: const Text('인쇄 미리보기 · PDF 만들기'),
                   ),
                   const SizedBox(height: 12),
@@ -158,9 +155,7 @@ class PrintOrderUnavailableScreen extends StatelessWidget {
                   TextButton(
                     onPressed: () => Navigator.push<void>(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const OrderHistoryScreen(),
-                      ),
+                      snapFitRoute(page: const OrderHistoryScreen()),
                     ),
                     child: const Text('기존 주문 내역 보기'),
                   ),
@@ -179,7 +174,7 @@ class PrintOrderUnavailableScreen extends StatelessWidget {
     actions: [
       TextButton.icon(
         onPressed: () => Navigator.pop(context),
-        icon: const Icon(Icons.arrow_back, size: 18),
+        icon: const ExperienceIcon('ArrowLeft', size: 18),
         label: const Text('앨범으로'),
       ),
     ],
@@ -197,9 +192,7 @@ class PrintOrderUnavailableScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(
-                    Icons.menu_book_outlined,
-                    color: WebPalette.of(context).brandInk,
+                  ExperienceIcon('BookOpen', color: WebPalette.of(context).brandInk,
                     size: 32,
                   ),
                   const SizedBox(height: 20),
@@ -223,12 +216,10 @@ class PrintOrderUnavailableScreen extends StatelessWidget {
                   FilledButton.icon(
                     onPressed: () => Navigator.push<void>(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => PrintOrderPreviewScreen(
+                      snapFitRoute(page: PrintOrderPreviewScreen(
                           albumId: albumId,
                           albumTitle: albumTitle,
-                        ),
-                      ),
+                        )),
                     ),
                     icon: const Icon(Icons.fact_check_outlined, size: 19),
                     label: const Text('인쇄 미리보기 · PDF 만들기'),
@@ -270,11 +261,9 @@ class PrintOrderUnavailableScreen extends StatelessWidget {
                     child: TextButton.icon(
                       onPressed: () => Navigator.push<void>(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const OrderHistoryScreen(),
-                        ),
+                        snapFitRoute(page: const OrderHistoryScreen()),
                       ),
-                      icon: const Icon(Icons.receipt_long_outlined, size: 18),
+                      icon: const ExperienceIcon('FileText', size: 18),
                       label: const Text('기존 주문 내역 보기'),
                     ),
                   ),

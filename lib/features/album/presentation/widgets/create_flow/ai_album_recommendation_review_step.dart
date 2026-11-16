@@ -9,6 +9,7 @@ import '../../../../../core/constants/cover_size.dart';
 import '../../../ai_album/domain/ai_album_models.dart';
 import '../../../ai_album/domain/ai_template_paper_tone.dart';
 import 'ai_template_design_review.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 class AiAlbumRecommendationReviewStep extends StatefulWidget {
   const AiAlbumRecommendationReviewStep({
@@ -335,10 +336,7 @@ class _TemplateSlotList extends StatelessWidget {
                             : const Color(0xFFE4D8C9),
                       ),
                     ),
-                    child: Icon(
-                      Icons.add_photo_alternate_outlined,
-                      size: 18,
-                      color: SnapFitColors.textSecondaryOf(context),
+                    child: ExperienceIcon('ImagePlus', size: 18, color: SnapFitColors.textSecondaryOf(context),
                     ),
                   ),
                   SizedBox(width: 11),
@@ -949,10 +947,7 @@ class _BackTextButton extends StatelessWidget {
         minimumSize: Size(0, 34),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      icon: Icon(
-        Icons.arrow_back_ios_new_rounded,
-        size: 14,
-        color: SnapFitColors.textSecondaryOf(context),
+      icon: ExperienceIcon('ArrowLeft', size: 14, color: SnapFitColors.textSecondaryOf(context),
       ),
       label: Text(
         '이전',

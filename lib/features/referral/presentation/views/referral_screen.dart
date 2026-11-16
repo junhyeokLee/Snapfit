@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../../core/utils/context_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -20,6 +21,7 @@ import '../../domain/referral_link.dart';
 import '../../domain/referral_status.dart';
 import '../providers/referral_providers.dart';
 import '../widgets/referral_widgets.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 class ReferralScreen extends ConsumerStatefulWidget {
   const ReferralScreen({super.key, this.initialCode});
@@ -154,14 +156,11 @@ class _ReferralScreenState extends ConsumerState<ReferralScreen>
       // never turn an accepted code into an apparent registration failure.
       ref.invalidate(myPointBalanceProvider);
       ref.invalidate(myPointLedgerProvider);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            confirmed.claimed && confirmed.awardedPoints > 0
-                ? '친구와 연결됐어요. ${referralPoints(confirmed.awardedPoints)}P를 받았어요.'
-                : '친구 초대 혜택은 이미 받았어요.',
-          ),
-        ),
+      ref.invalidate(pointLedgerHistoryProvider);
+      context.showSnack(
+        confirmed.claimed && confirmed.awardedPoints > 0
+            ? '친구와 연결됐어요. ${referralPoints(confirmed.awardedPoints)}P를 받았어요.'
+            : '친구 초대 혜택은 이미 받았어요.',
       );
     } catch (error) {
       if (_current(owner, revision)) {
@@ -208,15 +207,11 @@ class _ReferralScreenState extends ConsumerState<ReferralScreen>
     try {
       await Clipboard.setData(ClipboardData(text: value));
       if (_current(owner, revision)) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(message)));
+        context.showSnack(message);
       }
     } catch (_) {
       if (_current(owner, revision)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('복사하지 못했어요. 코드를 길게 눌러 복사해 주세요.')),
-        );
+        context.showSnack('복사하지 못했어요. 코드를 길게 눌러 복사해 주세요.');
       }
     }
   }
@@ -240,9 +235,7 @@ class _ReferralScreenState extends ConsumerState<ReferralScreen>
       );
     } catch (_) {
       if (_current(owner, revision)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('공유 창을 열지 못했어요. 링크를 복사해서 보내주세요.')),
-        );
+        context.showSnack('공유 창을 열지 못했어요. 링크를 복사해서 보내주세요.');
       }
     } finally {
       if (_current(owner, revision)) setState(() => _sharing = false);
@@ -329,7 +322,7 @@ class _ReferralScreenState extends ConsumerState<ReferralScreen>
                 key: const ValueKey('referral-refresh'),
                 tooltip: '초대 기록 새로고침',
                 onPressed: _redeeming || _refreshing ? null : _refresh,
-                icon: const Icon(Icons.refresh_rounded),
+                icon: const ExperienceIcon('RefreshCw'),
               ),
           ],
         ),
@@ -350,7 +343,7 @@ class _ReferralScreenState extends ConsumerState<ReferralScreen>
                             ? SocialEmpty(
                                 title: '초대 기록을 불러오지 못했어요',
                                 message: '연결 상태를 확인한 뒤 다시 시도해 주세요.',
-                                icon: Icons.cloud_off_outlined,
+                                icon: const ExperienceIcon('CloudOff'),
                                 action: OutlinedButton(
                                   key: const ValueKey('referral-retry'),
                                   onPressed: _refreshing ? null : _refresh,
@@ -432,144 +425,157 @@ class _ReferralScreenState extends ConsumerState<ReferralScreen>
     ],
   );
 
-  Widget _content(ReferralStatus status) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Text(
-        '함께 만드는 기록',
-        style: ExperienceFormStyle.text(
-          context,
-          14,
-          weight: FontWeight.w500,
-          color: SocialStyle.accent(context),
-        ),
-      ),
-      const SizedBox(height: 8),
-      Text(
-        '친구와 함께, SnapFit',
-        style: ExperienceFormStyle.text(
-          context,
-          30,
-          weight: FontWeight.w600,
-        ).copyWith(height: 1.3, letterSpacing: -.6),
-      ),
-      const SizedBox(height: 13),
-      Text(
-        '보유 포인트 ${referralPoints(status.balance)}P',
-        style: ExperienceFormStyle.text(context, 14, secondary: true),
-      ),
-      const SizedBox(height: 26),
-      if (_refreshError != null) ...[
-        ReferralPaper(
-          child: Semantics(
-            liveRegion: true,
-            child: Text(
-              _refreshError!,
-              style: ExperienceFormStyle.text(
-                context,
-                14,
-              ).copyWith(height: 1.6),
-            ),
+  Widget _redeemCard(ReferralStatus status) => ReferralRedeemCard(
+    controller: _code,
+    points: status.inviteePoints,
+    busy: _redeeming,
+    enabled: !_refreshing && _normalize(_code.text).isNotEmpty,
+    error: _error,
+    eligibleUntil: status.eligibleUntil,
+    onChanged: (_) => setState(() => _error = null),
+    onRedeem: _redeem,
+  );
+
+  Widget _content(ReferralStatus status) {
+    // 링크로 받은 코드만 우선해 수동 입력 중 카드와 포커스가 이동하지 않게 한다.
+    final incomingCode = normalizeReferralCode(
+      widget.initialCode ?? ref.watch(pendingReferralProvider)?.code ?? '',
+    );
+    final registrationFirst =
+        status.canRedeem && incomingCode != null && incomingCode != status.code;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          '함께 만드는 기록',
+          style: ExperienceFormStyle.text(
+            context,
+            14,
+            weight: FontWeight.w500,
+            color: SocialStyle.accent(context),
           ),
         ),
-        const SizedBox(height: 20),
-      ],
-      LayoutBuilder(
-        builder: (context, bounds) {
-          final reward = ReferralRewardCard(
-            inviterPoints: status.inviterPoints,
-            inviteePoints: status.inviteePoints,
-            registrationWindowDays: status.registrationWindowDays,
-          );
-          final share = ReferralShareCard(
-            code: status.code,
-            busy: _sharing,
-            onShare: () => _share(status),
-            onCopyCode: () =>
-                _copy(value: status.code, message: '초대 코드를 복사했어요.'),
-            onCopyLink: () => _copy(
-              value: _inviteLink(status.code).toString(),
-              message: '초대 링크를 복사했어요.',
-            ),
-          );
-          if (bounds.maxWidth >= 900 &&
-              MediaQuery.textScalerOf(context).scale(14) <= 20) {
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(flex: 6, child: reward),
-                const SizedBox(width: 24),
-                Expanded(flex: 5, child: share),
-              ],
-            );
-          }
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [reward, const SizedBox(height: 20), share],
-          );
-        },
-      ),
-      const SizedBox(height: 22),
-      if (status.canRedeem)
-        ReferralRedeemCard(
-          controller: _code,
-          points: status.inviteePoints,
-          busy: _redeeming,
-          enabled: !_refreshing && _normalize(_code.text).isNotEmpty,
-          error: _error,
-          eligibleUntil: status.eligibleUntil,
-          onChanged: (_) => setState(() => _error = null),
-          onRedeem: _redeem,
-        )
-      else
-        ReferralPaper(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                status.redeemed
-                    ? Icons.check_circle_outline_rounded
-                    : Icons.mail_outline_rounded,
-                color: SocialStyle.accent(context),
-                size: 29,
-              ),
-              const SizedBox(height: 14),
-              Text(
-                status.redeemed
-                    ? '친구 초대 혜택을 받았어요'
-                    : status.ineligibleReason == 'unverified'
-                    ? '이메일 인증이 필요해요'
-                    : '이제 친구를 초대해 보세요',
-                key: const ValueKey('referral-registration-state'),
-                style: ExperienceFormStyle.text(
-                  context,
-                  19,
-                  weight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 9),
-              Text(
-                status.redeemed
-                    ? '함께할 친구를 내 코드로 초대하고 새로운 추억을 남겨보세요.'
-                    : status.ineligibleReason == 'unverified'
-                    ? '가입한 이메일을 인증한 뒤 이 화면을 새로고침하면 친구 코드를 등록할 수 있어요.'
-                    : '친구 코드 등록은 가입 후 ${status.registrationWindowDays}일 안에 한 번만 가능해요. 내 코드를 보내 친구와 혜택을 나눠보세요.',
+        const SizedBox(height: 8),
+        Text(
+          '친구와 함께, SnapFit',
+          style: ExperienceFormStyle.text(
+            context,
+            30,
+            weight: FontWeight.w600,
+          ).copyWith(height: 1.3, letterSpacing: -.6),
+        ),
+        const SizedBox(height: 13),
+        Text(
+          '보유 포인트 ${referralPoints(status.balance)}P',
+          style: ExperienceFormStyle.text(context, 14, secondary: true),
+        ),
+        const SizedBox(height: 26),
+        if (_refreshError != null) ...[
+          ReferralPaper(
+            child: Semantics(
+              liveRegion: true,
+              child: Text(
+                _refreshError!,
                 style: ExperienceFormStyle.text(
                   context,
                   14,
-                  secondary: true,
                 ).copyWith(height: 1.6),
               ),
-            ],
+            ),
           ),
+          const SizedBox(height: 20),
+        ],
+        if (registrationFirst) ...[
+          _redeemCard(status),
+          const SizedBox(height: 22),
+        ],
+        LayoutBuilder(
+          builder: (context, bounds) {
+            final reward = ReferralRewardCard(
+              inviterPoints: status.inviterPoints,
+              inviteePoints: status.inviteePoints,
+              registrationWindowDays: status.registrationWindowDays,
+            );
+            final share = ReferralShareCard(
+              code: status.code,
+              busy: _sharing,
+              onShare: () => _share(status),
+              onCopyCode: () =>
+                  _copy(value: status.code, message: '초대 코드를 복사했어요.'),
+              onCopyLink: () => _copy(
+                value: _inviteLink(status.code).toString(),
+                message: '초대 링크를 복사했어요.',
+              ),
+            );
+            if (bounds.maxWidth >= 900 &&
+                MediaQuery.textScalerOf(context).scale(14) <= 20) {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(flex: 6, child: reward),
+                  const SizedBox(width: 24),
+                  Expanded(flex: 5, child: share),
+                ],
+              );
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [reward, const SizedBox(height: 20), share],
+            );
+          },
         ),
-      const SizedBox(height: 22),
-      ReferralSummaryCard(
-        monthlyRewardedCount: status.monthlyRewardedCount,
-        rewardLimit: status.rewardLimit,
-        invitedCount: status.invitedCount,
-        totalEarned: status.totalEarned,
-      ),
-    ],
-  );
+        if (!registrationFirst) const SizedBox(height: 22),
+        if (status.canRedeem && !registrationFirst) _redeemCard(status),
+        if (!status.canRedeem)
+          ReferralPaper(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  status.redeemed
+                      ? Icons.check_circle_outline_rounded
+                      : Icons.mail_outline_rounded,
+                  color: SocialStyle.accent(context),
+                  size: 29,
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  status.redeemed
+                      ? '친구 초대 혜택을 받았어요'
+                      : status.ineligibleReason == 'unverified'
+                      ? '이메일 인증이 필요해요'
+                      : '이제 친구를 초대해 보세요',
+                  key: const ValueKey('referral-registration-state'),
+                  style: ExperienceFormStyle.text(
+                    context,
+                    19,
+                    weight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 9),
+                Text(
+                  status.redeemed
+                      ? '함께할 친구를 내 코드로 초대하고 새로운 추억을 남겨보세요.'
+                      : status.ineligibleReason == 'unverified'
+                      ? '가입한 이메일을 인증한 뒤 이 화면을 새로고침하면 친구 코드를 등록할 수 있어요.'
+                      : '친구 코드 등록은 가입 후 ${status.registrationWindowDays}일 안에 한 번만 가능해요. 내 코드를 보내 친구와 혜택을 나눠보세요.',
+                  style: ExperienceFormStyle.text(
+                    context,
+                    14,
+                    secondary: true,
+                  ).copyWith(height: 1.6),
+                ),
+              ],
+            ),
+          ),
+        const SizedBox(height: 22),
+        ReferralSummaryCard(
+          monthlyRewardedCount: status.monthlyRewardedCount,
+          rewardLimit: status.rewardLimit,
+          invitedCount: status.invitedCount,
+          totalEarned: status.totalEarned,
+        ),
+      ],
+    );
+  }
 }

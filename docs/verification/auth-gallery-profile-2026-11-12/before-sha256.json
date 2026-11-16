@@ -1,0 +1,6 @@
+{
+  "lib/features/auth/presentation/views/login_screen.dart": "6d12645935953ce81de7cbf78f0f56a1877096dd180c7b1ccfcfd3fd9344269a",
+  "lib/shared/widgets/album_bottom_sheet.dart": "df71ba34ddf207603a04ba4dccd2d657072fb34b59b7490335e221b7289f744c",
+  "lib/features/album/presentation/viewmodels/gallery_notifier.dart": "aabe0d7aa427a6e065cdf6de72ebb90b5f921386664aca0a0e7a3924f7f6a27d",
+  "lib/features/social/presentation/views/social_profile_edit_screen.dart": "2d58bb78e6c6be8f77077ab2dc21a23b7b66aa2f41ff98205671b292c3f7e495"
+}

@@ -16,10 +16,19 @@ class DecorateStickerTab extends ConsumerStatefulWidget {
   final Color surfaceColor;
   final void Function(String sticker)? onStickerTap;
 
+  /// Capture the insertion target once per selection, before checking access.
+  /// Standalone catalog previews can omit this without creating editor state.
+  final ValueGetter<bool> Function()? captureApplyGuard;
+  final bool Function(String)? isStickerAvailable;
+  final String? availabilityNotice;
+
   const DecorateStickerTab({
     super.key,
     required this.surfaceColor,
     this.onStickerTap,
+    this.captureApplyGuard,
+    this.isStickerAvailable,
+    this.availabilityNotice,
   });
 
   @override
@@ -169,7 +178,7 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
   Widget build(BuildContext context) => CatalogFavoritesBuilder(
     builder: (context, favorites) {
       return DefaultTabController(
-        length: 6,
+        length: widget.isStickerAvailable == null ? 6 : 1,
         child: Column(
           children: [
             EditorMaterialFilterBar(
@@ -181,6 +190,17 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
               onFavoritesChanged: () =>
                   setState(() => _favoritesOnly = !_favoritesOnly),
             ),
+            if (widget.availabilityNotice case final notice?)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: Text(
+                  notice,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
             if (!_favoritesOnly)
               TabBar(
                 isScrollable: true,
@@ -190,14 +210,16 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
                   fontWeight: FontWeight.w600,
                 ),
                 indicatorSize: TabBarIndicatorSize.label,
-                tabs: const [
-                  Tab(text: '새 컬렉션'),
-                  Tab(text: '종이'),
-                  Tab(text: '스티커'),
-                  Tab(text: '테이프'),
-                  Tab(text: '꾸민 문구'),
-                  Tab(text: '기존 장식'),
-                ],
+                tabs: widget.isStickerAvailable != null
+                    ? const [Tab(text: '기존 장식')]
+                    : const [
+                        Tab(text: '새 컬렉션'),
+                        Tab(text: '종이'),
+                        Tab(text: '스티커'),
+                        Tab(text: '테이프'),
+                        Tab(text: '꾸민 문구'),
+                        Tab(text: '기존 장식'),
+                      ],
               ),
             Expanded(
               child: _favoritesOnly || _query.trim().isNotEmpty
@@ -211,62 +233,68 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
                       onlyFavorites: _favoritesOnly,
                     )
                   : TabBarView(
-                      children: [
-                        Column(
-                          children: [
-                            SizedBox(
-                              height: 52,
-                              child: ListView(
-                                scrollDirection: Axis.horizontal,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                ),
+                      children: widget.isStickerAvailable != null
+                          ? [_grid(_legacyEntries(), favorites)]
+                          : [
+                              Column(
                                 children: [
-                                  for (final label in [
-                                    null,
-                                    ...studioDecorations
-                                        .map((s) => s.collection)
-                                        .whereType<String>()
-                                        .toSet(),
-                                  ])
-                                    Padding(
-                                      padding: const EdgeInsets.only(right: 8),
-                                      child: ChoiceChip(
-                                        label: Text(label ?? '전체 소재'),
-                                        selected: _collection == label,
-                                        onSelected: (_) =>
-                                            setState(() => _collection = label),
+                                  SizedBox(
+                                    height: 52,
+                                    child: ListView(
+                                      scrollDirection: Axis.horizontal,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
                                       ),
+                                      children: [
+                                        for (final label in [
+                                          null,
+                                          ...studioDecorations
+                                              .map((s) => s.collection)
+                                              .whereType<String>()
+                                              .toSet(),
+                                        ])
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              right: 8,
+                                            ),
+                                            child: ChoiceChip(
+                                              label: Text(label ?? '전체 소재'),
+                                              selected: _collection == label,
+                                              onSelected: (_) => setState(
+                                                () => _collection = label,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
                                     ),
+                                  ),
+                                  Expanded(
+                                    child: _grid(
+                                      _studioEntries(
+                                        studioDecorations.where(
+                                          (s) =>
+                                              _collection == null ||
+                                              s.collection == _collection,
+                                        ),
+                                      ),
+                                      favorites,
+                                    ),
+                                  ),
                                 ],
                               ),
-                            ),
-                            Expanded(
-                              child: _grid(
-                                _studioEntries(
-                                  studioDecorations.where(
-                                    (s) =>
-                                        _collection == null ||
-                                        s.collection == _collection,
+                              for (final category
+                                  in StudioDecorationCategory.values)
+                                _grid(
+                                  _studioEntries(
+                                    studioDecorations.where(
+                                      (s) => s.category == category,
+                                    ),
                                   ),
+                                  favorites,
                                 ),
-                                favorites,
-                              ),
-                            ),
-                          ],
-                        ),
-                        for (final category in StudioDecorationCategory.values)
-                          _grid(
-                            _studioEntries(
-                              studioDecorations.where(
-                                (s) => s.category == category,
-                              ),
-                            ),
-                            favorites,
-                          ),
-                        _grid(_wordArtEntries(), favorites),
-                        _grid(_legacyEntries(), favorites),
-                      ],
+                              _grid(_wordArtEntries(), favorites),
+                              _grid(_legacyEntries(), favorites),
+                            ],
                     ),
             ),
           ],
@@ -365,14 +393,16 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
         ref.watch(ownedPointShopKeysProvider).asData?.value ?? <String>{};
     final items = favorites.arrange(
       source.where(
-        (item) => matchesEditorMaterial(
-          query: _query,
-          price: _price,
-          label: item.label,
-          productKey: item.productKey,
-          products: products,
-          owned: owned,
-        ),
+        (item) =>
+            widget.isStickerAvailable?.call(item.value) != false &&
+            matchesEditorMaterial(
+              query: _query,
+              price: _price,
+              label: item.label,
+              productKey: item.productKey,
+              products: products,
+              owned: owned,
+            ),
       ),
       (s) => CatalogFavoriteKeys.decoration(s.value),
       onlyFavorites: onlyFavorites,
@@ -400,9 +430,10 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
       itemBuilder: (context, index) {
         final item = items[index];
         Future<void> insert() async {
-          if (_isApplying) return;
+          if (!mounted || _isApplying) return;
           _isApplying = true;
           try {
+            final canApply = widget.captureApplyGuard?.call();
             if (item.productKey != null &&
                 !await ensurePointShopAccess(
                   context,
@@ -411,7 +442,7 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
                   title: item.label,
                 ))
               return;
-            if (!mounted) return;
+            if (!mounted || canApply?.call() == false) return;
             setState(() => _selectedStickerValue = item.value);
             widget.onStickerTap?.call(item.value);
           } finally {

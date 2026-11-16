@@ -46,6 +46,7 @@ dependencies:
   flutter_screenutil: ^5.9.3
   flutter_keyboard_visibility: ^7.0.1
   dio: ^5.9.0
+  http: 1.6.0
   supabase_flutter: ^2.9.1
   in_app_purchase: ^3.2.0
   in_app_purchase_android: 0.5.2
@@ -70,6 +71,7 @@ dependencies:
   portone_flutter: 1.1.0
   web: 1.1.1
   flutter_svg: ^2.2.1
+  video_player: ^2.9.2
   book_page_flip:
     path: packages/book_page_flip
 dev_dependencies:
@@ -94,6 +96,53 @@ flutter:
   uses-material-design: true
   generate: true
   assets:
+    - assets/print/cover_types/
+    - assets/snapfit_intro.mp4
+    - assets/templates/premium_quartets_2026/story-premium-vinyl-listening-room/
+    - assets/templates/premium_quartets_2026/story-premium-embroidery-bloom/
+    - assets/templates/premium_quartets_2026/story-premium-woodgrain-working-days/
+    - assets/templates/premium_quartets_2026/story-premium-watercolor-drying-time/
+    - assets/templates/premium_quartets_2026/story-premium-first-surf-stand/
+    - assets/templates/premium_quartets_2026/story-premium-strength-progress-log/
+    - assets/templates/premium_quartets_2026/story-premium-yoga-morning-breath/
+    - assets/templates/premium_quartets_2026/story-premium-marathon-after-finish/
+    - assets/templates/premium_quartets_2026/story-premium-pet-first-seaside/
+    - assets/templates/premium_quartets_2026/story-premium-rabbit-little-traces/
+    - assets/templates/premium_quartets_2026/story-premium-senior-paw-days/
+    - assets/templates/premium_quartets_2026/story-premium-adoption-first-home/
+    - assets/templates/premium_quartets_2026/story-premium-repair-cafe-company/
+    - assets/templates/premium_quartets_2026/story-premium-community-cooking-table/
+    - assets/templates/premium_quartets_2026/story-premium-tabletop-friends-night/
+    - assets/templates/premium_quartets_2026/story-premium-choir-shared-voices/
+    - assets/templates/premium_quartets_2026/story-premium-qualification-long-effort/
+    - assets/templates/premium_quartets_2026/story-premium-middle-school-first-day/
+    - assets/templates/premium_quartets_2026/story-premium-study-abroad-address/
+    - assets/templates/premium_quartets_2026/story-premium-thesis-new-sentence/
+    - assets/templates/premium_quartets_2026/story-premium-couple-kitchen-lab/
+    - assets/templates/premium_quartets_2026/story-premium-room-made-together/
+    - assets/templates/premium_quartets_2026/story-premium-twenty-seasons/
+    - assets/templates/premium_quartets_2026/story-premium-distant-love-letters/
+    - assets/templates/premium_quartets_2026/story-premium-neighborhood-friends-map/
+    - assets/templates/premium_quartets_2026/story-premium-friend-birthday-book/
+    - assets/templates/premium_quartets_2026/story-premium-family-home-cinema/
+    - assets/templates/premium_quartets_2026/story-premium-family-house-archive/
+    - assets/templates/premium_quartets_2026/story-premium-little-independence/
+    - assets/templates/premium_quartets_2026/story-premium-first-words/
+    - assets/templates/premium_quartets_2026/story-premium-first-winter/
+    - assets/templates/premium_quartets_2026/story-premium-first-picnic/
+    - assets/templates/premium_quartets_2026/story-premium-market-saturday/
+    - assets/templates/premium_quartets_2026/story-premium-mending-room/
+    - assets/templates/premium_quartets_2026/story-premium-rain-commute/
+    - assets/templates/premium_quartets_2026/story-premium-lunchbox-days/
+    - assets/templates/premium_quartets_2026/story-premium-bookshop-route/
+    - assets/templates/premium_quartets_2026/story-premium-desert-night/
+    - assets/templates/premium_quartets_2026/story-premium-onsen-pause/
+    - assets/templates/premium_quartets_2026/story-premium-snow-map/
+    - assets/templates/premium_quartets_2026/story-premium-renewed-vows/
+    - assets/templates/premium_quartets_2026/story-premium-made-by-us/
+    - assets/templates/premium_quartets_2026/story-premium-civil-address/
+    - assets/templates/premium_quartets_2026/story-premium-hanbok-vows/
+    - assets/sticker/premium_quartets_2026/
     - assets/cover/
     - assets/cover/cover1.png
     - assets/cover/cover2.png
@@ -133,6 +182,23 @@ flutter:
     - assets/templates/activity_editions_2026/story-sport-breath-lanes/
     # Native detail snapshots include the activity expansion; decoded on demand.
     - assets/templates/detail_documents/
+    - assets/templates/sensory_editions_2026/
+    - assets/templates/reading_room_2026/
+    - assets/templates/diversity_editions_2026/story-hobby-clay/
+    - assets/templates/diversity_editions_2026/story-hobby-leaf/
+    - assets/templates/diversity_editions_2026/story-hobby-film/
+    - assets/templates/diversity_editions_2026/story-hobby-bake/
+    - assets/templates/diversity_editions_2026/story-hobby-knit/
+    - assets/templates/diversity_editions_2026/story-hobby-music/
+    - assets/templates/diversity_editions_2026/story-hobby-paper/
+    - assets/templates/diversity_editions_2026/story-hobby-gallery/
+    - assets/templates/diversity_editions_2026/story-hobby-camp/
+    - assets/templates/diversity_editions_2026/story-milestone-little-applause/
+    - assets/templates/diversity_editions_2026/story-milestone-first-home/
+    - assets/templates/diversity_editions_2026/story-milestone-second-beginning/
+    - assets/templates/diversity_editions_2026/story-milestone-next-season/
+    - assets/templates/diversity_editions_2026/story-milestone-first-exhibition/
+    - assets/sticker/sensory/
     - assets/templates/original_editorial/images/
     - assets/templates/atelier_editions_2026/
     - assets/templates/club_editions_2026/story-club-photowalk/
@@ -349,11 +415,12 @@ flutter:
 flutter_native_splash:
   # 웹은 로그인/내 앨범 화면으로 바로 진입하며 이미지 스플래시를 생성하지 않음.
   web: false
-  color: "#101F22"
-  # 전체 화면 스플래시는 교체한 사진 이미지를 사용
-  image: assets/splash.png
-  android_gravity: fill
-  ios_content_mode: scaleAspectFill
+  # 시스템 시작 화면은 모든 화면 비율에서 브랜드 색상과 로고로 통일.
+  # 전체 앨범 이미지는 Flutter 스플래시에서 화면 비율에 맞춰 표시.
+  color: "#0AB5D1"
+  image: assets/snapfit_logo.png
+  android_gravity: center
+  ios_content_mode: center
   android_12:
     # Android 12 이상 시스템 스플래시는 정사각형 앱 아이콘만 지원
     color: "#0AB5D1"

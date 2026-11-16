@@ -37,10 +37,12 @@ class CatalogFavoriteButton extends StatelessWidget {
     required this.label,
     this.bookmark = false,
     this.unframed = false,
+    this.undoOnRemove = false,
   });
   final String itemKey, label;
   final bool bookmark;
   final bool unframed;
+  final bool undoOnRemove;
   @override
   Widget build(BuildContext context) => CatalogFavoritesBuilder(
     builder: (context, favorites) {
@@ -49,13 +51,50 @@ class CatalogFavoriteButton extends StatelessWidget {
       Future<void> toggle() async {
         HapticFeedback.selectionClick();
         final messenger = ScaffoldMessenger.maybeOf(context);
-        if (!await favorites.toggle(itemKey) &&
+        final route = ModalRoute.of(context);
+        final removing = favorites.contains(itemKey);
+        // The library can dispose this button as soon as selection changes.
+        bool currentRoute() =>
             messenger != null &&
-            messenger.mounted) {
+            messenger.mounted &&
+            (route == null || (route.isActive && route.isCurrent));
+        void showError() {
+          messenger!.removeCurrentSnackBar();
           messenger.showSnackBar(
             const SnackBar(content: Text('즐겨찾기를 저장하지 못했어요. 다시 시도해 주세요.')),
           );
         }
+
+        final saved = await favorites.toggle(itemKey);
+        if (!currentRoute()) return;
+        if (!saved) {
+          showError();
+          return;
+        }
+        if (!undoOnRemove || !removing || favorites.contains(itemKey)) return;
+        var undoAvailable = true;
+        messenger!.removeCurrentSnackBar();
+        final notice = messenger.showSnackBar(
+          SnackBar(
+            duration: const Duration(seconds: 4),
+            content: const Text('즐겨찾기 해제'),
+            action: SnackBarAction(
+              label: '되돌리기',
+              onPressed: () async {
+                // Replaced or expired notices must not restore an old item.
+                if (!undoAvailable || !currentRoute()) return;
+                undoAvailable = false;
+                final restored = await favorites.setSelected(
+                  itemKey,
+                  selected: true,
+                );
+                if (!restored && currentRoute()) showError();
+              },
+            ),
+          ),
+        );
+        // Snackbar content is shared by scaffolds during route transitions.
+        notice.closed.then((_) => undoAvailable = false);
       }
 
       return Semantics(
@@ -158,10 +197,7 @@ class CatalogFavoritesEmpty extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.star_outline_rounded,
-            size: 30,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ExperienceIcon('Star', size: 30, color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: 10),
           const Text(

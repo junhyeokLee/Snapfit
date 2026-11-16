@@ -1,5 +1,6 @@
 import 'dart:convert';
 import '../../../core/cache/memory_pressure_caches.dart';
+import '../../../core/data/catalog_template_metadata.dart';
 import '../../../core/templates/authored_collections.dart';
 import '../../../core/templates/published_premium_templates.dart';
 import '../../../core/templates/template_document_pages.dart';
@@ -59,7 +60,6 @@ final bundledCreationTemplates = List<PremiumTemplate>.unmodifiable([
       previewImages: const [],
       pageCount: authoredCollections[i].innerPageCount,
       userCount: 0,
-      isNew: true,
       isPremium: false,
       tags: ['SnapFit Original', '직접 디자인', ...authoredCollections[i].styleTags],
       documentBuilder: _lazyDocument(authoredCollections[i].catalogDocument),
@@ -80,7 +80,6 @@ final publishedPremiumTemplates = List<PremiumTemplate>.unmodifiable([
       previewImages: const [],
       pageCount: entry.key.extendedPages,
       userCount: 0,
-      isNew: true,
       isPremium: true,
       tags: const ['SnapFit Original', '프리미엄 컬렉션'],
       documentBuilder: _lazyDocument(() => premiumCatalogDocument(entry.key)),
@@ -96,7 +95,6 @@ final publishedPremiumTemplates = List<PremiumTemplate>.unmodifiable([
       previewImages: const [],
       pageCount: 24,
       userCount: 0,
-      isNew: true,
       isPremium: true,
       tags: const ['SnapFit Original', '컨셉 에디션'],
       documentBuilder: _lazyDocument(() => conceptCatalogDocument(entry.key)),
@@ -112,7 +110,6 @@ final publishedPremiumTemplates = List<PremiumTemplate>.unmodifiable([
       previewImages: const [],
       pageCount: edition.innerPageCount,
       userCount: 0,
-      isNew: true,
       isPremium: true,
       tags: const ['SnapFit Original', '아틀리에 에디션', '내지 32쪽'],
       documentBuilder: _lazyDocument(edition.catalogDocument),
@@ -128,7 +125,6 @@ final publishedPremiumTemplates = List<PremiumTemplate>.unmodifiable([
       previewImages: const [],
       pageCount: edition.innerPageCount,
       userCount: 0,
-      isNew: true,
       isPremium: true,
       tags: const ['SnapFit Original', '스튜디오 에디션', '내지 32쪽'],
       documentBuilder: _lazyDocument(edition.catalogDocument),
@@ -142,18 +138,19 @@ PremiumTemplate _storyTemplate(StoryEdition edition) => PremiumTemplate(
   title: edition.title,
   category: edition.category,
   subTitle: edition.subtitle,
-  description: '${edition.subtitle} · 내지 24쪽 · 인쇄 5가지 크기 · 전용 소재 3종',
+  description:
+      '${edition.subtitle} · 내지 ${edition.innerPages}쪽 · 인쇄 5가지 크기 · 전용 소재 ${edition.qualityRevision == premiumQuartetRevision || edition.qualityRevision == sensoryEditionRevision ? 8 : 3}종',
   coverImageUrl: '',
   previewImages: const [],
-  pageCount: StoryEdition.innerPageCount,
+  pageCount: edition.innerPages,
   userCount: 0,
-  isNew: true,
   isPremium: edition.isPremium,
   tags: [
     'SnapFit Original',
     '스토리 에디션',
     edition.category,
     ...edition.discoveryTags,
+    ...edition.styleTags,
   ],
   documentBuilder: _lazyDocument(() => storyEditionCatalogDocument(edition)),
 );
@@ -186,6 +183,9 @@ final _publishedPhotoCounts = <int, int>{};
 int? publishedTemplatePhotoCount(PremiumTemplate template) {
   final canonical = publishedCreationTemplateById(template.id);
   if (canonical == null) return null;
+  final exported =
+      publishedTemplateMetadataById(template.id)?['profile'] as Map?;
+  if (exported != null) return exported['photoSlotCount'] as int?;
   return _publishedPhotoCounts.putIfAbsent(
     template.id,
     () =>

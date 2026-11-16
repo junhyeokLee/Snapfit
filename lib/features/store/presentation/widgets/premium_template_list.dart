@@ -1,3 +1,4 @@
+import 'store_product_badge.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -17,6 +18,7 @@ import '../../../point_shop/presentation/point_shop_access.dart';
 import 'template_page_renderer.dart';
 import 'template_preview_frame.dart';
 import '../../data/api/template_provider.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 class PremiumTemplateList extends ConsumerStatefulWidget {
   final int? maxItems;
@@ -89,12 +91,6 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
     super.dispose();
   }
 
-  String? _showcaseBadgeLabel(PremiumTemplate template) {
-    if (template.isBest) return '추천';
-    if (template.isNew) return '새 무드';
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) =>
       CatalogFavoritesBuilder(builder: _buildCatalog);
@@ -142,11 +138,9 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                               child: SnapFitPressable(
                                 onTap: () => Navigator.push(
                                   context,
-                                  MaterialPageRoute(
-                                    builder: (_) => TemplateDetailScreen(
+                                  snapFitRoute(page: TemplateDetailScreen(
                                       template: template,
-                                    ),
-                                  ),
+                                    )),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,10 +175,7 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                           ),
                                         ),
                                         const SizedBox(width: 6),
-                                        const Icon(
-                                          Icons.chevron_right_rounded,
-                                          size: 20,
-                                        ),
+                                        const ExperienceIcon('ChevronRight', size: 20),
                                       ],
                                     ),
                                     const SizedBox(height: 5),
@@ -221,7 +212,7 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                       ),
                                       curve: Curves.easeOutCubic,
                                     ),
-                              icon: const Icon(Icons.chevron_left_rounded),
+                              icon: const ExperienceIcon('ChevronLeft'),
                             ),
                             SizedBox(
                               width: 70,
@@ -242,7 +233,7 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                       ),
                                       curve: Curves.easeOutCubic,
                                     ),
-                              icon: const Icon(Icons.chevron_right_rounded),
+                              icon: const ExperienceIcon('ChevronRight'),
                             ),
                           ],
                         )
@@ -355,16 +346,17 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                             itemBuilder: (context, index) {
                               final template = visibleTemplates[index];
                               final previewUrl = _coverPreviewUrl(template);
-                              final parsed = _parseFirstPage(template);
+                              final parsed =
+                                  isPublishedCreationTemplate(template)
+                                  ? null
+                                  : _parseFirstPage(template);
                               return SnapFitPressable(
                                 onTap: () {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(
-                                      builder: (_) => TemplateDetailScreen(
+                                    snapFitRoute(page: TemplateDetailScreen(
                                         template: template,
-                                      ),
-                                    ),
+                                      )),
                                   );
                                 },
                                 child: Stack(
@@ -440,31 +432,12 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          if (_showcaseBadgeLabel(template) !=
-                                              null)
-                                            Container(
-                                              margin: EdgeInsets.only(
-                                                bottom: 12,
-                                              ),
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: 14,
-                                                vertical: 6,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFF22D3EE),
-                                                borderRadius:
-                                                    BorderRadius.circular(100),
-                                              ),
-                                              child: Text(
-                                                _showcaseBadgeLabel(template)!,
-                                                style: TextStyle(
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.w900,
-                                                  color: Colors.white,
-                                                  letterSpacing: 0.5,
-                                                ),
-                                              ),
+                                          StoreProductBadge(
+                                            productKey: pointShopTemplateKey(
+                                              template,
                                             ),
+                                          ),
+                                          const SizedBox(height: 12),
                                           Text(
                                             template.title,
                                             maxLines: 2,
@@ -715,10 +688,7 @@ class _ShowcaseCtaPill extends StatelessWidget {
             ),
           ),
           SizedBox(width: 3),
-          const Icon(
-            Icons.chevron_right_rounded,
-            size: 15,
-            color: Color(0xFF1F2937),
+          const ExperienceIcon('ChevronRight', size: 15, color: Color(0xFF1F2937),
           ),
         ],
       ),

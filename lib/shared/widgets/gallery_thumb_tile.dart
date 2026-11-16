@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import '../../core/constants/snapfit_colors.dart';
 import 'grid_guideline_painter.dart';
+import '../../shared/widgets/experience_icon.dart';
 
 /// 사진첩 썸네일 타일.
 /// [simpleMode] true: 바텀시트 그리드용 (1:1, 체크만). false: 편집용 (6:8, 줌·가이드).
@@ -128,9 +129,7 @@ class GalleryThumbTileState extends State<GalleryThumbTile>
                                   strokeWidth: 2,
                                   color: SnapFitColors.textMutedOf(context),
                                 )
-                              : Icon(
-                                  Icons.photo_outlined,
-                                  color: SnapFitColors.textMutedOf(context),
+                              : ExperienceIcon('Image', color: SnapFitColors.textMutedOf(context),
                                   size: 22,
                                 ),
                         ),
@@ -146,11 +145,7 @@ class GalleryThumbTileState extends State<GalleryThumbTile>
                 Container(
                   color: Colors.black.withValues(alpha: 0.35),
                   alignment: Alignment.center,
-                  child: Icon(
-                    Icons.check_circle,
-                    color: SnapFitColors.accent,
-                    size: 28,
-                  ),
+                  child: ExperienceIcon('CheckCircle2', color: SnapFitColors.accent, size: 28),
                 ),
             ],
           ),
@@ -196,11 +191,7 @@ class GalleryThumbTileState extends State<GalleryThumbTile>
                 Container(
                   color: Colors.black.withValues(alpha: 0.3),
                   alignment: Alignment.center,
-                  child: Icon(
-                    Icons.check_circle,
-                    color: SnapFitColors.accent,
-                    size: 28,
-                  ),
+                  child: ExperienceIcon('CheckCircle2', color: SnapFitColors.accent, size: 28),
                 ),
             ],
           ),

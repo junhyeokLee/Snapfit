@@ -69,7 +69,11 @@ void main() {
       expect(find.byType(StoryAlbumArtwork), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('intro-next')));
       await tester.pumpAndSettle();
-      expect(find.text('마음에 드는\n디자인부터 골라요.'), findsOneWidget);
+      expect(find.text('한 장씩 모으거나,\n바로 앨범을 만들어요.'), findsOneWidget);
+      expect(
+        find.text('오늘 사진부터 기록해도 좋아요.\n디자인을 골라 앨범부터 시작할 수도 있어요.'),
+        findsOneWidget,
+      );
       await tester.tap(find.byKey(const ValueKey('intro-previous')));
       await tester.pumpAndSettle();
       expect(find.text('사진이,\n한 권의 기억으로.'), findsOneWidget);
@@ -78,7 +82,7 @@ void main() {
         const Offset(-500, 0),
       );
       await tester.pumpAndSettle();
-      expect(find.text('마음에 드는\n디자인부터 골라요.'), findsOneWidget);
+      expect(find.text('한 장씩 모으거나,\n바로 앨범을 만들어요.'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('intro-page-3')));
       await tester.pumpAndSettle();
       expect(find.text('시작하기'), findsOneWidget);

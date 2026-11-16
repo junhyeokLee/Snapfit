@@ -250,7 +250,7 @@ void main() {
       s.host.openOrder();
       await tester.pumpAndSettle();
       await capture('rearrange$suffix');
-      await tester.tap(find.byTooltip('재배치 닫기'));
+      await tester.tap(find.byTooltip('겹침 순서 닫기'));
       await tester.pumpAndSettle();
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pumpAndSettle();
@@ -315,7 +315,7 @@ void main() {
         () =>
             assets.last.thumbnailDataWithSize(const ThumbnailSize.square(120)),
       ).called(1);
-      await tester.tap(find.byTooltip('재배치 닫기'));
+      await tester.tap(find.byTooltip('겹침 순서 닫기'));
       await tester.pumpAndSettle();
       expect(controller.hasClients, isFalse);
       expect(tester.takeException(), isNull);
@@ -342,7 +342,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(s.vm.layers.map((l) => l.id), ['new-a', 'new-b']);
     expect(s.host.canUndo, isFalse);
-    await tester.tap(find.byTooltip('재배치 닫기'));
+    await tester.tap(find.byTooltip('겹침 순서 닫기'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
@@ -355,7 +355,7 @@ void main() {
         .widget<Material>(
           find
               .descendant(
-                of: find.byTooltip('재배치'),
+                of: find.byTooltip('겹침 순서'),
                 matching: find.byType(Material),
               )
               .first,
@@ -522,7 +522,7 @@ void main() {
         .onReorder!(0, 1);
     await tester.pumpAndSettle();
     expect(s.host.canUndo, isFalse);
-    await tester.tap(find.byTooltip('재배치 닫기'));
+    await tester.tap(find.byTooltip('겹침 순서 닫기'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
@@ -573,14 +573,14 @@ void main() {
               tester.getSize(find.byKey(const ValueKey('editor-context-dock'))),
               dock,
             );
-            expect(find.text('재배치').hitTestable(), findsOneWidget);
-            await tester.tap(find.text('재배치'));
+            expect(find.text('겹침 순서').hitTestable(), findsOneWidget);
+            await tester.tap(find.text('겹침 순서'));
             await tester.pump();
             expect(s.host.modes.last, EditorMode.layer);
           }
           s.host.manager.clearSelection();
           await tester.pumpAndSettle();
-          expect(find.text('재배치').hitTestable(), findsOneWidget);
+          expect(find.text('겹침 순서').hitTestable(), findsOneWidget);
           expect(
             tester.getSize(find.byKey(const ValueKey('editor-context-dock'))),
             dock,

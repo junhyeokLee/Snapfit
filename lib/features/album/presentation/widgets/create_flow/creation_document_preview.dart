@@ -149,7 +149,7 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
         leading: IconButton(
           tooltip: '확대 보기 닫기',
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.close_rounded),
+          icon: const ExperienceIcon('X'),
         ),
         title: const Text('디자인 미리보기', style: TextStyle(fontSize: 16)),
       ),
@@ -474,7 +474,7 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
           IconButton(
             tooltip: '페이지 확대',
             onPressed: () => _inspect(_page),
-            icon: const ExperienceIcon('Expand', size: 20),
+            icon: const ExperienceIcon('ZoomIn', size: 20),
           )
         else
           ValueListenableBuilder<Matrix4>(
@@ -490,12 +490,12 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
                 IconButton(
                   tooltip: '화면에 맞추기',
                   onPressed: () => _setZoom(1),
-                  icon: const Icon(Icons.fit_screen_rounded, size: 20),
+                  icon: const ExperienceIcon('Maximize2', size: 20),
                 ),
                 IconButton(
                   tooltip: '확대',
                   onPressed: _zoom < 3.99 ? () => _setZoom(_zoom + .5) : null,
-                  icon: const Icon(Icons.add_rounded, size: 20),
+                  icon: const ExperienceIcon('Plus', size: 20),
                 ),
               ],
             ),

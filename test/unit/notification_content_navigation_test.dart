@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/core/navigation/notification_content_navigation.dart';
+import 'package:snap_fit/core/navigation/web_app_location.dart';
 
 void main() {
   const album = NotificationContentTarget(NotificationContentKind.album, 7);
@@ -8,6 +9,58 @@ void main() {
     12,
   );
   final now = DateTime.utc(2026, 10, 19);
+
+  test('social comment taps retain a strict UUID target and owner fence', () {
+    const id = '33333333-3333-4333-8333-333333333333';
+    const work = NotificationContentTarget.work(id);
+    const web = WebAppLocation.socialWork(id, showComments: true);
+    expect(web.uri.toString(), '/works/$id?comments=1');
+    expect(WebAppLocation.parse(web.uri), web);
+    expect(
+      WebAppLocation.parse(
+        Uri.parse('https://snapfit.test/#/works/$id?comments=1'),
+      ),
+      web,
+    );
+    expect(
+      NotificationContentTarget.fromPayload({
+        'workId': id,
+        'commentId': 'comment-id',
+        'showComments': 'true',
+      }),
+      work,
+    );
+    expect(
+      NotificationContentTarget.fromUri(
+        Uri.parse('snapfit://work?workId=$id&comments=1'),
+      ),
+      work,
+    );
+    for (final malformed in [
+      'snapfit://work?workId=../private&comments=1',
+      'snapfit://work?workId=$id&comments=1&comments=0',
+      'snapfit://work?workId=$id&comments=1&ownerId=other',
+      'https://work?workId=$id&comments=1',
+    ]) {
+      expect(NotificationContentTarget.fromUri(Uri.parse(malformed)), isNull);
+    }
+    final navigation = NotificationContentNavigation()
+      ..observeOwner('alice')
+      ..receive(work, ownerId: 'alice');
+    final opening = navigation.take(
+      ownerId: 'alice',
+      profileOwnerId: 'alice',
+      navigatorReady: true,
+      now: now,
+    )!;
+    navigation
+      ..observeOwner('bob')
+      ..observeOwner('alice');
+    expect(
+      navigation.isCurrent(opening, ownerId: 'alice', profileOwnerId: 'alice'),
+      isFalse,
+    );
+  });
 
   test(
     'weekly reminder opens private journal without accepting an external destination',

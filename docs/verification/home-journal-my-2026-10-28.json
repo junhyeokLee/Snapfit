@@ -1,0 +1,97 @@
+{
+  "verifiedAt": "2026-10-28T09:47:25.955890+00:00",
+  "scope": "Home title, daily journal identity and entry, private My navigation cleanup",
+  "changes": [
+    "Home title uses available width and stacks actions under large text instead of ellipsis.",
+    "Daily journal is exposed as a labelled Today photo entry in home and web library; active album recovery is retained.",
+    "Daily journal starts with a dated photo-and-note preview, working photo slot and primary action, then date-based records and monthly album.",
+    "Owner My retains two album/library shortcut buttons and removes their duplicate preview sections and order card.",
+    "Print orders, notifications and settings are 44px owner-only app header actions; web reuses the global notification bell.",
+    "Public works have one header with view modes and management; private details are hidden on public visitor pages.",
+    "Daily entry date refreshes at Korean midnight and app resume, with no timer for anonymous or unavailable identity."
+  ],
+  "verification": {
+    "tests": [
+      {
+        "kind": "native",
+        "passed": 179,
+        "failures": 0,
+        "log": "output/memory-ux-native-passed.log"
+      },
+      {
+        "kind": "chrome",
+        "passed": 50,
+        "failures": 0,
+        "log": "output/memory-ux-chrome-tests.log"
+      },
+      {
+        "kind": "homeIntegration",
+        "passed": 51,
+        "failures": 0,
+        "log": "output/memory-ux-home-integration-tests.log"
+      }
+    ],
+    "totalChecks": 280,
+    "staticAnalysis": "output/memory-ux-analyze.log",
+    "staticAnalysisPassed": true,
+    "diffCheckPassed": true,
+    "phoneInstallVerified": false,
+    "nativePackageBuilt": false
+  },
+  "screenshots": {
+    "type": "Production Flutter widgets with isolated fixture data; no real user photos or account data.",
+    "home": "output/memory-ux-20261028/home-main.png",
+    "firstHome": "output/memory-ux-20261028/home-first.png",
+    "webHome": "output/memory-ux-20261028/home-web.png",
+    "my": "output/memory-ux-20261028/my-profile.png",
+    "myDark": "output/memory-ux-20261028/my-profile-dark.png",
+    "journalEmpty": "output/moments-journal-20261028/journal-empty.png",
+    "journal": "output/moments-journal-20261028/journal-light.png",
+    "journalDark": "output/moments-journal-20261028/journal-dark.png",
+    "journalDesktop": "output/moments-journal-20261028/journal-desktop-light.png",
+    "journalDesktopDark": "output/moments-journal-20261028/journal-desktop-dark.png"
+  },
+  "databaseChangesRequired": false,
+  "webDeployment": {
+    "status": "verified",
+    "url": "https://snapfit-c719d.web.app/albums",
+    "profileUrl": "https://snapfit-c719d.web.app/me",
+    "hostingRelease": "projects/360727043538/sites/snapfit-c719d/versions/50569f4b98b2b404",
+    "build": {
+      "main_sha256": "32923967e08b976d06f1da2a6635586e91fd0893648ddc10a9a66766e05378c7",
+      "main_file": "main.32923967e08b976d06f1.dart.js",
+      "bootstrap_sha256": "c9f883c456506e9eff8dc5910e22957b43f99e78a18d89720b217717a50db066",
+      "bootstrap_file": "flutter_bootstrap.c9f883c456506e9eff8d.js"
+    },
+    "httpChecks": [
+      {
+        "path": "/albums",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      },
+      {
+        "path": "/me",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      },
+      {
+        "path": "/snapfit-web-build.json",
+        "status": 200,
+        "matchesLocal": true
+      },
+      {
+        "path": "/flutter_bootstrap.c9f883c456506e9eff8d.js",
+        "status": 200,
+        "sha256": "c9f883c456506e9eff8dc5910e22957b43f99e78a18d89720b217717a50db066"
+      },
+      {
+        "path": "/main.32923967e08b976d06f1.dart.js",
+        "status": 200,
+        "sha256": "32923967e08b976d06f1da2a6635586e91fd0893648ddc10a9a66766e05378c7"
+      }
+    ],
+    "evidence": "output/memory-ux-deployment-check.json"
+  }
+}

@@ -54,6 +54,17 @@ void main() {
       tester.view.physicalSize = const Size(1200, 1000);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
+      final imageCache = PaintingBinding.instance.imageCache;
+      final previousSize = imageCache.maximumSize;
+      final previousBytes = imageCache.maximumSizeBytes;
+      imageCache.maximumSize = 8;
+      imageCache.maximumSizeBytes = 24 * 1024 * 1024;
+      addTearDown(() {
+        imageCache.clear();
+        imageCache.clearLiveImages();
+        imageCache.maximumSize = previousSize;
+        imageCache.maximumSizeBytes = previousBytes;
+      });
       final selectedIds = const String.fromEnvironment(
         'EXPORT_TEMPLATE_IDS',
       ).split(',').where((s) => s.isNotEmpty).map(int.parse).toSet();
@@ -162,8 +173,24 @@ void main() {
         firstPages[template.id] = firstPage;
         debugPrint('Editorial spread: ${template.id} ${template.title}');
         await tester.pumpWidget(const SizedBox());
+        imageCache.clear();
+        imageCache.clearLiveImages();
       }
-      expect(assets.length, publishedCreationTemplates.length);
+      // A partial refresh preserves the existing compatibility bitmaps. Newer
+      // live-only editions need not gain an unrelated bitmap in this run.
+      final expectedIds = partial
+          ? {...catalogEditorialAssets.keys, ...selectedIds}
+          : publishedCreationTemplates.map((t) => t.id).toSet();
+      expect(assets.keys, unorderedEquals(expectedIds));
+      expect(firstPages.keys, unorderedEquals(expectedIds));
+      if (partial) {
+        for (final id in catalogEditorialAssets.keys.where(
+          (id) => !selectedIds.contains(id),
+        )) {
+          expect(assets[id], catalogEditorialAssets[id]);
+          expect(firstPages[id], catalogEditorialFirstPages[id]);
+        }
+      }
       File(
         'lib/core/templates/catalog_editorial_assets.g.dart',
       ).writeAsStringSync(

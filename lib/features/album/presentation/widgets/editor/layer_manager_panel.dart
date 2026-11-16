@@ -20,6 +20,7 @@ import '../../viewmodels/album_editor_view_model.dart';
 import '../../controllers/layer_interaction_manager.dart';
 import 'editor_asset_thumbnail.dart';
 import 'editor_thumbnail_cache.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 class LayerManagerPanel extends ConsumerStatefulWidget {
   final List<LayerModel> layers;
@@ -277,7 +278,7 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
                       children: [
                         Expanded(
                           child: Text(
-                            '재배치',
+                            '겹침 순서',
                             style: ExperienceFormStyle.text(
                               context,
                               20,
@@ -296,9 +297,9 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
                         const SizedBox(width: 8),
                         IconButton(
                           key: const ValueKey('editor-layer-close'),
-                          tooltip: '재배치 닫기',
+                          tooltip: '겹침 순서 닫기',
                           onPressed: _close,
-                          icon: const Icon(Icons.close, size: 21),
+                          icon: const ExperienceIcon('X', size: 21),
                         ),
                       ],
                     ),
@@ -383,10 +384,7 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
-                                    Icons.layers_outlined,
-                                    size: 32,
-                                    color: ExperienceFormStyle.muted(context),
+                                  ExperienceIcon('Layers2', size: 32, color: ExperienceFormStyle.muted(context),
                                   ),
                                   const SizedBox(height: 12),
                                   Text(
@@ -488,9 +486,7 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
                     message: '겹침 순서 이동',
                     child: SizedBox.square(
                       dimension: 44,
-                      child: Icon(
-                        Icons.drag_indicator_rounded,
-                        color: ExperienceFormStyle.muted(context),
+                      child: ExperienceIcon('GripHorizontal', color: ExperienceFormStyle.muted(context),
                         size: 20,
                       ),
                     ),
@@ -546,7 +542,7 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
                       ),
                       if (!compact) ...[
                         if (selected)
-                          Icon(Icons.check_circle, size: 18, color: ink),
+                          ExperienceIcon('CheckCircle2', size: 18, color: ink),
                         handle,
                       ],
                     ],
@@ -764,9 +760,7 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
   /// 썸네일 없을 때: 순서 번호를 크게 표시해 "몇 번째 이미지/스티커"인지 한눈에 파악
   Widget _imageOrderPlaceholder(BuildContext context, int order) {
     return Center(
-      child: Icon(
-        Icons.image_outlined,
-        color: ExperienceFormStyle.muted(context),
+      child: ExperienceIcon('Image', color: ExperienceFormStyle.muted(context),
         size: 20,
       ),
     );

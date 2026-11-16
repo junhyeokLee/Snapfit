@@ -1,0 +1,32 @@
+{
+  "scene": "03-history-spent-320x844-dark-large-text",
+  "logicalSize": {
+    "width": 320.0,
+    "height": 844.0
+  },
+  "pixelRatio": 2,
+  "dark": true,
+  "textScale": 1.6,
+  "availableLedgerRows": 6,
+  "requests": [
+    {
+      "source": "page",
+      "userId": "11111111-1111-4111-8111-111111111111",
+      "filter": "all",
+      "limit": 21,
+      "before": null
+    },
+    {
+      "source": "page",
+      "userId": "11111111-1111-4111-8111-111111111111",
+      "filter": "spent",
+      "limit": 21,
+      "before": null
+    }
+  ],
+  "olderDebitInSource": true,
+  "olderDebitInWidgetTree": true,
+  "emptyFilteredMessage": false,
+  "purchaseCalls": 0,
+  "moreButtonVisible": false
+}

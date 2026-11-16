@@ -17,6 +17,7 @@ import 'package:snap_fit/features/album/data/album_creation_draft_store.dart';
 import 'package:snap_fit/features/album/presentation/views/home_screen.dart';
 import 'package:snap_fit/features/album/presentation/widgets/home/home_album_slider.dart';
 import 'package:snap_fit/features/album/presentation/widgets/home/home_album_header.dart';
+import 'package:snap_fit/features/album/presentation/widgets/home/home_moment_summary_card.dart';
 import 'package:snap_fit/features/album/presentation/widgets/home/home_bottom_navigation_bar.dart';
 import 'package:snap_fit/features/moments/presentation/widgets/first_book_next_step_card.dart';
 import 'package:snap_fit/features/album/presentation/widgets/home/home_empty_state.dart';
@@ -57,6 +58,38 @@ ScrollController _expectOwnedScroll(WidgetTester tester, Finder owner) {
   expect(controller.positions, hasLength(1));
   expect(PrimaryScrollController.of(tester.element(owner)), same(controller));
   return controller;
+}
+
+void _expectVisibleCoverTarget(WidgetTester tester, Finder cover) {
+  final scroll = find
+      .ancestor(of: cover, matching: find.byType(SingleChildScrollView))
+      .first;
+  var viewport = tester.getRect(scroll);
+  final navigation = find.byType(HomeBottomNavigationBar);
+  final rail = tester.widget<HomeBottomNavigationBar>(navigation).rail;
+  if (!rail) {
+    // extendBody allows painting under navigation, which is not a usable tap area.
+    viewport = viewport.intersect(
+      Rect.fromLTRB(
+        viewport.left,
+        viewport.top,
+        viewport.right,
+        tester.getRect(navigation).top,
+      ),
+    );
+  }
+  final bounds = tester.getRect(cover);
+  final visible = bounds.intersect(viewport);
+  expect(visible.width, greaterThanOrEqualTo(44));
+  expect(visible.height, greaterThanOrEqualTo(44));
+  // A large cover intentionally exceeds the short landscape viewport. Verify
+  // its visible portion receives gestures instead of testing its hidden center.
+  final point = visible.center;
+  final alignment = Alignment(
+    (point.dx - bounds.left) / bounds.width * 2 - 1,
+    (point.dy - bounds.top) / bounds.height * 2 - 1,
+  );
+  expect(cover.hitTestable(at: alignment), findsOneWidget);
 }
 
 void main() {
@@ -247,7 +280,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(HomeAlbumSlider), findsOneWidget);
-    expect(find.text('나의 앨범'), findsNothing);
+    expect(
+      find.byKey(const ValueKey('home-album-section-title')),
+      findsOneWidget,
+    );
     expect(find.textContaining('앨범에만'), findsNothing);
     expect(find.textContaining('가장 최근 앨범부터'), findsNothing);
     expect(find.text('앨범 만들기'), findsNothing);
@@ -305,13 +341,9 @@ void main() {
       sliderBounds.top,
       greaterThanOrEqualTo(tester.getRect(find.byType(HomeAlbumHeader)).bottom),
     );
-    final nextStep = find.byType(FirstBookNextStepCard);
-    if (nextStep.evaluate().isNotEmpty) {
-      expect(
-        sliderBounds.top,
-        greaterThanOrEqualTo(tester.getRect(nextStep).bottom),
-      );
-    }
+    expect(find.byType(FirstBookNextStepCard), findsNothing);
+    // Journal loading/guest states keep their entry while album layout stays usable.
+    expect(find.byType(HomeMomentSummaryCard), findsOneWidget);
     final navigation = tester.widget<HomeBottomNavigationBar>(
       find.byType(HomeBottomNavigationBar),
     );
@@ -368,7 +400,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const ValueKey('empty-home-create')));
+    final create = find.byKey(const ValueKey('empty-home-create'));
+    await Scrollable.ensureVisible(tester.element(create), alignment: .2);
+    await tester.pumpAndSettle();
+    await tester.tap(create);
+    await tester.pumpAndSettle();
+    expect(find.byType(AlbumCreateFlowScreen), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('album-creation-start-manual')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
 
@@ -499,7 +537,12 @@ void main() {
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.view.resetDevicePixelRatio);
-        stubFetchMyAlbums(mockRepo, [fakeAlbum(id: 46, ratio: ratio)]);
+        stubFetchMyAlbums(mockRepo, [
+          fakeAlbum(
+            id: 46,
+            ratio: ratio,
+          ).copyWith(userId: '1', targetPages: 20),
+        ]);
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
@@ -533,20 +576,29 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(find.byType(HomeAlbumSlider), findsOneWidget);
-        final nextStep = find.byKey(const ValueKey('first-book-next-step'));
-        expect(nextStep.hitTestable(), findsOneWidget);
-        if (size.height < 600) {
-          expect(tester.getSize(nextStep).height, inInclusiveRange(44, 64));
-        }
+        expect(
+          find.byKey(const ValueKey('first-book-next-step')),
+          findsNothing,
+        );
+        final cover = find.byKey(const ValueKey('home-bookshelf-open'));
+        await tester.ensureVisible(cover);
+        await tester.pumpAndSettle();
+        _expectVisibleCoverTarget(tester, cover);
+        expect(tester.getSize(cover).height, greaterThanOrEqualTo(180));
         expect(tester.takeException(), isNull);
         final state = tester.state(find.byType(HomeAlbumSlider));
         tester.view.physicalSize = Size(size.height, size.width);
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
         expect(tester.state(find.byType(HomeAlbumSlider)), same(state));
-        if (size.width < 600) {
-          expect(tester.getSize(nextStep).height, inInclusiveRange(44, 64));
-        }
+        await tester.ensureVisible(cover);
+        await tester.pumpAndSettle();
+        _expectVisibleCoverTarget(tester, cover);
+        expect(tester.getSize(cover).height, greaterThanOrEqualTo(180));
+        expect(
+          find.byKey(const ValueKey('first-book-next-step')),
+          findsNothing,
+        );
       });
     }
   }

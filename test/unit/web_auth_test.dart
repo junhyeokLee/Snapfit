@@ -73,6 +73,20 @@ Future<void> _session(SupabaseClient client, {String owner = _owner}) async {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  test(
+    'temporary auth transport failure requests retry without exposing details',
+    () {
+      final message = socialAuthErrorMessage(
+        AuthRetryableFetchException(
+          message: 'fixture-private-server-detail',
+          statusCode: '504',
+        ),
+      );
+      expect(message, contains('다시 확인'));
+      expect(message, isNot(contains('다시 로그인')));
+      expect(message, isNot(contains('fixture-private-server-detail')));
+    },
+  );
   group('browser OAuth redirect boundary', () {
     test(
       'current app origin replaces path/query/fragment with an exact callback',

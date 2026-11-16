@@ -10,6 +10,7 @@ import '../../controllers/layer_interaction_manager.dart';
 import '../../utils/cover_background_color.dart';
 import '../cover/cover.dart';
 import '../home/home_album_helpers.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 /// Flat view of saved artwork; never changes the stored album or print model.
 class WebSavedAlbumArtwork extends ConsumerWidget {
@@ -33,10 +34,7 @@ class WebSavedAlbumArtwork extends ConsumerWidget {
     final empty = ColoredBox(
       color: WebPalette.of(context).canvas,
       child: Center(
-        child: Icon(
-          Icons.auto_stories_outlined,
-          size: 32,
-          color: WebPalette.of(context).muted,
+        child: ExperienceIcon('BookOpen', size: 32, color: WebPalette.of(context).muted,
         ),
       ),
     );

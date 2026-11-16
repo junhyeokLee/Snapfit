@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/cover_size.dart';
+import '../../../../core/data/catalog_template_metadata.dart';
 import '../../../../core/templates/published_premium_templates.dart';
 import '../../../../core/templates/template_document_pages.dart';
 import '../../../point_shop/data/point_shop_provider.dart';
 import '../../../point_shop/domain/point_shop_product.dart';
 import '../../../point_shop/domain/point_shop_template_key.dart';
 import '../../domain/entities/premium_template.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 final _factsCache = Expando<PublicTemplateFacts>();
 
@@ -36,6 +38,22 @@ class PublicTemplateFacts {
   final List<int> availablePageCounts;
 
   factory PublicTemplateFacts.fromTemplate(PremiumTemplate template) {
+    final exported = canonicalTemplateMetadata(template);
+    if (exported != null) {
+      final ratios = (exported['ratios'] as List).cast<num>();
+      final sizes = [
+        for (final size in coverSizes)
+          if (ratios.any((ratio) => (ratio - size.ratio).abs() < .0001)) size,
+      ];
+      return PublicTemplateFacts(
+        innerPageCount: (exported['profile'] as Map)['innerPageCount'] as int?,
+        designShapes: List.unmodifiable({for (final size in sizes) size.name}),
+        printSizes: List.unmodifiable(sizes),
+        availablePageCounts: List.unmodifiable(
+          publishedPremiumVolume(template.id)?.pageCounts ?? const [],
+        ),
+      );
+    }
     final cached = _factsCache[template];
     if (cached != null) return cached;
     Map<String, dynamic>? document;
@@ -195,7 +213,7 @@ class PublicCatalogPriceLabel extends ConsumerWidget {
           TextButton.icon(
             key: ValueKey('public-price-retry-$productKey'),
             onPressed: () => ref.invalidate(publicPointShopCatalogProvider),
-            icon: const Icon(Icons.refresh, size: 18),
+            icon: const ExperienceIcon('RefreshCw', size: 18),
             label: const Text('가격 다시 확인'),
           ),
       ],

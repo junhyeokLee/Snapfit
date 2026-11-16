@@ -36,7 +36,7 @@ class _CatalogSearchDisclosureState extends State<CatalogSearchDisclosure> {
       setState(() => _expanded = !_expanded);
     },
     icon: _expanded
-        ? const Icon(Icons.close, size: 20)
+        ? const ExperienceIcon('X', size: 20)
         : ExperienceIcon(
             'Search',
             size: 20,
@@ -120,7 +120,7 @@ class _CatalogSearchDisclosureState extends State<CatalogSearchDisclosure> {
                               widget.controller.clear();
                               widget.onClear?.call();
                             },
-                            icon: const Icon(Icons.close, size: 18),
+                            icon: const ExperienceIcon('X', size: 18),
                             constraints: const BoxConstraints(
                               minWidth: 44,
                               minHeight: 44,

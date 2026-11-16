@@ -71,7 +71,6 @@ class SupabaseTemplateRepository
             : 0);
     final previewRaw = row['preview_images'];
     final tagsRaw = row['tags'];
-    final newUntil = DateTime.tryParse(row['new_until']?.toString() ?? '');
     return PremiumTemplate(
       id: (row['id'] as num?)?.toInt() ?? -1,
       title: row['title']?.toString() ?? '',
@@ -92,10 +91,7 @@ class SupabaseTemplateRepository
           ? tagsRaw.map((e) => e.toString()).toList(growable: false)
           : const <String>[],
       weeklyScore: (row['weekly_score'] as num?)?.toInt() ?? 0,
-      isNew:
-          row['is_new'] == true ||
-          (newUntil != null && newUntil.isAfter(DateTime.now())),
-      isBest: row['is_best'] == true,
+      // Store badges use verified release/ownership metadata instead of flags.
       isPremium: row['is_premium'] == true,
       isLiked: isLiked,
       templateJson: _document(row),

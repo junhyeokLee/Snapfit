@@ -4,11 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:snap_fit/core/theme/snapfit_theme.dart';
 import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
 import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
 import 'package:snap_fit/features/profile/presentation/views/my_page_screen.dart';
+import 'package:snap_fit/features/profile/presentation/views/admin_point_shop_management_screen.dart';
+import 'package:snap_fit/features/social/data/social_repository.dart';
+import 'package:snap_fit/features/social/domain/social_models.dart';
+import 'package:snap_fit/features/social/presentation/providers/social_providers.dart';
+import 'package:snap_fit/features/social/presentation/views/social_reports_admin_screen.dart';
 import 'package:snap_fit/features/profile/presentation/views/account_settings_screen.dart';
+import 'package:snap_fit/features/profile/presentation/views/terms_policy_screen.dart';
+import 'package:snap_fit/features/profile/presentation/widgets/theme_settings_sheet.dart';
 import 'package:snap_fit/features/onboarding/presentation/app_introduction_screen.dart';
 import 'package:snap_fit/features/onboarding/presentation/first_visit_controller.dart';
 import 'package:snap_fit/features/onboarding/data/first_visit_store.dart';
@@ -31,8 +40,62 @@ class FakeAuthViewModel extends AuthViewModel {
   }
 }
 
+class _Social extends Mock implements SocialRepository {}
+
 void main() {
   setUpAll(loadCreationFonts);
+  for (final administrator in [false, true]) {
+    testWidgets(
+      'report management entry follows administrator access $administrator',
+      (tester) async {
+        tester.view.devicePixelRatio = 1;
+        tester.view.physicalSize = const Size(390, 844);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        addTearDown(tester.view.resetPhysicalSize);
+        final social = _Social();
+        when(
+          () => social.fetchAdminReportsPage(status: 'open', offset: 0),
+        ).thenAnswer(
+          (_) async =>
+              const SocialReportsPage(items: [], hasMore: false, nextOffset: 0),
+        );
+        await tester.pumpWidget(
+          reviewApp(
+            const MyPageScreen(),
+            overrides: [
+              pointShopAdminAccessProvider.overrideWithValue(administrator),
+              socialCurrentUserIdProvider.overrideWithValue('me'),
+              socialRepositoryProvider.overrideWithValue(social),
+            ],
+          ),
+        );
+        await tester.pumpAndSettle();
+        final entry = find.text('신고 관리');
+        if (!administrator) {
+          expect(entry, findsNothing);
+          verifyNever(
+            () => social.fetchAdminReportsPage(status: 'open', offset: 0),
+          );
+        } else {
+          await tester.scrollUntilVisible(
+            entry,
+            400,
+            scrollable: find.byType(Scrollable).first,
+          );
+          await Scrollable.ensureVisible(tester.element(entry), alignment: .5);
+          await tester.pumpAndSettle();
+          expect(entry.hitTestable(), findsOneWidget);
+          await tester.tap(entry);
+          await tester.pumpAndSettle();
+          expect(find.byType(SocialReportsAdminScreen), findsOneWidget);
+          verify(
+            () => social.fetchAdminReportsPage(status: 'open', offset: 0),
+          ).called(1);
+        }
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
   testWidgets(
     'usage help replays intro and requests the main guide without resetting flags',
     (tester) async {
@@ -101,7 +164,9 @@ void main() {
       addTearDown(tester.view.resetPadding);
       await tester.pumpWidget(reviewApp(const MyPageScreen()));
       await tester.pumpAndSettle();
-      expect(find.text('설정 및 도움말'), findsOneWidget);
+      for (final group in ['계정 및 안전', '앱 설정', '도움말']) {
+        expect(find.text(group), findsOneWidget);
+      }
       expect(find.text('내 앨범'), findsNothing);
       expect(find.text('내 보관함'), findsNothing);
       expect(find.text('내 포인트'), findsNothing);
@@ -189,4 +254,173 @@ void main() {
     expect(fake.logoutCalled, isFalse);
     expect(find.byType(AccountSettingsScreen), findsOneWidget);
   });
+
+  testWidgets('grouped settings keep their routes usable with large text', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    tester.view.physicalSize = const Size(320, 720);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      reviewApp(
+        MediaQuery(
+          data: const MediaQueryData(
+            size: Size(320, 720),
+            textScaler: TextScaler.linear(1.8),
+          ),
+          child: const MyPageScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    Future<void> open(String title) async {
+      await tester.scrollUntilVisible(
+        find.text(title),
+        160,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.ensureVisible(find.text(title));
+      await tester.pumpAndSettle();
+      final row = find
+          .ancestor(of: find.text(title), matching: find.byType(InkWell))
+          .first;
+      expect(tester.getSize(row).height, greaterThanOrEqualTo(48));
+      await tester.tap(find.text(title));
+      await tester.pumpAndSettle();
+    }
+
+    await open('화면 테마');
+    expect(find.byType(ThemeSettingsSheet), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('theme-close')));
+    await tester.pumpAndSettle();
+    await open('이용 안내');
+    expect(find.byType(TermsPolicyScreen), findsOneWidget);
+    Navigator.of(tester.element(find.byType(TermsPolicyScreen))).pop();
+    await tester.pumpAndSettle();
+    await open('계정 설정');
+    expect(find.byType(AccountSettingsScreen), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('photo change keeps a compact icon and locks while saving', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 720);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final user = const UserInfo(
+      id: 'photo-owner',
+      name: '우리 가족의 사진과 여행을 오래 간직하는 지현',
+      provider: 'kakao',
+      email: 'jihyun@example.com',
+    );
+    final completion = Completer<void>();
+    final changedOwners = <String>[];
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authViewModelProvider.overrideWith(() => FakeAuthViewModel(user)),
+        ],
+        child: ScreenUtilInit(
+          designSize: const Size(390, 844),
+          builder: (_, __) => MaterialApp(
+            theme: SnapFitTheme.light(),
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: const TextScaler.linear(1.8)),
+              child: child!,
+            ),
+            home: AccountSettingsScreen(
+              onChangePhoto: (_, __, owner) async {
+                changedOwners.add(owner.id);
+                await completion.future;
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final action = find.byWidgetPredicate(
+      (widget) => widget is IconButton && widget.tooltip == '프로필 사진 변경',
+    );
+    expect(action, findsOneWidget);
+    expect(find.text('사진 변경'), findsNothing);
+    await tester.ensureVisible(action);
+    await tester.pumpAndSettle();
+    expect(tester.getSize(action).height, greaterThanOrEqualTo(48));
+    expect(tester.getSize(action).width, greaterThanOrEqualTo(48));
+    await tester.tap(action);
+    await tester.pump();
+    expect(changedOwners, ['photo-owner']);
+    expect(tester.widget<IconButton>(action).onPressed, isNull);
+    completion.complete();
+    await tester.pumpAndSettle();
+    expect(tester.widget<IconButton>(action).onPressed, isNotNull);
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final display in [
+    (size: const Size(320, 720), scale: 3.2),
+    (size: const Size(540, 320), scale: 3.0),
+  ]) {
+    testWidgets(
+      'photo change remains usable at ${display.size} scale=${display.scale}',
+      (tester) async {
+        tester.view.physicalSize = display.size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        const user = UserInfo(
+          id: 'large-text-photo-owner',
+          name: '우리 가족의 사진과 여행을 오래 간직하는 지현',
+          provider: 'kakao',
+          email: 'jihyun@example.com',
+        );
+        final changedOwners = <String>[];
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              authViewModelProvider.overrideWith(() => FakeAuthViewModel(user)),
+            ],
+            child: ScreenUtilInit(
+              designSize: const Size(390, 844),
+              builder: (_, __) => MaterialApp(
+                theme: SnapFitTheme.light(),
+                builder: (context, child) => MediaQuery(
+                  data: MediaQuery.of(
+                    context,
+                  ).copyWith(textScaler: TextScaler.linear(display.scale)),
+                  child: child!,
+                ),
+                home: AccountSettingsScreen(
+                  onChangePhoto: (_, __, owner) async =>
+                      changedOwners.add(owner.id),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        final action = find.byWidgetPredicate(
+          (widget) => widget is IconButton && widget.tooltip == '프로필 사진 변경',
+        );
+        expect(action, findsOneWidget);
+        await tester.ensureVisible(action);
+        await tester.pumpAndSettle();
+        expect(tester.getSize(action).height, greaterThanOrEqualTo(48));
+        expect(tester.getSize(action).width, greaterThanOrEqualTo(48));
+        await tester.tap(action);
+        await tester.pumpAndSettle();
+        expect(changedOwners, ['large-text-photo-owner']);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 }

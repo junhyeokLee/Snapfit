@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show listEquals;
+import '../../../../core/fonts/document_font_gate.dart';
 
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/widgets/experience_icon.dart';
@@ -27,8 +28,14 @@ class TemplateCuration extends StatefulWidget {
   State<TemplateCuration> createState() => _TemplateCurationState();
 }
 
+class _CurationPageCursor {
+  const _CurationPageCursor(this.ids, this.index);
+  final List<int> ids;
+  final int index;
+}
+
 class _TemplateCurationState extends State<TemplateCuration> {
-  final _controller = PageController();
+  var _controller = PageController(keepPage: false);
   int _index = 0;
   late List<PremiumTemplate> _curatedItems;
   late List<String> _titles;
@@ -36,6 +43,11 @@ class _TemplateCurationState extends State<TemplateCuration> {
   double _cachedTitleHeight = 0;
   Widget? _artwork;
   double? _artworkHeight;
+  PageStorageBucket? _pageStorage;
+  bool _restoredCursor = false;
+
+  Object get _cursorIdentifier =>
+      ('template-curation-page', widget.selection.placement, widget.key);
 
   List<PremiumTemplate> _resolveItems() =>
       widget.selection.resolve(widget.templates, pointShopTemplateKey);
@@ -45,6 +57,40 @@ class _TemplateCurationState extends State<TemplateCuration> {
     super.initState();
     _curatedItems = _resolveItems();
     _titles = _curatedItems.map((item) => item.title).toList();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _pageStorage = PageStorage.maybeOf(context);
+    if (_restoredCursor) return;
+    _restoredCursor = true;
+    final cursor = _pageStorage?.readState(
+      context,
+      identifier: _cursorIdentifier,
+    );
+    if (cursor is _CurationPageCursor &&
+        listEquals(cursor.ids, _curatedItems.map((item) => item.id).toList()) &&
+        cursor.index >= 0 &&
+        cursor.index < _curatedItems.length) {
+      _index = cursor.index;
+      _controller.dispose();
+      _controller = PageController(initialPage: _index, keepPage: false);
+    }
+    _rememberCursor();
+  }
+
+  void _rememberCursor() {
+    // The lazy shelf can unmount entirely. Retain only a few IDs and an index;
+    // its images, font widgets and PageController still dispose normally.
+    _pageStorage?.writeState(
+      context,
+      _CurationPageCursor(
+        List<int>.unmodifiable(_curatedItems.map((item) => item.id)),
+        _index,
+      ),
+      identifier: _cursorIdentifier,
+    );
   }
 
   @override
@@ -72,6 +118,7 @@ class _TemplateCurationState extends State<TemplateCuration> {
     }
     if (orderChanged) {
       _index = 0;
+      _rememberCursor();
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && _controller.hasClients) _controller.jumpToPage(0);
       });
@@ -90,7 +137,10 @@ class _TemplateCurationState extends State<TemplateCuration> {
         key: const ValueKey('curation-pager'),
         controller: _controller,
         itemCount: items.length,
-        onPageChanged: (index) => setState(() => _index = index),
+        onPageChanged: (index) {
+          setState(() => _index = index);
+          _rememberCursor();
+        },
         itemBuilder: (context, index) {
           final template = items[index];
           return Semantics(
@@ -127,7 +177,12 @@ class _TemplateCurationState extends State<TemplateCuration> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => DocumentFontGate(
+    families: const ['BookMyungjo'],
+    builder: _buildPrepared,
+  );
+
+  Widget _buildPrepared(BuildContext context) {
     final items = _curatedItems;
     if (items.isEmpty) return const SizedBox.shrink();
     return LayoutBuilder(
@@ -234,7 +289,7 @@ class _TemplateCurationState extends State<TemplateCuration> {
                         ),
                         const SizedBox(width: 12),
                         ExperienceIcon(
-                          'ArrowUpRight',
+                          'ChevronRight',
                           size: 20,
                           color: ExperienceFormStyle.muted(context),
                         ),

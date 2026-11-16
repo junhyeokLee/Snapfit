@@ -1,0 +1,115 @@
+{
+  "status": "artwork_integrated_web_deployed_android_verification_package_complete",
+  "completionRecordedDate": "2026-10-30",
+  "scope": "People-free cyan photo-album brand splash; existing app icon, authentication, introduction, deep-link ordering and web quick-entry behavior preserved",
+  "generation": {
+    "mode": "built-in image_gen image editing",
+    "provenance": "assets/brand/album-mark/splash-provenance-20261029.json",
+    "selectedAssets": [
+      {
+        "path": "assets/splash.png",
+        "generatedSource": "/Users/devsheep/.codex/generated_images/01a16f1a-9f3a-7a83-8359-1fa96e7f30e3/exec-6459468d-22b2-44bf-825a-6179543e292d.png",
+        "beforeBytes": 2214670,
+        "afterBytes": 1822590,
+        "width": 941,
+        "height": 1672,
+        "sha256": "4fe95df8a7a5cb09826d4ca1b5325c518eadb689063d6df39c571da0a503c16f"
+      },
+      {
+        "path": "assets/brand/album-mark/splash-portrait.png",
+        "generatedSource": "/Users/devsheep/.codex/generated_images/01a16f1a-9f3a-7a83-8359-1fa96e7f30e3/exec-6459468d-22b2-44bf-825a-6179543e292d.png",
+        "beforeBytes": 2214670,
+        "afterBytes": 1822590,
+        "width": 941,
+        "height": 1672,
+        "sha256": "4fe95df8a7a5cb09826d4ca1b5325c518eadb689063d6df39c571da0a503c16f"
+      },
+      {
+        "path": "assets/brand/album-mark/splash-landscape.png",
+        "generatedSource": "/Users/devsheep/.codex/generated_images/01a16f1a-9f3a-7a83-8359-1fa96e7f30e3/exec-f631c674-0d15-49ca-91d0-aca52a4f4564.png",
+        "beforeBytes": 2489366,
+        "afterBytes": 1668560,
+        "width": 1672,
+        "height": 941,
+        "sha256": "a643059dfcb874e925b74c5462062dfc7a1dd04da79352ef86c55ad02ac2464a"
+      }
+    ]
+  },
+  "tests": {
+    "passed": 37,
+    "failed": 0,
+    "log": "output/splash-redesign-20261029/widget-tests.log",
+    "sourceAnalysis": "No issues found",
+    "analysisLog": "output/splash-redesign-20261029/analysis.log",
+    "changedSplashScopeDiffCheckPassed": true
+  },
+  "captures": {
+    "type": "Actual Flutter widget renderings; not physical-device screenshots",
+    "logicalViewportSizes": [
+      "390x844",
+      "360x800",
+      "360x640",
+      "768x1024",
+      "844x390",
+      "1024x768"
+    ],
+    "directory": "output/splash-redesign-20261029/captures"
+  },
+  "native": {
+    "postflight": "output/splash-redesign-20261029/native-platform-postflight.json",
+    "android12SourceIconsByteIdenticalToHEAD": true,
+    "systemLaunch": "Original centered logo on cyan with matching window/system-bar backgrounds",
+    "flutterArtworkMinimumMs": 900,
+    "iosSourceUpdated": true,
+    "iosBuildPerformed": false
+  },
+  "android": {
+    "artifact": {
+      "path": "/Users/devsheep/SnapFit/SnapFit/build/app/outputs/flutter-apk/app-debug.apk",
+      "bytes": 846687562,
+      "sha256": "0813ac5365ae240505aff30b811e923cd65661c751f06b7245dae69aea99c479",
+      "target": "android-arm64",
+      "flutterEngineArchitectures": [
+        "arm64-v8a"
+      ],
+      "type": "Android debug verification APK",
+      "phoneInstallVerified": false,
+      "storeRolloutPerformed": false,
+      "signatureEvidence": "output/splash-redesign-20261029/android-signature.log",
+      "signatureVerified": true
+    },
+    "contentEvidence": "output/splash-redesign-20261029/android-content-check.json",
+    "sourceAssetFilesByteExact": 1072,
+    "fontFilesByteExactToSourceAndHEAD": 40,
+    "nativeLaunchImagesPixelExactToSource": 15,
+    "historicalAPKSizes": {
+      "previousRecordedBytes": 850596226,
+      "currentBytes": 846687562,
+      "note": "Prior measured artifact size only; previous APK snapshot is no longer present for a new direct comparison."
+    }
+  },
+  "web": {
+    "deployment": {
+      "status": "success",
+      "result": {
+        "hosting": "projects/360727043538/sites/snapfit-c719d/versions/bdbb45bf6ed770af"
+      }
+    },
+    "publicAssetBytesMatchLocal": true,
+    "assetEvidence": "output/splash-redesign-20261029/web-assets-check.json",
+    "pageErrors": [],
+    "fullSplashArtworkRequestsBeforeFirstFrame": 0,
+    "smokeEvidence": "output/splash-redesign-20261029/web-no-splash-download.json",
+    "note": "Functional startup smoke during APK compilation, not a controlled performance benchmark."
+  },
+  "bundledPortraitAndLandscapeArtBytesSaved": 1212886,
+  "productionDatabaseChanged": false,
+  "customerAlbumPhotosModified": false,
+  "phoneInstallVerified": false,
+  "storeRolloutPerformed": false,
+  "limitations": [
+    "Physical phone installation and OS launch rendering remain unverified because the phone is unavailable.",
+    "iOS source launch assets and storyboard verified; no iOS binary was built.",
+    "Scope diff whitespace check passed. A separate pre-existing untracked/modified lib/ㅇ whitespace issue outside this task was left untouched."
+  ]
+}

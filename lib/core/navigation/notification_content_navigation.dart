@@ -1,12 +1,29 @@
 import 'dart:async';
 
-enum NotificationContentKind { album, template, moments }
+enum NotificationContentKind { album, template, moments, work }
 
 /// Identifiers select a repository read; they never grant access to its result.
 class NotificationContentTarget {
-  const NotificationContentTarget(this.kind, this.id);
+  const NotificationContentTarget(this.kind, this.id)
+    : workId = null,
+      showComments = false;
+  const NotificationContentTarget.work(this.workId, {this.showComments = true})
+    : kind = NotificationContentKind.work,
+      id = 0;
   final NotificationContentKind kind;
   final int id;
+  final String? workId;
+  final bool showComments;
+
+  static String? socialWorkId(Object? value) {
+    if (value is! String ||
+        !RegExp(
+          r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+          caseSensitive: false,
+        ).hasMatch(value))
+      return null;
+    return value.toLowerCase();
+  }
 
   static int? positiveId(Object? value) {
     final text = value?.toString() ?? '';
@@ -27,9 +44,21 @@ class NotificationContentTarget {
       'album' => NotificationContentKind.album,
       'template' => NotificationContentKind.template,
       'moments' => NotificationContentKind.moments,
+      'work' => NotificationContentKind.work,
       _ => null,
     };
     if (kind == null) return null;
+    if (kind == NotificationContentKind.work) {
+      final ids = uri.queryParametersAll['workId'];
+      final comments = uri.queryParametersAll['comments'];
+      if (ids?.length != 1 ||
+          comments?.length != 1 ||
+          comments!.single != '1' ||
+          uri.queryParametersAll.length != 2)
+        return null;
+      final workId = socialWorkId(ids!.single);
+      return workId == null ? null : NotificationContentTarget.work(workId);
+    }
     if (kind == NotificationContentKind.moments) {
       return uri.hasQuery
           ? null
@@ -45,6 +74,10 @@ class NotificationContentTarget {
   }
 
   static NotificationContentTarget? fromPayload(Map<String, dynamic> data) {
+    if (data.containsKey('workId')) {
+      final id = socialWorkId(data['workId']);
+      return id == null ? null : NotificationContentTarget.work(id);
+    }
     for (final entry in const {
       'albumId': NotificationContentKind.album,
       'templateId': NotificationContentKind.template,
@@ -67,9 +100,11 @@ class NotificationContentTarget {
   bool operator ==(Object other) =>
       other is NotificationContentTarget &&
       other.kind == kind &&
-      other.id == id;
+      other.id == id &&
+      other.workId == workId &&
+      other.showComments == showComments;
   @override
-  int get hashCode => Object.hash(kind, id);
+  int get hashCode => Object.hash(kind, id, workId, showComments);
 }
 
 class NotificationContentOpen {

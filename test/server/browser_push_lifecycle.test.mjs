@@ -134,6 +134,14 @@ test('an open web app receives the original owner-bound click and is focused', a
   assert.equal(f.opened.length, 0);
 });
 
+test('a closed app opens the exact public work comments route without private content', async () => {
+  const f = fixture();
+  await f.bind();
+  const workId = '33333333-3333-4333-8333-333333333333';
+  await f.click(f.data({ orderId: undefined, workId, commentId: 'comment-id', showComments: 'true' }));
+  assert.deepEqual(f.opened, [`https://snapfit.test/app/#/works/${workId}?comments=1`]);
+});
+
 test('a closed web app opens same-origin order, album, and template routes', async () => {
   for (const [payload, fragment] of [
     [{ orderId: 'order-one' }, '/orders/order-one'],

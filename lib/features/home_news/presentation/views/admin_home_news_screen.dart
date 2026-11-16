@@ -10,6 +10,7 @@ import '../../../profile/presentation/widgets/customer_web_page.dart';
 import '../../data/admin_home_news_repository.dart';
 import '../../domain/home_news.dart';
 import '../providers/home_news_providers.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 class AdminHomeNewsScreen extends ConsumerWidget {
   const AdminHomeNewsScreen({super.key});
@@ -68,7 +69,7 @@ class AdminHomeNewsScreen extends ConsumerWidget {
                         key: const ValueKey('admin-home-news-retry'),
                         onPressed: () =>
                             ref.invalidate(adminHomeNewsSnapshotProvider),
-                        icon: const Icon(Icons.refresh_rounded),
+                        icon: const ExperienceIcon('RefreshCw'),
                         label: const Text('다시 불러오기'),
                       ),
                     ],
@@ -105,7 +106,7 @@ class AdminHomeNewsScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '모든 시간은 한국 시간입니다. 자동 팝업의 하루·주간 노출 제한은 유지됩니다.',
+                            '모든 시간은 한국 시간입니다. 메인 진입마다 표시하며, 오늘 하루 안 보기를 선택한 회원은 그날 숨깁니다.',
                             style: ExperienceFormStyle.text(
                               context,
                               12,
@@ -421,7 +422,7 @@ class _CampaignCardState extends State<_CampaignCard> {
               'admin-news-${start ? 'starts' : 'ends'}-${widget.campaign.kind.name}',
             ),
             onPressed: _saving ? null : () => _pickDate(start),
-            icon: const Icon(Icons.calendar_today_outlined, size: 17),
+            icon: const ExperienceIcon('Calendar', size: 17),
             label: Text('${start ? '시작' : '종료'} · $text'),
             style: OutlinedButton.styleFrom(
               alignment: Alignment.centerLeft,
@@ -442,7 +443,7 @@ class _CampaignCardState extends State<_CampaignCard> {
                       _endsAt = null;
                     }
                   }),
-            icon: const Icon(Icons.close_rounded, size: 20),
+            icon: const ExperienceIcon('X', size: 20),
           ),
         ],
       ],

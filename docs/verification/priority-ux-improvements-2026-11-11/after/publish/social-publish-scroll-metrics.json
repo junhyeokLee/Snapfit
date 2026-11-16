@@ -1,0 +1,15 @@
+{
+  "fixture": "actual catalog template -9501, synthetic saved album, first 20 authored pages",
+  "viewportLogical": {
+    "width": 390,
+    "height": 844
+  },
+  "selectedPages": 20,
+  "initialEstimatedMaxScrollExtent": 205.39999999999998,
+  "scrollPixelsToPublishButton": 205.39999999999998,
+  "finalMaxScrollExtent": 205.39999999999998,
+  "viewportDimension": 756.0,
+  "viewportLengthsToPublish": 0.27169312169312165,
+  "publishAttemptCount": 0,
+  "publishingExecuted": false
+}

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/features/album/domain/entities/layer.dart';
 import 'package:snap_fit/features/album/domain/entities/layer_export_mapper.dart';
+import 'package:snap_fit/features/album/printing/print_album_document.dart';
 
 LayerModel _textLayer({
   String id = 'layer-1',
@@ -30,6 +31,99 @@ LayerModel _textLayer({
 
 void main() {
   const canvasSize = Size(400, 300);
+
+  test(
+    'artboard crop survives save, resize, copies and deliberate removal',
+    () {
+      const clip = Rect.fromLTWH(30, 10, 320, 250);
+      final source = _textLayer().copyWith(canvasClip: clip);
+      final json = LayerExportMapper.toJson(source, canvasSize: canvasSize);
+      expect(json['canvasClip'], {
+        'x': 30 / 400,
+        'y': 10 / 300,
+        'width': 320 / 400,
+        'height': 250 / 300,
+      });
+      final restored = LayerExportMapper.fromJson(
+        json,
+        canvasSize: canvasSize * 2,
+      );
+      expect(restored.canvasClip, const Rect.fromLTWH(60, 20, 640, 500));
+      expect(restored.copyWith(text: '이어서 편집').canvasClip, restored.canvasClip);
+      expect(restored.copyWith(clearCanvasClip: true).canvasClip, isNull);
+      final legacy = LayerExportMapper.toJson(
+        _textLayer(),
+        canvasSize: canvasSize,
+      );
+      expect(legacy.containsKey('canvasClip'), isFalse);
+      expect(
+        LayerExportMapper.fromJson(legacy, canvasSize: canvasSize).canvasClip,
+        isNull,
+      );
+    },
+  );
+
+  test(
+    'cover artboard crop follows the same spine conversion as its content',
+    () {
+      const editorCanvas = Size(500, 500);
+      const clip = Rect.fromLTWH(38, 143, 438, 331);
+      final json = LayerExportMapper.toJson(
+        _textLayer().copyWith(canvasClip: clip),
+        canvasSize: editorCanvas,
+        isCover: true,
+      );
+      expect(
+        LayerExportMapper.fromJson(
+          json,
+          canvasSize: editorCanvas,
+          isCover: true,
+        ).canvasClip,
+        clip,
+      );
+      final document = PrintAlbumDocument.fromSnapshot({
+        'album': {
+          'ratio': '1',
+          'cover_theme': 'classic',
+          'cover_layers_json': {
+            'pages': [
+              {
+                'index': 0,
+                'isCover': true,
+                'backgroundColor': 0xFFFFFFFF,
+                'layers': [json],
+              },
+            ],
+          },
+        },
+      });
+      expect(
+        document.cover.layers.single.canvasClip,
+        const Rect.fromLTWH(24, 143, 438, 331),
+      );
+    },
+  );
+
+  test('malformed artboard crops fail before reaching the painter', () {
+    for (final clip in [
+      'invalid',
+      {},
+      {'x': 0, 'y': 0, 'width': 0, 'height': 1},
+      {'x': 0, 'y': 0, 'width': 1, 'height': -1},
+      {'x': double.nan, 'y': 0, 'width': 1, 'height': 1},
+      {'x': double.maxFinite, 'y': 0, 'width': 1, 'height': 1},
+      {'x': 0, 'y': 0, 'width': 1, 'height': 1, 'other': 'invalid'},
+    ]) {
+      final json = LayerExportMapper.toJson(
+        _textLayer(),
+        canvasSize: canvasSize,
+      )..['canvasClip'] = clip;
+      expect(
+        () => LayerExportMapper.fromJson(json, canvasSize: canvasSize),
+        throwsFormatException,
+      );
+    }
+  });
 
   test(
     'example flags survive reopening and saving without becoming personal',

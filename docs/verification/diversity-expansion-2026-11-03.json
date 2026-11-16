@@ -1,0 +1,368 @@
+{
+  "date": "2026-11-03",
+  "scope": "Fourteen new concept-specific books, every category at least10, with bounded local rendering",
+  "catalog": {
+    "beforeBooks": 136,
+    "addedBooks": 14,
+    "currentBooks": 150,
+    "freeBooks": 54,
+    "paidBooks": 96,
+    "topics": 11,
+    "minimumPerTopic": 10,
+    "categoryCounts": {
+      "가족·친구": 15,
+      "동아리": 15,
+      "반려동물": 15,
+      "성장·육아": 15,
+      "스포츠·도전": 10,
+      "여행": 16,
+      "웨딩": 15,
+      "일상": 15,
+      "졸업·새출발": 10,
+      "취미·기록": 10,
+      "커플·기념일": 14
+    },
+    "allTopicsAtLeastTen": true,
+    "existingSurplusBooksPreserved": true
+  },
+  "books": [
+    {
+      "id": -9772,
+      "key": "template:story-hobby-clay",
+      "title": "흙이 기억하는 손",
+      "category": "취미·기록",
+      "price": 0,
+      "innerPages": 24,
+      "exclusivePhotographs": 5,
+      "uniqueIncludedMaterials": 4
+    },
+    {
+      "id": -9773,
+      "key": "template:story-hobby-leaf",
+      "title": "잎새를 돌보는 날들",
+      "category": "취미·기록",
+      "price": 0,
+      "innerPages": 24,
+      "exclusivePhotographs": 5,
+      "uniqueIncludedMaterials": 4
+    },
+    {
+      "id": -9774,
+      "key": "template:story-hobby-film",
+      "title": "빛을 현상하는 주말",
+      "category": "취미·기록",
+      "price": 1800,
+      "innerPages": 24,
+      "exclusivePhotographs": 5,
+      "uniqueIncludedMaterials": 4
+    },
+    {
+      "id": -9775,
+      "key": "template:story-hobby-bake",
+      "title": "오븐 앞의 작은 기쁨",
+      "category": "취미·기록",
+      "price": 0,
+      "innerPages": 24,
+      "exclusivePhotographs": 5,
+      "uniqueIncludedMaterials": 4
+    },
+    {
+      "id": -9776,
+      "key": "template:story-hobby-knit",
+      "title": "한 코씩 쌓이는 계절",
+      "category": "취미·기록",
+      "price": 1800,
+      "innerPages": 24,
+      "exclusivePhotographs": 5,
+      "uniqueIncludedMaterials": 4
+    },
+    {
+      "id": -9777,
+      "key": "template:story-hobby-music",
+      "title": "다시 듣고 싶은 연습",
+      "category": "취미·기록",
+      "price": 1800,
+      "innerPages": 24,
+      "exclusivePhotographs": 5,
+      "uniqueIncludedMaterials": 4
+    },
+    {
+      "id": -9778,
+      "key": "template:story-hobby-paper",
+      "title": "종이 위의 수집",
+      "category": "취미·기록",
+      "price": 1800,
+      "innerPages": 24,
+      "exclusivePhotographs": 5,
+      "uniqueIncludedMaterials": 4
+    },
+    {
+      "id": -9779,
+      "key": "template:story-hobby-gallery",
+      "title": "전시를 걷는 시선",
+      "category": "취미·기록",
+      "price": 1800,
+      "innerPages": 24,
+      "exclusivePhotographs": 5,
+      "uniqueIncludedMaterials": 4
+    },
+    {
+      "id": -9780,
+      "key": "template:story-hobby-camp",
+      "title": "천천히 피우는 주말",
+      "category": "취미·기록",
+      "price": 1800,
+      "innerPages": 24,
+      "exclusivePhotographs": 5,
+      "uniqueIncludedMaterials": 4
+    },
+    {
+      "id": -9781,
+      "key": "template:story-milestone-little-applause",
+      "title": "작은 졸업, 큰 박수",
+      "category": "졸업·새출발",
+      "price": 0,
+      "innerPages": 24,
+      "exclusivePhotographs": 5,
+      "uniqueIncludedMaterials": 4
+    },
+    {
+      "id": -9782,
+      "key": "template:story-milestone-first-home",
+      "title": "처음 여는 우리 집",
+      "category": "졸업·새출발",
+      "price": 0,
+      "innerPages": 24,
+      "exclusivePhotographs": 5,
+      "uniqueIncludedMaterials": 4
+    },
+    {
+      "id": -9783,
+      "key": "template:story-milestone-second-beginning",
+      "title": "나의 두 번째 출발",
+      "category": "졸업·새출발",
+      "price": 1800,
+      "innerPages": 24,
+      "exclusivePhotographs": 5,
+      "uniqueIncludedMaterials": 4
+    },
+    {
+      "id": -9784,
+      "key": "template:story-milestone-next-season",
+      "title": "퇴근 다음의 계절",
+      "category": "졸업·새출발",
+      "price": 1800,
+      "innerPages": 24,
+      "exclusivePhotographs": 5,
+      "uniqueIncludedMaterials": 4
+    },
+    {
+      "id": -9785,
+      "key": "template:story-milestone-first-exhibition",
+      "title": "처음 내 이름을 걸다",
+      "category": "졸업·새출발",
+      "price": 1800,
+      "innerPages": 24,
+      "exclusivePhotographs": 5,
+      "uniqueIncludedMaterials": 4
+    }
+  ],
+  "diversity": {
+    "newBookSamplePhotos": 70,
+    "crossNewBookPhotoReuse": false,
+    "reuseOfOlderBookPhotos": false,
+    "uniqueSourceSHA256": 70,
+    "frames": 14,
+    "papers": 14,
+    "stickers": 14,
+    "editablePhraseCompositions": 14,
+    "newMaterials": 56,
+    "sharedNewMaterialKeys": 0,
+    "recordCardCopySets": 36,
+    "actualRecordQuestionsDifferWithinEachBook": true,
+    "semanticHeadlineLineBreaks": true,
+    "sourceAudit": "diversity-audit.json"
+  },
+  "images": {
+    "generator": "built-in image_gen",
+    "promptSet": "prompt-set.json",
+    "sourceProvenance": "artwork-provenance.json",
+    "originalsPreserved": true,
+    "bundledPhotoDimensions": [
+      1536,
+      1024
+    ],
+    "oneSourceDecodedAtATimeDuringBundling": true
+  },
+  "geometry": {
+    "printRatios": [
+      "square",
+      "landscape4x3",
+      "landscape5x4"
+    ],
+    "nativeProofViews": 546,
+    "pagesPerBookIncludingCover": 25,
+    "photographApertureRatio": 1.5,
+    "textAndPhotoOverlapChecked": true,
+    "cardWritingInsideFittedPaperChecked": true,
+    "naturalNativeFontMetricsAtFinalScale": true,
+    "saveRestoreChecked": true,
+    "allDeclaredMaterialsActuallyUsed": true
+  },
+  "checks": [
+    {
+      "log": "catalog-contract-tests.log",
+      "passed": 16,
+      "failedInitially": 1,
+      "note": "Catalog150/tier54-96/pricing578 passed; native frame outer bounds failed and were fixed, then passed in final-quality-tests.log."
+    },
+    {
+      "log": "hobby-first-eight-tests.log",
+      "passed": 15,
+      "failedInitially": 9,
+      "note": "Actual-font title and lettering measurements fixed without widening test tolerances."
+    },
+    {
+      "log": "hobby-quality-recheck.log",
+      "passed": 25,
+      "failedInitially": 6,
+      "note": "Remaining handwritten title boxes fixed using natural metrics."
+    },
+    {
+      "log": "milestone-quality-tests.log",
+      "passed": 13,
+      "failedInitially": 3,
+      "note": "Retirement companion photo moved above folio."
+    },
+    {
+      "log": "final-quality-tests.log",
+      "passed": 46,
+      "failedInitially": 1,
+      "note": "A final scaled lettering metric case was fixed with the new-edition natural-measurement helper."
+    },
+    {
+      "log": "milestone-final-recheck.log",
+      "passed": 16,
+      "failed": 0
+    },
+    {
+      "log": "copy-final-tests.log",
+      "passed": 29,
+      "failed": 0
+    },
+    {
+      "log": "camp-final-tests.log",
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "log": "native-render-review.log",
+      "passed": 1,
+      "uniqueProofViews": 546
+    },
+    {
+      "log": "copy-native-render-review.log",
+      "passed": 1,
+      "refreshedProofViews": 351
+    },
+    {
+      "log": "camp-final-review.log",
+      "passed": 1,
+      "refreshedProofViews": 39
+    },
+    {
+      "log": "store-regression-tests.log",
+      "passed": 25,
+      "failed": 0
+    },
+    {
+      "log": "analyze.log",
+      "result": "No issues found",
+      "files": 27
+    },
+    {
+      "tool": "test/tool/test_catalog_diversity_audit.py",
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "log": "editorial-selection-analyze.log",
+      "result": "No issues found",
+      "files": 1
+    }
+  ],
+  "visualReview": {
+    "independentReviewers": 3,
+    "originalContactSheets": 42,
+    "fullBookCoverage": "all14 books at3 ratios",
+    "resolvedFindings": [
+      "Non-repeating phase-specific record questions",
+      "Semantic line breaks without orphan syllables",
+      "Camp map heading and record prompt alignment"
+    ],
+    "knownUnresolvedFindings": [],
+    "reviewerReadOnly": true
+  },
+  "exports": {
+    "compactPreview": "preview-export.log",
+    "fullDetail": "detail-export.log",
+    "metadata": "metadata-final.log",
+    "sourceAudit": "diversity-audit-final.log",
+    "coversAnd56Materials": "thumbnail-export.log",
+    "representativeSpreads": "editorial-export.log",
+    "campDetailFinal": "camp-detail-refresh.log"
+  },
+  "preservation": {
+    "historicalDetailFiles": 151,
+    "allHistoricalDetailBytesUnchanged": true,
+    "previousCurrentDetailDocuments": 148,
+    "currentDetailDocuments": 162,
+    "existingPricesTiersAndCommerceKeysPreserved": true,
+    "unrelatedOperatingProductRowsPreservedByTransactionFingerprint": true
+  },
+  "production": {
+    "project": "rrbhxdtriummqpztpjrk",
+    "registeredProducts": 70,
+    "freeProducts": 25,
+    "paidProducts": 45,
+    "allActive": true,
+    "anonymousHTTPSCatalogAnd70AccessQuotesVerified": true,
+    "walletOwnershipAlbumWritesInitiated": false,
+    "newFirstPublicationRows": 0,
+    "appBuildPerformed": false,
+    "appDeploymentPerformed": false,
+    "currentLiveCurationUsesPreviouslyPublicBooks": true
+  },
+  "resourcePolicy": {
+    "localHeavyJobsRunOneAtATime": true,
+    "flutterTestConcurrency": 1,
+    "localPriority": "nice10",
+    "reviewImageCacheBytes": 25165824,
+    "reviewImageCacheEntries": 8,
+    "perBookImageAndDocumentCachesReleased": true,
+    "remotePhotoGenerationConcurrencyMaximum": 3,
+    "existingHeavyJobsCheckedAndDeferredWhenObserved": true,
+    "applicationsForceQuit": false,
+    "cacheOrSwapDeletion": false,
+    "separateDownloadedModelsOrVirtualEnvironments": false
+  },
+  "limitations": [
+    "New books and materials have active operating product rows and complete bundled assets, but customer-facing availability requires the next app release. No app build or deployment was requested or performed.",
+    "First-publication/NEW metadata intentionally waits for verified app exposure; operating product registration is not treated as first publication.",
+    "No physical print or paid purchase was performed.",
+    "Older catalog photo/material reuse is reported by the audit and remains a follow-up refinement area; original books and saved customer albums were preserved."
+  ],
+  "evidenceBase": "output/diversity-expansion-20261103/",
+  "evidence": [
+    "new-books-overview.jpg",
+    "photography-01.jpg",
+    "photography-02.jpg",
+    "contact-sheets/",
+    "review/",
+    "artwork-provenance.json",
+    "diversity-audit.json",
+    "asset-preservation.json",
+    "production-verification.json",
+    "public-registration-verification.json"
+  ]
+}

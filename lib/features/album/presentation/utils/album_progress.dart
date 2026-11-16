@@ -24,9 +24,16 @@ class AlbumProgressInfo {
     required this.completedPages,
     required this.targetPages,
     this.coverSize,
+    this.firstIncompletePageIndex,
+    this.firstIncompletePageNumber,
+    this.firstIncompletePhotoSlots = 0,
+    this.firstUnfilledPhotoLayerId,
   });
   final int completedPages, targetPages;
   final CoverSize? coverSize;
+  final int? firstIncompletePageIndex, firstIncompletePageNumber;
+  final int firstIncompletePhotoSlots;
+  final String? firstUnfilledPhotoLayerId;
   bool get hasTarget => targetPages > 0;
   bool get isCompleted => hasTarget && completedPages >= targetPages;
   double get ratio =>
@@ -45,26 +52,39 @@ int? firstIncompleteAlbumPageIndex(List<AlbumPage> pages) {
   for (var index = 0; index < pages.length; index++) {
     final page = pages[index];
     if (page.isCover) continue;
-    if (!isAlbumPageContentComplete(
-      page.layers.map(
-        (layer) => <String, dynamic>{
-          'type': layer.type.name,
-          'templateContent': layer.isTemplateContent,
-          'opacity': layer.opacity,
-          'payload': <String, dynamic>{
-            'text': layer.text,
-            'originalUrl': layer.originalUrl,
-            'previewUrl': layer.previewUrl,
-            'imageUrl': layer.imageUrl,
-          },
-        },
-      ),
-    )) {
+    if (!preparedAlbumPageProgress(page).isComplete) {
       return index;
     }
   }
   return null;
 }
+
+({
+  bool isComplete,
+  int photoSlots,
+  int filledPhotoSlots,
+  String? firstUnfilledPhotoId,
+})
+preparedAlbumPageProgress(AlbumPage page) => albumPageContentSummary(
+  page.layers.map(
+    (layer) => <String, dynamic>{
+      'id': layer.id,
+      'type': layer.type.name,
+      'templateContent': layer.isTemplateContent,
+      'opacity': layer.opacity,
+      'payload': <String, dynamic>{
+        'text': layer.text,
+        // A picked original has not been uploaded yet. It can complete the
+        // local page; the save flow still waits for its durable server upload.
+        'originalUrl': layer.asset != null
+            ? 'local:pending-photo'
+            : layer.originalUrl,
+        'previewUrl': layer.previewUrl,
+        'imageUrl': layer.imageUrl,
+      },
+    },
+  ),
+);
 
 // Weak album keys and compact counts/dimensions: no raw JSON result cache and no
 // retained history after refresh. Existing synchronous callers share the cache.
@@ -92,6 +112,10 @@ AlbumProgressInfo _resolveProgress(
       ratio,
       printProduct: document.printProduct,
     ),
+    firstIncompletePageIndex: document.firstIncompletePageIndex,
+    firstIncompletePageNumber: document.firstIncompletePageNumber,
+    firstIncompletePhotoSlots: document.firstIncompletePhotoSlots,
+    firstUnfilledPhotoLayerId: document.firstUnfilledPhotoLayerId,
   );
 }
 

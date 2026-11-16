@@ -28,26 +28,64 @@ class SupabaseAlbumRepository implements AlbumRepository {
   }
 
   @override
-  Future<Album> createAlbum(CreateAlbumRequest request) async {
+  Future<Album> createAlbum(
+    CreateAlbumRequest request, {
+    String? requestId,
+    String? expectedUserId,
+  }) async {
     final userId = await _userId();
-    final row = await client
-        .from('albums')
-        .insert({
-          'owner_id': userId,
-          'title': request.title,
-          'ratio': request.ratio,
-          'cover_layers_json': request.coverLayersJson,
-          'cover_image_url': request.coverImageUrl,
-          'cover_thumbnail_url': request.coverThumbnailUrl,
-          'cover_original_url': request.coverOriginalUrl,
-          'cover_preview_url': request.coverPreviewUrl,
-          'cover_theme': request.coverTheme,
-          'target_pages': request.targetPages,
-        })
-        .select()
-        .single();
-    _sameUser(userId);
-    return _fromRow(Map<String, dynamic>.from(row));
+    _sameUser(userId, expectedUserId);
+    if (requestId == null || expectedUserId == null) {
+      throw const AlbumCreationRecoveryRequired();
+    }
+    var sessionChanged = false;
+    final auth = client.auth.onAuthStateChange.listen((event) {
+      if (event.session?.user.id != userId) sessionChanged = true;
+    }, onError: (Object _, StackTrace __) => sessionChanged = true);
+    void sameSession() {
+      if (sessionChanged) throw const AlbumEditSessionChanged();
+      _sameUser(userId, expectedUserId);
+    }
+
+    try {
+      final raw = await client
+          .rpc(
+            'create_album_document',
+            params: {
+              'p_request_id': requestId,
+              'p_expected_actor_id': expectedUserId,
+              'p_album': {
+                'title': request.title,
+                'ratio': request.ratio,
+                'cover_layers_json': request.coverLayersJson,
+                'cover_image_url': request.coverImageUrl,
+                'cover_thumbnail_url': request.coverThumbnailUrl,
+                'cover_original_url': request.coverOriginalUrl,
+                'cover_preview_url': request.coverPreviewUrl,
+                'cover_theme': request.coverTheme,
+                'target_pages': request.targetPages,
+              },
+            },
+          )
+          .timeout(const Duration(seconds: 25));
+      sameSession();
+      return _fromRow(Map<String, dynamic>.from(raw as Map));
+    } on PostgrestException catch (error) {
+      sameSession();
+      if (error.message.contains('album_creation_deleted') ||
+          error.code == 'PT410')
+        throw const AlbumCreationDeleted();
+      if (error.message.contains('album_creation_request_conflict') ||
+          error.code == 'PT409')
+        throw const AlbumCreationRequestConflict();
+      if (error.message.contains('album_editor_session_changed')) {
+        throw const AlbumEditSessionChanged();
+      }
+      if (error.code == '42501') throw const AlbumEditAccessRevoked();
+      rethrow;
+    } finally {
+      await auth.cancel();
+    }
   }
 
   @override

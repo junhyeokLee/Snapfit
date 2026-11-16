@@ -21,13 +21,20 @@ import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
 import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
 import 'package:snap_fit/features/point_shop/data/point_shop_provider.dart';
 import 'package:snap_fit/features/point_shop/domain/point_shop_product.dart';
+import 'package:snap_fit/features/point_shop/domain/point_shop_launch_pricing.dart';
 import 'package:snap_fit/features/point_shop/domain/point_shop_template_key.dart';
 import 'package:snap_fit/features/point_shop/presentation/point_shop_access.dart';
 import 'package:snap_fit/features/store/data/api/template_provider.dart';
 import 'package:snap_fit/features/store/data/store_curation_provider.dart';
+import 'package:snap_fit/features/store/data/store_discovery_provider.dart';
 import 'package:snap_fit/features/store/presentation/views/material_detail_screen.dart';
+import 'package:snap_fit/features/store/presentation/views/material_catalog_screen.dart';
+import 'package:snap_fit/features/store/presentation/widgets/store_material_discovery.dart';
 import 'package:snap_fit/features/store/presentation/views/store_hub_screen.dart';
 import 'package:snap_fit/features/store/presentation/views/template_detail_screen.dart';
+import 'package:snap_fit/features/store/presentation/widgets/template_curation.dart';
+import 'package:snap_fit/features/store/presentation/widgets/template_editorial_list.dart';
+import 'package:snap_fit/features/store/presentation/widgets/template_catalog_tile.dart';
 import 'package:snap_fit/shared/web/web_design.dart';
 import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
 
@@ -91,6 +98,7 @@ Widget _app(
     albumCreationDraftProvider.overrideWith((ref) async => null),
     authViewModelProvider.overrideWith(_LocalAuth.new),
     authUserIdProvider.overrideWith((ref) async => 'catalog-layout-fixture'),
+    storeDiscoveryProvider.overrideWith((_) async => const {}),
     mockTemplateList(
       () async => curated ? publishedCreationTemplates : _templates,
     ),
@@ -104,15 +112,26 @@ Widget _app(
     ),
     pointShopCatalogProvider.overrideWith(
       (ref) async => [
-        for (var index = 0; index < _templates.length; index++)
-          PointShopProduct(
-            productKey: pointShopTemplateKey(_templates[index]),
-            kind: 'template',
-            assetId: '${_templates[index].id}',
-            title: _templates[index].title,
-            pointPrice: index == 0 ? 0 : 2400,
-            isActive: true,
-          ),
+        if (curated)
+          for (final entry in pointShopLaunchPrices.entries)
+            PointShopProduct(
+              productKey: entry.key,
+              kind: entry.key.split(':').first,
+              assetId: entry.key.split(':').last,
+              title: entry.key,
+              pointPrice: entry.value.points,
+              isActive: true,
+            )
+        else
+          for (var index = 0; index < _templates.length; index++)
+            PointShopProduct(
+              productKey: pointShopTemplateKey(_templates[index]),
+              kind: 'template',
+              assetId: '${_templates[index].id}',
+              title: _templates[index].title,
+              pointPrice: index == 0 ? 0 : 2400,
+              isActive: true,
+            ),
         const PointShopProduct(
           productKey: 'sticker:fixture',
           kind: 'sticker',
@@ -199,6 +218,17 @@ void _expectNoLayoutError(WidgetTester tester, String stage) {
   expect(error, isNull, reason: stage);
 }
 
+void _expectFeaturedPosition(WidgetTester tester, int current, int total) {
+  final counter = tester.widget<Text>(
+    find.byKey(const ValueKey('store-featured-position')),
+  );
+  final text = counter.data ?? counter.textSpan?.toPlainText() ?? '';
+  final values = RegExp(
+    r'\d+',
+  ).allMatches(text).map((match) => int.parse(match.group(0)!)).toList();
+  expect(values, [current, total]);
+}
+
 void main() {
   setUp(() async {
     _bodyErrorHandlerInstalled = false;
@@ -237,24 +267,145 @@ void main() {
             scale: size.width == 320 ? 1.8 : 1,
             curated: true,
           );
+          final shelf = find.byKey(const ValueKey('store-featured-templates'));
+          expect(shelf, findsOneWidget);
+          expect(find.byType(TemplateCuration), findsNothing);
+          final selected = StoreCuration.templates
+              .resolve(publishedCreationTemplates, pointShopTemplateKey)
+              .take(6)
+              .toList();
+          expect(selected, hasLength(6));
           expect(
-            find.byKey(const ValueKey('store-collection-spotlight')),
+            find.byKey(ValueKey('store-featured-template-${selected[1].id}')),
+            findsNothing,
+            reason: 'Only the selected book occupies the hero stage',
+          );
+          final firstProduct = find.byKey(
+            ValueKey('store-featured-template-${selected.first.id}'),
+          );
+          expect(firstProduct, findsOneWidget);
+          expect(
+            tester
+                .widget<Text>(
+                  find.byKey(
+                    ValueKey(
+                      'store-featured-template-title-${selected.first.id}',
+                    ),
+                  ),
+                )
+                .semanticsLabel,
+            selected.first.title,
+          );
+          expect(
+            find.byKey(
+              ValueKey('store-featured-template-price-${selected.first.id}'),
+            ),
             findsOneWidget,
           );
-          final position = find.byKey(const ValueKey('curation-position'));
-          expect(tester.widget<Text>(position).data, '01 / 04');
-          await tester.ensureVisible(find.byTooltip('다음 컬렉션'));
-          await settleStoreDetail(tester);
-          await Scrollable.ensureVisible(
-            tester.element(find.byTooltip('다음 컬렉션')),
-            alignment: .5,
+          final firstAction = find.byKey(
+            ValueKey('store-featured-open-${selected.first.id}'),
           );
+          await tester.ensureVisible(firstAction);
           await settleStoreDetail(tester);
-          expect(find.byTooltip('다음 컬렉션').hitTestable(), findsOneWidget);
-          await tester.tap(find.byTooltip('다음 컬렉션'));
+          expect(firstAction.hitTestable(), findsOneWidget);
+          expect(
+            find.byKey(ValueKey('store-featured-open-${selected.first.id}')),
+            findsOneWidget,
+          );
+          _expectFeaturedPosition(tester, 1, selected.length);
+          for (var index = 1; index < selected.length; index++) {
+            final next = find.byKey(const ValueKey('store-featured-next'));
+            await tester.ensureVisible(next);
+            await settleStoreDetail(tester);
+            await tester.tap(next);
+            await settleStoreDetail(tester);
+            _expectFeaturedPosition(tester, index + 1, selected.length);
+            expect(
+              tester
+                  .widget<Text>(
+                    find.byKey(
+                      ValueKey(
+                        'store-featured-template-title-${selected[index].id}',
+                      ),
+                    ),
+                  )
+                  .semanticsLabel,
+              selected[index].title,
+            );
+            expect(
+              find.byKey(
+                ValueKey('store-featured-template-price-${selected[index].id}'),
+              ),
+              findsOneWidget,
+            );
+            expect(
+              find.byKey(ValueKey('store-featured-open-${selected[index].id}')),
+              findsOneWidget,
+            );
+          }
+          final previous = find.byKey(
+            const ValueKey('store-featured-previous'),
+          );
+          await tester.ensureVisible(previous);
+          await tester.tap(previous);
           await settleStoreDetail(tester);
-          expect(tester.widget<Text>(position).data, '02 / 04');
-          _expectNoLayoutError(tester, 'curation $size dark=$dark');
+          _expectFeaturedPosition(tester, selected.length - 1, selected.length);
+          expect(
+            find.byKey(
+              ValueKey(
+                'store-featured-open-${selected[selected.length - 2].id}',
+              ),
+            ),
+            findsOneWidget,
+          );
+          final catalogScroll = find
+              .descendant(
+                of: find.byType(CustomScrollView).first,
+                matching: find.byType(Scrollable),
+              )
+              .first;
+          for (
+            var attempt = 0;
+            find.byType(TemplateCatalogTile).evaluate().isEmpty && attempt < 40;
+            attempt++
+          ) {
+            await tester.drag(catalogScroll, const Offset(0, -180));
+            await settleStoreDetail(tester);
+          }
+          expect(find.byType(TemplateCatalogTile), findsWidgets);
+          await tester.ensureVisible(find.byType(TemplateCatalogTile).first);
+          await settleStoreDetail(tester);
+          final catalog = tester.widget<TemplateEditorialList>(
+            find.byType(TemplateEditorialList),
+          );
+          expect(catalog.compactStart, isTrue);
+          expect(catalog.templates, isNotEmpty);
+          expect(catalog.interlude, isA<StoreMaterialDiscovery>());
+          final materials = find.byKey(
+            const ValueKey('store-material-discovery'),
+          );
+          await tester.scrollUntilVisible(
+            materials,
+            220,
+            scrollable: find
+                .descendant(
+                  of: find.byType(CustomScrollView).first,
+                  matching: find.byType(Scrollable),
+                )
+                .first,
+            maxScrolls: 40,
+          );
+          expect(materials, findsOneWidget);
+          expect(find.byKey(const ValueKey('curation-pager')), findsNothing);
+          await tester.ensureVisible(find.byTooltip('꾸밈소재 모두 보기'));
+          await settleStoreDetail(tester);
+          await tester.tap(find.byTooltip('꾸밈소재 모두 보기'));
+          await settleStoreDetail(tester);
+          expect(find.byType(MaterialCatalogScreen), findsOneWidget);
+          _expectNoLayoutError(
+            tester,
+            'featured products and materials $size dark=$dark',
+          );
           await tester.pumpWidget(const SizedBox());
         }
       }

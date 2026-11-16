@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import '../../../../core/utils/context_extensions.dart';
 import '../../../../shared/web/web_design.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../domain/social_models.dart';
 import '../../domain/social_topics.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 /// Neutral surfaces keep published pages in focus; logo teal marks actions.
 abstract final class SocialStyle {
@@ -37,7 +39,7 @@ abstract final class SocialStyle {
         ? WebPalette.of(context).onBrand
         : SnapFitColors.onAccent,
     minimumSize: const Size(0, 48),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    shape: const StadiumBorder(),
   );
 }
 
@@ -69,11 +71,11 @@ class SocialEmpty extends StatelessWidget {
     required this.title,
     required this.message,
     this.action,
-    this.icon = Icons.auto_stories_outlined,
+    this.icon = const ExperienceIcon('BookOpen', size: 28),
   });
   final String title, message;
   final Widget? action;
-  final IconData icon;
+  final Widget icon;
   @override
   Widget build(BuildContext context) => SingleChildScrollView(
     child: Padding(
@@ -116,11 +118,7 @@ class SocialEmpty extends StatelessWidget {
                               color: SocialStyle.line(context),
                             ),
                           ),
-                          child: Icon(
-                            icon,
-                            size: 28,
-                            color: SocialStyle.accent(context),
-                          ),
+                          child: icon,
                         ),
                       ),
                     ],
@@ -168,10 +166,7 @@ class SocialArtworkPlaceholder extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.auto_stories_outlined,
-              size: compact ? 28 : 40,
-              color: SocialStyle.accent(context),
+            ExperienceIcon('BookOpen', size: compact ? 28 : 40, color: SocialStyle.accent(context),
             ),
             if (!compact) ...[
               const SizedBox(height: 12),
@@ -196,9 +191,11 @@ class SocialAuthorLine extends StatelessWidget {
     super.key,
     required this.author,
     required this.onTap,
+    this.compact = false,
   });
   final SocialProfile author;
   final VoidCallback onTap;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -221,14 +218,14 @@ class SocialAuthorLine extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: EdgeInsets.symmetric(vertical: compact ? 7 : 10),
         child: Row(
           children: [
             ExcludeSemantics(
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(compact ? 36 : 12),
                 child: SizedBox.square(
-                  dimension: 40,
+                  dimension: compact ? 36 : 40,
                   child: author.avatarUrl?.isNotEmpty == true
                       ? Image.network(
                           author.avatarUrl!,
@@ -240,17 +237,17 @@ class SocialAuthorLine extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: compact ? 10 : 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     author.displayName,
-                    maxLines: 2,
+                    maxLines: compact ? 1 : 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 15,
+                    style: TextStyle(
+                      fontSize: compact ? 14 : 15,
                       fontWeight: FontWeight.w600,
                       height: 1.35,
                     ),
@@ -269,14 +266,13 @@ class SocialAuthorLine extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 12),
-            ExcludeSemantics(
-              child: Icon(
-                Icons.north_east,
-                size: 17,
-                color: SnapFitColors.textMutedOf(context),
+            if (!compact) ...[
+              const SizedBox(width: 12),
+              ExcludeSemantics(
+                child: ExperienceIcon('ChevronRight', size: 17, color: SnapFitColors.textMutedOf(context),
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),
@@ -298,16 +294,21 @@ class SocialWorkMetadata extends StatelessWidget {
       spacing: 10,
       runSpacing: 4,
       children: [
-        Text(socialTopicLabel(work.topic)),
-        Text('${work.imageUrls.length}쪽'),
-        Text(socialDate(work.createdAt)),
+        if (work.isMoment) ...[
+          const Text('월간 기록'),
+          Text(socialDate(work.recordDate ?? work.createdAt)),
+        ] else ...[
+          Text(socialTopicLabel(work.topic)),
+          Text(work.isRestricted ? '공개 제한' : '${work.imageUrls.length}쪽'),
+          Text(socialDate(work.createdAt)),
+        ],
       ],
     ),
   );
 }
 
 class SocialLoading extends StatelessWidget {
-  const SocialLoading({super.key, this.message = '공개 작품을 불러오고 있어요.'});
+  const SocialLoading({super.key, this.message = '공개 기록과 앨범을 불러오고 있어요.'});
   final String message;
   @override
   Widget build(BuildContext context) => Semantics(
@@ -347,7 +348,7 @@ class SocialFailure extends StatelessWidget {
   Widget build(BuildContext context) => SocialEmpty(
     title: '기록을 불러오지 못했어요.',
     message: '연결 상태를 확인하고 다시 시도해 주세요.',
-    icon: Icons.cloud_off_outlined,
+    icon: const ExperienceIcon('CloudOff'),
     action: OutlinedButton(onPressed: onRetry, child: const Text('다시 시도')),
   );
 }
@@ -359,13 +360,15 @@ class SocialWorkImage extends StatefulWidget {
     required this.url,
     this.fit = BoxFit.contain,
     this.onRetry,
-    this.label = '공개 작품 페이지',
+    this.label = '공개 이미지',
     this.excludeImageSemantics = false,
+    this.imageDecodeWidth = 1440,
   });
   final String url, label;
   final BoxFit fit;
   final VoidCallback? onRetry;
   final bool excludeImageSemantics;
+  final int imageDecodeWidth;
   @override
   State<SocialWorkImage> createState() => _SocialWorkImageState();
 }
@@ -426,7 +429,7 @@ class _SocialWorkImageState extends State<SocialWorkImage> {
     semanticLabel: widget.label,
     excludeFromSemantics: widget.excludeImageSemantics,
     // Browser-decoded sizes follow the CSS box; native decoding is bounded.
-    cacheWidth: 1440,
+    cacheWidth: widget.imageDecodeWidth,
     frameBuilder: (context, child, frame, synchronous) {
       if (frame != null || synchronous) {
         _automaticRetryUsed = false;
@@ -456,7 +459,7 @@ class _SocialWorkImageState extends State<SocialWorkImage> {
                   : IconButton(
                       tooltip: '이미지 다시 불러오기',
                       onPressed: _retry,
-                      icon: const Icon(Icons.refresh),
+                      icon: const ExperienceIcon('RefreshCw'),
                     ),
             );
           }
@@ -480,7 +483,7 @@ class _SocialWorkImageState extends State<SocialWorkImage> {
                     )
                   : TextButton.icon(
                       onPressed: _retry,
-                      icon: const Icon(Icons.refresh),
+                      icon: const ExperienceIcon('RefreshCw'),
                       label: const Text('이미지 다시 불러오기'),
                     ),
             ),
@@ -521,7 +524,7 @@ class SocialWorkTile extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
             child: ColoredBox(
               color: SocialStyle.paper(context),
-              child: work.imageUrls.isEmpty
+              child: work.isRestricted || work.imageUrls.isEmpty
                   ? const SocialArtworkPlaceholder(compact: true)
                   : SocialWorkImage(
                       key: ValueKey('social-work-tile-image-${work.id}'),
@@ -545,7 +548,9 @@ class SocialWorkTile extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          '${work.imageUrls.length}쪽 · ${socialTopicLabel(work.topic)}',
+          work.isRestricted
+              ? '공개 제한'
+              : '${work.imageUrls.length}쪽 · ${socialTopicLabel(work.topic)}',
           style: TextStyle(
             fontSize: 12,
             color: SnapFitColors.textSecondaryOf(context),
@@ -564,10 +569,12 @@ class SocialReactions extends StatelessWidget {
     required this.onSave,
     required this.onComments,
     this.busy = false,
+    this.compact = false,
   });
   final SocialWork work;
   final VoidCallback onLike, onSave, onComments;
   final bool busy;
+  final bool compact;
 
   Widget _reaction(
     BuildContext context, {
@@ -594,9 +601,12 @@ class SocialReactions extends StatelessWidget {
         child: TextButton.icon(
           onPressed: enabled ? onPressed : null,
           style: TextButton.styleFrom(
-            minimumSize: const Size(0, 48),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-            backgroundColor: selected
+            minimumSize: Size(44, compact ? 44 : 48),
+            padding: EdgeInsets.symmetric(
+              horizontal: compact ? 6 : 12,
+              vertical: compact ? 9 : 11,
+            ),
+            backgroundColor: selected && !compact
                 ? SocialStyle.paper(context)
                 : Colors.transparent,
             shape: RoundedRectangleBorder(
@@ -606,12 +616,12 @@ class SocialReactions extends StatelessWidget {
                 ? SocialStyle.accent(context)
                 : SnapFitColors.textPrimaryOf(context),
           ),
-          icon: Icon(icon, size: 22),
+          icon: Icon(icon, size: compact ? 24 : 22),
           label: Wrap(
             spacing: 5,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Text(label, style: const TextStyle(fontSize: 13)),
+              if (!compact) Text(label, style: const TextStyle(fontSize: 13)),
               Text(
                 '$count',
                 style: const TextStyle(
@@ -665,12 +675,14 @@ class SocialReactions extends StatelessWidget {
         button: true,
         enabled: !busy,
         toggled: work.isSaved,
-        label: work.isSaved ? '작품 저장 해제' : '작품 저장',
+        label:
+            '${work.isMoment ? '기록' : '앨범'} ${work.isSaved ? '저장 해제' : '저장'}',
         onTap: busy ? null : onSave,
         child: ExcludeSemantics(
           child: IconButton(
             constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-            tooltip: work.isSaved ? '작품 저장 해제' : '작품 저장',
+            tooltip:
+                '${work.isMoment ? '기록' : '앨범'} ${work.isSaved ? '저장 해제' : '저장'}',
             onPressed: busy ? null : onSave,
             icon: Icon(
               work.isSaved ? Icons.bookmark : Icons.bookmark_border,
@@ -687,7 +699,5 @@ String socialDate(DateTime date) =>
     '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
 
 void socialError(BuildContext context, {String? message}) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(message ?? '처리하지 못했어요. 잠시 후 다시 시도해 주세요.')),
-  );
+  context.showSnack(message ?? '처리하지 못했어요. 잠시 후 다시 시도해 주세요.');
 }

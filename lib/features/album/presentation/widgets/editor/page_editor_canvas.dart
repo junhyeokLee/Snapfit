@@ -5,6 +5,7 @@ import '../../../../../core/constants/cover_size.dart';
 import '../../../domain/entities/layer.dart';
 import '../../controllers/layer_builder.dart';
 import '../../controllers/layer_interaction_manager.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 /// 페이지 편집 캔버스
 class PageEditorCanvas extends StatelessWidget {
@@ -18,6 +19,10 @@ class PageEditorCanvas extends StatelessWidget {
   final Color? backgroundColor;
   final bool isCover;
   final bool flatPresentation;
+
+  /// Portable artwork may use a logical size other than the album's 500px
+  /// reference width. Its layers, guides, and hit targets must share that size.
+  final Size? logicalCanvasSize;
 
   /// Editor-only actions; absent callbacks keep an empty page read-only.
   final VoidCallback? onAddPhoto;
@@ -36,6 +41,7 @@ class PageEditorCanvas extends StatelessWidget {
     this.backgroundColor,
     this.isCover = false,
     this.flatPresentation = false,
+    this.logicalCanvasSize,
     this.onAddPhoto,
     this.onChooseDesign,
     this.emptyPageActionsEnabled = true,
@@ -56,9 +62,11 @@ class PageEditorCanvas extends StatelessWidget {
     final double coverLogicalW = kCoverReferenceWidth;
     final double coverLogicalH = coverLogicalW / physicalAspect;
 
-    final Size effectiveBaseSize = isCover
-        ? Size(coverLogicalW, coverLogicalH)
-        : Size(innerLogicalW, innerLogicalH);
+    final Size effectiveBaseSize =
+        logicalCanvasSize ??
+        (isCover
+            ? Size(coverLogicalW, coverLogicalH)
+            : Size(innerLogicalW, innerLogicalH));
 
     // 커버·내지 공통 스타일 (책 형태 동일하게)
     // 오른쪽 모서리만 둥글게 (왼쪽은 spine/제본 부분이므로 직각)
@@ -113,10 +121,7 @@ class PageEditorCanvas extends StatelessWidget {
               return Center(
                 child: Semantics(
                   label: '빈 페이지',
-                  child: Icon(
-                    Icons.photo_library_outlined,
-                    size: 32,
-                    color: SnapFitColors.deepCharcoal.withValues(alpha: .24),
+                  child: ExperienceIcon('Image', size: 32, color: SnapFitColors.deepCharcoal.withValues(alpha: .24),
                   ),
                 ),
               );
@@ -279,7 +284,7 @@ class _EmptyPageGuide extends StatelessWidget {
                 key: const ValueKey('empty-page-actions-menu'),
                 enabled: enabled,
                 tooltip: '빈 페이지 · 사진 넣기 또는 디자인 고르기',
-                icon: Icon(Icons.add, color: colors.onSurface),
+                icon: ExperienceIcon('Plus', color: colors.onSurface),
                 onSelected: (action) => switch (action) {
                   _EmptyPageAction.photo => onAddPhoto?.call(),
                   _EmptyPageAction.design => onChooseDesign?.call(),

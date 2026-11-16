@@ -11,12 +11,14 @@ import '../../features/album/data/gallery/browser_photo_asset.dart';
 import '../../features/album/data/gallery/browser_photo_picker.dart';
 import '../../features/profile/domain/order_visibility_owner.dart';
 import 'experience_form_style.dart';
+import '../../shared/widgets/experience_icon.dart';
 
 Future<List<AssetEntity>?> showBrowserPhotosSelectionSheet(
   BuildContext context, {
   required int maxSelection,
 }) => showDialog<List<AssetEntity>>(
   context: context,
+  useRootNavigator: false,
   barrierDismissible: false,
   builder: (dialogContext) => Dialog(
     backgroundColor: WebPalette.of(dialogContext).surface,
@@ -265,11 +267,41 @@ class _BrowserPhotoSelectionSheetState
   Widget build(BuildContext context) {
     ref.watch(visibleOrderOwnerProvider);
     if (!_ownerCurrent || _repository == null) {
-      return const SizedBox(
-        height: 220,
-        child: Center(child: Text('로그인한 계정이 변경됐어요. 사진 선택창을 닫고 다시 열어주세요.')),
+      return Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              _repository == null ? '사진 선택창을 열 수 없어요' : '로그인한 계정이 변경됐어요',
+              style: ExperienceFormStyle.text(
+                context,
+                20,
+                weight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '사진 선택창을 닫고 다시 열어주세요.',
+              style: ExperienceFormStyle.text(context, 14, secondary: true),
+            ),
+            const SizedBox(height: 24),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton(
+                // 계정이 바뀐 요청은 결과를 사용할 수 없으므로 읽기 완료를 기다리지 않고 닫는다.
+                onPressed: () => Navigator.pop(context),
+                child: const Text('닫기'),
+              ),
+            ),
+          ],
+        ),
       );
     }
+    final selectionOrder = {
+      for (final (index, id) in _selected.indexed) id: index + 1,
+    };
     return SizedBox(
       height: MediaQuery.sizeOf(context).height * .88,
       child: Column(
@@ -291,7 +323,7 @@ class _BrowserPhotoSelectionSheetState
                 IconButton(
                   onPressed: _busy ? null : () => Navigator.pop(context),
                   tooltip: '사진 선택 닫기',
-                  icon: const Icon(Icons.close),
+                  icon: const ExperienceIcon('X'),
                 ),
               ],
             ),
@@ -312,7 +344,7 @@ class _BrowserPhotoSelectionSheetState
                         FilledButton.icon(
                           key: const ValueKey('browser-photo-pick-files'),
                           onPressed: _busy ? null : _pick,
-                          icon: const Icon(Icons.add_photo_alternate_outlined),
+                          icon: const ExperienceIcon('ImagePlus'),
                           label: Text(_busy ? '사진 읽는 중' : '사진 파일 선택'),
                         ),
                         Text(
@@ -396,7 +428,7 @@ class _BrowserPhotoSelectionSheetState
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.file_upload_outlined, size: 42),
+                            const ExperienceIcon('Upload', size: 42),
                             const SizedBox(height: 12),
                             Text(
                               _hovering
@@ -420,10 +452,12 @@ class _BrowserPhotoSelectionSheetState
                       itemCount: _photos.length,
                       itemBuilder: (context, index) {
                         final photo = _photos[index],
-                            selected = _selected.contains(_photos[index].id);
+                            number = selectionOrder[photo.id] ?? 0,
+                            selected = number > 0;
                         return Semantics(
                           label:
-                              '${photo.title ?? '사진'} ${photo.width}×${photo.height}',
+                              '${photo.title ?? '사진'} ${photo.width}×${photo.height}'
+                              '${selected ? ', $number번째 선택' : ''}',
                           selected: selected,
                           button: true,
                           child: InkWell(
@@ -477,9 +511,19 @@ class _BrowserPhotoSelectionSheetState
                                     color: Colors.black26,
                                     alignment: Alignment.topRight,
                                     padding: const EdgeInsets.all(8),
-                                    child: const Icon(
-                                      Icons.check_circle,
-                                      color: Colors.white,
+                                    child: ExcludeSemantics(
+                                      child: CircleAvatar(
+                                        radius: 12,
+                                        backgroundColor: Colors.white,
+                                        foregroundColor: Colors.black87,
+                                        child: Text(
+                                          '$number',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
                               ],
@@ -520,8 +564,9 @@ class _BrowserPhotoSelectionSheetState
                       : () {
                           if (!_ownerCurrent) return;
                           Navigator.pop(context, <AssetEntity>[
-                            for (final photo in _photos)
-                              if (_selected.contains(photo.id)) photo,
+                            // 선택 순서는 자동 채우기의 지면 순서로 이어진다.
+                            for (final id in _selected)
+                              _photos.firstWhere((photo) => photo.id == id),
                           ]);
                         },
                   child: Text('${_selected.length}장 선택 완료'),

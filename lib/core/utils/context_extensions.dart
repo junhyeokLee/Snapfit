@@ -17,13 +17,15 @@ extension SnapFitContextSnackBars on BuildContext {
   }
 
   void showErrorSnack(String message) {
+    final colors = Theme.of(this).colorScheme;
     ScaffoldMessenger.of(this)
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: Text(message),
+          // 오류 배경에는 테마의 대응 본문 색을 함께 사용한다.
+          content: Text(message, style: TextStyle(color: colors.onError)),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: Theme.of(this).colorScheme.error,
+          backgroundColor: colors.error,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),

@@ -7,6 +7,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:snap_fit/features/album/presentation/views/print_order_checkout_screen.dart';
+import 'package:snap_fit/features/album/presentation/widgets/home/home_album_cover_thumbnail.dart';
+import 'package:snap_fit/core/commerce/commerce_policy.dart';
+import 'dart:convert';
 import 'package:snap_fit/features/album/presentation/views/print_order_complete_screen.dart';
 import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
 import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
@@ -106,12 +109,12 @@ Map<String, dynamic> _snapshot({String text = 'Our album'}) => {
   'pages': [],
 };
 
-PrintCheckoutReadiness _readiness({bool canPay = false, int amount = 49900}) =>
+PrintCheckoutReadiness _readiness({bool canPay = true, int amount = 49900}) =>
     PrintCheckoutReadiness(
       canPay: canPay,
       status: canPay ? 'READY' : 'PREPARING',
       reasonCode: canPay ? '' : 'print_sales_not_ready',
-      message: '정식 주문 서비스를 준비하고 있어요.',
+      message: canPay ? '' : '정식 주문 서비스를 준비하고 있어요.',
       quote: _quote(amount: amount),
       environment: canPay ? 'production' : 'unavailable',
     );
@@ -289,6 +292,124 @@ void main() {
   }
 
   testWidgets(
+    'design: summary reuses the verified album cover including map documents',
+    (tester) async {
+      await pump(tester);
+      final preview = find.byType(HomeAlbumCoverThumbnail);
+      expect(preview, findsOneWidget);
+      final album = tester.widget<HomeAlbumCoverThumbnail>(preview).album;
+      expect(album.id, 7);
+      expect(
+        jsonDecode(album.coverLayersJson),
+        _snapshot()['album']['cover_layers_json'],
+      );
+      expect(
+        find.byKey(const ValueKey('print-checkout-album-summary')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('design: changed review removes the old album cover', (
+    tester,
+  ) async {
+    await pump(tester);
+    expect(find.byType(HomeAlbumCoverThumbnail), findsOneWidget);
+    when(
+      () => orders.fetchPrintPreviewSnapshot(albumId: 7),
+    ).thenAnswer((_) async => _snapshot(text: '다른 표지'));
+    await tester.tap(find.byTooltip('최신 주문 정보 확인'));
+    await tester.pumpAndSettle();
+    expect(find.byType(HomeAlbumCoverThumbnail), findsNothing);
+    expect(find.textContaining('앨범 내용이나 제작 구성이 바뀌었어요.'), findsOneWidget);
+  });
+
+  testWidgets(
+    'design: production and total stay together and detail disclosure never grants consent',
+    (tester) async {
+      await pump(tester);
+      await validDelivery(tester);
+      await review(tester);
+      final summary = find.byKey(
+        const ValueKey('print-checkout-order-summary'),
+      );
+      expect(summary, findsOneWidget);
+      expect(
+        find.descendant(of: summary, matching: find.text('제작 구성')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: summary, matching: find.text('49,900원')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: summary, matching: find.text('기본 배송비 포함')),
+        findsOneWidget,
+      );
+      final details = find.byKey(
+        const ValueKey('print-checkout-custom-production-details'),
+      );
+      await tester.ensureVisible(details);
+      await tester.pumpAndSettle();
+      expect(find.text(CommercePolicy.customProductionConsent), findsNothing);
+      await tester.tap(details);
+      await tester.pumpAndSettle();
+      expect(find.text(CommercePolicy.customProductionConsent), findsOneWidget);
+      for (final key in [
+        'print-checkout-agreement',
+        'print-checkout-policy-agreement',
+        'print-checkout-custom-production-agreement',
+      ]) {
+        final checkbox = find.byKey(ValueKey(key));
+        expect(tester.widget<CheckboxListTile>(checkbox).value, isFalse);
+      }
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.widgetWithText(FilledButton, '49,900원 결제하기'),
+            )
+            .onPressed,
+        isNull,
+      );
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
+    'priority: direct closed checkout asks for no delivery and can refresh into READY',
+    (tester) async {
+      var ready = false;
+      var paymentCalls = 0;
+      when(
+        () => orders.fetchPrintCheckoutReadiness(albumId: 7),
+      ).thenAnswer((_) async => _readiness(canPay: ready));
+      await pump(
+        tester,
+        onPay: (_) async {
+          paymentCalls++;
+          return null;
+        },
+      );
+      expect(find.byKey(const ValueKey('print-recipient-name')), findsNothing);
+      expect(find.text('정식 주문 서비스를 준비하고 있어요.'), findsOneWidget);
+      expect(find.text('주문 내용 확인하기'), findsNothing);
+      expect(paymentCalls, 0);
+      ready = true;
+      await tester.tap(find.byTooltip('최신 주문 정보 확인'));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('print-recipient-name')),
+        findsOneWidget,
+      );
+      expect(find.text('주문 내용 확인하기'), findsOneWidget);
+      expect(paymentCalls, 0);
+      verifyNever(() => orders.fetchMyOrders());
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
     'content review alone cannot pay; policy and custom production choices are separately required',
     (tester) async {
       when(
@@ -340,7 +461,7 @@ void main() {
       expect(submitted?.consent?.complete, isTrue);
       expect(
         submitted?.consent?.toJson()['version'],
-        'PRINT_ORDER_CONSENT_2026_10_19',
+        'PRINT_ORDER_CONSENT_2026_10_30',
       );
       expect(tester.takeException(), isNull);
     },
@@ -372,8 +493,8 @@ void main() {
         final payment = find.byKey(const ValueKey('print-checkout-payment'));
         await tester.ensureVisible(payment);
         await tester.pumpAndSettle();
-        expect(tester.widget<FilledButton>(payment).onPressed, isNull);
-        expect(find.text('결제 준비 중'), findsOneWidget);
+        expect(tester.widget<FilledButton>(payment).onPressed, isNotNull);
+        expect(find.text('49,900원 결제하기'), findsOneWidget);
         expect(
           tester.getBottomRight(payment).dy,
           lessThanOrEqualTo(size.height - 24),
@@ -470,6 +591,16 @@ void main() {
       expect(
         (await PrintPaymentRecoveryStore().read('fixture-owner'))?.sdkStarted,
         isFalse,
+      );
+      await tester.scrollUntilVisible(
+        find.text('준비 주문 취소 요청'),
+        100,
+        scrollable: find
+            .descendant(
+              of: find.byType(ListView).first,
+              matching: find.byType(Scrollable),
+            )
+            .first,
       );
       await tester.ensureVisible(find.text('준비 주문 취소 요청'));
       await tester.tap(find.text('준비 주문 취소 요청'));
@@ -714,8 +845,11 @@ void main() {
         () => orders.fetchPrintCheckoutReadiness(albumId: 7),
       ).thenAnswer((_) async => _readiness(canPay: ready));
       await pump(tester, onPay: (_) async => null);
-      await validDelivery(tester);
+      expect(find.byKey(const ValueKey('print-recipient-name')), findsNothing);
       ready = true;
+      await tester.tap(find.byTooltip('최신 주문 정보 확인'));
+      await tester.pumpAndSettle();
+      await validDelivery(tester);
       await review(tester);
       expect(find.text('주문 내용 확인'), findsOneWidget);
       expect(find.textContaining('결제 전에 인쇄 PDF를 만들고'), findsOneWidget);
@@ -725,32 +859,29 @@ void main() {
   );
 
   testWidgets(
-    'closed checkout reviews delivery and price without payment or a fabricated order',
+    'order closing after entry hides delivery and reopening retains entered details',
     (tester) async {
-      var paymentCalls = 0;
+      var ready = true, paymentCalls = 0;
+      when(
+        () => orders.fetchPrintCheckoutReadiness(albumId: 7),
+      ).thenAnswer((_) async => _readiness(canPay: ready));
       await pump(
         tester,
         onPay: (_) async {
           paymentCalls++;
-          return _receipt();
+          return null;
         },
       );
       await validDelivery(tester);
-      await review(tester);
-      expect(find.text('주문 내용 확인'), findsOneWidget);
-      expect(find.text('49,900원'), findsOneWidget);
-      expect(find.text('기본 배송비 포함'), findsOneWidget);
-      await agree(tester);
-      final payment = find.byKey(const ValueKey('print-checkout-payment'));
-      await tester.ensureVisible(payment);
-      expect(tester.widget<FilledButton>(payment).onPressed, isNull);
-      expect(find.text('결제 준비 중'), findsOneWidget);
-      expect(find.byType(PrintOrderCompleteScreen), findsNothing);
-      expect(paymentCalls, 0);
-      verifyNever(() => orders.fetchMyOrders());
-      await tester.ensureVisible(find.text('수정'));
+      ready = false;
+      await tester.tap(find.byTooltip('최신 주문 정보 확인'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('수정'));
+      expect(find.byKey(const ValueKey('print-recipient-name')), findsNothing);
+      expect(find.text('정식 주문 서비스를 준비하고 있어요.'), findsOneWidget);
+      expect(find.text('주문 내용 확인하기'), findsNothing);
+      expect(paymentCalls, 0);
+      ready = true;
+      await tester.tap(find.byTooltip('최신 주문 정보 확인'));
       await tester.pumpAndSettle();
       expect(
         tester
@@ -770,6 +901,7 @@ void main() {
             .text,
         '테스트 동 호수',
       );
+      verifyNever(() => orders.fetchMyOrders());
       expect(tester.takeException(), isNull);
     },
   );
@@ -866,6 +998,16 @@ void main() {
           opens++;
           return const PortOneSdkResult.canceled();
         },
+      );
+      await tester.scrollUntilVisible(
+        find.textContaining('서버 저장 합성 수령인'),
+        120,
+        scrollable: find
+            .descendant(
+              of: find.byType(ListView).first,
+              matching: find.byType(Scrollable),
+            )
+            .first,
       );
       expect(find.textContaining('서버 저장 합성 수령인'), findsOneWidget);
       expect(
@@ -1062,6 +1204,71 @@ void main() {
       verify(() => orders.fetchPrintCheckoutReadiness(albumId: 7)).called(1);
     },
   );
+
+  for (final scenario in [
+    (name: 'compact', size: const Size(320, 568), scale: 1.0),
+    (name: 'large text', size: const Size(390, 844), scale: 1.6),
+  ]) {
+    testWidgets(
+      'native ${scenario.name} checkout reveals each first invalid delivery field',
+      (tester) async {
+        var paymentCalls = 0;
+        await pump(
+          tester,
+          size: scenario.size,
+          textScale: scenario.scale,
+          onPay: (_) async {
+            paymentCalls++;
+            return null;
+          },
+        );
+        await field(tester, 'print-address-line2', '101동 202호');
+        await field(tester, 'print-delivery-memo', '문 앞에 놓아주세요');
+
+        for (final invalid in [
+          ('print-recipient-name', '받는 분 이름을 입력해주세요.', '테스트 수령인'),
+          (
+            'print-recipient-phone',
+            '010으로 시작하는 휴대폰 번호 11자리를 입력해주세요.',
+            '01000000000',
+          ),
+          ('print-zip-code', '우편번호 5자리를 입력해주세요.', '12345'),
+          ('print-address-line1', '도로명 주소를 입력해주세요.', '서울 테스트도로 1'),
+        ]) {
+          await review(tester);
+          // 검증 후 테스트가 스크롤하지 않아야 실제 화면의 자동 이동을 확인한다.
+          expect(
+            find.byKey(ValueKey(invalid.$1)).hitTestable(),
+            findsOneWidget,
+          );
+          expect(find.text(invalid.$2).hitTestable(), findsOneWidget);
+          expect(find.text('주문 내용 확인'), findsNothing);
+          expect(paymentCalls, 0);
+          expect(tester.takeException(), isNull);
+          await field(tester, invalid.$1, invalid.$3);
+        }
+
+        verify(() => orders.fetchPrintCheckoutReadiness(albumId: 7)).called(1);
+        verify(() => orders.fetchPrintPreviewSnapshot(albumId: 7)).called(1);
+        for (final entry in {
+          'print-address-line2': '101동 202호',
+          'print-delivery-memo': '문 앞에 놓아주세요',
+        }.entries) {
+          expect(
+            tester
+                .widget<TextFormField>(find.byKey(ValueKey(entry.key)))
+                .controller!
+                .text,
+            entry.value,
+          );
+        }
+        await review(tester);
+        expect(find.text('주문 내용 확인'), findsOneWidget);
+        expect(paymentCalls, 0);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 
   testWidgets(
     'revised album blocks the old review and leaves delivery details intact',
@@ -1316,7 +1523,7 @@ void main() {
   testWidgets(
     'failed readiness can retry without discarding the delivery form',
     (tester) async {
-      var failing = true;
+      var failing = false;
       when(() => orders.fetchPrintCheckoutReadiness(albumId: 7)).thenAnswer((
         _,
       ) async {
@@ -1324,9 +1531,12 @@ void main() {
         return _readiness();
       });
       await pump(tester);
-      expect(find.textContaining('주문 준비 상태를 확인하지 못했습니다'), findsOneWidget);
       await validDelivery(tester);
-      await review(tester);
+      failing = true;
+      await tester.tap(find.byTooltip('최신 주문 정보 확인'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('주문 준비 상태를 확인하지 못했습니다'), findsOneWidget);
+      expect(find.byKey(const ValueKey('print-recipient-name')), findsNothing);
       expect(find.text('주문 내용 확인'), findsNothing);
       failing = false;
       await tester.tap(find.byTooltip('최신 주문 정보 확인'));
@@ -1387,6 +1597,225 @@ void main() {
       verify(() => orders.searchAddress(keyword: '테스트도로')).called(1);
       verifyNever(() => orders.fetchMyOrders());
       expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
+    'verified production receipt opens completion without an unsafe second receipt lookup',
+    (tester) async {
+      const rid = '00000000-0000-4000-8000-000000000000';
+      const pid = 'SFP_00000000-0000-4000-8000-000000000000';
+      PrintPaymentInvoice invoice({bool paid = false}) =>
+          PrintPaymentInvoice.fromJson({
+            'environment': 'production',
+            'orderId': 'paid-order',
+            'requestId': rid,
+            'paymentId': pid,
+            'albumId': 7,
+            'totalAmount': 49900,
+            'reviewedRevision': printCheckoutRevision(_snapshot()),
+            'reviewedSpecRevision': printSpecRevision(_quote().printSpec),
+            'printPackageReady': true,
+            'status': paid ? 'PAYMENT_COMPLETED' : 'PREPARED',
+            'verifiedPaid': paid,
+            if (!paid)
+              'sdkRequest': {
+                'status': 'READY',
+                'environment': 'production',
+                'storeId': 'store-00000000-0000-4000-8000-000000000001',
+                'channelKey':
+                    'channel-key-00000000-0000-4000-8000-000000000002',
+                'paymentId': pid,
+                'orderName': '합성 테스트 앨범',
+                'totalAmount': 49900,
+                'currency': 'KRW',
+              },
+          });
+      when(
+        () => orders.preparePrintPayment(
+          requestId: rid,
+          request: any(named: 'request'),
+        ),
+      ).thenAnswer((_) async => invoice());
+      when(
+        () => orders.confirmPrintPayment(pid),
+      ).thenAnswer((_) async => invoice(paid: true));
+      when(
+        () => orders.fetchPrintPaidReceipt(
+          orderId: 'paid-order',
+          albumId: 7,
+          expectedAmount: 49900,
+          expectedPaymentId: pid,
+        ),
+      ).thenAnswer((_) async => _receipt());
+      // A second lookup must not turn an authenticated paid receipt into failure.
+      when(
+        () => orders.fetchPrintPaidReceipt(
+          orderId: 'paid-order',
+          albumId: 7,
+          expectedAmount: 49900,
+        ),
+      ).thenThrow(
+        StateError('synthetic connection failure after verified payment'),
+      );
+      when(() => orders.fetchMyPrintOrder('paid-order')).thenAnswer(
+        (_) async => OrderHistoryItem(
+          orderId: 'paid-order',
+          title: 'Our album',
+          amount: 49900,
+          albumId: 7,
+          status: 'PAYMENT_COMPLETED',
+          statusLabel: '결제완료',
+          progress: .25,
+          orderedAt: DateTime.utc(2026, 10, 13),
+          paymentConfirmedAt: DateTime.utc(2026, 10, 13, 1),
+        ),
+      );
+      var launches = 0;
+      await pump(
+        tester,
+        launch: (_, sdk) async {
+          launches++;
+          return const PortOneSdkResult.canceled();
+        },
+      );
+      await validDelivery(tester);
+      await review(tester);
+      await agree(tester);
+      final payment = find.byKey(const ValueKey('print-checkout-payment'));
+      await tester.ensureVisible(payment);
+      await tester.pumpAndSettle();
+      await tester.tap(payment);
+      await tester.pumpAndSettle();
+      expect(find.byType(PrintOrderCompleteScreen), findsOneWidget);
+      expect(find.text('결제가 확인됐어요'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('print-checkout-payment')),
+        findsNothing,
+      );
+      expect(find.textContaining('결제 결과를 확인하지 못했습니다'), findsNothing);
+      expect(launches, 1);
+      expect(await PrintPaymentRecoveryStore().read('fixture-owner'), isNull);
+      verify(
+        () => orders.fetchPrintPaidReceipt(
+          orderId: 'paid-order',
+          albumId: 7,
+          expectedAmount: 49900,
+          expectedPaymentId: pid,
+        ),
+      ).called(1);
+      verifyNever(
+        () => orders.fetchPrintPaidReceipt(
+          orderId: 'paid-order',
+          albumId: 7,
+          expectedAmount: 49900,
+        ),
+      );
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpAndSettle();
+    },
+  );
+
+  for (final viewport in [
+    (size: const Size(390, 844), scale: 1.0),
+    (size: const Size(320, 568), scale: 1.8),
+    (size: const Size(844, 390), scale: 1.8),
+  ]) {
+    testWidgets(
+      'required confirmations count and reveal the next unchecked item at ${viewport.size} scale=${viewport.scale}',
+      (tester) async {
+        await pump(tester, size: viewport.size, textScale: viewport.scale);
+        await validDelivery(tester);
+        await review(tester);
+        final help = find.byKey(const ValueKey('print-checkout-consent-help'));
+        final payment = find.byKey(const ValueKey('print-checkout-payment'));
+        final keys = [
+          'print-checkout-agreement',
+          'print-checkout-policy-agreement',
+          'print-checkout-custom-production-agreement',
+        ];
+        for (var index = 0; index < keys.length; index++) {
+          expect(find.text('필수 확인 ${3 - index}개 남음 · 확인하기'), findsOneWidget);
+          await tester.ensureVisible(help);
+          await tester.pumpAndSettle();
+          await tester.tap(help);
+          await tester.pumpAndSettle();
+          final item = find.byKey(ValueKey(keys[index]));
+          final checkbox = find.descendant(
+            of: item,
+            matching: find.byType(Checkbox),
+          );
+          expect(checkbox.hitTestable(), findsOneWidget);
+          expect(tester.widget<CheckboxListTile>(item).value, isFalse);
+          expect(tester.widget<FilledButton>(payment).onPressed, isNull);
+          await tester.tap(checkbox);
+          await tester.pumpAndSettle();
+        }
+        expect(help, findsNothing);
+        expect(tester.widget<FilledButton>(payment).onPressed, isNotNull);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+        await tester.pumpAndSettle();
+      },
+    );
+  }
+
+  testWidgets(
+    'required confirmation helper does not contradict a loading or unavailable checkout',
+    (tester) async {
+      await pump(tester);
+      await validDelivery(tester);
+      await review(tester);
+      final help = find.byKey(const ValueKey('print-checkout-consent-help'));
+      expect(help, findsOneWidget);
+      final refreshed = Completer<PrintCheckoutReadiness>();
+      when(
+        () => orders.fetchPrintCheckoutReadiness(albumId: 7),
+      ).thenAnswer((_) => refreshed.future);
+      await tester.tap(find.byTooltip('최신 주문 정보 확인'));
+      await tester.pump();
+      expect(help, findsNothing);
+      final payment = find.byKey(const ValueKey('print-checkout-payment'));
+      expect(tester.widget<FilledButton>(payment).onPressed, isNull);
+      refreshed.complete(_readiness(canPay: false));
+      await tester.pumpAndSettle();
+      expect(help, findsNothing);
+      expect(tester.widget<FilledButton>(payment).onPressed, isNull);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpAndSettle();
+    },
+  );
+
+  testWidgets(
+    'required confirmation helper can reach a lazily unbuilt review section',
+    (tester) async {
+      await pump(
+        tester,
+        home: PrintOrderCheckoutScreen(
+          albumId: 7,
+          albumTitle: List.filled(100, '오래 기억할 순간').join(' '),
+          initialQuote: _quote(),
+          reviewedRevision: printCheckoutRevision(_snapshot()),
+        ),
+      );
+      await validDelivery(tester);
+      await review(tester);
+      final item = find.byKey(const ValueKey('print-checkout-agreement'));
+      expect(item, findsNothing);
+      final help = find.byKey(const ValueKey('print-checkout-consent-help'));
+      expect(help.hitTestable(), findsOneWidget);
+      await tester.tap(help);
+      await tester.pumpAndSettle();
+      final checkbox = find.descendant(
+        of: item,
+        matching: find.byType(Checkbox),
+      );
+      expect(checkbox.hitTestable(), findsOneWidget);
+      expect(tester.widget<CheckboxListTile>(item).value, isFalse);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpAndSettle();
     },
   );
 }

@@ -1,0 +1,140 @@
+{
+  "date": "2026-11-12",
+  "timezone": "Asia/Seoul",
+  "status": "implemented and locally verified",
+  "functionalTests": {
+    "passed": 100,
+    "failed": 0,
+    "skipped": 0,
+    "suites": [
+      {
+        "suite": "reward",
+        "passed": 30,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/reward.log"
+      },
+      {
+        "suite": "direct",
+        "passed": 12,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/direct.log"
+      },
+      {
+        "suite": "format",
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/format.log"
+      },
+      {
+        "suite": "choices",
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/choices.log"
+      },
+      {
+        "suite": "builder",
+        "passed": 42,
+        "failed": 0,
+        "skipped": 0,
+        "log": "logs/builder.log"
+      }
+    ]
+  },
+  "additionalPhotoFrameRegression": {
+    "passed": 1,
+    "failed": 0,
+    "scope": "Default book frame preserves raw images using contain; inconsistent month/date fixture is excluded from full-journal visual audit"
+  },
+  "afterCaptureScenarios": {
+    "passed": 4,
+    "syntheticLocalData": true,
+    "realBundledPhotosAndFonts": true,
+    "realAlbumWrites": false
+  },
+  "acceptedVisualEvidence": [
+    "compose/compose-notebook-light.png",
+    "saved-before/direct-saved-preview.png",
+    "month/monthly-phone-top.png",
+    "month/monthly-phone-middle.png",
+    "month/monthly-compact-top.png",
+    "month/monthly-compact-cta.png",
+    "after/month/monthly-phone-cta.png",
+    "after/month/monthly-compact-cta.png",
+    "after/saved/direct-saved-preview.png",
+    "after/existing/append-light.png"
+  ],
+  "excludedVisualEvidence": [
+    {
+      "path": "after/month/monthly-phone-middle.png",
+      "reason": "Native offscreen capture omitted the fixed header; final-cta image has a complete header and is used instead"
+    },
+    {
+      "path": "after/month/monthly-phone-top.png",
+      "reason": "Initial candidate choices are still loading; ready final-cta image is used"
+    },
+    {
+      "path": "after/month/monthly-compact-top.png",
+      "reason": "Initial candidate choices are still loading; ready final-cta image is used"
+    },
+    {
+      "path": "month/monthly-phone-cta.png",
+      "reason": "Fixed header omitted in native capture; complete compact CTA and phone middle evidence used"
+    },
+    {
+      "path": "journal/journal-light.png",
+      "reason": "Historical fixture records and displayed device month differ; photo-frame regression only, not a journal UX finding"
+    },
+    {
+      "path": "compose/compose-recovered-light.png",
+      "reason": "Fixed header omitted in native capture; not used for full-layout findings"
+    }
+  ],
+  "metrics": {
+    "phone": {
+      "beforeInitialAdditionalScrollPixels": 4356.0,
+      "beforeInitialAdditionalViewports": 5.5561224489795915,
+      "afterSelectionAdditionalScrollPixels": 0.0,
+      "afterCtaInBody": false
+    },
+    "compact": {
+      "beforeInitialAdditionalScrollPixels": 3972.0,
+      "beforeInitialAdditionalViewports": 7.818897637795276,
+      "afterSelectionAdditionalScrollPixels": 0.0,
+      "afterCtaInBody": false
+    }
+  },
+  "analysis": {
+    "errors": 0,
+    "warnings": 0,
+    "infos": 2,
+    "existingRule": "no_logic_in_create_state",
+    "log": "logs/analysis.log"
+  },
+  "independentReview": {
+    "completed": true,
+    "findingsFixed": [
+      "keyboard overlays footer",
+      "partial recovery journal is not a full month"
+    ],
+    "unresolved": 0
+  },
+  "verificationNotes": [
+    "Updated stale tests expecting raw-photo frame ratio instead of the current selected book format",
+    "Updated stale append test expecting feed caption to create an extra printed page; current policy excludes feed body from albums",
+    "Explicitly disposed three open-composer test containers before binding invariants to release the midnight timer",
+    "No whole-app build, live server/account/album operation, actual message, order or payment"
+  ],
+  "sha256": {
+    "lib/features/moments/presentation/views/monthly_moment_preview_screen.dart": "affca0dded369b8ebf83ba985c09c33f0edd0d2a2aea49d628cca4b667ea17b9",
+    "lib/features/moments/presentation/views/moment_saved_preview_screen.dart": "1a14b6d33712f16dab98610cdf207b6c73b462792fd4dddb9e38a723991bd0e7",
+    "lib/features/moments/presentation/moments_navigation.dart": "7983ace24c1e71ea093b574ea08cf1f27049b946597fd556ce3e50b78a2cba3a",
+    "lib/features/moments/presentation/views/moments_screen.dart": "4b94a6cac8c43ffe3f7d382cd22251f34d9fc099fa25582c92f90e89d8fd61ed",
+    "test/widget/moments_reward_flow_test.dart": "1740fef4daf8d368f3abf79898b3ad3d21cdefe880cc4d099ebbb106cbeca4b5",
+    "test/widget/moment_draft_entry_navigation_test.dart": "a24553b6aa485c41a741a433ee84d3680e004da27b8b88ee1217921477a15fbb",
+    "test/widget/moments_retention_layout_test.dart": "d982859a3d7bfa759a5003b31fd01c20fd342e5711803e1c64b6776230f44b29"
+  }
+}

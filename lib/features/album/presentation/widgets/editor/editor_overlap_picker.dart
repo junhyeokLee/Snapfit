@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../domain/entities/layer.dart';
 import '../../controllers/layer_interaction_manager.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 enum _OrderAction { forward, backward }
 
@@ -78,7 +79,7 @@ class EditorOverlapPicker extends StatelessWidget {
                       ),
                     ),
                     if (choices[i].id == interaction.selectedLayerId)
-                      const Icon(Icons.check, size: 18),
+                      const ExperienceIcon('Check', size: 18),
                   ],
                 ),
               ),
@@ -88,7 +89,7 @@ class EditorOverlapPicker extends StatelessWidget {
               enabled: interaction.canMoveSelectedLayer(1, paintOrder: ordered),
               child: const ListTile(
                 dense: true,
-                leading: Icon(Icons.arrow_upward),
+                leading: ExperienceIcon('ArrowUp'),
                 title: Text('앞으로'),
               ),
             ),
@@ -100,7 +101,7 @@ class EditorOverlapPicker extends StatelessWidget {
               ),
               child: const ListTile(
                 dense: true,
-                leading: Icon(Icons.arrow_downward),
+                leading: ExperienceIcon('ArrowDown'),
                 title: Text('뒤로'),
               ),
             ),
@@ -111,13 +112,13 @@ class EditorOverlapPicker extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.layers_outlined, size: 18),
+              const ExperienceIcon('Layers2', size: 18),
               const SizedBox(width: 6),
               Text(
                 '겹친 요소 ${choices.length}개',
                 style: ExperienceFormStyle.text(context, 12),
               ),
-              const Icon(Icons.expand_more, size: 18),
+              const ExperienceIcon('ChevronDown', size: 18),
             ],
           ),
         ),

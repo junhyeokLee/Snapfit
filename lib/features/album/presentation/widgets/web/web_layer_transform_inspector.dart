@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../../../../shared/web/web_design.dart';
 import '../../../domain/entities/layer.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 typedef WebLayerTransformChanged =
     void Function({
@@ -26,12 +27,19 @@ class WebLayerTransformInspector extends StatefulWidget {
     required this.baseSize,
     required this.onChanged,
     this.enabled = true,
+    this.logicalCanvasSize,
+    this.positionBounds,
   });
 
   final LayerModel layer;
   final Size baseSize;
   final WebLayerTransformChanged onChanged;
   final bool enabled;
+  final Size? logicalCanvasSize;
+
+  /// Optional host limits. Album documents retain free coordinate entry;
+  /// bounded portable artwork can explain invalid input before committing it.
+  final Rect? positionBounds;
 
   @override
   State<WebLayerTransformInspector> createState() =>
@@ -74,6 +82,16 @@ class _WebLayerTransformInspectorState
       return '${_formatNumber(base * .3)}~${_formatNumber(base * 3)} px 범위예요.';
     }
     return null;
+  }
+
+  String? _validatePosition(double value, {required bool horizontal}) {
+    final bounds = widget.positionBounds;
+    if (bounds == null) return null;
+    final minimum = horizontal ? bounds.left : bounds.top;
+    final maximum = horizontal ? bounds.right : bounds.bottom;
+    return value < minimum || value > maximum
+        ? '${_formatNumber(minimum)}~${_formatNumber(maximum)} px 범위예요.'
+        : null;
   }
 
   @override
@@ -126,7 +144,7 @@ class _WebLayerTransformInspectorState
               ),
               child: Row(
                 children: [
-                  Icon(Icons.tune_rounded, size: 17, color: palette.brandInk),
+                  ExperienceIcon('SlidersHorizontal', size: 17, color: palette.brandInk),
                   const SizedBox(width: 7),
                   Expanded(
                     child: Text(
@@ -146,7 +164,10 @@ class _WebLayerTransformInspectorState
           if (!_expanded) _caption('위치·크기·회전을 숫자로 조정할 수 있어요.', palette),
           if (_expanded) ...[
             const SizedBox(height: 6),
-            _caption('문서 기준 좌표(px) · 페이지 가로 500', palette),
+            _caption(
+              '문서 기준 좌표(px) · 페이지 가로 ${_formatNumber(widget.logicalCanvasSize?.width ?? 500)}',
+              palette,
+            ),
             const SizedBox(height: 14),
             _caption('위치 · 레이어 기준 좌표', palette),
             const SizedBox(height: 7),
@@ -158,6 +179,8 @@ class _WebLayerTransformInspectorState
                     name: 'x',
                     label: 'X',
                     value: layer.position.dx,
+                    validate: (value) =>
+                        _validatePosition(value, horizontal: true),
                     commit: (value) => _emit(owner, x: value),
                   ),
                 ),
@@ -167,6 +190,8 @@ class _WebLayerTransformInspectorState
                     name: 'y',
                     label: 'Y',
                     value: layer.position.dy,
+                    validate: (value) =>
+                        _validatePosition(value, horizontal: false),
                     commit: (value) => _emit(owner, y: value),
                   ),
                 ),
@@ -176,7 +201,7 @@ class _WebLayerTransformInspectorState
             Row(
               children: [
                 Expanded(child: _caption('크기 · 가로·세로 비율 유지', palette)),
-                Icon(Icons.link_rounded, size: 15, color: palette.muted),
+                ExperienceIcon('Link2', size: 15, color: palette.muted),
               ],
             ),
             const SizedBox(height: 7),

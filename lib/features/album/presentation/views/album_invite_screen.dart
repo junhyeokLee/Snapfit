@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/utils/context_extensions.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/theme/snapfit_design_tokens.dart' show SnapFitRadius;
@@ -217,7 +218,7 @@ class _AlbumInviteScreenState extends ConsumerState<AlbumInviteScreen> {
     actions: [
       TextButton.icon(
         onPressed: _busy ? null : () => Navigator.maybePop(context),
-        icon: const Icon(Icons.arrow_back, size: 17),
+        icon: const ExperienceIcon('ArrowLeft', size: 17),
         label: const Text('앨범으로'),
       ),
     ],
@@ -481,13 +482,38 @@ class _AlbumInviteScreenState extends ConsumerState<AlbumInviteScreen> {
         ),
       ],
     );
+    final linkTitle = Text(
+      '초대 링크',
+      style: ExperienceFormStyle.text(context, 14, weight: FontWeight.w600),
+    );
+    final newLink = TextButton(
+      key: const ValueKey('inviteNewLink'),
+      onPressed: _busy || _inviteLink == null ? null : _createInviteLink,
+      style: TextButton.styleFrom(
+        foregroundColor: ExperienceFormStyle.selectionInk(context),
+        minimumSize: const Size(44, 44),
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        textStyle: ExperienceFormStyle.text(
+          context,
+          12,
+          weight: FontWeight.w600,
+        ),
+      ),
+      // 복사·공유와 별도로, 다음 사람에게 보낼 링크만 명시적으로 만든다.
+      child: const Text('새 링크 만들기'),
+    );
     final link = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          '초대 링크',
-          style: ExperienceFormStyle.text(context, 14, weight: FontWeight.w600),
-        ),
+        if (compact)
+          linkTitle
+        else
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            children: [linkTitle, if (_inviteError == null) newLink],
+          ),
         SizedBox(height: compact ? 6 : 10),
         Semantics(
           liveRegion: true,
@@ -547,6 +573,9 @@ class _AlbumInviteScreenState extends ConsumerState<AlbumInviteScreen> {
             ),
           ),
         ),
+        // 짧은 화면에서는 현재 링크가 공유 버튼에 가리지 않도록 먼저 보여준다.
+        if (compact && _inviteError == null)
+          Align(alignment: Alignment.centerRight, child: newLink),
       ],
     );
     return Column(
@@ -774,9 +803,5 @@ class _AlbumInviteScreenState extends ConsumerState<AlbumInviteScreen> {
       revision == _revision &&
       ref.read(albumCollaborationActorProvider) == actor;
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(context)
-      ..clearSnackBars()
-      ..showSnackBar(SnackBar(content: Text(message)));
-  }
+  void _showMessage(String message) => context.showSnack(message);
 }

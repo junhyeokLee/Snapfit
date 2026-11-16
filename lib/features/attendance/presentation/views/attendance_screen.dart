@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/utils/context_extensions.dart';
 
 import '../../../../core/navigation/web_app_location.dart';
 import '../../../../shared/web/web_design.dart';
@@ -16,6 +17,7 @@ import '../../../social/presentation/widgets/social_widgets.dart';
 import '../../domain/attendance_status.dart';
 import '../providers/attendance_providers.dart';
 import '../widgets/attendance_widgets.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 class AttendanceScreen extends ConsumerStatefulWidget {
   const AttendanceScreen({super.key});
@@ -119,14 +121,11 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen>
       // remain separate and cannot turn a completed check-in into an error.
       ref.invalidate(myPointBalanceProvider);
       ref.invalidate(myPointLedgerProvider);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            confirmed.claimed && confirmed.awardedPoints > 0
-                ? '${attendancePoints(confirmed.awardedPoints)}P를 받았어요. 오늘의 기록이 쌓였어요.'
-                : '오늘 출석은 이미 완료했어요.',
-          ),
-        ),
+      ref.invalidate(pointLedgerHistoryProvider);
+      context.showSnack(
+        confirmed.claimed && confirmed.awardedPoints > 0
+            ? '${attendancePoints(confirmed.awardedPoints)}P를 받았어요. 오늘의 기록이 쌓였어요.'
+            : '오늘 출석은 이미 완료했어요.',
       );
     } catch (_) {
       if (_current(owner, revision)) {
@@ -188,7 +187,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen>
                 key: const ValueKey('attendance-refresh'),
                 tooltip: '출석 기록 새로고침',
                 onPressed: _claiming || _refreshing ? null : () => _refresh(),
-                icon: const Icon(Icons.refresh_rounded),
+                icon: const ExperienceIcon('RefreshCw'),
               ),
           ],
         ),
@@ -206,7 +205,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen>
                       ? SocialEmpty(
                           title: '매일의 기록으로 포인트를 모아요',
                           message: '로그인하고 오늘의 출석 도장을 찍어보세요.',
-                          icon: Icons.event_available_outlined,
+                          icon: const Icon(Icons.event_available_outlined),
                           action: FilledButton(
                             style: SocialStyle.primary(context),
                             onPressed: _login,
@@ -218,7 +217,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen>
                             ? SocialEmpty(
                                 title: '출석 기록을 불러오지 못했어요',
                                 message: '연결 상태를 확인한 뒤 다시 시도해 주세요.',
-                                icon: Icons.cloud_off_outlined,
+                                icon: const ExperienceIcon('CloudOff'),
                                 action: OutlinedButton(
                                   key: const ValueKey('attendance-retry'),
                                   onPressed: _refreshing

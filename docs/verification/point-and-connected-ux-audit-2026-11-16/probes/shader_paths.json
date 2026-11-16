@@ -1,0 +1,10 @@
+[
+  {
+    "source": "/Users/devsheep/flutter/packages/flutter/lib/src/material/shaders/ink_sparkle.frag",
+    "output": "/tmp/snapfit-point-ux-audit-20261116/assets/shaders/ink_sparkle.frag"
+  },
+  {
+    "source": "/Users/devsheep/flutter/packages/flutter/lib/src/material/shaders/stretch_effect.frag",
+    "output": "/tmp/snapfit-point-ux-audit-20261116/assets/shaders/stretch_effect.frag"
+  }
+]

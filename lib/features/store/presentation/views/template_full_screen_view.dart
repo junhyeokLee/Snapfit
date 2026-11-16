@@ -9,6 +9,7 @@ import '../../../../core/utils/image_url_policy.dart';
 import '../../../../shared/widgets/snapfit_motion.dart';
 import '../../../album/domain/entities/layer.dart';
 import '../widgets/template_page_renderer.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 class TemplateFullScreenView extends StatefulWidget {
   final List<List<LayerModel>> parsedPages;
@@ -178,9 +179,7 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
   Widget _imageError() => Container(
     color: kIsWeb ? WebPalette.of(context).canvas : SnapFitColors.deepCharcoal,
     alignment: Alignment.center,
-    child: Icon(
-      Icons.photo_outlined,
-      color: kIsWeb
+    child: ExperienceIcon('Image', color: kIsWeb
           ? WebPalette.of(context).muted
           : SnapFitStylePalette.charcoal,
       size: 36,
@@ -298,7 +297,7 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
                     foregroundColor: Colors.white,
                     fixedSize: const Size(48, 48),
                   ),
-                  icon: const Icon(Icons.close, size: 24),
+                  icon: const ExperienceIcon('X', size: 24),
                 ),
               ],
             ),
@@ -330,7 +329,7 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
                         minWidth: 48,
                         minHeight: 48,
                       ),
-                      icon: const Icon(Icons.chevron_left),
+                      icon: const ExperienceIcon('ChevronLeft'),
                     ),
                     Flexible(
                       child: Text(
@@ -358,7 +357,7 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
                         minWidth: 48,
                         minHeight: 48,
                       ),
-                      icon: const Icon(Icons.chevron_right),
+                      icon: const ExperienceIcon('ChevronRight'),
                     ),
                   ],
                 ),
@@ -464,7 +463,7 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
               color: Colors.white,
               disabledColor: Colors.white38,
               constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-              icon: const Icon(Icons.add),
+              icon: const ExperienceIcon('Plus'),
             ),
             Flexible(
               child: Text(
@@ -486,7 +485,7 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
               color: Colors.white,
               disabledColor: Colors.white38,
               constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-              icon: const Icon(Icons.fit_screen),
+              icon: const ExperienceIcon('Maximize2'),
             ),
           ],
         );
@@ -550,7 +549,7 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
       actions: [
         TextButton.icon(
           onPressed: () => Navigator.maybePop(context),
-          icon: const Icon(Icons.close, size: 18),
+          icon: const ExperienceIcon('X', size: 18),
           label: const Text('상세로 돌아가기'),
         ),
       ],
@@ -614,7 +613,7 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
                               IconButton(
                                 onPressed: () => _zoomWebPage(1.2),
                                 tooltip: '확대 (+)',
-                                icon: const Icon(Icons.add, size: 19),
+                                icon: const ExperienceIcon('Plus', size: 19),
                               ),
                             ],
                           ),
@@ -663,7 +662,7 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
                                 ? () => select(current - 1)
                                 : null,
                             tooltip: '이전 페이지 (←)',
-                            icon: const Icon(Icons.chevron_left),
+                            icon: const ExperienceIcon('ChevronLeft'),
                           ),
                           Flexible(
                             child: Padding(
@@ -681,7 +680,7 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
                                 ? () => select(current + 1)
                                 : null,
                             tooltip: '다음 페이지 (→)',
-                            icon: const Icon(Icons.chevron_right),
+                            icon: const ExperienceIcon('ChevronRight'),
                           ),
                         ],
                       ),

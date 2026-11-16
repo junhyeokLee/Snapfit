@@ -7,6 +7,7 @@ import 'cover_size_picker.dart';
 import 'print_cover_type_picker.dart';
 import 'creation_workspace.dart';
 import '../../../ai_album/domain/ai_album_models.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 class AiTemplateBriefStep extends StatefulWidget {
   const AiTemplateBriefStep({
@@ -237,7 +238,7 @@ class _AiTemplateBriefStepState extends State<AiTemplateBriefStep> {
                       () => _pageCount += AlbumPagePolicy.pageStep,
                     )
                   : null,
-              icon: const Icon(Icons.add, size: 20),
+              icon: const ExperienceIcon('Plus', size: 20),
             ),
           ],
         ),
@@ -256,7 +257,7 @@ class _AiTemplateBriefStepState extends State<AiTemplateBriefStep> {
           child: IconButton(
             tooltip: '이전',
             onPressed: widget.onBack,
-            icon: const Icon(Icons.arrow_back, size: 21),
+            icon: const ExperienceIcon('ArrowLeft', size: 21),
           ),
         ),
         const SizedBox(width: 12),

@@ -8,6 +8,7 @@ import '../../../domain/entities/album_page.dart';
 import '../../controllers/layer_builder.dart';
 import '../reader/album_reader_page_content.dart';
 import 'web_editor_viewport.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 /// A website document rail. Thumbnails use the same artwork and logical size
 /// as the document, without a separate book mock-up or another layer model.
@@ -25,6 +26,7 @@ class WebAlbumPageRail extends StatefulWidget {
     this.addDescription,
     this.onDelete,
     this.includesCover = true,
+    this.logicalCanvasSize,
   });
 
   final List<AlbumPage> pages;
@@ -38,6 +40,7 @@ class WebAlbumPageRail extends StatefulWidget {
   final String? addDescription;
   final VoidCallback? onDelete;
   final bool includesCover;
+  final Size? logicalCanvasSize;
 
   @override
   State<WebAlbumPageRail> createState() => _WebAlbumPageRailState();
@@ -98,7 +101,9 @@ class _WebAlbumPageRailState extends State<WebAlbumPageRail> {
     final onAdd = widget.onAdd;
     final addDescription = widget.addDescription;
     final onDelete = widget.onDelete;
-    final base = Size(kCoverReferenceWidth, kCoverReferenceWidth / cover.ratio);
+    final base =
+        widget.logicalCanvasSize ??
+        Size(kCoverReferenceWidth, kCoverReferenceWidth / cover.ratio);
     return ColoredBox(
       color: WebPalette.of(context).surface,
       child: Column(
@@ -237,13 +242,13 @@ class _WebAlbumPageRailState extends State<WebAlbumPageRail> {
                   if (onAdd != null)
                     OutlinedButton.icon(
                       onPressed: onAdd,
-                      icon: const Icon(Icons.add, size: 17),
+                      icon: const ExperienceIcon('Plus', size: 17),
                       label: const Text('페이지 추가'),
                     ),
                   if (onDelete != null)
                     TextButton.icon(
                       onPressed: onDelete,
-                      icon: const Icon(Icons.delete_outline, size: 16),
+                      icon: const ExperienceIcon('Trash2', size: 16),
                       label: const Text('선택 페이지 삭제'),
                     ),
                   if (addDescription != null)
@@ -308,7 +313,7 @@ class WebAlbumDocumentTitle extends StatelessWidget {
       IconButton(
         tooltip: backLabel,
         onPressed: busy ? null : onBack,
-        icon: const Icon(Icons.arrow_back, size: 20),
+        icon: const ExperienceIcon('ArrowLeft', size: 20),
       ),
       const SizedBox(width: 8),
       Expanded(
@@ -378,6 +383,10 @@ class WebAlbumEditorWorkspace extends StatefulWidget {
     this.onAddPage,
     this.onDeletePage,
     this.selectedLayerId,
+    this.saveActionLabel,
+    this.workspaceTitle = '앨범 편집',
+    this.documentSubtitle,
+    this.saveStatusLabel,
   });
 
   final String title;
@@ -405,6 +414,9 @@ class WebAlbumEditorWorkspace extends StatefulWidget {
   final VoidCallback? onAddPage;
   final VoidCallback? onDeletePage;
   final String? selectedLayerId;
+  final String? saveActionLabel;
+  final String workspaceTitle;
+  final String? documentSubtitle, saveStatusLabel;
 
   @override
   State<WebAlbumEditorWorkspace> createState() =>
@@ -433,6 +445,7 @@ class _WebAlbumEditorWorkspaceState extends State<WebAlbumEditorWorkspace> {
   }
 
   String get _saveStatus {
+    if (widget.saveStatusLabel case final label?) return label;
     final account = widget.isSaving
         ? '계정에 저장 중'
         : widget.hasUnsavedChanges
@@ -485,7 +498,7 @@ class _WebAlbumEditorWorkspaceState extends State<WebAlbumEditorWorkspace> {
             MediaQuery.sizeOf(context).width < 380 ||
             MediaQuery.textScalerOf(context).scale(14) > 21);
     return SnapFitWebShell(
-      title: '앨범 편집',
+      title: widget.workspaceTitle,
       compactBrand: true,
       denseHeader: true,
       // A multi-row document header can consume an entire short window. The
@@ -497,12 +510,13 @@ class _WebAlbumEditorWorkspaceState extends State<WebAlbumEditorWorkspace> {
               key: const ValueKey('web-editor-document-header'),
               title: widget.title,
               subtitle:
+                  widget.documentSubtitle ??
                   '${widget.hasUnsavedChanges
-                      ? '저장하지 않은 변경사항'
-                      : widget.isPersisted
-                      ? '저장된 앨범'
-                      : '새 앨범 · 저장 전'}'
-                  ' · ${widget.specification}',
+                          ? '저장하지 않은 변경사항'
+                          : widget.isPersisted
+                          ? '저장된 앨범'
+                          : '새 앨범 · 저장 전'}'
+                      ' · ${widget.specification}',
               onBack: widget.onBack,
               backLabel: '편집 나가기',
               busy: widget.isSaving,
@@ -514,12 +528,12 @@ class _WebAlbumEditorWorkspaceState extends State<WebAlbumEditorWorkspace> {
           IconButton(
             tooltip: '편집 나가기',
             onPressed: widget.isSaving ? null : widget.onBack,
-            icon: const Icon(Icons.arrow_back, size: 20),
+            icon: const ExperienceIcon('ArrowLeft', size: 20),
           ),
         if (groupedActions)
           PopupMenuButton<String>(
             tooltip: '편집 메뉴',
-            icon: const Icon(Icons.more_horiz),
+            icon: const ExperienceIcon('MoreHorizontal'),
             onSelected: (action) {
               switch (action) {
                 case 'undo':
@@ -555,13 +569,13 @@ class _WebAlbumEditorWorkspaceState extends State<WebAlbumEditorWorkspace> {
           IconButton(
             tooltip: '실행 취소 (Ctrl/⌘ Z)',
             onPressed: widget.isSaving ? null : widget.onUndo,
-            icon: const Icon(Icons.undo, size: 19),
+            icon: const ExperienceIcon('Undo2', size: 19),
           ),
         if (!groupedActions)
           IconButton(
             tooltip: '다시 실행 (Ctrl/⌘ Shift Z)',
             onPressed: widget.isSaving ? null : widget.onRedo,
-            icon: const Icon(Icons.redo, size: 19),
+            icon: const ExperienceIcon('Redo2', size: 19),
           ),
         if (widget.onSaveDraft != null && compactHeader && !groupedActions)
           IconButton(
@@ -590,13 +604,12 @@ class _WebAlbumEditorWorkspaceState extends State<WebAlbumEditorWorkspace> {
           ),
         FilledButton.icon(
           onPressed: widget.isSaving ? null : widget.onSave,
-          icon: const Icon(Icons.check, size: 17),
+          icon: const ExperienceIcon('Check', size: 17),
           label: Text(
             widget.isSaving
                 ? '계정에 저장 중'
-                : compactHeader
-                ? '계정 저장'
-                : '계정에 저장',
+                : widget.saveActionLabel ??
+                      (compactHeader ? '계정 저장' : '계정에 저장'),
           ),
           style: FilledButton.styleFrom(
             minimumSize: const Size(0, 48),
@@ -687,7 +700,7 @@ class _WebAlbumEditorWorkspaceState extends State<WebAlbumEditorWorkspace> {
                           _propertiesOpen = !_propertiesOpen;
                           if (_propertiesOpen && narrow) _pagesOpen = false;
                         }),
-                        icon: const Icon(Icons.tune, size: 19),
+                        icon: const ExperienceIcon('SlidersHorizontal', size: 19),
                       ),
                     const SizedBox(width: 8),
                   ],
@@ -873,13 +886,13 @@ class _WebAlbumEditorWorkspaceState extends State<WebAlbumEditorWorkspace> {
                     IconButton(
                       tooltip: '페이지 추가',
                       onPressed: widget.onAddPage,
-                      icon: const Icon(Icons.add, size: 18),
+                      icon: const ExperienceIcon('Plus', size: 18),
                     ),
                   if (narrow && widget.onDeletePage != null)
                     IconButton(
                       tooltip: '선택 페이지 삭제',
                       onPressed: widget.onDeletePage,
-                      icon: const Icon(Icons.delete_outline, size: 18),
+                      icon: const ExperienceIcon('Trash2', size: 18),
                     ),
                 ],
               ),
@@ -931,7 +944,7 @@ class _WebAlbumEditorWorkspaceState extends State<WebAlbumEditorWorkspace> {
                   IconButton(
                     tooltip: '속성 패널 접기',
                     onPressed: () => setState(() => _propertiesOpen = false),
-                    icon: const Icon(Icons.close, size: 18),
+                    icon: const ExperienceIcon('X', size: 18),
                   ),
                 ],
               ),
@@ -1087,11 +1100,7 @@ class _WebPropertiesResizeHandleState
                     child: ExcludeSemantics(
                       child: Row(
                         children: [
-                          Icon(
-                            Icons.drag_handle,
-                            size: 20,
-                            color: palette.muted,
-                          ),
+                          ExperienceIcon('GripHorizontal', size: 20, color: palette.muted),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -1117,12 +1126,12 @@ class _WebPropertiesResizeHandleState
         IconButton(
           tooltip: '속성 패널 작게',
           onPressed: canShrink ? () => _resize(widget.height - _step) : null,
-          icon: const Icon(Icons.expand_more, size: 20),
+          icon: const ExperienceIcon('ChevronDown', size: 20),
         ),
         IconButton(
           tooltip: '속성 패널 크게',
           onPressed: canGrow ? () => _resize(widget.height + _step) : null,
-          icon: const Icon(Icons.expand_less, size: 20),
+          icon: const ExperienceIcon('ChevronUp', size: 20),
         ),
       ],
     );
@@ -1187,13 +1196,13 @@ class WebAlbumReaderWorkspace extends StatelessWidget {
         if (onEdit != null)
           OutlinedButton.icon(
             onPressed: busy ? null : onEdit,
-            icon: const Icon(Icons.edit_outlined, size: 17),
+            icon: const ExperienceIcon('PenLine', size: 17),
             label: Text(editLabel),
           ),
         if (onOrder != null)
           FilledButton.icon(
             onPressed: busy ? null : onOrder,
-            icon: const Icon(Icons.auto_stories_outlined, size: 17),
+            icon: const ExperienceIcon('BookOpen', size: 17),
             label: const Text('책으로 주문'),
           ),
         if (managementMenu != null) managementMenu!,
@@ -1232,10 +1241,7 @@ class WebAlbumReaderWorkspace extends StatelessWidget {
                                   IconButton(
                                     tooltip: '이전 페이지',
                                     onPressed: busy ? null : onPrevious,
-                                    icon: const Icon(
-                                      Icons.chevron_left,
-                                      size: 20,
-                                    ),
+                                    icon: const ExperienceIcon('ChevronLeft', size: 20),
                                   ),
                                   SizedBox(
                                     width: compact ? 110 : 150,
@@ -1254,17 +1260,14 @@ class WebAlbumReaderWorkspace extends StatelessWidget {
                                   IconButton(
                                     tooltip: '다음 페이지',
                                     onPressed: busy ? null : onNext,
-                                    icon: const Icon(
-                                      Icons.chevron_right,
-                                      size: 20,
-                                    ),
+                                    icon: const ExperienceIcon('ChevronRight', size: 20),
                                   ),
                                   if (onDetail != null) ...[
                                     const SizedBox(width: 8),
                                     IconButton(
                                       tooltip: '현재 페이지 크게 보기',
                                       onPressed: busy ? null : onDetail,
-                                      icon: const Icon(Icons.zoom_in, size: 20),
+                                      icon: const ExperienceIcon('ZoomIn', size: 20),
                                     ),
                                   ],
                                 ],

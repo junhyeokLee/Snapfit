@@ -1,0 +1,47 @@
+{
+  "date": "2026-11-11",
+  "scope": "native Flutter album reader navigation",
+  "tests": {
+    "navigation": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    "motion": {
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0
+    },
+    "lifecycle": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    "thumbnails": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "captures": {
+    "passed": 3,
+    "failed": 0,
+    "images": [
+      "after/02-spread.png",
+      "after/03-menu.png",
+      "after/04-landscape.png",
+      "after/05-page-detail.png"
+    ]
+  },
+  "analysis": "No issues found",
+  "review": "Independent review found two blockers, fixed and re-reviewed without remaining blockers.",
+  "full_app_build": false,
+  "browser_runtime_verified": false,
+  "source_sha256": {
+    "lib/features/album/presentation/views/album_reader_screen.dart": "bfdf97606f09718343d40a3f533150b951b18927589ab9d14b5e3707e20ba2cd",
+    "lib/features/album/presentation/views/album_reader_inner_detail_screen.dart": "7ca4b7ae66b1f57a4deb813692694f30c6429255dfa1b97940e8df58e889cd59",
+    "lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart": "aebcf234f870345ad94911c804e26832fde27a8b20a9a7dff613a209c63effb2",
+    "lib/features/album/presentation/widgets/reader/album_reader_more_options_sheet.dart": "95c9cb662cc919663ee8b05d632ae1a331092d91c9ee591dda21bae70944cae1",
+    "test/widget/reader_navigation_continuity_test.dart": "03f1a882ed45f47e5dd53f1a74049084ee66b9b871f4af65f4e14237604fe32b"
+  }
+}

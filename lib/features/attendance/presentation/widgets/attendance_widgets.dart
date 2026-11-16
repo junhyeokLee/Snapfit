@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../social/presentation/widgets/social_widgets.dart';
 import '../../domain/attendance_status.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 String attendancePoints(int value) => value.toString().replaceAllMapped(
   RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
@@ -38,9 +39,7 @@ class AttendanceTodayCard extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             ExcludeSemantics(
-              child: Icon(
-                Icons.auto_stories_outlined,
-                color: SocialStyle.accent(context),
+              child: ExperienceIcon('BookOpen', color: SocialStyle.accent(context),
                 size: 24,
               ),
             ),
@@ -66,10 +65,7 @@ class AttendanceTodayCard extends StatelessWidget {
                 ),
                 child: Center(
                   child: status.checkedInToday
-                      ? Icon(
-                          Icons.check_rounded,
-                          size: 50,
-                          color: SocialStyle.accent(context),
+                      ? ExperienceIcon('Check', size: 50, color: SocialStyle.accent(context),
                         )
                       : Text(
                           '${status.serverDate.day}',

@@ -12,6 +12,7 @@ export 'src/engine.dart'
         BookFit,
         BookFlip,
         BookFlipController,
+        BookFlipCurveProfile,
         BookFlipCurl,
         BookFlipEffects,
         BookFlipMaterial,

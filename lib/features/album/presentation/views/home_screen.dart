@@ -19,12 +19,14 @@ import '../../../notification/presentation/views/notification_screen.dart';
 import '../../../store/presentation/views/store_hub_screen.dart';
 import '../providers/home_ui_state_provider.dart';
 import '../utils/album_creation_entry.dart';
+import '../widgets/create_flow/album_creation_start_sheet.dart';
 import '../../data/album_creation_draft_store.dart';
 import '../../domain/entities/album_creation_draft.dart';
 import '../web/web_album_library_screen.dart';
 import '../../../../shared/widgets/snapfit_shimmer.dart';
 import '../../../../shared/widgets/deferred_content.dart';
 import '../../../home_news/presentation/widgets/home_news_gate.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -65,6 +67,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _creatingAlbum = true;
     final destination = ref.read(homeUiStateProvider).bottomNavIndex;
     try {
+      // 초안의 명시적 이어쓰기는 선택 화면을 건너뛰고 기존 복구 경로를 따른다.
+      final startMode = requestedDraftId == null
+          ? await showAlbumCreationStartSheet(context)
+          : null;
+      if (!mounted ||
+          (requestedDraftId == null && startMode == null) ||
+          ref.read(homeUiStateProvider).bottomNavIndex != destination)
+        return;
       final decision = await resolveAlbumCreationEntry(
         context,
         ref,
@@ -76,10 +86,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (!mounted || decision == null) return;
       final created = await Navigator.push(
         context,
-        MaterialPageRoute(
-          settings: const WebAppRouteSettings(WebAppLocation.create),
-          builder: (_) => AlbumCreateFlowScreen(initialDraft: decision.draft),
-        ),
+        snapFitRoute(page: AlbumCreateFlowScreen(
+            initialDraft: decision.draft,
+            initialStartMode: decision.draft == null ? startMode : null,
+          ), settings: const WebAppRouteSettings(WebAppLocation.create)),
       );
       if (!mounted) return;
       ref.invalidate(albumCreationDraftProvider);

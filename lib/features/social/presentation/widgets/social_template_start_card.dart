@@ -3,6 +3,7 @@ import '../../../../core/constants/snapfit_colors.dart';
 
 import '../../domain/social_models.dart';
 import 'social_widgets.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 class SocialTemplateStartCard extends StatelessWidget {
   const SocialTemplateStartCard({
@@ -66,7 +67,7 @@ class SocialTemplateStartCard extends StatelessWidget {
                   height: 17,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Icon(Icons.auto_stories_outlined, size: 18),
+              : const ExperienceIcon('BookOpen', size: 18),
           label: Text(busy ? '템플릿 확인 중…' : '템플릿 보고 시작하기'),
         ),
       ],

@@ -1,18 +1,15 @@
-import 'dart:math' as math;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../../../../../shared/web/web_design.dart';
 
 import '../../../../../core/constants/page_templates.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
-import '../../../../../shared/widgets/catalog_favorite_widgets.dart';
+import '../../../../../shared/web/web_design.dart';
+import 'page_layout_catalog.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
-/// 페이지 템플릿 선택 바텀시트 (스크랩북 스타일)
-class PageTemplatePicker extends StatefulWidget {
-  final ValueChanged<PageTemplate> onSelect;
-
+class PageTemplatePicker extends StatelessWidget {
   const PageTemplatePicker({super.key, required this.onSelect});
+  final ValueChanged<PageTemplate> onSelect;
 
   static Future<void> show(
     BuildContext context, {
@@ -36,173 +33,65 @@ class PageTemplatePicker extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => PageTemplatePicker(
-        onSelect: (t) {
-          onSelect(t);
-          Navigator.pop(ctx);
+      builder: (sheetContext) => PageTemplatePicker(
+        onSelect: (template) {
+          onSelect(template);
+          Navigator.pop(sheetContext);
         },
       ),
     );
   }
 
   @override
-  State<PageTemplatePicker> createState() => _PageTemplatePickerState();
-}
-
-class _PageTemplatePickerState extends State<PageTemplatePicker> {
-  bool _favoritesOnly = false;
-  @override
-  Widget build(BuildContext context) =>
-      CatalogFavoritesBuilder(builder: _buildCatalog);
-
-  Widget _buildCatalog(BuildContext context, CatalogFavorites favorites) {
-    final templates = favorites.arrange(
-      pageTemplates,
-      (t) => CatalogFavoriteKeys.layout(t.id),
-      onlyFavorites: _favoritesOnly,
-    );
-    if (kIsWeb) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ListTile(
-            contentPadding: const EdgeInsets.fromLTRB(24, 12, 12, 12),
-            title: const Text(
-              '페이지 레이아웃',
-              style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
-            ),
-            subtitle: const Text('쪽 안에서 사진이 놓일 구성을 고르세요.'),
-            trailing: IconButton(
-              onPressed: () => Navigator.pop(context),
-              tooltip: '닫기',
-              icon: const Icon(Icons.close, size: 20),
-            ),
-          ),
-          Divider(height: 1, color: WebPalette.of(context).line),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-            child: CatalogFavoriteFilter(
-              selected: _favoritesOnly,
-              onChanged: (value) => setState(() => _favoritesOnly = value),
-            ),
-          ),
-          Expanded(
-            child: templates.isEmpty
-                ? CatalogFavoritesEmpty(
-                    onShowAll: () => setState(() => _favoritesOnly = false),
-                  )
-                : GridView.builder(
-                    padding: const EdgeInsets.all(24),
-                    gridDelegate:
-                        const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 230,
-                          mainAxisExtent: 220,
-                          mainAxisSpacing: 18,
-                          crossAxisSpacing: 18,
-                        ),
-                    itemCount: templates.length,
-                    itemBuilder: (context, index) {
-                      final template = templates[index];
-                      return CatalogFavoriteTile(
-                        key: ValueKey(template.id),
-                        itemKey: CatalogFavoriteKeys.layout(template.id),
-                        label: template.name,
-                        child: RepaintBoundary(
-                          child: _TemplateCard(
-                            template: template,
-                            onTap: () => widget.onSelect(template),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-        ],
-      );
-    }
-    final media = MediaQuery.of(context);
-    final isLandscape = media.size.width > media.size.height;
-    final bottomInset = media.viewPadding.bottom;
+  Widget build(BuildContext context) {
+    final height = (MediaQuery.sizeOf(context).height * .90).clamp(0.0, 900.0);
     return Container(
-      constraints: BoxConstraints(
-        maxHeight: media.size.height * (isLandscape ? 0.86 : 0.74),
-        minHeight: math.min(
-          media.size.height * (isLandscape ? 0.68 : 0.52),
-          460,
-        ),
-      ),
+      height: kIsWeb ? double.infinity : height,
       decoration: BoxDecoration(
         color: SnapFitColors.surfaceOf(context),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        boxShadow: [
-          BoxShadow(
-            color: SnapFitColors.isDark(context)
-                ? SnapFitColors.accentLight.withValues(alpha: 0.25)
-                : Colors.black.withValues(alpha: 0.18),
-            blurRadius: 20,
-            offset: Offset(0, -4),
-          ),
-        ],
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
         top: false,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SizedBox(height: 12),
-            Container(
-              width: 48,
-              height: 4,
-              decoration: BoxDecoration(
-                color: SnapFitColors.overlayMediumOf(context),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                '페이지 템플릿',
-                style: TextStyle(
-                  color: SnapFitColors.textPrimaryOf(context),
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+            if (!kIsWeb) ...[
+              const SizedBox(height: 10),
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: SnapFitColors.overlayStrongOf(context),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
                 ),
               ),
-            ),
-            CatalogFavoriteFilter(
-              selected: _favoritesOnly,
-              onChanged: (value) => setState(() => _favoritesOnly = value),
-            ),
-            Flexible(
-              child: templates.isEmpty
-                  ? CatalogFavoritesEmpty(
-                      onShowAll: () => setState(() => _favoritesOnly = false),
-                    )
-                  : GridView.builder(
-                      padding: EdgeInsets.fromLTRB(16, 0, 16, 24 + bottomInset),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: 100 / (118 + 8 + 14 * 1.4 + 10),
+            ],
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 8, 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '페이지 레이아웃',
+                      style: TextStyle(
+                        color: SnapFitColors.textPrimaryOf(context),
+                        fontSize: 19,
+                        fontWeight: FontWeight.w700,
                       ),
-                      itemCount: templates.length,
-                      itemBuilder: (context, index) {
-                        final template = templates[index];
-                        return CatalogFavoriteTile(
-                          key: ValueKey(template.id),
-                          itemKey: CatalogFavoriteKeys.layout(template.id),
-                          label: template.name,
-                          child: RepaintBoundary(
-                            child: _TemplateCard(
-                              template: template,
-                              onTap: () => widget.onSelect(template),
-                            ),
-                          ),
-                        );
-                      },
                     ),
+                  ),
+                  IconButton(
+                    tooltip: '레이아웃 닫기',
+                    onPressed: () => Navigator.maybePop(context),
+                    icon: const ExperienceIcon('X', size: 20),
+                  ),
+                ],
+              ),
             ),
+            Expanded(child: PageLayoutCatalog(onSelect: onSelect)),
           ],
         ),
       ),
@@ -210,177 +99,22 @@ class _PageTemplatePickerState extends State<PageTemplatePicker> {
   }
 }
 
-/// 실제 템플릿 레이아웃을 그대로 보여주는 미리보기 (직관적 구분용)
+/// Retained for existing callers; preview geometry is shared with the editor.
 class TemplatePreviewCanvas extends StatelessWidget {
-  final PageTemplate template;
-  final double width;
-  final double height;
-
   const TemplatePreviewCanvas({
     super.key,
     required this.template,
     this.width = 88,
     this.height = 118,
   });
-
-  @override
-  Widget build(BuildContext context) {
-    if (template.slots.isEmpty) {
-      return Container(
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          color: SnapFitColors.overlayLightOf(context),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(
-            color: SnapFitColors.overlayStrongOf(context),
-            width: 1,
-          ),
-        ),
-        child: Icon(
-          Icons.add_photo_alternate_outlined,
-          size: 28,
-          color: SnapFitColors.textSecondaryOf(context),
-        ),
-      );
-    }
-
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: SnapFitColors.pureWhite.withValues(alpha: 0.95),
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: template.slots.map((slot) {
-            final left = slot.left * width;
-            final top = slot.top * height;
-            final slotW = slot.width * width;
-            final slotH = slot.height * height;
-            final rot = slot.rotation * math.pi / 180;
-            final isImage = slot.type == 'image';
-            return Positioned(
-              left: left,
-              top: top,
-              child: Transform.rotate(
-                angle: rot,
-                child: Container(
-                  width: slotW,
-                  height: slotH,
-                  decoration: BoxDecoration(
-                    color: isImage
-                        ? Colors.grey.shade300
-                        : Colors.amber.shade50,
-                    borderRadius: BorderRadius.circular(isImage ? 4 : 2),
-                    border: Border.all(
-                      color: isImage
-                          ? Colors.grey.shade400
-                          : Colors.amber.shade200,
-                      width: 1,
-                    ),
-                    boxShadow: isImage
-                        ? [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.08),
-                              blurRadius: 2,
-                              offset: const Offset(0, 1),
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: isImage
-                      ? Center(
-                          child: Icon(
-                            Icons.photo_camera_outlined,
-                            size: (slotW.clamp(0, 24) + slotH.clamp(0, 24)) / 3,
-                            color: Colors.grey.shade500,
-                          ),
-                        )
-                      : Center(
-                          child: Text(
-                            'Aa',
-                            style: TextStyle(
-                              fontSize:
-                                  (slotW.clamp(0, 20) + slotH.clamp(0, 20)) / 4,
-                              color: Colors.amber.shade800,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-}
-
-class _TemplateCard extends StatelessWidget {
   final PageTemplate template;
-  final VoidCallback onTap;
-
-  const _TemplateCard({required this.template, required this.onTap});
+  final double width;
+  final double height;
 
   @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          width: 100,
-          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 6),
-          decoration: BoxDecoration(
-            color: SnapFitColors.overlayLightOf(context),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: SnapFitColors.overlayStrongOf(context),
-              width: 1,
-            ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Expanded(
-                child: FittedBox(
-                  fit: BoxFit.contain,
-                  child: TemplatePreviewCanvas(
-                    template: template,
-                    width: 88,
-                    height: 118,
-                  ),
-                ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                template.name,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: SnapFitColors.textPrimaryOf(context),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => SizedBox(
+    width: width,
+    height: height,
+    child: PageLayoutPreview(template: template),
+  );
 }

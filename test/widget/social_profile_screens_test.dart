@@ -13,6 +13,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:network_image_mock/network_image_mock.dart';
 import 'package:snap_fit/core/theme/snapfit_theme.dart';
+import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
+import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
 import 'package:snap_fit/features/social/data/social_repository.dart';
 import 'package:snap_fit/features/social/data/social_profile_photo.dart';
 import 'package:snap_fit/features/social/domain/social_models.dart';
@@ -21,7 +23,37 @@ import 'package:snap_fit/features/social/presentation/views/social_profile_edit_
 import 'package:snap_fit/features/social/presentation/views/social_profile_screen.dart';
 import 'package:snap_fit/features/social/presentation/views/social_relations_screen.dart';
 import 'package:snap_fit/features/social/presentation/views/social_works_manage_screen.dart';
+import 'package:snap_fit/features/social/presentation/widgets/my_moment_archive.dart';
 import 'package:snap_fit/features/social/presentation/widgets/social_profile_widgets.dart';
+import 'package:snap_fit/shared/snapfit_image.dart';
+
+// These tests provide public social identity only. Do not start the native
+// secure-storage account restoration while checking public/private boundaries.
+class _NoPrivateAccount extends AuthViewModel {
+  @override
+  FutureOr<UserInfo?> build() => null;
+}
+
+final _noPrivateAccount = authViewModelProvider.overrideWith(
+  _NoPrivateAccount.new,
+);
+
+final _emptyMomentPages = socialProfileMomentsPageProvider.overrideWith(
+  (_, _) async =>
+      const SocialWorkPage(items: [], hasMore: false, nextOffset: 0),
+);
+final _emptyMomentMonths = socialProfileMomentMonthsPageProvider.overrideWith(
+  (_, _) async =>
+      const SocialMomentMonthsPage(items: [], hasMore: false, nextOffset: 0),
+);
+
+Future<void> _openAlbums(WidgetTester tester) async {
+  final tab = find.byKey(const ValueKey('profile-collection-albums'));
+  await tester.ensureVisible(tab);
+  await tester.pumpAndSettle();
+  await tester.tap(tab);
+  await tester.pumpAndSettle();
+}
 
 Override _profileWorksOverride(
   String userId,
@@ -161,6 +193,7 @@ const _me = SocialProfile(
   followersCount: 3,
   followingCount: 2,
   worksCount: 1,
+  momentsCount: 5,
 );
 const _other = SocialProfile(
   userId: 'other',
@@ -169,6 +202,7 @@ const _other = SocialProfile(
   bio: '여행의 순간을 기록해요.',
   followersCount: 7,
   followingCount: 4,
+  momentsCount: 8,
   isFollowing: true,
 );
 const _third = SocialProfile(
@@ -200,6 +234,9 @@ Widget _photoEditApp(
   String? Function()? actor,
 }) => ProviderScope(
   overrides: [
+    _emptyMomentPages,
+    _emptyMomentMonths,
+    _noPrivateAccount,
     socialCurrentUserIdProvider.overrideWith(
       (_) => actor == null ? 'me' : actor(),
     ),
@@ -254,6 +291,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          _emptyMomentPages,
+          _emptyMomentMonths,
+          _noPrivateAccount,
           socialCurrentUserIdProvider.overrideWith((_) => 'me'),
           socialProfileProvider('other').overrideWith((_) async => _other),
           _profileWorksOverride('other', (_) async => []),
@@ -265,11 +305,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('해린'), findsOneWidget);
     expect(find.text('@haerin.note'), findsOneWidget);
+    expect(find.text('공개 기록 8'), findsOneWidget);
     expect(find.text('팔로워 7'), findsOneWidget);
     expect(find.text('팔로잉'), findsOneWidget);
     expect(find.text('프로필 수정'), findsNothing);
-    expect(find.byTooltip('공개 작품 관리'), findsNothing);
+    expect(find.byTooltip('공개 앨범 관리'), findsNothing);
     expect(find.text('작품 공개'), findsNothing);
+    expect(find.text('기록 남기기'), findsNothing);
     expect(find.text('저장한 작품'), findsNothing);
     expect(find.text('포인트와 결제'), findsNothing);
     expect(find.byTooltip('설정'), findsNothing);
@@ -295,6 +337,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          _emptyMomentPages,
+          _emptyMomentMonths,
+          _noPrivateAccount,
           socialCurrentUserIdProvider.overrideWith((_) => 'me'),
           ownSocialProfileProvider.overrideWith((_) async => _me),
           _profileWorksOverride('me', (_) async => [published, private]),
@@ -307,21 +352,25 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await _openAlbums(tester);
     expect(find.text('프로필 수정'), findsOneWidget);
-    expect(find.byTooltip('공개 작품 관리'), findsOneWidget);
-    expect(find.text('작품 공개'), findsOneWidget);
-    expect(find.byTooltip('설정'), findsOneWidget);
+    expect(find.text('공개 기록 5'), findsOneWidget);
+    expect(find.byTooltip('공개 앨범 관리'), findsOneWidget);
+    expect(find.text('기록 남기기'), findsOneWidget);
+    expect(find.byTooltip('설정'), findsNothing);
     expect(find.text('공개한 여행 기록'), findsOneWidget);
     expect(find.text('비공개 앨범의 개인 제목'), findsNothing);
     // A public-session fixture alone cannot reveal private account data.
     expect(find.text('저장한 작품'), findsNothing);
     expect(find.byKey(const ValueKey('my-point-balance-card')), findsNothing);
     expect(find.text('이 스타일로 만들기'), findsNothing);
-    await tester.tap(find.byTooltip('공개 작품 관리'));
+    await tester.ensureVisible(find.byTooltip('공개 앨범 관리'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('공개 앨범 관리'));
     await tester.pumpAndSettle();
     expect(find.byType(SocialWorksManageScreen), findsOneWidget);
-    expect(find.text('공개 작품 관리'), findsOneWidget);
-    expect(find.text('아직 이곳에 작품이 없어요.'), findsOneWidget);
+    expect(find.text('공개 관리'), findsOneWidget);
+    expect(find.text('아직 공개한 기록이나 앨범이 없어요.'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -336,6 +385,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            _emptyMomentPages,
+            _emptyMomentMonths,
+            _noPrivateAccount,
             socialCurrentUserIdProvider.overrideWith((_) => 'me'),
             socialRepositoryProvider.overrideWithValue(repository),
             socialBlockedProfilesProvider.overrideWith((_) async => []),
@@ -368,6 +420,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          _emptyMomentPages,
+          _emptyMomentMonths,
+          _noPrivateAccount,
           socialCurrentUserIdProvider.overrideWith((_) => 'me'),
           socialBlockedProfilesProvider.overrideWith((_) async => [_third]),
           _relationsOverride(
@@ -408,6 +463,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          _emptyMomentPages,
+          _emptyMomentMonths,
+          _noPrivateAccount,
           socialCurrentUserIdProvider.overrideWith((_) => 'me'),
           socialRepositoryProvider.overrideWithValue(repository),
           socialProfileProvider('third').overrideWith((_) async => profile),
@@ -452,6 +510,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          _emptyMomentPages,
+          _emptyMomentMonths,
+          _noPrivateAccount,
           socialCurrentUserIdProvider.overrideWith((_) => 'me'),
           socialRepositoryProvider.overrideWithValue(repository),
           socialBlockedProfilesProvider.overrideWith((_) async => []),
@@ -867,6 +928,9 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
+              _emptyMomentPages,
+              _emptyMomentMonths,
+              _noPrivateAccount,
               socialCurrentUserIdProvider.overrideWith((_) => actor),
               socialRepositoryProvider.overrideWithValue(repository),
               socialProfileProvider('other').overrideWith((_) async => person),
@@ -924,6 +988,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            _emptyMomentPages,
+            _emptyMomentMonths,
+            _noPrivateAccount,
             socialCurrentUserIdProvider.overrideWith((_) => actor),
             socialRepositoryProvider.overrideWithValue(repository),
             socialProfileProvider('other').overrideWith((_) async => person),
@@ -1409,6 +1476,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            _emptyMomentPages,
+            _emptyMomentMonths,
+            _noPrivateAccount,
             socialCurrentUserIdProvider.overrideWith((_) => 'me'),
             ownSocialProfileProvider.overrideWith((_) async => _me),
             _profileWorksOverride('me', (_) async => works),
@@ -1417,12 +1487,13 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await _openAlbums(tester);
       final portrait = tester.getRect(find.byType(SocialProfileAvatar));
       final expectedPortrait = viewportWidth == 320
-          ? 148.0
+          ? 80.0
           : viewportWidth == 390
-          ? 164.0
-          : 196.0;
+          ? 88.0
+          : 112.0;
       expect(portrait.width, expectedPortrait);
       expect(portrait.height, expectedPortrait);
       expect(
@@ -1444,7 +1515,7 @@ void main() {
       final publish = tester.getRect(
         find
             .ancestor(
-              of: find.text('작품 공개'),
+              of: find.text('기록 남기기'),
               matching: find.byWidgetPredicate(
                 (widget) => widget is ButtonStyleButton,
               ),
@@ -1453,8 +1524,16 @@ void main() {
       );
       expect(edit.top, publish.top);
       expect(edit.width, closeTo(publish.width, .01));
-      expect(find.byTooltip('공개 작품 관리').hitTestable(), findsOneWidget);
-      expect(find.byTooltip('설정').hitTestable(), findsOneWidget);
+      expect(find.byTooltip('공개 앨범 관리'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(SocialProfileGallery),
+          matching: find.text('공개 앨범'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('공개한 작품'), findsNothing);
+      expect(find.byTooltip('설정'), findsNothing);
       expect(find.text('모아 보기'), findsOneWidget);
       expect(find.text('크게 보기'), findsOneWidget);
       expect(
@@ -1558,7 +1637,7 @@ void main() {
         greaterThan(tester.getTopLeft(first).dy),
       );
       final workSemantics = tester.getSemantics(
-        find.bySemanticsLabel('작품 0, 0쪽 작품 보기'),
+        find.bySemanticsLabel('작품 0, 0쪽 앨범 보기'),
       );
       expect(workSemantics.hasFlag(ui.SemanticsFlag.isButton), isTrue);
       expect(
@@ -1700,16 +1779,16 @@ void main() {
           lessThan(tester.getBottomLeft(second).dy),
         );
         final firstSemantics = tester.getSemantics(
-          find.bySemanticsLabel('작품 0, 0쪽 작품 보기'),
+          find.bySemanticsLabel('작품 0, 0쪽 앨범 보기'),
         );
         final orderedWorks = firstSemantics.parent!
             .debugListChildrenInOrder(DebugSemanticsDumpOrder.traversalOrder)
-            .where((node) => node.label.endsWith('쪽 작품 보기'))
+            .where((node) => node.label.endsWith('쪽 앨범 보기'))
             .toList();
         expect(orderedWorks.map((node) => node.label), [
-          '작품 0, 0쪽 작품 보기',
-          '작품 1, 0쪽 작품 보기',
-          '작품 2, 0쪽 작품 보기',
+          '작품 0, 0쪽 앨범 보기',
+          '작품 1, 0쪽 앨범 보기',
+          '작품 2, 0쪽 앨범 보기',
         ]);
         expect(
           orderedWorks.map((node) => (node.sortKey! as OrdinalSortKey).order),
@@ -1805,6 +1884,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          _emptyMomentPages,
+          _emptyMomentMonths,
+          _noPrivateAccount,
           socialCurrentUserIdProvider.overrideWith((_) => 'me'),
           ownSocialProfileProvider.overrideWith((_) async => _me),
           _profileWorksOverride('me', (_) async => [work]),
@@ -1823,14 +1905,23 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await _openAlbums(tester);
     final portrait = tester.getRect(find.byType(SocialProfileAvatar));
-    expect(portrait.width, 148);
+    expect(portrait.width, 80);
     expect(
       tester.getTopLeft(find.text(_me.displayName)).dy,
       greaterThan(portrait.bottom),
     );
-    expect(find.byTooltip('공개 작품 관리').hitTestable(), findsOneWidget);
-    expect(find.byTooltip('설정').hitTestable(), findsOneWidget);
+    expect(find.byTooltip('공개 앨범 관리'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(SocialProfileGallery),
+        matching: find.text('공개 앨범'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('공개한 작품'), findsNothing);
+    expect(find.byTooltip('설정'), findsNothing);
     final editButton = find
         .ancestor(
           of: find.text('프로필 수정'),
@@ -1841,7 +1932,7 @@ void main() {
         .first;
     final publishButton = find
         .ancestor(
-          of: find.text('작품 공개'),
+          of: find.text('기록 남기기'),
           matching: find.byWidgetPredicate(
             (widget) => widget is ButtonStyleButton,
           ),
@@ -1884,7 +1975,26 @@ void main() {
     await tester.ensureVisible(tile);
     await tester.pumpAndSettle();
     expect(tile.hitTestable(), findsOneWidget);
-    expect(find.byKey(const ValueKey('profile-private-account')), findsNothing);
+    expect(
+      find.byKey(
+        const ValueKey('social-profile-private-me'),
+        skipOffstage: false,
+      ),
+      findsNothing,
+    );
+    expect(find.byType(MyMomentArchive, skipOffstage: false), findsNothing);
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is SnapfitImage &&
+            [widget.urlOrGs, ...widget.fallbackSources].any(
+              (source) =>
+                  source.startsWith('supabase://album-assets/me/moments/'),
+            ),
+        skipOffstage: false,
+      ),
+      findsNothing,
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -1904,6 +2014,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          _emptyMomentPages,
+          _emptyMomentMonths,
+          _noPrivateAccount,
           socialCurrentUserIdProvider.overrideWith((_) => actor),
           socialRepositoryProvider.overrideWithValue(repository),
           ownSocialProfileProvider.overrideWith((_) async => _me),

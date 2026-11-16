@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createPushDispatchHandler } from '../../supabase/functions/push-dispatch/handler.ts';
+import { deliveryPolicy } from '../../supabase/functions/push-dispatch/policy.ts';
 
 const secret = 'offline-dispatch-preferences-test-secret';
 const morning = '2026-10-19T23:00:00Z'; // 08:00 KST.
@@ -10,6 +11,7 @@ function fixture(t, {
   preferences = null, category = 'order', createdAt = morning, now = morning,
   offset = 540, platform = 'android', enabled = true,
   type = 'order_status', momentAllowed = true, momentError = null,
+  prepareAllowed = true, prepareError = null, preparedExpiresAt = null, prepareLatency = 0,
 } = {}) {
   t.mock.timers.enable({ apis: ['Date'], now: Date.parse(now) });
   const requests = [], patches = [], queries = [];
@@ -27,7 +29,12 @@ function fixture(t, {
     getAccessToken: async () => 'offline-access-token',
     logError: () => assert.fail('a controlled preference decision must not fail the worker'),
     adminClient: () => ({
-      rpc: async name => name === 'is_moment_reminder_delivery_allowed'
+      rpc: async name => name === 'prepare_push_delivery' ? (() => {
+        const finalPolicy = deliveryPolicy(category, preferences, offset, new Date(), createdAt);
+        const expiresAt = preparedExpiresAt ?? new Date(Date.now() + finalPolicy.ttlSeconds * 1000).toISOString();
+        if (prepareLatency) t.mock.timers.tick(prepareLatency);
+        return {data:{allowed:prepareAllowed,expiresAt},error:prepareError};
+      })() : name === 'is_moment_reminder_delivery_allowed'
         ? { data: momentAllowed, error: momentError }
         : ({ data: name === 'claim_push_deliveries'
         ? [{ id: 11, notification_id: 7, user_id: 'offline-owner', token: 'offline-device', attempts: 1, lease_token: 'offline-lease' }]
@@ -82,6 +89,20 @@ test('pending deliveries recheck every latest opt-out before contacting FCM', as
       }
     });
   }
+});
+
+test('stale delivery leases never contact FCM or overwrite a reclaimed attempt', async t => {
+  const delivery = fixture(t, { prepareAllowed: false });
+  assert.equal((await delivery.run()).discarded, 1);
+  assert.equal(delivery.requests.length, 0);
+  assert.equal(delivery.patches.length, 0);
+});
+
+test('a failed final lease check stays retryable and never contacts FCM', async t => {
+  const delivery = fixture(t, { prepareError: { message: 'fixture offline' } });
+  assert.equal((await delivery.run()).retry, 1);
+  assert.equal(delivery.requests.length, 0);
+  assert.equal(delivery.patches[0].status, 'pending');
 });
 
 test('weekly reminder rechecks opt-in and recent activity just before sending', async t => {
@@ -158,4 +179,23 @@ test('late-evening native and web messages expire at the quiet-hour boundary', a
       }
     });
   }
+});
+
+
+test('final DB deadline overrides a stale night-mute snapshot and deducts RPC time',async t=>{
+ const now='2026-10-29T12:59:00Z';
+ const delivery=fixture(t,{category:'comment',type:'social_comment',preferences:{night_mute:false},
+  now,createdAt:now,preparedExpiresAt:'2026-10-29T13:00:00Z',prepareLatency:10_000});
+ assert.equal((await delivery.run()).sent,1);
+ assert.equal(delivery.requests[0].message.android.ttl,'50s');
+ assert.equal(delivery.requests[0].message.apns.headers['apns-expiration'],String(Date.parse('2026-10-29T13:00:00Z')/1000));
+});
+
+test('an expired final DB quiet boundary never contacts FCM',async t=>{
+ const now='2026-10-29T12:59:59Z';
+ const delivery=fixture(t,{category:'comment',type:'social_comment',preferences:{night_mute:false},
+  now,createdAt:now,preparedExpiresAt:'2026-10-29T13:00:00Z',prepareLatency:2_000});
+ assert.equal((await delivery.run()).discarded,1);
+ assert.equal(delivery.requests.length,0);
+ assert.equal(delivery.patches[0].last_error,'notification_preferences');
 });

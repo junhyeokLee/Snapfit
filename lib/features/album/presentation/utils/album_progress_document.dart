@@ -7,6 +7,9 @@ class AlbumDocumentMetadata {
     this.completedPages = 0,
     this.innerPages = 0,
     this.firstIncompletePageIndex,
+    this.firstIncompletePageNumber,
+    this.firstIncompletePhotoSlots = 0,
+    this.firstUnfilledPhotoLayerId,
     this.productId,
     this.trimWidthMm,
     this.trimHeightMm,
@@ -17,6 +20,9 @@ class AlbumDocumentMetadata {
   /// Position in the saved `pages` list, including the cover when present.
   /// This is navigation metadata, not the page's printed/logical number.
   final int? firstIncompletePageIndex;
+  final int? firstIncompletePageNumber;
+  final int firstIncompletePhotoSlots;
+  final String? firstUnfilledPhotoLayerId;
   final String? productId;
   final num? trimWidthMm, trimHeightMm;
 
@@ -42,6 +48,9 @@ AlbumDocumentMetadata analyzeAlbumDocument(String raw) {
       completedPages: progress.completed,
       innerPages: progress.total,
       firstIncompletePageIndex: progress.firstIncomplete,
+      firstIncompletePageNumber: progress.firstIncompleteNumber,
+      firstIncompletePhotoSlots: progress.emptyPhotos,
+      firstUnfilledPhotoLayerId: progress.firstPhotoId,
       productId: id is String ? id : null,
       trimWidthMm: width is num ? width : null,
       trimHeightMm: height is num ? height : null,
@@ -54,16 +63,32 @@ AlbumDocumentMetadata analyzeAlbumDocument(String raw) {
 int countCompletedAlbumPages(String raw) =>
     analyzeAlbumDocument(raw).completedPages;
 
-({int completed, int total, int? firstIncomplete}) _pageProgress(
-  Map<String, dynamic> decoded,
-) {
+({
+  int completed,
+  int total,
+  int? firstIncomplete,
+  int? firstIncompleteNumber,
+  int emptyPhotos,
+  String? firstPhotoId,
+})
+_pageProgress(Map<String, dynamic> decoded) {
   final pages = decoded['pages'];
   if (pages is! List) {
-    return (completed: 0, total: 0, firstIncomplete: null);
+    return (
+      completed: 0,
+      total: 0,
+      firstIncomplete: null,
+      firstIncompleteNumber: null,
+      emptyPhotos: 0,
+      firstPhotoId: null,
+    );
   }
   var completed = 0;
   var total = 0;
   int? firstIncomplete;
+  int? firstIncompleteNumber;
+  var emptyPhotos = 0;
+  String? firstPhotoId;
   var lastPage = 0;
   var zeroBasedInteriors = false;
   final seen = <int>{};
@@ -84,6 +109,7 @@ int countCompletedAlbumPages(String raw) =>
       final index = page['index'] as int;
       if (index < 0 || !seen.add(index)) {
         firstIncomplete ??= position;
+        firstIncompleteNumber ??= total;
         continue;
       }
       // Explicit interior metadata takes precedence over legacy cover inference.
@@ -96,7 +122,17 @@ int countCompletedAlbumPages(String raw) =>
         isAlbumPageContentComplete(page['layers'] as List)) {
       completed++;
     } else {
-      firstIncomplete ??= position;
+      if (firstIncomplete == null) {
+        firstIncomplete = position;
+        firstIncompleteNumber = total;
+        final summary = albumPageContentSummary(
+          page is Map && page['layers'] is List
+              ? page['layers'] as List
+              : const [],
+        );
+        emptyPhotos = summary.photoSlots - summary.filledPhotoSlots;
+        firstPhotoId = summary.firstUnfilledPhotoId;
+      }
     }
   }
   final indexedTotal = lastPage + (zeroBasedInteriors ? 1 : 0);
@@ -104,6 +140,9 @@ int countCompletedAlbumPages(String raw) =>
     completed: completed,
     total: indexedTotal > total ? indexedTotal : total,
     firstIncomplete: firstIncomplete,
+    firstIncompleteNumber: firstIncompleteNumber,
+    emptyPhotos: emptyPhotos,
+    firstPhotoId: firstPhotoId,
   );
 }
 
@@ -111,9 +150,22 @@ int countCompletedAlbumPages(String raw) =>
 /// Keeping one predicate prevents the next-action card from skipping a page
 /// that the library still correctly considers unfinished.
 bool isAlbumPageContentComplete(Iterable<dynamic> layers) {
+  return albumPageContentSummary(layers).isComplete;
+}
+
+/// The same provenance rules drive progress, the home suggestion and the
+/// one-page editor. A bundled sample or an unverified legacy URL is not filled.
+({
+  bool isComplete,
+  int photoSlots,
+  int filledPhotoSlots,
+  String? firstUnfilledPhotoId,
+})
+albumPageContentSummary(Iterable<dynamic> layers) {
   var photos = 0;
   var filledPhotos = 0;
   var personalText = false;
+  String? firstPhotoId;
   for (final rawLayer in layers) {
     if (rawLayer is! Map) continue;
     final payload = rawLayer['payload'] is Map
@@ -125,7 +177,11 @@ bool isAlbumPageContentComplete(Iterable<dynamic> layers) {
         rawLayer['hidden'] != true && (opacity is! num || opacity > 0);
     if (type == 'IMAGE') {
       photos++;
-      if (visible && _hasPhoto(rawLayer, payload)) filledPhotos++;
+      if (visible && _hasPhoto(rawLayer, payload)) {
+        filledPhotos++;
+      } else if (rawLayer['id'] is String) {
+        firstPhotoId ??= rawLayer['id'] as String;
+      }
     } else if (type == 'TEXT' &&
         visible &&
         _hasPersonalText(rawLayer, payload)) {
@@ -134,7 +190,12 @@ bool isAlbumPageContentComplete(Iterable<dynamic> layers) {
   }
   // Every photo slot is required, even when a personal caption is present.
   // Backgrounds, frames and stickers never complete a page by themselves.
-  return photos > 0 ? filledPhotos == photos : personalText;
+  return (
+    isComplete: photos > 0 ? filledPhotos == photos : personalText,
+    photoSlots: photos,
+    filledPhotoSlots: filledPhotos,
+    firstUnfilledPhotoId: firstPhotoId,
+  );
 }
 
 // Only explicit personal provenance is evidence. Missing or malformed markers,

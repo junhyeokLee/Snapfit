@@ -718,6 +718,128 @@ class _StarStickerPainter extends CustomPainter {
   }
 }
 
+// Saved basic stickers use paths rather than platform symbol fonts. Their
+// artwork remains available in editors, previews, and exported feed pages.
+class _HeartStickerPainter extends CustomPainter {
+  const _HeartStickerPainter({required this.color});
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
+    final side = size.shortestSide;
+    canvas.save();
+    canvas.translate((size.width - side) / 2, (size.height - side) / 2);
+    canvas.drawPath(
+      _HeartClipper().getClip(Size.square(side)),
+      Paint()..color = color,
+    );
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _HeartStickerPainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
+class _LeafStickerPainter extends CustomPainter {
+  const _LeafStickerPainter({required this.color});
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
+    final side = size.shortestSide;
+    canvas.save();
+    canvas.translate((size.width - side) / 2, (size.height - side) / 2);
+    canvas.scale(side, side);
+    final stem = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = .037;
+    canvas.drawPath(
+      Path()
+        ..moveTo(.16, .90)
+        ..quadraticBezierTo(.38, .65, .68, .31),
+      stem,
+    );
+    final fill = Paint()..color = color;
+    canvas.drawPath(
+      Path()
+        ..moveTo(.29, .73)
+        ..cubicTo(.22, .36, .53, .13, .88, .10)
+        ..cubicTo(.87, .48, .66, .78, .29, .73)
+        ..close(),
+      fill,
+    );
+    canvas.drawPath(
+      Path()
+        ..moveTo(.36, .62)
+        ..cubicTo(.13, .62, .07, .44, .09, .28)
+        ..cubicTo(.29, .28, .44, .43, .36, .62)
+        ..close(),
+      fill,
+    );
+    canvas.drawPath(
+      Path()
+        ..moveTo(.30, .71)
+        ..quadraticBezierTo(.54, .48, .81, .18),
+      Paint()
+        ..color = Colors.white.withValues(alpha: .24)
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = .018,
+    );
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _LeafStickerPainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
+class _CloverStickerPainter extends CustomPainter {
+  const _CloverStickerPainter({required this.color});
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
+    final side = size.shortestSide;
+    canvas.save();
+    canvas.translate((size.width - side) / 2, (size.height - side) / 2);
+    canvas.scale(side, side);
+    final fill = Paint()..color = color;
+    canvas.drawPath(
+      Path()
+        ..moveTo(.50, .53)
+        ..quadraticBezierTo(.54, .74, .42, .91),
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = .052,
+    );
+    final leaf = _HeartClipper()
+        .getClip(const Size(.34, .37))
+        .shift(const Offset(-.17, -.37));
+    for (final angle in [0.0, -math.pi * .58, math.pi * .58]) {
+      canvas.save();
+      canvas.translate(.50, .54);
+      canvas.rotate(angle);
+      canvas.drawPath(leaf, fill);
+      canvas.restore();
+    }
+    canvas.drawCircle(const Offset(.50, .54), .04, fill);
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _CloverStickerPainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
 class _PaperClipPainter extends CustomPainter {
   final Color color;
 

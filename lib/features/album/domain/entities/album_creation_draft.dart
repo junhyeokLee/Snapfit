@@ -6,6 +6,7 @@ import 'album_page.dart';
 import 'layer.dart';
 import 'layer_export_mapper.dart';
 import 'album_source_template.dart';
+import 'album_creation_attempt.dart';
 
 class AlbumCreationEditorCheckpoint {
   AlbumCreationEditorCheckpoint({
@@ -132,6 +133,7 @@ class AlbumCreationDraft {
     this.createdAlbumId,
     this.editorCheckpoint,
     this.sourceTemplateProductKey,
+    this.creationAttempt,
   });
 
   final String id;
@@ -161,10 +163,14 @@ class AlbumCreationDraft {
   final int? createdAlbumId;
   final AlbumCreationEditorCheckpoint? editorCheckpoint;
   final String? sourceTemplateProductKey;
+  final AlbumCreationAttempt? creationAttempt;
 
   AlbumCreationDraft withEditorCheckpoint(
     AlbumCreationEditorCheckpoint checkpoint, {
     required CoverSize cover,
+    List<AssetEntity>? pendingPhotos,
+    String? selectedPhotoId,
+    int? currentPage,
   }) => AlbumCreationDraft(
     id: id,
     updatedAt: DateTime.now(),
@@ -184,20 +190,27 @@ class AlbumCreationDraft {
     baseCanvasSize: baseCanvasSize,
     templateTitle: templateTitle,
     previewUrl: previewUrl,
-    currentPage: currentPage,
-    pendingPhotos: pendingPhotos,
-    selectedPhotoId: selectedPhotoId,
-    selectedSlot: selectedSlot,
+    currentPage: currentPage ?? this.currentPage,
+    // 큐를 명시적으로 교체할 때만 사진/슬롯 선택을 함께 갱신한다.
+    pendingPhotos: pendingPhotos == null
+        ? this.pendingPhotos
+        : List<AssetEntity>.of(pendingPhotos),
+    selectedPhotoId: pendingPhotos == null
+        ? this.selectedPhotoId
+        : selectedPhotoId,
+    selectedSlot: pendingPhotos == null ? selectedSlot : null,
     editedCover: editedCover,
     editedCoverCanvasSize: editedCoverCanvasSize,
     createdAlbumId: createdAlbumId,
     editorCheckpoint: checkpoint,
     sourceTemplateProductKey: sourceTemplateProductKey,
+    creationAttempt: creationAttempt,
   );
 
   Map<String, dynamic> toJson() => {
     'version': 1,
     'createdAlbumId': createdAlbumId,
+    'creationAttempt': creationAttempt?.toJson(),
     'editorCheckpoint': editorCheckpoint?.toJson(),
     ...albumSourceTemplateMetadata(sourceTemplateProductKey),
     'id': id,
@@ -249,19 +262,26 @@ class AlbumCreationDraft {
     final width = (cover['width'] as num).toDouble();
     final height = (cover['height'] as num).toDouble();
     final createdAlbumId = json['createdAlbumId'] as int?;
+    final creationAttempt = json['creationAttempt'] == null
+        ? null
+        : AlbumCreationAttempt.fromJson(
+            Map<String, dynamic>.from(json['creationAttempt'] as Map),
+          );
     if (!ratio.isFinite ||
         ratio <= 0 ||
         !width.isFinite ||
         width <= 0 ||
         !height.isFinite ||
         height <= 0 ||
-        (createdAlbumId != null && createdAlbumId <= 0)) {
+        (createdAlbumId != null && createdAlbumId <= 0) ||
+        (creationAttempt != null && creationAttempt.draftId != json['id'])) {
       throw const FormatException('Invalid draft album dimensions or id');
     }
     final slot = json['selectedSlot'] as Map?;
     return AlbumCreationDraft(
       id: json['id'] as String,
       createdAlbumId: createdAlbumId,
+      creationAttempt: creationAttempt,
       sourceTemplateProductKey: readAlbumSourceTemplateProductKey(json),
       editorCheckpoint: json['editorCheckpoint'] == null
           ? null

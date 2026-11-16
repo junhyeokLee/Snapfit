@@ -13,6 +13,22 @@ final firstVisitProvider =
       FirstVisitController.new,
     );
 
+/// The guide claims its seen flag before its overlay is dismissed.
+/// Other home overlays wait for the actual guide to close as well.
+final firstHomeGuideVisibleProvider =
+    NotifierProvider<FirstHomeGuideVisibility, bool>(
+      FirstHomeGuideVisibility.new,
+    );
+
+class FirstHomeGuideVisibility extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void setVisible(bool visible) {
+    if (ref.mounted) state = visible;
+  }
+}
+
 class FirstVisitProgress {
   const FirstVisitProgress({
     this.introductionSeen = false,

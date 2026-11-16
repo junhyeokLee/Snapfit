@@ -1,0 +1,173 @@
+{
+  "task": "Every main entry popup with a plain today-hide text action",
+  "date": "2026-10-28",
+  "status": "complete",
+  "updatedAt": "2026-10-28T08:45:45.529869+00:00",
+  "policy": {
+    "entry": "Initial main entry, external tab/route return, return from a popup CTA destination, remount and foreground resume each get a fresh opportunity.",
+    "close": "Closing the popup itself consumes only the current appearance; it never automatically selects today-hide and does not immediately loop.",
+    "onlyPreference": "Plain gray text below the CTA: 오늘 하루 안 보기. A tap saves the account choice until next Korean midnight.",
+    "removedSuppression": [
+      "daily and weekly caps",
+      "per-session seen guard",
+      "already-seen campaign",
+      "completed-benefit targeting",
+      "persisted local drafts",
+      "album-list reads",
+      "stale onboarding flags without a visible guide"
+    ],
+    "retained": "Remote enabled/start/end schedules, actual active overlay deferral, authenticated owner/revision guards.",
+    "storage": "Server preference shared across app/web plus immediate per-owner local memory and persistent backup; writes serialize and retain a newer-day choice against a late older response.",
+    "manual": "Notifications → 혜택·새 소식 remains available after hiding today.",
+    "layout": "Text has no background/border; accessible 44px target and keyboard activation. Short landscape combines header and page controls without reducing body text scale."
+  },
+  "verification": {
+    "core": {
+      "passed": 73,
+      "log": "output/home-news-today-core-tests.log"
+    },
+    "finalNative": {
+      "passed": 63,
+      "log": "output/home-news-today-final-tests.log"
+    },
+    "settingsAndLibraryRegression": {
+      "passed": 69,
+      "log": "output/home-news-today-entry-final-tests.log"
+    },
+    "chromeLayoutFinal": {
+      "passed": 10,
+      "log": "output/home-news-today-chrome-layout-final-tests.log"
+    },
+    "chromeInitial": "73 passed; one short-landscape issue corrected and all 10 carousel tests passed in the final targeted rerun.",
+    "postgresPolicy": {
+      "passed": 8,
+      "log": "output/home-news-today-sql-tests.log"
+    },
+    "productionDatabase": [
+      {
+        "verification": {
+          "checks": [
+            "private preferences ACL",
+            "repeated home entries exceed old day/week caps",
+            "same seen generic month-review can start delivery",
+            "ordinary close does not hide",
+            "CTA does not hide",
+            "explicit hide persists across reads",
+            "exact next Korean midnight",
+            "hidden state blocks batch and legacy claim and swipe",
+            "other account unaffected",
+            "point ledger unchanged"
+          ],
+          "passed": true,
+          "testAccountsRemaining": 0,
+          "transactionRolledBack": true
+        }
+      }
+    ],
+    "advisors": {
+      "warnings": [],
+      "intentionalPrivateTableNotices": [
+        {
+          "name": "rls_enabled_no_policy",
+          "level": "INFO",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+          "findings": [
+            {
+              "detail": "Table \\`home_news_private.campaigns\\` has RLS enabled, but no policies exist",
+              "metadata": {
+                "name": "campaigns",
+                "type": "table",
+                "schema": "home_news_private"
+              },
+              "observed_at": "2026-10-28T08:26:30.649Z"
+            },
+            {
+              "detail": "Table \\`home_news_private.deliveries\\` has RLS enabled, but no policies exist",
+              "metadata": {
+                "name": "deliveries",
+                "type": "table",
+                "schema": "home_news_private"
+              },
+              "observed_at": "2026-10-28T08:26:30.649Z"
+            },
+            {
+              "detail": "Table \\`home_news_private.exposures\\` has RLS enabled, but no policies exist",
+              "metadata": {
+                "name": "exposures",
+                "type": "table",
+                "schema": "home_news_private"
+              },
+              "observed_at": "2026-10-28T08:26:30.649Z"
+            },
+            {
+              "detail": "Table \\`home_news_private.preferences\\` has RLS enabled, but no policies exist",
+              "metadata": {
+                "name": "preferences",
+                "type": "table",
+                "schema": "home_news_private"
+              },
+              "observed_at": "2026-10-28T08:26:30.649Z"
+            }
+          ]
+        }
+      ]
+    },
+    "analysis": {
+      "passed": true,
+      "log": "output/home-news-today-analysis.log"
+    },
+    "golden": "Reviewed and refreshed the existing first-home-guide golden to match prior header photo-icon layout; original preserved in output/first-home-guide-baseline-before-today.png. Actual guide behavior passed.",
+    "chromeEntryFinal": {
+      "passed": 40,
+      "log": "output/home-news-today-chrome-entry-final-tests.log"
+    },
+    "productionHosting": {
+      "passed": true,
+      "baseUrl": "https://snapfit-c719d.web.app",
+      "build": {
+        "main_sha256": "7b0cc0fd41924106bb109f1afe9c0ed8b71af979db724b244cf94f40325e9284",
+        "main_file": "main.7b0cc0fd41924106bb10.dart.js",
+        "bootstrap_sha256": "480a0f09845fd6aab832fb013304e7d872ea03917071573e51908dac6c9e1374",
+        "bootstrap_file": "flutter_bootstrap.480a0f09845fd6aab832.js"
+      },
+      "checks": [
+        {
+          "path": "/albums",
+          "status": 200,
+          "latestBootstrap": true,
+          "noStore": true
+        },
+        {
+          "path": "/notifications",
+          "status": 200,
+          "latestBootstrap": true,
+          "noStore": true
+        },
+        {
+          "path": "/snapfit-web-build.json",
+          "status": 200,
+          "matchesLocal": true
+        },
+        {
+          "path": "/flutter_bootstrap.480a0f09845fd6aab832.js",
+          "status": 200,
+          "sha256": "480a0f09845fd6aab832fb013304e7d872ea03917071573e51908dac6c9e1374"
+        },
+        {
+          "path": "/main.7b0cc0fd41924106bb10.dart.js",
+          "status": 200,
+          "sha256": "7b0cc0fd41924106bb109f1afe9c0ed8b71af979db724b244cf94f40325e9284"
+        }
+      ],
+      "deployment": {
+        "status": "success",
+        "result": {
+          "hosting": "projects/360727043538/sites/snapfit-c719d/versions/d95aef2a04ec0ca3"
+        }
+      }
+    }
+  },
+  "migration": "20261028082350_home_news_every_entry_and_today_hide.sql",
+  "screenshots": "output/home-news-20261028 (16 production-widget captures, fixture photos)",
+  "app": "Shared Flutter implementation updated. No native package built or device installation performed."
+}

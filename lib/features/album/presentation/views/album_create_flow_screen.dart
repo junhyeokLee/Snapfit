@@ -1,3 +1,5 @@
+import '../../../../core/fonts/document_font_gate.dart';
+import '../../../../core/fonts/document_fonts.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -15,6 +17,7 @@ import '../../../../shared/widgets/album_bottom_sheet.dart';
 import '../../../../shared/widgets/album_stage_style.dart';
 import '../../../../shared/widgets/experience_icon.dart';
 import '../../../../core/utils/screen_logger.dart';
+import '../../../../core/utils/context_extensions.dart';
 import '../../../../core/navigation/web_unsaved_work_guard.dart';
 import '../../../../core/navigation/web_app_location.dart';
 import '../../../billing/data/billing_provider.dart';
@@ -22,6 +25,7 @@ import '../../../billing/data/billing_repository.dart';
 import '../../../profile/presentation/views/billing_management_screen.dart';
 import '../../../profile/domain/order_visibility_owner.dart';
 import '../../domain/entities/album.dart';
+import '../../domain/album_creation_start_mode.dart';
 import '../../domain/entities/layer.dart';
 import '../../domain/entities/album_creation_template.dart';
 import '../../../store/domain/entities/premium_template.dart';
@@ -38,6 +42,8 @@ import '../../data/gallery/browser_photo_asset.dart';
 import '../../data/album_creation_catalog_provider.dart';
 import '../../data/album_creation_draft_store.dart';
 import '../../domain/entities/album_creation_draft.dart';
+import '../../domain/entities/album_creation_attempt.dart';
+import '../../domain/entities/album_edit_failure.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../widgets/create_flow/album_creation_review_sheet.dart';
 import '../widgets/web/web_album_workspace.dart';
@@ -53,9 +59,13 @@ import '../widgets/create_flow/ai_template_brief_step.dart';
 import '../widgets/create_flow/ai_template_generating_step.dart';
 import '../widgets/create_flow/ai_template_design_review.dart';
 import '../widgets/create_flow/template_photo_fill_step.dart';
+import '../widgets/create_flow/cover_copy_changes.dart';
+import '../widgets/create_flow/cover_copy_editor.dart';
 import '../viewmodels/album_editor_view_model.dart';
+import '../providers/album_edit_session_provider.dart';
 import 'add_cover_screen.dart';
 import 'page_editor_screen.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 
 /// 앨범 생성 플로우 화면 (스텝1~3)
 class _CreationStepReveal extends StatelessWidget {
@@ -68,13 +78,13 @@ class _CreationStepReveal extends StatelessWidget {
     // Only the incoming step is mounted; editor canvases must not coexist.
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
-      duration: const Duration(milliseconds: 180),
+      duration: const Duration(milliseconds: 220),
       curve: Curves.easeOutCubic,
       child: child,
       builder: (context, value, child) => Opacity(
-        opacity: .65 + .35 * value,
+        opacity: value,
         child: Transform.translate(
-          offset: Offset(0, 4 * (1 - value)),
+          offset: Offset(0, 12 * (1 - value)),
           child: child,
         ),
       ),
@@ -83,6 +93,8 @@ class _CreationStepReveal extends StatelessWidget {
 }
 
 class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
+  final bool _fontsPrepared;
+
   final AlbumCreationTemplate? initialCreationTemplate;
   final List<List<LayerModel>>? initialTemplatePages;
   final Map<String, List<List<LayerModel>>>? initialTemplatePagesByAspect;
@@ -93,6 +105,7 @@ class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
   final bool usesAdvancedServerAnalysis;
   final AlbumCreationDraft? initialDraft;
   final bool initialAiMode;
+  final AlbumCreationStartMode? initialStartMode;
 
   const AlbumCreateFlowScreen({
     super.key,
@@ -104,16 +117,37 @@ class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
     this.initialCoverSize,
     this.initialDraft,
     this.initialAiMode = false,
+    this.initialStartMode,
     bool? usesServerDraftProvider,
     bool? usesAdvancedServerAnalysis,
-  }) : usesServerDraftProvider =
+  }) : _fontsPrepared = false,
+       usesServerDraftProvider =
            usesServerDraftProvider ?? Env.useServerAiAlbumDraft,
        usesAdvancedServerAnalysis =
            usesAdvancedServerAnalysis ?? Env.useAdvancedServerAiAlbumAnalysis;
 
+  AlbumCreateFlowScreen._withFontsReady(AlbumCreateFlowScreen original)
+    : _fontsPrepared = true,
+      initialCreationTemplate = original.initialCreationTemplate,
+      initialTemplatePages = original.initialTemplatePages,
+      initialTemplatePagesByAspect = original.initialTemplatePagesByAspect,
+      initialAlbumTitle = original.initialAlbumTitle,
+      initialTemplatePreviewImages = original.initialTemplatePreviewImages,
+      initialCoverSize = original.initialCoverSize,
+      usesServerDraftProvider = original.usesServerDraftProvider,
+      usesAdvancedServerAnalysis = original.usesAdvancedServerAnalysis,
+      initialDraft = original.initialDraft,
+      initialAiMode = original.initialAiMode,
+      initialStartMode = original.initialStartMode;
+
   @override
   ConsumerState<AlbumCreateFlowScreen> createState() =>
-      _AlbumCreateFlowScreenState();
+      // ignore: no_logic_in_create_state — intentional: selects a different State subtype for deferred font loading
+      DocumentFonts.deferred && !_fontsPrepared
+      ? DocumentFontEntryState<AlbumCreateFlowScreen>(
+          AlbumCreateFlowScreen._withFontsReady,
+        )
+      : _AlbumCreateFlowScreenState();
 }
 
 class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
@@ -128,6 +162,12 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
   bool _leaving = false;
   bool _reviewing = false;
   bool _startingAlbum = false;
+  Object? _entryOperation, _entryEditorSession;
+  List<LayerModel>? _entryCoverSnapshot;
+  String? _entryErrorMessage;
+  int _coverCopyRevision = 0;
+  DialogRoute<Map<String, String>>? _coverCopyRoute;
+  NavigatorState? _coverCopyNavigator;
   List<LayerModel>? _draftCoverLayers;
   Size? _draftCoverCanvasSize;
   int _currentStep = 0;
@@ -137,6 +177,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
   static const AiAlbumDraftTemplateBuilder _aiDraftTemplateBuilder =
       AiAlbumDraftTemplateBuilder();
   bool _hasSelectedCreationMode = false;
+  bool _browsingCreationCatalog = false;
   bool _isAiCreationMode = false;
   bool _hasConfirmedAiPointCost = false;
   bool _isGeneratingAiDraft = false;
@@ -165,9 +206,20 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
 
   void _discardAiAccountWork() {
     _resetDesign();
+    _entryOperation = null;
+    _entryEditorSession = null;
+    _entryCoverSnapshot = null;
+    _entryErrorMessage = null;
+    _startingAlbum = false;
     _currentStep = 0;
     _isAiCreationMode = false;
     _createdAlbumId = null;
+    _creationAttempt = null;
+    _creationEditorCheckpoint = null;
+    _creationEditorSessionIdentity = null;
+    _restoringCreatedAlbum = false;
+    _creationCheckpointFailed = false;
+    _checkpointRetryOperation = null;
     _onCompletePressed = null;
     _stopAiObservation();
     _aiCurrentJob = null;
@@ -204,6 +256,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
     _hasSelectedCreationMode = false;
     _draftOwner = ref.read(visibleOrderOwnerProvider);
     _draftId = const Uuid().v4();
+    _beginDraftWriteSession();
   }
 
   AlbumTheme? _selectedAiTheme;
@@ -669,14 +722,14 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
                 TextButton.icon(
                   key: const ValueKey('ai-return-to-result'),
                   onPressed: _returnToAiResult,
-                  icon: const Icon(Icons.undo_rounded, size: 18),
+                  icon: const ExperienceIcon('Undo2', size: 18),
                   label: const Text('기존 결과로 돌아가기'),
                 )
               else if (canCompare)
                 TextButton.icon(
                   key: const ValueKey('ai-open-previous-result'),
                   onPressed: () => setState(() => _previewAiComparison = true),
-                  icon: const Icon(Icons.compare_arrows_rounded, size: 18),
+                  icon: const ExperienceIcon('ArrowLeftRight', size: 18),
                   label: const Text('이전 결과 비교'),
                 ),
               Text(
@@ -698,6 +751,13 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
   bool _allowEditing = true;
   List<String> _invitedEmails = [];
   int? _createdAlbumId;
+  AlbumCreationAttempt? _creationAttempt;
+  AlbumCreationEditorCheckpoint? _creationEditorCheckpoint;
+  Object? _creationEditorSessionIdentity;
+  bool _restoringCreatedAlbum = false;
+  bool _creationCheckpointFailed = false;
+  bool _creationRecoveryConflict = false;
+  Object? _checkpointRetryOperation;
   List<List<LayerModel>>? _resolvedTemplatePages;
   List<List<LayerModel>>? _baseTemplatePages;
   Map<String, List<List<LayerModel>>>? _templatePagesByAspect;
@@ -740,6 +800,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
   }
 
   void _resetDesign({bool keepPendingPhotos = false}) {
+    _invalidateCoverCopy();
     _stopAiObservation();
     _aiCurrentJob = null;
     _aiResumeCandidate = null;
@@ -815,9 +876,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
 
   bool _canChangeDraftDesign(String? owner) {
     if (_draftOwner == null || owner == _draftOwner) return true;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('계정 정보를 확인하고 있어요. 잠시 후 다시 시도해주세요.')),
-    );
+    context.showSnack('계정 정보를 확인하고 있어요. 잠시 후 다시 시도해주세요.');
     return false;
   }
 
@@ -826,10 +885,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
     if (!_canChangeDraftDesign(owner)) return;
     final selection = await Navigator.push<AlbumCreationTemplate>(
       context,
-      MaterialPageRoute(
-        builder: (_) =>
-            TemplateDetailScreen(template: template, selectForCreation: true),
-      ),
+      snapFitRoute(page: TemplateDetailScreen(template: template, selectForCreation: true)),
     );
     if (!mounted ||
         selection == null ||
@@ -866,10 +922,12 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
       _returnToSetupFromHub = true;
       _hasSelectedCreationMode = false;
       _isAiCreationMode = false;
+      if (widget.initialStartMode != null) _browsingCreationCatalog = true;
     });
   }
 
   Future<void> _selectCover(CoverSize cover) async {
+    if (_startingAlbum || _createdAlbumId != null) return;
     final owner = ref.read(visibleOrderOwnerProvider);
     if (cover.productId == _selectedCover?.productId) return;
     if (!_canChangeDraftDesign(owner)) return;
@@ -880,6 +938,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
       return;
     if (!mounted || ref.read(visibleOrderOwnerProvider) != owner) return;
     setState(() {
+      _invalidateCoverCopy();
       _selectedCover = cover;
       _preferredCoverType = cover.coverType;
       if (!sameSize) {
@@ -895,19 +954,12 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
   }
 
   Widget _buildCreationProgress() {
-    final hasPhotos = _resolvedTemplatePages != null || _isAiCreationMode;
-    final labels = hasPhotos
-        ? ['디자인', '설정', '사진', '표지', '편집']
-        : ['디자인', '설정', '표지', '편집'];
+    const labels = ['디자인', '설정', '편집'];
     final selected = _isAiCreationMode
         ? 0
         : _currentStep == 0
         ? 1
-        : _currentStep == 2
-        ? labels.length - 1
-        : _showPhotoFill
-        ? 2
-        : labels.length - 2;
+        : 2;
     return SafeArea(
       top: false,
       bottom: false,
@@ -1043,6 +1095,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
   }
 
   void _applyTemplateByCoverIfNeeded(CoverSize cover) {
+    _invalidateCoverCopy();
     final variants = _templatePagesByAspect;
     final productKey = AlbumCreationTemplate.variantKey(cover);
     final sizeKey = cover.sizeProductId;
@@ -1099,31 +1152,37 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
     return Size(kCoverReferenceWidth, kCoverReferenceWidth / ratio);
   }
 
+  void _beginDraftWriteSession({AlbumCreationDraft? restoring}) {
+    _draftWriteSessionError = null;
+    _draftWriteSession = null;
+    final owner = _draftOwner;
+    final draftId = _draftId;
+    if (owner?.isNotEmpty == true) {
+      final store = ref.read(albumCreationDraftStoreProvider);
+      if (store is AlbumCreationDraftWriteSession) {
+        _draftWriteSession = (store as AlbumCreationDraftWriteSession)
+            .beginDraftWriteSession(owner!, draftId, restoring: restoring)
+            .then<void>(
+              (_) {},
+              onError: (Object error, StackTrace _) {
+                // Keep asynchronous preparation failures handled until Save can show
+                // the message without discarding the document being edited.
+                if (mounted && _draftOwner == owner && _draftId == draftId) {
+                  _draftWriteSessionError = error;
+                }
+              },
+            );
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _draftId = widget.initialDraft?.id ?? const Uuid().v4();
     _draftOwner = ref.read(authViewModelProvider).asData?.value?.id;
-    if (kIsWeb && _draftOwner?.isNotEmpty == true) {
-      final store = ref.read(albumCreationDraftStoreProvider);
-      if (store is AlbumCreationDraftWriteSession) {
-        _draftWriteSession = (store as AlbumCreationDraftWriteSession)
-            .beginDraftWriteSession(
-              _draftOwner!,
-              _draftId,
-              restoring: widget.initialDraft,
-            )
-            .then<void>(
-              (_) {},
-              onError: (Object error, StackTrace _) {
-                // Keep asynchronous preparation failures handled until Save can show
-                // the message without discarding the document being edited.
-                _draftWriteSessionError = error;
-              },
-            );
-      }
-    }
+    _beginDraftWriteSession(restoring: widget.initialDraft);
     _hasSelectedCreationMode =
         (widget.initialTemplatePages != null &&
             widget.initialTemplatePages!.isNotEmpty) ||
@@ -1180,15 +1239,26 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
     if (widget.initialCreationTemplate != null) {
       _useTemplate(widget.initialCreationTemplate!);
     }
+    if (widget.initialDraft == null && !_hasSelectedCreationMode) {
+      // 홈에서 이미 고른 방법을 다시 묻지 않고 설정 또는 디자인 목록을 연다.
+      _hasSelectedCreationMode =
+          widget.initialStartMode == AlbumCreationStartMode.manual;
+      _browsingCreationCatalog =
+          widget.initialStartMode == AlbumCreationStartMode.design;
+    }
     final draft = widget.initialDraft;
     if (draft != null) {
       _createdAlbumId = draft.createdAlbumId;
+      _restoringCreatedAlbum = draft.createdAlbumId != null;
+      _creationAttempt = draft.creationAttempt;
+      _creationEditorCheckpoint = draft.editorCheckpoint;
       _albumTitle = draft.title;
       _selectedCover = draft.cover;
       _preferredCoverType = draft.cover.coverType;
       _selectedPageCount = draft.pageCount;
-      _currentStep = draft.step;
-      _showPhotoFill = draft.showPhotoFill;
+      // Older unfinished photo/cover drafts resume at the common setup entry.
+      _currentStep = 0;
+      _showPhotoFill = false;
       _hasSelectedCreationMode = draft.hasSelectedMode;
       _resolvedTemplatePages = draft.pages;
       _baseTemplatePages = draft.basePages;
@@ -1251,6 +1321,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
 
   @override
   void dispose() {
+    _invalidateCoverCopy();
     _stopAiObservation();
     _photoSession.reset();
     WidgetsBinding.instance.removeObserver(this);
@@ -1289,6 +1360,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
   void _keepEditedCover() {
     if (_currentStep != 1 || _showPhotoFill) return;
     final cover = _editedCoverLayers();
+    _invalidateCoverCopy();
     _draftCoverLayers = cover;
     _draftCoverCanvasSize = _usesPhysicalTemplateCanvas
         ? coverCanvasBaseSize(_selectedCover!)
@@ -1299,6 +1371,93 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
       final key = AlbumCreationTemplate.variantKey(_selectedCover!);
       _templatePagesByAspect?[key] = _resolvedTemplatePages!;
     }
+  }
+
+  void _dismissCoverCopy() {
+    final route = _coverCopyRoute, navigator = _coverCopyNavigator;
+    _coverCopyRoute = null;
+    _coverCopyNavigator = null;
+    if (route == null || navigator == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (navigator.mounted && route.isActive) navigator.removeRoute(route);
+    });
+  }
+
+  void _invalidateCoverCopy() {
+    _coverCopyRevision++;
+    _dismissCoverCopy();
+  }
+
+  Future<void> _editCoverCopy() async {
+    if (_coverCopyRoute != null || _currentStep != 0) return;
+    final owner = ref.read(visibleOrderOwnerProvider);
+    final cover = _selectedCover;
+    final pages = _resolvedTemplatePages;
+    final layers = pages?.firstOrNull ?? _draftCoverLayers;
+    if (cover == null ||
+        layers == null ||
+        !layers.any((layer) => layer.type == LayerType.text))
+      return;
+    if (owner == null || owner != _draftOwner) return;
+    final revision = ++_coverCopyRevision;
+    final draftId = _draftId;
+    bool current() =>
+        mounted &&
+        revision == _coverCopyRevision &&
+        _currentStep == 0 &&
+        _draftId == draftId &&
+        _draftOwner == owner &&
+        ref.read(visibleOrderOwnerProvider) == owner &&
+        _selectedCover?.productId == cover.productId &&
+        _selectedCover?.coverType == cover.coverType &&
+        identical(_resolvedTemplatePages, pages);
+    final navigator = Navigator.of(context, rootNavigator: true);
+    late final DialogRoute<Map<String, String>> route;
+    route = DialogRoute<Map<String, String>>(
+      context: context,
+      builder: (_) => Dialog.fullscreen(
+        child: CoverCopyEditor(
+          layers: layers,
+          cover: cover,
+          ownerId: owner,
+          isCurrent: current,
+          preserveTypography: _preserveTemplateTypography,
+          onCancel: _dismissCoverCopy,
+          onApply: (values) {
+            if (current() && route.isCurrent) navigator.pop(values);
+          },
+        ),
+      ),
+    );
+    _coverCopyRoute = route;
+    _coverCopyNavigator = navigator;
+    Map<String, String>? values;
+    try {
+      values = await navigator.push(route);
+    } finally {
+      if (identical(_coverCopyRoute, route)) {
+        _coverCopyRoute = null;
+        _coverCopyNavigator = null;
+      }
+    }
+    if (values == null || !current()) return;
+    final changes = CoverCopyChanges.fromValues(layers, values);
+    if (changes.isEmpty) return;
+    setState(() {
+      if (pages != null) _resolvedTemplatePages = changes.applyToPages(pages);
+      if (_baseTemplatePages case final base?) {
+        _baseTemplatePages = changes.applyToPages(base);
+      }
+      _templatePagesByAspect = _templatePagesByAspect?.map(
+        (key, variant) => MapEntry(key, changes.applyToPages(variant)),
+      );
+      if (_draftCoverLayers case final edited?) {
+        _draftCoverLayers = changes.applyTo(edited);
+      }
+      final updated = _resolvedTemplatePages?.firstOrNull ?? _draftCoverLayers;
+      if (updated != null) _photoSession.updateCover(updated);
+      _coverCopyRevision++;
+    });
   }
 
   Future<bool> _saveDraft({bool notify = true, bool afterCreation = false}) {
@@ -1317,6 +1476,171 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
     );
   }
 
+  Future<void> _startAlbumEditing() async {
+    if (_startingAlbum || _savingDraft || _entryOperation != null) return;
+    if (_createdAlbumId != null) {
+      await _retryCreationCheckpoint();
+      return;
+    }
+    final title = _albumTitle.trim();
+    final cover = _selectedCover;
+    final owner = ref.read(visibleOrderOwnerProvider);
+    if (title.isEmpty ||
+        cover == null ||
+        !AlbumPagePolicy.isValid(_selectedPageCount) ||
+        _templateMinPageCount > AlbumPagePolicy.maxInnerPages) {
+      context.showSnack('앨범 이름과 크기, 쪽수를 확인해주세요.');
+      return;
+    }
+    if (owner == null ||
+        owner.isEmpty ||
+        _draftOwner != null && _draftOwner != owner) {
+      context.showSnack('로그인 상태를 확인한 뒤 다시 시도해주세요.');
+      return;
+    }
+    _draftOwner ??= owner;
+    final draftId = _draftId;
+    final operation = Object();
+    _albumTitle = title;
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() {
+      _entryOperation = operation;
+      _entryErrorMessage = null;
+      _startingAlbum = true;
+    });
+    bool current() =>
+        mounted &&
+        identical(_entryOperation, operation) &&
+        _draftId == draftId &&
+        _draftOwner == owner &&
+        ref.read(visibleOrderOwnerProvider) == owner &&
+        ref.read(albumEditorOwnerReaderProvider)() == owner &&
+        ModalRoute.of(context)?.isCurrent != false;
+    AlbumEditorViewModel? editor;
+    try {
+      await ref.read(albumEditorViewModelProvider.future);
+      if (!current()) return;
+      final vm = ref.read(albumEditorViewModelProvider.notifier);
+      editor = vm;
+      final reference = Size(
+        kCoverReferenceWidth,
+        kCoverReferenceWidth / cover.ratio,
+      );
+      if (!identical(_entryEditorSession, vm.editSessionIdentity)) {
+        // Reset only the first preparation; retries retain a known ID and CAS save.
+        vm.resetForCreate(
+          initialCover: cover,
+          targetPages: _selectedPageCount,
+          sourceTemplateProductKey: _sourceTemplateProductKey,
+        );
+        vm.bindCreationDraft(
+          ownerId: owner,
+          draftId: draftId,
+          attempt: _creationAttempt,
+          persist: _persistAlbumCreation,
+        );
+        vm.setCoverCanvasSize(reference);
+        final layers = _draftCoverLayers ?? _resolvedTemplatePages?.firstOrNull;
+        if (layers != null && layers.isNotEmpty) {
+          vm.applyTemplateCoverPreview(
+            layers,
+            templateCanvasSize:
+                _draftCoverCanvasSize ??
+                (_usesPhysicalTemplateCanvas
+                    ? coverCanvasBaseSize(cover)
+                    : _draftCoverCanvasSize),
+          );
+        }
+        _entryEditorSession = vm.editSessionIdentity;
+      }
+      if (!current()) return;
+      final session = vm.editSessionIdentity;
+      final id = await vm.saveAlbumToBackend(
+        reference,
+        title: title,
+        targetPages: _selectedPageCount,
+        overrideLayers: List.of(vm.pages.first.layers),
+        coverImageBytes: null,
+      );
+      if (!current() ||
+          !identical(session, vm.editSessionIdentity) ||
+          id == null)
+        return;
+      // This getter is safe only after this draft owns the VM's prepared session.
+      _entryCoverSnapshot = _editedCoverLayers();
+      _draftCoverLayers = _entryCoverSnapshot;
+      _draftCoverCanvasSize = _usesPhysicalTemplateCanvas
+          ? coverCanvasBaseSize(cover)
+          : reference;
+      await _handleAlbumCreated(id, preparedCover: _entryCoverSnapshot);
+    } catch (error) {
+      if (!current()) return;
+      final vm = editor;
+      final knownId = vm?.editingAlbumId;
+      if (error is AlbumRevisionConflict && knownId != null && vm != null) {
+        final session = vm.editSessionIdentity;
+        final open = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('이미 만들어진 앨범이 있어요'),
+            content: const Text(
+              '저장된 내용과 이 기기의 작업이 달라 덮어쓰지 않았어요. 내 작업을 유지한 채 편집 화면에서 저장된 앨범을 확인할 수 있어요.',
+            ),
+            actions: [
+              TextButton(
+                key: const ValueKey('creation-conflict-keep'),
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('내 작업 유지'),
+              ),
+              FilledButton(
+                key: const ValueKey('creation-conflict-review'),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('저장된 앨범 확인'),
+              ),
+            ],
+          ),
+        );
+        if (!current() || !identical(session, vm.editSessionIdentity)) return;
+        if (open == true) {
+          _entryCoverSnapshot = _editedCoverLayers();
+          await _handleAlbumCreated(
+            knownId,
+            recoveryConflict: true,
+            preparedCover: _entryCoverSnapshot,
+          );
+          return;
+        }
+      }
+      if (current())
+        setState(() {
+          _entryErrorMessage = error is AlbumCreationRecoveryRequired
+              ? '작업을 기기에 기록하지 못해 앨범 준비를 멈췄어요. 다시 시도해주세요.'
+              : '앨범을 준비하지 못했어요. 사진과 글은 유지돼요. 다시 시도해주세요.';
+        });
+    } finally {
+      if (mounted && identical(_entryOperation, operation))
+        setState(() {
+          _entryOperation = null;
+          _startingAlbum = false;
+        });
+    }
+  }
+
+  Future<void> _persistAlbumCreation(AlbumCreationAttempt attempt) async {
+    if (!mounted ||
+        attempt.draftId != _draftId ||
+        attempt.ownerId != _draftOwner ||
+        ref.read(visibleOrderOwnerProvider) != attempt.ownerId ||
+        (_creationAttempt != null &&
+            _creationAttempt!.requestId != attempt.requestId)) {
+      throw const AlbumEditSessionChanged();
+    }
+    _creationAttempt = attempt;
+    if (!await _saveDraft(notify: false, afterCreation: true)) {
+      throw const AlbumCreationRecoveryRequired();
+    }
+  }
+
   List<List<LayerModel>>? _copyDraftPages(List<List<LayerModel>>? pages) =>
       pages?.map((page) => [...page]).toList();
 
@@ -1332,9 +1656,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
         owner.isEmpty ||
         (_draftOwner != null && owner != _draftOwner)) {
       if (notify)
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('로그인 상태를 확인한 뒤 다시 저장해주세요.')),
-        );
+        context.showSnack('로그인 상태를 확인한 뒤 다시 저장해주세요.');
       return false;
     }
     _draftOwner ??= owner;
@@ -1342,6 +1664,8 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
     final draft = AlbumCreationDraft(
       id: _draftId,
       createdAlbumId: _createdAlbumId,
+      creationAttempt: _creationAttempt,
+      editorCheckpoint: _creationEditorCheckpoint,
       updatedAt: DateTime.now(),
       title: _albumTitle,
       cover: _selectedCover ?? defaultCoverSize,
@@ -1371,34 +1695,24 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
     );
     setState(() => _savingDraft = true);
     try {
-      if (kIsWeb) {
-        await _draftWriteSession;
-        if (_draftWriteSessionError case final error?) throw error;
-      }
+      await _draftWriteSession;
+      if (_draftWriteSessionError case final error?) throw error;
       await ref.read(albumCreationDraftStoreProvider).save(owner, draft);
       if (!mounted) return true;
       ref.invalidate(albumCreationDraftProvider);
       if (notify)
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              kIsWeb ? '이 브라우저에 사진 원본과 함께 임시 저장했어요.' : '이 기기에 임시 저장했어요.',
-            ),
-          ),
+        context.showSnack(
+          kIsWeb ? '이 브라우저에 사진 원본과 함께 임시 저장했어요.' : '이 기기에 임시 저장했어요.',
         );
       return true;
     } catch (error) {
       if (mounted && notify)
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              kIsWeb && error is BrowserPhotoException
-                  ? error.message
-                  : kIsWeb
-                  ? '임시 저장하지 못했어요. 브라우저 저장 공간을 확인한 뒤 다시 시도해주세요. 작업은 유지됩니다.'
-                  : '임시 저장하지 못했어요. 작업을 유지한 채 다시 시도해주세요.',
-            ),
-          ),
+        context.showErrorSnack(
+          kIsWeb && error is BrowserPhotoException
+              ? error.message
+              : kIsWeb
+              ? '임시 저장하지 못했어요. 브라우저 저장 공간을 확인한 뒤 다시 시도해주세요. 작업은 유지됩니다.'
+              : '임시 저장하지 못했어요. 작업을 유지한 채 다시 시도해주세요.',
         );
       return false;
     } finally {
@@ -1447,9 +1761,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
           if (mounted) ref.invalidate(albumCreationDraftProvider);
         } catch (_) {
           if (mounted)
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('임시 저장을 지우지 못했어요. 다시 시도해주세요.')),
-            );
+            context.showSnack('임시 저장을 지우지 못했어요. 다시 시도해주세요.');
           return;
         }
       }
@@ -1461,7 +1773,11 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
 
   Future<void> _reviewBeforeCreate() async {
     final complete = _onCompletePressed;
-    if (_reviewing || _savingDraft || _startingAlbum || complete == null)
+    if (_reviewing ||
+        _savingDraft ||
+        _startingAlbum ||
+        _creationCheckpointFailed ||
+        complete == null)
       return;
     _reviewing = true;
     _keepEditedCover();
@@ -1495,6 +1811,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
 
   bool _hasUnsavedBrowserPhotoWork() {
     if (!kIsWeb) return false;
+    if (_creationCheckpointFailed) return true;
     if (_isGeneratingAiDraft ||
         _isAcceptingAiDraft ||
         _aiPointUsageUnconfirmed ||
@@ -1542,7 +1859,13 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
       setState(_discardAiAccountWork);
       return;
     }
-    _draftOwner ??= ref.read(visibleOrderOwnerProvider);
+    if (_draftOwner == null) {
+      final owner = ref.read(visibleOrderOwnerProvider);
+      if (owner != null) {
+        _draftOwner = owner;
+        _beginDraftWriteSession();
+      }
+    }
   }
 
   @override
@@ -1560,62 +1883,72 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
             ? _buildWebCreation()
             : Scaffold(
                 backgroundColor: AlbumStageStyle.top(context),
-                appBar: AppBar(
-                  toolbarHeight:
-                      MediaQuery.orientationOf(context) == Orientation.landscape
-                      ? 48
-                      : 52,
-                  backgroundColor: AlbumStageStyle.top(context),
-                  systemOverlayStyle: AlbumStageStyle.overlay(context).copyWith(
-                    systemNavigationBarColor: AlbumStageStyle.bottom(context),
-                  ),
-                  surfaceTintColor: Colors.transparent,
-                  scrolledUnderElevation: 0,
-                  elevation: 0,
-                  leading: IconButton(
-                    tooltip: '뒤로가기',
-                    icon: const ExperienceIcon('ArrowLeft', size: 22),
-                    onPressed: _handleBack,
-                  ),
-                  title: Text(
-                    _currentStep == 0
-                        ? (widget.initialDraft == null ? '앨범 만들기' : '이어서 만들기')
-                        : _currentStep == 1
-                        ? (_showPhotoFill
-                              ? (widget.initialDraft == null
+                appBar: !_hasSelectedCreationMode
+                    ? _creationHubAppBar()
+                    : AppBar(
+                        toolbarHeight:
+                            MediaQuery.orientationOf(context) ==
+                                Orientation.landscape
+                            ? 48
+                            : 52,
+                        backgroundColor: AlbumStageStyle.top(context),
+                        systemOverlayStyle: AlbumStageStyle.overlay(context)
+                            .copyWith(
+                              systemNavigationBarColor: AlbumStageStyle.bottom(
+                                context,
+                              ),
+                            ),
+                        surfaceTintColor: Colors.transparent,
+                        scrolledUnderElevation: 0,
+                        elevation: 0,
+                        leading: IconButton(
+                          tooltip: '뒤로가기',
+                          icon: const ExperienceIcon('ArrowLeft', size: 22),
+                          onPressed: _handleBack,
+                        ),
+                        title: Text(
+                          _currentStep == 0
+                              ? (!_isAiCreationMode
+                                    ? '앨범 설정'
+                                    : widget.initialDraft == null
                                     ? '앨범 만들기'
                                     : '이어서 만들기')
-                              : '표지')
-                        : '초대',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: ExperienceFormStyle.text(
-                      context,
-                      15,
-                      weight: FontWeight.w600,
-                    ),
-                  ),
-                  actions: [
-                    if (!_isAiCreationMode && !_isGeneratingAiDraft) ...[
-                      IconButton(
-                        key: const ValueKey('creation-save-draft'),
-                        tooltip: '임시 저장',
-                        onPressed: _savingDraft || _startingAlbum
-                            ? null
-                            : _saveDraft,
-                        icon: const Icon(Icons.save_outlined, size: 21),
+                              : _currentStep == 1
+                              ? (_showPhotoFill
+                                    ? (widget.initialDraft == null
+                                          ? '앨범 만들기'
+                                          : '이어서 만들기')
+                                    : '표지')
+                              : '초대',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: ExperienceFormStyle.text(
+                            context,
+                            _currentStep == 0 && !_isAiCreationMode ? 18 : 15,
+                            weight: FontWeight.w600,
+                          ),
+                        ),
+                        actions: [
+                          if (!_isAiCreationMode && !_isGeneratingAiDraft) ...[
+                            IconButton(
+                              key: const ValueKey('creation-save-draft'),
+                              tooltip: '임시 저장',
+                              onPressed: _savingDraft || _startingAlbum
+                                  ? null
+                                  : _saveDraft,
+                              icon: const Icon(Icons.save_outlined, size: 21),
+                            ),
+                            IconButton(
+                              key: const ValueKey('creation-exit'),
+                              tooltip: '앨범 만들기 나가기',
+                              onPressed: _savingDraft || _startingAlbum
+                                  ? null
+                                  : _leaveCreation,
+                              icon: const ExperienceIcon('X', size: 21),
+                            ),
+                          ],
+                        ],
                       ),
-                      IconButton(
-                        key: const ValueKey('creation-exit'),
-                        tooltip: '앨범 만들기 나가기',
-                        onPressed: _savingDraft || _startingAlbum
-                            ? null
-                            : _leaveCreation,
-                        icon: const Icon(Icons.close_rounded, size: 21),
-                      ),
-                    ],
-                  ],
-                ),
                 body: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1655,7 +1988,9 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
   }
 
   String get _creationScene {
-    if (_createdAlbumId != null) return 'opening';
+    // This value is also the native reveal widget's key. A newly known ID
+    // must not remount/reset the live cover while its checkpoint is pending.
+    if (_restoringCreatedAlbum) return 'opening';
     if (!_hasSelectedCreationMode) return 'choose';
     if (_currentStep > 0) return _showPhotoFill ? 'photos' : 'cover';
     if (!_isAiCreationMode) return 'settings';
@@ -1675,40 +2010,76 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
     _ => 'AI 디자인',
   };
 
+  PreferredSizeWidget _creationHubAppBar() => AppBar(
+    key: const ValueKey('creation-hub-header'),
+    toolbarHeight: 56,
+    backgroundColor: AlbumStageStyle.top(context),
+    surfaceTintColor: Colors.transparent,
+    scrolledUnderElevation: 0,
+    elevation: 0,
+    leading: IconButton(
+      key: const ValueKey('creation-hub-back'),
+      tooltip: _browsingCreationCatalog && widget.initialStartMode == null
+          ? '만들기 방법'
+          : '뒤로가기',
+      onPressed: _savingDraft || _startingAlbum ? null : _handleBack,
+      icon: const ExperienceIcon('ArrowLeft', size: 22),
+    ),
+    title: Text(
+      _browsingCreationCatalog
+          ? '디자인 고르기'
+          : widget.initialDraft == null
+          ? '앨범 만들기'
+          : '이어서 만들기',
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: ExperienceFormStyle.text(context, 19, weight: FontWeight.w600),
+    ),
+    actions: [
+      IconButton(
+        key: const ValueKey('creation-save-draft'),
+        tooltip: '임시 저장',
+        onPressed: _savingDraft || _startingAlbum ? null : _saveDraft,
+        icon: const Icon(Icons.save_outlined, size: 21),
+      ),
+      IconButton(
+        key: const ValueKey('creation-exit'),
+        tooltip: '앨범 만들기 나가기',
+        onPressed: _savingDraft || _startingAlbum ? null : _leaveCreation,
+        icon: const ExperienceIcon('X', size: 21),
+      ),
+    ],
+  );
+
   Widget _buildWebCreation() {
     final compactHeader = MediaQuery.sizeOf(context).width < 700;
+    // Keep the hub subtree stable across resizing and returning from a preview.
+    if (!_hasSelectedCreationMode) {
+      return Scaffold(
+        backgroundColor: AlbumStageStyle.top(context),
+        appBar: _creationHubAppBar(),
+        body: _buildStepContent(),
+      );
+    }
     final photoWorkspaceNeedsRoom =
         _currentStep == 1 &&
         _showPhotoFill &&
         MediaQuery.textScalerOf(context).scale(11) > 14 &&
         (MediaQuery.sizeOf(context).width < 760 ||
             MediaQuery.sizeOf(context).height < 560);
-    final hasPhotos = _resolvedTemplatePages != null || _isAiCreationMode;
-    final labels = hasPhotos
-        ? [
-            '디자인 선택',
-            '앨범 설정',
-            '사진 채우기',
-            '표지 편집',
-            _currentStep == 2 ? '공유 설정' : '편집 시작',
-          ]
-        : ['디자인 선택', '앨범 설정', '표지 편집', _currentStep == 2 ? '공유 설정' : '편집 시작'];
-    final selected = !_hasSelectedCreationMode || _isAiCreationMode
+    const labels = ['디자인 선택', '앨범 설정', '앨범 편집'];
+    final selected = _isAiCreationMode
         ? 0
         : _currentStep == 0
         ? 1
-        : _currentStep == 2
-        ? labels.length - 1
-        : _showPhotoFill
-        ? 2
-        : labels.length - 2;
+        : 2;
     final title = labels[selected];
     final description = !_hasSelectedCreationMode
         ? '템플릿으로 시작하거나, 빈 앨범에서 원하는 디자인을 만들어보세요.'
         : _isAiCreationMode
         ? '원하는 분위기와 사진을 고르고, 생성 전에 이용 조건을 확인하세요.'
         : _currentStep == 0
-        ? '제목과 실물 책 규격을 정하세요. 앨범 내용은 편집 화면에서 계속 바꿀 수 있습니다.'
+        ? '앨범 이름과 크기, 쪽수를 정하세요. 사진과 글은 편집 화면에서 바로 바꿀 수 있어요.'
         : _currentStep == 2
         ? '함께 편집할 사람과 공유 설정을 확인하세요. 혼자 편집을 시작할 수도 있습니다.'
         : _showPhotoFill
@@ -1727,7 +2098,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
                   onPressed: _savingDraft || _startingAlbum || _reviewing
                       ? null
                       : _handleBack,
-                  icon: const Icon(Icons.arrow_back, size: 20),
+                  icon: const ExperienceIcon('ArrowLeft', size: 20),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -1877,7 +2248,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
             key: const ValueKey('creation-exit'),
             tooltip: '앨범 만들기 나가기',
             onPressed: _savingDraft || _startingAlbum ? null : _leaveCreation,
-            icon: const Icon(Icons.close, size: 20),
+            icon: const ExperienceIcon('X', size: 20),
           ),
         ],
       ],
@@ -2356,10 +2727,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
       case AiAlbumDraftRecoveryAction.reviewPointCost:
         await Navigator.push<bool>(
           context,
-          MaterialPageRoute(
-            builder: (_) =>
-                const BillingManagementScreen(returnToAiDraftFlow: true),
-          ),
+          snapFitRoute(page: const BillingManagementScreen(returnToAiDraftFlow: true)),
         );
         if (!mounted) return;
         ref.invalidate(myPointBalanceProvider);
@@ -2385,9 +2753,151 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
     }
   }
 
+  Future<void> _retryCreationCheckpoint() async {
+    final id = _createdAlbumId;
+    final owner = _draftOwner;
+    final draftId = _draftId;
+    if (_checkpointRetryOperation != null ||
+        _savingDraft ||
+        id == null ||
+        owner == null ||
+        ModalRoute.of(context)?.isCurrent == false)
+      return;
+    final operation = Object();
+    setState(() => _checkpointRetryOperation = operation);
+    bool current() =>
+        mounted &&
+        identical(_checkpointRetryOperation, operation) &&
+        _draftId == draftId &&
+        _draftOwner == owner &&
+        ref.read(albumEditorOwnerReaderProvider)() == owner;
+    try {
+      await _handleAlbumCreated(
+        id,
+        recoveryConflict: _creationRecoveryConflict,
+        preparedCover: _entryCoverSnapshot,
+      );
+    } catch (_) {
+      if (current()) setState(() => _creationCheckpointFailed = true);
+    } finally {
+      if (current()) setState(() => _checkpointRetryOperation = null);
+    }
+  }
+
+  /// Keep the live cover State mounted while a known album's local hand-off is
+  /// retried. Remounting it would reset the editor and lose the known ID/pages.
+  Widget _withCreationCheckpointRecovery(Widget editor) => Stack(
+    fit: StackFit.expand,
+    children: [
+      Offstage(
+        offstage: _creationCheckpointFailed,
+        child: TickerMode(
+          enabled: !_creationCheckpointFailed,
+          child: AbsorbPointer(absorbing: _savingDraft, child: editor),
+        ),
+      ),
+      if (_creationCheckpointFailed)
+        Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 440),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Icon(Icons.save_outlined, size: 32),
+                  const SizedBox(height: 20),
+                  Text(
+                    '편집한 내용은 이 화면에 있어요',
+                    style: ExperienceFormStyle.text(
+                      context,
+                      22,
+                      weight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    '앨범은 만들어졌어요. 현재 작업을 기기에 저장하지 못해 이동을 멈췄어요.',
+                    style: ExperienceFormStyle.text(
+                      context,
+                      14,
+                      secondary: true,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton.icon(
+                    key: const ValueKey('creation-checkpoint-retry'),
+                    onPressed: _savingDraft || _checkpointRetryOperation != null
+                        ? null
+                        : () => unawaited(_retryCreationCheckpoint()),
+                    icon: _savingDraft || _checkpointRetryOperation != null
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.save_outlined, size: 18),
+                    label: Text(
+                      _savingDraft || _checkpointRetryOperation != null
+                          ? '작업 저장 중'
+                          : '작업 저장하고 계속하기',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+    ],
+  );
+
   Widget _buildStepContent() {
-    if (_createdAlbumId != null)
+    if (_restoringCreatedAlbum)
       return const Center(child: CircularProgressIndicator());
+    if (_entryErrorMessage != null) {
+      return _withCreationCheckpointRecovery(
+        Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 440),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '작업을 유지하고 있어요',
+                    style: ExperienceFormStyle.text(
+                      context,
+                      20,
+                      weight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    _entryErrorMessage!,
+                    style: ExperienceFormStyle.text(
+                      context,
+                      14,
+                      secondary: true,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton(
+                    key: const ValueKey('creation-entry-retry'),
+                    onPressed: _startingAlbum
+                        ? null
+                        : () => unawaited(_startAlbumEditing()),
+                    style: ExperienceFormStyle.primary(context),
+                    child: const Text('다시 시도'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     switch (_currentStep) {
       case 0:
         if (_aiAccountChanged) {
@@ -2424,6 +2934,9 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
         }
         if (!_hasSelectedCreationMode) {
           return AiAlbumStartStep(
+            browsing: _browsingCreationCatalog,
+            onBrowsingChanged: (value) =>
+                setState(() => _browsingCreationCatalog = value),
             templates: ref.watch(albumCreationCatalogProvider),
             onRetry: () {
               ref.invalidate(templateListProvider);
@@ -2657,42 +3170,35 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
             ),
           );
         }
-        return AlbumCreateStep1(
-          albumTitle: _albumTitle,
-          templateTitle: _templateTitle,
-          templatePreviewImageUrl: _templatePreviewUrl,
-          sourceLabel: _sourceLabel,
-          coverLayers: _resolvedTemplatePages?.firstOrNull,
-          documentPages: _resolvedTemplatePages,
-          preserveTypography: _preserveTemplateTypography,
-          availableCovers: coverSizes,
-          onChangeDesign: _changeDesign,
-          selectedCover: _selectedCover,
-          selectedPageCount: _selectedPageCount,
-          minPageCount: _templateMinPageCount,
-          templatePageCount: (_resolvedTemplatePages?.length ?? 1) - 1,
-          // 제목 변경은 부모의 setState를 매 키 입력마다 호출하지 않고,
-          // 값만 보관해서 한글 IME 조합이 끊기지 않도록 한다.
-          onTitleChanged: (title) => _albumTitle = title,
-          onCoverSelected: _selectCover,
-          onPageCountChanged: (count) =>
-              setState(() => _selectedPageCount = _normalizePageCount(count)),
-          onNext: () {
-            final title = _albumTitle.trim();
-            if (title.isNotEmpty &&
-                _selectedCover != null &&
-                AlbumPagePolicy.isValid(_selectedPageCount)) {
-              _albumTitle = title;
-              setState(() {
-                _showPhotoFill = _resolvedTemplatePages != null;
-                _currentStep = 1;
-              });
-              return;
-            }
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('앨범 제목과 책 크기를 확인해주세요.')),
-            );
-          },
+        return _withCreationCheckpointRecovery(
+          AbsorbPointer(
+            absorbing: _startingAlbum || _savingDraft,
+            child: AlbumCreateStep1(
+              isPreparing: _startingAlbum,
+              albumTitle: _albumTitle,
+              templateTitle: _templateTitle,
+              templatePreviewImageUrl: _templatePreviewUrl,
+              sourceLabel: _sourceLabel,
+              coverLayers: _resolvedTemplatePages?.firstOrNull,
+              documentPages: _resolvedTemplatePages,
+              preserveTypography: _preserveTemplateTypography,
+              availableCovers: coverSizes,
+              onChangeDesign: _changeDesign,
+              onEditCoverText: _editCoverCopy,
+              selectedCover: _selectedCover,
+              selectedPageCount: _selectedPageCount,
+              minPageCount: _templateMinPageCount,
+              templatePageCount: (_resolvedTemplatePages?.length ?? 1) - 1,
+              // 제목 변경은 부모의 setState를 매 키 입력마다 호출하지 않고,
+              // 값만 보관해서 한글 IME 조합이 끊기지 않도록 한다.
+              onTitleChanged: (title) => _albumTitle = title,
+              onCoverSelected: _selectCover,
+              onPageCountChanged: (count) => setState(
+                () => _selectedPageCount = _normalizePageCount(count),
+              ),
+              onNext: () => unawaited(_startAlbumEditing()),
+            ),
+          ),
         );
       case 1:
         if (_showPhotoFill &&
@@ -2703,7 +3209,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
             pages: _resolvedTemplatePages!,
             preserveTypography: _preserveTemplateTypography,
             cover: _selectedCover!,
+            enableAutoFill: _sourceLabel == '선택한 템플릿',
+            currentOwner: () => ref.read(visibleOrderOwnerProvider),
             onChanged: (pages) => setState(() {
+              _invalidateCoverCopy();
               _resolvedTemplatePages = pages;
               final productKey = AlbumCreationTemplate.variantKey(
                 _selectedCover!,
@@ -2726,29 +3235,35 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
         if (_selectedCover == null) {
           return const Center(child: CircularProgressIndicator());
         }
-        return AddCoverScreen(
-          sourceTemplateProductKey: _sourceTemplateProductKey,
-          onReviewBeforeCreate: _reviewBeforeCreate,
-          isFromCreateFlow: true,
-          initialCoverSize: _selectedCover,
-          initialTemplateCanvasSize: _usesPhysicalTemplateCanvas
-              ? coverCanvasBaseSize(_selectedCover!)
-              : _draftCoverCanvasSize,
-          albumTitle: _albumTitle, // 앨범 제목 전달
-          targetPages: _selectedPageCount, // 목표 페이지 수 전달
-          initialTemplateCoverLayers:
-              (_resolvedTemplatePages != null &&
-                  _resolvedTemplatePages!.isNotEmpty)
-              ? _resolvedTemplatePages!.first
-              : _draftCoverLayers,
-          onRegisterCompleteAction: (callback) {
-            setState(() {
-              _onCompletePressed = callback;
-            });
-          },
-          onAlbumCreated: (albumId) {
-            _handleAlbumCreated(albumId);
-          },
+        return _withCreationCheckpointRecovery(
+          AddCoverScreen(
+            creationDraftOwner: _draftOwner,
+            creationDraftId: _draftId,
+            creationAttempt: _creationAttempt,
+            onPersistCreationAttempt: _persistAlbumCreation,
+            onCreationConflict: (id) =>
+                _handleAlbumCreated(id, recoveryConflict: true),
+            sourceTemplateProductKey: _sourceTemplateProductKey,
+            onReviewBeforeCreate: _reviewBeforeCreate,
+            isFromCreateFlow: true,
+            initialCoverSize: _selectedCover,
+            initialTemplateCanvasSize: _usesPhysicalTemplateCanvas
+                ? coverCanvasBaseSize(_selectedCover!)
+                : _draftCoverCanvasSize,
+            albumTitle: _albumTitle, // 앨범 제목 전달
+            targetPages: _selectedPageCount, // 목표 페이지 수 전달
+            initialTemplateCoverLayers:
+                (_resolvedTemplatePages != null &&
+                    _resolvedTemplatePages!.isNotEmpty)
+                ? _resolvedTemplatePages!.first
+                : _draftCoverLayers,
+            onRegisterCompleteAction: (callback) {
+              setState(() {
+                _onCompletePressed = callback;
+              });
+            },
+            onAlbumCreated: (albumId) => _handleAlbumCreated(albumId),
+          ),
         );
       case 2:
         // Step 3: 친구 초대 (마지막 단계)
@@ -2803,10 +3318,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
               // 즉시 편집 화면으로 이동
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(
-                  settings: const WebAppRouteSettings(WebAppLocation.create),
-                  builder: (_) => const PageEditorScreen(initialPageIndex: 1),
-                ),
+                snapFitRoute(page: const PageEditorScreen(initialPageIndex: 1), settings: const WebAppRouteSettings(WebAppLocation.create)),
               );
             }
           },
@@ -2820,14 +3332,24 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
   Future<void> _handleAlbumCreated(
     int albumId, {
     bool restoring = false,
+    bool recoveryConflict = false,
+    List<LayerModel>? preparedCover,
   }) async {
+    final owner = _draftOwner;
+    final draftId = _draftId;
+    bool current() =>
+        mounted &&
+        owner != null &&
+        _draftOwner == owner &&
+        _draftId == draftId &&
+        ref.read(albumEditorOwnerReaderProvider)() == owner &&
+        ref.read(visibleOrderOwnerProvider) == owner;
+    if (!current()) return;
     _createdAlbumId = albumId;
     // Inner pages have not reached the backend yet. Keep a linked draft until
     // the page editor saves the entire album, and never create it twice on resume.
-    if (!restoring) await _saveDraft(notify: false, afterCreation: true);
-    if (!mounted) return;
     await ref.read(albumEditorViewModelProvider.future);
-    if (!mounted) return;
+    if (!current()) return;
     final dummyAlbum = Album(
       id: albumId,
       ratio: _selectedCover!.ratio.toString(),
@@ -2837,8 +3359,19 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     final editorCheckpoint = restoring
         ? widget.initialDraft?.editorCheckpoint
+        : _creationCheckpointFailed
+        ? _creationEditorCheckpoint
         : null;
-    if (editorCheckpoint != null) {
+    final keepPreparedEditor =
+        !restoring &&
+        _creationCheckpointFailed &&
+        editorCheckpoint != null &&
+        vm.editingAlbumId == albumId &&
+        identical(_creationEditorSessionIdentity, vm.editSessionIdentity);
+    if (keepPreparedEditor) {
+      // Only the durable link failed. Keep this exact document, revision and
+      // history instead of opening a new editor session on each local retry.
+    } else if (editorCheckpoint != null) {
       vm.restoreCreatedEditorDraft(
         sourceTemplateProductKey: _sourceTemplateProductKey,
         albumId: albumId,
@@ -2852,7 +3385,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
       // Keep the cover just edited; only the inner pages come from the template.
       final cover = restoring
           ? _draftCoverLayers ?? _resolvedTemplatePages!.first
-          : _editedCoverLayers();
+          : preparedCover ?? _editedCoverLayers();
       final pages = <List<LayerModel>>[
         cover,
         ...?_resolvedTemplatePages?.skip(1),
@@ -2878,17 +3411,49 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
       );
     }
 
-    if (!mounted) return;
+    if (recoveryConflict) vm.showCreatedAlbumConflict();
+    _creationEditorCheckpoint = vm.captureCreationEditorCheckpoint();
+    _creationEditorSessionIdentity = vm.editSessionIdentity;
+    if (!restoring) {
+      final saved = await _saveDraft(notify: false, afterCreation: true);
+      if (!current()) return;
+      if (!saved) {
+        // Knowing the server ID is insufficient: the page editor only updates
+        // this exact linked draft. Keep its complete local document here until
+        // that link and checkpoint have durably committed.
+        setState(() {
+          _creationCheckpointFailed = true;
+          _creationRecoveryConflict = recoveryConflict;
+        });
+        return;
+      }
+    }
+    if (!current()) return;
+    // The creation route clears its session on disposal. Hand off an independent
+    // queue so delayed font loading and route restoration keep unplaced photos.
+    final photoFillSession = TemplatePhotoFillSession()
+      ..page = _photoSession.page
+      ..pendingPhotos.addAll(_photoSession.pendingPhotos)
+      ..selectedPhoto = _photoSession.selectedPhoto
+      ..selectedSlot = _photoSession.selectedSlot;
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        settings: const WebAppRouteSettings(WebAppLocation.create),
-        builder: (_) => PageEditorScreen(
-          initialPageIndex: editorCheckpoint?.pageIndex ?? 1,
+      snapFitRoute(page: PageEditorScreen(
+          initialPageIndex:
+              editorCheckpoint?.pageIndex ??
+              (widget.initialDraft?.currentPage ?? 0).clamp(
+                0,
+                vm.pages.length - 1,
+              ),
+          initialSelectedLayerId:
+              editorCheckpoint == null &&
+                  _photoSession.selectedSlot?.page == _photoSession.page
+              ? _photoSession.selectedSlot?.id
+              : null,
+          initialPhotoFillSession: photoFillSession,
           creationDraftId: _draftId,
           creationDraftOwner: _draftOwner,
-        ),
-      ),
+        ), settings: const WebAppRouteSettings(WebAppLocation.create)),
     );
   }
 
@@ -2936,7 +3501,13 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
   /// - Step 1,2,3: 이전 스텝으로 이동
   /// return true 이면 이벤트를 소모했음을 의미 (WillPopScope에서 pop 방지)
   Future<bool> _handleBack() async {
-    if (_savingDraft || _leaving || _reviewing) return true;
+    if (_savingDraft || _leaving || _reviewing || _startingAlbum) return true;
+    if (_entryErrorMessage != null) {
+      // Keep the immutable creation attempt and known server ID together while
+      // recovery is pending; leaving still offers the normal draft-save choice.
+      await _leaveCreation();
+      return true;
+    }
     if (_isGeneratingAiDraft ||
         _isAcceptingAiDraft ||
         _aiPointUsageUnconfirmed) {
@@ -2948,6 +3519,9 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
                 ? '포인트 처리 결과를 먼저 확인해 주세요. 같은 디자인을 유지하고 있어요.'
                 : '현재 요청의 결과를 기다리고 있어요. 중복 요청을 보내지 않도록 잠시 기다려 주세요.',
           ),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         ),
       );
       _aiWaitNotice = notice;
@@ -2956,6 +3530,22 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
           if (identical(_aiWaitNotice, notice)) _aiWaitNotice = null;
         }),
       );
+      return true;
+    }
+    if (!_hasSelectedCreationMode && _browsingCreationCatalog) {
+      if (widget.initialStartMode != null) {
+        if (_returnToSetupFromHub) {
+          setState(() {
+            _browsingCreationCatalog = false;
+            _returnToSetupFromHub = false;
+            _hasSelectedCreationMode = true;
+          });
+        } else {
+          await _leaveCreation();
+        }
+        return true;
+      }
+      setState(() => _browsingCreationCatalog = false);
       return true;
     }
     if (_previewAiComparison) {
@@ -2977,6 +3567,13 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
         _returnToSetupFromHub = false;
         _hasSelectedCreationMode = true;
       });
+      return true;
+    }
+    if (_currentStep == 0 &&
+        _hasSelectedCreationMode &&
+        widget.initialStartMode != null) {
+      // 시작 방법은 홈의 바텀시트에서 선택했다. 뒤로가기로 예전 허브를 노출하지 않는다.
+      await _leaveCreation();
       return true;
     }
     if (_currentStep == 0 &&

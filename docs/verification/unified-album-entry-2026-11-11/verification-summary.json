@@ -1,0 +1,202 @@
+{
+  "date": "2026-11-11",
+  "runtime": "installed Flutter native tester, serial processes",
+  "native_tests": [
+    {
+      "suite": "entry",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "photoEntry",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "photoDraft",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "photoQueue",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "photoWorkspace",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "coverCopy",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "drafts",
+      "passed": 31,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "journey",
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "printSizes",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "settings",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "step1",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "feedback",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "batch",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "photoHistory",
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "cropReview",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "photoPlan",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "editorVm",
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "photoQueueExit",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "conflict",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "flow",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "continuity",
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "saved",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "native_passed": 217,
+  "capture_tests": [
+    {
+      "suite": "entryCapture",
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "suite": "savedCapture",
+      "passed": 4,
+      "failed": 0
+    },
+    {
+      "suite": "colorCapture",
+      "passed": 1,
+      "failed": 0
+    }
+  ],
+  "web_ai_not_executed": [
+    {
+      "suite": "aiJobs",
+      "passed": 0,
+      "failed": 0,
+      "skipped": 5
+    },
+    {
+      "suite": "aiServer",
+      "passed": 0,
+      "failed": 0,
+      "skipped": 14
+    }
+  ],
+  "source_sha256": {
+    "lib/features/album/presentation/views/album_create_flow_screen.dart": "b400dba0bdaeb7a7911c4c4407f7be1c507198503e27c4eefc4f90d78212d3cc",
+    "lib/features/album/presentation/widgets/create_flow/album_create_step1.dart": "7d5a946687aa3d29c8775db6c645d72bba905b1cc1178251f0e20ee746c951b4",
+    "lib/features/album/presentation/views/page_editor_screen.dart": "4792e2a8392fab1c43d4c81ce5a76283248fe7e298dddf0a6a5eef50270cf596",
+    "lib/features/album/presentation/viewmodels/album_editor_view_model.dart": "6368ca9ed5c18dae9209db4e9458e0f219eef9f4dedb52370f6fd33512671cc8",
+    "lib/features/album/domain/entities/album_photo_fill_draft.dart": "f7f5a46b8322576520b95568761ce37381c5a21c19eb8dd5183e7ac6394f9e0b",
+    "lib/features/album/domain/entities/album_creation_draft.dart": "07012499c1a26659fb2d2efa59a49cdfcbcb6dbd2a4df992cdc5bdf4c000e869",
+    "lib/features/album/presentation/widgets/editor/editor_photo_fill_screen.dart": "5abd740665295839b331c785c74681981f0434f91fb42b9e1fae3547dd8a4d57",
+    "lib/features/album/presentation/widgets/editor/editor_more_tools_sheet.dart": "c7a8e8529c9f63bd147ba40508ac7443642c1ad3b45014e2345311ad21761df9",
+    "lib/features/album/presentation/widgets/editor/editor_context_dock.dart": "0b4338882093564c686962736aca52cc946f0f09642f74b43945a7ad95f1f5dd",
+    "lib/features/album/presentation/widgets/editor/editor_bottom_menu.dart": "8722b38b25ee2d01090015031db24133153300f32e6709bc6b8ac499bc198b9a",
+    "lib/features/album/presentation/widgets/create_flow/template_photo_fill_step.dart": "2b435d6b9b960a517ce1003bd21aede2e2d7118f7ca7cc78e368c3df21443067",
+    "lib/shared/widgets/browser_photo_selection_sheet.dart": "d3d32280ee7ccac1217b4dd6f9da2bad3b8a0f70f8796a52b4b9f01852c3d1be",
+    "lib/features/album/presentation/widgets/create_flow/template_photo_fill_preview.dart": "5688c53a7445498cf5be897b9aa3a6be880eeeab3c30271ede9a0abc8120217b",
+    "lib/features/store/presentation/widgets/template_page_renderer.dart": "62a8b663358b9d3cade7439287df3ba6720364db22904cce69500c9ee779c322"
+  },
+  "png_sha256": {
+    "docs/verification/unified-album-entry-2026-11-11/01-settings.png": "a8508dcd1c4b88d933b970a788152cc0b37a62b02ad3caa5ecbb62473ec297b4",
+    "docs/verification/unified-album-entry-2026-11-11/03-inner-editor.png": "d4584fe36795bd5cd1cfd1e8f5cfc35ec895ea440bac0abd5b6333979813281c",
+    "docs/verification/unified-album-entry-2026-11-11/04-editor-more.png": "303b308fc654c2f00b9e1c262414a99d74d9c3330ace79777ea064df718775d2",
+    "docs/verification/unified-album-entry-2026-11-11/05-optional-photos.png": "10bcec98585ee4bf89a8bb45d1d02f6203c7d8dbaed46d458972cf6cf47ceb9d",
+    "docs/verification/unified-album-entry-2026-11-11/06-custom-page-colors.png": "c0a5adeecc939e8d4138b7a349dde1375b3130406a278a7144c182c1b5f4b454",
+    "docs/verification/unified-album-entry-2026-11-11/02-cover-editor.png": "2d21a14d55695252a1d77eb27bf63bc69faf0016ce12d6456ccb2dd62fcc4abd",
+    "docs/verification/saved-album-followup-2026-11-11/saved-album-phone-in-progress.png": "9fecccb64fa396dd9f1bc7f908eb09d456a824c835e01a377ebdc4022b220c72",
+    "docs/verification/saved-album-followup-2026-11-11/saved-album-compact-light.png": "46f7063960d8fd471cd496424058db6b8e577cd50041e66bb78db3aa64a509c3",
+    "docs/verification/saved-album-followup-2026-11-11/saved-album-phone-dark.png": "4992f078f1d351137189a08d011257512ac751426d27a13dd24ccb2652187f7e",
+    "docs/verification/saved-album-followup-2026-11-11/saved-album-desktop-light.png": "4fb5647f873c49e6bb1782d1fd7017f81f374bcb54e4bb5df626b57688f584eb"
+  },
+  "default_rendering_png_comparison": {
+    "unchanged": 9,
+    "changed": 0
+  }
+}

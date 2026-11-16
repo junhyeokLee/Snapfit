@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 /// 앨범 삭제 확인 다이얼로그
 class HomeDeleteAlbumDialog extends StatelessWidget {
@@ -50,11 +51,7 @@ class HomeDeleteAlbumDialog extends StatelessWidget {
                   color: SnapFitColors.errorLight,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.delete_outline_rounded,
-                  size: 32,
-                  color: SnapFitColors.error,
-                ),
+                child: const ExperienceIcon('Trash2', size: 32, color: SnapFitColors.error),
               ),
               const SizedBox(height: 20),
               // 제목

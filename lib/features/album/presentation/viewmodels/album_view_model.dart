@@ -47,6 +47,8 @@ class AlbumViewModel extends _$AlbumViewModel {
     String? coverOriginalUrl,
     String? coverPreviewUrl,
     String coverTheme = '',
+    String? requestId,
+    String? expectedUserId,
   }) async {
     final operation = ++_operation;
     final owner = _readOwner();
@@ -66,6 +68,8 @@ class AlbumViewModel extends _$AlbumViewModel {
           coverPreviewUrl: coverPreviewUrl,
           coverTheme: coverTheme,
         ),
+        requestId: requestId,
+        expectedUserId: expectedUserId,
       );
       if (_current(operation, owner)) state = AsyncData(album);
     } catch (e, st) {

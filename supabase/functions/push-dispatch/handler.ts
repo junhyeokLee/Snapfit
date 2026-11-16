@@ -51,7 +51,7 @@ export function createPushDispatchHandler(dependencies: {
           if (!device?.enabled || !notification) {
             await finish(row, { status: 'discarded', last_error: 'recipient_unavailable' }); counts.discarded++; return;
           }
-          const now = new Date();
+          let now = new Date();
           const policy = deliveryPolicy(notification.category, prefsResult.data,
             device.timezone_offset_minutes, now, notification.created_at);
           if (!policy.allowed) {
@@ -66,9 +66,24 @@ export function createPushDispatchHandler(dependencies: {
               await finish(row, { status: 'discarded', last_error: 'moment_reminder_no_longer_due' }); counts.discarded++; return;
             }
           }
+          const { data: prepared, error: prepareError } = await supabase.rpc('prepare_push_delivery', {
+            p_id: row.id, p_lease_token: row.lease_token,
+          });
+          if (prepareError) throw prepareError;
+          // False includes a lease reclaimed by another worker. Never finish
+          // that worker's delivery or send using this stale attempt.
+          if (prepared?.allowed !== true) { counts.discarded++; return; }
+          now = new Date();
+          // DB time, current opt-outs and the current device offset decide this
+          // absolute boundary together. RPC time cannot extend quiet hours.
+          const expiresAt = typeof prepared.expiresAt === 'string' ? Date.parse(prepared.expiresAt) : NaN;
+          const ttlSeconds = Math.min(300, Math.floor((expiresAt - now.getTime()) / 1000));
+          if (!Number.isFinite(ttlSeconds) || ttlSeconds < 1) {
+            await finish(row, { status: 'discarded', last_error: 'notification_preferences' }); counts.discarded++; return;
+          }
           const response = await fetch(`https://fcm.googleapis.com/v1/projects/${encodeURIComponent(account.project_id)}/messages:send`, {
             method: 'POST', headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify(fcmMessage(notification, row.token, now, policy.ttlSeconds, device.platform)), signal: AbortSignal.timeout(10_000),
+            body: JSON.stringify(fcmMessage(notification, row.token, now, ttlSeconds, device.platform)), signal: AbortSignal.timeout(10_000),
           });
           const result = await response.json().catch(() => ({}));
           if (response.ok) {

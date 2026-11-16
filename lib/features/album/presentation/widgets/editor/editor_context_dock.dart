@@ -11,6 +11,7 @@ import '../../controllers/text_editor_manager.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import 'editor_bottom_menu.dart';
 import 'editor_more_tools_sheet.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 /// A constant-size touch dock. Selecting artwork replaces tools, never the
 /// canvas or its image tree. Extra controls are mounted only while requested.
@@ -31,6 +32,9 @@ class EditorContextDock extends ConsumerStatefulWidget {
     this.onRedo,
     this.enabled = true,
     this.currentMode = EditorMode.none,
+    this.onEditText,
+    this.onDetailsOpenChanged,
+    this.onFillPhotos,
   });
 
   final List<LayerModel> layers;
@@ -42,6 +46,9 @@ class EditorContextDock extends ConsumerStatefulWidget {
   final bool canUndo, canRedo, enabled;
   final EditorMode currentMode;
   final VoidCallback? onUndo, onRedo;
+  final ValueChanged<LayerModel>? onEditText;
+  final ValueChanged<bool>? onDetailsOpenChanged;
+  final Future<void> Function()? onFillPhotos;
 
   @override
   ConsumerState<EditorContextDock> createState() => _EditorContextDockState();
@@ -60,6 +67,7 @@ class _EditorContextDockState extends ConsumerState<EditorContextDock> {
   Future<void> _details(BuildContext context) async {
     if (!_canUseTools) return;
     setState(() => _detailsPending = true);
+    widget.onDetailsOpenChanged?.call(true);
     try {
       final scope = ProviderScope.containerOf(context, listen: false);
       final vm = scope.read(albumEditorViewModelProvider.notifier);
@@ -104,6 +112,7 @@ class _EditorContextDockState extends ConsumerState<EditorContextDock> {
             selectedId: selectedId,
             onAction: finish,
             onClose: finish,
+            showPhotoFill: widget.onFillPhotos != null,
           ),
         ),
       );
@@ -142,9 +151,12 @@ class _EditorContextDockState extends ConsumerState<EditorContextDock> {
           widget.onModeChanged(EditorMode.layout);
         case EditorMoreAction.background:
           widget.onModeChanged(EditorMode.backgroundColor);
+        case EditorMoreAction.fillPhotos:
+          await widget.onFillPhotos?.call();
       }
     } finally {
       if (mounted) setState(() => _detailsPending = false);
+      widget.onDetailsOpenChanged?.call(false);
     }
   }
 
@@ -221,9 +233,13 @@ class _EditorContextDockState extends ConsumerState<EditorContextDock> {
         tool(
           selected.type == LayerType.text ? '글 수정' : '꾸미기',
           Icons.text_fields,
-          () => selected.type == LayerType.text
-              ? textEditor.openForExisting(selected)
-              : widget.onOpenDecorate(selected),
+          () {
+            if (widget.onEditText case final callback?) {
+              callback(selected);
+            } else {
+              textEditor.openForExisting(selected);
+            }
+          },
         ),
         tool(
           selected.type == LayerType.text ? '글 꾸미기' : '요소 꾸미기',
@@ -236,12 +252,18 @@ class _EditorContextDockState extends ConsumerState<EditorContextDock> {
       tools = [
         tool('요소 편집', Icons.tune, () => _details(context)),
         tool('진하기', Icons.opacity, () => _details(context)),
-        tool('삭제', Icons.delete_outline, widget.interaction.deleteSelected),
+        tool(
+          '삭제',
+          Icons.delete_outline,
+          widget.interaction.isLayerDeletable(selected)
+              ? widget.interaction.deleteSelected
+              : null,
+        ),
       ];
     }
     tools.add(
       tool(
-        '재배치',
+        '겹침 순서',
         Icons.layers_outlined,
         () => widget.onModeChanged(EditorMode.layer),
         highlighted: widget.currentMode == EditorMode.layer,
@@ -295,7 +317,7 @@ class _EditorContextDockState extends ConsumerState<EditorContextDock> {
                                   widget.interaction.clearSelection();
                               }
                             : null,
-                        icon: const Icon(Icons.close, size: 18),
+                        icon: const ExperienceIcon('X', size: 18),
                       ),
                     IconButton(
                       key: const ValueKey('editor-Undo2'),
@@ -309,7 +331,7 @@ class _EditorContextDockState extends ConsumerState<EditorContextDock> {
                               if (_canUseTools) widget.onUndo?.call();
                             }
                           : null,
-                      icon: const Icon(Icons.undo, size: 20),
+                      icon: const ExperienceIcon('Undo2', size: 20),
                     ),
                     IconButton(
                       key: const ValueKey('editor-Redo2'),
@@ -323,7 +345,7 @@ class _EditorContextDockState extends ConsumerState<EditorContextDock> {
                               if (_canUseTools) widget.onRedo?.call();
                             }
                           : null,
-                      icon: const Icon(Icons.redo, size: 20),
+                      icon: const ExperienceIcon('Redo2', size: 20),
                     ),
                   ],
                 ),

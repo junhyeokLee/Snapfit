@@ -10,6 +10,7 @@ import '../../service/album_editor_service.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import 'layer_builder.dart';
 import '../../../../core/utils/context_extensions.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 Future<bool> editPhotoFrame(
   BuildContext context,
@@ -92,11 +93,7 @@ class EditorPhotoFramePreview extends StatelessWidget {
     final placeholder = ColoredBox(
       color: colors.surfaceContainerHighest,
       child: Center(
-        child: Icon(
-          Icons.add_photo_alternate_outlined,
-          size: 28,
-          color: colors.onSurfaceVariant,
-        ),
+        child: ExperienceIcon('ImagePlus', size: 28, color: colors.onSurfaceVariant),
       ),
     );
     ImageProvider provider;

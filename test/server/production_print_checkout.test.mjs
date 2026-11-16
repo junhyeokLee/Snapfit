@@ -50,6 +50,7 @@ const prepare=async(f,changes={})=>result(f.handler(request(await prepareBody(f,
 test('separate policy and custom-production consent must be affirmative and exactly versioned before any privileged checkout read',async()=>{
  for(const consent of [undefined,null,{},[],{...printCheckoutConsent,policyAccepted:false},{...printCheckoutConsent,orderReviewed:false},
   {...printCheckoutConsent,customProductionAccepted:false},{...printCheckoutConsent,policyVersion:'old'},
+  {...printCheckoutConsent,version:'PRINT_ORDER_CONSENT_2026_10_19',policyVersion:'v1.0-prelaunch-20261019'},
   {...printCheckoutConsent,customProductionNotice:'no refunds'},{...printCheckoutConsent,acceptedAt:'forged-client-time'}]){
   const f=fixture();const response=await prepare(f,{consent});assert.equal(response.status,400);assert.equal(response.body.error,'print_checkout_consent_required');
   assert.equal(f.calls.includes('db'),false);assert.equal(f.rows.length,0)

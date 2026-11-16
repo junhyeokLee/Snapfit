@@ -1,0 +1,90 @@
+{
+  "status": "passed",
+  "widget_tests_passed": 148,
+  "failed": 0,
+  "suites": [
+    {
+      "suite": "disclosure",
+      "exit": 0,
+      "result": "RESULT passed=5 failed=0 skipped=0",
+      "log": "disclosure-tests.log"
+    },
+    {
+      "suite": "loading",
+      "exit": 0,
+      "result": "RESULT passed=2 failed=0 skipped=0",
+      "log": "loading-verified-tests.log"
+    },
+    {
+      "suite": "savedphoto",
+      "exit": 0,
+      "result": "RESULT passed=4 failed=0 skipped=0",
+      "log": "savedphoto-tests.log"
+    },
+    {
+      "suite": "records",
+      "exit": 0,
+      "result": "RESULT passed=49 failed=0 skipped=0",
+      "log": "records-final-tests.log"
+    },
+    {
+      "suite": "reward",
+      "exit": 0,
+      "result": "RESULT passed=30 failed=0 skipped=0",
+      "log": "reward-final-tests.log"
+    },
+    {
+      "suite": "journal",
+      "exit": 0,
+      "result": "RESULT passed=13 failed=0 skipped=0",
+      "log": "journal-final-tests.log"
+    },
+    {
+      "suite": "sharing",
+      "exit": 0,
+      "result": "RESULT passed=11 failed=0 skipped=0",
+      "log": "sharing-tests.log"
+    },
+    {
+      "suite": "webcontent",
+      "exit": 0,
+      "result": "RESULT passed=5 failed=0 skipped=0",
+      "log": "webcontent-final-tests.log"
+    },
+    {
+      "suite": "choices",
+      "exit": 0,
+      "result": "RESULT passed=8 failed=0 skipped=0",
+      "log": "choices-final-tests.log"
+    },
+    {
+      "suite": "draft",
+      "exit": 0,
+      "result": "RESULT passed=12 failed=0 skipped=0",
+      "log": "draft-tests.log"
+    },
+    {
+      "suite": "format",
+      "exit": 0,
+      "result": "RESULT passed=8 failed=0 skipped=0",
+      "log": "format-tests.log"
+    },
+    {
+      "suite": "entry",
+      "exit": 0,
+      "result": "RESULT passed=1 failed=0 skipped=0",
+      "log": "entry-tests.log"
+    }
+  ],
+  "prototype_checks_passed": 21,
+  "prototype": "/Users/devsheep/SnapFit/album-spread-turn.html",
+  "product_source_sha256": {
+    "lib/features/moments/presentation/widgets/moments_widgets.dart": "1dd705d25b37f21b4de5afa422ab59c32bc4f2b17d04b70c2ce56fe7357b1f92",
+    "lib/features/moments/presentation/views/moments_screen.dart": "6213c63e510ec1d82a31b36c47fc2feeab5c038779fb6914c2b0115da382d437",
+    "lib/features/moments/presentation/views/moment_compose_screen.dart": "0cf05e441718e9a3cbd016a2b778c9739e7b6483a2aea05078dfa6e058bde4f4",
+    "lib/features/moments/presentation/views/moment_saved_preview_screen.dart": "4bfc0ad248f3b9ca3609ca7b12d3962a01adeec28507bed1952186bc6074a5de"
+  },
+  "app_build": false,
+  "server_mutations": false,
+  "browser_render_verified": false
+}

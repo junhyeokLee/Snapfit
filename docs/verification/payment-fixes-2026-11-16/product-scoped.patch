@@ -1,0 +1,1042 @@
+--- a/lib/features/billing/data/point_purchase_service.dart
++++ b/lib/features/billing/data/point_purchase_service.dart
+@@ -12,6 +12,7 @@
+ import '../../../config/env.dart';
+ import '../domain/billing_failure_copy.dart';
+ import '../domain/pending_point_purchase.dart';
++import '../domain/pending_point_checkout.dart';
+ import 'billing_repository.dart';
+ 
+ abstract class PointPurchaseStore {
+@@ -126,10 +127,13 @@
+ abstract class PendingPointPurchaseStorage {
+   Future<List<PendingPointPurchase>> read();
+   Future<void> write(List<PendingPointPurchase> records);
++  Future<List<PendingPointCheckout>> readCheckouts();
++  Future<void> writeCheckouts(List<PendingPointCheckout> records);
+ }
+ 
+ class SecurePendingPointPurchaseStorage implements PendingPointPurchaseStorage {
+   static const _key = 'snapfit_pending_point_purchases_v1';
++  static const _checkoutKey = 'snapfit_pending_point_checkouts_v1';
+   final FlutterSecureStorage _storage = const FlutterSecureStorage();
+   @override
+   Future<List<PendingPointPurchase>> read() async {
+@@ -151,20 +155,51 @@
+           key: _key,
+           value: jsonEncode(records.map((e) => e.toJson()).toList()),
+         );
++  @override
++  Future<List<PendingPointCheckout>> readCheckouts() async {
++    final raw = await _storage.read(key: _checkoutKey);
++    if (raw == null) return [];
++    return (jsonDecode(raw) as List)
++        .map(
++          (row) => PendingPointCheckout.fromJson(
++            Map<String, dynamic>.from(row as Map),
++          ),
++        )
++        .toList();
++  }
++
++  @override
++  Future<void> writeCheckouts(List<PendingPointCheckout> records) =>
++      records.isEmpty
++      ? _storage.delete(key: _checkoutKey)
++      : _storage.write(
++          key: _checkoutKey,
++          value: jsonEncode(records.map((row) => row.toJson()).toList()),
++        );
+ }
+ 
+ /// Correlation for a store window, separate from durable receipt fulfillment.
+ class _PointCheckout {
+   _PointCheckout({
+-    required this.epoch,
+     required this.owner,
+     required this.product,
+     required this.startedAt,
+   });
+-  final int epoch;
+   final String owner, product;
+   final DateTime startedAt;
+   final existingReceipts = <String>{};
++  String? receiptKey;
++  bool delayed = false, launched = false, receiptVerified = false;
++  Timer? timeout;
++
++  PendingPointCheckout get record => PendingPointCheckout(
++    ownerId: owner,
++    productId: product,
++    startedAt: startedAt,
++    existingReceiptKeys: existingReceipts,
++    receiptKey: receiptKey,
++    receiptVerified: receiptVerified,
++  );
+ }
+ 
+ /// One instance per app container; survives navigation away from the billing page.
+@@ -192,17 +227,41 @@
+   Future<void> _queue = Future.value();
+   Future<void>? _load;
+   Timer? _retry;
+-  Timer? _purchaseTimeout;
++  final _checkouts = <String, _PointCheckout>{};
++  Future<void> _checkoutWrites = Future.value();
++  int _checkpointing = 0;
++  bool _storageReady = false;
+   bool _disposed = false;
+   bool _started = false;
+   bool _recovering = false;
+   bool _processingReceipt = false;
+-  int _checkoutEpoch = 0;
+-  _PointCheckout? _checkout;
++  _PointCheckout? get _checkout => _checkouts[currentUserId()];
+   bool available = false;
+   bool loadingProducts = false;
+-  bool get busy => _checkout != null || _recovering || _processingReceipt;
++  bool get busy =>
++      _recovering ||
++      _processingReceipt ||
++      _checkpointing > 0 ||
++      _checkouts.values.any((checkout) => !checkout.delayed);
++  bool catalogFresh = false;
++  bool get verificationDelayed {
++    final owner = currentUserId();
++    if (owner == null) return false;
++    return _checkout?.delayed == true ||
++        _pending.values.any((receipt) => receipt.ownerId == owner);
++  }
++
++  bool get canStartPurchase =>
++      !_disposed &&
++      _storageReady &&
++      available &&
++      catalogFresh &&
++      !loadingProducts &&
++      !busy &&
++      !verificationDelayed &&
++      _checkout == null;
+   String? message;
++  String? _catalogMessage;
+   List<ProductDetails> products = [];
+ 
+   void _notify() {
+@@ -257,25 +316,63 @@
+         for (final item in await storage.read()) {
+           _pending.putIfAbsent(item.key, () => item);
+         }
++        for (final record in await storage.readCheckouts()) {
++          final checkout =
++              _PointCheckout(
++                  owner: record.ownerId,
++                  product: record.productId,
++                  startedAt: record.startedAt,
++                )
++                ..existingReceipts.addAll(record.existingReceiptKeys)
++                ..receiptKey = record.receiptKey
++                ..receiptVerified = record.receiptVerified
++                ..delayed = true
++                ..launched = true;
++          _checkouts.putIfAbsent(checkout.owner, () => checkout);
++        }
++        _storageReady = true;
+       })());
+     } catch (_) {
+       _load = null;
++      _storageReady = false;
+       rethrow;
+     }
+   }
+ 
+   Future<void> _persist() => storage.write(_pending.values.toList());
++
++  Future<void> _persistCheckouts() async {
++    _checkpointing++;
++    _notify();
++    try {
++      final write = _checkoutWrites.then(
++        (_) => storage.writeCheckouts(
++          _checkouts.values
++              .where((checkout) => checkout.launched)
++              .map((checkout) => checkout.record)
++              .toList(),
++        ),
++      );
++      _checkoutWrites = write.catchError((Object _) {});
++      await write;
++    } finally {
++      _checkpointing--;
++      _notify();
++    }
++  }
+ 
+   Future<void> loadProducts() async {
+     if (loadingProducts || _disposed) return;
+     loadingProducts = true;
++    catalogFresh = false;
+     _notify();
+     try {
++      await _ensureLoaded();
+       available = await store.isAvailable().timeout(
+         const Duration(seconds: 15),
+       );
+       if (!available) {
+-        message = billingStoreUnavailableMessage();
++        message = _catalogMessage = billingStoreUnavailableMessage();
+         return;
+       }
+       final result = await store
+@@ -290,9 +387,17 @@
+       final missing = Env.iapPointProductIds.toSet().difference(
+         products.map((p) => p.id).toSet(),
+       );
+-      if (missing.isNotEmpty) message = billingMissingProductsMessage(missing);
++      catalogFresh = true;
++      if (missing.isNotEmpty) {
++        message = _catalogMessage = billingMissingProductsMessage(missing);
++      } else {
++        // 상품 재조회 성공은 이전 상품 오류만 지우고 결제 상태 안내는 보존한다.
++        if (message == _catalogMessage) message = null;
++        _catalogMessage = null;
++      }
+     } catch (error) {
+-      message = billingProductQueryFailureMessage(error);
++      products = [];
++      message = _catalogMessage = billingProductQueryFailureMessage(error);
+     } finally {
+       loadingProducts = false;
+       _notify();
+@@ -300,12 +405,13 @@
+   }
+ 
+   Future<void> buy(ProductDetails product) async {
+-    if (busy ||
+-        _recovering ||
+-        _processingReceipt ||
+-        !available ||
+-        !Env.iapPointProductIds.contains(product.id))
++    if (!canStartPurchase || !Env.iapPointProductIds.contains(product.id))
+       return;
++    ProductDetails? currentProduct;
++    for (final candidate in products) {
++      if (candidate.id == product.id) currentProduct = candidate;
++    }
++    if (currentProduct == null) return;
+     final owner = currentUserId();
+     if (owner == null || owner.isEmpty) {
+       message = '로그인 후 포인트를 충전해 주세요.';
+@@ -313,7 +419,6 @@
+       return;
+     }
+     final checkout = _PointCheckout(
+-      epoch: ++_checkoutEpoch,
+       owner: owner,
+       product: product.id,
+       startedAt: DateTime.fromMillisecondsSinceEpoch(
+@@ -321,68 +426,115 @@
+         isUtc: true,
+       ),
+     );
+-    _checkout = checkout;
++    _checkouts[owner] = checkout;
+     message = '포인트 결제를 시작합니다.';
+     _notify();
+-    _purchaseTimeout?.cancel();
+-    _purchaseTimeout = Timer(const Duration(minutes: 2), () {
+-      if (!_endCheckout(checkout)) return;
+-      message = '스토어 승인을 기다리고 있어요. 결제 상태는 구매 복원에서 다시 확인할 수 있습니다.';
+-      _notify();
+-    });
+     try {
+       await _ensureLoaded();
+       checkout.existingReceipts.addAll(_pending.keys);
+       await ensureServerAvailable().timeout(const Duration(seconds: 15));
+       if (_disposed || !_isCheckout(checkout)) return;
+       if (currentUserId() != owner) {
+-        _endCheckout(checkout);
++        await _endCheckout(checkout);
+         message = '로그인 계정이 변경되었습니다. 다시 충전을 시작해 주세요.';
+         _notify();
+         return;
+       }
+-      if (!await store
+-          .buy(product, owner)
+-          .timeout(const Duration(seconds: 30))) {
+-        if (!_endCheckout(checkout)) return;
+-        message = '포인트 결제 요청을 시작하지 못했습니다.';
++      // Save the request before crossing into an SDK whose Future cannot be cancelled.
++      checkout.launched = true;
++      try {
++        await _persistCheckouts();
++      } catch (_) {
++        checkout.launched = false;
++        rethrow;
++      }
++      if (_disposed || !_isCheckout(checkout)) return;
++      if (currentUserId() != owner) {
++        await _endCheckout(checkout);
++        return;
++      }
++      checkout.timeout = Timer(
++        const Duration(minutes: 2),
++        () => _delayCheckout(checkout),
++      );
++      final request = store.buy(currentProduct, owner);
++      // A late explicit false proves that the store window never opened.
++      unawaited(
++        request.then((started) async {
++          if (!started && !_disposed && _isCheckout(checkout)) {
++            await _enqueue(() async {
++              if (await _endCheckout(checkout)) {
++                message = '포인트 결제 요청을 시작하지 못했습니다.';
++                _notify();
++              }
++            });
++          }
++        }, onError: (Object _, StackTrace __) {}),
++      );
++      await request.timeout(const Duration(seconds: 30));
++    } catch (error) {
++      if (!_isCheckout(checkout)) return;
++      if (checkout.launched) {
++        _delayCheckout(checkout);
++      } else if (await _endCheckout(checkout)) {
++        message = billingPurchaseStartFailureMessage(
++          kind: BillingPurchaseKind.points,
++          error: error,
++        );
+         _notify();
+       }
+-    } catch (error) {
+-      if (!_endCheckout(checkout)) return;
+-      message = billingPurchaseStartFailureMessage(
+-        kind: BillingPurchaseKind.points,
+-        error: error,
+-      );
+-      _notify();
+     }
+   }
+ 
+   bool _isCheckout(_PointCheckout checkout) =>
+-      identical(_checkout, checkout) && checkout.epoch == _checkoutEpoch;
+-
+-  bool _endCheckout(_PointCheckout checkout) {
++      identical(_checkouts[checkout.owner], checkout);
++
++  void _delayCheckout(_PointCheckout checkout) {
++    if (!_isCheckout(checkout) || _disposed) return;
++    checkout.delayed = true;
++    checkout.timeout?.cancel();
++    if (checkout.owner == currentUserId()) {
++      message = '결제 상태 확인이 지연되고 있어요. 다시 결제하지 말고 결제 상태를 확인해 주세요.';
++    }
++    _notify();
++  }
++
++  Future<bool> _endCheckout(_PointCheckout checkout) async {
+     if (!_isCheckout(checkout)) return false;
+-    _checkout = null;
+-    _purchaseTimeout?.cancel();
++    _checkouts.remove(checkout.owner);
++    try {
++      if (checkout.launched) await _persistCheckouts();
++    } catch (_) {
++      _checkouts.putIfAbsent(checkout.owner, () => checkout);
++      _delayCheckout(checkout);
++      return false;
++    }
++    checkout.timeout?.cancel();
+     return true;
+   }
++
++  String? _nativeOwner(PurchaseDetails purchase) => switch (purchase) {
++    GooglePlayPurchaseDetails p =>
++      p.billingClientPurchase.obfuscatedAccountId?.trim().toLowerCase(),
++    SK2PurchaseDetails p => p.appAccountToken?.trim().toLowerCase(),
++    _ => null,
++  };
+ 
+   _PointCheckout? _checkoutFor(
+     PurchaseDetails purchase,
+-    PendingPointPurchase? record,
+-  ) {
+-    final checkout = _checkout;
++    PendingPointPurchase? record, {
++    bool terminal = false,
++  }) {
++    final nativeOwner = _nativeOwner(purchase);
++    // A definite terminal event can settle its explicit owner's marker without
++    // authenticating a purchase or touching the account currently on screen.
++    final checkout = terminal && nativeOwner?.isNotEmpty == true
++        ? _checkouts[nativeOwner]
++        : _checkout;
+     if (checkout == null ||
+-        checkout.owner != currentUserId() ||
++        !terminal && checkout.owner != currentUserId() ||
+         checkout.product != purchase.productID)
+       return null;
+-    final nativeOwner = switch (purchase) {
+-      GooglePlayPurchaseDetails p =>
+-        p.billingClientPurchase.obfuscatedAccountId,
+-      SK2PurchaseDetails p => p.appAccountToken,
+-      _ => null,
+-    };
+     if (nativeOwner?.trim().isNotEmpty == true &&
+         nativeOwner!.trim().toLowerCase() != checkout.owner.toLowerCase()) {
+       return null;
+@@ -400,8 +552,33 @@
+       return null;
+     }
+     if (event.isGoogle && event.serverData.isEmpty) return null;
++    if (checkout.receiptKey != null &&
++        checkout.receiptKey != event.key &&
++        (!terminal || checkout.receiptVerified))
++      return null;
+     if (checkout.existingReceipts.contains(event.key) ||
+         _finished.contains(event.key))
++      return null;
++    return checkout;
++  }
++
++  _PointCheckout? _checkoutForRecord(PendingPointPurchase record) {
++    final checkout = _checkout;
++    if (checkout == null ||
++        checkout.product != record.productId ||
++        record.ownerId.isNotEmpty && record.ownerId != checkout.owner)
++      return null;
++    if (checkout.receiptKey != null) {
++      return checkout.receiptKey == record.key ? checkout : null;
++    }
++    final milliseconds = int.tryParse(record.transactionDate ?? '');
++    final date = milliseconds == null
++        ? DateTime.tryParse(record.transactionDate ?? '')
++        : DateTime.fromMillisecondsSinceEpoch(milliseconds, isUtc: true);
++    if (date == null ||
++        date.isBefore(checkout.startedAt) ||
++        checkout.existingReceipts.contains(record.key) ||
++        _finished.contains(record.key))
+       return null;
+     return checkout;
+   }
+@@ -427,6 +604,7 @@
+     if (!Env.iapPointProductIds.contains(purchase.productID) &&
+         !purchase.productID.startsWith('snapfit_points_'))
+       return;
++    await _ensureLoaded();
+     if (purchase.status == PurchaseStatus.pending) {
+       if (_checkout == null || _checkoutFor(purchase, null) != null) {
+         message = '결제 승인 대기 중입니다.';
+@@ -436,9 +614,12 @@
+     }
+     if (purchase.status == PurchaseStatus.error ||
+         purchase.status == PurchaseStatus.canceled) {
+-      final checkout = _checkoutFor(purchase, null);
+-      if (checkout != null) _endCheckout(checkout);
+-      if (_checkout == null) {
++      final checkout = _checkoutFor(purchase, null, terminal: true);
++      final nativeOwner = _nativeOwner(purchase);
++      final belongsToCurrent =
++          nativeOwner?.isNotEmpty != true || nativeOwner == currentUserId();
++      if (checkout != null) await _endCheckout(checkout);
++      if (_checkout == null && belongsToCurrent) {
+         message = purchase.status == PurchaseStatus.canceled
+             ? '결제가 취소되었습니다.'
+             : billingPurchaseUpdateFailureMessage(
+@@ -504,15 +685,36 @@
+       _notify();
+       return;
+     }
++    checkout ??= _checkoutForRecord(record);
++    final previouslyBound = checkout?.receiptKey == record.key;
+     var verifiedNewPurchase = false;
+     try {
+       await _persist();
++      if (checkout != null && checkout.receiptKey != record.key) {
++        checkout.receiptKey = record.key;
++        await _persistCheckouts();
++      }
+       final result = await verify(record).timeout(const Duration(seconds: 30));
+       if (result.productId != record.productId)
+         throw StateError('verified_product_mismatch');
+       verifiedNewPurchase = !result.alreadyGranted;
+-      if (result.alreadyGranted) checkout = null;
++      if (result.alreadyGranted && !previouslyBound) {
++        // An unrelated credited replay cannot complete a newer store request.
++        if (checkout != null) {
++          checkout.receiptKey = null;
++          checkout.receiptVerified = false;
++          await _persistCheckouts();
++        }
++        checkout = null;
++      }
++      if (checkout != null) {
++        checkout.receiptVerified = true;
++        await _persistCheckouts();
++      }
+       await store.finish(record, purchase).timeout(const Duration(seconds: 30));
++      if (checkout != null && !await _endCheckout(checkout)) {
++        throw StateError('checkout_checkpoint_cleanup_failed');
++      }
+       _pending.remove(record.key);
+       try {
+         await _persist();
+@@ -523,7 +725,7 @@
+       _finished.add(record.key);
+       // An already credited replay, including after process restart, is not
+       // evidence that the currently open checkout has completed.
+-      if (!result.alreadyGranted && checkout != null) _endCheckout(checkout);
++
+       if (currentUserId() == owner) {
+         onBalanceChanged();
+         if (_checkout == null) {
+@@ -534,15 +736,39 @@
+       }
+       _notify();
+     } catch (error) {
++      final foreignReceipt =
++          error is PointPurchaseVerificationException &&
++          !error.retryable &&
++          const {
++            'purchase_account_mismatch',
++            'purchase_owner_mismatch',
++            'purchase_ownership_invalid',
++          }.contains(error.code);
++      if (foreignReceipt &&
++          checkout != null &&
++          !checkout.receiptVerified &&
++          checkout.receiptKey == record.key) {
++        // Server ownership rejection disproves only this provisional receipt,
++        // not the separate native request that is still waiting for its result.
++        checkout.receiptKey = null;
++        checkout.existingReceipts.add(record.key);
++        try {
++          await _persistCheckouts();
++        } catch (_) {
++          _delayCheckout(checkout);
++        }
++        _failed(error);
++        return;
++      }
+       final attributable =
+           verifiedNewPurchase ||
+-          (checkout != null && record.ownerId == checkout.owner);
++          (checkout != null && checkout.receiptKey == record.key);
+       _failed(error, checkout: attributable ? checkout : null);
+     }
+   }
+ 
+   void _failed(Object error, {_PointCheckout? checkout}) {
+-    if (checkout != null) _endCheckout(checkout);
++    if (checkout != null) _delayCheckout(checkout);
+     if (_checkout == null) {
+       message = billingVerificationFailureMessage(
+         error,
+@@ -588,7 +814,9 @@
+           _pending.isEmpty &&
+           pending.isEmpty &&
+           _finished.length == completedBefore)
+-        message = '미완료 구매가 없습니다. 포인트 잔액을 새로 확인했어요.';
++        message = verificationDelayed
++            ? '결제 상태를 아직 확정하지 못했어요. 다시 결제하지 말고 잠시 후 결제 상태를 확인해 주세요.'
++            : '미완료 구매가 없습니다. 포인트 잔액을 새로 확인했어요.';
+       if (currentUserId() == owner) onBalanceChanged();
+     } catch (error) {
+       _failed(error);
+@@ -602,7 +830,9 @@
+   void dispose() {
+     _disposed = true;
+     _retry?.cancel();
+-    _purchaseTimeout?.cancel();
++    for (final checkout in _checkouts.values) {
++      checkout.timeout?.cancel();
++    }
+     _subscription?.cancel();
+     super.dispose();
+   }
+--- /dev/null
++++ b/lib/features/billing/domain/pending_point_checkout.dart
+@@ -0,0 +1,54 @@
++/// A native store request remains unresolved until its own result is confirmed.
++/// Receipts stay in their original secure-storage format and key.
++class PendingPointCheckout {
++  const PendingPointCheckout({
++    required this.ownerId,
++    required this.productId,
++    required this.startedAt,
++    this.existingReceiptKeys = const {},
++    this.receiptKey,
++    this.receiptVerified = false,
++  });
++
++  factory PendingPointCheckout.fromJson(Map<String, dynamic> json) {
++    final owner = json['ownerId'];
++    final product = json['productId'];
++    final started = DateTime.tryParse('${json['startedAt'] ?? ''}');
++    final existing = json['existingReceiptKeys'];
++    final receipt = json['receiptKey'];
++    if (owner is! String ||
++        owner.trim().isEmpty ||
++        product is! String ||
++        product.isEmpty ||
++        started == null ||
++        existing is! List ||
++        existing.any((key) => key is! String) ||
++        receipt != null && receipt is! String ||
++        json['receiptVerified'] != null && json['receiptVerified'] is! bool) {
++      throw const FormatException('pending_point_checkout_invalid');
++    }
++    return PendingPointCheckout(
++      ownerId: owner.trim().toLowerCase(),
++      productId: product,
++      startedAt: started.toUtc(),
++      existingReceiptKeys: existing.cast<String>().toSet(),
++      receiptKey: receipt as String?,
++      receiptVerified: json['receiptVerified'] == true,
++    );
++  }
++
++  final String ownerId, productId;
++  final DateTime startedAt;
++  final Set<String> existingReceiptKeys;
++  final String? receiptKey;
++  final bool receiptVerified;
++
++  Map<String, dynamic> toJson() => {
++    'ownerId': ownerId,
++    'productId': productId,
++    'startedAt': startedAt.toUtc().toIso8601String(),
++    'existingReceiptKeys': existingReceiptKeys.toList(),
++    'receiptKey': receiptKey,
++    'receiptVerified': receiptVerified,
++  };
++}
+--- a/lib/features/profile/presentation/views/billing_management_screen.dart
++++ b/lib/features/profile/presentation/views/billing_management_screen.dart
+@@ -14,6 +14,7 @@
+ import '../../../billing/presentation/widgets/web_point_topup_panel.dart';
+ import '../../../billing/presentation/widgets/point_purchase_visuals.dart';
+ import '../widgets/customer_web_page.dart';
++import 'support_center_screen.dart';
+ import '../../domain/order_visibility_owner.dart';
+ import '../../../../shared/web/web_design.dart' show WebSection;
+ 
+@@ -642,7 +643,13 @@
+               ? null
+               : () => unawaited(purchases.recover()),
+           icon: const ExperienceIcon('RefreshCw', size: 16),
+-          label: Text(purchases.busy ? '구매 확인 중' : '구매 복원'),
++          label: Text(
++            purchases.busy
++                ? '구매 확인 중'
++                : purchases.verificationDelayed
++                ? '결제 상태 확인'
++                : '구매 복원',
++          ),
+           style: TextButton.styleFrom(
+             textStyle: ExperienceFormStyle.text(context, 13),
+             minimumSize: const Size(0, 44),
+@@ -651,31 +658,40 @@
+       ],
+     ),
+     const SizedBox(height: 8),
++    // 미확정 거래의 다음 행동을 새 상품 선택보다 먼저 안내한다.
++    if (purchases.verificationDelayed) _purchaseStatus(purchases),
+     if (purchases.loadingProducts)
+       const LinearProgressIndicator()
+     else if (purchases.products.isEmpty) ...[
+-      Text('스토어 포인트 상품 준비 중입니다.', style: ExperienceFormStyle.text(context, 14)),
+-      Align(
+-        alignment: Alignment.centerLeft,
+-        child: TextButton(
+-          onPressed: purchases.busy
+-              ? null
+-              : () => unawaited(purchases.loadProducts()),
+-          child: const Text('상품 다시 확인'),
+-        ),
+-      ),
++      Text(
++        purchases.catalogFresh ? '지금 구매 가능한 충전 상품이 없어요.' : '충전 상품을 확인하지 못했어요.',
++        style: ExperienceFormStyle.text(context, 14),
++      ),
++      if (purchases.catalogFresh || purchases.message == null)
++        Align(
++          alignment: Alignment.centerLeft,
++          child: TextButton(
++            onPressed: purchases.busy
++                ? null
++                : () => unawaited(purchases.loadProducts()),
++            child: const Text('상품 다시 확인'),
++          ),
++        ),
+     ] else
+       for (final product in purchases.products)
+         Padding(
+           padding: const EdgeInsets.only(bottom: 10),
+           child: _productOption(product, purchases),
+         ),
+-    if (purchases.busy || purchases.message != null) _purchaseStatus(purchases),
++    if (!purchases.verificationDelayed &&
++        (purchases.busy || purchases.message != null))
++      _purchaseStatus(purchases),
+     const SizedBox(height: 8),
+-    Text(
+-      '포인트가 반영되지 않았다면 구매 복원으로 확인하세요.',
+-      style: ExperienceFormStyle.text(context, 12, secondary: true),
+-    ),
++    if (!purchases.verificationDelayed)
++      Text(
++        '포인트가 반영되지 않았다면 구매 복원으로 확인하세요.',
++        style: ExperienceFormStyle.text(context, 12, secondary: true),
++      ),
+   ];
+ 
+   Widget _purchaseStatus(PointPurchaseService purchases) => Semantics(
+@@ -693,25 +709,64 @@
+         crossAxisAlignment: CrossAxisAlignment.stretch,
+         children: [
+           Text(
+-            purchases.busy ? '결제·지급 확인 중' : '결제 안내',
++            purchases.verificationDelayed && !purchases.busy
++                ? '결제 확인이 지연되고 있어요'
++                : purchases.busy
++                ? '결제·지급 확인 중'
++                : !purchases.catalogFresh
++                ? '충전 상품 확인 필요'
++                : '결제 안내',
+             style: ExperienceFormStyle.text(
+               context,
+               14,
+               weight: FontWeight.w600,
+             ),
+           ),
+-          if (purchases.message != null) ...[
++          if (purchases.message != null && !purchases.verificationDelayed) ...[
+             const SizedBox(height: 8),
+             Text(
+               purchases.message!,
+               style: ExperienceFormStyle.text(context, 13, secondary: true),
+             ),
+           ],
+-          if (purchases.busy) ...[
++          if (purchases.verificationDelayed) ...[
++            const SizedBox(height: 8),
++            Text(
++              purchases.busy
++                  ? '기존 구매 내역과 스토어 승인 결과를 확인하고 있어요.'
++                  : '기존 결제 확인이 끝날 때까지 새 충전은 멈춰둘게요. 위의 결제 상태 확인을 눌러주세요.',
++              style: ExperienceFormStyle.text(context, 12, secondary: true),
++            ),
++            TextButton(
++              key: const ValueKey('points-payment-help'),
++              onPressed: purchases.busy
++                  ? null
++                  : () => Navigator.push<void>(
++                      context,
++                      MaterialPageRoute(
++                        builder: (_) => const SupportCenterScreen(),
++                      ),
++                    ),
++              child: const Text('계속 확인되지 않으면 고객센터로 문의'),
++            ),
++          ] else if (purchases.busy) ...[
+             const SizedBox(height: 8),
+             Text(
+               '새로 결제하지 말고 진행 중인 결제의 확인을 기다려 주세요.',
+               style: ExperienceFormStyle.text(context, 12, secondary: true),
++            ),
++          ],
++          if (!purchases.catalogFresh &&
++              !purchases.verificationDelayed &&
++              !purchases.busy) ...[
++            const SizedBox(height: 8),
++            TextButton.icon(
++              key: const ValueKey('points-catalog-retry'),
++              onPressed: purchases.loadingProducts
++                  ? null
++                  : () => unawaited(_refresh(purchases)),
++              icon: const Icon(Icons.refresh_rounded, size: 18),
++              label: const Text('충전 상품 다시 확인'),
+             ),
+           ],
+         ],
+@@ -727,18 +782,17 @@
+     points: _pointAmountFromProductId(product.id),
+     price: product.price,
+     selected: _selectedProductId == product.id,
+-    onTap: purchases.busy
++    onTap:
++        purchases.busy ||
++            purchases.verificationDelayed ||
++            !purchases.catalogFresh
+         ? null
+         : () => setState(() => _selectedProductId = product.id),
+   );
+ 
+   Widget _purchaseButton(PointPurchaseService purchases) {
+     final selected = _selectedProduct(purchases);
+-    final canBuy =
+-        selected != null &&
+-        purchases.available &&
+-        !purchases.loadingProducts &&
+-        !purchases.busy;
++    final canBuy = selected != null && purchases.canStartPurchase;
+     return Column(
+       mainAxisSize: MainAxisSize.min,
+       crossAxisAlignment: CrossAxisAlignment.stretch,
+@@ -777,10 +831,7 @@
+           ),
+           onPressed: canBuy
+               ? () {
+-                  if (purchases.busy ||
+-                      purchases.loadingProducts ||
+-                      !purchases.available)
+-                    return;
++                  if (!purchases.canStartPurchase) return;
+                   final current = _selectedProduct(purchases);
+                   if (current != null) unawaited(purchases.buy(current));
+                 }
+@@ -788,9 +839,13 @@
+           child: Text(
+             purchases.busy
+                 ? '결제·지급 확인 중'
++                : purchases.verificationDelayed
++                ? '결제 상태 확인 필요'
+                 : purchases.loadingProducts
+                 ? '상품 확인 중'
+-                : !purchases.available || purchases.products.isEmpty
++                : !purchases.catalogFresh ||
++                      !purchases.available ||
++                      purchases.products.isEmpty
+                 ? '충전 상품 확인 필요'
+                 : selected == null
+                 ? '충전할 포인트 선택'
+--- a/lib/features/album/presentation/views/print_order_checkout_screen.dart
++++ b/lib/features/album/presentation/views/print_order_checkout_screen.dart
+@@ -58,6 +58,9 @@
+     extends ConsumerState<PrintOrderCheckoutScreen>
+     with WidgetsBindingObserver {
+   final _formKey = GlobalKey<FormState>();
++  final _reviewConsentAnchor = GlobalKey();
++  final _policyConsentAnchor = GlobalKey();
++  final _customConsentAnchor = GlobalKey();
+   final _name = TextEditingController();
+   final _phone = TextEditingController();
+   final _zip = TextEditingController();
+@@ -154,7 +157,7 @@
+     });
+   }
+ 
+-  bool get _canPay =>
++  bool get _canConfirmOrder =>
+       _ownerCurrent &&
+       !_loading &&
+       !_paying &&
+@@ -165,8 +168,45 @@
+       !_reviewChanged &&
+       _error == null &&
+       _paymentAvailable &&
+-      _quote.hasPlannedRetailPrice &&
+-      _consent.complete;
++      _quote.hasPlannedRetailPrice;
++
++  bool get _canPay => _canConfirmOrder && _consent.complete;
++
++  int get _remainingConsentCount => [
++    _agreed,
++    _policyAccepted,
++    _customProductionAccepted,
++  ].where((accepted) => !accepted).length;
++
++  GlobalKey? get _nextConsentAnchor => !_agreed
++      ? _reviewConsentAnchor
++      : !_policyAccepted
++      ? _policyConsentAnchor
++      : !_customProductionAccepted
++      ? _customConsentAnchor
++      : null;
++
++  Future<void> _revealNextConsent() async {
++    if (!_reviewing || !_canConfirmOrder || _consent.complete) return;
++    if (_nextConsentAnchor?.currentContext == null && _scroll.hasClients) {
++      // 마지막 주문 확인 영역이 아직 지연 생성되지 않았다면 먼저 화면에 붙인다.
++      await _scroll.animateTo(
++        _scroll.position.maxScrollExtent,
++        duration: const Duration(milliseconds: 180),
++        curve: Curves.easeOut,
++      );
++      await WidgetsBinding.instance.endOfFrame;
++    }
++    if (!mounted || !_reviewing || !_canConfirmOrder) return;
++    final target = _nextConsentAnchor?.currentContext;
++    if (target == null || !target.mounted) return;
++    await Scrollable.ensureVisible(
++      target,
++      alignment: .15,
++      duration: const Duration(milliseconds: 180),
++      curve: Curves.easeOut,
++    );
++  }
+ 
+   @override
+   void initState() {
+@@ -450,13 +490,16 @@
+           receipt.amount != _quote.amount) {
+         throw StateError('payment_receipt_unverified');
+       }
+-      final verifiedReceipt = await ref
+-          .read(orderRepositoryProvider)
+-          .fetchPrintPaidReceipt(
+-            orderId: receipt.orderId,
+-            albumId: widget.albumId,
+-            expectedAmount: _quote.amount,
+-          );
++      // 서비스가 검증한 성공 결과를 추가 조회 실패로 잃지 않는다. 주입 경로는 검증한다.
++      final verifiedReceipt = widget.onPay == null
++          ? receipt
++          : await ref
++                .read(orderRepositoryProvider)
++                .fetchPrintPaidReceipt(
++                  orderId: receipt.orderId,
++                  albumId: widget.albumId,
++                  expectedAmount: _quote.amount,
++                );
+       if (!mounted || !_ownerCurrent) return;
+       ref.invalidate(myOrderHistoryProvider);
+       ref.invalidate(myOrderSummaryProvider);
+@@ -1609,17 +1652,20 @@
+         _priceDetails(),
+       ],
+       const SizedBox(height: 16),
+-      CheckboxListTile(
+-        key: const ValueKey('print-checkout-agreement'),
+-        contentPadding: EdgeInsets.zero,
+-        controlAffinity: ListTileControlAffinity.leading,
+-        value: _agreed,
+-        onChanged: _paying || _loading || _reviewChanged
+-            ? null
+-            : (v) => setState(() => _agreed = v == true),
+-        title: Text(
+-          PrintCheckoutConsent.reviewNotice,
+-          style: ExperienceFormStyle.text(context, 13),
++      KeyedSubtree(
++        key: _reviewConsentAnchor,
++        child: CheckboxListTile(
++          key: const ValueKey('print-checkout-agreement'),
++          contentPadding: EdgeInsets.zero,
++          controlAffinity: ListTileControlAffinity.leading,
++          value: _agreed,
++          onChanged: _paying || _loading || _reviewChanged
++              ? null
++              : (v) => setState(() => _agreed = v == true),
++          title: Text(
++            PrintCheckoutConsent.reviewNotice,
++            style: ExperienceFormStyle.text(context, 13),
++          ),
+         ),
+       ),
+       Wrap(
+@@ -1638,17 +1684,20 @@
+           _policyLink('개인정보 처리방침', TermsPolicyDocType.privacy),
+         ],
+       ),
+-      CheckboxListTile(
+-        key: const ValueKey('print-checkout-policy-agreement'),
+-        contentPadding: EdgeInsets.zero,
+-        controlAffinity: ListTileControlAffinity.leading,
+-        value: _policyAccepted,
+-        onChanged: _paying || _loading || _reviewChanged
+-            ? null
+-            : (v) => setState(() => _policyAccepted = v == true),
+-        title: Text(
+-          '[필수] 이용약관과 취소·환불·제작·배송 정책을 확인하고 동의합니다.',
+-          style: ExperienceFormStyle.text(context, 13),
++      KeyedSubtree(
++        key: _policyConsentAnchor,
++        child: CheckboxListTile(
++          key: const ValueKey('print-checkout-policy-agreement'),
++          contentPadding: EdgeInsets.zero,
++          controlAffinity: ListTileControlAffinity.leading,
++          value: _policyAccepted,
++          onChanged: _paying || _loading || _reviewChanged
++              ? null
++              : (v) => setState(() => _policyAccepted = v == true),
++          title: Text(
++            '[필수] 이용약관과 취소·환불·제작·배송 정책을 확인하고 동의합니다.',
++            style: ExperienceFormStyle.text(context, 13),
++          ),
+         ),
+       ),
+       const SizedBox(height: 8),
+@@ -1657,17 +1706,20 @@
+         style: ExperienceFormStyle.text(context, 13, weight: FontWeight.w600),
+       ),
+       _note(CommercePolicy.customProductionConsent),
+-      CheckboxListTile(
+-        key: const ValueKey('print-checkout-custom-production-agreement'),
+-        contentPadding: EdgeInsets.zero,
+-        controlAffinity: ListTileControlAffinity.leading,
+-        value: _customProductionAccepted,
+-        onChanged: _paying || _loading || _reviewChanged
+-            ? null
+-            : (v) => setState(() => _customProductionAccepted = v == true),
+-        title: Text(
+-          '[필수·별도 동의] 위 주문제작 상품의 청약철회 제한 안내를 확인하고 동의합니다.',
+-          style: ExperienceFormStyle.text(context, 13),
++      KeyedSubtree(
++        key: _customConsentAnchor,
++        child: CheckboxListTile(
++          key: const ValueKey('print-checkout-custom-production-agreement'),
++          contentPadding: EdgeInsets.zero,
++          controlAffinity: ListTileControlAffinity.leading,
++          value: _customProductionAccepted,
++          onChanged: _paying || _loading || _reviewChanged
++              ? null
++              : (v) => setState(() => _customProductionAccepted = v == true),
++          title: Text(
++            '[필수·별도 동의] 위 주문제작 상품의 청약철회 제한 안내를 확인하고 동의합니다.',
++            style: ExperienceFormStyle.text(context, 13),
++          ),
+         ),
+       ),
+       if (!widget.testMode && _readiness?.canPay != true)
+@@ -1748,7 +1800,7 @@
+       onPressed: _paying ? null : () => Navigator.pop(context, 'edit_album'),
+       child: const Text('앨범 계속 편집하기'),
+     );
+-    return wide
++    final buttons = wide
+         ? IntrinsicHeight(
+             child: Row(
+               crossAxisAlignment: CrossAxisAlignment.stretch,
+@@ -1764,6 +1816,30 @@
+             crossAxisAlignment: CrossAxisAlignment.stretch,
+             children: [payment, const SizedBox(height: 8), edit],
+           );
++    return Column(
++      mainAxisSize: MainAxisSize.min,
++      crossAxisAlignment: CrossAxisAlignment.stretch,
++      children: [
++        if (_canConfirmOrder && !_consent.complete)
++          Semantics(
++            liveRegion: true,
++            child: TextButton(
++              key: const ValueKey('print-checkout-consent-help'),
++              onPressed: _revealNextConsent,
++              style: TextButton.styleFrom(
++                minimumSize: const Size(0, 44),
++                padding: const EdgeInsets.all(8),
++              ),
++              child: Text(
++                '필수 확인 $_remainingConsentCount개 남음 · 확인하기',
++                textAlign: TextAlign.center,
++                style: ExperienceFormStyle.text(context, 13),
++              ),
++            ),
++          ),
++        buttons,
++      ],
++    );
+   }
+ 
+   Widget _configuration({bool includeProduct = false}) => Column(

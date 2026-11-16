@@ -269,6 +269,8 @@ class WebPointTopupException implements Exception {
     'web_point_desktop_required' => '현재 웹 결제는 PC 브라우저에서 진행해주세요.',
     'web_point_launch_not_available' =>
       '기존 결제 상태를 확인해주세요. 새 결제를 자동으로 시작하지 않습니다.',
+    'web_point_previous_window_unresolved' || 'web_point_window_unresolved' =>
+      '이전 결제창을 닫고 페이지를 새로고침한 뒤 새 충전을 시작해 주세요. 확인된 결제 내역과 포인트는 그대로 유지돼요.',
     _ => '결제 확인이 지연되고 있어요. 다시 결제하지 말고 상태를 확인해주세요.',
   };
   @override

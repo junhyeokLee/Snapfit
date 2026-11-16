@@ -56,6 +56,29 @@ final _receipt = PrintPaidReceipt.fromOrder(
   ),
 );
 
+Future<void> _showProgressStage(WidgetTester tester, Finder stage) async {
+  if (stage.evaluate().isEmpty) {
+    final details = find.byKey(const PageStorageKey('print-progress-timeline'));
+    if (details.evaluate().isEmpty) {
+      await tester.scrollUntilVisible(
+        details,
+        120,
+        scrollable: find
+            .descendant(
+              of: find.byKey(const PageStorageKey('print-progress-content')),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+    }
+    await tester.ensureVisible(details);
+    await tester.pumpAndSettle();
+    await tester.tap(details);
+    await tester.pumpAndSettle();
+  }
+  await tester.ensureVisible(stage);
+}
+
 void main() {
   _PaintBinding();
   const exportImages = bool.fromEnvironment('PRINT_JOURNEY_QA');
@@ -309,7 +332,8 @@ void main() {
           dark: dark,
         );
         await capture(tester, 'print-shipping-progress', size, dark);
-        await tester.ensureVisible(
+        await _showProgressStage(
+          tester,
           find.byKey(const ValueKey('print-progress-배송 완료')),
         );
         await tester.pumpAndSettle();
@@ -372,7 +396,7 @@ void main() {
             final stage = find.byKey(
               const ValueKey('print-progress-제작사 주문 접수'),
             );
-            await tester.ensureVisible(stage);
+            await _showProgressStage(tester, stage);
             await tester.pumpAndSettle();
             expect(
               find.descendant(of: stage, matching: find.text('대기')),
@@ -553,7 +577,7 @@ void main() {
     metrics(tester, const Size(844, 390));
     await tester.pumpAndSettle();
     final stage = find.byKey(const ValueKey('print-progress-책 제작'));
-    await tester.ensureVisible(stage);
+    await _showProgressStage(tester, stage);
     await tester.pumpAndSettle();
     expect(
       find.descendant(of: stage, matching: find.text('대기')),

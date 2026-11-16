@@ -7,8 +7,16 @@ import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../domain/entities/layer.dart';
 import '../../controllers/layer_interaction_manager.dart';
 import '../../viewmodels/album_editor_view_model.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
-enum EditorMoreAction { photoPosition, delete, decorate, layout, background }
+enum EditorMoreAction {
+  photoPosition,
+  delete,
+  decorate,
+  layout,
+  background,
+  fillPhotos,
+}
 
 /// Only secondary controls live here. Photo replacement, crop and styling stay
 /// in the dock, so a second modal never covers their existing touch targets.
@@ -22,6 +30,7 @@ class EditorMoreToolsSheet extends ConsumerWidget {
     required this.selectedId,
     required this.onAction,
     required this.onClose,
+    this.showPhotoFill = true,
   });
 
   final LayerInteractionManager interaction;
@@ -30,6 +39,7 @@ class EditorMoreToolsSheet extends ConsumerWidget {
   final int? albumId;
   final ValueChanged<EditorMoreAction> onAction;
   final VoidCallback onClose;
+  final bool showPhotoFill;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -74,7 +84,7 @@ class EditorMoreToolsSheet extends ConsumerWidget {
         description,
         style: ExperienceFormStyle.text(context, 12, secondary: true),
       ),
-      trailing: const Icon(Icons.chevron_right, size: 20),
+      trailing: const ExperienceIcon('ChevronRight', size: 20),
       enabled: enabled,
       onTap: enabled
           ? () {
@@ -121,7 +131,7 @@ class EditorMoreToolsSheet extends ConsumerWidget {
                   IconButton(
                     tooltip: '편집 도구 닫기',
                     onPressed: onClose,
-                    icon: const Icon(Icons.close, size: 21),
+                    icon: const ExperienceIcon('X', size: 21),
                   ),
                 ],
               ),
@@ -227,21 +237,42 @@ class EditorMoreToolsSheet extends ConsumerWidget {
                   '이 페이지의 배경색 변경',
                   EditorMoreAction.background,
                 ),
+                if (showPhotoFill)
+                  action(
+                    Icons.photo_library_outlined,
+                    '사진 여러 장 넣기',
+                    '사진을 골라 빈 자리에 순서대로 채워요',
+                    EditorMoreAction.fillPhotos,
+                    enabled: vm.editingAllowed,
+                  ),
                 if (layer != null) ...[
                   const SizedBox(height: 12),
                   Divider(height: 1, color: line),
                   const SizedBox(height: 8),
-                  TextButton.icon(
-                    onPressed: () {
-                      if (valid()) onAction(EditorMoreAction.delete);
-                    },
-                    style: TextButton.styleFrom(
-                      foregroundColor: Theme.of(context).colorScheme.error,
-                      minimumSize: const Size(0, 48),
+                  if (interaction.isLayerDeletable(layer))
+                    TextButton.icon(
+                      onPressed: () {
+                        if (valid()) onAction(EditorMoreAction.delete);
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: Theme.of(context).colorScheme.error,
+                        minimumSize: const Size(0, 48),
+                      ),
+                      icon: const ExperienceIcon('Trash2', size: 20),
+                      label: const Text('삭제'),
+                    )
+                  else
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Text(
+                        '이 사진의 원본은 유지돼요. 꾸미기 요소는 각각 삭제할 수 있어요.',
+                        style: ExperienceFormStyle.text(
+                          context,
+                          12,
+                          secondary: true,
+                        ),
+                      ),
                     ),
-                    icon: const Icon(Icons.delete_outline, size: 20),
-                    label: const Text('삭제'),
-                  ),
                 ],
               ],
             ],

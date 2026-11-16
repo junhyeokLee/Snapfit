@@ -24,16 +24,26 @@ class AuthService {
     Future<bool> Function(OAuthProvider)? webProviderEnabled,
     Uri Function()? browserUri,
     Future<void> Function()? prepareLogout,
+    Duration sessionSyncTimeout = const Duration(seconds: 25),
+    Duration webProviderCheckTimeout = const Duration(seconds: 3),
   }) : _webOAuthLauncher = webOAuthLauncher,
        _webProviderEnabled = webProviderEnabled ?? isWebOAuthProviderEnabled,
        _browserUri = browserUri ?? (() => Uri.base),
-       _prepareLogout = prepareLogout ?? _prepareLogoutPushState;
+       _prepareLogout = prepareLogout ?? _prepareLogoutPushState,
+       _sessionSyncTimeout = sessionSyncTimeout,
+       _webProviderCheckTimeout = webProviderCheckTimeout;
 
   final Future<bool> Function(OAuthProvider, String, String?)?
   _webOAuthLauncher;
   final Future<bool> Function(OAuthProvider) _webProviderEnabled;
   final Uri Function() _browserUri;
   final Future<void> Function() _prepareLogout;
+  final Duration _sessionSyncTimeout;
+  final Duration _webProviderCheckTimeout;
+  Future<AuthResponse?>? _sessionSyncFuture;
+  String? _sessionSyncToken;
+  bool Function()? _sessionSyncCurrent;
+  int _sessionSyncRevision = 0;
   Future<void> _authStorageQueue = Future<void>.value();
   ({String email, String userId})? _pendingEmailConfirmation;
 
@@ -63,17 +73,25 @@ class AuthService {
         await tokenStorage.clear();
       });
 
-  Future<void> _saveCurrentAuth(AuthResponse auth) =>
-      _mutateAuthStorage(() async {
-        _sameSessionOwner(auth.user.id);
-        await tokenStorage.saveAuth(auth);
-        if (supabase?.auth.currentSession?.user.id != auth.user.id) {
-          if (await tokenStorage.getUserId() == auth.user.id) {
-            await tokenStorage.clear();
-          }
-          throw const WebOAuthException('web_auth_owner_changed');
-        }
-      });
+  Future<void> _saveCurrentAuth(
+    AuthResponse auth, {
+    void Function()? requireCurrent,
+  }) => _mutateAuthStorage(() async {
+    requireCurrent?.call();
+    _sameSessionOwner(auth.user.id);
+    await tokenStorage.saveAuth(auth);
+    try {
+      requireCurrent?.call();
+      _sameSessionOwner(auth.user.id);
+    } catch (_) {
+      // A timed-out/old request must not leave a partial older session behind.
+      // The serialized queue keeps a newer login write outside this cleanup.
+      if (await tokenStorage.getUserId() == auth.user.id) {
+        await tokenStorage.clear();
+      }
+      rethrow;
+    }
+  });
 
   Future<void> _discardRejectedSession(Session rejected) async {
     final client = supabase;
@@ -122,9 +140,22 @@ class AuthService {
       _browserUri(),
       configured: Env.authWebRedirectUrl,
     ).toString();
-    if (!await _webProviderEnabled(provider)) {
+    bool? enabled;
+    try {
+      enabled = await _webProviderEnabled(
+        provider,
+      ).timeout(_webProviderCheckTimeout);
+    } on TimeoutException {
+      // This optional availability lookup must not block the server's OAuth
+      // flow. Its late reply cannot change this bounded result or launch twice.
+    } on WebOAuthException catch (error) {
+      if (error.code != 'web_auth_provider_status_unknown') rethrow;
+    }
+    if (enabled == false) {
       throw const WebOAuthException('web_auth_provider_disabled');
     }
+    // Unknown transport availability still uses the official same-window PKCE
+    // flow. Auth and the callback retain provider, redirect and user validation.
     final scopes = provider == OAuthProvider.kakao ? 'account_email' : null;
     final launched = _webOAuthLauncher != null
         ? await _webOAuthLauncher(provider, redirect, scopes)
@@ -159,12 +190,63 @@ class AuthService {
 
   /// Browser persistence and callbacks never trust cached profile/JWT claims.
   /// Auth getUser validates the real session before profile/token sync.
-  Future<AuthResponse?> synchronizeSupabaseSession() async {
+  Future<AuthResponse?> synchronizeSupabaseSession() {
     final client = supabase;
     if (client == null) {
-      throw const WebOAuthException('web_auth_configuration_unavailable');
+      return Future.error(
+        const WebOAuthException('web_auth_configuration_unavailable'),
+      );
     }
     final initial = client.auth.currentSession;
+    final pending = _sessionSyncFuture;
+    if (pending != null &&
+        _sessionSyncToken == initial?.accessToken &&
+        _sessionSyncCurrent?.call() == true) {
+      return pending;
+    }
+    final revision = ++_sessionSyncRevision;
+    var active = true;
+    var ownerChanged = false;
+    final subscription = client.auth.onAuthStateChange.listen(
+      (event) {
+        if (event.session?.user.id != initial?.user.id) ownerChanged = true;
+      },
+      onError: (Object _, StackTrace __) {
+        // An offline token refresh is not an account change. getUser still
+        // verifies this request; real UID changes and revocations stay fenced.
+      },
+    );
+    void requireCurrent() {
+      if (!active || ownerChanged || revision != _sessionSyncRevision) {
+        throw const WebOAuthException('web_auth_owner_changed');
+      }
+      if (initial != null) _sameSessionOwner(initial.user.id);
+    }
+
+    late final Future<AuthResponse?> request;
+    request = _synchronizeSupabaseSession(initial, requireCurrent)
+        .timeout(_sessionSyncTimeout)
+        .whenComplete(() {
+          // timeout does not cancel an HTTP future. Fence its later writes too.
+          active = false;
+          unawaited(subscription.cancel());
+          if (identical(_sessionSyncFuture, request)) {
+            _sessionSyncFuture = null;
+            _sessionSyncToken = null;
+            _sessionSyncCurrent = null;
+          }
+        });
+    _sessionSyncToken = initial?.accessToken;
+    _sessionSyncCurrent = () =>
+        active && !ownerChanged && revision == _sessionSyncRevision;
+    return _sessionSyncFuture = request;
+  }
+
+  Future<AuthResponse?> _synchronizeSupabaseSession(
+    Session? initial,
+    void Function() requireCurrent,
+  ) async {
+    final client = supabase!;
     if (initial == null) {
       await _clearSignedOutAuth().timeout(_authRequestTimeout);
       if (kIsWeb) {
@@ -177,6 +259,7 @@ class AuthService {
       }
       return null;
     }
+    requireCurrent();
     User? verifiedUser;
     try {
       verifiedUser =
@@ -185,12 +268,16 @@ class AuthService {
                   .timeout(_authRequestTimeout))
               .user;
     } on AuthException catch (error) {
+      // An older timed-out request must not discard a newer valid retry.
+      requireCurrent();
       if (_isRejectedSession(error)) await _discardRejectedSession(initial);
       rethrow;
     }
+    requireCurrent();
     if (verifiedUser == null || verifiedUser.id != initial.user.id) {
       throw const WebOAuthException('web_auth_session_invalid');
     }
+    requireCurrent();
     _sameSessionOwner(verifiedUser.id);
     final session = client.auth.currentSession!.copyWith(user: verifiedUser);
     await _requireConfirmedEmailSession(session);
@@ -206,6 +293,7 @@ class AuthService {
         .eq('id', verifiedUser.id)
         .maybeSingle()
         .timeout(_authRequestTimeout);
+    requireCurrent();
     _sameSessionOwner(verifiedUser.id);
     if (profile != null) {
       final name = profile['name'];
@@ -221,9 +309,15 @@ class AuthService {
         ),
       );
     }
+    requireCurrent();
     await _upsertSupabaseProfile(auth.user).timeout(_authRequestTimeout);
+    requireCurrent();
     _sameSessionOwner(verifiedUser.id);
-    await _saveCurrentAuth(auth).timeout(_authRequestTimeout);
+    await _saveCurrentAuth(
+      auth,
+      requireCurrent: requireCurrent,
+    ).timeout(_authRequestTimeout);
+    requireCurrent();
     return auth;
   }
 
@@ -717,7 +811,9 @@ class AuthService {
     final consent = await tokenStorage.getConsent();
     if (consent == null) return;
     final user = await tokenStorage.getUserInfo();
-    if (supabase != null && user != null) {
+    if (supabase != null &&
+        user != null &&
+        supabase!.auth.currentUser?.id == user.id) {
       try {
         await supabase!.from('profiles').upsert({
           'id': user.id,

@@ -1,0 +1,22 @@
+{
+  "removed": [
+    {
+      "path": "/tmp/snapfit-record-next-audit.dill",
+      "allocatedBytes": 125235200
+    },
+    {
+      "path": "/tmp/snapfit-record-next-red.dill",
+      "allocatedBytes": 125362176
+    },
+    {
+      "path": "/tmp/snapfit-record-next-final.dill",
+      "allocatedBytes": 125939712
+    },
+    {
+      "path": "/tmp/snapfit-record-next-direct.dill",
+      "allocatedBytes": 124956672
+    }
+  ],
+  "removedAllocatedBytes": 501493760,
+  "freeBytesAfter": 9451671552
+}

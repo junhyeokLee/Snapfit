@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math' as math;
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart' show kIsWeb, listEquals;
 import 'package:flutter/material.dart';
 import 'creation_workspace.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
@@ -15,9 +16,12 @@ import '../../../domain/entities/layer.dart';
 import '../../../../store/presentation/widgets/template_page_renderer.dart';
 import '../../../../store/presentation/widgets/template_book_artwork.dart';
 import 'photo_crop_sheet.dart';
+import 'template_photo_fill_plan.dart';
+import 'template_photo_fill_preview.dart';
 import '../../../data/gallery/browser_photo_asset.dart';
 import '../../utils/photo_crop_geometry.dart';
 import '../../../../../core/utils/context_extensions.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 /// A creation workspace outlives the photo-fill widget, but not its album.
 class TemplatePhotoFillSession {
@@ -31,8 +35,10 @@ class TemplatePhotoFillSession {
   final List<_PhotoFillSnapshot> _redo = [];
   final Map<String, File> _files = {};
   final Map<AssetEntity, Future<File?>> _fileRequests = {};
+  int _generation = 0;
 
   void reset() {
+    _generation++;
     page = 0;
     selectedPhoto = null;
     selectedSlot = null;
@@ -60,6 +66,7 @@ class TemplatePhotoFillSession {
   void updateCover(List<LayerModel> cover) {
     final pages = _pages;
     if (pages == null || pages.isEmpty) return;
+    _generation++;
     // Older photo-fill undo entries must not undo a later cover edit.
     _pages = [
       [...cover],
@@ -98,15 +105,27 @@ class TemplatePhotoFillStep extends ConsumerStatefulWidget {
     this.pickPhotos,
     this.preserveTypography = false,
     this.session,
+    this.enableAutoFill = false,
+    this.currentOwner,
+    this.continueLabel,
+    this.canvasSize,
+    this.pageBackgroundColors,
   });
   final List<List<LayerModel>> pages;
   final CoverSize cover;
   final ValueChanged<List<List<LayerModel>>> onChanged;
   final VoidCallback onContinue;
+  final String? continueLabel;
+  final Size? canvasSize;
+  final List<Color?>? pageBackgroundColors;
   final Future<AssetEntity?> Function()? pickPhoto;
   final Future<List<AssetEntity>?> Function()? pickPhotos;
   final bool preserveTypography;
   final TemplatePhotoFillSession? session;
+
+  /// Ordinary templates opt in; AI's accepted photo selection stays unchanged.
+  final bool enableAutoFill;
+  final String? Function()? currentOwner;
 
   @override
   ConsumerState<TemplatePhotoFillStep> createState() =>
@@ -120,6 +139,14 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
   set _page(int value) => _session.page = value;
   int _revision = 0;
   bool _picking = false;
+  Size get _canvas => widget.canvasSize ?? coverCanvasBaseSize(widget.cover);
+  Color? _pageBackground(int page) {
+    final colors = widget.pageBackgroundColors;
+    return colors != null && page >= 0 && page < colors.length
+        ? colors[page]
+        : null;
+  }
+
   List<List<LayerModel>> get _knownPages => _session._pages!;
   set _knownPages(List<List<LayerModel>> value) => _session._pages = value;
   List<_PhotoFillSnapshot> get _undo => _session._undo;
@@ -134,9 +161,26 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
       _session.selectedSlot = value;
   final ScrollController _pageRailController = ScrollController();
   double _railItemExtent = 80;
+  _PhotoFillBatch? _batch;
+  ModalRoute<bool>? _batchRoute;
+  NavigatorState? _batchNavigator;
+
+  void _dismissBatchPreview() {
+    final route = _batchRoute, navigator = _batchNavigator;
+    _batchRoute = null;
+    _batchNavigator = null;
+    if (route == null || navigator == null) return;
+    // Account or document changes can remove this workspace during a build.
+    // Remove only our own preview after Navigator finishes its current mutation.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (navigator.mounted && route.isActive) navigator.removeRoute(route);
+    });
+  }
 
   @override
   void dispose() {
+    _batch = null;
+    _dismissBatchPreview();
     _pageRailController.dispose();
     super.dispose();
   }
@@ -222,7 +266,7 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
       key: const ValueKey('photo-fill-undo'),
       tooltip: '실행 취소',
       constraints: const BoxConstraints.tightFor(width: 44, height: 44),
-      icon: const Icon(Icons.undo_rounded, size: 20),
+      icon: const ExperienceIcon('Undo2', size: 20),
       onPressed: _picking || _undo.isEmpty
           ? null
           : () => _restore(_undo, _redo),
@@ -231,7 +275,7 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
       key: const ValueKey('photo-fill-redo'),
       tooltip: '다시 실행',
       constraints: const BoxConstraints.tightFor(width: 44, height: 44),
-      icon: const Icon(Icons.redo_rounded, size: 20),
+      icon: const ExperienceIcon('Redo2', size: 20),
       onPressed: _picking || _redo.isEmpty
           ? null
           : () => _restore(_redo, _undo),
@@ -281,7 +325,151 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
   @override
   void didUpdateWidget(covariant TemplatePhotoFillStep oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.canvasSize != widget.canvasSize) {
+      _revision++;
+      _undo.clear();
+      _redo.clear();
+      _selectedSlot = null;
+    }
     _synchronizePages();
+    final batch = _batch;
+    if (batch != null && !_batchIsCurrent(batch)) _dismissBatchPreview();
+  }
+
+  String? _readOwner() {
+    try {
+      return widget.currentOwner?.call();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool _batchIsCurrent(_PhotoFillBatch batch) {
+    final known = _session._pages;
+    return mounted &&
+        identical(_batch, batch) &&
+        widget.enableAutoFill &&
+        _revision == batch.revision &&
+        _session._generation == batch.generation &&
+        _readOwner() == batch.owner &&
+        widget.cover.productId == batch.cover.productId &&
+        widget.cover.ratio == batch.cover.ratio &&
+        widget.cover.realSize == batch.cover.realSize &&
+        _canvas == batch.canvas &&
+        listEquals(widget.pageBackgroundColors, batch.pageBackgroundColors) &&
+        known != null &&
+        batch.plan.matches(known, _pendingPhotos) &&
+        batch.plan.matches(widget.pages, _pendingPhotos);
+  }
+
+  Future<void> _autoFill() async {
+    if (_picking || !widget.enableAutoFill) return;
+    final owner = _readOwner();
+    if (owner == null || owner.isEmpty) {
+      context.showSnack('로그인 상태를 확인한 뒤 다시 시도해주세요.');
+      return;
+    }
+    final plan = TemplatePhotoFillPlan.create(
+      pages: widget.pages,
+      photos: _pendingPhotos,
+    );
+    if (plan.placements.isEmpty) return;
+    final batch = _PhotoFillBatch(
+      plan: plan,
+      owner: owner,
+      revision: _revision,
+      generation: _session._generation,
+      cover: widget.cover,
+      canvas: _canvas,
+      pageBackgroundColors: widget.pageBackgroundColors == null
+          ? null
+          : List<Color?>.unmodifiable(widget.pageBackgroundColors!),
+    );
+    _batch = batch;
+    setState(() => _picking = true);
+    try {
+      final loaded = <String, File>{};
+      // Every proposed photograph must be readable before the preview opens.
+      // A failed original never leaves a partially applied batch behind.
+      for (final placement in plan.placements) {
+        if (!_batchIsCurrent(batch)) return _staleTarget();
+        final photo = placement.photo;
+        if (photo is BrowserPhotoAsset && photo.ownerId != owner)
+          throw StateError('Photo account changed');
+        File? file;
+        try {
+          file = await _fileFor(photo);
+          if (!_batchIsCurrent(batch)) return _staleTarget();
+          if (file == null && photo is! BrowserPhotoAsset)
+            throw StateError('Photo unavailable');
+          final bytes = photo is BrowserPhotoAsset
+              ? photo.previewBytes
+              : await file!.readAsBytes();
+          if (!_batchIsCurrent(batch)) return _staleTarget();
+          final codec = await ui.instantiateImageCodec(
+            bytes,
+            targetWidth: 16,
+            targetHeight: 16,
+            allowUpscaling: false,
+          );
+          try {
+            final frame = await codec.getNextFrame();
+            frame.image.dispose();
+          } finally {
+            codec.dispose();
+          }
+        } catch (_) {
+          _fileRequests.remove(photo);
+          rethrow;
+        }
+        if (!_batchIsCurrent(batch)) return _staleTarget();
+        if (file != null) loaded[placement.fileKey] = file;
+      }
+      if (!_batchIsCurrent(batch)) return _staleTarget();
+      final pages = plan.buildPages();
+      final accepted = await showTemplatePhotoFillPreview(
+        context,
+        plan: plan,
+        pages: pages,
+        canvas: batch.canvas,
+        pageBackgroundColors: batch.pageBackgroundColors,
+        files: {..._files, ...loaded},
+        preserveTypography: widget.preserveTypography,
+        isCurrent: () => _batchIsCurrent(batch),
+        onOpened: (previewContext) {
+          _batchRoute = ModalRoute.of<bool>(previewContext);
+          _batchNavigator = Navigator.of(previewContext);
+        },
+      );
+      _batchRoute = null;
+      _batchNavigator = null;
+      if (accepted != true) return;
+      if (!_batchIsCurrent(batch)) return _staleTarget();
+      // One history entry covers document, resolved files, the entire queue,
+      // selection and current page. Undo/redo therefore restores the full step.
+      _remember();
+      _batch = null;
+      setState(() {
+        _files.addAll(loaded);
+        _pendingPhotos
+          ..clear()
+          ..addAll(plan.remainingPhotos);
+        if (!_pendingPhotos.any((photo) => identical(photo, _selectedPhoto)))
+          _selectedPhoto = _pendingPhotos.firstOrNull;
+        final first = plan.placements.first;
+        _page = first.page;
+        _selectedSlot = (page: first.page, id: first.original.id);
+      });
+      _publish(pages);
+      _revealPage(_page);
+    } catch (_) {
+      if (mounted && _batchIsCurrent(batch)) {
+        context.showErrorSnack('사진을 준비하지 못했어요. 아무 사진도 배치하지 않았어요. 다시 선택해주세요.');
+      }
+    } finally {
+      if (identical(_batch, batch)) _batch = null;
+      if (mounted) setState(() => _picking = false);
+    }
   }
 
   void _synchronizePages() {
@@ -622,7 +810,7 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
     File? targetFile,
   }) {
     final snapshot = List<LayerModel>.of(widget.pages[page]);
-    final canvas = coverCanvasBaseSize(widget.cover);
+    final canvas = _canvas;
     final preserveTypography = widget.preserveTypography;
     final files = <String, File>{
       for (final layer in snapshot)
@@ -640,6 +828,7 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
           width: canvas.width,
           height: canvas.height,
           designCanvasSize: canvas,
+          backgroundColor: _pageBackground(page),
           preserveTypography: preserveTypography,
           showCanvasChrome: false,
           cacheNetworkImages: true,
@@ -719,7 +908,7 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
               ? const BoxConstraints.tightFor(width: 44, height: 44)
               : null,
           tooltip: '사진 구도 조정',
-          icon: const Icon(Icons.crop),
+          icon: const ExperienceIcon('Crop'),
           onPressed: _picking || !available ? null : _cropSelectedPhoto,
         ),
         IconButton(
@@ -727,7 +916,7 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
               ? const BoxConstraints.tightFor(width: 44, height: 44)
               : null,
           tooltip: '사진 교체',
-          icon: const Icon(Icons.swap_horiz),
+          icon: const ExperienceIcon('ArrowLeftRight'),
           onPressed: _picking || !available ? null : _replaceSelectedPhoto,
         ),
         IconButton(
@@ -735,7 +924,7 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
               ? const BoxConstraints.tightFor(width: 44, height: 44)
               : null,
           tooltip: '사진 제거',
-          icon: const Icon(Icons.delete_outline),
+          icon: const ExperienceIcon('Trash2'),
           onPressed: _picking || !available ? null : _removeSelectedPhoto,
         ),
         IconButton(
@@ -743,7 +932,7 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
               ? const BoxConstraints.tightFor(width: 44, height: 44)
               : null,
           tooltip: '사진 선택 해제',
-          icon: const Icon(Icons.close),
+          icon: const ExperienceIcon('X'),
           onPressed: _picking || !available
               ? null
               : () => setState(() => _selectedSlot = null),
@@ -974,7 +1163,7 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
                   : '사진 $remaining장 남음'}';
           final preview = LayoutBuilder(
             builder: (context, box) {
-              final canvas = coverCanvasBaseSize(widget.cover);
+              final canvas = _canvas;
               final scale = math.max(
                 .01,
                 math.min(
@@ -994,6 +1183,7 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
                   pageBuilder: (i, wrap) => FittedBox(
                     child: TemplatePageRenderer(
                       layers: widget.pages[i],
+                      backgroundColor: _pageBackground(i),
                       width: canvas.width,
                       height: canvas.height,
                       designCanvasSize: canvas,
@@ -1091,11 +1281,10 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
                           child: FittedBox(
                             child: TemplatePageRenderer(
                               layers: widget.pages[index],
-                              width: coverCanvasBaseSize(widget.cover).width,
-                              height: coverCanvasBaseSize(widget.cover).height,
-                              designCanvasSize: coverCanvasBaseSize(
-                                widget.cover,
-                              ),
+                              backgroundColor: _pageBackground(index),
+                              width: _canvas.width,
+                              height: _canvas.height,
+                              designCanvasSize: _canvas,
                               showCanvasChrome: true,
                               imageDecodeWidth: 192,
                               preserveTypography: widget.preserveTypography,
@@ -1120,12 +1309,8 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
                               if (pageSlots.isNotEmpty) ...[
                                 const SizedBox(width: 5),
                                 if (pageFilled == pageSlots.length)
-                                  Icon(
-                                    Icons.check_circle_outline,
-                                    size: 12,
-                                    color: ExperienceFormStyle.selectionInk(
-                                      context,
-                                    ),
+                                  ExperienceIcon('CheckCircle2', size: 12, color: ExperienceFormStyle.selectionInk(
+                                      context),
                                   )
                                 else
                                   Text(
@@ -1181,7 +1366,7 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
                       container: true,
                       liveRegion: true,
                       label: allPhotosPlaced
-                          ? '사진 ${slots.length}장 모두 배치됨. 표지를 확인해주세요.'
+                          ? '사진 ${slots.length}장 모두 배치됨. ${widget.continueLabel ?? '표지를 확인해주세요.'}'
                           : '전체 사진 ${slots.length}장 중 $filled장 추가됨',
                       excludeSemantics: true,
                       child: Column(
@@ -1192,12 +1377,8 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               if (allPhotosPlaced) ...[
-                                Icon(
-                                  Icons.check_circle,
-                                  size: 16,
-                                  color: ExperienceFormStyle.selectionInk(
-                                    context,
-                                  ),
+                                ExperienceIcon('CheckCircle2', size: 16, color: ExperienceFormStyle.selectionInk(
+                                    context),
                                 ),
                                 const SizedBox(width: 6),
                               ],
@@ -1297,10 +1478,7 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
                           final add = FilledButton.icon(
                             key: const ValueKey('fill-add-photos'),
                             onPressed: _picking ? null : _addPhotos,
-                            icon: const Icon(
-                              Icons.add_photo_alternate_outlined,
-                              size: 20,
-                            ),
+                            icon: const ExperienceIcon('ImagePlus', size: 20),
                             label: const Text('사진 추가'),
                             style: CreationStyle.primary(context),
                           );
@@ -1310,7 +1488,9 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
                                   onPressed: _picking
                                       ? null
                                       : widget.onContinue,
-                                  child: const Text('나중에 채우기'),
+                                  child: Text(
+                                    widget.continueLabel ?? '나중에 채우기',
+                                  ),
                                 )
                               : FilledButton(
                                   key: const ValueKey('fill-continue'),
@@ -1318,8 +1498,42 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
                                       ? null
                                       : widget.onContinue,
                                   style: CreationStyle.primary(context),
-                                  child: const Text('표지 확인'),
+                                  child: Text(widget.continueLabel ?? '표지 확인'),
                                 );
+                          if (widget.enableAutoFill &&
+                              needsPhotos &&
+                              _pendingPhotos.isNotEmpty) {
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                FilledButton.icon(
+                                  key: const ValueKey('fill-auto-fill'),
+                                  onPressed: _picking ? null : _autoFill,
+                                  icon: const ExperienceIcon('Sparkles', size: 18),
+                                  label: Text(
+                                    _picking
+                                        ? '사진을 준비하고 있어요…'
+                                        : '빈 칸에 순서대로 채우기',
+                                  ),
+                                  style: CreationStyle.primary(context),
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextButton(
+                                        key: const ValueKey('fill-add-photos'),
+                                        onPressed: _picking ? null : _addPhotos,
+                                        child: const Text('사진 추가'),
+                                      ),
+                                    ),
+                                    Expanded(child: next),
+                                  ],
+                                ),
+                              ],
+                            );
+                          }
                           final stacked = actionsBox.maxWidth < 380;
                           if (stacked) {
                             return Column(
@@ -1451,6 +1665,25 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
       ),
     );
   }
+}
+
+class _PhotoFillBatch {
+  const _PhotoFillBatch({
+    required this.plan,
+    required this.owner,
+    required this.revision,
+    required this.generation,
+    required this.cover,
+    required this.canvas,
+    this.pageBackgroundColors,
+  });
+
+  final TemplatePhotoFillPlan plan;
+  final String owner;
+  final int revision, generation;
+  final CoverSize cover;
+  final Size canvas;
+  final List<Color?>? pageBackgroundColors;
 }
 
 class _PhotoFillSnapshot {

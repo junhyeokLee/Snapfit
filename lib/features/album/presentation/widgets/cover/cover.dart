@@ -6,6 +6,7 @@ import '../../../../../shared/widgets/spine_painter.dart';
 import 'package:flutter/material.dart';
 
 import '../../../domain/entities/layer.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 
 typedef BuildImageLayer = Widget Function(LayerModel layer);
 typedef BuildTextLayer = Widget Function(LayerModel layer);
@@ -336,9 +337,7 @@ class _CoverEmptyGuide extends StatelessWidget {
                         color: const Color(0xFF13C8EC).withValues(alpha: 0.12),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.add_photo_alternate_outlined,
-                        color: Color(0xFF13AFCF),
+                      child: const ExperienceIcon('ImagePlus', color: Color(0xFF13AFCF),
                         size: 30,
                       ),
                     ),

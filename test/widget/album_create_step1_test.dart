@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/core/constants/cover_size.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/album_create_step1.dart';
 import 'ai_album_start_step_test.dart' show wrapCreation, loadCreationFonts;
+import 'album_settings_redesign_test.dart' show openAlbumSettingsSection;
 import '../fixtures/ai_template_design_fixture.dart';
 
 void main() {
@@ -39,6 +40,7 @@ void main() {
       isNotNull,
     );
     expect(find.text('세로형'), findsNothing);
+    await openAlbumSettingsSection(tester, 'book');
     for (final size in coverSizes) {
       expect(
         find.byKey(ValueKey('print-size-${size.productId}')),
@@ -53,6 +55,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(cover.productId, 'REDP_250X200_SOFT');
     expect(cover.ratio, 1.25);
+    await openAlbumSettingsSection(tester, 'pages');
     await tester.ensureVisible(find.byTooltip('페이지 늘리기'));
     await tester.tap(find.byTooltip('페이지 늘리기'));
     await tester.pump();
@@ -115,6 +118,7 @@ void main() {
       await tester.ensureVisible(unavailable);
       await tester.tap(unavailable);
       expect(changes, 0);
+      await openAlbumSettingsSection(tester, 'pages');
       expect(
         tester
             .widget<IconButton>(
@@ -134,7 +138,7 @@ void main() {
     const Size(320, 568),
   ]) {
     testWidgets('album setup layout $size', (tester) async {
-      await loadCreationFonts();
+      await tester.runAsync(loadCreationFonts);
       await tester.binding.setSurfaceSize(size);
       addTearDown(() => tester.binding.setSurfaceSize(null));
       final design = templateDesignDraft().design!;

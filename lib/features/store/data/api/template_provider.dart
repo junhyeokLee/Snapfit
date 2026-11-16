@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../domain/store_template_discovery.dart';
 import '../../../../core/templates/catalog_favorites.dart';
 import '../../../../core/templates/catalog_favorite_keys.dart';
 import '../../../../core/templates/retired_store_templates.dart';
@@ -193,6 +194,13 @@ class _TemplateSessionNotifier extends Notifier<String?> {
 final _localTemplateCatalogProvider =
     AsyncNotifierProvider<_LocalTemplateCatalogNotifier, List<PremiumTemplate>>(
       _LocalTemplateCatalogNotifier.new,
+    );
+
+/// Related designs share the already loaded local metadata. Opening a detail
+/// must not start an additional full remote catalog or author its documents.
+final storeTemplateDiscoveryCandidatesProvider =
+    Provider<AsyncValue<List<PremiumTemplate>>>(
+      (ref) => ref.watch(_localTemplateCatalogProvider),
     );
 
 /// Full catalogs are fetched only by creation/library consumers that need one.
@@ -734,16 +742,7 @@ class StoreTemplateFeedNotifier extends Notifier<StoreTemplateFeedState> {
   ) => templates.where((t) {
     if (category.isNotEmpty && category != '전체' && t.category != category)
       return false;
-    if (query.isNotEmpty) {
-      final q = query.toLowerCase();
-      return [
-        t.title,
-        t.subTitle ?? '',
-        t.description ?? '',
-        ...?t.tags,
-      ].any((v) => v.toLowerCase().contains(q));
-    }
-    return true;
+    return matchesStoreTemplateQuery(t, query);
   }).toList();
 }
 

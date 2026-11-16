@@ -3,14 +3,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../shared/snapfit_image.dart';
+import '../../../../core/utils/korean_text_preview.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../album/domain/entities/album.dart';
 import '../../../album/presentation/utils/album_progress.dart';
 import '../../../album/presentation/widgets/home/home_album_helpers.dart';
+import '../../../album/presentation/widgets/home/album_next_page_preview.dart';
 import '../../../social/presentation/widgets/social_widgets.dart';
 import '../../domain/moment_draft.dart';
 import '../providers/moments_providers.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 /// One useful next step, without decoding the library's documents in build.
 class FirstBookNextStepCard extends ConsumerStatefulWidget {
@@ -24,6 +26,9 @@ class FirstBookNextStepCard extends ConsumerStatefulWidget {
     this.creationDraftTitle,
     this.onResumeCreation,
     this.compact = false,
+    this.idleContent,
+    this.activeFooter,
+    this.sectionTitle,
   });
 
   final String ownerId;
@@ -34,6 +39,8 @@ class FirstBookNextStepCard extends ConsumerStatefulWidget {
   final String? creationDraftTitle;
   final VoidCallback? onResumeCreation;
   final bool compact;
+  final Widget? idleContent, activeFooter;
+  final String? sectionTitle;
 
   @override
   ConsumerState<FirstBookNextStepCard> createState() =>
@@ -189,18 +196,21 @@ class _FirstBookNextStepCardState extends ConsumerState<FirstBookNextStepCard>
     final resumeAlbum =
         album != null && _progress != null && !_progress!.isCompleted;
     final resumeCreation = widget.onResumeCreation != null;
+    if (draft == null &&
+        !resumeCreation &&
+        !resumeAlbum &&
+        widget.idleContent != null) {
+      return widget.idleContent!;
+    }
     final title = draft != null
         ? '남기던 순간 이어 쓰기'
         : resumeCreation
         ? '이어서 만들기'
         : resumeAlbum
-        ? (album.title.trim().isEmpty ? '만들던 앨범 이어가기' : album.title)
+        ? '이번엔 ${_progress!.firstIncompletePageNumber ?? _progress!.completedPages + 1}쪽만 완성해요.'
         : _progress?.isCompleted == true
         ? '다음 한 권의 시작'
         : '한 장에서 나의 첫 한 권까지';
-    final remaining = _progress == null
-        ? 0
-        : _progress!.targetPages - _progress!.completedPages;
     final description = draft != null
         ? '사진과 글을 이 기기에 보관했어요.'
         : resumeCreation
@@ -208,9 +218,8 @@ class _FirstBookNextStepCardState extends ConsumerState<FirstBookNextStepCard>
               ? widget.creationDraftTitle!
               : '골라둔 사진과 구성을 이어서 완성해요.')
         : resumeAlbum
-        ? (remaining > 0
-              ? '남은 $remaining쪽부터 이어 만들어요.'
-              : '사진과 글을 채워 한 권을 마무리해요.')
+        ? '${album.title.trim().isEmpty ? '만들던 앨범' : album.title}\n'
+              '${_progress!.firstIncompletePhotoSlots > 0 ? '사진 ${_progress!.firstIncompletePhotoSlots}칸을 채우면 돼요.' : '사진이나 내 글을 남겨 이 쪽을 완성해요.'}'
         : '사진을 남기고, 모아둔 순간을 한 권으로 만나보세요.';
     final VoidCallback action = draft != null
         ? () => widget.onDraft(draft)
@@ -219,11 +228,6 @@ class _FirstBookNextStepCardState extends ConsumerState<FirstBookNextStepCard>
         : resumeAlbum
         ? () => widget.onContinueAlbum(album)
         : widget.onMoments;
-    final cover = resumeAlbum
-        ? album.coverThumbnailUrl ??
-              album.coverPreviewUrl ??
-              album.coverImageUrl
-        : null;
     final icon = draft != null
         ? Icons.edit_note_rounded
         : resumeCreation || resumeAlbum
@@ -231,7 +235,7 @@ class _FirstBookNextStepCardState extends ConsumerState<FirstBookNextStepCard>
         : Icons.add_photo_alternate_outlined;
     final shortCompact =
         widget.compact && MediaQuery.sizeOf(context).height < 600;
-    return Material(
+    final card = Material(
       color: SocialStyle.paper(context),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
@@ -264,9 +268,7 @@ class _FirstBookNextStepCardState extends ConsumerState<FirstBookNextStepCard>
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Icon(
-                        Icons.arrow_forward_rounded,
-                        color: SocialStyle.accent(context),
+                      ExperienceIcon('ArrowRight', color: SocialStyle.accent(context),
                         size: 20,
                       ),
                     ],
@@ -278,7 +280,7 @@ class _FirstBookNextStepCardState extends ConsumerState<FirstBookNextStepCard>
                 child: Row(
                   children: [
                     Container(
-                      width: widget.compact ? 48 : 72,
+                      width: widget.compact ? 64 : 72,
                       height: widget.compact ? 62 : 88,
                       clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
@@ -286,20 +288,22 @@ class _FirstBookNextStepCardState extends ConsumerState<FirstBookNextStepCard>
                           context,
                         ).withValues(alpha: .08),
                         borderRadius: BorderRadius.circular(7),
-                        border: Border(
-                          left: BorderSide(
-                            color: SocialStyle.accent(
-                              context,
-                            ).withValues(alpha: .4),
-                            width: 3,
-                          ),
+                        border: Border.all(
+                          color: SocialStyle.accent(
+                            context,
+                          ).withValues(alpha: .4),
+                          width: .75,
                         ),
                       ),
-                      child: cover?.isNotEmpty == true
-                          ? SnapfitImage(
-                              urlOrGs: cover!,
-                              fit: BoxFit.cover,
-                              error: Icon(icon),
+                      child: resumeAlbum
+                          ? AlbumNextPagePreview(
+                              key: ValueKey((
+                                widget.ownerId,
+                                album.id,
+                                album.updatedAt,
+                              )),
+                              album: album,
+                              pagePosition: _progress!.firstIncompletePageIndex,
                             )
                           : Icon(
                               icon,
@@ -338,15 +342,44 @@ class _FirstBookNextStepCardState extends ConsumerState<FirstBookNextStepCard>
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Icon(
-                      Icons.arrow_forward_rounded,
-                      color: SocialStyle.accent(context),
+                    ExperienceIcon('ArrowRight', color: SocialStyle.accent(context),
                       size: 20,
                     ),
                   ],
                 ),
               ),
       ),
+    );
+    final footer = widget.activeFooter;
+    final content = footer == null
+        ? card
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [card, const SizedBox(height: 2), footer],
+          );
+    final sectionTitle = widget.sectionTitle;
+    if (sectionTitle == null || sectionTitle.trim().isEmpty) return content;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Semantics(
+          key: const ValueKey('first-book-section-title'),
+          header: true,
+          child: Text(
+            keepShortKoreanWords(sectionTitle),
+            semanticsLabel: sectionTitle,
+            style: ExperienceFormStyle.text(
+              context,
+              20,
+              weight: FontWeight.w600,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        content,
+      ],
     );
   }
 }

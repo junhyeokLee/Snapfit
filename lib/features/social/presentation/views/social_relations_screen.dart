@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/navigation/web_app_location.dart';
+import '../../../../core/utils/context_extensions.dart';
 import '../../../../shared/web/web_design.dart';
 import '../../../../shared/widgets/experience_form_style.dart';
 import '../../../../shared/widgets/experience_style.dart';
@@ -14,6 +15,7 @@ import '../widgets/social_profile_widgets.dart';
 import '../widgets/social_web_frame.dart';
 import '../widgets/social_widgets.dart';
 import 'social_profile_screen.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 enum _RelationAction { follow, removeFollower, block }
 
@@ -162,7 +164,7 @@ class _SocialRelationsScreenState extends ConsumerState<SocialRelationsScreen> {
         };
         final copy = switch (action) {
           _RelationAction.follow =>
-            '${person.displayName}님의 공개 작품은 계속 볼 수 있어요.',
+            '${person.displayName}님의 공개 기록과 앨범은 계속 볼 수 있어요.',
           _RelationAction.removeFollower =>
             '상대에게 알림을 보내지 않아요. 내가 상대를 팔로우하는 관계는 유지되며, 상대는 다시 팔로우할 수 있어요.',
           _RelationAction.block =>
@@ -209,9 +211,7 @@ class _SocialRelationsScreenState extends ConsumerState<SocialRelationsScreen> {
     } catch (_) {
       if (_isCurrent(actor, owner, revision)) {
         _invalidate();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('변경 결과를 확인하지 못했어요. 최신 상태를 다시 확인해 주세요.')),
-        );
+        context.showSnack('변경 결과를 확인하지 못했어요. 최신 상태를 다시 확인해 주세요.');
       }
     } finally {
       if (_isCurrent(actor, owner, revision)) {
@@ -325,7 +325,7 @@ class _SocialRelationsScreenState extends ConsumerState<SocialRelationsScreen> {
                       alignment: Alignment.centerLeft,
                       child: TextButton.icon(
                         onPressed: () => _openProfile(widget.userId),
-                        icon: const Icon(Icons.person_outline, size: 18),
+                        icon: const ExperienceIcon('UserRound', size: 18),
                         label: const Text('공개 프로필 보기'),
                       ),
                     ),
@@ -412,7 +412,7 @@ class _SocialRelationsScreenState extends ConsumerState<SocialRelationsScreen> {
                                 : '아직 팔로우한 사람이 없어요.',
                             message: _followers
                                 ? '새로운 관계가 생기면 이곳에 표시돼요.'
-                                : '마음에 드는 작품의 창작자를 팔로우해 보세요.',
+                                : '마음에 드는 기록과 앨범을 남긴 사람을 팔로우해 보세요.',
                           );
                         }
                         return Column(

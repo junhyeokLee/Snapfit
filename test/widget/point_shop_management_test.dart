@@ -6,6 +6,7 @@ import 'package:snap_fit/features/point_shop/data/point_shop_provider.dart';
 import 'package:snap_fit/features/point_shop/data/point_shop_repository.dart';
 import 'package:snap_fit/features/profile/presentation/views/admin_point_shop_management_screen.dart';
 import 'package:snap_fit/features/profile/presentation/widgets/my_point_balance_card.dart';
+import 'package:snap_fit/features/profile/domain/order_visibility_owner.dart';
 
 class FakeShop extends PointShopRepository {
   final List<PointShopProduct> saved = [];
@@ -403,7 +404,10 @@ void main() {
       var charges = 0;
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [myPointBalanceProvider.overrideWith((ref) async => 2750)],
+          overrides: [
+            visibleOrderOwnerProvider.overrideWithValue('point-card-owner'),
+            myPointBalanceProvider.overrideWith((ref) async => 2750),
+          ],
           child: MaterialApp(
             home: Scaffold(body: MyPointBalanceCard(onCharge: () => charges++)),
           ),
@@ -411,7 +415,11 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('2,750 P'), findsOneWidget);
+      expect(find.byKey(const ValueKey('my-point-charge')), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('my-point-summary')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('my-point-charge')));
+      await tester.pumpAndSettle();
       expect(charges, 1);
     },
   );
@@ -423,6 +431,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            visibleOrderOwnerProvider.overrideWithValue('point-card-owner'),
             myPointBalanceProvider.overrideWith((ref) async {
               if (++reads == 1) throw StateError('offline');
               return -200;
@@ -435,9 +444,17 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('0 P'), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('my-point-summary')));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('다시 확인'));
       await tester.pumpAndSettle();
-      expect(find.text('-200 P'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('my-point-details')),
+          matching: find.text('-200 P'),
+        ),
+        findsOneWidget,
+      );
     },
   );
 }

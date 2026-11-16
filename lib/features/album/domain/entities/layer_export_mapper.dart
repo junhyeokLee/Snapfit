@@ -40,6 +40,13 @@ class LayerExportMapper {
       'scale': layer.scale, // scale 별도 저장
       'rotation': layer.rotation,
       'opacity': layer.opacity,
+      if (layer.canvasClip case final clip?)
+        'canvasClip': {
+          'x': (clip.left - (isCover ? kCoverSpineWidth : 0)) / refWidth,
+          'y': clip.top / canvasSize.height,
+          'width': clip.width / refWidth,
+          'height': clip.height / canvasSize.height,
+        },
       if (layer.isTemplateContent != null)
         'templateContent': layer.isTemplateContent,
       'payload': switch (layer.type) {
@@ -135,6 +142,11 @@ class LayerExportMapper {
       position: Offset(x, y), // 현재 화면에 최적화된 좌표
       width: width,
       height: height,
+      canvasClip: _canvasClipFromJson(
+        json['canvasClip'],
+        canvasSize,
+        isCover: isCover,
+      ),
       scale:
           (json['scale'] as num?)?.toDouble() ??
           1.0, // scale 복원 (하위 호환: 없으면 1.0)
@@ -174,6 +186,40 @@ class LayerExportMapper {
   }
 
   // --- Helper Methods ---
+
+  static Rect? _canvasClipFromJson(
+    dynamic value,
+    Size canvasSize, {
+    required bool isCover,
+  }) {
+    if (value == null) return null;
+    if (value is! Map ||
+        value.keys.any((key) => !{'x', 'y', 'width', 'height'}.contains(key))) {
+      throw const FormatException('layer_canvas_clip_invalid');
+    }
+    double number(String key) {
+      final number = value[key];
+      if (number is! num || !number.isFinite || number.abs() > 16) {
+        throw const FormatException('layer_canvas_clip_invalid');
+      }
+      return number.toDouble();
+    }
+
+    final x = number('x'), y = number('y');
+    final width = number('width'), height = number('height');
+    if (width <= 0 || height <= 0) {
+      throw const FormatException('layer_canvas_clip_invalid');
+    }
+    final refWidth = isCover
+        ? canvasSize.width - kCoverSpineWidth
+        : canvasSize.width;
+    return Rect.fromLTWH(
+      x * refWidth + (isCover ? kCoverSpineWidth : 0),
+      y * canvasSize.height,
+      width * refWidth,
+      height * canvasSize.height,
+    );
+  }
 
   static double _imageZoomFromJson(dynamic value) =>
       value is num && value.isFinite ? value.toDouble().clamp(1, 4) : 1;

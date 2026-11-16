@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-15",
+  "requested_items": [
+    2,
+    3,
+    4
+  ],
+  "production_files": [
+    "lib/features/store/presentation/views/store_screen.dart",
+    "lib/features/album/presentation/widgets/home/home_moment_summary_card.dart",
+    "lib/features/moments/presentation/views/moments_screen.dart",
+    "lib/features/moments/presentation/widgets/moments_widgets.dart"
+  ],
+  "test_files": [
+    "test/widget/home_moment_summary_test.dart",
+    "test/widget/moments_retention_layout_test.dart",
+    "test/widget/store_filter_continuity_test.dart",
+    "test/widget/store_main_experience_test.dart"
+  ],
+  "verification": {
+    "passed": 76,
+    "failed": 0,
+    "skipped": 1,
+    "analysis": "No issues found!",
+    "scoped_whitespace": "passed",
+    "independent_review": "No blocking findings"
+  },
+  "bottom_navigation_unchanged": true,
+  "bottom_navigation_sha256": "8c567ed74770bf41f2aebb429ca5026462dc3f7bf86d9e70ce6c389d64f56d84",
+  "source_sha256": {
+    "lib/features/store/presentation/views/store_screen.dart": "2e1dfe9311da63a3048083480d22e2b6045146dd5772448d0013376b29e0876d",
+    "lib/features/album/presentation/widgets/home/home_moment_summary_card.dart": "f8a5a2d1df32062cbf7aaab376b132c314886523a0c7bc9d24455700f6f1a6eb",
+    "lib/features/moments/presentation/views/moments_screen.dart": "d272b36a835edd8ec1a74c0acda737cbedb2d8fc64d7436582399c4eddef1772",
+    "lib/features/moments/presentation/widgets/moments_widgets.dart": "2d5a3321ab8b84cf800494fae6a707c8571956d90e055ee7811cb0bddfc7c153",
+    "test/widget/home_moment_summary_test.dart": "c53f783fa0f47792dc1f4bcea4f55f5f246d5a1b006799404f3bd79252d508ee",
+    "test/widget/moments_retention_layout_test.dart": "556540aeb689d858da7434c1b9041262daf75b279bb8a96dc73f32e5ec716b1a",
+    "test/widget/store_filter_continuity_test.dart": "50bd72de3527fee6599d045cf7c08423d6f345587643fa48c255ca610b043b2b",
+    "test/widget/store_main_experience_test.dart": "2f4e88a6668339a7ccc0dfa09e79a81e16c5ba7d865f554bf1c3db22cc4daa50"
+  },
+  "screens": [
+    "01-home.png",
+    "02-record.png",
+    "03-store-results.png",
+    "04-store-initial.png",
+    "05-store-large-text.png"
+  ],
+  "limits": [
+    "Native in-process runner with image-warmup fixture adapters; original test assertions retained.",
+    "No full repository suite, physical-device, production flow, build, deploy or commit."
+  ]
+}

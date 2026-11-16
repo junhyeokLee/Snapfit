@@ -1,0 +1,93 @@
+{
+  "date": "2026-11-11",
+  "task": "Read-only audit of actual HomeScreen overall layout",
+  "result": {
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0
+  },
+  "productCodeModified": false,
+  "sourceChecks": [
+    {
+      "path": "lib/features/album/presentation/views/home_screen.dart",
+      "before": "83efd3fd66adf9f050adbe3f86d84e573dd4a369005b1980282067c842f6e565",
+      "after": "83efd3fd66adf9f050adbe3f86d84e573dd4a369005b1980282067c842f6e565"
+    },
+    {
+      "path": "lib/features/album/presentation/widgets/home/home_album_destination.dart",
+      "before": "933edd3c65adc59659d79978d913cde3ec5143a92907bf0ea0b8074bd8a831b0",
+      "after": "933edd3c65adc59659d79978d913cde3ec5143a92907bf0ea0b8074bd8a831b0"
+    },
+    {
+      "path": "lib/features/album/presentation/widgets/home/home_album_slider.dart",
+      "before": "6f4324a68696b1024ac93e6fd850fe281867f921563c41c9f5978ffdc81d4c6f",
+      "after": "6f4324a68696b1024ac93e6fd850fe281867f921563c41c9f5978ffdc81d4c6f"
+    },
+    {
+      "path": "lib/features/album/presentation/widgets/home/home_moment_summary_card.dart",
+      "before": "4e302bd626db4d2df203ee0f0c898a468f4a348b10aff92c667139a22019f59e",
+      "after": "4e302bd626db4d2df203ee0f0c898a468f4a348b10aff92c667139a22019f59e"
+    },
+    {
+      "path": "lib/features/album/presentation/widgets/home/home_moment_reward_summary.dart",
+      "before": "4c999a96f3daf87c1844687c43d9db50b3e31f34222e1e75a2d558295fd04de4",
+      "after": "4c999a96f3daf87c1844687c43d9db50b3e31f34222e1e75a2d558295fd04de4"
+    },
+    {
+      "path": "lib/features/moments/presentation/widgets/moment_month_calendar.dart",
+      "before": "5246ee7347aca774ae9a9b1b77a8b526ed4bee1edeb189f87d6d3ef6324755b6",
+      "after": "5246ee7347aca774ae9a9b1b77a8b526ed4bee1edeb189f87d6d3ef6324755b6"
+    },
+    {
+      "path": "lib/features/album/presentation/widgets/home/home_album_header.dart",
+      "before": "a53d9c60fc046bb7bd7dab40f046f5c59540db58ffafd1d076d82190e6f3dcf1",
+      "after": "a53d9c60fc046bb7bd7dab40f046f5c59540db58ffafd1d076d82190e6f3dcf1"
+    },
+    {
+      "path": "lib/features/album/presentation/widgets/home/home_bottom_navigation_bar.dart",
+      "before": "8c567ed74770bf41f2aebb429ca5026462dc3f7bf86d9e70ce6c389d64f56d84",
+      "after": "8c567ed74770bf41f2aebb429ca5026462dc3f7bf86d9e70ce6c389d64f56d84"
+    }
+  ],
+  "screenshotCount": 9,
+  "fullScreenEvidence": [
+    "390x844-01-initial.png",
+    "390x844-02-today-and-archive.png",
+    "320x568-01-initial.png",
+    "320x568-02-today-and-archive.png",
+    "390x844-today-saved-01-initial.png"
+  ],
+  "excludedFromFullScreenGeometry": [
+    "390x844-03-album-focus.png",
+    "390x844-04-album-selector.png",
+    "320x568-03-album-focus.png",
+    "320x568-04-album-selector.png"
+  ],
+  "captureLimitation": "Deep-scroll software-rendered PNGs omit fixed header and shift content; not treated as a product bug. RenderBox metrics retained separately.",
+  "deviceOrBrowserVerified": false,
+  "appBuiltOrDeployed": false,
+  "fixture": {
+    "screens": [
+      [
+        390,
+        844
+      ],
+      [
+        320,
+        568
+      ]
+    ],
+    "devicePixelRatio": 2,
+    "safePadding": {
+      "top": 24,
+      "bottom": 34
+    },
+    "syntheticToday": "2026-11-18",
+    "albumCount": 3,
+    "momentDays": [
+      17,
+      18
+    ],
+    "textScale": 1
+  }
+}

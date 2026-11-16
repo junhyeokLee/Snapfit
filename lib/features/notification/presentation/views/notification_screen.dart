@@ -130,7 +130,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     setState(() => _openingNews = true);
     try {
       await Navigator.of(context).push<void>(
-        MaterialPageRoute<void>(builder: (_) => const HomeNewsScreen()),
+        snapFitRoute<void>(page: const HomeNewsScreen()),
       );
     } finally {
       if (mounted) setState(() => _openingNews = false);
@@ -288,7 +288,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
               _refreshing || _markingAll || _openingSettings || inbox.isLoading
               ? null
               : _refreshInbox,
-          icon: const Icon(Icons.refresh, size: 18),
+          icon: const ExperienceIcon('RefreshCw', size: 18),
           label: const Text('새로고침'),
         ),
       ],
@@ -317,7 +317,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                 OutlinedButton.icon(
                   key: const ValueKey('inbox-settings'),
                   onPressed: _openingSettings ? null : _openSettings,
-                  icon: const Icon(Icons.tune, size: 18),
+                  icon: const ExperienceIcon('Settings2', size: 18),
                   label: const Text('알림 설정'),
                 ),
               ],
@@ -394,7 +394,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         ),
       ),
       onPressed: _openingNews || _openingSettings ? null : _openNews,
-      icon: const Icon(Icons.auto_awesome_outlined, size: 18),
+      icon: const ExperienceIcon('Sparkles', size: 18),
       label: const Text('혜택·새 소식'),
     );
     return Wrap(
@@ -477,9 +477,47 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         return Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
-            child: Text(
-              '알림이 없습니다.',
-              style: ExperienceFormStyle.text(context, 14, secondary: true),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: ExperienceFormStyle.selection(context),
+                    shape: BoxShape.circle,
+                  ),
+                  child: ExperienceIcon('Bell', color: ExperienceFormStyle.selectionInk(context),
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  '아직 도착한 알림이 없어요.',
+                  textAlign: TextAlign.center,
+                  style: ExperienceFormStyle.text(
+                    context,
+                    17,
+                    weight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '새로운 소식이 오면 이곳에 모여요.',
+                  textAlign: TextAlign.center,
+                  style: ExperienceFormStyle.text(context, 13, secondary: true),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  key: const ValueKey('inbox-empty-settings'),
+                  onPressed: _openingSettings ? null : _openSettings,
+                  style: TextButton.styleFrom(
+                    foregroundColor: ExperienceFormStyle.selectionInk(context),
+                    minimumSize: const Size(0, 44),
+                  ),
+                  child: const Text('알림 설정 보기'),
+                ),
+              ],
             ),
           ),
         );
@@ -595,7 +633,7 @@ class _RetentionPolicyBar extends StatelessWidget {
         ),
       ),
       child: Text(
-        '알림은 실서비스 운영 기준에 맞춰 $days일 보관 후 자동 삭제됩니다.',
+        '최근 $days일의 알림을 볼 수 있어요.',
         textAlign: compact ? TextAlign.left : TextAlign.center,
         style: ExperienceFormStyle.text(context, 12, secondary: true),
       ),
@@ -615,6 +653,9 @@ class _NotificationCard extends StatelessWidget {
     'album_member_changed',
   }.contains(item.type);
 
+  bool get _isComment =>
+      const {'album_comment', 'social_comment'}.contains(item.type);
+
   @override
   Widget build(BuildContext context) => Semantics(
     value: item.isRead ? '읽음' : '읽지 않음',
@@ -633,17 +674,22 @@ class _NotificationCard extends StatelessWidget {
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
         leading: Badge(
           isLabelVisible: !isRead,
-          smallSize: 5,
+          smallSize: 6,
+          backgroundColor: ExperienceFormStyle.selectionInk(context),
           child: Container(
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: ExperienceFormStyle.surface(context),
+              color: isRead
+                  ? ExperienceFormStyle.surface(context)
+                  : ExperienceFormStyle.selection(context),
               borderRadius: BorderRadius.circular(9),
             ),
             child: Icon(
               _isAlbumSharing
                   ? Icons.people_outline
+                  : _isComment
+                  ? Icons.chat_bubble_outline_rounded
                   : item.type == 'order_status'
                   ? Icons.inventory_2_outlined
                   : Icons.notifications_none,
@@ -672,6 +718,8 @@ class _NotificationCard extends StatelessWidget {
               style: ExperienceFormStyle.text(context, 12, secondary: true),
             ),
           ],
+        ),
+        trailing: ExperienceIcon('ChevronRight', size: 20, color: ExperienceFormStyle.muted(context),
         ),
         onTap: onTap,
       ),
@@ -708,11 +756,14 @@ class _NotificationCard extends StatelessWidget {
                   child: Badge(
                     isLabelVisible: !item.isRead,
                     smallSize: 6,
+                    backgroundColor: WebPalette.of(context).brandInk,
                     alignment: Alignment.topRight,
                     child: Center(
                       child: Icon(
                         _isAlbumSharing
                             ? Icons.people_outline
+                            : _isComment
+                            ? Icons.chat_bubble_outline_rounded
                             : item.type == 'order_status'
                             ? Icons.inventory_2_outlined
                             : Icons.notifications_none,
@@ -778,10 +829,7 @@ class _NotificationCard extends StatelessWidget {
                 const SizedBox(width: 20),
                 Padding(
                   padding: EdgeInsets.only(top: 4),
-                  child: Icon(
-                    Icons.chevron_right,
-                    size: 18,
-                    color: WebPalette.of(context).muted,
+                  child: ExperienceIcon('ChevronRight', size: 18, color: WebPalette.of(context).muted,
                   ),
                 ),
               ],
@@ -800,6 +848,8 @@ class _NotificationCard extends StatelessWidget {
         return '주문 알림';
       case 'album_comment':
         return '댓글/반응';
+      case 'social_comment':
+        return '새 댓글';
       case 'album_invite':
       case 'invite_accepted':
       case 'album_member_changed':

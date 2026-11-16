@@ -1,0 +1,121 @@
+{
+  "verifiedAt": "2026-10-28T11:49:31.937746+00:00",
+  "request": "Move the feed to individually opted-in monthly journal records, keep published albums on user profiles, prioritize records in My, and simplify the point balance design.",
+  "behavior": {
+    "feed": "Moment publications only: one explicitly selected photo, saved caption and calendar date. A monthly album does not need to have been materialized yet.",
+    "profile": "Single-photo public records first, with an independent published-album tab. The owner has a visible monthly journal entry and private account actions.",
+    "privacy": "Records stay private unless the owner opts in. Other photos and monthly album documents are not included in a record publication. Existing records are not published by migration.",
+    "safety": "Owner and record revision are checked server-side. Edits withdraw the old public copy; deletion tombstones every old copy. Publication revision CAS prevents delayed completion from undoing a private choice. Original images are re-encoded to bounded PNG with metadata removed.",
+    "retry": "A saved record is reused after a failed publication. Same-photo re-publication preserves the current publication and its reactions. Every remote publication stage is bounded to 25 seconds.",
+    "points": "Neutral single-line balance opens a charge/history sheet. Owner and route guards prevent stale account actions."
+  },
+  "verification": {
+    "native": {
+      "passed": 367,
+      "failures": 0,
+      "log": "output/moment-feed-final-native.log"
+    },
+    "server": {
+      "passed": 12,
+      "failures": 0,
+      "log": "output/moment-feed-server-final.log"
+    },
+    "chromeLayoutAndPointMenu": {
+      "passed": 14,
+      "failures": 0,
+      "log": "output/moment-feed-chrome.log"
+    },
+    "chromePublication": {
+      "passed": 13,
+      "failures": 0,
+      "log": "output/moment-feed-publication-chrome-verified.log",
+      "scope": "Two actual record compose workflows plus 11 publication service cases, including decoded preview pixels, retry without duplicate save, no-op private withdrawal, owner ABA, late upload timeout, private finalize response and metadata-free ratio-preserving PNG."
+    },
+    "productionWidgetCaptures": {
+      "passed": 10,
+      "failures": 0,
+      "log": "output/moment-feed-captures-final.log"
+    },
+    "sourceAnalysis": "output/moment-feed-final-analysis.log",
+    "diffCheckPassed": true,
+    "nativePackageBuilt": false,
+    "phoneInstallVerified": false,
+    "fixtureNote": "Screenshots are actual production Flutter widgets with isolated fake accounts and bundled example photographs. Browser widget tests inject in-memory image bytes; native captures retain the real photographs. No test publication was added to production.",
+    "chromeTotalPassed": 27,
+    "totalPrimaryChecks": 406,
+    "browserFixtureAnalysis": "output/moment-feed-browser-fixture-analysis.log",
+    "staticAnalysisPassed": true
+  },
+  "database": {
+    "project": "rrbhxdtriummqpztpjrk",
+    "migration": "20261028112445_private_moment_publication_feed.sql",
+    "applied": true,
+    "beforeAndAfter": {
+      "albums": 18,
+      "records": 1,
+      "works": 1,
+      "follows": 0
+    },
+    "automaticallyPublishedMoments": 0,
+    "privateLedgerDirectReadDenied": true,
+    "legacyDispatcherBypassDenied": true,
+    "rlsEnabled": true,
+    "pricesOrEntitlementsChanged": false,
+    "evidence": "output/moment-feed-database-check.json",
+    "advisors": "No new WARN/ERROR. Two new private RPC-only ledgers intentionally have RLS without direct policies and with all direct privileges revoked."
+  },
+  "webDeployment": {
+    "status": "verified",
+    "url": "https://snapfit-c719d.web.app/feed",
+    "profileUrl": "https://snapfit-c719d.web.app/me",
+    "release": "projects/360727043538/sites/snapfit-c719d/versions/ac83650d7c70f3bf",
+    "build": {
+      "main_sha256": "339b8dd754c08b94bfb2bd32388141fddb520d4413fdf5cbd0cbe43cd3685645",
+      "main_file": "main.339b8dd754c08b94bfb2.dart.js",
+      "bootstrap_sha256": "795e216979abefd51e2e36287e73f96a463d68301ceed3fd039ae3e9035acc2a",
+      "bootstrap_file": "flutter_bootstrap.795e216979abefd51e2e.js"
+    },
+    "httpChecks": [
+      {
+        "path": "/feed",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      },
+      {
+        "path": "/me",
+        "status": 200,
+        "latestBootstrap": true,
+        "noStore": true
+      },
+      {
+        "path": "/snapfit-web-build.json",
+        "status": 200,
+        "matchesLocal": true
+      },
+      {
+        "path": "/flutter_bootstrap.795e216979abefd51e2e.js",
+        "status": 200,
+        "sha256": "795e216979abefd51e2e36287e73f96a463d68301ceed3fd039ae3e9035acc2a"
+      },
+      {
+        "path": "/main.339b8dd754c08b94bfb2.dart.js",
+        "status": 200,
+        "sha256": "339b8dd754c08b94bfb2bd32388141fddb520d4413fdf5cbd0cbe43cd3685645"
+      }
+    ],
+    "runtimeGuestChecks": [
+      "Production feed renders the new monthly-record empty state.",
+      "My destination redirects a guest to login.",
+      "No captured browser console errors."
+    ],
+    "evidence": "output/moment-feed-deployment-check.json"
+  },
+  "screenshots": {
+    "my": "output/moment-feed-20261028/my-profile.png",
+    "feed": "output/moment-feed-20261028/feed-app.png",
+    "publicPhotoSelection": "output/moment-feed-20261028/compose-recovered-light-public-photo-selection.png",
+    "darkMy": "output/moment-feed-20261028/my-profile-dark.png"
+  },
+  "status": "verified_and_deployed"
+}

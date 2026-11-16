@@ -1,0 +1,297 @@
+--- before/lib/core/templates/catalog_favorites.dart
++++ after/lib/core/templates/catalog_favorites.dart
+@@ -87,12 +87,18 @@
+     return result;
+   }
+ 
+-  Future<bool> toggle(String key) => _enqueue(() async {
++  Future<bool> toggle(String key) =>
++      _enqueue(() => _setSelected(key, !contains(key)));
++
++  /// Resolve explicit state inside the queue so undo preserves a newer save.
++  Future<bool> setSelected(String key, {required bool selected}) =>
++      _enqueue(() => _setSelected(key, selected));
++
++  Future<bool> _setSelected(String key, bool selected) async {
+     if (key.isEmpty) return false;
++    if (contains(key) == selected) return true;
+     final previous = List<String>.of(_keys);
+-    _keys = contains(key)
+-        ? _keys.where((k) => k != key).toList()
+-        : [key, ..._keys];
++    _keys = selected ? [key, ..._keys] : _keys.where((k) => k != key).toList();
+     _notify();
+     try {
+       await _save();
+@@ -102,7 +108,7 @@
+       _notify();
+       return false;
+     }
+-  });
++  }
+ 
+   Future<bool> importLegacyTemplates(
+     Iterable<String> keys, {
+--- before/lib/core/utils/context_extensions.dart
++++ after/lib/core/utils/context_extensions.dart
+@@ -17,13 +17,15 @@
+   }
+ 
+   void showErrorSnack(String message) {
++    final colors = Theme.of(this).colorScheme;
+     ScaffoldMessenger.of(this)
+       ..hideCurrentSnackBar()
+       ..showSnackBar(
+         SnackBar(
+-          content: Text(message),
++          // 오류 배경에는 테마의 대응 본문 색을 함께 사용한다.
++          content: Text(message, style: TextStyle(color: colors.onError)),
+           behavior: SnackBarBehavior.floating,
+-          backgroundColor: Theme.of(this).colorScheme.error,
++          backgroundColor: colors.error,
+           shape: RoundedRectangleBorder(
+             borderRadius: BorderRadius.circular(12),
+           ),
+--- before/lib/features/social/presentation/widgets/social_comment_widgets.dart
++++ after/lib/features/social/presentation/widgets/social_comment_widgets.dart
+@@ -250,54 +250,58 @@
+                 child: Column(
+                   crossAxisAlignment: CrossAxisAlignment.start,
+                   children: [
+-                    Row(
+-                      crossAxisAlignment: CrossAxisAlignment.center,
++                    // 이름 폭을 먼저 확보하고, 공간이 부족할 때만 정보를 다음 줄로 보낸다.
++                    Wrap(
++                      spacing: comment.author.userId == workAuthorId ? 6 : 8,
++                      crossAxisAlignment: WrapCrossAlignment.center,
+                       children: [
+-                        Flexible(
+-                          child: InkWell(
+-                            onTap: () => onProfile(comment.author),
+-                            borderRadius: BorderRadius.circular(6),
+-                            child: Padding(
+-                              padding: const EdgeInsets.symmetric(vertical: 7),
+-                              child: Text(
+-                                comment.author.displayName,
+-                                maxLines: 1,
+-                                overflow: TextOverflow.ellipsis,
+-                                style: const TextStyle(
+-                                  fontSize: 13,
+-                                  fontWeight: FontWeight.w700,
+-                                ),
++                        InkWell(
++                          onTap: () => onProfile(comment.author),
++                          borderRadius: BorderRadius.circular(6),
++                          child: Padding(
++                            padding: const EdgeInsets.symmetric(vertical: 7),
++                            child: Text(
++                              comment.author.displayName,
++                              maxLines: 1,
++                              overflow: TextOverflow.ellipsis,
++                              style: const TextStyle(
++                                fontSize: 13,
++                                fontWeight: FontWeight.w700,
+                               ),
+                             ),
+                           ),
+                         ),
+-                        if (comment.author.userId == workAuthorId) ...[
+-                          const SizedBox(width: 6),
+-                          DecoratedBox(
+-                            decoration: BoxDecoration(
+-                              color: SocialStyle.paper(context),
+-                              borderRadius: BorderRadius.circular(5),
++                        Wrap(
++                          spacing: 8,
++                          crossAxisAlignment: WrapCrossAlignment.center,
++                          children: [
++                            if (comment.author.userId == workAuthorId)
++                              DecoratedBox(
++                                decoration: BoxDecoration(
++                                  color: SocialStyle.paper(context),
++                                  borderRadius: BorderRadius.circular(5),
++                                ),
++                                child: Padding(
++                                  padding: const EdgeInsets.symmetric(
++                                    horizontal: 5,
++                                    vertical: 2,
++                                  ),
++                                  child: Text(
++                                    '작성자',
++                                    style: TextStyle(
++                                      fontSize: 10,
++                                      color: muted,
++                                    ),
++                                  ),
++                                ),
++                              ),
++                            Text(
++                              socialCommentTime(comment.createdAt),
++                              maxLines: 1,
++                              overflow: TextOverflow.ellipsis,
++                              style: TextStyle(fontSize: 11, color: muted),
+                             ),
+-                            child: Padding(
+-                              padding: const EdgeInsets.symmetric(
+-                                horizontal: 5,
+-                                vertical: 2,
+-                              ),
+-                              child: Text(
+-                                '작성자',
+-                                style: TextStyle(fontSize: 10, color: muted),
+-                              ),
+-                            ),
+-                          ),
+-                        ],
+-                        const SizedBox(width: 8),
+-                        Flexible(
+-                          child: Text(
+-                            socialCommentTime(comment.createdAt),
+-                            maxLines: 1,
+-                            overflow: TextOverflow.ellipsis,
+-                            style: TextStyle(fontSize: 11, color: muted),
+-                          ),
++                          ],
+                         ),
+                       ],
+                     ),
+--- before/lib/features/store/presentation/views/material_catalog_screen.dart
++++ after/lib/features/store/presentation/views/material_catalog_screen.dart
+@@ -754,6 +754,11 @@
+       }
+       final items = _cachedItems;
+       final activeFilters = _activeFilters;
++      // 단독 즐겨찾기는 선택 버튼에서 해제할 수 있어 같은 조건을 반복하지 않는다.
++      final onlyLibraryFavorites =
++          widget.library &&
++          activeFilters.length == 1 &&
++          activeFilters.single.id == 'favorites';
+       _total = _cachedTotal;
+       final curation = !widget.library
+           ? ref.watch(storeCurationsProvider).asData?.value['materials']
+@@ -1005,10 +1010,11 @@
+                               ? (catalog.hasError ? '가격 확인 필요' : '가격 확인 중')
+                               : '${items.length}개의 소재',
+                         ),
+-                      CatalogActiveFilters(
+-                        filters: activeFilters,
+-                        onReset: _resetFilters,
+-                      ),
++                      if (!onlyLibraryFavorites)
++                        CatalogActiveFilters(
++                          filters: activeFilters,
++                          onReset: _resetFilters,
++                        ),
+                       SizedBox(height: libraryWide ? 8 : 16),
+                     ],
+                     if (kIsWeb) const SizedBox(height: 20),
+@@ -1274,6 +1280,7 @@
+                                 template: item.template,
+                                 owned: ownedKeys.contains(item.key),
+                                 favoriteKey: item.favoriteKey,
++                                undoOnRemove: widget.library,
+                                 heroTag: (this, item.key),
+                                 previewHeight: previewHeight,
+                                 onOpen: () => _open(item),
+@@ -1416,6 +1423,7 @@
+                                       CatalogFavoriteButton(
+                                         bookmark: true,
+                                         unframed: true,
++                                        undoOnRemove: widget.library,
+                                         itemKey: item.favoriteKey,
+                                         label: item.title,
+                                       ),
+--- before/lib/features/store/presentation/widgets/library_design_tile.dart
++++ after/lib/features/store/presentation/widgets/library_design_tile.dart
+@@ -28,6 +28,7 @@
+     this.favoriteKey,
+     this.heroTag,
+     this.coverOnly = false,
++    this.undoOnRemove = false,
+   });
+ 
+   final String productKey, title, type;
+@@ -41,6 +42,7 @@
+ 
+   /// Creation browsing needs a large jacket; other shelves keep their spread.
+   final bool coverOnly;
++  final bool undoOnRemove;
+ 
+   static double extent(
+     double previewHeight,
+@@ -127,6 +129,7 @@
+                             top: 3,
+                             child: CatalogFavoriteButton(
+                               bookmark: true,
++                              undoOnRemove: undoOnRemove,
+                               itemKey: favoriteKey!,
+                               label: title,
+                             ),
+--- before/lib/shared/widgets/catalog_favorite_widgets.dart
++++ after/lib/shared/widgets/catalog_favorite_widgets.dart
+@@ -37,10 +37,12 @@
+     required this.label,
+     this.bookmark = false,
+     this.unframed = false,
++    this.undoOnRemove = false,
+   });
+   final String itemKey, label;
+   final bool bookmark;
+   final bool unframed;
++  final bool undoOnRemove;
+   @override
+   Widget build(BuildContext context) => CatalogFavoritesBuilder(
+     builder: (context, favorites) {
+@@ -49,13 +51,50 @@
+       Future<void> toggle() async {
+         HapticFeedback.selectionClick();
+         final messenger = ScaffoldMessenger.maybeOf(context);
+-        if (!await favorites.toggle(itemKey) &&
++        final route = ModalRoute.of(context);
++        final removing = favorites.contains(itemKey);
++        // The library can dispose this button as soon as selection changes.
++        bool currentRoute() =>
+             messenger != null &&
+-            messenger.mounted) {
++            messenger.mounted &&
++            (route == null || (route.isActive && route.isCurrent));
++        void showError() {
++          messenger!.removeCurrentSnackBar();
+           messenger.showSnackBar(
+             const SnackBar(content: Text('즐겨찾기를 저장하지 못했어요. 다시 시도해 주세요.')),
+           );
+         }
++
++        final saved = await favorites.toggle(itemKey);
++        if (!currentRoute()) return;
++        if (!saved) {
++          showError();
++          return;
++        }
++        if (!undoOnRemove || !removing || favorites.contains(itemKey)) return;
++        var undoAvailable = true;
++        messenger!.removeCurrentSnackBar();
++        final notice = messenger.showSnackBar(
++          SnackBar(
++            duration: const Duration(seconds: 4),
++            content: const Text('즐겨찾기 해제'),
++            action: SnackBarAction(
++              label: '되돌리기',
++              onPressed: () async {
++                // Replaced or expired notices must not restore an old item.
++                if (!undoAvailable || !currentRoute()) return;
++                undoAvailable = false;
++                final restored = await favorites.setSelected(
++                  itemKey,
++                  selected: true,
++                );
++                if (!restored && currentRoute()) showError();
++              },
++            ),
++          ),
++        );
++        // Snackbar content is shared by scaffolds during route transitions.
++        notice.closed.then((_) => undoAvailable = false);
+       }
+ 
+       return Semantics(

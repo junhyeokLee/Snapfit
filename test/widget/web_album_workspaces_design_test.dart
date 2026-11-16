@@ -73,7 +73,7 @@ WebAlbumEditorWorkspace _editor({
   compactPageRail: const Center(child: Text('페이지 목록')),
   properties: const Center(child: Text('사진과 글의 속성')),
   tools: [
-    for (final label in ['사진 추가', '텍스트', '재배치', '레이아웃', '템플릿', '꾸미기', '배경'])
+    for (final label in ['사진 추가', '텍스트', '겹침 순서', '레이아웃', '템플릿', '꾸미기', '배경'])
       WebAlbumEditorTool(
         label: label,
         icon: Icons.layers_outlined,

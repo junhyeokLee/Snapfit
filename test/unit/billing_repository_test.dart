@@ -7,6 +7,47 @@ import 'package:snap_fit/features/billing/data/billing_repository.dart';
 class MockTokenStorage extends Mock implements TokenStorage {}
 
 void main() {
+  for (final reason in [
+    'DIGITAL_ITEM_PURCHASE',
+    'AI_ALBUM_DRAFT_CHARGE',
+    'AI_ALBUM_DRAFT_FREE',
+  ]) {
+    test('ledger shows stored title for $reason', () {
+      final entry = PointLedgerEntry.fromJson({
+        'id': 12,
+        'amount_delta': -450,
+        'reason': reason,
+        'metadata': {'title': '  여행의 결  '},
+      });
+      expect(entry.subtitle, '여행의 결');
+    });
+  }
+  for (final metadata in [
+    null,
+    'invalid',
+    [],
+    {'title': 42},
+    {'title': '  '},
+  ]) {
+    test('ledger keeps a useful fallback for metadata $metadata', () {
+      final entry = PointLedgerEntry.fromJson({
+        'id': 12,
+        'amount_delta': -450,
+        'reason': 'DIGITAL_ITEM_PURCHASE',
+        'metadata': metadata,
+      });
+      expect(entry.subtitle, '구매한 상품은 계속 사용할 수 있어요');
+    });
+  }
+  test('unrelated ledger metadata is not shown as a purchase title', () {
+    final entry = PointLedgerEntry.fromJson({
+      'id': 12,
+      'amount_delta': 10,
+      'reason': 'DAILY_ATTENDANCE',
+      'metadata': {'title': '내부 처리 정보'},
+    });
+    expect(entry.subtitle, '오늘의 출석으로 받은 무료 포인트');
+  });
   test(
     'earned attendance and signup points have distinct ledger descriptions',
     () {

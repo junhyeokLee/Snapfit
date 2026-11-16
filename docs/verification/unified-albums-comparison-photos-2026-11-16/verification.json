@@ -1,0 +1,156 @@
+{
+  "date": "2026-11-16",
+  "scope": "approved four UX improvements; latest user instruction removes working/completed album separation",
+  "runtime": "headless Flutter tester; actual widgets, local repositories, bundled photos and fonts",
+  "suites": {
+    "library": {
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    },
+    "store": {
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    "photos": {
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    "personal": {
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0
+    },
+    "hub": {
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    },
+    "filters": {
+      "passed": 9,
+      "failed": 0,
+      "skipped": 1
+    },
+    "comparison": {
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0
+    },
+    "journey": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    "price": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    "photo_old": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "members": {
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0
+    },
+    "profile": {
+      "passed": 25,
+      "failed": 0,
+      "skipped": 0
+    },
+    "imports": {
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    "storage": {
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_library": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_store": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_create": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "regression_tests": 127,
+  "skipped_tests": 1,
+  "capture_cases": 7,
+  "screenshots": 11,
+  "analyzer_scope": "five product and five repository test files",
+  "analyzer": "No issues found!",
+  "temporary_probe_analysis": "No errors; test-only @visibleForTesting warnings outside test/ and an unused harness import",
+  "kernel_compile_errors": 0,
+  "serial_heavy_processes": true,
+  "live_payments": false,
+  "live_db_writes": false,
+  "real_device_validation": false,
+  "real_browser_validation": false,
+  "deployment": false,
+  "full_app_build": false,
+  "personal_workflow_verification": "28 original cases and 69 original expect assertions in a temporary adapter; same assertions, absolute helper imports, diagnostic logging, bounded runAsync/pump image readiness instead of unbounded precache waits. The raw original run timed out at 60 seconds.",
+  "skipped_reason": "One existing web-only filter test is excluded by native runtime metadata.",
+  "working_tree_note": "Preexisting changes preserved. Patch compares task-start snapshots; new tests use /dev/null. No commit or reset.",
+  "baseline_sha256": {
+    "lib/features/album/presentation/views/album_category_screen.dart": "e4466645747ca67a897f95eb24c1c0f0008fb5c29e30475890f91470cd2b2f95",
+    "lib/features/store/presentation/views/store_screen.dart": "2e1dfe9311da63a3048083480d22e2b6045146dd5772448d0013376b29e0876d",
+    "lib/features/store/presentation/views/store_hub_screen.dart": "f3169c206c26bbf3bbc382cb192803042702d108181b9243c04d21c066a1447d",
+    "lib/features/store/presentation/widgets/template_design_comparison.dart": "e5d63fbdd3e0433b996e962417ebc518aa0c29517e982e2c3327a0d573429460",
+    "lib/shared/widgets/browser_photo_selection_sheet.dart": "d3d32280ee7ccac1217b4dd6f9da2bad3b8a0f70f8796a52b4b9f01852c3d1be",
+    "test/widget/personal_workshop_journey_test.dart": "838fead0ee7612633d81377816a069a92a339a7df037414693dbfc492cc1327a",
+    "test/widget/template_design_comparison_test.dart": "872c2d23533de0bd02f6a5bfb1e2a0999589dd674e71e77db0a2506874a20169"
+  },
+  "final_source_sha256": {
+    "lib/features/album/presentation/views/album_category_screen.dart": "c66bf3f8e20446f17d418332718a79295ab8d51053a08061a9014b4f0f8b8a1e",
+    "lib/features/store/presentation/views/store_screen.dart": "cc26ce074abfacd900a9cdaf6e84801b85e945bccab021ec4f6be33c923b23e5",
+    "lib/features/store/presentation/views/store_hub_screen.dart": "ced7c80b588f79c16f2ae9a1c0f0b811b12b84841448a9f1e66240bad0cb7980",
+    "lib/features/store/presentation/widgets/template_design_comparison.dart": "fbf24069c8fd94f6038633d4aeb244b10fa34ab5f37e2b5df6c34d991dc6c02e",
+    "lib/shared/widgets/browser_photo_selection_sheet.dart": "745cd28eef54f026333d5d38522754d4c7f4ff53e34072b58e5a6df02b9b4184",
+    "test/widget/personal_workshop_journey_test.dart": "0e1543fabc721f9bc75d9a4e5f8976304924a1d0e3c4bfad6d7d9fb156e6ca12",
+    "test/widget/template_design_comparison_test.dart": "96989c55fddf49aeda2c6897b84a8c5586057c82f078bcd902c8622b57dcc4d9",
+    "test/widget/album_collection_unified_test.dart": "0b60e779a0df8d445046e008084bf7af304e88b2c8ab420f43161b75228eb45f",
+    "test/widget/store_comparison_continuity_test.dart": "3d2f0be374789953bf9bfcb2aa5128a8c9709066009eccd08e89d7b3cf1290fa",
+    "test/widget/browser_photo_selection_continuity_test.dart": "dbd18d51a6b30c5903fe0320c8a5950e6ed3c44828a399e8df22da2e5e5f4d10"
+  },
+  "screens_sha256": {
+    "01-library-all-mixed-390-light.png": "d1a4560b97ae065165b322310ed0aa04568840249dbd843ac7e4113e7ef9948b",
+    "02-library-favorites-390-light.png": "dd0729dd081917404ed9e6a0e3ac6e8c60dd62a37946f2073e7355eb089513b3",
+    "03-library-320-dark-text180.png": "5047f5ca3fe40531b223cb8eb591ef99608b11b9f7d1bf8999f16534e9dc5b22",
+    "04-library-title-320-dark-text180.png": "d87f4fc53655218ac694af192e7b55602490de7f3715265d8edd1894950153b5",
+    "05-library-landscape-844-dark-text180.png": "0c104a0f1286530ba4d0feb271c28399d6aa6120bc2174ba78321876de073878",
+    "10-store-main-comparison-a.png": "4673ede4db2266d9d7993b0561c7b9cd45a81e7eff0b9e96613116984637c529",
+    "11-store-search-comparison-a-b.png": "cc073f5b24bb5b9aea0f9b0891a3aa1d6a8848e76529efd1668ea77f07375604",
+    "12-store-main-comparison-a-b-returned.png": "266168d47c03fc36f25a30bc422f6e5284fdbb2e4818107009f654014b4b9eb5",
+    "20-web-photo-selected-c1-a2-390-light.png": "5b371f376a0fe52c7aec884647f58be35eb7c51bcf20784b38cc1a84783df118",
+    "21-web-photo-account-changed-390-light.png": "61cf5651b3a9c785872a33254954e14eabf55a6081a5b447b23c0bb1d727d9c1",
+    "22-web-photo-account-changed-320-dark-text180.png": "9da6bb1edf9e016114e930cc5333acfa41197e8e27f2d8202383157d0181de52"
+  },
+  "verified_behavior": {
+    "album_states_visible_together": true,
+    "status_filter_tabs_removed": true,
+    "favorites_and_search_preserved": true,
+    "comparison_shared_within_hub_only": true,
+    "comparison_maximum": 3,
+    "web_photo_selection_and_autofill_order": [
+      "C",
+      "A"
+    ],
+    "account_change_explicit_close_returns": null
+  }
+}

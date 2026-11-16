@@ -14,6 +14,7 @@ import 'package:snap_fit/features/store/data/store_curation_provider.dart';
 import 'package:snap_fit/features/store/domain/entities/premium_template.dart';
 import 'package:snap_fit/features/store/presentation/views/store_screen.dart';
 import 'package:snap_fit/features/store/presentation/widgets/public_template_information.dart';
+import 'package:snap_fit/features/store/presentation/widgets/store_featured_template_shelf.dart';
 import 'package:snap_fit/features/store/presentation/widgets/template_editorial_list.dart';
 import 'package:snap_fit/shared/web/web_design.dart';
 import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
@@ -66,8 +67,11 @@ class _Fixture {
     double textScale = 1,
     bool searchMode = false,
     bool editorial = false,
+    StoreTemplateFeedNotifier Function()? feedSource,
   }) => ProviderScope(
     overrides: [
+      if (feedSource != null)
+        storeTemplateFeedProvider.overrideWith(feedSource),
       mockTemplateList(() {
         catalogLoads++;
         return templates;
@@ -127,6 +131,28 @@ class _Fixture {
   );
 }
 
+class _SparseMoodFeed extends StoreTemplateFeedNotifier {
+  _SparseMoodFeed(this.initial, this.next);
+  final PremiumTemplate initial, next;
+  int loads = 0;
+
+  @override
+  StoreTemplateFeedState build() => StoreTemplateFeedState(
+    items: [initial],
+    isInitialLoading: false,
+    isLoadingMore: false,
+    hasNext: true,
+    page: 0,
+  );
+
+  @override
+  Future<void> loadMore() async {
+    if (!state.hasNext) return;
+    loads++;
+    state = state.copyWith(items: [initial, next], hasNext: false, page: 1);
+  }
+}
+
 void _viewport(WidgetTester tester, Size size) {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -150,35 +176,41 @@ int _count(WidgetTester tester) =>
 Finder _topic(String value) => kIsWeb
     ? find.widgetWithText(ChoiceChip, value)
     : find.byKey(ValueKey('store-topic-$value'));
-Finder _filters() => find.byKey(
-  ValueKey(kIsWeb ? 'web-catalog-toolbar' : 'store-topic-filters'),
-);
+Finder _filters() =>
+    find.byKey(ValueKey(kIsWeb ? 'web-catalog-toolbar' : 'catalog-sort'));
 
 Future<void> _reachFilters(
   WidgetTester tester, {
   bool fromResults = false,
 }) async {
   await tester.scrollUntilVisible(
-    _topic('여행'),
+    _filters(),
     fromResults ? -240 : 240,
     scrollable: _scrollable(),
   );
-  await tester.ensureVisible(_topic('여행'));
+  await tester.ensureVisible(_filters());
   await tester.pumpAndSettle();
 }
 
 Future<void> _tapTopic(WidgetTester tester, String value) async {
   // Move along the horizontal subject strip if necessary. Once revealed, the
   // filter must never need another vertical trip past the collection hero.
+  if (_topic(value).evaluate().isEmpty) {
+    await tester.scrollUntilVisible(
+      _topic(value),
+      -240,
+      scrollable: _scrollable(),
+    );
+  }
   await tester.ensureVisible(_topic(value));
   await tester.pumpAndSettle();
   expect(_topic(value).hitTestable(), findsOneWidget);
   await tester.tap(_topic(value));
   await tester.pumpAndSettle();
   expect(
-    _topic(value).hitTestable(),
+    _filters().hitTestable(),
     findsOneWidget,
-    reason: 'The chosen subject stays in the viewport',
+    reason: 'Category selection reveals result controls without another scroll',
   );
 }
 
@@ -224,12 +256,85 @@ Future<void> _price(WidgetTester tester, String value) async {
 }
 
 void main() {
+  testWidgets('a sparse mood can explicitly inspect the next metadata page', (
+    tester,
+  ) async {
+    _viewport(tester, const Size(390, 844));
+    final fixture = _Fixture();
+    final next = fixture.templates.first.copyWith(
+      id: 2000,
+      title: '새로 찾은 필름 디자인',
+      tags: ['필름'],
+    );
+    final feed = _SparseMoodFeed(fixture.templates.first, next);
+    await tester.pumpWidget(fixture.host(feedSource: () => feed));
+    await tester.pumpAndSettle();
+    expect(feed.loads, 0, reason: 'Initial mounting must not request a page');
+    final style = find.byKey(const ValueKey('store-style-film'));
+    await tester.tap(style);
+    await tester.pumpAndSettle();
+    expect(feed.loads, 0, reason: 'Changing mood must not eagerly scan pages');
+    expect(
+      tester
+          .widget<Semantics>(
+            find.byKey(const ValueKey('store-style-semantics-film')),
+          )
+          .properties
+          .selected,
+      isTrue,
+    );
+    expect(
+      ProviderScope.containerOf(
+        tester.element(find.byType(StoreScreen)),
+      ).read(storeTemplateFeedProvider).hasNext,
+      isTrue,
+    );
+    final more = find.byKey(const ValueKey('store-filtered-load-more'));
+    expect(more, findsOneWidget);
+    expect(feed.loads, 0);
+    // Invoke the mounted action without a scroll notification loading the next
+    // page through the existing near-end path first.
+    tester.widget<TextButton>(more).onPressed!();
+    await tester.pumpAndSettle();
+    expect(feed.loads, 1);
+    expect(more, findsNothing);
+    expect(
+      tester
+          .widget<Text>(find.byKey(const ValueKey('store-style-count-film')))
+          .data,
+      '1개',
+      reason: 'Loaded server summaries must join the discovery candidates',
+    );
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     CatalogFavorites.instance = CatalogFavorites();
     await CatalogFavorites.instance.load();
   });
   tearDown(() => CatalogFavorites.instance.dispose());
+
+  testWidgets('native editorial category jumps directly to its results', (
+    tester,
+  ) async {
+    _viewport(tester, const Size(390, 844));
+    final fixture = _Fixture();
+    await tester.pumpWidget(fixture.host(editorial: true));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(_topic('여행'));
+    await tester.pumpAndSettle();
+    await tester.tap(_topic('여행'));
+    await tester.pumpAndSettle();
+    // 선택 후 테스트가 스크롤하지 않아야 실제 결과 영역의 자동 이동을 확인한다.
+    expect(find.text('여행 템플릿').hitTestable(), findsOneWidget);
+    expect(_filters().hitTestable(), findsOneWidget);
+    expect(find.text('주제 · 여행').hitTestable(), findsOneWidget);
+    expect(fixture.catalogLoads, 1);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  }, skip: kIsWeb);
 
   testWidgets(
     'compact filter summary retains hero size, local filtering and reset',
@@ -261,7 +366,7 @@ void main() {
         find.byKey(const ValueKey('catalog-reset-filters')),
       );
       await tester.pumpAndSettle();
-      expect(tester.widget<ChoiceChip>(_topic('전체')).selected, isTrue);
+      expect(find.text('주제 · 여행'), findsNothing);
       expect(_filters().hitTestable(), findsOneWidget);
       expect(find.byKey(const ValueKey('catalog-reset-filters')), findsNothing);
       expect(find.text('36개의 디자인'), findsOneWidget);
@@ -384,9 +489,9 @@ void main() {
           : find.byType(DropdownButton<String>);
       await _tapVisible(tester, sort);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('이름순').last);
+      await tester.tap(find.text('인기순').last);
       await tester.pumpAndSettle();
-      expect(_topic('일상').hitTestable(), findsOneWidget);
+      expect(find.text('주제 · 일상').hitTestable(), findsOneWidget);
       expect(_count(tester), 1);
       expect(selected, findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -429,9 +534,11 @@ void main() {
       await tester.ensureVisible(search);
       await tester.pumpAndSettle();
       expect(search.hitTestable(), findsOneWidget);
-      await tester.enterText(search, 'Design 2');
+      // Words match across metadata, so this includes Design 3/13/23 and
+      // Design 30..35. Keep the filtered result smaller than one page.
+      await tester.enterText(search, 'Design 3');
       await tester.pumpAndSettle();
-      expect(_count(tester), 11);
+      expect(_count(tester), 9);
       expect(search.hitTestable(), findsOneWidget);
       expect(
         tester
@@ -464,13 +571,16 @@ void main() {
     expect(_controller(tester).offset, 0);
     expect(fixture.catalogLoads, 2);
     expect(find.byKey(const ValueKey('store-curation-sliver')), findsOneWidget);
+    // The discovery panel and full collection are back above the filters.
+    // Mount the lazy grid before inspecting its page-sized delegate.
+    await _reachFilters(tester);
     expect(_count(tester), 12);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
   testWidgets(
-    'subject browsing keeps its editorial list while omitting the hero',
+    'subject browsing scopes its featured shelf and retains the editorial list',
     (tester) async {
       _viewport(tester, const Size(390, 844));
       final fixture = _Fixture();
@@ -481,8 +591,41 @@ void main() {
         findsOneWidget,
       );
       await _reachFilters(tester);
+      await _tapTopic(tester, '추천');
+      // 결과 이동을 확인한 뒤 위로 돌아가 추천 구성이 보존됐는지 확인한다.
+      _controller(tester).jumpTo(0);
+      await tester.pumpAndSettle();
+      final recommendedShelf = tester.widget<StoreFeaturedTemplateShelf>(
+        find.byType(StoreFeaturedTemplateShelf),
+      );
+      expect(recommendedShelf.topic, isNull);
+      expect(recommendedShelf.selection!.title, '사진을 모은 컬렉션');
+      expect(
+        selectStoreFeaturedTemplates(
+          templates: recommendedShelf.templates,
+          selection: recommendedShelf.selection,
+          discovery: recommendedShelf.discovery,
+        ).curated,
+        isNotEmpty,
+      );
       await _tapTopic(tester, '여행');
+      _controller(tester).jumpTo(0);
+      await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('store-curation-sliver')), findsNothing);
+      expect(find.byType(StoreFeaturedTemplateShelf), findsOneWidget);
+      final shelf = tester.widget<StoreFeaturedTemplateShelf>(
+        find.byType(StoreFeaturedTemplateShelf),
+      );
+      expect(shelf.topic, '여행');
+      final selected = selectStoreFeaturedTemplates(
+        templates: shelf.templates,
+        selection: shelf.selection,
+        discovery: shelf.discovery,
+        topic: shelf.topic,
+      );
+      expect(selected.curated, isNotEmpty);
+      expect(selected.curated.every((item) => item.category == '여행'), isTrue);
+      expect(selected.isTopicRecommendation, isFalse);
       expect(
         find.byType(TemplateEditorialList, skipOffstage: false),
         findsOneWidget,

@@ -27,6 +27,8 @@ class LibraryDesignTile extends StatelessWidget {
     this.template,
     this.favoriteKey,
     this.heroTag,
+    this.coverOnly = false,
+    this.undoOnRemove = false,
   });
 
   final String productKey, title, type;
@@ -38,18 +40,29 @@ class LibraryDesignTile extends StatelessWidget {
   final String? favoriteKey;
   final Object? heroTag;
 
-  static double extent(double previewHeight, TextScaler scaler) =>
-      previewHeight +
-      scaler.scale(13) * 2.9 +
-      scaler.scale(11) * 1.5 +
-      (scaler.scale(12) * 1.5).clamp(32, double.infinity) +
-      25;
+  /// Creation browsing needs a large jacket; other shelves keep their spread.
+  final bool coverOnly;
+  final bool undoOnRemove;
+
+  static double extent(
+    double previewHeight,
+    TextScaler scaler, {
+    bool coverOnly = false,
+  }) => coverOnly
+      ? previewHeight + scaler.scale(15) * 2.9 + scaler.scale(12) * 1.8 + 18
+      : previewHeight +
+            scaler.scale(13) * 2.9 +
+            scaler.scale(11) * 1.5 +
+            (scaler.scale(12) * 1.5).clamp(32, double.infinity) +
+            25;
 
   @override
   Widget build(BuildContext context) {
     final edition = template;
     final hasSpread =
-        edition != null && catalogEditorialSpread(edition) != null;
+        !coverOnly &&
+        edition != null &&
+        catalogEditorialSpread(edition) != null;
     final scaler = MediaQuery.textScalerOf(context);
     return Semantics(
       button: true,
@@ -99,7 +112,9 @@ class LibraryDesignTile extends StatelessWidget {
                           top: hasSpread ? box.maxHeight * .12 : 0,
                           bottom: hasSpread ? box.maxHeight * .08 : 0,
                           child: Padding(
-                            padding: EdgeInsets.all(hasSpread ? 0 : 16),
+                            padding: EdgeInsets.all(
+                              coverOnly ? 4 : (hasSpread ? 0 : 16),
+                            ),
                             child: RepaintBoundary(
                               child: CatalogArtworkHero(
                                 tag: heroTag,
@@ -114,6 +129,7 @@ class LibraryDesignTile extends StatelessWidget {
                             top: 3,
                             child: CatalogFavoriteButton(
                               bookmark: true,
+                              undoOnRemove: undoOnRemove,
                               itemKey: favoriteKey!,
                               label: title,
                             ),
@@ -125,30 +141,34 @@ class LibraryDesignTile extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               SizedBox(
-                height: scaler.scale(13) * 2.9,
+                height: scaler.scale(coverOnly ? 15 : 13) * 2.9,
                 child: CatalogItemTitle(
                   title,
                   style: ExperienceFormStyle.text(
                     context,
-                    13,
+                    coverOnly ? 15 : 13,
                     weight: FontWeight.w600,
                   ).copyWith(height: 1.45),
                 ),
               ),
-              const SizedBox(height: 3),
-              Text(
-                edition == null ? type : '템플릿 · 내지 ${edition.pageCount}쪽',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: ExperienceFormStyle.text(
-                  context,
-                  11,
-                  secondary: true,
-                ).copyWith(height: 1.5),
-              ),
-              const Spacer(),
+              if (!coverOnly) ...[
+                const SizedBox(height: 3),
+                Text(
+                  edition == null ? type : '템플릿 · 내지 ${edition.pageCount}쪽',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: ExperienceFormStyle.text(
+                    context,
+                    11,
+                    secondary: true,
+                  ).copyWith(height: 1.5),
+                ),
+                const Spacer(),
+              ],
               SizedBox(
-                height: (scaler.scale(12) * 1.5).clamp(32, double.infinity),
+                height: coverOnly
+                    ? scaler.scale(12) * 1.8
+                    : (scaler.scale(12) * 1.5).clamp(32, double.infinity),
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: owned
@@ -179,18 +199,36 @@ class LibraryDesignTile extends StatelessWidget {
                             ),
                           ],
                         )
-                      : PointShopProductBadge(
-                          productKey: productKey,
-                          compact: false,
-                          fontSize: 12,
-                          unlistedLabel:
-                              freeTemplateMaterialProductKeys.contains(
-                                    productKey,
-                                  ) ||
-                                  edition?.isPremium == false
-                              ? '무료'
-                              : '판매 준비 중',
-                        ),
+                      : coverOnly
+                      ? LayoutBuilder(
+                          builder: (context, box) {
+                            // Prioritize the amount/status on narrow or enlarged UI.
+                            if (box.maxWidth < 140 || scaler.scale(12) > 18) {
+                              return _priceBadge();
+                            }
+                            return Row(
+                              children: [
+                                _priceBadge(),
+                                if (edition?.category case final category?) ...[
+                                  const SizedBox(width: 5),
+                                  Expanded(
+                                    child: Text(
+                                      '· $category',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: ExperienceFormStyle.text(
+                                        context,
+                                        12,
+                                        secondary: true,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            );
+                          },
+                        )
+                      : _priceBadge(),
                 ),
               ),
             ],
@@ -199,4 +237,16 @@ class LibraryDesignTile extends StatelessWidget {
       ),
     );
   }
+
+  // Price and unlisted status keep using the existing server-backed badge.
+  Widget _priceBadge() => PointShopProductBadge(
+    productKey: productKey,
+    compact: false,
+    fontSize: 12,
+    unlistedLabel:
+        freeTemplateMaterialProductKeys.contains(productKey) ||
+            template?.isPremium == false
+        ? '무료'
+        : '판매 준비 중',
+  );
 }

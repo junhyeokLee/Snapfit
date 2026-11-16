@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import '../../../core/fonts/document_fonts.dart';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:dio/dio.dart';
@@ -590,22 +591,42 @@ class AlbumPrintExporter {
       for (final page in document.pages)
         for (final layer in page.layers)
           if (layer.textStyle?.fontFamily case final String name) name,
+      for (final page in document.pages)
+        for (final layer in page.layers)
+          ...?layer.textStyle?.fontFamilyFallback,
     };
     final sorted = used.toList()..sort();
     final key =
         '$fontFamilyPrefix:${loadOnlyUsedFonts ? jsonEncode(sorted) : '*'}';
-    return _fonts[key] ??= _loadFonts(
-      fontFamilyPrefix,
-      loadOnlyUsedFonts ? used : null,
-    );
+    final existing = _fonts[key];
+    if (existing != null) return existing;
+    late final Future<Set<String>> pending;
+    pending = _loadFonts(fontFamilyPrefix, loadOnlyUsedFonts ? used : null)
+        .then((families) async {
+          // Known fallback families participate in the canvas readiness gate.
+          // Fail before capture if a family could not be registered, rather
+          // than encoding an asynchronous font placeholder into the PDF.
+          await DocumentFonts.ensure(used);
+          return families;
+        })
+        .catchError((Object error, StackTrace stack) {
+          // A temporary network/registration failure must not poison this book's
+          // preparation for the rest of the tab's lifetime. Retain successful work.
+          if (identical(_fonts[key], pending)) _fonts.remove(key);
+          Error.throwWithStackTrace(error, stack);
+        });
+    _fonts[key] = pending;
+    return pending;
   }
 
   static Future<Set<String>> _loadFonts(
     String prefix,
     Set<String>? used,
   ) async {
-    final entries =
-        jsonDecode(await rootBundle.loadString('FontManifest.json')) as List;
+    // Embedded stationery captions are not listed among the document's text
+    // layers, but must keep their original serif before a synchronous export.
+    await DocumentFonts.ensure(const ['Cormorant Garamond']);
+    final entries = await loadDocumentFontManifest();
     final families = <String>{};
     for (final entry in entries.cast<Map>()) {
       final manifestName = entry['family'] as String;
@@ -626,6 +647,7 @@ class AlbumPrintExporter {
       // Unused invalid families do not prevent printing another album.
       if (!valid) continue;
       await loader.load();
+      DocumentFonts.markLoaded(name);
       families.add(name);
     }
     return families;

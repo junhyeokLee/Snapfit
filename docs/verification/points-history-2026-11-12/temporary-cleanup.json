@@ -1,0 +1,18 @@
+{
+  "removed": [
+    {
+      "path": "/tmp/snapfit-points-history-red.dill",
+      "allocatedBytes": 124952576
+    },
+    {
+      "path": "/tmp/snapfit-points-history-green.dill",
+      "allocatedBytes": 125480960
+    },
+    {
+      "path": "/tmp/snapfit-points-history-page.dill",
+      "allocatedBytes": 125140992
+    }
+  ],
+  "removedAllocatedBytes": 375574528,
+  "freeBytesAfter": 10938523648
+}

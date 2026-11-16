@@ -1,0 +1,1858 @@
+--- a/lib/features/album/presentation/views/album_reader_screen.dart
++++ b/lib/features/album/presentation/views/album_reader_screen.dart
+@@ -81,6 +81,13 @@
+         ? 0
+         : 1 + ((widget.initialSpreadIndex - 1) * 2);
+     _coverKey = GlobalKey();
++    final initialCover = ref
++        .read(albumEditorViewModelProvider.notifier)
++        .selectedCover;
++    _baseCanvasSize = Size(
++      kCoverReferenceWidth,
++      kCoverReferenceWidth / initialCover.ratio,
++    );
+     // 앨범 보기 화면: 레이어 인터랙션 완전 비활성화 (드래그/탭/핀치 모두 잠금)
+     _interaction = LayerInteractionManager(
+       ref: ref,
+@@ -126,12 +133,13 @@
+ 
+         // [Fix] 앨범 비율에 맞게 내지 베이스 사이즈 동적 초기화
+         final aspect = vm.selectedCover.ratio;
+-        setState(() {
+-          _baseCanvasSize = Size(
+-            kCoverReferenceWidth,
+-            kCoverReferenceWidth / aspect,
+-          );
+-        });
++        final baseSize = Size(
++          kCoverReferenceWidth,
++          kCoverReferenceWidth / aspect,
++        );
++        if (_baseCanvasSize != baseSize) {
++          setState(() => _baseCanvasSize = baseSize);
++        }
+       }
+     });
+   }
+@@ -926,7 +934,7 @@
+         onCanvasSizeChanged: (size) {
+           if (_coverSize == size) return;
+           WidgetsBinding.instance.addPostFrameCallback((_) {
+-            if (!mounted) return;
++            if (!mounted || _coverSize == size) return;
+             setState(() => _coverSize = size);
+             vm.setCoverCanvasSize(size);
+           });
+--- a/lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart
++++ b/lib/features/album/presentation/widgets/reader/album_reader_single_page_view.dart
+@@ -129,6 +129,8 @@
+ 
+   bool _isCoverPressed = false;
+   bool _isTurningWithControl = false;
++  int? _pendingControlDirection;
++  int? _requestedPreparationSpread;
+   late int _focusPageIndex;
+   int _bookContentSignature = 0;
+   int _bookContentRevision = 0;
+@@ -145,6 +147,10 @@
+   bool _isCoverFlipActive = false;
+   int _coverFlipDirection = 0;
+   bool _isDraggingOpenSpread = false;
++  bool _bookDragStarted = false;
++  bool _waitingForDragPages = false;
++  bool _dragReplayQueued = false;
++  Offset _openSpreadLocalPosition = Offset.zero;
+   int? _openSpreadPointer;
+   Offset _openSpreadLastPosition = Offset.zero;
+   VelocityTracker? _openSpreadVelocityTracker;
+@@ -192,7 +198,7 @@
+     }
+     _bookFlipController = BookFlipController(
+       initialSpread: _spreadForFocusPage(_focusPageIndex),
+-    );
++    )..addListener(_resumePreparedInput);
+     _focusPanController = AnimationController(
+       vsync: this,
+       duration: const Duration(milliseconds: 500),
+@@ -209,6 +215,9 @@
+ 
+   void _resetOpenSpreadTracking() {
+     _isDraggingOpenSpread = false;
++    _bookDragStarted = false;
++    _waitingForDragPages = false;
++    _openSpreadLocalPosition = Offset.zero;
+     _openSpreadPointer = null;
+     _openSpreadLastPosition = Offset.zero;
+     _openSpreadVelocityTracker = null;
+@@ -261,6 +270,8 @@
+   }
+ 
+   void _clearFocusCamera() {
++    _pendingControlDirection = null;
++    _requestedPreparationSpread = null;
+     _focusPanEpoch++;
+     _focusRequestEpoch++;
+     _pendingSingleFocusRequest = null;
+@@ -349,7 +360,10 @@
+     if (target == _focusPageIndex) return;
+     final currentSpread = _spreadForFocusPage(_focusPageIndex);
+     final targetSpread = _spreadForFocusPage(target);
+-    if (SnapFitMotion.reduced(context) || !_bookFlipController.isReady) {
++    if (SnapFitMotion.reduced(context) ||
++        (_readerPhotoFailed &&
++            (!_bookFlipController.isReady ||
++                !_bookFlipController.isSpreadReady(targetSpread)))) {
+       await _finishFocusPageJump(target);
+       return;
+     }
+@@ -358,28 +372,32 @@
+       await _settleFocusPan(commit: true);
+       return;
+     }
++    if (!_bookFlipController.isReady ||
++        !_bookFlipController.isSpreadReady(targetSpread)) {
++      _pendingControlDirection = direction;
++      _requestPreparedSpread(targetSpread);
++      return;
++    }
+     if (_bookFlipController.currentSpread != currentSpread) {
+       _bookFlipController.goToSpread(currentSpread);
+     }
+-    final epoch = _bookRenderEpoch;
+     setState(() {
+       _beginFocusTransition(target, pan: false);
+       _isTurningWithControl = true;
+       _isCoverFlipActive = currentSpread == 0 || targetSpread == 0;
+       _coverFlipDirection = _isCoverFlipActive ? direction : 0;
+     });
+-    final navigationEpoch = _focusPanEpoch;
+-    await WidgetsBinding.instance.endOfFrame;
+-    if (!mounted ||
+-        epoch != _bookRenderEpoch ||
+-        navigationEpoch != _focusPanEpoch)
+-      return;
++    // 앨범 곡면은 고정되어 있어 다음 프레임까지 입력을 묶어 둘 필요가 없다.
+     final started = direction > 0
+         ? _bookFlipController.nextSpread(velocity: _bookFlipControlVelocity)
+         : _bookFlipController.previousSpread(
+             velocity: -_bookFlipControlVelocity,
+           );
+-    if (!started) await _finishFocusPageJump(target);
++    if (!started) {
++      _isTurningWithControl = false;
++      _pendingControlDirection = direction;
++      _requestPreparedSpread(targetSpread);
++    }
+   }
+ 
+   // Called during layout, before deciding which live pages to show. Only a real
+@@ -463,6 +481,7 @@
+   void dispose() {
+     widget.pageController.removeListener(_syncFocusFromSpread);
+     _clearFlipEndWaiter();
++    _bookFlipController.removeListener(_resumePreparedInput);
+     _bookFlipController.dispose();
+     _focusPanController.dispose();
+     super.dispose();
+@@ -567,6 +586,7 @@
+         _bookFlipController.isAnimating) {
+       return;
+     }
++    _requestedPreparationSpread = null;
+ 
+     if (_singlePageFocusActive) {
+       await _turnSingleFocusPage(direction);
+@@ -579,8 +599,17 @@
+       _bookSpreadCount - 1,
+     );
+     if (targetSpread == currentSpread) return;
+-    if (!_bookFlipController.isReady || SnapFitMotion.reduced(context)) {
++    if (SnapFitMotion.reduced(context) ||
++        (_readerPhotoFailed &&
++            (!_bookFlipController.isReady ||
++                !_bookFlipController.isSpreadReady(targetSpread)))) {
+       await _finishAnimatedSpreadJump(targetSpread);
++      return;
++    }
++    if (!_bookFlipController.isReady ||
++        !_bookFlipController.isSpreadReady(targetSpread)) {
++      _pendingControlDirection = direction;
++      _requestPreparedSpread(targetSpread);
+       return;
+     }
+     if (_bookFlipController.currentSpread != currentSpread) {
+@@ -596,7 +625,7 @@
+       _isCoverFlipActive = isCoverEdgeFlip;
+       _coverFlipDirection = isCoverEdgeFlip ? direction : 0;
+     });
+-    await WidgetsBinding.instance.endOfFrame;
++    if (!widget.singlePageFocus) await WidgetsBinding.instance.endOfFrame;
+     if (!mounted ||
+         epoch != _bookRenderEpoch ||
+         _isAnimatingToRequestedSpread) {
+@@ -608,7 +637,11 @@
+         : _bookFlipController.previousSpread(
+             velocity: -_bookFlipControlVelocity,
+           );
+-    if (!started) await _finishAnimatedSpreadJump(targetSpread);
++    if (!started) {
++      _isTurningWithControl = false;
++      _pendingControlDirection = direction;
++      _requestPreparedSpread(targetSpread);
++    }
+     // onFlipEnd is the single source of the settled spread, including a user's
+     // re-grab/cancel. No delayed control completion may force its old target.
+   }
+@@ -1090,14 +1123,108 @@
+     _clearFlipEndWaiter();
+   }
+ 
++  void _requestPreparedSpread(int spread) {
++    if (_requestedPreparationSpread == spread) return;
++    _requestedPreparationSpread = spread;
++    _bookFlipController.requestSpread(spread);
++  }
++
++  void _resumePreparedInput() {
++    if (!mounted ||
++        widget.allPages.isEmpty ||
++        _bookRendererReplacing ||
++        ModalRoute.of(context)?.isCurrent == false) {
++      return;
++    }
++    if (_waitingForDragPages && _openSpreadPointer != null) {
++      _driveOpenSpreadDrag();
++    }
++    final direction = _pendingControlDirection;
++    if (direction == null ||
++        _openSpreadPointer != null ||
++        _isTurningWithControl ||
++        _isAnimatingToRequestedSpread ||
++        _bookFlipController.isAnimating) {
++      return;
++    }
++    final target = _singlePageFocusActive
++        ? _spreadForFocusPage(
++            (_focusPageIndex + direction)
++                .clamp(0, widget.allPages.length - 1)
++                .toInt(),
++          )
++        : (_spreadForFocusPage(_focusPageIndex) + direction).clamp(
++            0,
++            _bookSpreadCount - 1,
++          );
++    if (!_bookFlipController.isReady ||
++        !_bookFlipController.isSpreadReady(target)) {
++      return;
++    }
++    _pendingControlDirection = null;
++    unawaited(_turnFocusPage(direction));
++  }
++
++  void _schedulePreparedDragReplay() {
++    if (_dragReplayQueued) return;
++    _dragReplayQueued = true;
++    // 텍스처 준비 직후에는 실제 책 캔버스의 첫 배치가 한 프레임 늦을 수 있다.
++    WidgetsBinding.instance.addPostFrameCallback((_) {
++      _dragReplayQueued = false;
++      if (mounted) _resumePreparedInput();
++    });
++    WidgetsBinding.instance.ensureVisualUpdate();
++  }
++
++  void _driveOpenSpreadDrag() {
++    if (!_isDraggingOpenSpread ||
++        _openSpreadDirection == 0 ||
++        _openSpreadReducedMotion ||
++        _isPanningFocus) {
++      return;
++    }
++    final target = _singlePageFocusActive && _focusTurnTargetPage != null
++        ? _spreadForFocusPage(_focusTurnTargetPage!)
++        : (_openSpreadStartSpread + _openSpreadDirection).clamp(
++            0,
++            _bookSpreadCount - 1,
++          );
++    if (!_bookFlipController.isReady ||
++        !_bookFlipController.isSpreadReady(target)) {
++      _waitingForDragPages = true;
++      _requestPreparedSpread(target);
++      return;
++    }
++    // 준비 완료 알림이 같은 손가락의 현재 위치를 이어받는다.
++    _waitingForDragPages = false;
++    if (!_bookDragStarted) {
++      _bookDragStarted = true;
++      if (!_bookFlipController.dragStart(_openSpreadLocalPosition)) {
++        _bookDragStarted = false;
++        _waitingForDragPages = true;
++        _schedulePreparedDragReplay();
++        return;
++      }
++    }
++    _bookFlipController.dragToDistance(
++      localPosition: _openSpreadLocalPosition,
++      direction: _openSpreadDirection > 0
++          ? FlipDirection.forward
++          : FlipDirection.backward,
++      distance:
++          -_openSpreadDirection * _openSpreadTotalDx * _openSpreadMotionScale,
++    );
++  }
++
+   void _handleOpenSpreadPointerDown(PointerDownEvent event, double pageWidth) {
+     if (_singlePageFocusActive && _pendingSingleFocusRequest != null) return;
+     if (_isTurningWithControl && !_bookFlipController.isAnimating) {
+       return;
+     }
+     if (_isAnimatingToRequestedSpread) return;
+-    if (!_bookFlipController.isReady) return;
+     if (_openSpreadPointer != null) return;
++    _pendingControlDirection = null;
++    _requestedPreparationSpread = null;
+     final focusedSpread = _spreadForFocusPage(_focusPageIndex);
+     final currentSpread = _bookFlipController.isAnimating
+         ? _bookFlipController.currentSpread
+@@ -1106,10 +1233,16 @@
+       _bookFlipController.goToSpread(currentSpread);
+     }
+     final reducedMotion = SnapFitMotion.reduced(context);
++    final ready = _bookFlipController.isReady;
+     final started =
+-        reducedMotion || _bookFlipController.dragStart(event.localPosition);
++        reducedMotion ||
++        !ready ||
++        _bookFlipController.dragStart(event.localPosition);
+     if (!started || !mounted) return;
++    _bookDragStarted = !reducedMotion && ready;
++    _waitingForDragPages = false;
+     _openSpreadPointer = event.pointer;
++    _openSpreadLocalPosition = event.localPosition;
+     _openSpreadLastPosition = event.position;
+     _openSpreadLastMoveTime = event.timeStamp;
+     _openSpreadInstantVelocity = 0;
+@@ -1135,6 +1268,7 @@
+ 
+   void _handleOpenSpreadPointerMove(PointerMoveEvent event) {
+     if (!_isDraggingOpenSpread || event.pointer != _openSpreadPointer) return;
++    _openSpreadLocalPosition = event.localPosition;
+     // Screen-space travel excludes the cover stage's own centring movement.
+     final dx = event.position.dx - _openSpreadLastPosition.dx;
+     _openSpreadLastPosition = event.position;
+@@ -1198,16 +1332,7 @@
+         return;
+       }
+     }
+-    if (!_openSpreadReducedMotion && _openSpreadDirection != 0) {
+-      _bookFlipController.dragToDistance(
+-        localPosition: event.localPosition,
+-        direction: _openSpreadDirection > 0
+-            ? FlipDirection.forward
+-            : FlipDirection.backward,
+-        distance:
+-            -_openSpreadDirection * _openSpreadTotalDx * _openSpreadMotionScale,
+-      );
+-    }
++    _driveOpenSpreadDrag();
+   }
+ 
+   void _handleOpenSpreadPointerUp(PointerUpEvent event) {
+@@ -1222,7 +1347,9 @@
+             event.timeStamp - movementTime > const Duration(milliseconds: 120)
+         ? 0.0
+         : rawVelocity;
+-    final progress = _openSpreadReducedMotion
++    final waitingForPaper = !_bookDragStarted || _waitingForDragPages;
++    final progress =
++        (_openSpreadReducedMotion || waitingForPaper) && !_isPanningFocus
+         ? (-_openSpreadDirection *
+                   _openSpreadTotalDx *
+                   _openSpreadMotionScale /
+@@ -1241,23 +1368,42 @@
+     final reducedMotion = _openSpreadReducedMotion;
+     final direction = _openSpreadDirection;
+     final panning = _isPanningFocus;
+-    if (!reducedMotion && !panning) {
++    if (!reducedMotion && !panning && !waitingForPaper) {
+       _bookFlipController.dragEndWithDecision(
+         velocity * _openSpreadMotionScale,
+         commit: shouldCommit,
+       );
+     }
++    if (!reducedMotion && !panning && waitingForPaper && _bookDragStarted) {
++      _bookFlipController.dragCancel();
++    }
++    _bookDragStarted = false;
++    _waitingForDragPages = false;
+     _openSpreadPointer = null;
+     _openSpreadLastPosition = Offset.zero;
+     _openSpreadVelocityTracker = null;
+     _openSpreadTotalDx = 0;
+     _openSpreadStartSpread = 0;
+     _openSpreadDirection = 0;
+-    if (mounted) setState(() => _isDraggingOpenSpread = false);
++    if (mounted) {
++      setState(() {
++        _isDraggingOpenSpread = false;
++        if (!reducedMotion && waitingForPaper && !panning) {
++          // 아직 엔진이 시작되지 않은 손동작에는 완료 콜백이 오지 않는다.
++          _clearFocusCamera();
++          _isCoverFlipActive = false;
++          _coverFlipDirection = 0;
++        }
++      });
++    }
+     if (panning) {
+       unawaited(_settleFocusPan(commit: shouldCommit));
+       return;
+     }
++    if (!reducedMotion && waitingForPaper && shouldCommit && direction != 0) {
++      unawaited(_turnFocusPage(direction));
++      return;
++    }
+     if (reducedMotion && shouldCommit && direction != 0) {
+       unawaited(_turnFocusPage(direction));
+     }
+@@ -1266,16 +1412,28 @@
+   void _handleOpenSpreadPointerCancel(PointerCancelEvent event) {
+     if (!_isDraggingOpenSpread || event.pointer != _openSpreadPointer) return;
+     final panning = _isPanningFocus;
+-    if (!_openSpreadReducedMotion && !panning) {
++    final waitingForPaper = !_bookDragStarted || _waitingForDragPages;
++    if (!_openSpreadReducedMotion && !panning && _bookDragStarted) {
+       _bookFlipController.dragCancel();
+     }
++    _bookDragStarted = false;
++    _waitingForDragPages = false;
+     _openSpreadPointer = null;
+     _openSpreadLastPosition = Offset.zero;
+     _openSpreadVelocityTracker = null;
+     _openSpreadTotalDx = 0;
+     _openSpreadStartSpread = 0;
+     _openSpreadDirection = 0;
+-    if (mounted) setState(() => _isDraggingOpenSpread = false);
++    if (mounted) {
++      setState(() {
++        _isDraggingOpenSpread = false;
++        if (waitingForPaper && !panning) {
++          _clearFocusCamera();
++          _isCoverFlipActive = false;
++          _coverFlipDirection = 0;
++        }
++      });
++    }
+     if (panning) unawaited(_settleFocusPan(commit: false));
+   }
+ 
+@@ -1295,6 +1453,8 @@
+         'book_flip_${widget.singlePageFocus ? 'album' : 'material'}_${_bookPageCount}_${pageWidth.toStringAsFixed(1)}_${pageHeight.toStringAsFixed(1)}_${_bookContentRevision}_$epoch',
+       ),
+       pageCount: _bookPageCount,
++      progressive: true,
++      preparationPaused: _isPanningFocus,
+       pageSize: Size(pageWidth, pageHeight),
+       pixelRatio: pixelRatio,
+       preparePage: (context, index) async {
+@@ -1529,7 +1689,13 @@
+                             child: GestureDetector(
+                               behavior: HitTestBehavior.translucent,
+                               onTap: showClosedCover
+-                                  ? () => _turnFocusPage(1)
++                                  ? () {
++                                      if (_suppressNextTapUp) {
++                                        _suppressNextTapUp = false;
++                                        return;
++                                      }
++                                      _turnFocusPage(1);
++                                    }
+                                   : null,
+                               onTapUp: (details) {
+                                 if (showClosedCover || _isCoverFlipActive)
+--- a/packages/book_page_flip/lib/src/api.dart
++++ b/packages/book_page_flip/lib/src/api.dart
+@@ -543,6 +543,7 @@
+ 
+   int _spreadCache;
+   _BookFlipState? _state;
++  _BookFlipPageSource? _pageSource;
+   bool _emitScheduled = false;
+ 
+   /// The spread (open two-page view) shown at rest. Spread 0 is the first two
+@@ -557,7 +558,21 @@
+   bool get isAnimating => _state?._scene.active ?? false;
+ 
+   /// Whether the book has finished preparing its page texture and can turn.
+-  bool get isReady => _state?._phase.value == _BootPhase.ready;
++  bool get isReady =>
++      _state?._phase.value == _BootPhase.ready &&
++      (_pageSource?.isSpreadPacked(currentSpread) ?? true);
++
++  /// Prioritises the spread and its neighbouring turn faces during preparation.
++  /// It does not change the selected spread or interrupt an active gesture.
++  void requestSpread(int spread) => _pageSource?.requestSpread(spread);
++
++  /// Whether both resting faces of [spread] are in the current page texture.
++  /// A turn also requires its outgoing faces; its start method checks those.
++  bool isSpreadReady(int spread) =>
++      _state?._phase.value == _BootPhase.ready &&
++      spread >= 0 &&
++      spread < totalSpreads &&
++      (_pageSource?.isSpreadPacked(spread) ?? true);
+ 
+   /// Progress of the current turn, 0 (flat) to 1 (turned). Stays 0 when idle.
+   double get flipProgress => _state?._scene.t ?? 0.0;
+@@ -589,7 +604,12 @@
+   /// still wants the real page curl to begin from the finger position.
+   bool dragStart(Offset localPosition) {
+     final state = _state;
+-    if (state == null || state._phase.value != _BootPhase.ready) return false;
++    if (state == null ||
++        !isReady ||
++        state._scene.w <= 0 ||
++        state._scene.h <= 0) {
++      return false;
++    }
+     state._onDragStart(localPosition);
+     return true;
+   }
+@@ -610,13 +630,18 @@
+     required double distance,
+   }) {
+     final state = _state;
+-    if (state == null || state._phase.value != _BootPhase.ready) return false;
++    if (state == null ||
++        state._phase.value != _BootPhase.ready ||
++        state._scene.w <= 0 ||
++        state._scene.h <= 0) {
++      return false;
++    }
+     state._onDragDistance(
+       localPosition,
+       direction == FlipDirection.forward ? 1 : -1,
+       distance,
+     );
+-    return true;
++    return state._scene.active;
+   }
+ 
+   /// Ends a drag started with [dragStart].
+@@ -632,6 +657,7 @@
+   /// Jumps straight to [spread] with no animation — handy for restoring a saved
+   /// position.
+   void goToSpread(int spread) {
++    requestSpread(spread);
+     _spreadCache = spread;
+     _state?._jumpTo(spread);
+   }
+@@ -726,6 +752,10 @@
+   /// manage, unlike the default [BookFlip] constructor.
+   /// [preparePage] can await image decoding for each mounted page. Capture then
+   /// waits for another painted frame; failures use [errorBuilder].
++  /// [progressive] prepares the current turn faces first and fills distant page
++  /// textures in the background. The default still prepares the entire book.
++  /// [preparationPaused] lets a host camera animation pause only that background
++  /// preparation; the book's own animation controller keeps running.
+   ///
+   /// Everything else (controller, physics, material, curl, effects, fit, callbacks,
+   /// loading and error builders) behaves exactly as on the default constructor. Pass
+@@ -746,6 +776,8 @@
+     Key? key,
+     double? pixelRatio,
+     Future<void> Function(BuildContext context, int pageIndex)? preparePage,
++    bool progressive = false,
++    bool preparationPaused = false,
+     BookFlipController? controller,
+     BookFlipPhysics physics = const BookFlipPhysics(),
+     BookFlipMaterial material = BookFlipMaterial.paper,
+@@ -787,6 +819,8 @@
+       pageSize: pageSize,
+       pixelRatio: pixelRatio,
+       preparePage: preparePage,
++      progressive: progressive,
++      preparationPaused: preparationPaused,
+       controller: controller,
+       physics: physics,
+       material: material,
+--- a/packages/book_page_flip/lib/src/state.dart
++++ b/packages/book_page_flip/lib/src/state.dart
+@@ -27,6 +27,9 @@
+   int _dragStartDir = 0;
+   int _bootGen =
+       0; // bumped per _boot; a stale boot aborts at its post-await check
++  _BookFlipPageSource? _pageSource;
++  bool _refreshingAtlas = false;
++  int _packedRevision = -1;
+ 
+   BookFlipPhysics get _physics => widget.physics;
+ 
+@@ -87,6 +90,8 @@
+     _scene.curl = widget.curl;
+     _scene.effects = widget.effects;
+     _scene.transparentPages = widget.transparentPages;
++    _pageSource = widget.controller?._pageSource;
++    _pageSource?.addListener(_onProgressivePagesChanged);
+     unawaited(_boot());
+   }
+ 
+@@ -94,6 +99,9 @@
+   void didUpdateWidget(BookFlip old) {
+     super.didUpdateWidget(old);
+     if (!identical(old.controller, widget.controller)) {
++      _pageSource?.removeListener(_onProgressivePagesChanged);
++      _pageSource = widget.controller?._pageSource;
++      _pageSource?.addListener(_onProgressivePagesChanged);
+       if (identical(old.controller?._state, this)) {
+         old.controller?._spreadCache = _spread;
+         old.controller?._state = null;
+@@ -154,7 +162,11 @@
+   Future<void> _boot() async {
+     final gen = ++_bootGen; // a later _boot supersedes this one
+     try {
+-      final pages = widget.pages;
++      final source = _pageSource;
++      final pages =
++          source == null ? widget.pages : List<ui.Image>.of(widget.pages);
++      final capturedPages = source?.captured.keys.toSet();
++      final revision = source?.revision ?? -1;
+       final cols = _atlasColsFor(pages.length);
+       final rows = _atlasRowsFor(pages.length);
+       // Pack into one atlas with the largest cell that fits maxTextureDimension.
+@@ -170,7 +182,8 @@
+         final (cw, ch) =
+             bookFlipAtlasCell(src.width, src.height, cols, rows, cap);
+         try {
+-          atlas = await _packAtlas(pages, cols, cw, ch);
++          atlas =
++              await _packAtlas(pages, cols, cw, ch, pageIndices: capturedPages);
+           cellW = cw;
+           cellH = ch;
+         } on Object {
+@@ -192,15 +205,123 @@
+         ..cellH = cellH
+         ..transparentPages = widget.transparentPages;
+       _applyPageMap(); // idle map for the opening spread
+-      _phase.value = _BootPhase.ready;
++      if (source != null) {
++        source.packed = capturedPages!;
++        _packedRevision = revision;
++      }
++      _phase.value = source == null || source.isSpreadPacked(_spread)
++          ? _BootPhase.ready
++          : _BootPhase.loading;
+       // totalSpreads is now known: nudge a listening controller so a "page X of N"
+       // indicator built before load updates from its 0 placeholder.
+       widget.controller?._emit();
++      _onProgressivePagesChanged();
+     } on Object catch (_) {
+       // toImage can throw (e.g. GPU OOM). Surface retry, never a dead spinner.
+       // Ignore a stale boot's failure so it can't clobber a newer success.
+       if (mounted && gen == _bootGen) _phase.value = _BootPhase.error;
+     }
++  }
++
++  void _onProgressivePagesChanged() {
++    final source = _pageSource;
++    if (source == null ||
++        _scene.atlas == null ||
++        _phase.value == _BootPhase.error ||
++        _refreshingAtlas ||
++        _scene.active ||
++        source.revision == _packedRevision) {
++      return;
++    }
++    // Batch new snapshots around a requested spread; never repack every distant
++    // page or stop a moving leaf just because another photo has finished.
++    final required = source.requiredPages(_spread);
++    if (!required.every(source.captured.containsKey) &&
++        source.captured.length != source.pageCount) {
++      return;
++    }
++    if (required.every(source.packed.contains) &&
++        source.captured.length != source.pageCount) {
++      return;
++    }
++    unawaited(_refreshProgressiveAtlas(source));
++  }
++
++  Future<void> _refreshProgressiveAtlas(_BookFlipPageSource source) async {
++    _refreshingAtlas = true;
++    final gen = _bootGen;
++    final revision = source.revision;
++    final capturedPages = source.captured.keys.toSet();
++    final pages = List<ui.Image>.of(widget.pages);
++    var cellW = _scene.cellW, cellH = _scene.cellH;
++    var cap = math.max(
++      _scene.atlasCols * cellW,
++      _atlasRowsFor(pages.length) * cellH,
++    );
++    ui.Image? atlas;
++    try {
++      while (atlas == null) {
++        try {
++          atlas = await _packAtlas(
++            pages,
++            _scene.atlasCols,
++            cellW,
++            cellH,
++            pageIndices: capturedPages,
++          );
++        } on Object {
++          if (cap <= kPageTexMin) rethrow;
++          cap = cap ~/ 2;
++          final cell = bookFlipAtlasCell(
++            pages.first.width,
++            pages.first.height,
++            _scene.atlasCols,
++            _atlasRowsFor(pages.length),
++            cap,
++          );
++          cellW = cell.$1;
++          cellH = cell.$2;
++        }
++      }
++      if (!mounted || gen != _bootGen || !identical(source, _pageSource)) {
++        return;
++      }
++      if (_scene.active) {
++        return; // Keep the turn's texture stable until it lands.
++      }
++      final previous = _scene.atlas;
++      _scene
++        ..atlas = atlas
++        ..cellW = cellW
++        ..cellH = cellH;
++      atlas = null;
++      source.packed = capturedPages;
++      _packedRevision = revision;
++      _phase.value = source.isSpreadPacked(_spread)
++          ? _BootPhase.ready
++          : _BootPhase.loading;
++      previous?.dispose();
++      _render();
++      widget.controller?._emit();
++    } on Object {
++      // Existing usable pages survive a failed background texture refresh.
++    } finally {
++      atlas?.dispose();
++      _refreshingAtlas = false;
++    }
++    if (mounted && revision != source.revision) _onProgressivePagesChanged();
++  }
++
++  bool _hasTurnPages(int dir) {
++    final source = _pageSource;
++    if (source == null) return true;
++    final first = dir > 0 ? _spread * 2 : (_spread - 1) * 2;
++    final available = <int>[
++      for (var page = first; page < first + 4; page++)
++        page.clamp(0, _pageCount - 1),
++    ].every(source.packed.contains);
++    if (!available) source.requestSpread(_spread + dir);
++    return available;
+   }
+ 
+   // Pack the caller's page images into one atlas texture (a single GPU upload,
+@@ -209,12 +330,13 @@
+     List<ui.Image> pages,
+     int cols,
+     int cellW,
+-    int cellH,
+-  ) async {
++    int cellH, {
++    Set<int>? pageIndices,
++  }) async {
+     final rec = ui.PictureRecorder();
+     final canvas = Canvas(rec);
+     final paint = Paint()..filterQuality = FilterQuality.high;
+-    for (var p = 0; p < pages.length; p++) {
++    for (final p in pageIndices ?? Iterable<int>.generate(pages.length)) {
+       final img = pages[p];
+       final src =
+           Rect.fromLTWH(0, 0, img.width.toDouble(), img.height.toDouble());
+@@ -237,6 +359,7 @@
+     if (_phase.value != _BootPhase.ready || _scene.active) return false;
+     final canGo = dir > 0 ? _canForward(_spread) : _canBackward(_spread);
+     if (!canGo) return false;
++    if (!_hasTurnPages(dir)) return false;
+     _ctl.stop();
+     _dragging = false;
+     _atBoundary = false;
+@@ -276,6 +399,8 @@
+       // boot must not restore the older spread over the latest live-page choice.
+       _spread = spread.clamp(0, math.max(0, (widget.pages.length ~/ 2) - 1));
+       widget.controller?._spreadCache = _spread;
++      if (_pageCount > 0) _applyPageMap();
++      _onProgressivePagesChanged();
+       return;
+     }
+     // Capture before the teardown: a jump that INTERRUPTS a live flip must still
+@@ -294,13 +419,18 @@
+       ..coverBackwardEdge = false
+       ..t = 0.0;
+     _applyPageMap();
++    if (_pageSource?.isSpreadPacked(_spread) == false) {
++      _phase.value = _BootPhase.loading;
++    }
+     _render();
+     if (_spread != prevSpread) widget.onSpreadChanged?.call(_spread);
+     if (wasFlipping) widget.onFlipEnd?.call(_spread);
++    _onProgressivePagesChanged();
+   }
+ 
+   @override
+   void dispose() {
++    _pageSource?.removeListener(_onProgressivePagesChanged);
+     if (identical(widget.controller?._state, this)) {
+       widget.controller?._spreadCache = _spread;
+       widget.controller?._state = null;
+@@ -406,6 +536,8 @@
+     _render();
+     if (committed) widget.onSpreadChanged?.call(_spread);
+     widget.onFlipEnd?.call(_spread);
++    _pageSource?.requestSpread(_spread);
++    _onProgressivePagesChanged();
+   }
+ 
+   // ── gestures (driven by RenderBookCanvas's HorizontalDragGestureRecognizer) ──
+@@ -445,6 +577,7 @@
+         _pendingDir = dx < 0 ? 1 : -1;
+       }
+       final dir = _pendingDir;
++      if (!_hasTurnPages(dir)) return;
+       _atBoundary = dir > 0 ? !_canForward(_spread) : !_canBackward(_spread);
+       _scene
+         ..grabV = _pendingGrabV
+@@ -476,6 +609,7 @@
+ 
+   void _onDragDistance(Offset local, int dir, double distance) {
+     if (_phase.value != _BootPhase.ready || _scene.w <= 0) return;
++    if (!_hasTurnPages(dir)) return;
+ 
+     _dragging = true;
+     _ctl.stop();
+--- a/packages/book_page_flip/lib/src/widget_capture.dart
++++ b/packages/book_page_flip/lib/src/widget_capture.dart
+@@ -42,6 +42,9 @@
+     required this.onCaptured,
+     this.pixelRatio = 1.0,
+     this.preparePage,
++    this.isPagePrepared,
++    this.nextPageIndex,
++    this.onPageCaptured,
+     this.cover = const SizedBox.expand(),
+     this.onError,
+     super.key,
+@@ -70,6 +73,11 @@
+   /// Resolve asynchronous artwork before freezing a page. Only one page is
+   /// prepared at a time; a fresh painted frame follows completion.
+   final Future<void> Function(BuildContext context, int pageIndex)? preparePage;
++
++  // Progressive hosts prepare a small window together and retain each image.
++  final bool Function(int pageIndex)? isPagePrepared;
++  final int? Function()? nextPageIndex;
++  final void Function(int pageIndex, ui.Image image)? onPageCaptured;
+ 
+   /// Painted on top of the (hidden) capture layer while rasterising — typically
+   /// the loading view, so the user never sees the pages being captured.
+@@ -94,11 +102,13 @@
+   bool _preparing = false;
+   bool _rasterizing = false;
+   int? _preparedPage;
++  final Set<int> _capturedPages = <int>{};
+ 
+   bool get _active {
+     // Keep the local package's Flutter 3.22 compatibility.
+     // ignore: deprecated_member_use
+     final lifecycle = WidgetsBinding.instance.lifecycleState;
++    // ignore: deprecated_member_use
+     return TickerMode.of(context) &&
+         (lifecycle == null || lifecycle == AppLifecycleState.resumed);
+   }
+@@ -111,6 +121,7 @@
+   @override
+   void initState() {
+     super.initState();
++    _pageIndex = widget.nextPageIndex?.call() ?? 0;
+     WidgetsBinding.instance.addObserver(this);
+     // Capture AFTER the first frame is painted (post-frame), so every boundary's
+     // layer exists. A handful of retries covers the rare not-yet-laid-out frame.
+@@ -134,11 +145,13 @@
+     if (_captured || _preparing || _rasterizing || !mounted || !_active) {
+       return;
+     }
+-    if (_images.length > _pageIndex) {
++    if (_capturedPages.contains(_pageIndex)) {
+       _advanceCapturedPage();
+       return;
+     }
+-    if (widget.preparePage != null && _preparedPage != _pageIndex) {
++    if (widget.preparePage != null &&
++        _preparedPage != _pageIndex &&
++        !(widget.isPagePrepared?.call(_pageIndex) ?? false)) {
+       _preparing = true;
+       try {
+         await widget.preparePage!(context, _pageIndex);
+@@ -189,7 +202,17 @@
+ 
+     try {
+       _rasterizing = true;
+-      _images.add(await object.toImage(pixelRatio: widget.pixelRatio));
++      final image = await object.toImage(pixelRatio: widget.pixelRatio);
++      if (!mounted) {
++        image.dispose();
++        return;
++      }
++      _capturedPages.add(_pageIndex);
++      if (widget.onPageCaptured != null) {
++        widget.onPageCaptured!(_pageIndex, image);
++      } else {
++        _images.add(image);
++      }
+     } on Object catch (error, stack) {
+       if (!mounted || !_active) return;
+       _captured = true;
+@@ -221,6 +244,17 @@
+   }
+ 
+   void _advanceCapturedPage() {
++    if (widget.nextPageIndex != null) {
++      final next = widget.nextPageIndex!();
++      if (next != null) {
++        setState(() => _pageIndex = next);
++        _scheduleCapture();
++        return;
++      }
++      _captured = true;
++      widget.onCaptured(const <ui.Image>[]);
++      return;
++    }
+     if (_images.length < widget.pages.length) {
+       setState(() => _pageIndex += 1);
+       _scheduleCapture();
+--- a/packages/book_page_flip/lib/src/widget_pages.dart
++++ b/packages/book_page_flip/lib/src/widget_pages.dart
+@@ -1,4 +1,72 @@
+ part of 'engine.dart';
++
++// Keeps global page indices stable while distant photo pages finish preparing.
++class _BookFlipPageSource extends ChangeNotifier {
++  _BookFlipPageSource(this.pageCount, this.requestedSpread, this.onRequest);
++
++  final int pageCount;
++  final VoidCallback onRequest;
++  int requestedSpread;
++  List<ui.Image>? pages;
++  final Map<int, ui.Image> captured = <int, ui.Image>{};
++  final Set<int> prepared = <int>{};
++  Set<int> packed = <int>{};
++  int revision = 0;
++
++  List<int> window(int spread) {
++    final left = spread.clamp(0, math.max(0, pageCount ~/ 2 - 1)).toInt() * 2;
++    return <int>[
++      left,
++      left + 1,
++      left + 2,
++      left + 3,
++      left - 2,
++      left - 1,
++    ].where((page) => page >= 0 && page < pageCount).toList();
++  }
++
++  List<int> requiredPages(int currentSpread) {
++    final current =
++        currentSpread.clamp(0, math.max(0, pageCount ~/ 2 - 1)).toInt();
++    final requested =
++        requestedSpread.clamp(0, math.max(0, pageCount ~/ 2 - 1)).toInt();
++    return requested == current
++        ? window(current)
++        : <int>[current * 2, current * 2 + 1, requested * 2, requested * 2 + 1];
++  }
++
++  bool isSpreadPacked(int spread) =>
++      packed.contains(spread * 2) && packed.contains(spread * 2 + 1);
++
++  void requestSpread(int spread) {
++    final target = spread.clamp(0, math.max(0, pageCount ~/ 2 - 1)).toInt();
++    if (target == requestedSpread) {
++      notifyListeners();
++      return;
++    }
++    requestedSpread = target;
++    onRequest();
++    notifyListeners();
++  }
++
++  void add(int index, ui.Image image) {
++    // Unprepared slots are never used by a turn; sharing an existing image avoids
++    // allocating placeholder textures or changing the atlas's global indices.
++    pages ??= List<ui.Image>.filled(pageCount, image);
++    pages![index] = image;
++    captured[index] = image;
++    revision++;
++    notifyListeners();
++  }
++
++  @override
++  void dispose() {
++    for (final image in captured.values) {
++      image.dispose();
++    }
++    super.dispose();
++  }
++}
+ 
+ // ─────────────────────────────────────────────────────────────────────────────
+ //  Widget pages → BookFlip.  Public entry point: [BookFlip.builder] (api.dart)
+@@ -20,6 +88,8 @@
+     required this.pageSize,
+     required this.pixelRatio,
+     required this.preparePage,
++    required this.progressive,
++    required this.preparationPaused,
+     required this.controller,
+     required this.physics,
+     required this.material,
+@@ -43,6 +113,8 @@
+   final Size pageSize;
+   final double? pixelRatio;
+   final Future<void> Function(BuildContext context, int pageIndex)? preparePage;
++  final bool progressive;
++  final bool preparationPaused;
+   final BookFlipController? controller;
+   final BookFlipPhysics physics;
+   final BookFlipMaterial material;
+@@ -72,6 +144,63 @@
+   // Bumped on any capture-affecting change; keys the rasteriser so a reconfigure
+   // (even mid-capture) remounts it fresh and abandons the stale in-flight capture.
+   int _epoch = 0;
++  int _captureEpoch = 0;
++  _BookFlipPageSource? _source;
++  BookFlipController? _sourceController;
++  BookFlipController? _ownedController;
++  final Map<int, Future<void>> _preparing = <int, Future<void>>{};
++
++  BookFlipController get _controller =>
++      widget.controller ?? (_ownedController ??= BookFlipController());
++
++  @override
++  void initState() {
++    super.initState();
++    _attachProgressiveSource();
++  }
++
++  void _attachProgressiveSource() {
++    if (!widget.progressive) return;
++    _source = _BookFlipPageSource(
++      widget.pageCount,
++      _controller.currentSpread,
++      _prioritiseRequestedSpread,
++    );
++    _controller._pageSource = _source;
++    _sourceController = _controller;
++  }
++
++  void _prioritiseRequestedSpread() {
++    // Remount only the capture layer so a slow distant preparation cannot own
++    // the newly requested window. The engine and active gesture stay attached.
++    void reprioritise() {
++      if (!mounted) return;
++      setState(() {
++        _captureEpoch++;
++        _captureError = null;
++      });
++    }
++
++    final phase = SchedulerBinding.instance.schedulerPhase;
++    if (phase == SchedulerPhase.persistentCallbacks) {
++      WidgetsBinding.instance.addPostFrameCallback((_) => reprioritise());
++    } else {
++      reprioritise();
++    }
++  }
++
++  void _disposeProgressiveSource() {
++    final source = _source;
++    if (source == null) return;
++    final controller = _sourceController;
++    if (identical(controller?._pageSource, source)) {
++      controller!._pageSource = null;
++    }
++    source.dispose();
++    _source = null;
++    _sourceController = null;
++    _preparing.clear();
++  }
+ 
+   void _disposeImages() {
+     final imgs = _images;
+@@ -89,20 +218,32 @@
+     final changed = old.pageCount != widget.pageCount ||
+         old.pageSize != widget.pageSize ||
+         old.pixelRatio != widget.pixelRatio ||
+-        old.transparentPages != widget.transparentPages;
++        old.transparentPages != widget.transparentPages ||
++        old.progressive != widget.progressive;
+     if (changed) {
+       _disposeImages();
++      _disposeProgressiveSource();
++      _attachProgressiveSource();
+       setState(() {
+         _images = null; // null → re-enter the capture branch
+         _captureError = null;
+         _epoch++; // remount the rasteriser at the new configuration
+       });
+     }
++    if (!identical(old.controller, widget.controller) && _source != null) {
++      if (identical(old.controller?._pageSource, _source)) {
++        old.controller!._pageSource = null;
++      }
++      _controller._pageSource = _source;
++      _sourceController = _controller;
++    }
+   }
+ 
+   @override
+   void dispose() {
+     _disposeImages();
++    _disposeProgressiveSource();
++    _ownedController?.dispose();
+     super.dispose();
+   }
+ 
+@@ -131,6 +272,7 @@
+ 
+   @override
+   Widget build(BuildContext context) {
++    if (_source != null) return _buildProgressive(context);
+     final images = _images;
+     if (images != null) {
+       // Captured → an ordinary BookFlip, engine untouched. We own [images] and
+@@ -183,6 +325,138 @@
+     );
+   }
+ 
++  int? _nextProgressivePage() {
++    final source = _source!;
++    for (final page in <int>[
++      ...source.requiredPages(_controller.currentSpread),
++      ...source.window(_controller.currentSpread),
++      ...source.window(source.requestedSpread),
++      for (var page = 0; page < widget.pageCount; page++) page,
++    ]) {
++      if (!source.captured.containsKey(page)) return page;
++    }
++    return null;
++  }
++
++  Future<void> _prepareProgressivePage(BuildContext context, int index) async {
++    final source = _source!;
++    final prepare = widget.preparePage;
++    if (prepare == null) return;
++    final currentWindow = source.window(_controller.currentSpread);
++    final requestedWindow = source.window(source.requestedSpread);
++    final batch = currentWindow.contains(index)
++        ? currentWindow
++        : requestedWindow.contains(index)
++            ? requestedWindow
++            : <int>[index];
++    Future<void> prepareOne(int page) {
++      if (source.prepared.contains(page)) return Future<void>.value();
++      final pending = _preparing[page];
++      if (pending != null) return pending;
++      final work = () async {
++        await prepare(context, page);
++        if (!mounted || !context.mounted || !identical(source, _source)) {
++          throw const BookFlipPreparationPaused();
++        }
++        source.prepared.add(page);
++      }();
++      _preparing[page] = work;
++      void completed() {
++        if (identical(_preparing[page], work)) _preparing.remove(page);
++      }
++
++      // Prefetch failures are observed now and surfaced when that page is used.
++      unawaited(work.then<void>((_) => completed(),
++          onError: (Object _, StackTrace __) {
++        completed();
++      }));
++      return work;
++    }
++
++    for (final page in batch) {
++      prepareOne(page);
++    }
++    // A slow neighbouring photo must not delay an already decoded turn face.
++    await prepareOne(index);
++  }
++
++  Widget _buildProgressive(BuildContext context) {
++    final source = _source!;
++    final hasBook = source.pages != null &&
++        (source
++                .requiredPages(_controller.currentSpread)
++                .every(source.captured.containsKey) ||
++            _controller._state != null);
++    return Stack(
++      fit: StackFit.expand,
++      children: <Widget>[
++        if (_captureError == null && source.captured.length < widget.pageCount)
++          Positioned(
++            left: -widget.pageSize.width,
++            top: 0,
++            width: widget.pageSize.width,
++            height: widget.pageSize.height,
++            child: ListenableBuilder(
++              listenable: _controller,
++              builder: (context, child) => TickerMode(
++                enabled: !widget.preparationPaused && !_controller.isAnimating,
++                child: child!,
++              ),
++              child: BookFlipPageRasterizer(
++                key: ValueKey('progressive_${_epoch}_$_captureEpoch'),
++                pixelRatio:
++                    widget.pixelRatio ?? MediaQuery.devicePixelRatioOf(context),
++                logicalSize: widget.pageSize,
++                preparePage:
++                    widget.preparePage == null ? null : _prepareProgressivePage,
++                isPagePrepared: source.prepared.contains,
++                nextPageIndex: _nextProgressivePage,
++                onPageCaptured: (index, image) {
++                  if (!mounted || !identical(source, _source)) {
++                    image.dispose();
++                    return;
++                  }
++                  source.add(index, image);
++                  setState(() {});
++                },
++                onCaptured: (_) {},
++                onError: _onCaptureError,
++                pages: <Widget>[
++                  for (var page = 0; page < widget.pageCount; page++)
++                    Builder(builder: (context) => _composePage(context, page)),
++                ],
++              ),
++            ),
++          ),
++        if (hasBook)
++          BookFlip(
++            key: ValueKey('progressive_book_$_epoch'),
++            pages: source.pages!,
++            controller: _controller,
++            physics: widget.physics,
++            material: widget.material,
++            curl: widget.curl,
++            effects: widget.effects,
++            fit: widget.fit,
++            transparentPages: widget.transparentPages,
++            pageAspectRatio: widget.pageSize.width / widget.pageSize.height,
++            maxTextureDimension: widget.maxTextureDimension,
++            meshResolution: widget.meshResolution,
++            onSpreadChanged: widget.onSpreadChanged,
++            onFlipStart: widget.onFlipStart,
++            onFlipEnd: widget.onFlipEnd,
++            loadingBuilder: widget.loadingBuilder,
++            errorBuilder: widget.errorBuilder,
++          )
++        else if (_captureError != null)
++          widget.errorBuilder?.call(context) ??
++              _BookErrorView(onRetry: _retryCapture)
++        else
++          widget.loadingBuilder?.call(context) ?? const _BookLoadingView(),
++      ],
++    );
++  }
++
+   // One page widget, with the optional page-number label composited on top — baked
+   // into the capture, so numeration costs the engine nothing. The label widget
+   // self-positions (wrap it in Align/Positioned). [page] passed out is 1-based.
+--- /dev/null
++++ b/test/widget/reader_first_interaction_test.dart
+@@ -0,0 +1,233 @@
++import 'dart:async';
++
++import 'package:book_page_flip/book_page_flip.dart';
++import 'package:flutter/material.dart';
++import 'package:flutter_riverpod/flutter_riverpod.dart';
++import 'package:flutter_screenutil/flutter_screenutil.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:snap_fit/core/constants/cover_size.dart';
++import 'package:snap_fit/core/constants/cover_theme.dart';
++import 'package:snap_fit/features/album/domain/entities/album_page.dart';
++import 'package:snap_fit/features/album/domain/entities/layer.dart';
++import 'package:snap_fit/features/album/presentation/controllers/layer_builder.dart';
++import 'package:snap_fit/features/album/presentation/controllers/layer_interaction_manager.dart';
++import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
++import 'package:snap_fit/features/album/presentation/widgets/reader/album_reader_single_page_view.dart';
++
++const _viewport = Size(390, 844);
++const _innerPages = 40;
++
++class _Editor extends AlbumEditorViewModel {
++  @override
++  FutureOr<AlbumEditorState> build() => const AlbumEditorState();
++}
++
++Future<void> _coldReader(WidgetTester tester) async {
++  tester.view.physicalSize = _viewport;
++  tester.view.devicePixelRatio = 1;
++  addTearDown(tester.view.resetPhysicalSize);
++  addTearDown(tester.view.resetDevicePixelRatio);
++
++  final pageController = PageController();
++  final canvas = coverCanvasBaseSize(defaultCoverSize);
++  final interaction = LayerInteractionManager.printPreview(() => canvas);
++  addTearDown(pageController.dispose);
++  addTearDown(interaction.dispose);
++  addTearDown(() async {
++    // 실패한 첫 입력도 진행 중인 래스터화/애니메이션을 남기지 않는다.
++    await tester.pumpWidget(const SizedBox.shrink());
++    await tester.pump();
++  });
++
++  final pages = List.generate(
++    _innerPages + 1,
++    (index) => AlbumPage(
++      id: 'cold-page-$index',
++      pageIndex: index,
++      isCover: index == 0,
++      backgroundColor: index.isEven ? 0xffe8f0e9 : 0xfff7f3ec,
++      layers: [
++        LayerModel(
++          id: 'cold-caption-$index',
++          type: LayerType.text,
++          position: Offset(canvas.width * .1, canvas.height * .4),
++          width: canvas.width * .8,
++          height: canvas.height * .2,
++          text: 'PAGE $index',
++          textStyle: const TextStyle(fontSize: 24, color: Color(0xff263e37)),
++        ),
++      ],
++    ),
++  );
++
++  await tester.pumpWidget(
++    ProviderScope(
++      overrides: [albumEditorViewModelProvider.overrideWith(_Editor.new)],
++      child: ScreenUtilInit(
++        designSize: _viewport,
++        builder: (_, child) => MaterialApp(home: Scaffold(body: child)),
++        child: AlbumReaderSinglePageView(
++          allPages: pages,
++          selectedCover: defaultCoverSize,
++          coverTheme: CoverTheme.classic,
++          pageController: pageController,
++          interaction: interaction,
++          layerBuilder: LayerBuilder(interaction, () => canvas),
++          canvasKey: GlobalKey(),
++          onCanvasSizeChanged: (_) {},
++          onPageChanged: (_) {},
++          onStateChanged: () {},
++          focusMode: true,
++          singlePageFocus: true,
++        ),
++      ),
++    ),
++  );
++  // 준비 완료를 기다리면 최초 진입에서 유실되는 입력을 숨기게 된다.
++}
++
++BookFlipController? _controller(WidgetTester tester) {
++  final book = find.byType(BookFlip);
++  // 첫 프레임에는 실제 BookFlip 대신 페이지 래스터화 위젯만 있을 수 있다.
++  return book.evaluate().isEmpty
++      ? null
++      : tester.widget<BookFlip>(book.first).controller;
++}
++
++double _cameraX(WidgetTester tester) => tester
++    .widget<Transform>(find.byKey(const ValueKey('reader-focus-transform')))
++    .transform
++    .storage[12];
++
++String _position(WidgetTester tester) => tester
++    .widget<Text>(find.byKey(const ValueKey('reader-page-position')))
++    .data!;
++
++Future<void> _frame(WidgetTester tester) async {
++  // toImage 완료가 실제 이벤트 루프로 돌아올 기회를 주되 준비는 기다리지 않는다.
++  await tester.runAsync(
++    () => Future<void>.delayed(const Duration(milliseconds: 2)),
++  );
++  await tester.pump(const Duration(milliseconds: 16));
++}
++
++Future<bool> _firstMotion(WidgetTester tester, double startX) async {
++  final pageWidth =
++      tester.getSize(find.byKey(const ValueKey('reader-focus-book'))).width / 2;
++  final endX = pageWidth / 2;
++  var moved = false;
++  int? firstResponseFrame;
++  for (var frame = 0; frame < 8; frame++) {
++    await _frame(tester);
++    final controller = _controller(tester);
++    final x = _cameraX(tester);
++    // 최종 위치로 순간 이동하는 폴백은 종이 모션으로 인정하지 않는다.
++    final moving =
++        (x > startX + .5 && x < endX - .5) ||
++        (controller != null &&
++            controller.isAnimating &&
++            controller.flipProgress > 0 &&
++            controller.flipProgress < 1);
++    moved |= moving;
++    if (moving) firstResponseFrame ??= frame + 1;
++  }
++  debugPrint('READER_FIRST_RESPONSE frames=$firstResponseFrame budget=8');
++  return moved;
++}
++
++Future<void> _expectFirstPage(WidgetTester tester) async {
++  for (var frame = 0; frame < 80; frame++) {
++    if (_position(tester) == '1 / ${_innerPages}쪽' &&
++        _controller(tester)?.isAnimating != true) {
++      break;
++    }
++    await _frame(tester);
++  }
++  expect(_position(tester), '1 / ${_innerPages}쪽');
++  expect(_controller(tester)?.isAnimating, isNot(true));
++  expect(tester.takeException(), isNull);
++}
++
++void main() {
++  testWidgets('a quick cold-entry swipe is retained after the finger lifts', (
++    tester,
++  ) async {
++    await _coldReader(tester);
++    final startX = _cameraX(tester);
++    final viewport = tester.getRect(
++      find.byKey(const ValueKey('reader-page-viewport')),
++    );
++    final gesture = await tester.startGesture(viewport.center);
++    await gesture.moveBy(Offset(-viewport.width * .45, 0));
++    await gesture.up();
++    expect(await _firstMotion(tester, startX), isTrue);
++    await _expectFirstPage(tester);
++  });
++
++  for (final cancel in [false, true]) {
++    testWidgets('an aborted cold swipe restores the cover cancel=$cancel', (
++      tester,
++    ) async {
++      await _coldReader(tester);
++      final startX = _cameraX(tester);
++      final viewport = tester.getRect(
++        find.byKey(const ValueKey('reader-page-viewport')),
++      );
++      final gesture = await tester.startGesture(viewport.center);
++      await gesture.moveBy(const Offset(-10, 0));
++      if (cancel) {
++        await gesture.cancel();
++      } else {
++        await gesture.up();
++      }
++      for (var frame = 0; frame < 14; frame++) {
++        await _frame(tester);
++      }
++      expect(_position(tester), '표지 / ${_innerPages}쪽');
++      expect(_cameraX(tester), closeTo(startX, .1));
++      await tester.tap(find.byTooltip('다음 페이지'));
++      expect(await _firstMotion(tester, startX), isTrue);
++      await _expectFirstPage(tester);
++    });
++  }
++
++  testWidgets('the first cold-entry swipe moves without waiting for the book', (
++    tester,
++  ) async {
++    await _coldReader(tester);
++    final startX = _cameraX(tester);
++    final viewport = tester.getRect(
++      find.byKey(const ValueKey('reader-page-viewport')),
++    );
++    final gesture = await tester.startGesture(
++      Offset(viewport.left + viewport.width * .85, viewport.center.dy),
++    );
++    var moved = false;
++    try {
++      await gesture.moveBy(Offset(-viewport.width * .45, 0));
++      moved = await _firstMotion(tester, startX);
++    } finally {
++      await gesture.up();
++    }
++    expect(
++      moved,
++      isTrue,
++      reason: 'The first held swipe must move before distant pages are ready.',
++    );
++    await _expectFirstPage(tester);
++  });
++
++  testWidgets('the first cold-entry button starts a turn instead of jumping', (
++    tester,
++  ) async {
++    await _coldReader(tester);
++    final startX = _cameraX(tester);
++    await tester.tap(find.byTooltip('다음 페이지'));
++    expect(
++      await _firstMotion(tester, startX),
++      isTrue,
++      reason: 'The first button press must animate while the long book warms.',
++    );
++    await _expectFirstPage(tester);
++  });
++}
+--- /dev/null
++++ b/test/widget/book_flip_progressive_entry_test.dart
+@@ -0,0 +1,350 @@
++import 'dart:async';
++import 'dart:ui' as ui;
++
++import 'package:book_page_flip/book_page_flip.dart';
++import 'package:flutter/material.dart';
++import 'package:flutter/rendering.dart';
++import 'package:flutter_test/flutter_test.dart';
++
++Future<void> _paintFrames(WidgetTester tester, int count) async {
++  for (var frame = 0; frame < count; frame++) {
++    // Raster image completion needs the real event loop in a widget test.
++    await tester.runAsync(
++      () => Future<void>.delayed(const Duration(milliseconds: 2)),
++    );
++    await tester.pump(const Duration(milliseconds: 16));
++  }
++}
++
++Future<void> _until(WidgetTester tester, bool Function() ready) async {
++  for (var frame = 0; frame < 100 && !ready(); frame++) {
++    await _paintFrames(tester, 1);
++  }
++  expect(ready(), isTrue);
++}
++
++Widget _book(
++  BookFlipController controller,
++  Future<void> Function(BuildContext, int) prepare, {
++  GlobalKey? captureKey,
++  bool preparationPaused = false,
++}) => MaterialApp(
++  home: Center(
++    child: RepaintBoundary(
++      key: captureKey,
++      child: SizedBox(
++        width: 320,
++        height: 240,
++        child: ColoredBox(
++          color: Colors.green,
++          child: BookFlip.builder(
++            progressive: true,
++            preparationPaused: preparationPaused,
++            controller: controller,
++            pageCount: 40,
++            pageSize: const Size(160, 240),
++            pixelRatio: 1,
++            curl: BookFlipCurl.albumPreview,
++            transparentPages: const {0},
++            effects: const BookFlipEffects(
++              gloss: false,
++              grain: false,
++              castShadow: false,
++              spineShadow: false,
++              edge: false,
++              translucency: false,
++            ),
++            preparePage: prepare,
++            pageBuilder: (_, page) => ColoredBox(
++              color: page == 4 ? Colors.red : const Color(0xff0000ff),
++            ),
++          ),
++        ),
++      ),
++    ),
++  ),
++);
++
++void _releaseAtTearDown(Completer<void> gate) {
++  addTearDown(() {
++    if (!gate.isCompleted) gate.complete();
++  });
++}
++
++void main() {
++  testWidgets('a distant photo does not block the first turn of a long book', (
++    tester,
++  ) async {
++    final distantPhoto = Completer<void>();
++    final controller = BookFlipController();
++    addTearDown(controller.dispose);
++    addTearDown(() {
++      if (!distantPhoto.isCompleted) distantPhoto.complete();
++    });
++    await tester.pumpWidget(
++      MaterialApp(
++        home: Center(
++          child: SizedBox(
++            width: 320,
++            height: 240,
++            child: BookFlip.builder(
++              progressive: true,
++              controller: controller,
++              pageCount: 40,
++              pageSize: const Size(160, 240),
++              pixelRatio: 1,
++              curl: BookFlipCurl.albumPreview,
++              preparePage: (_, index) =>
++                  index == 39 ? distantPhoto.future : Future<void>.value(),
++              pageBuilder: (_, index) =>
++                  ColoredBox(color: index.isEven ? Colors.orange : Colors.blue),
++            ),
++          ),
++        ),
++      ),
++    );
++
++    await _paintFrames(tester, 100);
++    expect(distantPhoto.isCompleted, isFalse);
++    expect(
++      controller.isReady,
++      isTrue,
++      reason: 'The current spread must be usable before distant photos finish.',
++    );
++    expect(controller.totalSpreads, 20);
++    expect(controller.nextSpread(), isTrue);
++    await tester.pump();
++    await tester.pump(const Duration(milliseconds: 16));
++    expect(controller.flipProgress, greaterThan(0));
++    expect(tester.takeException(), isNull);
++    await tester.pumpWidget(const SizedBox());
++  });
++
++  testWidgets('the next spread turns while the following photo stays pending', (
++    tester,
++  ) async {
++    final nextSpreadPhotos = Completer<void>();
++    final laterPhoto = Completer<void>();
++    _releaseAtTearDown(nextSpreadPhotos);
++    _releaseAtTearDown(laterPhoto);
++    final controller = BookFlipController();
++    addTearDown(controller.dispose);
++    await tester.pumpWidget(
++      _book(
++        controller,
++        (_, page) => page == 4 || page == 5
++            ? nextSpreadPhotos.future
++            : page == 6
++            ? laterPhoto.future
++            : Future<void>.value(),
++      ),
++    );
++    await _until(tester, () => controller.isReady);
++    expect(controller.nextSpread(), isTrue);
++    await _until(tester, () => !controller.isAnimating);
++    expect(controller.currentSpread, 1);
++    expect(controller.isSpreadReady(2), isFalse);
++    controller.requestSpread(2);
++    nextSpreadPhotos.complete();
++    await _until(tester, () => controller.isSpreadReady(2));
++    expect(laterPhoto.isCompleted, isFalse);
++    expect(controller.nextSpread(), isTrue);
++    await tester.pump();
++    await tester.pump(const Duration(milliseconds: 16));
++    expect(controller.flipProgress, greaterThan(0));
++    await tester.pump(const Duration(milliseconds: 501));
++    expect(controller.currentSpread, 2);
++    expect(tester.takeException(), isNull);
++    await tester.pumpWidget(const SizedBox());
++  });
++
++  testWidgets(
++    'a requested captured spread can bypass a blocked background page',
++    (tester) async {
++      final backgroundPhoto = Completer<void>();
++      _releaseAtTearDown(backgroundPhoto);
++      final controller = BookFlipController();
++      addTearDown(controller.dispose);
++      await tester.pumpWidget(
++        _book(
++          controller,
++          (_, page) =>
++              page == 10 ? backgroundPhoto.future : Future<void>.value(),
++        ),
++      );
++      await _until(tester, () => controller.isReady);
++      // Pages 4..9 finish behind the book while page 10 still awaits its photo.
++      await _paintFrames(tester, 30);
++      expect(controller.isSpreadReady(3), isFalse);
++      controller.requestSpread(3);
++      await _until(tester, () => controller.isSpreadReady(3));
++      expect(backgroundPhoto.isCompleted, isFalse);
++      controller.goToSpread(3);
++      expect(controller.currentSpread, 3);
++      expect(controller.isReady, isTrue);
++      expect(tester.takeException(), isNull);
++      await tester.pumpWidget(const SizedBox());
++    },
++  );
++
++  testWidgets('moving leaf pauses distant preparation until settling', (
++    tester,
++  ) async {
++    final backgroundPhoto = Completer<void>();
++    _releaseAtTearDown(backgroundPhoto);
++    final preparedPages = <int>[];
++    final controller = BookFlipController();
++    addTearDown(controller.dispose);
++    await tester.pumpWidget(
++      _book(controller, (_, page) {
++        preparedPages.add(page);
++        return page == 4 ? backgroundPhoto.future : Future<void>.value();
++      }),
++    );
++    await _until(tester, () => controller.isReady && preparedPages.contains(4));
++    await tester.pump(); // The first ready texture can precede canvas layout.
++    expect(controller.dragStart(const Offset(250, 100)), isTrue);
++    expect(
++      controller.dragToDistance(
++        localPosition: const Offset(200, 100),
++        direction: FlipDirection.forward,
++        distance: 64,
++      ),
++      isTrue,
++    );
++    await tester.pump();
++    backgroundPhoto.complete();
++    await _paintFrames(tester, 20);
++    expect(controller.isAnimating, isTrue);
++    expect(
++      preparedPages.where((page) => page >= 5),
++      isEmpty,
++      reason: 'Hidden photo preparation must yield to the moving leaf.',
++    );
++    controller.dragEndWithDecision(0, commit: true);
++    await _until(tester, () => !controller.isAnimating);
++    await _until(tester, () => preparedPages.any((page) => page >= 5));
++    expect(controller.currentSpread, 1);
++    expect(tester.takeException(), isNull);
++    await tester.pumpWidget(const SizedBox());
++  });
++
++  testWidgets('a host pause leaves the book animation running', (tester) async {
++    final backgroundPhoto = Completer<void>();
++    _releaseAtTearDown(backgroundPhoto);
++    final preparedPages = <int>[];
++    final paused = ValueNotifier(false);
++    addTearDown(paused.dispose);
++    final controller = BookFlipController();
++    addTearDown(controller.dispose);
++    await tester.pumpWidget(
++      ValueListenableBuilder<bool>(
++        valueListenable: paused,
++        builder: (_, isPaused, _) => _book(controller, (_, page) {
++          preparedPages.add(page);
++          return page == 4 ? backgroundPhoto.future : Future<void>.value();
++        }, preparationPaused: isPaused),
++      ),
++    );
++    await _until(tester, () => controller.isReady && preparedPages.contains(4));
++    paused.value = true;
++    await tester.pump();
++    backgroundPhoto.complete();
++    await _paintFrames(tester, 20);
++    expect(preparedPages.where((page) => page >= 5), isEmpty);
++    expect(controller.nextSpread(), isTrue);
++    await _until(tester, () => !controller.isAnimating);
++    expect(controller.currentSpread, 1);
++    expect(preparedPages.where((page) => page >= 5), isEmpty);
++    paused.value = false;
++    await _until(tester, () => preparedPages.any((page) => page >= 5));
++    expect(tester.takeException(), isNull);
++    await tester.pumpWidget(const SizedBox());
++  });
++
++  testWidgets('background snapshots keep the same held leaf and renderer', (
++    tester,
++  ) async {
++    final backgroundPhoto = Completer<void>();
++    _releaseAtTearDown(backgroundPhoto);
++    final controller = BookFlipController();
++    addTearDown(controller.dispose);
++    await tester.pumpWidget(
++      _book(
++        controller,
++        (_, page) => page == 4 ? backgroundPhoto.future : Future<void>.value(),
++      ),
++    );
++    await _until(tester, () => controller.isReady);
++    await tester
++        .pump(); // Attach the canvas before testing an already-held leaf.
++    final renderer = tester.state(find.byType(BookFlip));
++    final pages = tester.widget<BookFlip>(find.byType(BookFlip)).pages;
++    expect(controller.dragStart(const Offset(250, 100)), isTrue);
++    expect(
++      controller.dragToDistance(
++        localPosition: const Offset(200, 100),
++        direction: FlipDirection.forward,
++        distance: 64,
++      ),
++      isTrue,
++    );
++    final progress = controller.flipProgress;
++    backgroundPhoto.complete();
++    await _paintFrames(tester, 100);
++
++    expect(controller.isAnimating, isTrue);
++    expect(controller.flipProgress, closeTo(progress, .00001));
++    expect(tester.state(find.byType(BookFlip)), same(renderer));
++    expect(tester.widget<BookFlip>(find.byType(BookFlip)).pages, same(pages));
++    controller.dragEndWithDecision(0, commit: true);
++    await tester.pump();
++    await tester.pump(const Duration(milliseconds: 501));
++    await tester.pump(const Duration(milliseconds: 1));
++    expect(controller.currentSpread, 1);
++    expect(tester.takeException(), isNull);
++    await tester.pumpWidget(const SizedBox());
++  });
++
++  testWidgets(
++    'hidden capture pixels retain their colour without leaking through the cover',
++    (tester) async {
++      final backgroundPhoto = Completer<void>();
++      _releaseAtTearDown(backgroundPhoto);
++      final controller = BookFlipController();
++      addTearDown(controller.dispose);
++      final captureKey = GlobalKey();
++      await tester.pumpWidget(
++        _book(
++          controller,
++          (_, page) =>
++              page == 4 ? backgroundPhoto.future : Future<void>.value(),
++          captureKey: captureKey,
++        ),
++      );
++      await _until(tester, () => controller.isReady);
++      await _paintFrames(tester, 4);
++      final boundary =
++          captureKey.currentContext!.findRenderObject()!
++              as RenderRepaintBoundary;
++      final screen = (await tester.runAsync(() => boundary.toImage()))!;
++      final screenPixels = (await tester.runAsync(
++        () => screen.toByteData(format: ui.ImageByteFormat.rawRgba),
++      ))!;
++      final leftCentre = (120 * screen.width + 80) * 4;
++      expect(screenPixels.getUint8(leftCentre), Colors.green.red);
++      expect(screenPixels.getUint8(leftCentre + 1), Colors.green.green);
++      expect(screenPixels.getUint8(leftCentre + 2), Colors.green.blue);
++      screen.dispose();
++      final page = tester.widget<BookFlip>(find.byType(BookFlip)).pages[1];
++      final pagePixels = (await tester.runAsync(
++        () => page.toByteData(format: ui.ImageByteFormat.rawRgba),
++      ))!;
++      final centre = ((page.height ~/ 2) * page.width + page.width ~/ 2) * 4;
++      expect(pagePixels.getUint8(centre + 2), 255);
++      expect(pagePixels.getUint8(centre + 3), 255);
++      expect(tester.takeException(), isNull);
++      await tester.pumpWidget(const SizedBox());
++    },
++  );
++}

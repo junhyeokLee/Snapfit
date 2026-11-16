@@ -7,6 +7,10 @@ part 'atelier_composition_catalog.dart';
 part 'concept_wave_material_catalog.dart';
 part 'atelier_edition_material_catalog.dart';
 part 'story_edition_material_catalog.dart';
+part 'sensory_material_catalog.dart';
+part 'hobby_expansion_material_catalog.dart';
+part 'milestone_expansion_material_catalog.dart';
+part 'premium_quartet_material_catalog.g.dart';
 
 /// Basic photo legibility effects, not independently purchasable materials.
 const photoCoverShadeStyles = {'photoCoverShadeTop', 'photoCoverShadeBottom'};
@@ -53,6 +57,10 @@ class StudioDecorationSpec {
 
 /// Stable keys are stored in album documents. Keep old decorations untouched.
 const studioDecorations = [
+  ...premiumQuartetDecorations,
+  ...hobbyExpansionDecorations,
+  ...milestoneExpansionDecorations,
+  ...sensoryDecorations,
   ...storyEditionDecorations,
   ...atelierEditionDecorations,
   ...conceptWaveDecorations,

@@ -1,10 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/supabase/supabase_provider.dart';
 import '../../../../core/templates/catalog_preview_assets.g.dart';
-import '../../../album/data/album_creation_draft_store.dart';
 import '../../../album/data/bundled_creation_templates.dart';
-import '../../../album/presentation/viewmodels/home_view_model.dart';
 import '../../../attendance/domain/attendance_status.dart';
 import '../../../attendance/presentation/providers/attendance_providers.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
@@ -115,7 +114,7 @@ Future<T?> _optional<T>(Future<T> request) async {
 }
 
 /// Enabled stories remain browsable together, even after a benefit is used.
-/// Automatic delivery separately requires an eligible, unseen starting story.
+/// Every home entry can show these; only an explicit today-hide suppresses it.
 final homeNewsCatalogProvider = FutureProvider.autoDispose<List<HomeNewsItem>>((
   ref,
 ) async {
@@ -242,39 +241,36 @@ final homeNewsCatalogProvider = FutureProvider.autoDispose<List<HomeNewsItem>>((
   return List.unmodifiable(items);
 });
 
-/// A pending local recovery takes priority over an optional announcement.
-/// Loading the library also finishes before any automatic notice is considered.
-final homeNewsRecoveryBlockProvider = FutureProvider.autoDispose<bool>((
-  ref,
-) async {
-  final owner = ref.watch(homeNewsCurrentOwnerProvider);
-  if (owner == null) return true;
-  try {
-    final (creation, moments, _) = await (
-      ref.watch(albumCreationDraftProvider.future),
-      ref.watch(momentDraftSummariesForOwnerProvider(owner).future),
-      ref.watch(homeViewModelProvider.future),
-    ).wait;
-    return !ref.mounted || creation != null || moments.isNotEmpty;
-  } catch (_) {
-    return true;
-  }
-});
+/// Compatibility hook for an active recovery overlay. Stored drafts and album
+/// loading do not suppress an every-entry popup. A currently open modal route
+/// already prevents two overlays from appearing at the same time.
+final homeNewsRecoveryBlockProvider = FutureProvider.autoDispose<bool>(
+  (ref) async => ref.watch(homeNewsCurrentOwnerProvider) == null,
+);
 
-class HomeNewsSessionGuard {
-  final _attempted = <String>{};
-  bool begin(String owner) => _attempted.add(owner);
-}
-
-final homeNewsSessionGuardProvider = Provider((_) => HomeNewsSessionGuard());
 final homeNewsReadyDelayProvider = Provider(
-  (_) => const Duration(milliseconds: 900),
+  (_) => const Duration(milliseconds: 200),
 );
 
-class HomeNewsPresentationCoordinator {
-  bool busy = false;
+class HomeNewsPresentationCoordinator extends ChangeNotifier {
+  bool _busy = false;
+  bool _disposed = false;
+  bool get busy => _busy;
+  set busy(bool value) {
+    if (_busy == value) return;
+    _busy = value;
+    if (!_disposed) notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
 }
 
-final homeNewsPresentationCoordinatorProvider = Provider(
-  (_) => HomeNewsPresentationCoordinator(),
-);
+final homeNewsPresentationCoordinatorProvider = Provider((ref) {
+  final coordinator = HomeNewsPresentationCoordinator();
+  ref.onDispose(coordinator.dispose);
+  return coordinator;
+});

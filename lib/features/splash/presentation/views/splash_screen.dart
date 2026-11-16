@@ -10,6 +10,7 @@ import '../../../auth/presentation/views/auth_gate.dart';
 import '../../../onboarding/presentation/app_introduction_screen.dart';
 import '../../../onboarding/presentation/first_visit_controller.dart';
 import '../../../../shared/web/web_design.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -19,7 +20,7 @@ class SplashScreen extends ConsumerStatefulWidget {
 }
 
 class _SplashScreenState extends ConsumerState<SplashScreen> {
-  static const Duration _minDisplayDuration = Duration(milliseconds: 900);
+  static const Duration _minDisplayDuration = Duration(milliseconds: 300);
   static const Duration _fadeDuration = Duration(milliseconds: 350);
   late final DateTime _startedAt;
   late final ProviderSubscription<AsyncValue<UserInfo?>> _authSub;
@@ -112,10 +113,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.auto_stories_outlined,
-                size: 34,
-                color: WebPalette.of(context).brand,
+              ExperienceIcon('BookOpen', size: 34, color: WebPalette.of(context).brand,
               ),
               SizedBox(height: 16),
               Text(
@@ -136,23 +134,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         ),
       );
     }
-    return Scaffold(
-      backgroundColor: const Color(0xFF101112),
-      body: SizedBox.expand(
-        child: LayoutBuilder(
-          builder: (context, box) {
-            final landscape = box.maxWidth > box.maxHeight;
-            return Image.asset(
-              landscape
-                  ? 'assets/brand/album-mark/splash-landscape.png'
-                  : 'assets/splash.png',
-              fit: BoxFit.cover,
-              alignment: landscape ? Alignment.center : Alignment.topCenter,
-              gaplessPlayback: true,
-            );
-          },
-        ),
-      ),
+    return const Scaffold(
+      backgroundColor: Color(0xFF0AB5D1),
     );
   }
 }

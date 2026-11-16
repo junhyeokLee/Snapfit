@@ -1,0 +1,62 @@
+{
+  "date": "2026-11-11",
+  "productCodeModified": true,
+  "priority": "daily monthly record, then full-size own album and selector, then supporting paths",
+  "unitWidgetTests": {
+    "passed": 69,
+    "failed": 0,
+    "suites": {
+      "summary": 18,
+      "monthly": 7,
+      "screen": 17,
+      "chrome": 20,
+      "archive": 7
+    }
+  },
+  "captureGeometryTests": {
+    "passed": 9,
+    "failed": 0
+  },
+  "additionalDepthSuite": {
+    "completed": false,
+    "observedPassed": 37,
+    "observedFailed": 5,
+    "unresolvedBookFlipFailures": 4,
+    "preexistingLabelMismatch": 1,
+    "termination": "stopped after lengthy follow-on execution",
+    "followup": {
+      "status": "resolved",
+      "report": "../reader-regression-2026-11-11/README.md",
+      "completeFileResult": {
+        "passed": 76,
+        "failed": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "analysis": "No issues found!",
+  "fullRepositoryTestsPassed": false,
+  "deviceOrBrowserVerified": false,
+  "appBuiltOrDeployed": false,
+  "fullScreenEvidence": [
+    "390x844-02-today-and-archive.png",
+    "390x844-03-album-focus.png",
+    "320x568-01-initial.png",
+    "320x568-02-today-and-archive.png",
+    "390x844-today-saved-01-initial.png"
+  ],
+  "excludedFromFullScreenEvidence": [
+    "390x844-01-initial.png",
+    "390x844-04-album-selector.png",
+    "320x568-03-album-focus.png",
+    "320x568-04-album-selector.png"
+  ],
+  "sha256": {
+    "lib/features/album/presentation/widgets/home/home_album_destination.dart": "a6b755a2481ca740c94d38ec4254b8b0860587d67147a2516819e6b6418f40ac",
+    "lib/features/album/presentation/widgets/home/home_album_slider.dart": "8e6922b19d5503b38bd060b9aa1b7285db36b286bdd7904153d3137123048047",
+    "lib/features/album/presentation/widgets/home/home_moment_summary_card.dart": "fa9721c801c8c8fcb4f5245669737bf652b0607e261579cc8fa950587a175058",
+    "test/widget/home_moment_summary_test.dart": "5f76568181fd07b15e3d968e2412e3fdebff4aecea339cd34aebddec5192fc02",
+    "test/widget/home_album_chrome_test.dart": "b823d69508576b62ca7cd831381a09ef82d72fd8abdb0a8d6fe88bfee81a5cbd",
+    "test/widget/home_screen_test.dart": "e9dc997e5a5fcf39b3a6b99e4d5b3e2c3565cc9e5f743295b4b0686e27bbff21"
+  }
+}

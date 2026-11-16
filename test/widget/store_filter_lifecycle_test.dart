@@ -61,12 +61,20 @@ void main() {
                 ),
             ],
           ),
+          ownedPointShopKeysProvider.overrideWith((_) async => <String>{}),
           storeCurationsProvider.overrideWith(
             (_) async => <String, StoreCuration>{},
           ),
         ],
       );
-      addTearDown(container.dispose);
+      var disposed = false;
+      void disposeContainer() {
+        if (disposed) return;
+        disposed = true;
+        container.dispose();
+      }
+
+      addTearDown(disposeContainer);
       var visible = true;
       var incarnation = 0;
       late StateSetter change;
@@ -133,6 +141,9 @@ void main() {
       }
       expect(localLoads, 1);
       await tester.pumpWidget(const SizedBox.shrink());
+      // Refresh timers belong to this retained container. Cancel them inside
+      // the fake clock before the widget binding checks pending timers.
+      disposeContainer();
       await tester.pumpAndSettle();
       expect(tester.binding.transientCallbackCount, 0);
       expect(tester.takeException(), isNull);

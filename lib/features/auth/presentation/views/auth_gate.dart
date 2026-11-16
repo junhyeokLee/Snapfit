@@ -127,8 +127,11 @@ class _AuthGateState extends ConsumerState<AuthGate> {
               : const Scaffold(
                   body: Center(child: CircularProgressIndicator()),
                 ),
-          error: (error, _) =>
-              LoginScreen(authNotice: socialAuthErrorMessage(error)),
+          error: (error, _) => LoginScreen(
+            authNotice: socialAuthErrorMessage(error),
+            onRetrySession: () =>
+                ref.read(authViewModelProvider.notifier).refresh(),
+          ),
         ),
       ),
     );

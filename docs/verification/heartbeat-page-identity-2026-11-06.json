@@ -1,0 +1,115 @@
+{
+  "date": "2026-11-06",
+  "automation_id": "snapfit",
+  "trigger_time": "2026-11-06T00:32:54.080Z",
+  "finished_time": "2026-11-06T00:38:46.819021+00:00",
+  "scope": "Stable in-session editing targets when inner pages are appended after deletion, replenished after authored-page deletion, or extended by template application.",
+  "previous_reports": [
+    "docs/verification/heartbeat-editor-decoration-target-2026-10-30.json",
+    "docs/verification/editor-layout-expansion-2026-11-02.json",
+    "docs/verification/authenticated-loading-flow-2026-11-02.json"
+  ],
+  "findings": [
+    {
+      "id": "duplicate-or-reused-inner-page-target",
+      "priority": "P2",
+      "status": "fixed",
+      "before": "Additional inner pages were assigned page_<current length>. Deletion retained the IDs of surviving pages, so a later append could duplicate a surviving ID. The blank replacement after deleting from a fully authored book had the same problem. Tail deletion followed by addition also revived a removed ID within the same editing session, allowing that ID to denote a different target.",
+      "evidence": [
+        "A 24-inner-page book with pages 1-2 removed then two pages added had 25 pages but only 23 distinct IDs.",
+        "Deleting an authored page when no blank partner existed added a blank replacement whose ID was already present.",
+        "Deleting and recreating the final spread reused removed target IDs under the same editSessionIdentity.",
+        "Template extension after a middle deletion reproduced the same ID collision.",
+        "A repeated remove/add fixture reused a target ID on its first cycle."
+      ],
+      "change": "Generate a UUID-backed local ID only for newly appended inner pages. Share that creation helper between padding/addition, template extension and blank replacement. Leave all retained page IDs, initial cover/page creation and session identity unchanged."
+    }
+  ],
+  "production_files_changed_this_run": [
+    "lib/features/album/presentation/viewmodels/album_editor_view_model.dart"
+  ],
+  "new_test_files": [
+    "test/unit/album_editor_page_identity_test.dart"
+  ],
+  "verification": {
+    "initial_fixture_load": {
+      "log": "output/heartbeat-page-identity-2026-11-06/baseline-tests.log",
+      "classification": "The first helper used a contextually inferred async return cascade, which inferred FutureOr<AlbumEditorViewModel> and failed compilation. Corrected the helper by using a local variable; no production issue was inferred from this fixture error."
+    },
+    "controlled_baseline": {
+      "passed": 0,
+      "failed": 5,
+      "log": "output/heartbeat-page-identity-2026-11-06/controlled-baseline-tests.log",
+      "classification": "Intentional before-fix reproductions of five page-identity cases."
+    },
+    "related_tests": {
+      "passed": 22,
+      "failed": 0,
+      "log": "output/heartbeat-page-identity-2026-11-06/related-tests.log",
+      "single_process": true,
+      "concurrency": 1,
+      "priority": "nice 10",
+      "command": "nice -n 10 flutter test --no-test-assets --no-pub --concurrency=1 --reporter expanded test/unit/album_editor_page_identity_test.dart test/unit/album_editor_view_model_test.dart test/unit/album_page_policy_test.dart --name 'page identity|printable editor page policy|resetForCreate|addPage and removeLastPage|new selections|template minimum|undo and redo'",
+      "coverage": [
+        "Five new identity regressions including 30 repeated deletion/addition cycles.",
+        "Existing minimum/maximum 20-80 page policy, even/odd legacy padding and deletion, template addition/cap rejection, retained authored/background content, reset and undo/redo behavior."
+      ]
+    },
+    "static_analysis": {
+      "items": 2,
+      "final_issues": 0,
+      "log": "output/heartbeat-page-identity-2026-11-06/final-analysis.log",
+      "initial_analysis": "output/heartbeat-page-identity-2026-11-06/analysis.log",
+      "post_test_cleanup": "Removed only an unnecessary material.dart import from the new test after analysis; final analysis confirms symbol resolution. Production behavior and all test bodies were unchanged after the passing run; the suite was not redundantly rerun."
+    },
+    "scoped_git_diff_check": "passed; exact source replacement against the pre-run snapshot also checked",
+    "resources": {
+      "initial_free_disk": "15 GiB",
+      "final_free_disk_bytes": 15710576640,
+      "handling": "Checked known active Flutter test/build/run/compiler and render/export processes before starting. Ran one agent-owned test process at a time with concurrency=1 and nice 10. Static analysis ran after the test process completed, also with nice 10. Used no-test-assets for these local model/policy fixtures and did not regenerate asset bundles or delete caches."
+    },
+    "external_effects": "No app build, running app/device, preview server, deployment, production database operation, purchase or customer album mutation."
+  },
+  "review": {
+    "remaining_blocking_findings_in_changed_scope": [],
+    "checked": [
+      "All three live append paths use the helper; initialization paths still use their existing initial IDs.",
+      "Retained page IDs, order, pageIndex, backgrounds and photo/layer objects are preserved by the controlled retention cases.",
+      "New IDs are allocated only during explicit model additions; no work is added to scrolling, cover rendering, image decoding or list building.",
+      "The existing UUID dependency is reused. There is no extra cache, historical ID set, subscriber, timer, queue or worker.",
+      "The page-ID consumers inspected use opaque identity comparisons; no numeric parsing of page IDs was found in the album feature.",
+      "The full album serializer continues using page index/isCover/background/layers and was not edited; existing saved content, product metadata and layer photo references are untouched.",
+      "The previous decoration target guard and point-shop access code remain byte-identical to their pre-run snapshots.",
+      "No other task work or existing dirty workspace change was reset, overwritten or removed."
+    ],
+    "protected_sources_unchanged": {
+      "lib/features/album/service/album_editor_service.dart": true,
+      "lib/features/album/presentation/widgets/editor/decorate_panel.dart": true,
+      "lib/features/album/presentation/widgets/editor/decorate_sticker_tab.dart": true,
+      "lib/features/point_shop/presentation/point_shop_access.dart": true
+    },
+    "source_assertions": {
+      "only_new_inner_page_creation_and_three_append_sites_changed": true,
+      "existing_pages_never_renamed": true,
+      "no_new_dependency_cache_subscriber_or_worker": true,
+      "page_indices_and_serialization_unchanged": true
+    },
+    "final_sha256": {
+      "lib/features/album/presentation/viewmodels/album_editor_view_model.dart": "b352f951ad32a9cc6ea67e482a1932c23141c16159f5394825e00fc34897e779",
+      "test/unit/album_editor_page_identity_test.dart": "bb6bfac7a33bbbb2df5b0984989628b9926c93c87e71b55a38c0e08c867760b1"
+    }
+  },
+  "follow_up": {
+    "automation_remains_useful": true,
+    "next_candidates": [
+      "Inspect pending frame/phrase application at their editor caller boundaries, using the latest target/page policy code and a concrete delayed-completion regression before changing it.",
+      "Review whether an already-loaded legacy document can contain duplicate local targets through a different path; do not rename saved/retained IDs without a separate controlled case and preservation plan.",
+      "Resume main/store/reader hidden/resume and stale-owner checks after reviewing newer verification records; preserve completed request sharing, discovery sort/badge rules and catalog ownership."
+    ]
+  },
+  "limits": [
+    "No physical-device FPS, frame time, peak application/native memory or heap leak profile was measured. New IDs are small local metadata allocated on explicit addition, not a measured memory/performance result.",
+    "UUID v4 generation uses the existing dependency and provides practical unique identity; the regression checks validate the controlled sequences rather than mathematically proving every possible random ID.",
+    "This fix prevents new duplicate/revived IDs on the three affected append paths. It does not migrate or rename already retained/saved pages, and no production/customer data was inspected or rewritten."
+  ]
+}

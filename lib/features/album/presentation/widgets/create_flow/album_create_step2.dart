@@ -339,10 +339,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
             IconButton(
               tooltip: '초대 링크 복사',
               onPressed: _isCreatingInvite ? null : _copyInviteLink,
-              icon: Icon(
-                Icons.content_copy_outlined,
-                size: 21,
-                color: ExperienceFormStyle.ink(context),
+              icon: ExperienceIcon('Copy', size: 21, color: ExperienceFormStyle.ink(context),
               ),
             ),
           ],
@@ -413,9 +410,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
       setState(() => _inviteLink = inviteResponse.link);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('초대 링크 생성 실패: $e')));
+        context.showErrorSnack('초대 링크 생성 실패: $e');
       }
     } finally {
       if (mounted) {
@@ -478,9 +473,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
           SnackBar(
             content: Row(
               children: [
-                Icon(
-                  Icons.check_circle,
-                  color: const Color(0xFF191919),
+                ExperienceIcon('CheckCircle2', color: const Color(0xFF191919),
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -525,9 +518,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
         SnackBar(
           content: Row(
             children: [
-              Icon(
-                Icons.check_circle,
-                color: kIsWeb ? WebPalette.of(context).onBrand : Colors.white,
+              ExperienceIcon('CheckCircle2', color: kIsWeb ? WebPalette.of(context).onBrand : Colors.white,
                 size: 20,
               ),
               const SizedBox(width: 8),

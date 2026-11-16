@@ -18,6 +18,7 @@ import '../../../album/printing/redprinting_fulfillment_policy.dart';
 import '../../data/order_repository.dart';
 import '../../domain/entities/order_history_item.dart';
 import '../../../../core/utils/context_extensions.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 class AdminOrderManagementScreen extends ConsumerStatefulWidget {
   const AdminOrderManagementScreen({super.key});
@@ -100,7 +101,7 @@ class _AdminOrderManagementScreenState
         actions: [
           IconButton(
             onPressed: () => setState(() => _refreshSeed++),
-            icon: const Icon(Icons.refresh_rounded),
+            icon: const ExperienceIcon('RefreshCw'),
             tooltip: '새로고침',
           ),
         ],
@@ -123,10 +124,10 @@ class _AdminOrderManagementScreenState
                       fontSize: 12,
                       color: SnapFitColors.textSecondaryOf(context),
                     ),
-                    prefixIcon: const Icon(Icons.search_rounded),
+                    prefixIcon: const ExperienceIcon('Search'),
                     suffixIcon: IconButton(
                       onPressed: _applyKeyword,
-                      icon: const Icon(Icons.arrow_forward_rounded),
+                      icon: const ExperienceIcon('ArrowRight'),
                     ),
                     filled: true,
                     fillColor: SnapFitColors.surfaceOf(context),
@@ -778,7 +779,7 @@ class _PrintFulfillmentSheetState
                     onPressed: _busy
                         ? null
                         : () => Navigator.pop(context, _changed),
-                    icon: const Icon(Icons.close),
+                    icon: const ExperienceIcon('X'),
                   ),
                 ],
               ),
@@ -827,7 +828,7 @@ class _PrintFulfillmentSheetState
                             ),
                             mode: LaunchMode.externalApplication,
                           ),
-                          icon: const Icon(Icons.info_outline),
+                          icon: const ExperienceIcon('Info'),
                           label: const Text('업체 작업 가이드·견적 확인'),
                         ),
                         if (paid &&
@@ -840,7 +841,7 @@ class _PrintFulfillmentSheetState
                             !const ['SUBMITTED', 'ACCEPTED'].contains(stage))
                           FilledButton.icon(
                             onPressed: _busy ? null : _generate,
-                            icon: const Icon(Icons.picture_as_pdf),
+                            icon: const ExperienceIcon('Printer'),
                             label: Text(
                               _order.hasPrintFiles
                                   ? '표지·내지 PDF 다시 생성'
@@ -907,12 +908,12 @@ class _PrintFulfillmentSheetState
                                       mode: LaunchMode.externalApplication,
                                     )
                                   : null,
-                              icon: const Icon(Icons.open_in_new),
+                              icon: const ExperienceIcon('ArrowUpRight'),
                               label: const Text('레드프린팅 주문 페이지'),
                             ),
                             OutlinedButton.icon(
                               onPressed: _copyOrder,
-                              icon: const Icon(Icons.copy),
+                              icon: const ExperienceIcon('Copy'),
                               label: const Text('고객 배송정보·규격 복사'),
                             ),
                           ],
@@ -1297,7 +1298,7 @@ class _AdminOrderPagedTabState extends ConsumerState<_AdminOrderPagedTab> {
                 SizedBox(height: 10),
                 OutlinedButton.icon(
                   onPressed: _loadFirst,
-                  icon: const Icon(Icons.refresh_rounded),
+                  icon: const ExperienceIcon('RefreshCw'),
                   label: const Text('다시 시도'),
                 ),
               ],

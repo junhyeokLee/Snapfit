@@ -1,0 +1,527 @@
+--- before/lib/features/auth/presentation/views/login_screen.dart
++++ after/lib/features/auth/presentation/views/login_screen.dart
+@@ -76,6 +76,7 @@
+   bool _showNewPasswordConfirm = false;
+   String? _pendingConfirmationEmail;
+   bool _resetEmailSent = false;
++  String? _resetEmailSentTo;
+   bool _confirmationEmailResent = false;
+   bool _confirmationNeedsRequest = false;
+   bool _passwordChangeComplete = false;
+@@ -103,6 +104,7 @@
+     _mode = widget.startInPasswordReset
+         ? _AuthMode.resetPassword
+         : _AuthMode.login;
++    _resetEmailController.addListener(_onResetEmailChanged);
+     ScreenLogger.enter('LoginScreen', '카카오/구글/이메일 로그인 진입 화면');
+     if (kIsWeb) {
+       WidgetsBinding.instance.addPostFrameCallback((_) {
+@@ -165,6 +167,7 @@
+     _confirmationCodeController.dispose();
+     _loginEmailController.dispose();
+     _loginPasswordController.dispose();
++    _resetEmailController.removeListener(_onResetEmailChanged);
+     _resetEmailController.dispose();
+     _newPasswordController.dispose();
+     _newPasswordConfirmController.dispose();
+@@ -349,6 +352,14 @@
+     }
+   }
+ 
++  void _onResetEmailChanged() {
++    // 커서 이동은 발송 안내를 지우지 않고, 실제 수신 주소가 바뀔 때만 지운다.
++    if (_resetEmailSent &&
++        _resetEmailController.text.trim() != _resetEmailSentTo) {
++      setState(() => _resetEmailSent = false);
++    }
++  }
++
+   Future<void> _requestPasswordReset() async {
+     if (!mounted ||
+         _mode != _AuthMode.resetRequest ||
+@@ -357,6 +368,7 @@
+     FocusScope.of(context).unfocus();
+     if (_isLoading || _resetCooldown > 0) return;
+     if (!(_resetPasswordFormKey.currentState?.validate() ?? false)) return;
++    final email = _resetEmailController.text.trim();
+     setState(() {
+       _emailFormError = null;
+       _loadingProvider = _LoginProvider.email;
+@@ -364,10 +376,16 @@
+     try {
+       await ref
+           .read(authViewModelProvider.notifier)
+-          .requestPasswordReset(_resetEmailController.text.trim());
++          .requestPasswordReset(email);
+       if (!mounted) return;
+-      setState(() => _resetEmailSent = true);
+       _startEmailCooldown(confirmation: false);
++      if (_mode != _AuthMode.resetRequest ||
++          ModalRoute.of(context)?.isCurrent == false)
++        return;
++      setState(() {
++        _resetEmailSentTo = email;
++        _resetEmailSent = _resetEmailController.text.trim() == email;
++      });
+       context.showSnack('비밀번호 재설정 메일을 보냈어요.');
+     } catch (e) {
+       if (!mounted) return;
+@@ -471,6 +489,7 @@
+   Future<void> _submitNewPassword() async {
+     if (!mounted ||
+         _isLoading ||
++        _passwordChangeComplete ||
+         _mode != _AuthMode.resetPassword ||
+         ModalRoute.of(context)?.isCurrent == false)
+       return;
+@@ -487,6 +506,9 @@
+           .updatePassword(_newPasswordController.text);
+       TextInput.finishAutofillContext();
+       if (!mounted) return;
++      // 성공한 입력은 다시 제출하지 않도록 지우고 완료 화면으로 전환한다.
++      _newPasswordController.clear();
++      _newPasswordConfirmController.clear();
+       setState(() => _passwordChangeComplete = true);
+       context.showSnack('비밀번호가 변경되었어요.');
+     } catch (e) {
+@@ -500,6 +522,29 @@
+     } finally {
+       if (mounted) setState(() => _loadingProvider = null);
+     }
++  }
++
++  bool get _canReturnAfterPasswordChange {
++    final auth = ref.read(authViewModelProvider);
++    return !auth.isLoading &&
++        !auth.hasError &&
++        auth.asData?.value != null &&
++        Navigator.of(context).canPop();
++  }
++
++  void _finishPasswordReset() {
++    if (!mounted ||
++        _isLoading ||
++        !_passwordChangeComplete ||
++        _mode != _AuthMode.resetPassword ||
++        ModalRoute.of(context)?.isCurrent == false)
++      return;
++    // 유효한 세션 위에 열린 복구 화면만 닫고, 루트의 인증 판단은 AuthGate에 맡긴다.
++    if (_canReturnAfterPasswordChange) {
++      Navigator.of(context).pop();
++      return;
++    }
++    _switchMode(_AuthMode.emailLogin);
+   }
+ 
+   Future<void> _submitEmailSignUp() async {
+@@ -629,17 +674,17 @@
+     }
+     final videoBg = _videoBgController;
+     final hasVideo =
+-        videoBg != null && videoBg.value.isInitialized && _mode == _AuthMode.login;
++        videoBg != null &&
++        videoBg.value.isInitialized &&
++        _mode == _AuthMode.login;
+     return AnnotatedRegion<SystemUiOverlayStyle>(
+       value: hasVideo
+           ? SystemUiOverlayStyle.light
+           : SnapFitTheme.systemOverlayStyle(context),
+       child: Scaffold(
+-        backgroundColor: (hasVideo || _videoBgController != null)
++        backgroundColor: hasVideo
+             ? Colors.black
+-            : SnapFitColors.isDark(context)
+-                ? SnapFitColors.deepCharcoal
+-                : const Color(0xFFF9F7F4),
++            : Theme.of(context).scaffoldBackgroundColor,
+         body: Stack(
+           fit: StackFit.expand,
+           children: [
+@@ -670,7 +715,8 @@
+             ],
+             _AuthResponsiveShell(
+               controller: _scrollController,
+-              animateIn: _animateIn,
++              // 영상 준비 상태와 관계없이 일반 로그인·입력 폼은 바로 읽을 수 있다.
++              animateIn: _animateIn || !hasVideo,
+               mode: _mode,
+               keyboardOpen: MediaQuery.viewInsetsOf(context).bottom > 0,
+               videoBackground: hasVideo,
+@@ -1076,6 +1122,9 @@
+ 
+   Widget _buildResetPasswordCard(BuildContext context) {
+     final isUpdate = _mode == _AuthMode.resetPassword;
++    if (isUpdate && _passwordChangeComplete) {
++      return _buildPasswordCompletionCard(context);
++    }
+     return _AuthPaperCard(
+       maxWidth: 500,
+       child: Form(
+@@ -1120,11 +1169,6 @@
+                 const _InlineAuthNotice(
+                   icon: Icons.mark_email_read_rounded,
+                   text: '입력한 이메일로 재설정 링크를 보냈어요. 메일함을 확인해주세요.',
+-                ),
+-              if (_passwordChangeComplete)
+-                const _InlineAuthNotice(
+-                  icon: Icons.check_circle_rounded,
+-                  text: '비밀번호가 변경되었어요. 이제 새 비밀번호로 로그인할 수 있어요.',
+                 ),
+             ],
+           ),
+@@ -1216,7 +1260,7 @@
+                   )
+                 : Text(
+                     isUpdate
+-                        ? (_passwordChangeComplete ? '다시 변경하기' : '비밀번호 변경하기')
++                        ? '비밀번호 변경하기'
+                         : _resetCooldown > 0
+                         ? '$_resetCooldown초 후 다시 보내기'
+                         : _resetEmailSent
+@@ -1231,6 +1275,44 @@
+             child: const Text('이메일 로그인으로 돌아가기'),
+           ),
+         ),
++      ),
++    );
++  }
++
++  Widget _buildPasswordCompletionCard(BuildContext context) {
++    // 완료 뒤 세션 검증이 진행되거나 실패해도 이전 사용자로 복귀하지 않는다.
++    ref.watch(authViewModelProvider);
++    final canReturn = _canReturnAfterPasswordChange;
++    return _AuthPaperCard(
++      maxWidth: 500,
++      child: _AuthFormLayout(
++        header: Column(
++          crossAxisAlignment: CrossAxisAlignment.start,
++          children: [
++            const _CardEyebrow('계정 복구'),
++            const SizedBox(height: 8),
++            Text('비밀번호 변경 완료', style: _titleStyle(context)),
++          ],
++        ),
++        fields: Align(
++          alignment: Alignment.centerLeft,
++          child: Icon(
++            Icons.check_circle_outline_rounded,
++            size: 48,
++            color: ExperienceFormStyle.selectionInk(context),
++          ),
++        ),
++        aside: Text(
++          canReturn ? '새 비밀번호가 저장되었어요.' : '새 비밀번호로 로그인해 주세요.',
++          style: _bodyStyle(context),
++        ),
++        action: ElevatedButton(
++          key: const ValueKey('auth-password-complete'),
++          onPressed: _isLoading ? null : _finishPasswordReset,
++          style: _primaryButtonStyle(context),
++          child: Text(canReturn ? '스냅핏으로 돌아가기' : '이메일로 로그인'),
++        ),
++        secondary: const SizedBox.shrink(),
+       ),
+     );
+   }
+@@ -2180,23 +2262,24 @@
+     final dividerColor = videoBg
+         ? Colors.white.withValues(alpha: 0.25)
+         : ExperienceFormStyle.line(context);
+-    final textColor = videoBg
+-        ? Colors.white.withValues(alpha: 0.5)
+-        : null;
++    final textColor = videoBg ? Colors.white.withValues(alpha: 0.5) : null;
+     return Row(
+-    children: [
+-      Expanded(child: Divider(color: dividerColor)),
+-      Padding(
+-        padding: const EdgeInsets.symmetric(horizontal: 12),
+-        child: Text(
+-          text,
+-          style: ExperienceFormStyle.text(context, 12, secondary: true)
+-              .copyWith(color: textColor),
++      children: [
++        Expanded(child: Divider(color: dividerColor)),
++        Padding(
++          padding: const EdgeInsets.symmetric(horizontal: 12),
++          child: Text(
++            text,
++            style: ExperienceFormStyle.text(
++              context,
++              12,
++              secondary: true,
++            ).copyWith(color: textColor),
++          ),
+         ),
+-      ),
+-      Expanded(child: Divider(color: dividerColor)),
+-    ],
+-  );
++        Expanded(child: Divider(color: dividerColor)),
++      ],
++    );
+   }
+ }
+ 
+--- before/lib/features/album/presentation/viewmodels/gallery_notifier.dart
++++ after/lib/features/album/presentation/viewmodels/gallery_notifier.dart
+@@ -7,6 +7,9 @@
+ 
+ part 'gallery_notifier.freezed.dart';
+ part 'gallery_notifier.g.dart';
++
++/// 확인된 권한 거절·빈 목록은 일반 조회 예외와 별개의 결과로 전달한다.
++enum GalleryLoadFailure { permissionDenied, emptyLibrary }
+ 
+ @freezed
+ abstract class GalleryState with _$GalleryState {
+@@ -48,7 +51,7 @@
+           selectedAlbum: null,
+           images: const [],
+           hasMore: false,
+-          error: '사진 접근 권한이 필요합니다. 권한을 허용해주세요.',
++          error: GalleryLoadFailure.permissionDenied,
+         );
+         return;
+       }
+@@ -62,7 +65,7 @@
+           selectedAlbum: null,
+           images: const [],
+           hasMore: false,
+-          error: '이미지 앨범이 없습니다.',
++          error: GalleryLoadFailure.emptyLibrary,
+         );
+         return;
+       }
+--- before/lib/shared/widgets/album_bottom_sheet.dart
++++ after/lib/shared/widgets/album_bottom_sheet.dart
+@@ -24,18 +24,24 @@
+   final VoidCallback onRetry;
+   final VoidCallback onOpenPhotoSettings;
+ 
+-  bool get _isPermissionError {
+-    final text = message?.toString() ?? '';
+-    return text.contains('권한') || text.toLowerCase().contains('permission');
+-  }
++  // 예외 문구에 특정 단어가 들어 있어도 권한 거절이나 빈 앨범으로 추정하지 않는다.
++  bool get _isPermissionError => message == GalleryLoadFailure.permissionDenied;
++  bool get _isEmpty =>
++      message == null || message == GalleryLoadFailure.emptyLibrary;
+ 
+   @override
+   Widget build(BuildContext context) {
+-    final title = _isPermissionError ? '사진 접근 권한이 필요해요' : '이미지 앨범이 비어 있어요';
++    final title = _isPermissionError
++        ? '사진 접근 권한이 필요해요'
++        : _isEmpty
++        ? '이미지 앨범이 비어 있어요'
++        : '사진을 불러오지 못했어요';
+     final body = _isPermissionError
+         ? '설정에서 사진을 몇 장 더 허용한 뒤 다시 불러오면 Snapfit이 기기 안에서만 사진을 보여줘요.'
+-        : '다른 앨범을 고르거나 사진 접근 범위를 넓힌 뒤 다시 불러와 주세요.';
+-    final retryLabel = _isPermissionError ? '다시 시도' : '다시 불러오기';
++        : _isEmpty
++        ? '사진을 추가하거나 접근 범위를 확인해 주세요.'
++        : '잠시 후 다시 시도해 주세요.';
++    final retryLabel = _isEmpty ? '다시 불러오기' : '다시 시도';
+ 
+     return Container(
+       decoration: BoxDecoration(
+@@ -59,7 +65,9 @@
+                 child: Icon(
+                   _isPermissionError
+                       ? Icons.photo_library_outlined
+-                      : Icons.photo_outlined,
++                      : _isEmpty
++                      ? Icons.photo_outlined
++                      : Icons.error_outline,
+                   size: 34,
+                   color: SnapFitColors.accent,
+                 ),
+--- before/lib/features/social/presentation/views/social_profile_edit_screen.dart
++++ after/lib/features/social/presentation/views/social_profile_edit_screen.dart
+@@ -32,6 +32,8 @@
+   final _name = TextEditingController();
+   final _handle = TextEditingController();
+   final _bio = TextEditingController();
++  late final _edits = Listenable.merge([_name, _handle, _bio]);
++  (String, String, String)? _savedText;
+   String? _initializedFor;
+   bool _saving = false;
+   bool _photoBusy = false;
+@@ -41,6 +43,98 @@
+   int _revision = 0;
+   int _photoRevision = 0;
+   DialogRoute<bool>? _photoDialog;
++  DialogRoute<bool>? _exitDialog;
++
++  // 서버에 저장하는 값과 같은 기준으로 비교해 원상복구한 입력은 막지 않는다.
++  (String, String, String) get _currentText =>
++      (_name.text.trim(), _handle.text.trim().toLowerCase(), _bio.text.trim());
++
++  bool get _hasUnsavedText =>
++      _savedText != null &&
++      _initializedFor == ref.read(socialCurrentUserIdProvider) &&
++      _currentText != _savedText;
++
++  Future<void> _requestExit() async {
++    if (!mounted ||
++        _saving ||
++        _photoBusy ||
++        _exitDialog != null ||
++        ModalRoute.of(context)?.isCurrent == false)
++      return;
++    final actor = ref.read(socialCurrentUserIdProvider);
++    final revision = _revision;
++    if (_hasUnsavedText) {
++      FocusManager.instance.primaryFocus?.unfocus();
++      var decisionMade = false;
++      late final DialogRoute<bool> route;
++      void resolve(BuildContext dialogContext, bool discard) {
++        // 계정이 바뀌거나 이미 닫힌 확인창의 콜백은 새 화면에 영향을 주지 않는다.
++        if (!mounted ||
++            decisionMade ||
++            _exitDialog != route ||
++            revision != _revision ||
++            ref.read(socialCurrentUserIdProvider) != actor ||
++            !dialogContext.mounted ||
++            !route.isCurrent)
++          return;
++        decisionMade = true;
++        Navigator.pop(dialogContext, discard);
++      }
++
++      route = DialogRoute<bool>(
++        context: context,
++        builder: (dialogContext) => AlertDialog(
++          scrollable: true,
++          title: const Text('수정을 그만둘까요?'),
++          content: const Text('나가면 수정한 내용이 사라져요.'),
++          actions: [
++            TextButton(
++              autofocus: true,
++              onPressed: () => resolve(dialogContext, false),
++              child: const Text('계속 수정'),
++            ),
++            TextButton(
++              onPressed: () => resolve(dialogContext, true),
++              child: const Text('나가기'),
++            ),
++          ],
++        ),
++      );
++      _exitDialog = route;
++      bool? discard;
++      try {
++        discard = await Navigator.of(
++          context,
++          rootNavigator: true,
++        ).push<bool>(route);
++      } finally {
++        if (_exitDialog == route) _exitDialog = null;
++      }
++      if (discard != true ||
++          !mounted ||
++          _saving ||
++          _photoBusy ||
++          revision != _revision ||
++          ref.read(socialCurrentUserIdProvider) != actor ||
++          ModalRoute.of(context)?.isCurrent == false)
++        return;
++    }
++    // 확인된 이탈만 직접 닫아 PopScope의 재확인을 방지한다.
++    if (Navigator.canPop(context)) {
++      Navigator.pop(context);
++    } else {
++      ExperienceNavigationScope.maybeOf(context)?.onBack();
++    }
++  }
++
++  void _dismissExitDialog() {
++    final route = _exitDialog;
++    _exitDialog = null;
++    if (route == null) return;
++    WidgetsBinding.instance.addPostFrameCallback((_) {
++      if (route.isActive) route.navigator?.removeRoute(route);
++    });
++  }
+ 
+   void _login() {
+     final navigate = WebNavigationScope.maybeOf(context)?.onPublicNavigate;
+@@ -63,6 +157,7 @@
+     _revision++;
+     _photoRevision++;
+     _dismissPhotoDialog();
++    _dismissExitDialog();
+     _name.dispose();
+     _handle.dispose();
+     _bio.dispose();
+@@ -75,6 +170,7 @@
+     _name.text = profile?.displayName ?? '';
+     _handle.text = profile?.handle ?? '';
+     _bio.text = profile?.bio ?? '';
++    _savedText = _currentText;
+   }
+ 
+   void _invalidateProfile(String actor) {
+@@ -273,6 +369,7 @@
+       return;
+     if (_formKey.currentState?.validate() != true) return;
+     final revision = ++_revision;
++    final submitted = _currentText;
+     setState(() {
+       _saving = true;
+       _error = null;
+@@ -281,14 +378,15 @@
+       await ref
+           .read(socialRepositoryProvider)
+           .upsertOwnProfile(
+-            displayName: _name.text.trim(),
+-            handle: _handle.text.trim().toLowerCase(),
+-            bio: _bio.text.trim(),
++            displayName: submitted.$1,
++            handle: submitted.$2,
++            bio: submitted.$3,
+           );
+       if (!mounted ||
+           revision != _revision ||
+           ref.read(socialCurrentUserIdProvider) != actor)
+         return;
++      _savedText = submitted;
+       _invalidateProfile(actor);
+       setState(() => _saving = false);
+       ScaffoldMessenger.of(
+@@ -315,7 +413,9 @@
+       _revision++;
+       _photoRevision++;
+       _dismissPhotoDialog();
++      _dismissExitDialog();
+       _initializedFor = null;
++      _savedText = null;
+       _lastProfile = null;
+       _saving = false;
+       _photoBusy = false;
+@@ -328,12 +428,20 @@
+     final profile = actor == null ? null : ref.watch(ownSocialProfileProvider);
+     return SocialWebFrame(
+       section: WebSection.myProfile,
+-      child: PopScope(
+-        canPop: !_saving && !_photoBusy,
++      child: ListenableBuilder(
++        listenable: _edits,
++        builder: (context, child) => PopScope(
++          canPop: !_saving && !_photoBusy && !_hasUnsavedText,
++          onPopInvokedWithResult: (didPop, _) {
++            if (!didPop) _requestExit();
++          },
++          child: child!,
++        ),
+         child: Scaffold(
+-          appBar: const ExperienceHeader(
++          appBar: ExperienceHeader(
+             title: '프로필 수정',
+             showNotifications: false,
++            onBack: _requestExit,
+           ),
+           body: SafeArea(
+             top: false,

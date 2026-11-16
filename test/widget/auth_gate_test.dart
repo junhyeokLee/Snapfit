@@ -41,6 +41,27 @@ class LoadingAuthViewModel extends AuthViewModel {
   FutureOr<UserInfo?> build() => _completer.future;
 }
 
+class RetryingAuthViewModel extends FakeAuthViewModel {
+  RetryingAuthViewModel() : super(null);
+  int retries = 0;
+  int builds = 0;
+
+  @override
+  Future<UserInfo?> build() {
+    builds++;
+    return Future<UserInfo?>.delayed(
+      const Duration(milliseconds: 30),
+      () => throw TimeoutException('stalled account check'),
+    );
+  }
+
+  @override
+  Future<void> refresh() async {
+    retries++;
+    state = const AsyncData(null);
+  }
+}
+
 class FakeHomeViewModel extends HomeViewModel {
   FakeHomeViewModel(this.albums);
 
@@ -155,6 +176,32 @@ void main() {
       await tester.pump();
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    },
+  );
+
+  storeDetailTestWidgets(
+    'default scope exposes account timeout once and keeps explicit retry visible',
+    (tester) async {
+      final auth = RetryingAuthViewModel();
+      await _mountReturnFlow(tester, auth);
+      final retry = find.byKey(const ValueKey('auth-retry-session'));
+      expect(retry, findsOneWidget);
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(auth.builds, 1);
+      expect(retry, findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.byType(HomeScreen), findsNothing);
+      expect(find.textContaining('계정 확인 응답이 늦어지고'), findsOneWidget);
+      await tester.ensureVisible(retry);
+      await tester.tap(retry);
+      await settleStoreDetail(tester);
+      expect(auth.retries, 1);
+      expect(find.byType(LoginScreen), findsOneWidget);
+      expect(find.byType(HomeScreen), findsNothing);
+      expect(find.byKey(const ValueKey('auth-retry-session')), findsNothing);
+      expect(find.textContaining('계정 확인 응답이 늦어지고'), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
     },
   );
 

@@ -1,0 +1,1796 @@
+--- /dev/null
++++ b/lib/features/billing/domain/point_purchase_completion.dart
+@@ -0,0 +1,17 @@
++/// 서버 검증과 스토어 완료, 영수증 정리가 끝난 뒤 표시하는 계정별 결과다.
++/// alreadyGranted는 기존 구매 확인이며 새 포인트 지급으로 표시하지 않는다.
++class PointPurchaseCompletion {
++  const PointPurchaseCompletion({
++    required this.ownerId,
++    required this.productId,
++    required this.grantedPoints,
++    required this.remainingBalance,
++    required this.alreadyGranted,
++  });
++
++  final String ownerId;
++  final String productId;
++  final int grantedPoints;
++  final int remainingBalance;
++  final bool alreadyGranted;
++}
+--- /dev/null
++++ b/lib/features/billing/domain/point_top_up_context.dart
+@@ -0,0 +1,14 @@
++/// 충전 화면에 구매 목적만 전달합니다. 가격·잔액·구매 권한은 서버에서 다시 확인합니다.
++class PointTopUpContext {
++  const PointTopUpContext({
++    required this.ownerId,
++    required this.productKey,
++    required this.title,
++    required this.requiredPoints,
++  });
++
++  final String ownerId;
++  final String productKey;
++  final String title;
++  final int requiredPoints;
++}
+--- a/lib/features/billing/data/point_purchase_service.dart
++++ b/lib/features/billing/data/point_purchase_service.dart
+@@ -13,6 +13,7 @@
+ import '../domain/billing_failure_copy.dart';
+ import '../domain/pending_point_purchase.dart';
+ import '../domain/pending_point_checkout.dart';
++import '../domain/point_purchase_completion.dart';
+ import 'billing_repository.dart';
+ 
+ abstract class PointPurchaseStore {
+@@ -260,6 +261,23 @@
+       !busy &&
+       !verificationDelayed &&
+       _checkout == null;
++  PointPurchaseCompletion? _completion;
++  String? _completionMessage;
++  bool get messageIsCompletion =>
++      _completionMessage != null && message == _completionMessage;
++  PointPurchaseCompletion? get completion {
++    final result = _completion;
++    return !_disposed && result?.ownerId == currentUserId() ? result : null;
++  }
++
++  void dismissCompletion() {
++    if (_completion == null) return;
++    if (message == _completionMessage) message = null;
++    _completion = null;
++    _completionMessage = null;
++    _notify();
++  }
++
+   String? message;
+   String? _catalogMessage;
+   List<ProductDetails> products = [];
+@@ -426,6 +444,8 @@
+         isUtc: true,
+       ),
+     );
++    _completion = null;
++    _completionMessage = null;
+     _checkouts[owner] = checkout;
+     message = '포인트 결제를 시작합니다.';
+     _notify();
+@@ -729,9 +749,17 @@
+       if (currentUserId() == owner) {
+         onBalanceChanged();
+         if (_checkout == null) {
++          _completion = PointPurchaseCompletion(
++            ownerId: owner,
++            productId: result.productId,
++            grantedPoints: result.grantedPoints,
++            remainingBalance: result.remainingBalance,
++            alreadyGranted: result.alreadyGranted,
++          );
+           message = result.alreadyGranted
+               ? '이미 반영된 구매입니다. 현재 잔액 ${result.remainingBalance}P'
+               : '${result.grantedPoints}포인트가 충전되었습니다. 현재 잔액 ${result.remainingBalance}P';
++          _completionMessage = message;
+         }
+       }
+       _notify();
+--- a/lib/features/billing/presentation/widgets/point_purchase_visuals.dart
++++ b/lib/features/billing/presentation/widgets/point_purchase_visuals.dart
+@@ -9,12 +9,14 @@
+   const PointWalletCard({
+     super.key,
+     required this.value,
++    this.label = '사용 가능한 포인트',
+     this.compact = false,
+     this.footnote,
+     this.onRetry,
+   });
+ 
+   final String value;
++  final String label;
+   final bool compact;
+   final String? footnote;
+   final VoidCallback? onRetry;
+@@ -62,7 +64,7 @@
+                 crossAxisAlignment: CrossAxisAlignment.start,
+                 children: [
+                   Text(
+-                    '사용 가능한 포인트',
++                    label,
+                     style: SnapFitType.style(
+                       12,
+                       color: Colors.white,
+@@ -72,12 +74,17 @@
+                   const SizedBox(height: 8),
+                   Padding(
+                     padding: EdgeInsets.only(right: showArtwork ? 54 : 0),
+-                    child: Text(
+-                      value,
+-                      style: SnapFitType.style(
+-                        compact ? 28 : 34,
+-                        color: Colors.white,
+-                        weight: FontWeight.w700,
++                    // 금액과 단위가 따로 줄 바뀌거나 잘리지 않도록 함께 맞춘다.
++                    child: FittedBox(
++                      fit: BoxFit.scaleDown,
++                      alignment: Alignment.centerLeft,
++                      child: Text(
++                        value,
++                        style: SnapFitType.style(
++                          compact ? 28 : 34,
++                          color: Colors.white,
++                          weight: FontWeight.w700,
++                        ),
+                       ),
+                     ),
+                   ),
+@@ -95,10 +102,7 @@
+                     const SizedBox(height: 10),
+                     Text(
+                       footnote!,
+-                      style: SnapFitType.style(
+-                        12,
+-                        color: Colors.white,
+-                      ),
++                      style: SnapFitType.style(12, color: Colors.white),
+                     ),
+                   ],
+                 ],
+--- a/lib/features/point_shop/presentation/point_shop_access.dart
++++ b/lib/features/point_shop/presentation/point_shop_access.dart
+@@ -1,6 +1,7 @@
+ import 'package:flutter/material.dart';
+ import 'package:flutter_riverpod/flutter_riverpod.dart';
+ 
++import '../../billing/domain/point_top_up_context.dart';
+ import '../../profile/presentation/views/billing_management_screen.dart';
+ import '../data/point_shop_provider.dart';
+ import '../domain/point_shop_product.dart';
+@@ -31,12 +32,18 @@
+   title: title,
+ );
+ 
+-typedef PointShopTopUp = Future<void> Function(BuildContext context);
++typedef PointShopTopUp =
++    Future<void> Function(
++      BuildContext context, {
++      required PointTopUpContext purchaseContext,
++    });
+ final pointShopTopUpProvider = Provider<PointShopTopUp>(
+-  (ref) => (context) async {
+-    await Navigator.of(
+-      context,
+-    ).push<void>(snapFitRoute(page: const BillingManagementScreen()));
++  (ref) => (context, {required purchaseContext}) async {
++    await Navigator.of(context).push<void>(
++      snapFitRoute(
++        page: BillingManagementScreen(purchaseContext: purchaseContext),
++      ),
++    );
+   },
+ );
+ 
+@@ -83,14 +90,45 @@
+       if (userId != repository.currentUserId)
+         throw const PointShopException('account_changed');
+       if (action == PointShopPurchaseAction.topUp) {
+-        await ref.read(pointShopTopUpProvider)(context);
++        await ref.read(pointShopTopUpProvider)(
++          context,
++          purchaseContext: PointTopUpContext(
++            ownerId: userId,
++            productKey: access.productKey,
++            title: access.title ?? title,
++            requiredPoints: price,
++          ),
++        );
+         if (!active()) return false;
+         refreshPointShop(ref);
+         continue;
+       }
+-      final result = await repository
+-          .purchase(productKey, price)
+-          .timeout(const Duration(seconds: 20));
++      PointShopPurchase result;
++      try {
++        result = await repository
++            .purchase(productKey, price)
++            .timeout(const Duration(seconds: 20));
++      } on PointShopException catch (error) {
++        if (error.code != 'point_shop_price_changed') rethrow;
++        if (!active()) return false;
++        if (userId != repository.currentUserId) {
++          throw const PointShopException('account_changed');
++        }
++        // 같은 요청을 유지해야 새 가격 확인 후에도 편집기 적용으로 이어집니다.
++        final closed = await ScaffoldMessenger.of(context)
++            .showSnackBar(
++              SnackBar(
++                content: Text(error.message),
++                action: SnackBarAction(label: '새 가격 확인', onPressed: () {}),
++              ),
++            )
++            .closed;
++        if (closed != SnackBarClosedReason.action || !active()) return false;
++        if (userId != repository.currentUserId) {
++          throw const PointShopException('account_changed');
++        }
++        continue;
++      }
+       if (!active()) return false;
+       if (userId != repository.currentUserId)
+         throw const PointShopException('account_changed');
+--- a/lib/features/profile/presentation/views/billing_management_screen.dart
++++ b/lib/features/profile/presentation/views/billing_management_screen.dart
+@@ -11,10 +11,13 @@
+ import '../../../billing/data/billing_provider.dart';
+ import '../../../billing/data/billing_repository.dart';
+ import '../../../billing/data/point_purchase_service.dart';
++import '../../../billing/domain/point_purchase_completion.dart';
++import '../../../billing/domain/point_top_up_context.dart';
+ import '../../../billing/presentation/widgets/web_point_topup_panel.dart';
+ import '../../../billing/presentation/widgets/point_purchase_visuals.dart';
+ import '../widgets/customer_web_page.dart';
+ import 'support_center_screen.dart';
++import 'terms_policy_screen.dart';
+ import '../../domain/order_visibility_owner.dart';
+ import '../../../../shared/web/web_design.dart' show WebSection;
+ 
+@@ -39,9 +42,11 @@
+     super.key,
+     this.returnToAiDraftFlow = false,
+     this.initialPointsTabIndex = 0,
++    this.purchaseContext,
+   }) : assert(initialPointsTabIndex == 0 || initialPointsTabIndex == 1);
+   final bool returnToAiDraftFlow;
+   final int initialPointsTabIndex;
++  final PointTopUpContext? purchaseContext;
+   @override
+   ConsumerState<BillingManagementScreen> createState() =>
+       _BillingManagementScreenState();
+@@ -56,6 +61,7 @@
+   PointLedgerFilter _filter = PointLedgerFilter.all;
+   String? _selectedProductId;
+   String? _webOwnerId;
++  PointPurchaseCompletion? _completionAtEntry;
+   bool get _webOwnerCurrent =>
+       _webOwnerId != null && ref.read(visibleOrderOwnerProvider) == _webOwnerId;
+ 
+@@ -64,6 +70,10 @@
+     super.initState();
+     _history = widget.initialPointsTabIndex == 1;
+     _webTopup = !_history;
++    // 이 화면을 열기 전에 확인했던 구매를 새로운 충전 완료로 다시 안내하지 않는다.
++    if (!kIsWeb) {
++      _completionAtEntry = ref.read(pointPurchaseServiceProvider).completion;
++    }
+     WidgetsBinding.instance.addPostFrameCallback((_) {
+       if (mounted && !kIsWeb) ref.read(pointPurchaseServiceProvider).start();
+     });
+@@ -82,6 +92,27 @@
+     }
+     return null;
+   }
++
++  PointTopUpContext? _purchasePurpose(String? ownerId) {
++    final purpose = widget.purchaseContext;
++    return ownerId != null && purpose?.ownerId == ownerId ? purpose : null;
++  }
++
++  PointPurchaseCompletion? _visibleCompletion(PointPurchaseService purchases) {
++    final result = purchases.completion;
++    return result != null &&
++            !identical(result, _completionAtEntry) &&
++            !purchases.busy &&
++            !purchases.verificationDelayed
++        ? result
++        : null;
++  }
++
++  // 짧은 화면에서는 완료 내용을 우선하고 추가 충전은 본문에서 선택한다.
++  bool _compactCompletion(PointPurchaseService purchases) =>
++      !_history &&
++      _visibleCompletion(purchases) != null &&
++      MediaQuery.sizeOf(context).height < 420;
+ 
+   Future<void> _refresh(PointPurchaseService purchases) async {
+     if (purchases.busy) return;
+@@ -150,7 +181,9 @@
+             top: false,
+             child: LayoutBuilder(
+               builder: (context, box) {
++                final compactCompletion = _compactCompletion(purchases);
+                 final wide =
++                    !compactCompletion &&
+                     box.maxWidth >= 540 &&
+                     MediaQuery.orientationOf(context) == Orientation.landscape;
+                 return Align(
+@@ -212,15 +245,16 @@
+                         : Column(
+                             crossAxisAlignment: CrossAxisAlignment.stretch,
+                             children: [
+-                              Padding(
+-                                padding: const EdgeInsets.fromLTRB(
+-                                  24,
+-                                  16,
+-                                  24,
+-                                  0,
++                              if (!compactCompletion)
++                                Padding(
++                                  padding: const EdgeInsets.fromLTRB(
++                                    24,
++                                    16,
++                                    24,
++                                    0,
++                                  ),
++                                  child: _modeSelector(),
+                                 ),
+-                                child: _modeSelector(),
+-                              ),
+                               Expanded(
+                                 child: _content(
+                                   purchases,
+@@ -282,7 +316,12 @@
+       sidebar: Column(
+         crossAxisAlignment: CrossAxisAlignment.stretch,
+         children: [
++          if (_purchasePurpose(_webOwnerId) case final purpose?) ...[
++            _purchasePurposeCard(purpose, balance),
++            const SizedBox(height: 16),
++          ],
+           PointWalletCard(
++            label: (balance.asData?.value ?? 0) < 0 ? '포인트 잔액' : '사용 가능한 포인트',
+             value: balance.when(
+               data: (amount) => '${_formatPoints(amount)} P',
+               loading: () => '잔액 확인 중',
+@@ -399,22 +438,97 @@
+           purchaseInProgress: purchases.busy,
+           compact: compact,
+         ),
++      if (!_history && _visibleCompletion(purchases) == null)
++        if (_purchasePurpose(purchases.currentUserId())
++            case final purpose?) ...[
++          _purchasePurposeCard(purpose, balance, enabled: !purchases.busy),
++          const SizedBox(height: 16),
++        ],
+       PointWalletCard(
+         value: balance.when(
+           data: (v) => '${_formatPoints(v)} P',
+           loading: () => '확인 중',
+           error: (_, __) => '확인 실패',
+         ),
++        label: (balance.asData?.value ?? 0) < 0 ? '포인트 잔액' : '사용 가능한 포인트',
+         compact: compact,
+         onRetry: balance.hasError
+             ? () => ref.invalidate(myPointBalanceProvider)
+             : null,
+         footnote: (balance.asData?.value ?? 0) < 0
+-            ? '환불로 차감된 포인트가 남아 있어요. 충전 시 먼저 정산됩니다.'
++            ? '정산할 포인트 ${_formatPoints(-balance.requireValue)}P · 충전 시 먼저 정산돼요.'
+             : '템플릿과 꾸밈 소재를 고를 때 사용해요.',
+       ),
+     ],
+   );
++
++  Widget _purchasePurposeCard(
++    PointTopUpContext purpose,
++    AsyncValue<int> balance, {
++    bool enabled = true,
++  }) {
++    final current = balance.asData?.value;
++    final deficit = current == null ? null : purpose.requiredPoints - current;
++    final missing = deficit == null
++        ? null
++        : deficit > 0
++        ? deficit
++        : 0;
++    return Container(
++      key: const ValueKey('points-purchase-context'),
++      width: double.infinity,
++      padding: const EdgeInsets.all(16),
++      decoration: BoxDecoration(
++        color: ExperienceFormStyle.surface(context),
++        borderRadius: BorderRadius.circular(SnapFitRadius.lg),
++        border: Border.all(color: ExperienceFormStyle.line(context)),
++      ),
++      child: Column(
++        crossAxisAlignment: CrossAxisAlignment.start,
++        children: [
++          Text(
++            '구매할 상품',
++            style: ExperienceFormStyle.text(context, 12, secondary: true),
++          ),
++          const SizedBox(height: 6),
++          Text(
++            purpose.title,
++            style: ExperienceFormStyle.text(
++              context,
++              16,
++              weight: FontWeight.w600,
++            ),
++          ),
++          const SizedBox(height: 10),
++          Text(
++            missing == null
++                ? '잔액을 확인한 뒤 부족분을 안내해요.'
++                : missing > 0
++                ? '${_formatPoints(missing)} P 더 필요해요.'
++                : '필요한 포인트가 준비됐어요.',
++            style: ExperienceFormStyle.text(
++              context,
++              14,
++              weight: FontWeight.w600,
++              color: ExperienceFormStyle.selectionInk(context),
++            ),
++          ),
++          const SizedBox(height: 6),
++          Text(
++            '안내 가격 ${_formatPoints(purpose.requiredPoints)} P · 돌아가서 최신 가격을 다시 확인해요.',
++            style: ExperienceFormStyle.text(context, 12, secondary: true),
++          ),
++          if (Navigator.canPop(context))
++            TextButton.icon(
++              key: const ValueKey('points-purpose-return'),
++              onPressed: enabled ? () => Navigator.maybePop(context) : null,
++              icon: const Icon(Icons.arrow_back, size: 17),
++              label: const Text('구매하던 상품으로 돌아가기'),
++            ),
++        ],
++      ),
++    );
++  }
+ 
+   Widget _modeSelector() => SegmentedButton<bool>(
+     key: const ValueKey('points-mode'),
+@@ -454,7 +568,7 @@
+     PointLedgerHistoryState ledger, {
+     required bool wide,
+   }) {
+-    final charge = _chargeItems(purchases);
++    final charge = _chargeItems(purchases, balance);
+     final entries = ledger.entries;
+     return RefreshIndicator(
+       onRefresh: () => _refresh(purchases),
+@@ -469,7 +583,8 @@
+                 : const EdgeInsets.fromLTRB(24, 20, 24, 28),
+             sliver: SliverMainAxisGroup(
+               slivers: [
+-                if (!wide)
++                if (!wide &&
++                    (_history || _visibleCompletion(purchases) == null))
+                   SliverToBoxAdapter(
+                     child: Column(
+                       crossAxisAlignment: CrossAxisAlignment.stretch,
+@@ -552,6 +667,14 @@
+                         _ledgerRow(entries[index], compact: wide),
+                   ),
+                   SliverToBoxAdapter(child: _historyFooter(ledger)),
++                  SliverToBoxAdapter(
++                    child: _pointHelp(
++                      purchases,
++                      refundHistory: entries.any(
++                        (e) => e.reason == 'POINT_PURCHASE_REFUND',
++                      ),
++                    ),
++                  ),
+                 ] else
+                   SliverList.builder(
+                     itemCount: charge.length,
+@@ -624,75 +747,290 @@
+     );
+   }
+ 
+-  List<Widget> _chargeItems(PointPurchaseService purchases) => [
+-    Row(
+-      children: [
+-        Expanded(
+-          child: Text(
+-            '포인트 충전',
++  List<Widget> _chargeItems(
++    PointPurchaseService purchases,
++    AsyncValue<int> balance,
++  ) => [
++    if (_visibleCompletion(purchases) case final completed?) ...[
++      _completionCard(completed, purchases),
++    ] else ...[
++      Row(
++        children: [
++          Expanded(
++            child: Text(
++              '포인트 충전',
++              style: ExperienceFormStyle.text(
++                context,
++                16,
++                weight: FontWeight.w600,
++              ),
++            ),
++          ),
++          TextButton.icon(
++            key: const ValueKey('points-purchase-recover'),
++            onPressed: purchases.busy
++                ? null
++                : () => unawaited(purchases.recover()),
++            icon: const ExperienceIcon('RefreshCw', size: 16),
++            label: Text(
++              purchases.busy
++                  ? '구매 확인 중'
++                  : purchases.verificationDelayed
++                  ? '결제 상태 확인'
++                  : '구매 복원',
++            ),
++            style: TextButton.styleFrom(
++              textStyle: ExperienceFormStyle.text(context, 13),
++              minimumSize: const Size(0, 44),
++            ),
++          ),
++        ],
++      ),
++      const SizedBox(height: 8),
++      // 미확정 거래의 다음 행동을 새 상품 선택보다 먼저 안내한다.
++      if (purchases.verificationDelayed) _purchaseStatus(purchases),
++      if (purchases.loadingProducts)
++        const LinearProgressIndicator()
++      else if (purchases.products.isEmpty) ...[
++        Text(
++          purchases.catalogFresh
++              ? '지금 구매 가능한 충전 상품이 없어요.'
++              : '충전 상품을 확인하지 못했어요.',
++          style: ExperienceFormStyle.text(context, 14),
++        ),
++        if (purchases.catalogFresh || purchases.message == null)
++          Align(
++            alignment: Alignment.centerLeft,
++            child: TextButton(
++              onPressed: purchases.busy
++                  ? null
++                  : () => unawaited(purchases.loadProducts()),
++              child: const Text('상품 다시 확인'),
++            ),
++          ),
++      ] else
++        for (final product in purchases.products)
++          Padding(
++            padding: const EdgeInsets.only(bottom: 10),
++            child: _productOption(product, purchases),
++          ),
++      if (_selectedProduct(purchases) case final selected?)
++        _expectedBalanceCard(balance, selected),
++      if (!purchases.verificationDelayed &&
++          (purchases.busy ||
++              purchases.message != null && !purchases.messageIsCompletion))
++        _purchaseStatus(purchases),
++      const SizedBox(height: 8),
++      if (!purchases.verificationDelayed)
++        Text(
++          '포인트가 반영되지 않았다면 구매 복원으로 확인하세요.',
++          style: ExperienceFormStyle.text(context, 12, secondary: true),
++        ),
++    ],
++    _pointHelp(purchases),
++    if (_compactCompletion(purchases)) _chargeMoreButton(purchases),
++  ];
++
++  Widget _completionCard(
++    PointPurchaseCompletion result,
++    PointPurchaseService purchases,
++  ) {
++    final purpose = _purchasePurpose(purchases.currentUserId());
++    return Container(
++      key: const ValueKey('points-completion'),
++      width: double.infinity,
++      padding: const EdgeInsets.all(20),
++      decoration: BoxDecoration(
++        color: ExperienceFormStyle.selection(context),
++        borderRadius: BorderRadius.circular(SnapFitRadius.lg),
++      ),
++      child: Column(
++        crossAxisAlignment: CrossAxisAlignment.start,
++        children: [
++          Icon(
++            Icons.check_circle_outline,
++            color: ExperienceFormStyle.selectionInk(context),
++            size: 30,
++          ),
++          const SizedBox(height: 14),
++          Text(
++            result.alreadyGranted ? '구매 반영을 확인했어요' : '포인트가 충전됐어요',
+             style: ExperienceFormStyle.text(
+               context,
+-              16,
+-              weight: FontWeight.w600,
+-            ),
+-          ),
+-        ),
+-        TextButton.icon(
+-          key: const ValueKey('points-purchase-recover'),
+-          onPressed: purchases.busy
+-              ? null
+-              : () => unawaited(purchases.recover()),
+-          icon: const ExperienceIcon('RefreshCw', size: 16),
+-          label: Text(
+-            purchases.busy
+-                ? '구매 확인 중'
+-                : purchases.verificationDelayed
+-                ? '결제 상태 확인'
+-                : '구매 복원',
+-          ),
+-          style: TextButton.styleFrom(
+-            textStyle: ExperienceFormStyle.text(context, 13),
+-            minimumSize: const Size(0, 44),
+-          ),
++              20,
++              weight: FontWeight.w700,
++            ),
++          ),
++          const SizedBox(height: 16),
++          if (!result.alreadyGranted) ...[
++            FittedBox(
++              fit: BoxFit.scaleDown,
++              alignment: Alignment.centerLeft,
++              child: Text(
++                '+${_formatPoints(result.grantedPoints)} P',
++                style: ExperienceFormStyle.text(
++                  context,
++                  30,
++                  weight: FontWeight.w700,
++                ),
++              ),
++            ),
++            const SizedBox(height: 16),
++          ] else ...[
++            Text(
++              '이미 반영된 구매예요. 이번 확인으로 포인트가 추가 지급되지는 않아요.',
++              style: ExperienceFormStyle.text(context, 13, secondary: true),
++            ),
++            const SizedBox(height: 16),
++          ],
++          _pointSummaryRow(
++            '충전 후 확인 잔액',
++            '${_formatPoints(result.remainingBalance)} P',
++          ),
++          if (purpose != null) ...[
++            const SizedBox(height: 20),
++            Text(
++              purpose.title,
++              style: ExperienceFormStyle.text(
++                context,
++                15,
++                weight: FontWeight.w600,
++              ),
++            ),
++            const SizedBox(height: 6),
++            Text(
++              '구매하던 상품으로 돌아가 최신 가격을 확인해주세요.',
++              style: ExperienceFormStyle.text(context, 13, secondary: true),
++            ),
++          ],
++        ],
++      ),
++    );
++  }
++
++  Widget _expectedBalanceCard(AsyncValue<int> balance, ProductDetails product) {
++    final current = balance.asData?.value;
++    final points = _pointAmountFromProductId(product.id);
++    if (current == null || points <= 0) return const SizedBox.shrink();
++    final projected = current + points;
++    return Container(
++      key: const ValueKey('points-expected-balance'),
++      width: double.infinity,
++      margin: const EdgeInsets.symmetric(vertical: 12),
++      padding: const EdgeInsets.all(16),
++      decoration: BoxDecoration(
++        border: Border.all(color: ExperienceFormStyle.line(context)),
++        borderRadius: BorderRadius.circular(SnapFitRadius.lg),
++      ),
++      child: Column(
++        crossAxisAlignment: CrossAxisAlignment.start,
++        children: [
++          _pointSummaryRow('현재 잔액', '${_formatPoints(current)} P'),
++          const SizedBox(height: 10),
++          _pointSummaryRow('이번 충전', '+${_formatPoints(points)} P'),
++          Padding(
++            padding: const EdgeInsets.symmetric(vertical: 14),
++            child: Divider(height: 1, color: ExperienceFormStyle.line(context)),
++          ),
++          _pointSummaryRow('충전 후 예상 잔액', '${_formatPoints(projected)} P'),
++          if (current < 0) ...[
++            const SizedBox(height: 10),
++            Text(
++              '충전 시 먼저 정산돼요. 정산 후 사용할 수 있는 포인트는 ${_formatPoints(projected < 0 ? 0 : projected)}P예요.',
++              style: ExperienceFormStyle.text(context, 12, secondary: true),
++            ),
++          ],
++        ],
++      ),
++    );
++  }
++
++  Widget _pointSummaryRow(String label, String amount) => LayoutBuilder(
++    builder: (context, bounds) {
++      final name = Text(
++        label,
++        style: ExperienceFormStyle.text(context, 12, secondary: true),
++      );
++      final value = Text(
++        amount,
++        style: ExperienceFormStyle.text(context, 15, weight: FontWeight.w600),
++      );
++      if (bounds.maxWidth < 250 ||
++          MediaQuery.textScalerOf(context).scale(1) > 1.4) {
++        return Column(
++          crossAxisAlignment: CrossAxisAlignment.start,
++          children: [
++            name,
++            const SizedBox(height: 4),
++            FittedBox(
++              fit: BoxFit.scaleDown,
++              alignment: Alignment.centerLeft,
++              child: value,
++            ),
++          ],
++        );
++      }
++      return Row(
++        children: [
++          Expanded(child: name),
++          const SizedBox(width: 12),
++          Flexible(
++            child: FittedBox(fit: BoxFit.scaleDown, child: value),
++          ),
++        ],
++      );
++    },
++  );
++
++  Widget _pointHelp(
++    PointPurchaseService purchases, {
++    bool refundHistory = false,
++  }) => Padding(
++    padding: const EdgeInsets.only(top: 18),
++    child: Column(
++      crossAxisAlignment: CrossAxisAlignment.start,
++      children: [
++        if (refundHistory)
++          Text(
++            '포인트 회수 기록과 현금 환불 처리 내역은 구분돼요. 자세한 기준과 신청 경로를 확인해주세요.',
++            style: ExperienceFormStyle.text(context, 12, secondary: true),
++          ),
++        Wrap(
++          spacing: 8,
++          runSpacing: 4,
++          children: [
++            TextButton.icon(
++              key: const ValueKey('points-policy-help'),
++              onPressed: purchases.busy
++                  ? null
++                  : () => Navigator.push<void>(
++                      context,
++                      MaterialPageRoute(
++                        builder: (_) => const TermsPolicyScreen(
++                          initialDocType: TermsPolicyDocType.refund,
++                        ),
++                      ),
++                    ),
++              icon: const Icon(Icons.description_outlined, size: 17),
++              label: const Text('포인트 이용·환불 안내'),
++            ),
++            TextButton(
++              key: const ValueKey('points-support-help'),
++              onPressed: purchases.busy
++                  ? null
++                  : () => Navigator.push<void>(
++                      context,
++                      MaterialPageRoute(
++                        builder: (_) => const SupportCenterScreen(),
++                      ),
++                    ),
++              child: const Text('포인트 문의'),
++            ),
++          ],
+         ),
+       ],
+     ),
+-    const SizedBox(height: 8),
+-    // 미확정 거래의 다음 행동을 새 상품 선택보다 먼저 안내한다.
+-    if (purchases.verificationDelayed) _purchaseStatus(purchases),
+-    if (purchases.loadingProducts)
+-      const LinearProgressIndicator()
+-    else if (purchases.products.isEmpty) ...[
+-      Text(
+-        purchases.catalogFresh ? '지금 구매 가능한 충전 상품이 없어요.' : '충전 상품을 확인하지 못했어요.',
+-        style: ExperienceFormStyle.text(context, 14),
+-      ),
+-      if (purchases.catalogFresh || purchases.message == null)
+-        Align(
+-          alignment: Alignment.centerLeft,
+-          child: TextButton(
+-            onPressed: purchases.busy
+-                ? null
+-                : () => unawaited(purchases.loadProducts()),
+-            child: const Text('상품 다시 확인'),
+-          ),
+-        ),
+-    ] else
+-      for (final product in purchases.products)
+-        Padding(
+-          padding: const EdgeInsets.only(bottom: 10),
+-          child: _productOption(product, purchases),
+-        ),
+-    if (!purchases.verificationDelayed &&
+-        (purchases.busy || purchases.message != null))
+-      _purchaseStatus(purchases),
+-    const SizedBox(height: 8),
+-    if (!purchases.verificationDelayed)
+-      Text(
+-        '포인트가 반영되지 않았다면 구매 복원으로 확인하세요.',
+-        style: ExperienceFormStyle.text(context, 12, secondary: true),
+-      ),
+-  ];
++  );
+ 
+   Widget _purchaseStatus(PointPurchaseService purchases) => Semantics(
+     liveRegion: true,
+@@ -722,7 +1060,9 @@
+               weight: FontWeight.w600,
+             ),
+           ),
+-          if (purchases.message != null && !purchases.verificationDelayed) ...[
++          if (purchases.message != null &&
++              !purchases.verificationDelayed &&
++              !purchases.messageIsCompletion) ...[
+             const SizedBox(height: 8),
+             Text(
+               purchases.message!,
+@@ -791,6 +1131,8 @@
+   );
+ 
+   Widget _purchaseButton(PointPurchaseService purchases) {
++    final completed = _visibleCompletion(purchases);
++    if (completed != null) return _completionActions(purchases);
+     final selected = _selectedProduct(purchases);
+     final canBuy = selected != null && purchases.canStartPurchase;
+     return Column(
+@@ -849,6 +1191,8 @@
+                 ? '충전 상품 확인 필요'
+                 : selected == null
+                 ? '충전할 포인트 선택'
++                : MediaQuery.textScalerOf(context).scale(1) > 1.4
++                ? '${_formatPoints(_pointAmountFromProductId(selected.id))} P 충전\n${selected.price} 결제하기'
+                 : '${selected.price} · ${_formatPoints(_pointAmountFromProductId(selected.id))} P 충전하기',
+             textAlign: TextAlign.center,
+           ),
+@@ -856,6 +1200,55 @@
+       ],
+     );
+   }
++
++  Widget _completionActions(PointPurchaseService purchases) {
++    final returning =
++        Navigator.canPop(context) &&
++        (_purchasePurpose(purchases.currentUserId()) != null ||
++            widget.returnToAiDraftFlow);
++    return Column(
++      crossAxisAlignment: CrossAxisAlignment.stretch,
++      mainAxisSize: MainAxisSize.min,
++      children: [
++        FilledButton(
++          key: ValueKey(
++            returning
++                ? 'points-completion-return'
++                : 'points-completion-history',
++          ),
++          style: ExperienceFormStyle.primary(context),
++          onPressed: () {
++            if (returning) {
++              Navigator.pop(context, true);
++            } else {
++              setState(() {
++                _history = true;
++                _selectedProductId = null;
++              });
++              purchases.dismissCompletion();
++            }
++          },
++          child: Text(
++            returning
++                ? widget.returnToAiDraftFlow
++                      ? 'AI 템플릿으로 돌아가기'
++                      : '구매하던 상품으로 돌아가기'
++                : '이용 내역 보기',
++          ),
++        ),
++        if (!_compactCompletion(purchases)) _chargeMoreButton(purchases),
++      ],
++    );
++  }
++
++  Widget _chargeMoreButton(PointPurchaseService purchases) => TextButton(
++    key: const ValueKey('points-charge-more'),
++    onPressed: () {
++      setState(() => _selectedProductId = null);
++      purchases.dismissCompletion();
++    },
++    child: const Text('추가 충전하기'),
++  );
+ 
+   Widget _ledgerRow(
+     PointLedgerEntry entry, {
+--- /dev/null
++++ b/test/unit/point_purchase_completion_test.dart
+@@ -0,0 +1,284 @@
++import 'dart:async';
++
++import 'package:fake_async/fake_async.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:in_app_purchase/in_app_purchase.dart';
++import 'package:snap_fit/features/billing/data/billing_repository.dart';
++import 'package:snap_fit/features/billing/data/point_purchase_service.dart';
++import 'package:snap_fit/features/billing/domain/pending_point_purchase.dart';
++
++import '../support/point_purchase_fakes.dart';
++
++class _CompletionStore extends FakeStore {
++  Completer<void>? finishGate;
++  bool failCatalog = false;
++  @override
++  Future<ProductDetailsResponse> products(Set<String> ids) async {
++    if (failCatalog) throw StateError('store_product_query_failed');
++    return super.products(ids);
++  }
++
++  @override
++  Future<void> finish(
++    PendingPointPurchase record,
++    PurchaseDetails? native,
++  ) async {
++    await finishGate?.future;
++    await super.finish(record, native);
++  }
++}
++
++class _CleanupReceipts extends MemoryReceipts {
++  bool failCleanup = false;
++  @override
++  Future<void> write(List<PendingPointPurchase> value) async {
++    if (failCleanup && value.isEmpty)
++      throw StateError('receipt_cleanup_failed');
++    await super.write(value);
++  }
++}
++
++class _Fixture {
++  _Fixture(this.clock) {
++    service = PointPurchaseService(
++      store: store,
++      storage: receipts,
++      currentUserId: () => owner,
++      ensureServerAvailable: () async {},
++      now: () => start.add(clock.elapsed),
++      verify: (record) async {
++        if (failVerification) throw StateError('verification_failed');
++        if (verifyGate != null) return verifyGate!.future;
++        final duplicate = !credited.add(record.key);
++        return StorePointPurchaseResult(
++          productId: record.productId,
++          grantedPoints: duplicate ? 0 : 2500,
++          remainingBalance: credited.length * 2500,
++          alreadyGranted: duplicate,
++        );
++      },
++      onBalanceChanged: () {},
++    )..start();
++    clock.flushMicrotasks();
++  }
++  final FakeAsync clock;
++  final start = DateTime.utc(2026, 11, 16);
++  final store = _CompletionStore();
++  final receipts = _CleanupReceipts();
++  final credited = <String>{};
++  late PointPurchaseService service;
++  String owner = 'owner';
++  bool failVerification = false;
++  Completer<StorePointPurchaseResult>? verifyGate;
++
++  void buy() {
++    unawaited(service.buy(product));
++    clock.flushMicrotasks();
++  }
++
++  void emit(String token) {
++    store.controller.add([
++      purchase(
++        token: token,
++        nativeOwner: owner,
++        transactionTime: start.add(clock.elapsed).millisecondsSinceEpoch,
++      ),
++    ]);
++    clock.flushMicrotasks();
++  }
++
++  void recover() {
++    unawaited(service.recover());
++    clock.flushMicrotasks();
++  }
++
++  void close() {
++    service.dispose();
++    unawaited(store.controller.close());
++    clock.flushMicrotasks();
++  }
++}
++
++void main() {
++  test(
++    'completion publishes the verified product grant and balance only after fulfillment',
++    () {
++      fakeAsync((clock) {
++        final f = _Fixture(clock);
++        f.buy();
++        expect(f.service.completion, isNull);
++        f.emit('new-purchase');
++        final result = f.service.completion!;
++        expect(result.ownerId, 'owner');
++        expect(result.productId, sku);
++        expect(result.grantedPoints, 2500);
++        expect(result.remainingBalance, 2500);
++        expect(result.alreadyGranted, isFalse);
++        expect(f.receipts.records, isEmpty);
++        expect(f.receipts.checkouts, isEmpty);
++        f.close();
++      });
++    },
++  );
++
++  test(
++    'verification and store completion must both finish before completion appears',
++    () {
++      fakeAsync((clock) {
++        final f = _Fixture(clock);
++        f.verifyGate = Completer<StorePointPurchaseResult>();
++        f.store.finishGate = Completer<void>();
++        f.buy();
++        f.emit('await-verification');
++        expect(f.service.completion, isNull);
++        f.verifyGate!.complete(
++          StorePointPurchaseResult(
++            productId: sku,
++            grantedPoints: 2500,
++            remainingBalance: 4800,
++          ),
++        );
++        clock.flushMicrotasks();
++        expect(f.service.completion, isNull);
++        f.store.finishGate!.complete();
++        clock.flushMicrotasks();
++        expect(f.service.completion!.remainingBalance, 4800);
++        f.close();
++      });
++    },
++  );
++
++  for (final failAt in ['verify', 'finish', 'cleanup']) {
++    test(
++      'a $failAt failure never announces completion and successful recovery can',
++      () {
++        fakeAsync((clock) {
++          final f = _Fixture(clock);
++          f.failVerification = failAt == 'verify';
++          f.store.failFinish = failAt == 'finish';
++          f.receipts.failCleanup = failAt == 'cleanup';
++          f.buy();
++          f.emit('retry-$failAt');
++          expect(f.service.completion, isNull);
++          f.failVerification = false;
++          f.store.failFinish = false;
++          f.receipts.failCleanup = false;
++          f.recover();
++          expect(f.service.completion, isNotNull);
++          expect(f.service.completion!.alreadyGranted, failAt != 'verify');
++          f.close();
++        });
++      },
++    );
++  }
++
++  test('an already granted restore is distinguished from a new grant', () {
++    fakeAsync((clock) {
++      final f = _Fixture(clock);
++      f.credited.add('google_play:credited-earlier');
++      f.emit('credited-earlier');
++      expect(f.service.completion!.alreadyGranted, isTrue);
++      expect(f.service.completion!.grantedPoints, 0);
++      f.close();
++    });
++  });
++
++  test(
++    'a credited replay cannot announce completion while another checkout is open',
++    () {
++      fakeAsync((clock) {
++        final f = _Fixture(clock);
++        f.credited.add('google_play:old-replay');
++        f.buy();
++        f.emit('old-replay');
++        expect(f.service.busy, isTrue);
++        expect(f.service.completion, isNull);
++        f.emit('current-checkout');
++        expect(f.service.completion!.alreadyGranted, isFalse);
++        f.close();
++      });
++    },
++  );
++
++  test(
++    'completion belongs to the current owner and can be dismissed explicitly',
++    () {
++      fakeAsync((clock) {
++        final f = _Fixture(clock);
++        f.buy();
++        f.emit('owner-only');
++        final completed = f.service.completion;
++        expect(completed, isNotNull);
++        f.owner = 'another-owner';
++        expect(f.service.completion, isNull);
++        expect(f.service.messageIsCompletion, isTrue);
++        f.owner = 'owner';
++        expect(f.service.completion, same(completed));
++        var notifications = 0;
++        f.service.addListener(() => notifications++);
++        f.service.dismissCompletion();
++        expect(f.service.completion, isNull);
++        expect(f.service.message, isNull);
++        expect(f.service.messageIsCompletion, isFalse);
++        expect(notifications, 1);
++        f.close();
++      });
++    },
++  );
++
++  test('a late previous owner fulfillment cannot publish a new completion', () {
++    fakeAsync((clock) {
++      final f = _Fixture(clock);
++      f.verifyGate = Completer<StorePointPurchaseResult>();
++      f.buy();
++      f.emit('late-owner');
++      f.owner = 'another-owner';
++      f.verifyGate!.complete(
++        StorePointPurchaseResult(
++          productId: sku,
++          grantedPoints: 2500,
++          remainingBalance: 2500,
++        ),
++      );
++      clock.flushMicrotasks();
++      expect(f.service.completion, isNull);
++      f.owner = 'owner';
++      expect(f.service.completion, isNull);
++      f.close();
++    });
++  });
++
++  test('a new accepted checkout clears the previous completion', () {
++    fakeAsync((clock) {
++      final f = _Fixture(clock);
++      f.buy();
++      f.emit('first');
++      expect(f.service.completion, isNotNull);
++      f.buy();
++      expect(f.store.buyCalls, 2);
++      expect(f.service.completion, isNull);
++      f.close();
++    });
++  });
++  test('dismissing completion keeps a later catalog failure visible', () {
++    fakeAsync((clock) {
++      final f = _Fixture(clock);
++      f.buy();
++      f.emit('complete-before-error');
++      expect(f.service.completion, isNotNull);
++      final success = f.service.message;
++      f.store.failCatalog = true;
++      unawaited(f.service.loadProducts());
++      clock.flushMicrotasks();
++      final failure = f.service.message;
++      expect(failure, isNotNull);
++      expect(failure, isNot(success));
++      expect(f.service.catalogFresh, isFalse);
++      expect(f.service.messageIsCompletion, isFalse);
++      f.service.dismissCompletion();
++      expect(f.service.completion, isNull);
++      expect(f.service.message, failure);
++      f.close();
++    });
++  });
++}
+--- /dev/null
++++ b/test/widget/point_wallet_improvements_test.dart
+@@ -0,0 +1,382 @@
++import 'package:flutter/material.dart';
++import 'package:flutter/rendering.dart';
++import 'package:flutter_riverpod/flutter_riverpod.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:shared_preferences/shared_preferences.dart';
++import 'package:snap_fit/core/theme/snapfit_theme.dart';
++import 'package:snap_fit/features/billing/data/billing_provider.dart';
++import 'package:snap_fit/features/billing/data/billing_repository.dart';
++import 'package:snap_fit/features/billing/data/point_purchase_service.dart';
++import 'package:snap_fit/features/billing/domain/point_top_up_context.dart';
++import 'package:snap_fit/features/profile/presentation/views/billing_management_screen.dart';
++import 'package:snap_fit/features/profile/presentation/views/terms_policy_screen.dart';
++import '../support/point_ledger_history_fakes.dart';
++import '../support/point_purchase_fakes.dart';
++import 'ai_album_start_step_test.dart' show loadCreationFonts;
++
++class _WalletFixture {
++  _WalletFixture({this.balance = 12450});
++  int balance;
++  String? owner = 'owner';
++  bool balanceFailure = false;
++  final store = FakeStore();
++  ProviderContainer? container;
++  late final service = PointPurchaseService(
++    store: store,
++    storage: MemoryReceipts(),
++    currentUserId: () => owner,
++    ensureServerAvailable: () async {},
++    verify: (record) async {
++      balance += 2500;
++      return StorePointPurchaseResult(
++        productId: record.productId,
++        grantedPoints: 2500,
++        remainingBalance: balance,
++      );
++    },
++    onBalanceChanged: () => container?.invalidate(myPointBalanceProvider),
++  );
++}
++
++Future<void> _mount(
++  WidgetTester tester,
++  _WalletFixture fixture, {
++  Size size = const Size(390, 844),
++  double scale = 1,
++  bool dark = false,
++  PointTopUpContext? purchaseContext,
++  Widget? home,
++}) async {
++  tester.view.physicalSize = size;
++  tester.view.devicePixelRatio = 1;
++  addTearDown(tester.view.resetPhysicalSize);
++  addTearDown(tester.view.resetDevicePixelRatio);
++  addTearDown(fixture.store.controller.close);
++  await tester.pumpWidget(
++    ProviderScope(
++      overrides: [
++        pointPurchaseServiceProvider.overrideWith((ref) {
++          ref.onDispose(fixture.service.dispose);
++          return fixture.service;
++        }),
++        myPointBalanceProvider.overrideWith((_) async {
++          if (fixture.balanceFailure) throw StateError('fixture_balance_error');
++          return fixture.balance;
++        }),
++        pointLedgerHistoryProvider.overrideWith2(
++          (filter) =>
++              FixturePointLedgerHistoryController(filter, () async => []),
++        ),
++      ],
++      child: MaterialApp(
++        theme: dark ? SnapFitTheme.dark() : SnapFitTheme.light(),
++        builder: (context, child) => MediaQuery(
++          data: MediaQuery.of(
++            context,
++          ).copyWith(textScaler: TextScaler.linear(scale)),
++          child: child!,
++        ),
++        home: home ?? BillingManagementScreen(purchaseContext: purchaseContext),
++      ),
++    ),
++  );
++  fixture.container = ProviderScope.containerOf(
++    tester.element(find.byType(MaterialApp)),
++    listen: false,
++  );
++  await tester.pumpAndSettle();
++}
++
++Finder _scroll() => find
++    .descendant(
++      of: find.byType(CustomScrollView).first,
++      matching: find.byType(Scrollable),
++    )
++    .first;
++Future<void> _show(WidgetTester tester, Finder target) async {
++  if (target.evaluate().isEmpty) {
++    await tester.scrollUntilVisible(target, 120, scrollable: _scroll());
++  }
++  await tester.ensureVisible(target);
++  await tester.pumpAndSettle();
++}
++
++Future<void> _select(WidgetTester tester) async {
++  final option = find.byKey(
++    const ValueKey('points-product-snapfit_points_2500'),
++  );
++  await _show(tester, option);
++  await tester.tap(option);
++  await tester.pumpAndSettle();
++}
++
++void main() {
++  setUpAll(loadCreationFonts);
++  setUp(() => SharedPreferences.setMockInitialValues({}));
++
++  testWidgets(
++    'wallet: verified charge replaces the buy action with completion and history',
++    (tester) async {
++      final fixture = _WalletFixture();
++      await _mount(tester, fixture);
++      await _select(tester);
++      final pay = find.byKey(const ValueKey('points-charge-action'));
++      await tester.tap(pay);
++      fixture.store.controller.add([purchase(nativeOwner: 'owner')]);
++      await tester.pumpAndSettle();
++      expect(fixture.balance, 14950);
++      final completed = find.byKey(const ValueKey('points-completion'));
++      await _show(tester, completed);
++      expect(completed, findsOneWidget);
++      expect(find.byKey(const ValueKey('points-charge-action')), findsNothing);
++      expect(
++        find.descendant(
++          of: completed,
++          matching: find.textContaining('2,500 P'),
++        ),
++        findsOneWidget,
++      );
++      final history = find.byKey(const ValueKey('points-completion-history'));
++      await tester.tap(history);
++      await tester.pumpAndSettle();
++      expect(find.text('아직 포인트 내역이 없어요.'), findsOneWidget);
++      expect(fixture.store.buyCalls, 1);
++      await tester.pumpWidget(const SizedBox());
++    },
++  );
++
++  testWidgets(
++    'wallet: negative balance names settlement and explains the selected pack result',
++    (tester) async {
++      final fixture = _WalletFixture(balance: -2500);
++      await _mount(tester, fixture);
++      expect(find.text('포인트 잔액'), findsOneWidget);
++      await _select(tester);
++      final projection = find.byKey(const ValueKey('points-expected-balance'));
++      await _show(tester, projection);
++      expect(
++        find.descendant(of: projection, matching: find.text('0 P')),
++        findsOneWidget,
++      );
++      expect(fixture.balance, -2500);
++      expect(fixture.store.buyCalls, 0);
++      await tester.pumpWidget(const SizedBox());
++    },
++  );
++
++  testWidgets(
++    'wallet: normal charging exposes the existing refund policy without a transaction',
++    (tester) async {
++      final fixture = _WalletFixture();
++      await _mount(tester, fixture);
++      final policy = find.byKey(const ValueKey('points-policy-help'));
++      await _show(tester, policy);
++      await tester.tap(policy);
++      await tester.pumpAndSettle();
++      expect(find.byType(TermsPolicyScreen), findsOneWidget);
++      expect(fixture.store.buyCalls, 0);
++      await tester.pumpWidget(const SizedBox());
++    },
++  );
++
++  testWidgets(
++    'wallet: large accessible balance keeps the amount and unit on one line',
++    (tester) async {
++      final fixture = _WalletFixture();
++      await _mount(
++        tester,
++        fixture,
++        size: const Size(320, 568),
++        scale: 1.8,
++        dark: true,
++      );
++      final value = find.text('12,450 P');
++      final paragraph = tester.renderObject<RenderParagraph>(value);
++      final boxes = paragraph.getBoxesForSelection(
++        const TextSelection(baseOffset: 0, extentOffset: 8),
++      );
++      expect(boxes.length, 1);
++      expect(tester.takeException(), isNull);
++      await tester.pumpWidget(const SizedBox());
++    },
++  );
++  testWidgets('wallet: purchase purpose is visible only to its own account', (
++    tester,
++  ) async {
++    final fixture = _WalletFixture(balance: 20);
++    await _mount(
++      tester,
++      fixture,
++      purchaseContext: const PointTopUpContext(
++        ownerId: 'owner',
++        productKey: 'sticker:studioCottonRag',
++        title: '수제지 조각',
++        requiredPoints: 100,
++      ),
++    );
++    expect(find.text('수제지 조각'), findsOneWidget);
++    expect(find.text('80 P 더 필요해요.'), findsOneWidget);
++    fixture.owner = 'another-owner';
++    fixture.container!.invalidate(myPointBalanceProvider);
++    await tester.pumpAndSettle();
++    expect(find.text('수제지 조각'), findsNothing);
++    expect(find.byKey(const ValueKey('points-purchase-context')), findsNothing);
++    expect(fixture.store.buyCalls, 0);
++    await tester.pumpWidget(const SizedBox());
++  });
++
++  testWidgets(
++    'wallet: unavailable balance never becomes a projected zero balance',
++    (tester) async {
++      final fixture = _WalletFixture()..balanceFailure = true;
++      await _mount(tester, fixture);
++      await _select(tester);
++      tester.state<ScrollableState>(_scroll()).position.jumpTo(0);
++      await tester.pumpAndSettle();
++      expect(find.text('확인 실패'), findsOneWidget);
++      expect(find.text('0 P'), findsNothing);
++      expect(
++        find.byKey(const ValueKey('points-expected-balance')),
++        findsNothing,
++      );
++      expect(fixture.store.buyCalls, 0);
++      await tester.pumpWidget(const SizedBox());
++    },
++  );
++
++  testWidgets(
++    'wallet: choosing another charge clears the previous success and requires a new selection',
++    (tester) async {
++      final fixture = _WalletFixture();
++      await _mount(tester, fixture);
++      await _select(tester);
++      await tester.tap(find.byKey(const ValueKey('points-charge-action')));
++      fixture.store.controller.add([purchase(nativeOwner: 'owner')]);
++      await tester.pumpAndSettle();
++      await tester.tap(find.byKey(const ValueKey('points-charge-more')));
++      await tester.pumpAndSettle();
++      expect(fixture.service.completion, isNull);
++      expect(find.textContaining('충전되었습니다'), findsNothing);
++      expect(
++        tester
++            .widget<FilledButton>(
++              find.byKey(const ValueKey('points-charge-action')),
++            )
++            .onPressed,
++        isNull,
++      );
++      expect(fixture.store.buyCalls, 1);
++      await tester.pumpWidget(const SizedBox());
++    },
++  );
++
++  testWidgets(
++    'wallet: completed recharge can return to the original purchase without buying it',
++    (tester) async {
++      final fixture = _WalletFixture(balance: 20);
++      bool? returned;
++      const purpose = PointTopUpContext(
++        ownerId: 'owner',
++        productKey: 'sticker:studioCottonRag',
++        title: '수제지 조각',
++        requiredPoints: 100,
++      );
++      await _mount(
++        tester,
++        fixture,
++        home: Scaffold(
++          body: Builder(
++            builder: (context) => TextButton(
++              onPressed: () async {
++                returned = await Navigator.push<bool>(
++                  context,
++                  MaterialPageRoute(
++                    builder: (_) =>
++                        const BillingManagementScreen(purchaseContext: purpose),
++                  ),
++                );
++              },
++              child: const Text('상품에서 충전 열기'),
++            ),
++          ),
++        ),
++      );
++      await tester.tap(find.text('상품에서 충전 열기'));
++      await tester.pumpAndSettle();
++      await _select(tester);
++      await tester.tap(find.byKey(const ValueKey('points-charge-action')));
++      fixture.store.controller.add([purchase(nativeOwner: 'owner')]);
++      await tester.pumpAndSettle();
++      await tester.tap(find.byKey(const ValueKey('points-completion-return')));
++      await tester.pumpAndSettle();
++      expect(returned, isTrue);
++      expect(find.text('상품에서 충전 열기'), findsOneWidget);
++      await tester.tap(find.text('상품에서 충전 열기'));
++      await tester.pumpAndSettle();
++      expect(find.byKey(const ValueKey('points-completion')), findsNothing);
++      expect(find.textContaining('충전되었습니다'), findsNothing);
++      expect(fixture.store.buyCalls, 1);
++      await tester.pumpWidget(const SizedBox());
++    },
++  );
++  for (final size in [const Size(648, 320), const Size(844, 390)]) {
++    testWidgets('wallet: completion keeps readable space in landscape $size', (
++      tester,
++    ) async {
++      final fixture = _WalletFixture();
++      await _mount(tester, fixture, size: size, dark: true, scale: 1.8);
++      await _select(tester);
++      await tester.tap(find.byKey(const ValueKey('points-charge-action')));
++      fixture.store.controller.add([purchase(nativeOwner: 'owner')]);
++      await tester.pumpAndSettle();
++      final primary = find.byKey(const ValueKey('points-completion-history'));
++      expect(primary.hitTestable(), findsOneWidget);
++      // 완료 내용을 한 줄씩만 읽게 만드는 과도한 고정 영역을 방지한다.
++      expect(tester.getSize(_scroll()).height, greaterThanOrEqualTo(120));
++      await _show(tester, find.text('충전 후 확인 잔액'));
++      expect(find.text('충전 후 확인 잔액').hitTestable(), findsOneWidget);
++      final more = find.byKey(const ValueKey('points-charge-more'));
++      await _show(tester, more);
++      expect(more.hitTestable(), findsOneWidget);
++      expect(tester.getRect(primary).overlaps(tester.getRect(more)), isFalse);
++      await tester.tap(more);
++      await tester.pumpAndSettle();
++      expect(fixture.service.completion, isNull);
++      expect(
++        tester
++            .widget<FilledButton>(
++              find.byKey(const ValueKey('points-charge-action')),
++            )
++            .onPressed,
++        isNull,
++      );
++      expect(fixture.store.buyCalls, 1);
++      expect(tester.takeException(), isNull);
++      await tester.pumpWidget(const SizedBox());
++    });
++  }
++
++  testWidgets(
++    'wallet: another account cannot see the previous successful amount or message',
++    (tester) async {
++      final fixture = _WalletFixture();
++      await _mount(tester, fixture);
++      await _select(tester);
++      await tester.tap(find.byKey(const ValueKey('points-charge-action')));
++      fixture.store.controller.add([purchase(nativeOwner: 'owner')]);
++      await tester.pumpAndSettle();
++      expect(fixture.service.completion, isNotNull);
++      fixture.owner = 'another-owner';
++      fixture.balance = 700;
++      fixture.container!.invalidate(myPointBalanceProvider);
++      await tester.pumpAndSettle();
++      expect(find.byKey(const ValueKey('points-completion')), findsNothing);
++      expect(find.textContaining('충전되었습니다'), findsNothing);
++      expect(find.textContaining('14950'), findsNothing);
++      expect(find.textContaining('14,950'), findsNothing);
++      expect(find.text('700 P'), findsWidgets);
++      expect(fixture.store.buyCalls, 1);
++      await tester.pumpWidget(const SizedBox());
++    },
++  );
++}
+--- a/test/widget/point_shop_purchase_flow_test.dart
++++ b/test/widget/point_shop_purchase_flow_test.dart
+@@ -9,6 +9,7 @@
+ 
+ class _Shop extends PointShopRepository {
+   String? user = 'alice';
++  String productTitle = '수제지 조각';
+   int balance = 300, price = 100, charges = 0, reads = 0;
+   bool owned = false, free = false, available = true;
+   Object? readFailure, purchaseFailure;
+@@ -34,7 +35,7 @@
+     if (readFailure != null) throw readFailure!;
+     return PointShopAccess(
+       productKey: key,
+-      title: '수제지 조각',
++      title: productTitle,
+       pointPrice: price,
+       available: available,
+       isFree: free,
+@@ -199,12 +200,19 @@
+   testWidgets(
+     'recharge return reloads both balance and price and asks again before debit',
+     (tester) async {
+-      final shop = _Shop()..balance = 20, results = <bool>[];
++      final shop = _Shop()
++        ..balance = 20
++        ..productTitle = '최신 수제지 조각';
++      final results = <bool>[];
+       await _mount(
+         tester,
+         shop,
+         results,
+-        topUp: (_) async {
++        topUp: (_, {required purchaseContext}) async {
++          expect(purchaseContext.ownerId, 'alice');
++          expect(purchaseContext.productKey, 'sticker:studioCottonRag');
++          expect(purchaseContext.title, '최신 수제지 조각');
++          expect(purchaseContext.requiredPoints, 100);
+           shop.balance = 300;
+           shop.price = 120;
+         },
+@@ -235,9 +243,118 @@
+     await _mount(tester, shop, results);
+     await tester.tap(find.text('100P로 구매'));
+     await tester.pumpAndSettle();
+-    expect(results, [false]);
++    expect(shop.reads, 1);
+     expect(shop.charges, 0);
+     expect(find.text('가격이 변경됐어요. 새 가격을 확인해 주세요.'), findsOneWidget);
++    tester
++        .state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger))
++        .hideCurrentSnackBar();
++    await tester.pumpAndSettle();
++    expect(results, [false]);
++    expect(shop.reads, 1);
++  });
++
++  testWidgets(
++    'price change offers an explicit action that reloads the same product before purchase',
++    (tester) async {
++      final shop = _Shop()
++        ..purchaseFailure = const PointShopException(
++          'point_shop_price_changed',
++        );
++      final results = <bool>[];
++      await _mount(tester, shop, results);
++      await tester.tap(find.text('100P로 구매'));
++      await tester.pumpAndSettle();
++      expect(shop.reads, 1);
++      expect(shop.charges, 0);
++      final retry = find.widgetWithText(SnackBarAction, '새 가격 확인');
++      expect(retry, findsOneWidget);
++      shop.purchaseFailure = null;
++      shop.price = 120;
++      await tester.tap(retry);
++      await tester.pumpAndSettle();
++      expect(shop.reads, 2);
++      expect(shop.charges, 0);
++      expect(find.text('120P로 구매'), findsOneWidget);
++      await tester.tap(find.text('120P로 구매'));
++      await tester.pumpAndSettle();
++      await tester.tap(find.text('소재 사용하기'));
++      await tester.pumpAndSettle();
++      // The original caller still receives approval and can apply its selection.
++      expect(results, [true]);
++      expect(shop.pricesSent, [100, 120]);
++      expect(shop.charges, 1);
++    },
++  );
++
++  testWidgets('price retry never reopens for another account', (tester) async {
++    final shop = _Shop()
++      ..purchaseFailure = const PointShopException('point_shop_price_changed');
++    final results = <bool>[];
++    await _mount(tester, shop, results);
++    await tester.tap(find.text('100P로 구매'));
++    await tester.pumpAndSettle();
++    shop.user = 'bob';
++    await tester.tap(find.widgetWithText(SnackBarAction, '새 가격 확인'));
++    await tester.pumpAndSettle();
++    expect(results, [false]);
++    expect(shop.reads, 1);
++    expect(shop.charges, 0);
++    expect(find.text('구매 가격'), findsNothing);
++  });
++
++  testWidgets('price retry never reopens after leaving its route', (
++    tester,
++  ) async {
++    final shop = _Shop()
++      ..purchaseFailure = const PointShopException('point_shop_price_changed');
++    final results = <bool>[];
++    await _mount(tester, shop, results);
++    await tester.tap(find.text('100P로 구매'));
++    await tester.pumpAndSettle();
++    final navigator = tester.state<NavigatorState>(find.byType(Navigator));
++    unawaited(
++      navigator.push<void>(
++        MaterialPageRoute(
++          builder: (_) => const Scaffold(body: Center(child: Text('다른 화면'))),
++        ),
++      ),
++    );
++    await tester.pumpAndSettle();
++    await tester.tap(find.widgetWithText(SnackBarAction, '새 가격 확인'));
++    await tester.pumpAndSettle();
++    expect(results, [false]);
++    expect(shop.reads, 1);
++    expect(shop.charges, 0);
++    expect(find.text('다른 화면'), findsOneWidget);
++    expect(tester.takeException(), isNull);
++  });
++
++  testWidgets('repeated selection while price retry waits keeps one flow', (
++    tester,
++  ) async {
++    final shop = _Shop()
++      ..purchaseFailure = const PointShopException('point_shop_price_changed');
++    final results = <bool>[];
++    await _mount(tester, shop, results);
++    await tester.tap(find.text('100P로 구매'));
++    await tester.pumpAndSettle();
++    await tester.tap(find.text('선택'));
++    await tester.pumpAndSettle();
++    expect(results, [false]);
++    expect(shop.reads, 1);
++    shop.purchaseFailure = null;
++    shop.price = 120;
++    await tester.tap(find.widgetWithText(SnackBarAction, '새 가격 확인'));
++    await tester.pumpAndSettle();
++    expect(shop.reads, 2);
++    expect(shop.charges, 0);
++    await tester.tap(find.text('120P로 구매'));
++    await tester.pumpAndSettle();
++    await tester.tap(find.text('소재 사용하기'));
++    await tester.pumpAndSettle();
++    expect(results, [false, true]);
++    expect(shop.charges, 1);
+   });
+ 
+   testWidgets(
+--- a/test/widget/billing_responsive_refinement_test.dart
++++ b/test/widget/billing_responsive_refinement_test.dart
+@@ -432,6 +432,11 @@
+       expect(purchases.message, isNotNull);
+       expect(find.text('결제 확인이 지연되고 있어요'), findsOneWidget);
+       expect(tester.widget<FilledButton>(action()).onPressed, isNull);
++      // 예상 잔액 카드 아래의 복구 액션은 스크롤로 접근한다.
++      await visible(
++        tester,
++        find.byKey(const ValueKey('points-purchase-recover')),
++      );
+       expect(
+         tester
+             .widget<TextButton>(
+@@ -659,7 +664,7 @@
+       expect(store.buys, 0);
+       await tap(tester, find.text('잔액 다시 확인'));
+       expect(find.text('-600 P'), findsOneWidget);
+-      expect(find.textContaining('먼저 정산됩니다'), findsOneWidget);
++      expect(find.textContaining('먼저 정산돼요'), findsOneWidget);
+       await capture(tester, 'points-negative-balance', size, true);
+       await tester.pumpWidget(const SizedBox());
+       store.pending = null;

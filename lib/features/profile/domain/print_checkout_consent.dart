@@ -9,7 +9,7 @@ class PrintCheckoutConsent {
     required this.customProductionAccepted,
   });
 
-  static const version = 'PRINT_ORDER_CONSENT_2026_10_19';
+  static const version = 'PRINT_ORDER_CONSENT_2026_10_30';
   static const reviewNotice =
       '최종 인쇄 미리보기의 사진·글·페이지 순서, 제작 구성, 배송지와 금액을 확인했습니다.';
 

@@ -87,12 +87,18 @@ class CatalogFavorites extends ChangeNotifier {
     return result;
   }
 
-  Future<bool> toggle(String key) => _enqueue(() async {
+  Future<bool> toggle(String key) =>
+      _enqueue(() => _setSelected(key, !contains(key)));
+
+  /// Resolve explicit state inside the queue so undo preserves a newer save.
+  Future<bool> setSelected(String key, {required bool selected}) =>
+      _enqueue(() => _setSelected(key, selected));
+
+  Future<bool> _setSelected(String key, bool selected) async {
     if (key.isEmpty) return false;
+    if (contains(key) == selected) return true;
     final previous = List<String>.of(_keys);
-    _keys = contains(key)
-        ? _keys.where((k) => k != key).toList()
-        : [key, ..._keys];
+    _keys = selected ? [key, ..._keys] : _keys.where((k) => k != key).toList();
     _notify();
     try {
       await _save();
@@ -102,7 +108,7 @@ class CatalogFavorites extends ChangeNotifier {
       _notify();
       return false;
     }
-  });
+  }
 
   Future<bool> importLegacyTemplates(
     Iterable<String> keys, {

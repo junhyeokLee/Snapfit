@@ -1,0 +1,27 @@
+[
+  {
+    "suite": "home",
+    "exit": 0,
+    "result": "RESULT passed=17 failed=0 skipped=0"
+  },
+  {
+    "suite": "records",
+    "exit": 0,
+    "result": "RESULT passed=49 failed=0 skipped=0"
+  },
+  {
+    "suite": "monthly",
+    "exit": 0,
+    "result": "RESULT passed=7 failed=0 skipped=0"
+  },
+  {
+    "suite": "choices",
+    "exit": 0,
+    "result": "RESULT passed=8 failed=0 skipped=0"
+  },
+  {
+    "suite": "retention",
+    "exit": 0,
+    "result": "RESULT passed=13 failed=0 skipped=0"
+  }
+]

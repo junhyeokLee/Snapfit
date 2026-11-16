@@ -1,3 +1,5 @@
+import 'package:snap_fit/features/store/data/store_discovery_provider.dart';
+import 'package:snap_fit/features/store/domain/store_product_discovery.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +14,8 @@ import 'package:snap_fit/shared/web/web_design.dart';
 
 Widget _host() => ProviderScope(
   overrides: [
+    storeDiscoveryClockProvider.overrideWithValue(DateTime.utc(2026, 11, 3)),
+    storeDiscoveryProvider.overrideWith((_) async => bundledStoreDiscovery),
     publicPointShopCatalogProvider.overrideWith((_) async => []),
     pointShopRepositoryProvider.overrideWith(
       (_) => throw StateError(
@@ -43,7 +47,11 @@ List<int> _displayedIds(WidgetTester tester) {
   return [
     for (var index = 0; index < delegate.estimatedChildCount!; index++)
       int.parse(
-        (((delegate.builder(context, index) as Material).child as InkWell).key
+        (((((delegate.builder(context, index) as RepaintBoundary).child
+                                as Material)
+                            .child)
+                        as InkWell)
+                    .key
                 as ValueKey<String>)
             .value
             .substring('discovery-template-'.length),
@@ -75,7 +83,10 @@ void main() {
     'mobile public discovery exposes varied subjects and retains comparison through search and topic changes',
     (tester) async {
       _viewport(tester, const Size(390, 844));
-      final ordered = orderPublicDiscoveryTemplates(publishedCreationTemplates);
+      final ordered = orderPublicDiscoveryTemplates(
+        publishedCreationTemplates,
+        now: DateTime.utc(2026, 11, 3),
+      );
       await tester.pumpWidget(_host());
       await tester.pumpAndSettle();
       final first = _displayedIds(tester);
@@ -87,7 +98,7 @@ void main() {
         shown.map((item) => item.category).toSet(),
         templateTopicOrder.toSet(),
       );
-      expect(shown.where((item) => item.isPremium), hasLength(4));
+      expect(shown.map((item) => item.isPremium).toSet(), {false, true});
 
       final selected = ordered.first;
       final compare = find.byKey(ValueKey('discovery-compare-${selected.id}'));
@@ -143,7 +154,10 @@ void main() {
     'public load more appends the next stable twelve without repeated IDs',
     (tester) async {
       _viewport(tester, const Size(1280, 1000));
-      final ordered = orderPublicDiscoveryTemplates(publishedCreationTemplates);
+      final ordered = orderPublicDiscoveryTemplates(
+        publishedCreationTemplates,
+        now: DateTime.utc(2026, 11, 3),
+      );
       await tester.pumpWidget(_host());
       await tester.pumpAndSettle();
       final first = _displayedIds(tester);

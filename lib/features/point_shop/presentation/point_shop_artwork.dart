@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/fonts/document_font_gate.dart';
 
 import '../../../core/templates/studio_decoration_catalog.dart';
 import '../../../core/templates/studio_phrase_catalog.dart';
@@ -12,6 +13,7 @@ import '../../album/data/bundled_creation_templates.dart';
 import '../../album/presentation/widgets/create_flow/creation_catalog_cover.dart';
 import '../domain/point_shop_template_key.dart';
 import '../../store/data/api/template_provider.dart';
+import '../../../shared/widgets/experience_icon.dart';
 
 class PointShopArtwork extends StatelessWidget {
   const PointShopArtwork({
@@ -44,7 +46,7 @@ class PointShopArtwork extends StatelessWidget {
               .where((item) => pointShopTemplateKey(item) == productKey)
               .firstOrNull;
           return template == null
-              ? const Icon(Icons.auto_stories_outlined, size: 40)
+              ? const ExperienceIcon('BookOpen', size: 40)
               : CreationCatalogCover(
                   template: template,
                   useThumbnail: true,
@@ -65,12 +67,15 @@ class PointShopArtwork extends StatelessWidget {
         .where((item) => 'phrase:${item.id}' == productKey)
         .firstOrNull;
     if (phrase != null) {
-      return FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Text(
-          phrase.text,
-          style: phrase.lettering.style,
-          textAlign: phrase.alignment,
+      return DocumentFontGate(
+        families: [phrase.lettering.font],
+        builder: (_) => FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            phrase.text,
+            style: phrase.lettering.style,
+            textAlign: phrase.alignment,
+          ),
         ),
       );
     }
@@ -84,6 +89,6 @@ class PointShopArtwork extends StatelessWidget {
         child: Image.asset(photo, fit: BoxFit.cover, cacheWidth: 384),
       );
     }
-    return const Icon(Icons.auto_stories_outlined, size: 40);
+    return const ExperienceIcon('BookOpen', size: 40);
   }
 }

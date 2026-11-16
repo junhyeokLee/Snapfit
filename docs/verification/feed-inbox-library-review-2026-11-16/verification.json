@@ -1,0 +1,76 @@
+{
+  "date": "2026-11-16",
+  "mode": "read-only local Flutter widget audit",
+  "source_files_checked": 821,
+  "source_changes": [],
+  "suites": {
+    "cap_feed": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_saved": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cap_notifications": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "screen_count": 27,
+  "screens": [
+    "feed_01_latest_390.png",
+    "feed_02_following_390.png",
+    "feed_03_second_photo_390.png",
+    "feed_04_detail_390.png",
+    "feed_05_back_390.png",
+    "feed_06_comments_390.png",
+    "feed_07_320_large_dark.png",
+    "feed_08_comments_320_large_dark.png",
+    "notifications-01-mixed.png",
+    "notifications-02-marking-all.png",
+    "notifications-03-all-read.png",
+    "notifications-04-older-section.png",
+    "notifications-05-dark-narrow-large.png",
+    "notifications-06-settings-denied-large.png",
+    "notifications-07-settings-categories-large.png",
+    "notifications-08-mark-failed.png",
+    "notifications-09-refresh-failed-retained.png",
+    "notifications-10-refresh-recovered.png",
+    "saved-01-library.png",
+    "saved-02-favorites.png",
+    "saved-02b-removed-favorite.png",
+    "saved-02c-all-after-removal.png",
+    "saved-03-filter-no-results.png",
+    "saved-04-reset.png",
+    "saved-05-empty.png",
+    "saved-06-favorites-empty.png",
+    "saved-07-dark-large-text.png"
+  ],
+  "error_snackbar": {
+    "brightness": "light",
+    "foreground": "#222A2B",
+    "background": "#BA1A1A",
+    "font_size_sp": 14,
+    "weight": 400,
+    "contrast": 2.2666
+  },
+  "excluded": [
+    "real backend requests",
+    "real payment or purchase",
+    "real push delivery",
+    "device screen-reader testing",
+    "full app build"
+  ],
+  "fixture_corrections": [
+    "Feed bundled image loading moved outside widget fake async zone after fixture timeout.",
+    "Feed image decode advanced before settling after fixture spinner timeout."
+  ],
+  "notes": [
+    "Point catalog values are fixtures; price correctness was not audited.",
+    "Pretendard font alias uses bundled NotoSansKR; document font fallback artifacts were excluded."
+  ]
+}

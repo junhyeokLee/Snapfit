@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-15",
+  "scope": "Continue the last approved collaboration/checkout fixes after conversation length limit.",
+  "changes": [
+    "Reuse the existing web validation reveal on native checkout. After validation layout, scroll the first invalid field and its message into view.",
+    "Add compact 320x568 and text-scale 1.6 regression tests that correct name, phone, postal code and address in order, preserve optional input, block invalid review and permit valid review."
+  ],
+  "existing_fix_verified": "Invitation return refresh already implemented on 2026-11-13; no member production code changed in this task.",
+  "verification": {
+    "baseline": {
+      "passed": 0,
+      "failed": 2,
+      "reason": "First invalid name remained outside the visible viewport."
+    },
+    "final": {
+      "passed": 37,
+      "failed": 0,
+      "skipped": 0,
+      "checkout": 26,
+      "members": 11
+    },
+    "analysis": "2 files, No issues found!",
+    "whitespace": "Scoped git diff --check passed",
+    "runner": "Existing native serial test harness adapted from collaboration-checkout-audit-2026-11-12/probes/test_runner.dart. Executed actual widget test files in flutter_tester without VM service or socket server. Temporary SDK copy used because the original SDK cache is read-only.",
+    "limits": [
+      "Scoped tests only; full repository suite not run.",
+      "No physical device, OS keyboard, screen reader or browser validation.",
+      "No full app build, server start, production request, real invitation, payment, deployment or commit."
+    ]
+  },
+  "review": [
+    "Only the native platform gate and duplicate boolean validation were removed; web reveal behavior is retained.",
+    "Existing validators, ownership and mounted checks, payment constraints, controllers, layout and request paths retained.",
+    "No dependencies, focus nodes, recurring work or new network requests.",
+    "Existing uncommitted work preserved."
+  ],
+  "sha256": {
+    "lib/features/album/presentation/views/print_order_checkout_screen.dart": "2bd10342a0028ca4e94ae93bce0a904c31f130d3e954f7573354c39764880923",
+    "test/widget/print_order_checkout_test.dart": "33cc2c49a8e5842218d244481aa764309afe99d9966c9a485727330bd9b53f08"
+  }
+}

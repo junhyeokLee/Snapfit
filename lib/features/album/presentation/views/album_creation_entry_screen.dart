@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/album_creation_draft.dart';
 import '../utils/album_creation_entry.dart';
 import 'album_create_flow_screen.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 /// Keeps legacy named routes behind the same draft check as visible actions.
 class AlbumCreationEntryScreen extends ConsumerStatefulWidget {
@@ -59,7 +60,7 @@ class _AlbumCreationEntryScreenState
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (_checking) ...[
-                      const Icon(Icons.history_rounded, size: 32),
+                      const ExperienceIcon('History', size: 32),
                       const SizedBox(height: 16),
                     ],
                     Text(

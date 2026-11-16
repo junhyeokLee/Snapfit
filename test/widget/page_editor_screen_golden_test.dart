@@ -255,7 +255,7 @@ void main() {
       expect(find.byType(EditCover), findsOneWidget);
       expect(find.byType(EditorContextDock), findsOneWidget);
       expect(find.text('템플릿'), findsOneWidget);
-      expect(find.text('재배치'), findsOneWidget);
+      expect(find.text('겹침 순서'), findsOneWidget);
 
       final canvasBottom = tester.getBottomLeft(find.byType(EditCover)).dy;
       final dockTop = tester.getTopLeft(find.byType(EditorContextDock)).dy;
@@ -309,6 +309,11 @@ void main() {
     await tester.tap(find.text('1쪽'));
     await tester.pump(const Duration(milliseconds: 120));
 
+    expect(
+      find.descendant(of: find.byType(AppBar), matching: find.text('1 / 20쪽')),
+      findsOneWidget,
+    );
+
     expect(find.byKey(const Key('pageEditorPageTurnReveal')), findsOneWidget);
     expect(
       tester
@@ -343,16 +348,16 @@ void main() {
     (tester) async {
       await _pumpEditor(tester);
 
-      await tester.ensureVisible(find.byTooltip('재배치'));
+      await tester.ensureVisible(find.byTooltip('겹침 순서'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('재배치'));
+      await tester.tap(find.byTooltip('겹침 순서'));
       await tester.pump(const Duration(milliseconds: 180));
 
       expect(find.byType(LayerManagerPanel), findsOneWidget);
       expect(find.byType(EditorContextDock), findsOneWidget);
       expect(find.byType(BottomSheet), findsOneWidget);
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('재배치 닫기'));
+      await tester.tap(find.byTooltip('겹침 순서 닫기'));
       await tester.pumpAndSettle();
       expect(find.byType(PageEditorScreen), findsOneWidget);
       expect(find.byType(LayerManagerPanel), findsNothing);
@@ -380,6 +385,33 @@ void main() {
     },
   );
 
+  testWidgets('editor page count follows added inner pages and keeps cover label', (
+    tester,
+  ) async {
+    await _pumpEditor(tester);
+    Finder header(String label) =>
+        find.descendant(of: find.byType(AppBar), matching: find.text(label));
+    expect(header('표지'), findsOneWidget);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(PageEditorScreen)),
+    );
+    final editor = container.read(albumEditorViewModelProvider.notifier);
+    editor.goToPage(20);
+    await tester.pumpAndSettle();
+    expect(header('20 / 20쪽'), findsOneWidget);
+
+    final add = find.byKey(const Key('addInnerPagesButton'));
+    await tester.ensureVisible(add);
+    await tester.tap(add);
+    await tester.pumpAndSettle();
+    expect(header('21 / 22쪽'), findsOneWidget);
+
+    editor.goToPage(0);
+    await tester.pumpAndSettle();
+    expect(header('표지'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'page editor full workspace golden captures canvas dock and layer sheet',
     (tester) async {
@@ -392,9 +424,9 @@ void main() {
         matchesGoldenFile('goldens/page_editor_workspace_390x844.png'),
       );
 
-      await tester.ensureVisible(find.byTooltip('재배치'));
+      await tester.ensureVisible(find.byTooltip('겹침 순서'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('재배치'));
+      await tester.tap(find.byTooltip('겹침 순서'));
       await tester.pumpAndSettle();
 
       expect(find.byType(LayerManagerPanel), findsOneWidget);

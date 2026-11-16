@@ -38,6 +38,14 @@ Widget _wrap(Widget child) {
   );
 }
 
+// 추천 카드에도 쪽수가 있으므로 상세의 페이지 분량 지표만 검사한다.
+Finder _pageCountMetric(String value) => find.descendant(
+  of: find
+      .ancestor(of: find.text('페이지 분량'), matching: find.byType(Column))
+      .first,
+  matching: find.text(value),
+);
+
 PremiumTemplate _template({
   int likeCount = 1,
   bool isLiked = false,
@@ -171,7 +179,7 @@ void main() {
           findsOneWidget,
         );
         expect(find.text('내 사진으로 만드는 앨범'), findsOneWidget);
-        expect(find.text('24쪽'), findsOneWidget);
+        expect(_pageCountMetric('24쪽'), findsOneWidget);
         expect(find.text('이 디자인으로 시작'), findsOneWidget);
         expect(find.text('여행 컬렉션'), findsOneWidget);
         expect(find.text('프리미엄'), findsNothing);
@@ -209,7 +217,7 @@ void main() {
         await settleStoreDetail(tester);
 
         final titleRect = tester.getRect(find.text('여행의 장면').first);
-        final heroMetaRect = tester.getRect(find.text('24쪽'));
+        final heroMetaRect = tester.getRect(_pageCountMetric('24쪽'));
         final ctaRect = tester.getRect(
           find.byKey(const ValueKey('template-detail-use')),
         );
@@ -222,9 +230,9 @@ void main() {
         expect(titleRect.bottom, lessThan(ctaRect.top));
         expect(ctaRect.bottom, lessThanOrEqualTo(844));
         expect(ctaRect.top, greaterThan(700));
-        await tester.ensureVisible(find.text('24쪽'));
+        await tester.ensureVisible(_pageCountMetric('24쪽'));
         await settleStoreDetail(tester);
-        expect(find.text('24쪽').hitTestable(), findsOneWidget);
+        expect(_pageCountMetric('24쪽').hitTestable(), findsOneWidget);
         expect(
           tester.getRect(find.byKey(const ValueKey('template-detail-use'))),
           ctaRect,
@@ -339,7 +347,7 @@ void main() {
           final ctaRect = tester.getRect(
             find.byKey(const ValueKey('template-detail-use')),
           );
-          final heroMetaRect = tester.getRect(find.text('24쪽'));
+          final heroMetaRect = tester.getRect(_pageCountMetric('24쪽'));
 
           expect(titleRect.left, greaterThanOrEqualTo(0), reason: viewport.$1);
           expect(

@@ -172,6 +172,51 @@ void main() {
       expect(payload['p_event_id'], matches(RegExp(r'^[0-9a-f-]{36}$')));
     },
   );
+  test(
+    'auth refresh errors invalidate pending preferences without signing out and permit a fresh retry',
+    () async {
+      for (final save in [false, true]) {
+        final pending = Completer<http.Response>();
+        respond = (_) => pending.future;
+        final result = save
+            ? repository.saveReminder(const MomentReminder())
+            : repository.load();
+        final failure = expectLater(result, throwsA(isA<MomentException>()));
+        await Future<void>.delayed(Duration.zero);
+        events.addError(
+          AuthRetryableFetchException(message: 'fixture offline refresh'),
+          StackTrace.current,
+        );
+        pending.complete(response(value));
+        await failure;
+        expect(actor, 'owner-a');
+        expect(client.auth.currentUser?.id, 'owner-a');
+        respond = (_) async => response(value);
+        expect((await repository.load()).hasRecords, isTrue);
+      }
+    },
+  );
+  test(
+    'a pending activity stays nonblocking after an auth refresh error',
+    () async {
+      final pending = Completer<http.Response>();
+      respond = (_) => pending.future;
+      final result = repository.recordActivity(MomentActivity.recapViewed);
+      await Future<void>.delayed(Duration.zero);
+      events.addError(
+        AuthRetryableFetchException(message: 'fixture offline refresh'),
+        StackTrace.current,
+      );
+      pending.complete(response(true));
+      expect(await result, isFalse);
+      expect(actor, 'owner-a');
+      respond = (_) async => response(true);
+      expect(
+        await repository.recordActivity(MomentActivity.recapViewed),
+        isTrue,
+      );
+    },
+  );
   test('measurement errors do not interrupt the user flow', () async {
     respond = (_) async =>
         response({'message': 'offline', 'code': 'offline'}, 503);

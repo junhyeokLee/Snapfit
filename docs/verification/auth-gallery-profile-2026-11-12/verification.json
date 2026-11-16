@@ -1,0 +1,443 @@
+{
+  "date": "2026-11-12",
+  "status": "implemented_and_locally_verified",
+  "scope": "auth form contrast/completion, gallery failure messaging, social profile text exit guard",
+  "product_source_sha256": {
+    "lib/features/auth/presentation/views/login_screen.dart": "c4593d94646ad8c16730503c815080e8af088fb6553bdcb8ab8f32f5cfcd6cbc",
+    "lib/features/album/presentation/viewmodels/gallery_notifier.dart": "47890b76c65579086dba479bc934f9aaad0538b71cd2b2b17c261efe1962a533",
+    "lib/shared/widgets/album_bottom_sheet.dart": "679cf2aa307815dab9cc4943a61e0ccc7a18b2eceba37b89d2755f9ea17237a1",
+    "lib/features/social/presentation/views/social_profile_edit_screen.dart": "aa8f655813ff7cfa125805b4955cc3d5f53f7ad70dbdf7f549bb4a353986a1b1"
+  },
+  "tests": {
+    "unique_final_passed": 180,
+    "failed": 0,
+    "new_regressions": 31,
+    "suites": {
+      "auth_completion": {
+        "source_log": "logs/final-focused.log",
+        "cases": {
+          "recovery regression: reset form uses its theme with video=AuthVideoState.initialized dark=false": "PASS",
+          "recovery regression: reset form uses its theme with video=AuthVideoState.failed dark=false": "PASS",
+          "recovery regression: reset form uses its theme with video=AuthVideoState.loading dark=false": "PASS",
+          "recovery regression: email form leaves video chrome in dark=false": "PASS",
+          "recovery regression: signup form leaves video chrome in dark=false": "PASS",
+          "recovery regression: reset form uses its theme with video=AuthVideoState.initialized dark=true": "PASS",
+          "recovery regression: reset form uses its theme with video=AuthVideoState.failed dark=true": "PASS",
+          "recovery regression: reset form uses its theme with video=AuthVideoState.loading dark=true": "PASS",
+          "recovery regression: email form leaves video chrome in dark=true": "PASS",
+          "recovery regression: signup form leaves video chrome in dark=true": "PASS",
+          "recovery regression: a loading video never hides ordinary login actions": "PASS",
+          "recovery regression: confirmed password completion clears credentials and returns its route once": "PASS",
+          "recovery regression: standalone completion offers login without inventing a session": "PASS",
+          "recovery regression: loading cached identity cannot close completion as a verified login": "PASS",
+          "recovery regression: failed password update keeps both inputs and permits retry": "PASS",
+          "recovery regression: editing a reset recipient clears stale delivery copy without bypassing cooldown": "PASS"
+        }
+      },
+      "login": {
+        "source_log": "logs/green-auth-profile.log",
+        "cases": {
+          "rejected signup delivery stays editable without claiming mail sent": "PASS",
+          "failed resend clears the prior successful delivery notice": "PASS",
+          "failed password reset delivery does not show success or login error": "PASS",
+          "signup and verification remain reachable with large text, keyboard and system insets at Size(320.0, 568.0)": "PASS",
+          "signup and verification remain reachable with large text, keyboard and system insets at Size(390.0, 844.0)": "PASS",
+          "signup and verification remain reachable with large text, keyboard and system insets at Size(648.0, 320.0)": "PASS",
+          "signup and verification remain reachable with large text, keyboard and system insets at Size(740.0, 360.0)": "PASS",
+          "signup and verification remain reachable with large text, keyboard and system insets at Size(844.0, 390.0)": "PASS",
+          "nickname and required consents are enough; marketing remains optional": "PASS",
+          "password indicators track the existing validation rules": "PASS",
+          "verification resend is paced, and email login keeps the recipient": "PASS",
+          "mistyped verification address returns to editable signup, not a fake account update": "PASS",
+          "keyboard submit locks inputs, keeps errors inline, and allows retry": "PASS",
+          "reset email shows pacing and cannot be requested twice immediately": "PASS",
+          "kakao login button triggers loading and calls auth": "PASS",
+          "login screen renders in portrait and landscape": "PASS",
+          "signup form stays renderable on compact landscape phones": "PASS",
+          "google login button triggers loading and calls auth": "PASS",
+          "loading spinner appears only on the selected provider button": "PASS",
+          "email signup form renders and requires terms before submit": "PASS",
+          "valid email signup submits through auth view model": "PASS",
+          "signup enforces stronger password rules": "PASS",
+          "email login submits through auth view model": "PASS",
+          "forgot password sends reset email request": "PASS",
+          "signup confirmation can resend verification email": "PASS",
+          "password recovery mode updates password": "PASS"
+        }
+      },
+      "profile_exit": {
+        "source_log": "logs/final-focused.log",
+        "cases": {
+          "recovery regression: profile name back preserves unsaved text": "PASS",
+          "recovery regression: profile handle back preserves unsaved text": "PASS",
+          "recovery regression: profile bio back preserves unsaved text": "PASS",
+          "recovery regression: profile system back can discard explicitly": "PASS",
+          "recovery regression: profile unchanged or reverted exits immediately revert=false": "PASS",
+          "recovery regression: profile unchanged or reverted exits immediately revert=true": "PASS",
+          "recovery regression: profile repeated back opens a single confirmation": "PASS",
+          "recovery regression: profile save is busy then closes without discard prompt": "PASS",
+          "recovery regression: profile identity change dismisses stale exit confirmation actor=null": "PASS",
+          "recovery regression: profile identity change dismisses stale exit confirmation actor=profile-other": "PASS",
+          "recovery regression: profile draft confirmation fits narrow large text": "PASS"
+        }
+      },
+      "profile": {
+        "source_log": "logs/green-auth-profile.log",
+        "cases": {
+          "another public profile never exposes the private shortcuts": "PASS",
+          "own profile has management while filtering non-public works": "PASS",
+          "own follower removal does not remove the outgoing relationship": "PASS",
+          "relations omit blocked users and never offer self follow": "PASS",
+          "profile refetches a committed follow after a lost response": "PASS",
+          "relations refresh the final follow state after response loss": "PASS",
+          "resizing an expired thumbnail renews and decodes its public URL": "PASS",
+          "identity changes discard an outstanding thumbnail renewal": "PASS",
+          "failed thumbnail renewals do not loop after more resizes": "PASS",
+          "a decoded renewal can recover again after its next expiry": "PASS",
+          "a public portrait opens a zoomable photo and can be dismissed": "PASS",
+          "zoom resolves a fresh photo URL instead of reusing the cached one": "PASS",
+          "unavailable refreshed photo never opens the stale cached URL": "PASS",
+          "session change discards an outstanding public-photo resolution": "PASS",
+          "session change closes an already opened public photo": "PASS",
+          "replaced identity removes only its photo below another dialog": "PASS",
+          "canceling the gallery never requests a photo update": "PASS",
+          "photo review requires explicit consent and cancellation keeps drafts": "PASS",
+          "confirmed photo updates independently without saving typed bio": "PASS",
+          "lost photo reply refetches committed portrait while retaining text": "PASS",
+          "oversized picked file is rejected before decode or upload": "PASS",
+          "photo removal needs confirmation and keeps unsaved fields": "PASS",
+          "late gallery result after logout never opens review or uploads": "PASS",
+          "late photo RPC reply cannot restore a logged-out profile": "PASS",
+          "session change dismisses a private selected-photo review": "PASS",
+          "missing or private-file avatar has initials and no photo action": "PASS",
+          "profile opens with large photos at 320.0 pixels": "PASS",
+          "profile opens with large photos at 390.0 pixels": "PASS",
+          "profile opens with large photos at 820.0 pixels": "PASS",
+          "profile opens with large photos at 1440.0 pixels": "PASS",
+          "mobile profile opens large and can collect or open its works": "PASS",
+          "gallery view labels stay usable with narrow dark large text": "PASS",
+          "wide gallery keeps large pairs at 820.0 pixels": "PASS",
+          "wide gallery keeps large pairs at 1440.0 pixels": "PASS",
+          "a single desktop work keeps a full width page in large mode": "PASS",
+          "own profile stays usable at 320 pixels with dark large text": "PASS",
+          "profile save validates the handle and ignores a lost session": "PASS",
+          "identity and relationship controls fit narrow dark large text": "PASS"
+        }
+      },
+      "profile_reliability": {
+        "source_log": "logs/green-profile-reliability-isolated.log",
+        "cases": {
+          "an old profile follow reply cannot finish a new account cycle": "PASS",
+          "an old profile failure cannot announce an error after A B A": "PASS",
+          "profile identity replacement cancels only its confirmation": "PASS",
+          "account change closes profile unfollow confirmation": "PASS",
+          "account change closes profile block confirmation": "PASS",
+          "late profile reply cannot change a replacement profile busy state": "PASS",
+          "an old relation reply cannot finish the new account follow": "PASS",
+          "relation owner changes reset the tab and discard stale confirmation": "PASS",
+          "account changes discard the relation follower removal confirmation": "PASS",
+          "relation avatars can resolve a fresh public photo after expiry": "PASS",
+          "profile work image retry remains a separate accessible action": "PASS",
+          "profile galleries can load their 31st work without losing earlier pages": "PASS",
+          "later profile page errors retain loaded works and can be retried": "PASS",
+          "signed page renewal preserves the gallery state while waiting": "PASS",
+          "relationship lists reveal the 13th person and reset on tab changes": "PASS",
+          "blocking from profiles and relationships refreshes open saved and comment pages": "PASS",
+          "saving a public name refreshes every open paginated author cache": "PASS"
+        }
+      },
+      "social_login": {
+        "source_log": "logs/green-auth-profile.log",
+        "cases": {
+          "executes the expected VM or actual browser platform": "PASS",
+          "completed social launch without a session releases the login buttons": "PASS",
+          "failed social login releases busy state and can be retried": "PASS",
+          "callback failure releases an old attempt and late completion cannot change the retry": "PASS"
+        }
+      },
+      "gallery_panel": {
+        "source_log": "logs/final-focused.log",
+        "cases": {
+          "permission error offers settings and retry recovery": "PASS",
+          "empty album offers adding photos or checking access": "PASS",
+          "recovery regression: initial lookup failure is recoverable without claiming an empty library: temporary photo database failure": "PASS",
+          "recovery regression: initial lookup failure is recoverable without claiming an empty library: permission was granted but the album query failed": "PASS",
+          "recovery regression: a confirmed empty library keeps the empty guidance and reload action": "PASS"
+        }
+      },
+      "gallery_notifier": {
+        "source_log": "logs/green-gallery.log",
+        "cases": {
+          "recovery regression: an initial album query failure preserves its cause and recovers on retry": "PASS",
+          "initial selection prefers all photos rather than the first folder": "PASS",
+          "refresh preserves the chosen album while loading a new first page": "PASS",
+          "a deleted chosen folder falls back to all photos during refresh": "PASS",
+          "album switching ignores a late success without unlocking the new request": "PASS",
+          "album switching ignores a late failure without unlocking the new request": "PASS",
+          "concurrent pagination loads each page once and retries the failed page": "PASS",
+          "refresh ignores permission results from an older initialization": "PASS",
+          "disposal before a request fails does not write state": "PASS",
+          "date range queries bounded native pages without changing album paths": "PASS",
+          "date changes ignore a late page from an earlier range": "PASS",
+          "date changes ignore a late failure from an earlier range": "PASS",
+          "date query errors retry the same first page and range without new permission": "PASS",
+          "date changes during permission loading preserve initialization and apply to first page": "PASS",
+          "date changes during album loading preserve initialization and apply to first page": "PASS"
+        }
+      },
+      "gallery_picker": {
+        "source_log": "logs/green-gallery-picker.log",
+        "cases": {
+          "latest gallery, resizing, album covers and selected review 320-light": "PASS",
+          "latest gallery, resizing, album covers and selected review 320-dark": "PASS",
+          "latest gallery, resizing, album covers and selected review 390-light": "PASS",
+          "latest gallery, resizing, album covers and selected review 390-dark": "PASS",
+          "latest gallery, resizing, album covers and selected review 844-light": "PASS",
+          "latest gallery, resizing, album covers and selected review 844-dark": "PASS",
+          "review supports removing photos, clearing all and returning to the album": "PASS",
+          "reopening and pull refresh load new photos without losing selected order": "PASS",
+          "many albums load covers lazily and can be searched": "PASS",
+          "large text preserves controls and single selection Size(320.0, 568.0)": "PASS",
+          "large text keeps multi-photo confirmation accessible Size(320.0, 568.0)": "PASS",
+          "large text preserves controls and single selection Size(648.0, 320.0)": "PASS",
+          "large text keeps multi-photo confirmation accessible Size(648.0, 320.0)": "PASS",
+          "large text preserves controls and single selection Size(740.0, 360.0)": "PASS",
+          "large text keeps multi-photo confirmation accessible Size(740.0, 360.0)": "PASS",
+          "large text preserves controls and single selection Size(844.0, 390.0)": "PASS",
+          "large text keeps multi-photo confirmation accessible Size(844.0, 390.0)": "PASS",
+          "selected review and order survive rotation while the sheet is open": "PASS",
+          "album search remains visible above the keyboard in landscape": "PASS",
+          "two-digit selection badges fit with large text": "PASS",
+          "scrolling appends bounded pages without changing the first row": "PASS",
+          "date search preserves the tray, album switching, refresh and reset": "PASS",
+          "cancelled or invalid dates do not query and end day is inclusive": "PASS",
+          "date toolbar and recovery fit large text at 320.0": "PASS",
+          "date toolbar and recovery fit large text at 844.0": "PASS",
+          "date picker uses the editing navigator and scoped modal name": "PASS"
+        }
+      },
+      "auth_responsive": {
+        "source_log": "logs/green-auth-responsive.log",
+        "cases": {
+          "native authentication flow Size(320.0, 568.0) dark=false": "PASS",
+          "native authentication flow Size(320.0, 568.0) dark=true": "PASS",
+          "native authentication flow Size(390.0, 844.0) dark=false": "PASS",
+          "native authentication flow Size(390.0, 844.0) dark=true": "PASS",
+          "native authentication flow Size(648.0, 320.0) dark=false": "PASS",
+          "native authentication flow Size(648.0, 320.0) dark=true": "PASS",
+          "native authentication flow Size(740.0, 360.0) dark=false": "PASS",
+          "native authentication flow Size(740.0, 360.0) dark=true": "PASS",
+          "native authentication flow Size(844.0, 390.0) dark=false": "PASS",
+          "native authentication flow Size(844.0, 390.0) dark=true": "PASS",
+          "large text and keyboard preserve usable signup and recovery controls Size(320.0, 568.0)": "PASS",
+          "large text and keyboard preserve usable signup and recovery controls Size(648.0, 320.0)": "PASS",
+          "large text and keyboard preserve usable signup and recovery controls Size(844.0, 390.0)": "PASS",
+          "focused signup input stays above keyboard without manual scrolling": "PASS",
+          "long verification recipient stays complete across rotation": "PASS",
+          "consent with small landscape keyboard keeps action reachable": "PASS",
+          "signup draft, consents and active input survive rotation": "PASS",
+          "social consent is single-flight across providers and cancelling never authenticates": "PASS",
+          "consent checks survive rotation and document review; stale confirm is rejected": "PASS",
+          "late verification resend after correcting email does not send to the old recipient": "PASS",
+          "covered or disposed login actions cannot start authentication": "PASS",
+          "auth system bars follow the page theme without a global orientation lock": "PASS"
+        }
+      }
+    }
+  },
+  "captures": {
+    "scenarios_passed": 9,
+    "failed": 0,
+    "screenshots": [
+      {
+        "path": "screens/01-gallery-query-failed.png",
+        "size": [
+          780,
+          1688
+        ],
+        "sha256": "9fdf2c80563b3b30a4ad5cd1554fa79823433dd9eae9835373a4d5021c61a9b6",
+        "visually_inspected": true
+      },
+      {
+        "path": "screens/02-gallery-empty-after-retry.png",
+        "size": [
+          780,
+          1688
+        ],
+        "sha256": "909964c73d5eebaf9bcbbe2b7b186ee9a18ae13b17f2b7dd3f8af24c6ce57f95",
+        "visually_inspected": true
+      },
+      {
+        "path": "screens/03-gallery-permission.png",
+        "size": [
+          780,
+          1688
+        ],
+        "sha256": "7304d80c03fa9c74707113441a9df5faeae53acf6989f7208ce3854c43775a56",
+        "visually_inspected": true
+      },
+      {
+        "path": "screens/04-email-light.png",
+        "size": [
+          780,
+          1688
+        ],
+        "sha256": "80b8db33c01c63b27a109016830ff4d35ef53a71ebdf426b5eee4784a07df820",
+        "visually_inspected": true
+      },
+      {
+        "path": "screens/05-email-dark.png",
+        "size": [
+          780,
+          1688
+        ],
+        "sha256": "0e017b9b5e850aa7a872d3924836bd84edf7926ed87be97b057e3949a271b546",
+        "visually_inspected": true
+      },
+      {
+        "path": "screens/06-reset-light.png",
+        "size": [
+          780,
+          1688
+        ],
+        "sha256": "ac08572d017b2bf00c5815cc50c16b006f0b1854e546f13561570a4fec83e836",
+        "visually_inspected": true
+      },
+      {
+        "path": "screens/07-reset-dark.png",
+        "size": [
+          780,
+          1688
+        ],
+        "sha256": "ebb3d62d760586ef2d6ad2d4c7f8fc4697792de89914e705fd8863cb9c3f0b1e",
+        "visually_inspected": true
+      },
+      {
+        "path": "screens/08-password-before-submit.png",
+        "size": [
+          780,
+          1688
+        ],
+        "sha256": "640671bafd0f6a2d21f9ff873430e8fe7ab35beca1f4f99ef82c8355c1a5e7e3",
+        "visually_inspected": true
+      },
+      {
+        "path": "screens/09-password-complete-return.png",
+        "size": [
+          780,
+          1688
+        ],
+        "sha256": "5856a8a6a798b88dfd357be99e6d45a5944a1947e6349ed265ccd505efcea0c5",
+        "visually_inspected": true
+      },
+      {
+        "path": "screens/10-password-complete-login.png",
+        "size": [
+          780,
+          1688
+        ],
+        "sha256": "92061c7a11ae548d31f4acd916a8aea97ae78860c9d318645269936a7c13fa25",
+        "visually_inspected": true
+      },
+      {
+        "path": "screens/11-reset-email-sent.png",
+        "size": [
+          780,
+          1688
+        ],
+        "sha256": "c0814f500010471cdc73854482bc31308a68f791e54947d410b85d84de2c00b7",
+        "visually_inspected": true
+      },
+      {
+        "path": "screens/12-reset-recipient-edited.png",
+        "size": [
+          780,
+          1688
+        ],
+        "sha256": "914aea95c7319de869bf328579ffd9ef0c97f8502b223ac876fea4a65aababfb",
+        "visually_inspected": true
+      },
+      {
+        "path": "screens/13-profile-unsaved-draft.png",
+        "size": [
+          780,
+          1688
+        ],
+        "sha256": "73082374876e337f1c2a0d3580a4e6defc147fae07a7b4aa22c69dad2552422d",
+        "visually_inspected": true
+      },
+      {
+        "path": "screens/14-profile-discard-confirmation.png",
+        "size": [
+          780,
+          1688
+        ],
+        "sha256": "76d47d1557ee987b43a7f01fffddfc1d9d03612c5bf8a2ef40a3a0ee196b5d26",
+        "visually_inspected": true
+      },
+      {
+        "path": "screens/15-profile-draft-preserved.png",
+        "size": [
+          780,
+          1688
+        ],
+        "sha256": "73082374876e337f1c2a0d3580a4e6defc147fae07a7b4aa22c69dad2552422d",
+        "visually_inspected": true
+      },
+      {
+        "path": "screens/16-profile-after-explicit-discard.png",
+        "size": [
+          780,
+          1688
+        ],
+        "sha256": "47175b8cf6261ee273066e46deaeff26185c050cbe94cba50494cc9bc3cda564",
+        "visually_inspected": true
+      },
+      {
+        "path": "screens/17-profile-confirmation-large-text.png",
+        "size": [
+          640,
+          1136
+        ],
+        "sha256": "dfcc131c8fa6cee31a15d3ba8e4c5f650e47c36ee78d309c43222075e92e6040",
+        "visually_inspected": true
+      }
+    ],
+    "profile_draft_pixels_equal_after_continue": true,
+    "environment": "native flutter_tester software rendering; real widgets; memory service/repository/video-platform fixtures; DPR 2"
+  },
+  "analysis": {
+    "files": 10,
+    "errors": 0,
+    "warnings": 0,
+    "info": 0,
+    "log": "logs/analyze.log"
+  },
+  "review": {
+    "independent_read_only_review": "no blocking findings in approved scope",
+    "after_review_changes": "only shortened completion/empty/dialog copy and removed unused test/probe imports; focused tests and captures rerun"
+  },
+  "intermediate_test_issue": {
+    "case": "profile work image retry remains a separate accessible action",
+    "initial_result": "pumpAndSettle timeout when multiple files shared one test process",
+    "before_change_isolated_case": "1/1 pass",
+    "after_change_isolated_file": "17/17 pass",
+    "resolution": "final results use the isolated file run; no product/test code was changed for this timeout",
+    "logs": [
+      "logs/green-auth-profile.log",
+      "logs/baseline-profile-image-retry.log",
+      "logs/green-profile-reliability-isolated.log"
+    ]
+  },
+  "limits": [
+    "No complete application build or installation",
+    "No live email delivery, password mutation, recovery deep link or full AuthGate session roundtrip",
+    "No real OS photo permissions, settings navigation or gallery contents",
+    "Video fixture controls initialization; playback frames/quality not evaluated",
+    "Profile guard covers header/system back; browser reload, tab close and web shell menu navigation are outside scope"
+  ],
+  "probes": {
+    "probes/native_capture.dart": "a9b876ec99913dc25a7727e204e8a923853cd02353c77b54b65b4d0326b69280",
+    "probes/test_runner.dart": "8f62c4df080f8baba60ede1e9a81dce163deb0b52103552e8fae7cf51882db13"
+  }
+}
