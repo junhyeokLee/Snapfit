@@ -148,7 +148,10 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
                   ],
                 ),
               ),
-              ExperienceIcon('ArrowRight', size: 20, color: WebPalette.of(context).brandInk,
+              ExperienceIcon(
+                'ArrowRight',
+                size: 20,
+                color: WebPalette.of(context).brandInk,
               ),
             ],
           ),

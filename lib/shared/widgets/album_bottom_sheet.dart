@@ -886,10 +886,13 @@ class _GalleryAlbumSelectionSheetState
                   child: TextField(
                     key: const ValueKey('gallery-album-search'),
                     style: ExperienceFormStyle.text(context, 14),
-                    decoration: ExperienceFormStyle.input(
-                      context,
-                      hint: '사진첩 검색',
-                    ).copyWith(prefixIcon: const ExperienceIcon('Search', size: 20)),
+                    decoration:
+                        ExperienceFormStyle.input(
+                          context,
+                          hint: '사진첩 검색',
+                        ).copyWith(
+                          prefixIcon: const ExperienceIcon('Search', size: 20),
+                        ),
                     onChanged: (value) => setState(() => _query = value),
                   ),
                 ),
@@ -984,7 +987,10 @@ class _GalleryAlbumTileState extends ConsumerState<_GalleryAlbumTile> {
                   color: ExperienceFormStyle.surface(context),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: ExperienceIcon('Image', size: 22, color: ExperienceFormStyle.muted(context),
+                child: ExperienceIcon(
+                  'Image',
+                  size: 22,
+                  color: ExperienceFormStyle.muted(context),
                 ),
               )
             : GalleryThumbTile(
@@ -1014,7 +1020,10 @@ class _GalleryAlbumTileState extends ConsumerState<_GalleryAlbumTile> {
             ),
     ),
     trailing: widget.selected
-        ? ExperienceIcon('Check', size: 21, color: ExperienceFormStyle.selectionInk(context),
+        ? ExperienceIcon(
+            'Check',
+            size: 21,
+            color: ExperienceFormStyle.selectionInk(context),
           )
         : null,
     onTap: () => Navigator.pop(context, widget.album),

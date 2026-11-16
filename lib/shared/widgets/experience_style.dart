@@ -254,7 +254,10 @@ class ExperienceRow extends StatelessWidget {
               ],
             ),
           ),
-          ExperienceIcon('ChevronRight', size: 18, color: themeAware
+          ExperienceIcon(
+            'ChevronRight',
+            size: 18,
+            color: themeAware
                 ? SnapFitColors.textSecondaryOf(context)
                 : ExperienceStyle.muted,
           ),

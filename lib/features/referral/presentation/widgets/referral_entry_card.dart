@@ -15,13 +15,18 @@ class ReferralEntryCard extends StatelessWidget {
       key: const ValueKey('referral-entry'),
       borderRadius: BorderRadius.circular(16),
       onTap: () => Navigator.of(context).push<void>(
-        snapFitRoute<void>(page: const ReferralScreen(), settings: const WebAppRouteSettings(WebAppLocation.referral)),
+        snapFitRoute<void>(
+          page: const ReferralScreen(),
+          settings: const WebAppRouteSettings(WebAppLocation.referral),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            ExperienceIcon('Users2', color: ExperienceFormStyle.selectionInk(context),
+            ExperienceIcon(
+              'Users2',
+              color: ExperienceFormStyle.selectionInk(context),
               size: 25,
             ),
             const SizedBox(width: 12),
@@ -50,7 +55,9 @@ class ReferralEntryCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            ExperienceIcon('ChevronRight', color: ExperienceFormStyle.selectionInk(context),
+            ExperienceIcon(
+              'ChevronRight',
+              color: ExperienceFormStyle.selectionInk(context),
             ),
           ],
         ),

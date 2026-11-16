@@ -172,7 +172,9 @@ class CoverSizePicker extends StatelessWidget {
                                   'print-size-selected-${cover.productId}',
                                 ),
                                 size: 18,
-                                color: ExperienceFormStyle.selectionInk(context),
+                                color: ExperienceFormStyle.selectionInk(
+                                  context,
+                                ),
                               )
                             : ExperienceIcon(
                                 'Circle',

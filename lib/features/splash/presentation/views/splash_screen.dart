@@ -113,7 +113,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ExperienceIcon('BookOpen', size: 34, color: WebPalette.of(context).brand,
+              ExperienceIcon(
+                'BookOpen',
+                size: 34,
+                color: WebPalette.of(context).brand,
               ),
               SizedBox(height: 16),
               Text(
@@ -134,8 +137,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         ),
       );
     }
-    return const Scaffold(
-      backgroundColor: Color(0xFF0AB5D1),
-    );
+    return const Scaffold(backgroundColor: Color(0xFF0AB5D1));
   }
 }

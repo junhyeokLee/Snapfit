@@ -164,8 +164,7 @@ class MomentPrivateNote extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      ExperienceIcon('Lock', size: 16, color: SocialStyle.accent(context),
-      ),
+      ExperienceIcon('Lock', size: 16, color: SocialStyle.accent(context)),
       const SizedBox(width: 7),
       Expanded(
         child: Text(
@@ -496,7 +495,10 @@ class _MomentRecordCardState extends State<MomentRecordCard> {
                                       ),
                                       curve: Curves.easeOut,
                                     ),
-                              icon: const ExperienceIcon('ChevronLeft', size: 20),
+                              icon: const ExperienceIcon(
+                                'ChevronLeft',
+                                size: 20,
+                              ),
                             ),
                             IconButton(
                               tooltip: '다음 기록 사진',
@@ -508,7 +510,10 @@ class _MomentRecordCardState extends State<MomentRecordCard> {
                                       ),
                                       curve: Curves.easeOut,
                                     ),
-                              icon: const ExperienceIcon('ChevronRight', size: 20),
+                              icon: const ExperienceIcon(
+                                'ChevronRight',
+                                size: 20,
+                              ),
                             ),
                           ],
                         ),

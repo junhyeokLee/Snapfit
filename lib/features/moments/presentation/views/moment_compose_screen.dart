@@ -1515,7 +1515,10 @@ class _MomentComposeScreenState extends ConsumerState<MomentComposeScreen>
                           dimension: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : ExperienceIcon('ImagePlus', size: 22, color: SocialStyle.accent(context),
+                      : ExperienceIcon(
+                          'ImagePlus',
+                          size: 22,
+                          color: SocialStyle.accent(context),
                         ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -1561,7 +1564,10 @@ class _MomentComposeScreenState extends ConsumerState<MomentComposeScreen>
                       dimension: 24,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : ExperienceIcon('ImagePlus', size: 32, color: SocialStyle.accent(context),
+                  : ExperienceIcon(
+                      'ImagePlus',
+                      size: 32,
+                      color: SocialStyle.accent(context),
                     ),
             ),
           );
@@ -1920,9 +1926,7 @@ class _MomentComposeScreenState extends ConsumerState<MomentComposeScreen>
           alignment: Alignment.centerLeft,
           child: TextButton.icon(
             key: ValueKey('moment-decorate-$photoId'),
-            onPressed: _editingLocked
-                ? null
-                : () => _decoratePhoto(photoId),
+            onPressed: _editingLocked ? null : () => _decoratePhoto(photoId),
             icon: const ExperienceIcon('Sparkles', size: 18),
             label: Text(edited ? '꾸밈 수정하기' : '사진 꾸미기'),
             style: TextButton.styleFrom(

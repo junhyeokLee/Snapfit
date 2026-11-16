@@ -48,11 +48,13 @@ class _AlbumMembersScreenState extends ConsumerState<AlbumMembersScreen> {
     try {
       await Navigator.push<void>(
         context,
-        snapFitRoute<void>(page: AlbumInviteScreen(
+        snapFitRoute<void>(
+          page: AlbumInviteScreen(
             albumId: album.id,
             albumTitle: album.title,
             album: album,
-          )),
+          ),
+        ),
       );
       if (_current(actor, revision) &&
           widget.album.id == album.id &&

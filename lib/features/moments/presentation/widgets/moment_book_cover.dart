@@ -124,11 +124,19 @@ class MomentBookCover extends StatelessWidget {
                               color: Colors.white.withValues(alpha: .8),
                               child: Center(
                                 child: compact
-                                    ? const ExperienceIcon('ImagePlus', color: SnapFitColors.accentInk, size: 22)
+                                    ? const ExperienceIcon(
+                                        'ImagePlus',
+                                        color: SnapFitColors.accentInk,
+                                        size: 22,
+                                      )
                                     : Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          const ExperienceIcon('ImagePlus', color: SnapFitColors.accentInk, size: 30),
+                                          const ExperienceIcon(
+                                            'ImagePlus',
+                                            color: SnapFitColors.accentInk,
+                                            size: 30,
+                                          ),
                                           const SizedBox(height: 10),
                                           Text(
                                             '내 사진이 들어갈 자리',

@@ -39,7 +39,9 @@ class AttendanceTodayCard extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             ExcludeSemantics(
-              child: ExperienceIcon('BookOpen', color: SocialStyle.accent(context),
+              child: ExperienceIcon(
+                'BookOpen',
+                color: SocialStyle.accent(context),
                 size: 24,
               ),
             ),
@@ -65,7 +67,10 @@ class AttendanceTodayCard extends StatelessWidget {
                 ),
                 child: Center(
                   child: status.checkedInToday
-                      ? ExperienceIcon('Check', size: 50, color: SocialStyle.accent(context),
+                      ? ExperienceIcon(
+                          'Check',
+                          size: 50,
+                          color: SocialStyle.accent(context),
                         )
                       : Text(
                           '${status.serverDate.day}',

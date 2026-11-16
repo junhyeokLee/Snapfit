@@ -381,10 +381,9 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen> {
                     Text('@${person.handle}'),
                     Text(
                       '기록 ${person.momentsCount} · 앨범 ${person.worksCount}',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(fontSize: 11),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(fontSize: 11),
                     ),
                   ],
                 ),

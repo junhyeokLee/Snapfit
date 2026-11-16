@@ -166,7 +166,10 @@ class SocialArtworkPlaceholder extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ExperienceIcon('BookOpen', size: compact ? 28 : 40, color: SocialStyle.accent(context),
+            ExperienceIcon(
+              'BookOpen',
+              size: compact ? 28 : 40,
+              color: SocialStyle.accent(context),
             ),
             if (!compact) ...[
               const SizedBox(height: 12),
@@ -269,7 +272,10 @@ class SocialAuthorLine extends StatelessWidget {
             if (!compact) ...[
               const SizedBox(width: 12),
               ExcludeSemantics(
-                child: ExperienceIcon('ChevronRight', size: 17, color: SnapFitColors.textMutedOf(context),
+                child: ExperienceIcon(
+                  'ChevronRight',
+                  size: 17,
+                  color: SnapFitColors.textMutedOf(context),
                 ),
               ),
             ],

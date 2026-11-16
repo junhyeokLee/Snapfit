@@ -268,7 +268,9 @@ class _FirstBookNextStepCardState extends ConsumerState<FirstBookNextStepCard>
                         ),
                       ),
                       const SizedBox(width: 12),
-                      ExperienceIcon('ArrowRight', color: SocialStyle.accent(context),
+                      ExperienceIcon(
+                        'ArrowRight',
+                        color: SocialStyle.accent(context),
                         size: 20,
                       ),
                     ],
@@ -342,7 +344,9 @@ class _FirstBookNextStepCardState extends ConsumerState<FirstBookNextStepCard>
                       ),
                     ),
                     const SizedBox(width: 8),
-                    ExperienceIcon('ArrowRight', color: SocialStyle.accent(context),
+                    ExperienceIcon(
+                      'ArrowRight',
+                      color: SocialStyle.accent(context),
                       size: 20,
                     ),
                   ],

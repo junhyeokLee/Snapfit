@@ -115,7 +115,10 @@ class AlbumFrozenScreen extends StatelessWidget {
                   height: 380,
                   child: album == null
                       ? Center(
-                          child: ExperienceIcon('BookOpen', size: 42, color: WebPalette.of(context).muted,
+                          child: ExperienceIcon(
+                            'BookOpen',
+                            size: 42,
+                            color: WebPalette.of(context).muted,
                           ),
                         )
                       : Center(child: WebSavedAlbumArtwork(album: album!)),
@@ -127,7 +130,10 @@ class AlbumFrozenScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        ExperienceIcon('CheckCircle2', size: 20, color: WebPalette.of(context).brandInk,
+                        ExperienceIcon(
+                          'CheckCircle2',
+                          size: 20,
+                          color: WebPalette.of(context).brandInk,
                         ),
                         SizedBox(width: 10),
                         Text(
@@ -233,7 +239,10 @@ class AlbumFrozenScreen extends StatelessWidget {
     children: [
       Row(
         children: [
-          ExperienceIcon('CheckCircle2', size: 20, color: ExperienceFormStyle.selectionInk(context),
+          ExperienceIcon(
+            'CheckCircle2',
+            size: 20,
+            color: ExperienceFormStyle.selectionInk(context),
           ),
           const SizedBox(width: 8),
           Text(

@@ -263,7 +263,9 @@ class _AiAlbumStartStepState extends ConsumerState<AiAlbumStartStep> {
                 ),
               ),
               const SizedBox(width: 10),
-              ExperienceIcon('ChevronRight', color: ExperienceFormStyle.selectionInk(context),
+              ExperienceIcon(
+                'ChevronRight',
+                color: ExperienceFormStyle.selectionInk(context),
                 size: 20,
               ),
             ],
@@ -371,7 +373,10 @@ class _AiAlbumStartStepState extends ConsumerState<AiAlbumStartStep> {
                               child: TextButton.icon(
                                 key: const ValueKey('creation-catalog-back'),
                                 onPressed: () => _setBrowsing(false),
-                                icon: const ExperienceIcon('ArrowLeft', size: 18),
+                                icon: const ExperienceIcon(
+                                  'ArrowLeft',
+                                  size: 18,
+                                ),
                                 label: const Text('만들기 방법'),
                               ),
                             ),
@@ -389,7 +394,10 @@ class _AiAlbumStartStepState extends ConsumerState<AiAlbumStartStep> {
                                   context,
                                   hint: '디자인 이름, 주제 검색',
                                 ).copyWith(
-                                  prefixIcon: const ExperienceIcon('Search', size: 22),
+                                  prefixIcon: const ExperienceIcon(
+                                    'Search',
+                                    size: 22,
+                                  ),
                                   suffixIcon: _query.isEmpty
                                       ? null
                                       : IconButton(
@@ -398,7 +406,10 @@ class _AiAlbumStartStepState extends ConsumerState<AiAlbumStartStep> {
                                             _query = '';
                                             _search.clear();
                                           }),
-                                          icon: const ExperienceIcon('X', size: 18),
+                                          icon: const ExperienceIcon(
+                                            'X',
+                                            size: 18,
+                                          ),
                                         ),
                                 ),
                           ),

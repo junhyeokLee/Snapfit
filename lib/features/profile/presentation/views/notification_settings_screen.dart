@@ -596,7 +596,10 @@ class NotificationSettingsContent extends StatelessWidget {
       children: [
         Row(
           children: [
-            ExperienceIcon('Bell', size: 20, color: ExperienceFormStyle.muted(context),
+            ExperienceIcon(
+              'Bell',
+              size: 20,
+              color: ExperienceFormStyle.muted(context),
             ),
             const SizedBox(width: 12),
             Expanded(

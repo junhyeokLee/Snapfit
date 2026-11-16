@@ -395,7 +395,10 @@ class _WeeklyMomentRecapScreenState
                               ).copyWith(letterSpacing: .3),
                             ),
                           ),
-                          ExperienceIcon('Lock', size: 13, color: SocialStyle.accent(context),
+                          ExperienceIcon(
+                            'Lock',
+                            size: 13,
+                            color: SocialStyle.accent(context),
                           ),
                           const SizedBox(width: 5),
                           Text(

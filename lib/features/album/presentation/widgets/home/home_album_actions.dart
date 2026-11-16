@@ -55,9 +55,12 @@ class HomeAlbumActions {
           ref.read(albumCollaborationActorProvider) != actor)
         return;
       await Navigator.of(context).push<void>(
-        snapFitRoute<void>(page: SocialPublishScreen(album: saved), settings: WebAppRouteSettings(
+        snapFitRoute<void>(
+          page: SocialPublishScreen(album: saved),
+          settings: WebAppRouteSettings(
             WebAppLocation(WebAppPage.socialPublish, '${saved.id}'),
-          )),
+          ),
+        ),
       );
     } catch (_) {
       if (context.mounted &&
@@ -183,7 +186,8 @@ class HomeAlbumActions {
           : 0;
       final editing = Navigator.push(
         context,
-        snapFitRoute(page: startWithPages || startAtFirstIncompletePage
+        snapFitRoute(
+          page: startWithPages || startAtFirstIncompletePage
               ? PageEditorScreen(
                   initialPageIndex: initialPage,
                   onePageGoal: onePageGoal,
@@ -194,11 +198,13 @@ class HomeAlbumActions {
                         ).firstUnfilledPhotoId
                       : null,
                 )
-              : AddCoverScreen(editAlbum: album), settings: albumId != null && albumId > 0
+              : AddCoverScreen(editAlbum: album),
+          settings: albumId != null && albumId > 0
               ? WebAppRouteSettings(
                   WebAppLocation(WebAppPage.editor, '$albumId'),
                 )
-              : null),
+              : null,
+        ),
       );
       if (onEditorClosed != null) {
         // The preparation lock ends now; refresh the caller only after editing.
@@ -335,7 +341,12 @@ class HomeAlbumActions {
         final routeResult = Navigator.push<Object?>(
           context,
           kIsWeb
-              ? snapFitRoute<Object?>(page: AlbumReaderScreen(initialSpreadIndex: initialSpreadIndex), settings: readerSettings)
+              ? snapFitRoute<Object?>(
+                  page: AlbumReaderScreen(
+                    initialSpreadIndex: initialSpreadIndex,
+                  ),
+                  settings: readerSettings,
+                )
               : openOverlay == null
               ? snapFitAlbumOpenRoute<Object?>(
                   settings: readerSettings,

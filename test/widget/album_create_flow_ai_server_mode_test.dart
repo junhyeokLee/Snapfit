@@ -188,13 +188,15 @@ void main() {
       final albums = RecordingCreationAlbums(owner: 'user-1');
       final creationStore = MemoryCreationDraftStore();
       await tester.pumpWidget(
-        _controlledFlow(provider, ({
-          required draftId,
-          required pointCost,
-        }) async {
-          charged.add(draftId);
-          return _pointSuccess;
-        }, albums: albums, creationStore: creationStore),
+        _controlledFlow(
+          provider,
+          ({required draftId, required pointCost}) async {
+            charged.add(draftId);
+            return _pointSuccess;
+          },
+          albums: albums,
+          creationStore: creationStore,
+        ),
       );
       await _openGeneratedReview(tester);
       await tester.tap(find.byTooltip('종이 톤 조절'));
@@ -257,49 +259,51 @@ void main() {
     skip: !kIsWeb,
   );
 
-  testWidgets('웹 /create/ai 전용 · 네이티브 AI 진입 미제공 · a late old point operation cannot replace a new account draft', (
-    tester,
-  ) async {
-    await tester.binding.setSurfaceSize(const Size(390, 844));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-    final provider = _ControlledTemplateProvider(immediate: true);
-    final auth = _FlowAuth();
-    final operation = Completer<Map<String, dynamic>>();
-    var calls = 0;
-    var balanceReads = 0;
-    await tester.pumpWidget(
-      _controlledFlow(
-        provider,
-        ({required draftId, required pointCost}) {
-          calls++;
-          return operation.future;
-        },
-        auth: auth,
-        onBalanceRead: () => balanceReads++,
-      ),
-    );
-    await _openGeneratedReview(tester);
-    await tester.tap(find.text('이 디자인 사용'));
-    await tester.pump();
-    final container = ProviderScope.containerOf(
-      tester.element(find.byType(AlbumCreateFlowScreen)),
-    );
-    container.read(orderSessionOwnerProvider.notifier).observe('other-user');
-    auth.switchAccount('other-user');
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('처음으로'));
-    await tester.pumpAndSettle();
-    await _openGeneratedReview(tester, reopen: true);
-    expect(provider.briefs, hasLength(2));
-    final previousBalanceReads = balanceReads;
-    operation.complete(_pointSuccess);
-    await tester.pumpAndSettle();
-    expect(find.text('이 디자인 사용'), findsOneWidget);
-    expect(find.byType(AlbumCreateStep1), findsNothing);
-    expect(balanceReads, previousBalanceReads);
-    expect(calls, 1);
-    expect(tester.takeException(), isNull);
-  }, skip: !kIsWeb);
+  testWidgets(
+    '웹 /create/ai 전용 · 네이티브 AI 진입 미제공 · a late old point operation cannot replace a new account draft',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final provider = _ControlledTemplateProvider(immediate: true);
+      final auth = _FlowAuth();
+      final operation = Completer<Map<String, dynamic>>();
+      var calls = 0;
+      var balanceReads = 0;
+      await tester.pumpWidget(
+        _controlledFlow(
+          provider,
+          ({required draftId, required pointCost}) {
+            calls++;
+            return operation.future;
+          },
+          auth: auth,
+          onBalanceRead: () => balanceReads++,
+        ),
+      );
+      await _openGeneratedReview(tester);
+      await tester.tap(find.text('이 디자인 사용'));
+      await tester.pump();
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(AlbumCreateFlowScreen)),
+      );
+      container.read(orderSessionOwnerProvider.notifier).observe('other-user');
+      auth.switchAccount('other-user');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('처음으로'));
+      await tester.pumpAndSettle();
+      await _openGeneratedReview(tester, reopen: true);
+      expect(provider.briefs, hasLength(2));
+      final previousBalanceReads = balanceReads;
+      operation.complete(_pointSuccess);
+      await tester.pumpAndSettle();
+      expect(find.text('이 디자인 사용'), findsOneWidget);
+      expect(find.byType(AlbumCreateStep1), findsNothing);
+      expect(balanceReads, previousBalanceReads);
+      expect(calls, 1);
+      expect(tester.takeException(), isNull);
+    },
+    skip: !kIsWeb,
+  );
 
   testWidgets(
     '웹 /create/ai 전용 · 네이티브 AI 진입 미제공 · account change discards a late generated design and its request',
@@ -746,144 +750,151 @@ void main() {
     skip: !kIsWeb,
   );
 
-  testWidgets('웹 /create/ai 전용 · 네이티브 AI 진입 미제공 · AI template flow applies slot draft to real album setup step', (
-    tester,
-  ) async {
-    await tester.binding.setSurfaceSize(const Size(390, 844));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-    final tokenStorage = _MockTokenStorage();
-    when(() => tokenStorage.getUserId()).thenAnswer((_) async => 'user-1');
-    final albums = RecordingCreationAlbums(owner: 'user-1');
-    final creationStore = MemoryCreationDraftStore();
-    final billedDraftIds = <String>[];
+  testWidgets(
+    '웹 /create/ai 전용 · 네이티브 AI 진입 미제공 · AI template flow applies slot draft to real album setup step',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final tokenStorage = _MockTokenStorage();
+      when(() => tokenStorage.getUserId()).thenAnswer((_) async => 'user-1');
+      final albums = RecordingCreationAlbums(owner: 'user-1');
+      final creationStore = MemoryCreationDraftStore();
+      final billedDraftIds = <String>[];
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          ...unifiedCreationBackendOverrides(albums: albums),
-          authViewModelProvider.overrideWith(_FlowAuth.new),
-          albumEditorOwnerReaderProvider.overrideWith((ref) {
-            var owner = ref.read(authViewModelProvider).asData?.value?.id;
-            ref.listen(authViewModelProvider, (_, next) {
-              owner = next.asData?.value?.id;
-            });
-            // dispose 중에도 Ref에 접근하지 않는 계정 상태 스냅샷을 읽는다.
-            return () => owner;
-          }),
-          albumEditorOwnerChangesProvider.overrideWith(
-            (ref) =>
-                Stream.value(ref.watch(authViewModelProvider).asData?.value?.id),
-          ),
-          albumCreationDraftStoreProvider.overrideWithValue(creationStore),
-          myPointBalanceProvider.overrideWith((_) async => 1000),
-          billingRepositoryProvider.overrideWithValue(
-            BillingRepository(
-              tokenStorage: tokenStorage,
-              recordAiAlbumDraftSuccessRpc:
-                  ({required draftId, required pointCost}) async {
-                    expect(draftId, 'slot-draft-1');
-                    billedDraftIds.add(draftId);
-                    return {
-                      'used_free_credit': true,
-                      'charged_points': 0,
-                      'remaining_balance': 1000,
-                    };
-                  },
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ...unifiedCreationBackendOverrides(albums: albums),
+            authViewModelProvider.overrideWith(_FlowAuth.new),
+            albumEditorOwnerReaderProvider.overrideWith((ref) {
+              var owner = ref.read(authViewModelProvider).asData?.value?.id;
+              ref.listen(authViewModelProvider, (_, next) {
+                owner = next.asData?.value?.id;
+              });
+              // dispose 중에도 Ref에 접근하지 않는 계정 상태 스냅샷을 읽는다.
+              return () => owner;
+            }),
+            albumEditorOwnerChangesProvider.overrideWith(
+              (ref) => Stream.value(
+                ref.watch(authViewModelProvider).asData?.value?.id,
+              ),
             ),
-          ),
-          aiAlbumDraftGenerationServiceProvider.overrideWithValue(
-            AiAlbumDraftGenerationService(
-              collectCandidates: (_) async => [
-                _candidate(
-                  'photo-1',
-                  DateTime(2026, 8, 20),
-                  PhotoOrientation.landscape,
-                ),
-                _candidate(
-                  'photo-2',
-                  DateTime(2026, 8, 21),
-                  PhotoOrientation.portrait,
-                ),
-                _candidate(
-                  'photo-3',
-                  DateTime(2026, 8, 22),
-                  PhotoOrientation.square,
-                ),
-              ],
-              draftProvider: const _SlotTemplateDraftProvider(),
-              minimumPhotoCount: 3,
+            albumCreationDraftStoreProvider.overrideWithValue(creationStore),
+            myPointBalanceProvider.overrideWith((_) async => 1000),
+            billingRepositoryProvider.overrideWithValue(
+              BillingRepository(
+                tokenStorage: tokenStorage,
+                recordAiAlbumDraftSuccessRpc:
+                    ({required draftId, required pointCost}) async {
+                      expect(draftId, 'slot-draft-1');
+                      billedDraftIds.add(draftId);
+                      return {
+                        'used_free_credit': true,
+                        'charged_points': 0,
+                        'remaining_balance': 1000,
+                      };
+                    },
+              ),
             ),
-          ),
-        ],
-        child: ScreenUtilInit(
-          designSize: const Size(390, 844),
-          minTextAdapt: true,
-          builder: (_, __) => const MaterialApp(
-            home: Scaffold(
-              body: AlbumCreateFlowScreen(
-                usesServerDraftProvider: true,
-                initialAiMode: true,
+            aiAlbumDraftGenerationServiceProvider.overrideWithValue(
+              AiAlbumDraftGenerationService(
+                collectCandidates: (_) async => [
+                  _candidate(
+                    'photo-1',
+                    DateTime(2026, 8, 20),
+                    PhotoOrientation.landscape,
+                  ),
+                  _candidate(
+                    'photo-2',
+                    DateTime(2026, 8, 21),
+                    PhotoOrientation.portrait,
+                  ),
+                  _candidate(
+                    'photo-3',
+                    DateTime(2026, 8, 22),
+                    PhotoOrientation.square,
+                  ),
+                ],
+                draftProvider: const _SlotTemplateDraftProvider(),
+                minimumPhotoCount: 3,
+              ),
+            ),
+          ],
+          child: ScreenUtilInit(
+            designSize: const Size(390, 844),
+            minTextAdapt: true,
+            builder: (_, __) => const MaterialApp(
+              home: Scaffold(
+                body: AlbumCreateFlowScreen(
+                  usesServerDraftProvider: true,
+                  initialAiMode: true,
+                ),
               ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    await _openAiBrief(tester);
-    await _submitBrief(tester, productId: 'REDP_250X200_SOFT', hardcover: true);
-    await tester.ensureVisible(find.text('템플릿 만들기'));
-    await tester.tap(find.text('템플릿 만들기'));
-    await tester.pumpAndSettle();
+      await _openAiBrief(tester);
+      await _submitBrief(
+        tester,
+        productId: 'REDP_250X200_SOFT',
+        hardcover: true,
+      );
+      await tester.ensureVisible(find.text('템플릿 만들기'));
+      await tester.tap(find.text('템플릿 만들기'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('제주의 느린 오후'), findsWidgets);
-    expect(find.text('추천 사진 0장'), findsNothing);
-    expect(find.byKey(const Key('ai_design_page_0')), findsOneWidget);
+      expect(find.text('제주의 느린 오후'), findsWidgets);
+      expect(find.text('추천 사진 0장'), findsNothing);
+      expect(find.byKey(const Key('ai_design_page_0')), findsOneWidget);
 
-    await tester.tap(find.text('이 디자인 사용'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('이 디자인 사용'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('제주의 느린 오후'), findsWidgets);
-    expect(find.text('앨범 설정'), findsOneWidget);
-    final setup = tester.widget<AlbumCreateStep1>(
-      find.byType(AlbumCreateStep1),
-    );
-    expect(setup.selectedCover!.productId, 'REDP_250X200_HARD');
-    expect(setup.selectedCover!.ratio, 1.25);
-    expect(setup.selectedCover!.realSize, const Size(25, 20));
-    expect(setup.selectedPageCount, 20);
-    final container = await _continueToEditor(tester);
-    final vm = container.read(albumEditorViewModelProvider.notifier);
-    expect(find.byType(PageEditorScreen), findsOneWidget);
-    expect(find.byType(TemplatePhotoFillStep), findsNothing);
-    expect(vm.currentPageIndex, 0);
-    expect(vm.selectedCover.productId, 'REDP_250X200_HARD');
-    expect(vm.selectedCover.ratio, 1.25);
-    expect(vm.selectedCover.realSize, const Size(25, 20));
-    expect(vm.innerPageCount, 20);
-    expect(
-      vm.pages.first.layers.any(
-        (layer) => layer.type == LayerType.image && !layer.hasImageSource,
-      ),
-      isTrue,
-    );
-    final linked = creationStore.draft!;
-    final editor = tester.widget<PageEditorScreen>(
-      find.byType(PageEditorScreen),
-    );
-    expect(albums.creates, 1);
-    expect(vm.editingAlbumId, albums.albumId);
-    expect(linked.createdAlbumId, albums.albumId);
-    expect(editor.creationDraftId, linked.id);
-    expect(editor.creationDraftOwner, 'user-1');
-    expect(linked.editorCheckpoint!.pages, hasLength(21));
-    expect(linked.editorCheckpoint!.sourceOwnerId, 'user-1');
-    expect(linked.cover.productId, 'REDP_250X200_HARD');
-    expect(billedDraftIds, ['slot-draft-1']);
-    expect(find.text('사진 추가'), findsWidgets);
-    expect(find.text('AI가 이렇게 골랐어요'), findsNothing);
-    expect(tester.takeException(), isNull);
-  }, skip: !kIsWeb);
+      expect(find.text('제주의 느린 오후'), findsWidgets);
+      expect(find.text('앨범 설정'), findsOneWidget);
+      final setup = tester.widget<AlbumCreateStep1>(
+        find.byType(AlbumCreateStep1),
+      );
+      expect(setup.selectedCover!.productId, 'REDP_250X200_HARD');
+      expect(setup.selectedCover!.ratio, 1.25);
+      expect(setup.selectedCover!.realSize, const Size(25, 20));
+      expect(setup.selectedPageCount, 20);
+      final container = await _continueToEditor(tester);
+      final vm = container.read(albumEditorViewModelProvider.notifier);
+      expect(find.byType(PageEditorScreen), findsOneWidget);
+      expect(find.byType(TemplatePhotoFillStep), findsNothing);
+      expect(vm.currentPageIndex, 0);
+      expect(vm.selectedCover.productId, 'REDP_250X200_HARD');
+      expect(vm.selectedCover.ratio, 1.25);
+      expect(vm.selectedCover.realSize, const Size(25, 20));
+      expect(vm.innerPageCount, 20);
+      expect(
+        vm.pages.first.layers.any(
+          (layer) => layer.type == LayerType.image && !layer.hasImageSource,
+        ),
+        isTrue,
+      );
+      final linked = creationStore.draft!;
+      final editor = tester.widget<PageEditorScreen>(
+        find.byType(PageEditorScreen),
+      );
+      expect(albums.creates, 1);
+      expect(vm.editingAlbumId, albums.albumId);
+      expect(linked.createdAlbumId, albums.albumId);
+      expect(editor.creationDraftId, linked.id);
+      expect(editor.creationDraftOwner, 'user-1');
+      expect(linked.editorCheckpoint!.pages, hasLength(21));
+      expect(linked.editorCheckpoint!.sourceOwnerId, 'user-1');
+      expect(linked.cover.productId, 'REDP_250X200_HARD');
+      expect(billedDraftIds, ['slot-draft-1']);
+      expect(find.text('사진 추가'), findsWidgets);
+      expect(find.text('AI가 이렇게 골랐어요'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+    skip: !kIsWeb,
+  );
 }
 
 Future<void> _submitBrief(
@@ -1083,10 +1094,7 @@ Future<ProviderContainer> _continueToEditor(WidgetTester tester) async {
   fail('Accepted AI design did not enter the unified editor.');
 }
 
-Future<void> _openAiBrief(
-  WidgetTester tester, {
-  bool reopen = false,
-}) async {
+Future<void> _openAiBrief(WidgetTester tester, {bool reopen = false}) async {
   if (reopen) {
     // 계정 변경 뒤에는 실제 웹 /create/ai 경로로 새 요청 화면을 연다.
     final navigation = Navigator.of(

@@ -113,7 +113,10 @@ class _HomeAlbumDestinationState extends ConsumerState<HomeAlbumDestination> {
               ?.month,
         ),
         onSignIn: () => Navigator.of(context).push<void>(
-          snapFitRoute<void>(page: const LoginScreen(), settings: const WebAppRouteSettings(WebAppLocation.login)),
+          snapFitRoute<void>(
+            page: const LoginScreen(),
+            settings: const WebAppRouteSettings(WebAppLocation.login),
+          ),
         ),
         onOpenDate: (date) =>
             openMoments(context, initialMonth: date, initialDate: date),

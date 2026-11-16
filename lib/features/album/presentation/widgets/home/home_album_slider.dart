@@ -375,7 +375,10 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
                                       children: [
                                         Text('전체보기'),
                                         SizedBox(width: 5),
-                                        ExperienceIcon('ChevronRight', size: 14),
+                                        ExperienceIcon(
+                                          'ChevronRight',
+                                          size: 14,
+                                        ),
                                       ],
                                     ),
                                   ),

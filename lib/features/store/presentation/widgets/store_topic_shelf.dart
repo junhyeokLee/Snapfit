@@ -155,7 +155,10 @@ class _StoreTopicShelfState extends State<StoreTopicShelf> {
                   avatar: category == '전체'
                       ? null
                       : category == storeRecommendedCategory
-                      ? ExperienceIcon('Sparkles', size: 16, color: ExperienceFormStyle.selectionInk(context),
+                      ? ExperienceIcon(
+                          'Sparkles',
+                          size: 16,
+                          color: ExperienceFormStyle.selectionInk(context),
                         )
                       : SizedBox(
                           width: 4,

@@ -546,7 +546,10 @@ class _MyMomentArchiveState extends ConsumerState<MyMomentArchive>
                         color: ExperienceFormStyle.selection(context),
                         child: photo == null
                             ? Center(
-                                child: ExperienceIcon('Image', size: hero ? 40 : 28, color: ExperienceFormStyle.muted(context),
+                                child: ExperienceIcon(
+                                  'Image',
+                                  size: hero ? 40 : 28,
+                                  color: ExperienceFormStyle.muted(context),
                                 ),
                               )
                             : Semantics(
@@ -619,7 +622,10 @@ class _MyMomentArchiveState extends ConsumerState<MyMomentArchive>
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 2),
-                    child: ExperienceIcon('ArrowRight', size: hero ? 23 : 20, color: ExperienceFormStyle.selectionInk(context),
+                    child: ExperienceIcon(
+                      'ArrowRight',
+                      size: hero ? 23 : 20,
+                      color: ExperienceFormStyle.selectionInk(context),
                     ),
                   ),
                 ],

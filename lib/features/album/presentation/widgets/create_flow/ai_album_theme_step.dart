@@ -295,7 +295,10 @@ class _TemplateStyleCard extends StatelessWidget {
                       children: [
                         Flexible(child: _ThemePill(text: style.themeLabel)),
                         SizedBox(width: 6),
-                        ExperienceIcon('ArrowRight', size: compact ? 16 : 17, color: SnapFitColors.textMutedOf(context),
+                        ExperienceIcon(
+                          'ArrowRight',
+                          size: compact ? 16 : 17,
+                          color: SnapFitColors.textMutedOf(context),
                         ),
                       ],
                     ),

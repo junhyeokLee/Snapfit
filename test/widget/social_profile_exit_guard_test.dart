@@ -46,7 +46,9 @@ class ProfileExitFixture {
       ),
     ).thenAnswer((_) async {
       saves++;
-      return pendingSave == null ? profileExitInitial : await pendingSave!.future;
+      return pendingSave == null
+          ? profileExitInitial
+          : await pendingSave!.future;
     });
   }
 
@@ -112,7 +114,9 @@ Future<void> mountProfileExit(
           splashFactory: NoSplash.splashFactory,
         ),
         builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(scale)),
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(scale)),
           child: capture == null
               ? child!
               : RepaintBoundary(key: capture, child: child!),
@@ -137,10 +141,12 @@ Future<void> _edit(WidgetTester tester, String name, String value) async {
 
 VoidCallback _back(WidgetTester tester) => tester
     .widget<IconButton>(
-      find.ancestor(
-        of: find.byTooltip('뒤로가기'),
-        matching: find.byType(IconButton),
-      ).first,
+      find
+          .ancestor(
+            of: find.byTooltip('뒤로가기'),
+            matching: find.byType(IconButton),
+          )
+          .first,
     )
     .onPressed!;
 
@@ -157,145 +163,164 @@ void main() {
     ('handle', 'changed.public'),
     ('bio', '저장 전 작성하던 공개 소개입니다.'),
   ]) {
-    testWidgets('recovery regression: profile ${entry.$1} back preserves unsaved text', (
-      tester,
-    ) async {
+    testWidgets(
+      'recovery regression: profile ${entry.$1} back preserves unsaved text',
+      (tester) async {
+        final fixture = ProfileExitFixture();
+        await mountProfileExit(tester, fixture);
+        await _edit(tester, entry.$1, entry.$2);
+        _back(tester)();
+        await tester.pumpAndSettle();
+        expect(find.byType(AlertDialog), findsOneWidget);
+        await _choose(tester, '계속 수정');
+        expect(find.byType(SocialProfileEditScreen), findsOneWidget);
+        expect(
+          tester.widget<TextFormField>(_field(entry.$1)).controller!.text,
+          entry.$2,
+        );
+        expect(fixture.saves, 0);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets(
+    'recovery regression: profile system back can discard explicitly',
+    (tester) async {
       final fixture = ProfileExitFixture();
       await mountProfileExit(tester, fixture);
-      await _edit(tester, entry.$1, entry.$2);
-      _back(tester)();
+      await _edit(tester, 'bio', '뒤로 가기 전에 확인할 소개');
+      await fixture.navigator.currentState!.maybePop();
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsOneWidget);
+      await _choose(tester, '나가기');
+      expect(find.byType(SocialProfileEditScreen), findsNothing);
+      expect(find.text('프로필 검토 시작'), findsOneWidget);
+      await fixture.open(tester);
+      expect(
+        tester.widget<TextFormField>(_field('bio')).controller!.text,
+        profileExitInitial.bio,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  for (final revert in [false, true]) {
+    testWidgets(
+      'recovery regression: profile unchanged or reverted exits immediately revert=$revert',
+      (tester) async {
+        final fixture = ProfileExitFixture();
+        await mountProfileExit(tester, fixture);
+        if (revert) {
+          for (final field in [
+            ('name', profileExitInitial.displayName),
+            ('handle', profileExitInitial.handle),
+            ('bio', profileExitInitial.bio),
+          ]) {
+            await _edit(tester, field.$1, '임시로 바꾼 값');
+            await _edit(tester, field.$1, field.$2);
+          }
+        }
+        _back(tester)();
+        await tester.pumpAndSettle();
+        expect(find.byType(AlertDialog), findsNothing);
+        expect(find.byType(SocialProfileEditScreen), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets(
+    'recovery regression: profile repeated back opens a single confirmation',
+    (tester) async {
+      final fixture = ProfileExitFixture();
+      await mountProfileExit(tester, fixture);
+      await _edit(tester, 'bio', '변경한 소개');
+      final back = _back(tester);
+      back();
+      back();
       await tester.pumpAndSettle();
       expect(find.byType(AlertDialog), findsOneWidget);
       await _choose(tester, '계속 수정');
       expect(find.byType(SocialProfileEditScreen), findsOneWidget);
-      expect(tester.widget<TextFormField>(_field(entry.$1)).controller!.text, entry.$2);
-      expect(fixture.saves, 0);
       expect(tester.takeException(), isNull);
-    });
-  }
+    },
+  );
 
-  testWidgets('recovery regression: profile system back can discard explicitly', (
-    tester,
-  ) async {
-    final fixture = ProfileExitFixture();
-    await mountProfileExit(tester, fixture);
-    await _edit(tester, 'bio', '뒤로 가기 전에 확인할 소개');
-    await fixture.navigator.currentState!.maybePop();
-    await tester.pumpAndSettle();
-    expect(find.byType(AlertDialog), findsOneWidget);
-    await _choose(tester, '나가기');
-    expect(find.byType(SocialProfileEditScreen), findsNothing);
-    expect(find.text('프로필 검토 시작'), findsOneWidget);
-    await fixture.open(tester);
-    expect(tester.widget<TextFormField>(_field('bio')).controller!.text, profileExitInitial.bio);
-    expect(tester.takeException(), isNull);
-  });
-
-  for (final revert in [false, true]) {
-    testWidgets('recovery regression: profile unchanged or reverted exits immediately revert=$revert', (
-      tester,
-    ) async {
-      final fixture = ProfileExitFixture();
+  testWidgets(
+    'recovery regression: profile save is busy then closes without discard prompt',
+    (tester) async {
+      final fixture = ProfileExitFixture()
+        ..pendingSave = Completer<SocialProfile>();
       await mountProfileExit(tester, fixture);
-      if (revert) {
-        for (final field in [
-          ('name', profileExitInitial.displayName),
-          ('handle', profileExitInitial.handle),
-          ('bio', profileExitInitial.bio),
-        ]) {
-          await _edit(tester, field.$1, '임시로 바꾼 값');
-          await _edit(tester, field.$1, field.$2);
-        }
-      }
+      await _edit(tester, 'bio', '계정에 저장할 소개');
+      final save = find.widgetWithText(FilledButton, '프로필 저장');
+      await tester.ensureVisible(save);
+      await tester.tap(save);
+      await tester.pump(const Duration(milliseconds: 100));
       _back(tester)();
-      await tester.pumpAndSettle();
+      await fixture.navigator.currentState!.maybePop();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.byType(SocialProfileEditScreen), findsOneWidget);
       expect(find.byType(AlertDialog), findsNothing);
+      fixture.pendingSave!.complete(profileExitInitial);
+      await tester.pumpAndSettle();
       expect(find.byType(SocialProfileEditScreen), findsNothing);
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(fixture.saves, 1);
       expect(tester.takeException(), isNull);
-    });
-  }
-
-  testWidgets('recovery regression: profile repeated back opens a single confirmation', (
-    tester,
-  ) async {
-    final fixture = ProfileExitFixture();
-    await mountProfileExit(tester, fixture);
-    await _edit(tester, 'bio', '변경한 소개');
-    final back = _back(tester);
-    back();
-    back();
-    await tester.pumpAndSettle();
-    expect(find.byType(AlertDialog), findsOneWidget);
-    await _choose(tester, '계속 수정');
-    expect(find.byType(SocialProfileEditScreen), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('recovery regression: profile save is busy then closes without discard prompt', (
-    tester,
-  ) async {
-    final fixture = ProfileExitFixture()..pendingSave = Completer<SocialProfile>();
-    await mountProfileExit(tester, fixture);
-    await _edit(tester, 'bio', '계정에 저장할 소개');
-    final save = find.widgetWithText(FilledButton, '프로필 저장');
-    await tester.ensureVisible(save);
-    await tester.tap(save);
-    await tester.pump(const Duration(milliseconds: 100));
-    _back(tester)();
-    await fixture.navigator.currentState!.maybePop();
-    await tester.pump(const Duration(milliseconds: 100));
-    expect(find.byType(SocialProfileEditScreen), findsOneWidget);
-    expect(find.byType(AlertDialog), findsNothing);
-    fixture.pendingSave!.complete(profileExitInitial);
-    await tester.pumpAndSettle();
-    expect(find.byType(SocialProfileEditScreen), findsNothing);
-    expect(find.byType(AlertDialog), findsNothing);
-    expect(fixture.saves, 1);
-    expect(tester.takeException(), isNull);
-  });
+    },
+  );
 
   for (final actor in <String?>[null, 'profile-other']) {
-    testWidgets('recovery regression: profile identity change dismisses stale exit confirmation actor=$actor', (
-      tester,
-    ) async {
-      final fixture = ProfileExitFixture();
-      await mountProfileExit(tester, fixture);
-      await _edit(tester, 'bio', '이전 계정이 작성한 비공개 초안');
-      _back(tester)();
-      await tester.pumpAndSettle();
-      expect(find.byType(AlertDialog), findsOneWidget);
-      final discard = tester
-          .widget<TextButton>(find.widgetWithText(TextButton, '나가기'))
-          .onPressed!;
-      fixture.owner(actor);
-      await tester.pumpAndSettle();
-      expect(find.byType(AlertDialog), findsNothing);
-      expect(find.text('이전 계정이 작성한 비공개 초안'), findsNothing);
-      discard();
-      await tester.pumpAndSettle();
-      expect(find.byType(SocialProfileEditScreen), findsOneWidget);
-      await fixture.navigator.currentState!.maybePop();
-      await tester.pumpAndSettle();
-      expect(find.byType(AlertDialog), findsNothing);
-      expect(find.byType(SocialProfileEditScreen), findsNothing);
-      expect(tester.takeException(), isNull);
-    });
+    testWidgets(
+      'recovery regression: profile identity change dismisses stale exit confirmation actor=$actor',
+      (tester) async {
+        final fixture = ProfileExitFixture();
+        await mountProfileExit(tester, fixture);
+        await _edit(tester, 'bio', '이전 계정이 작성한 비공개 초안');
+        _back(tester)();
+        await tester.pumpAndSettle();
+        expect(find.byType(AlertDialog), findsOneWidget);
+        final discard = tester
+            .widget<TextButton>(find.widgetWithText(TextButton, '나가기'))
+            .onPressed!;
+        fixture.owner(actor);
+        await tester.pumpAndSettle();
+        expect(find.byType(AlertDialog), findsNothing);
+        expect(find.text('이전 계정이 작성한 비공개 초안'), findsNothing);
+        discard();
+        await tester.pumpAndSettle();
+        expect(find.byType(SocialProfileEditScreen), findsOneWidget);
+        await fixture.navigator.currentState!.maybePop();
+        await tester.pumpAndSettle();
+        expect(find.byType(AlertDialog), findsNothing);
+        expect(find.byType(SocialProfileEditScreen), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
   }
 
-  testWidgets('recovery regression: profile draft confirmation fits narrow large text', (
-    tester,
-  ) async {
-    final fixture = ProfileExitFixture();
-    await mountProfileExit(tester, fixture, size: const Size(320, 568), scale: 1.8);
-    await _edit(tester, 'bio', '좁은 화면에서도 보존할 작성 중인 소개');
-    _back(tester)();
-    await tester.pumpAndSettle();
-    for (final label in ['계속 수정', '나가기']) {
-      final action = find.widgetWithText(TextButton, label);
-      await tester.ensureVisible(action);
+  testWidgets(
+    'recovery regression: profile draft confirmation fits narrow large text',
+    (tester) async {
+      final fixture = ProfileExitFixture();
+      await mountProfileExit(
+        tester,
+        fixture,
+        size: const Size(320, 568),
+        scale: 1.8,
+      );
+      await _edit(tester, 'bio', '좁은 화면에서도 보존할 작성 중인 소개');
+      _back(tester)();
       await tester.pumpAndSettle();
-      expect(action.hitTestable(), findsOneWidget);
-    }
-    expect(tester.takeException(), isNull);
-  });
+      for (final label in ['계속 수정', '나가기']) {
+        final action = find.widgetWithText(TextButton, label);
+        await tester.ensureVisible(action);
+        await tester.pumpAndSettle();
+        expect(action.hitTestable(), findsOneWidget);
+      }
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

@@ -86,10 +86,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (!mounted || decision == null) return;
       final created = await Navigator.push(
         context,
-        snapFitRoute(page: AlbumCreateFlowScreen(
+        snapFitRoute(
+          page: AlbumCreateFlowScreen(
             initialDraft: decision.draft,
             initialStartMode: decision.draft == null ? startMode : null,
-          ), settings: const WebAppRouteSettings(WebAppLocation.create)),
+          ),
+          settings: const WebAppRouteSettings(WebAppLocation.create),
+        ),
       );
       if (!mounted) return;
       ref.invalidate(albumCreationDraftProvider);

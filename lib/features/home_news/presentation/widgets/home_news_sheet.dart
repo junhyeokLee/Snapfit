@@ -696,7 +696,10 @@ class _AttendanceArtwork extends StatelessWidget {
         Positioned(
           right: 28,
           top: 30,
-          child: ExperienceIcon('Sparkles', size: 22, color: SnapFitColors.accent.withValues(alpha: .6),
+          child: ExperienceIcon(
+            'Sparkles',
+            size: 22,
+            color: SnapFitColors.accent.withValues(alpha: .6),
           ),
         ),
         Transform.translate(
@@ -731,7 +734,11 @@ class _AttendanceArtwork extends StatelessWidget {
                       color: SnapFitColors.actionAccent,
                       shape: BoxShape.circle,
                     ),
-                    child: const ExperienceIcon('Check', size: 42, color: Colors.white),
+                    child: const ExperienceIcon(
+                      'Check',
+                      size: 42,
+                      color: Colors.white,
+                    ),
                   ),
                 ],
               ),
@@ -892,7 +899,11 @@ class _ReviewArtwork extends StatelessWidget {
                   color: dark
                       ? const Color(0xFFBFD2D4)
                       : const Color(0xFFDDECEE),
-                  child: const ExperienceIcon('ImagePlus', size: 48, color: SnapFitColors.actionAccent),
+                  child: const ExperienceIcon(
+                    'ImagePlus',
+                    size: 48,
+                    color: SnapFitColors.actionAccent,
+                  ),
                 ),
               ),
             ),
@@ -1009,7 +1020,10 @@ class _CoverFallback extends StatelessWidget {
   Widget build(BuildContext context) => ColoredBox(
     color: ExperienceFormStyle.selection(context),
     child: Center(
-      child: ExperienceIcon('Bookmark', size: 40, color: ExperienceFormStyle.selectionInk(context),
+      child: ExperienceIcon(
+        'Bookmark',
+        size: 40,
+        color: ExperienceFormStyle.selectionInk(context),
       ),
     ),
   );

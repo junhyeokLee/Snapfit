@@ -397,10 +397,7 @@ class EditCoverState extends ConsumerState<EditCover> {
         } else {
           // 기존 앨범(커버 탭/편집): 다음 단계(페이지 편집)로 이동
           context.showSnack('저장되었습니다.');
-          Navigator.push(
-            context,
-            snapFitRoute(page: const PageEditorScreen()),
-          );
+          Navigator.push(context, snapFitRoute(page: const PageEditorScreen()));
         }
       } else {
         // 실패 (ID 반환 없음)

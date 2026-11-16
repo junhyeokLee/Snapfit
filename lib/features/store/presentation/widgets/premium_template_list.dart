@@ -138,9 +138,11 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                               child: SnapFitPressable(
                                 onTap: () => Navigator.push(
                                   context,
-                                  snapFitRoute(page: TemplateDetailScreen(
+                                  snapFitRoute(
+                                    page: TemplateDetailScreen(
                                       template: template,
-                                    )),
+                                    ),
+                                  ),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,7 +177,10 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                           ),
                                         ),
                                         const SizedBox(width: 6),
-                                        const ExperienceIcon('ChevronRight', size: 20),
+                                        const ExperienceIcon(
+                                          'ChevronRight',
+                                          size: 20,
+                                        ),
                                       ],
                                     ),
                                     const SizedBox(height: 5),
@@ -354,9 +359,11 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                 onTap: () {
                                   Navigator.push(
                                     context,
-                                    snapFitRoute(page: TemplateDetailScreen(
+                                    snapFitRoute(
+                                      page: TemplateDetailScreen(
                                         template: template,
-                                      )),
+                                      ),
+                                    ),
                                   );
                                 },
                                 child: Stack(
@@ -688,7 +695,10 @@ class _ShowcaseCtaPill extends StatelessWidget {
             ),
           ),
           SizedBox(width: 3),
-          const ExperienceIcon('ChevronRight', size: 15, color: Color(0xFF1F2937),
+          const ExperienceIcon(
+            'ChevronRight',
+            size: 15,
+            color: Color(0xFF1F2937),
           ),
         ],
       ),

@@ -34,7 +34,10 @@ class WebSavedAlbumArtwork extends ConsumerWidget {
     final empty = ColoredBox(
       color: WebPalette.of(context).canvas,
       child: Center(
-        child: ExperienceIcon('BookOpen', size: 32, color: WebPalette.of(context).muted,
+        child: ExperienceIcon(
+          'BookOpen',
+          size: 32,
+          color: WebPalette.of(context).muted,
         ),
       ),
     );

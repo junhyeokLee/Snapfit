@@ -465,10 +465,7 @@ void main() {
         card,
         300,
         scrollable: find
-            .descendant(
-              of: catalog,
-              matching: find.byType(Scrollable),
-            )
+            .descendant(of: catalog, matching: find.byType(Scrollable))
             .first,
       );
       await _settle(tester);

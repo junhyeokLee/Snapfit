@@ -124,7 +124,10 @@ class _PublicDiscoveryScreenState extends ConsumerState<PublicDiscoveryScreen> {
       return;
     }
     Navigator.of(context).push(
-      snapFitRoute<void>(page: TemplateDetailScreen(template: template, guestPreview: true), settings: kIsWeb ? WebAppRouteSettings(location) : null),
+      snapFitRoute<void>(
+        page: TemplateDetailScreen(template: template, guestPreview: true),
+        settings: kIsWeb ? WebAppRouteSettings(location) : null,
+      ),
     );
   }
 

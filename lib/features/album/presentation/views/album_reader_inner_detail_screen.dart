@@ -91,12 +91,15 @@ class _AlbumReaderInnerDetailScreenState
     final owner = ref.read(albumEditorOwnerReaderProvider)();
     await Navigator.push<bool>(
       context,
-      snapFitRoute(page: PageEditorScreen(
+      snapFitRoute(
+        page: PageEditorScreen(
           initialPageIndex: target,
           returnToPreviousOnSave: true,
-        ), settings: albumId != null && albumId > 0
+        ),
+        settings: albumId != null && albumId > 0
             ? WebAppRouteSettings(WebAppLocation(WebAppPage.editor, '$albumId'))
-            : null),
+            : null,
+      ),
     );
     if (!mounted) return;
     if (!identical(ref.read(albumEditorViewModelProvider.notifier), vm) ||
@@ -124,11 +127,13 @@ class _AlbumReaderInnerDetailScreenState
     if (album == null || album.id <= 0 || !album.allowsManagement) return;
     Navigator.push(
       context,
-      snapFitRoute(page: AlbumInviteScreen(
+      snapFitRoute(
+        page: AlbumInviteScreen(
           album: album,
           albumId: album.id,
           albumTitle: album.title.isEmpty ? '스냅핏 앨범' : album.title,
-        )),
+        ),
+      ),
     );
   }
 

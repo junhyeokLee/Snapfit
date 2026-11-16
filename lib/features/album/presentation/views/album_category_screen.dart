@@ -66,7 +66,10 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
       if (!mounted || decision == null) return;
       final created = await Navigator.push(
         context,
-        snapFitRoute(page: AlbumCreateFlowScreen(initialDraft: decision.draft), settings: const WebAppRouteSettings(WebAppLocation.create)),
+        snapFitRoute(
+          page: AlbumCreateFlowScreen(initialDraft: decision.draft),
+          settings: const WebAppRouteSettings(WebAppLocation.create),
+        ),
       );
       if (!mounted) return;
       ref.invalidate(albumCreationDraftProvider);

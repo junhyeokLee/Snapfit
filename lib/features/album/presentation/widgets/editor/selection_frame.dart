@@ -299,7 +299,11 @@ class _WebSelectionFrameState extends State<WebSelectionFrame> {
               ),
             ),
             child: rotation
-                ? ExperienceIcon('RotateCw', color: SnapFitColors.accent, size: 13 / _viewportScale)
+                ? ExperienceIcon(
+                    'RotateCw',
+                    color: SnapFitColors.accent,
+                    size: 13 / _viewportScale,
+                  )
                 : null,
           ),
         ),

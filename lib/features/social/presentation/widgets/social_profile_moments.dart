@@ -268,15 +268,18 @@ class _SocialProfileMomentsState extends ConsumerState<SocialProfileMoments> {
                           onOpen: () {
                             if (!_current(revision, userId, viewer)) return;
                             Navigator.of(context).push<void>(
-                              snapFitRoute(page: SocialMomentMonthScreen(
+                              snapFitRoute(
+                                page: SocialMomentMonthScreen(
                                   userId: userId,
                                   month: month.month,
-                                ), settings: WebAppRouteSettings(
+                                ),
+                                settings: WebAppRouteSettings(
                                   WebAppLocation.socialMomentMonth(
                                     userId,
                                     month.month,
                                   ),
-                                )),
+                                ),
+                              ),
                             );
                           },
                         ),

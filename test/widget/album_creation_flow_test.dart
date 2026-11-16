@@ -95,16 +95,15 @@ void main() {
             await tester.tap(open);
             await tester.pumpAndSettle();
           }
-          final catalogue = find.byKey(const PageStorageKey('albumCreationHub'));
+          final catalogue = find.byKey(
+            const PageStorageKey('albumCreationHub'),
+          );
           expect(catalogue, findsOneWidget);
           await tester.scrollUntilVisible(
             card,
             300,
             scrollable: find
-                .descendant(
-                  of: catalogue,
-                  matching: find.byType(Scrollable),
-                )
+                .descendant(of: catalogue, matching: find.byType(Scrollable))
                 .first,
           );
           await tester.pumpAndSettle();
@@ -125,16 +124,10 @@ void main() {
               ),
               authViewModelProvider.overrideWith(
                 () => FakeAuthViewModel(
-                  const UserInfo(
-                    id: _owner,
-                    name: '테스트',
-                    provider: 'email',
-                  ),
+                  const UserInfo(id: _owner, name: '테스트', provider: 'email'),
                 ),
               ),
-              albumCreationDraftStoreProvider.overrideWithValue(
-                store,
-              ),
+              albumCreationDraftStoreProvider.overrideWithValue(store),
             ],
             child: wrapCreation(
               const AlbumCreateFlowScreen(),
@@ -182,7 +175,9 @@ void main() {
         await tester.ensureVisible(hard);
         await tester.tap(hard);
         await tester.pumpAndSettle();
-        final changeDesign = find.byKey(const ValueKey('creation-change-design'));
+        final changeDesign = find.byKey(
+          const ValueKey('creation-change-design'),
+        );
         await tester.ensureVisible(changeDesign);
         await tester.tap(changeDesign);
         await tester.pumpAndSettle();

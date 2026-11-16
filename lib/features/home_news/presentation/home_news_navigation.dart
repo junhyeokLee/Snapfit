@@ -161,16 +161,20 @@ Future<void> openHomeNews(
 
     switch (item.kind) {
       case HomeNewsKind.monthlyDesign:
-        await pushDestination(
-          snapFitRoute(page: const MonthlyDesignsScreen()),
-        );
+        await pushDestination(snapFitRoute(page: const MonthlyDesignsScreen()));
       case HomeNewsKind.attendance:
         await pushDestination(
-          snapFitRoute(page: const AttendanceScreen(), settings: const WebAppRouteSettings(WebAppLocation.attendance)),
+          snapFitRoute(
+            page: const AttendanceScreen(),
+            settings: const WebAppRouteSettings(WebAppLocation.attendance),
+          ),
         );
       case HomeNewsKind.referral:
         await pushDestination(
-          snapFitRoute(page: const ReferralScreen(), settings: const WebAppRouteSettings(WebAppLocation.referral)),
+          snapFitRoute(
+            page: const ReferralScreen(),
+            settings: const WebAppRouteSettings(WebAppLocation.referral),
+          ),
         );
       case HomeNewsKind.monthReview:
         // Re-read the month before previewing: another device might already
@@ -185,7 +189,8 @@ Future<void> openHomeNews(
           return;
         }
         await pushDestination(
-          snapFitRoute(page: MonthlyMomentPreviewScreen(
+          snapFitRoute(
+            page: MonthlyMomentPreviewScreen(
               month: journal.month,
               records: journal.records,
               today: journal.today,
@@ -201,7 +206,8 @@ Future<void> openHomeNews(
                   startAtFirstIncompletePage: true,
                 );
               },
-            )),
+            ),
+          ),
         );
     }
   } catch (_) {

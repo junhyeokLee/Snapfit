@@ -271,7 +271,10 @@ class _MoodTile extends StatelessWidget {
     final accent = ExperienceFormStyle.selectionInk(context);
     final placeholder = ColoredBox(
       color: ExperienceFormStyle.surface(context),
-      child: ExperienceIcon('BookOpen', size: 25, color: ExperienceFormStyle.muted(context),
+      child: ExperienceIcon(
+        'BookOpen',
+        size: 25,
+        color: ExperienceFormStyle.muted(context),
       ),
     );
     return SizedBox(
@@ -341,7 +344,11 @@ class _MoodTile extends StatelessWidget {
                               ),
                               child: const Padding(
                                 padding: EdgeInsets.all(2),
-                                child: ExperienceIcon('Check', size: 12, color: Colors.white),
+                                child: ExperienceIcon(
+                                  'Check',
+                                  size: 12,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),

@@ -202,7 +202,10 @@ class _NewsCardState extends State<_NewsCard> {
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
             else
-              ExperienceIcon('ArrowRight', size: 18, color: ExperienceFormStyle.ink(context),
+              ExperienceIcon(
+                'ArrowRight',
+                size: 18,
+                color: ExperienceFormStyle.ink(context),
               ),
           ],
         ),

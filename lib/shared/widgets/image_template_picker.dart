@@ -206,7 +206,11 @@ class _ImageTemplatePickerState extends State<ImageTemplatePicker> {
                                         ),
                                         const Spacer(),
                                         if (selected)
-                                          ExperienceIcon('Check', size: 18, color: color),
+                                          ExperienceIcon(
+                                            'Check',
+                                            size: 18,
+                                            color: color,
+                                          ),
                                       ],
                                     ),
                                   ),

@@ -67,7 +67,10 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
       return;
     }
     Navigator.of(context).push<void>(
-      snapFitRoute<void>(page: const LoginScreen(), settings: const WebAppRouteSettings(WebAppLocation.login)),
+      snapFitRoute<void>(
+        page: const LoginScreen(),
+        settings: const WebAppRouteSettings(WebAppLocation.login),
+      ),
     );
   }
 
@@ -121,15 +124,18 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
       if (!mounted || decision == null) return;
       final draft = decision.draft;
       await Navigator.of(context).push(
-        snapFitRoute<void>(page: AlbumCreateFlowScreen(
+        snapFitRoute<void>(
+          page: AlbumCreateFlowScreen(
             initialDraft: draft,
             initialAiMode: ai && draft == null,
             initialStartMode: draft == null ? startMode : null,
-          ), settings: WebAppRouteSettings(
+          ),
+          settings: WebAppRouteSettings(
             ai && draft == null
                 ? WebAppLocation.aiCreate
                 : WebAppLocation.create,
-          )),
+          ),
+        ),
       );
       if (mounted) {
         ref.invalidate(albumCreationDraftProvider);
@@ -141,29 +147,47 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
   }
 
   void _orders() => Navigator.of(context).push(
-    snapFitRoute<void>(page: const OrderHistoryScreen(), settings: const WebAppRouteSettings(WebAppLocation.orders)),
+    snapFitRoute<void>(
+      page: const OrderHistoryScreen(),
+      settings: const WebAppRouteSettings(WebAppLocation.orders),
+    ),
   );
 
   void _account() => Navigator.of(context).push(
-    snapFitRoute<void>(page: const MyPageScreen(), settings: const WebAppRouteSettings(WebAppLocation.account)),
+    snapFitRoute<void>(
+      page: const MyPageScreen(),
+      settings: const WebAppRouteSettings(WebAppLocation.account),
+    ),
   );
 
   void _feed() => Navigator.of(context).push(
-    snapFitRoute<void>(page: const SocialFeedScreen(), settings: const WebAppRouteSettings(WebAppLocation.feed)),
+    snapFitRoute<void>(
+      page: const SocialFeedScreen(),
+      settings: const WebAppRouteSettings(WebAppLocation.feed),
+    ),
   );
 
   void _myProfile() => Navigator.of(context).push(
-    snapFitRoute<void>(page: const SocialProfileScreen(), settings: const WebAppRouteSettings(WebAppLocation.myProfile)),
+    snapFitRoute<void>(
+      page: const SocialProfileScreen(),
+      settings: const WebAppRouteSettings(WebAppLocation.myProfile),
+    ),
   );
 
   void _designs({bool materials = false}) => Navigator.of(context).push(
-    snapFitRoute<void>(page: StoreHubScreen(initialMaterials: materials), settings: WebAppRouteSettings(
+    snapFitRoute<void>(
+      page: StoreHubScreen(initialMaterials: materials),
+      settings: WebAppRouteSettings(
         materials ? WebAppLocation.materials : WebAppLocation.designs,
-      )),
+      ),
+    ),
   );
 
   void _designLibrary() => Navigator.of(context).push(
-    snapFitRoute<void>(page: const MaterialCatalogScreen(library: true), settings: const WebAppRouteSettings(WebAppLocation.library)),
+    snapFitRoute<void>(
+      page: const MaterialCatalogScreen(library: true),
+      settings: const WebAppRouteSettings(WebAppLocation.library),
+    ),
   );
 
   Future<void> _open(Album album) async {
@@ -180,9 +204,12 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
   }
 
   void _print(Album album) => Navigator.of(context).push(
-    snapFitRoute<void>(page: PrintOrderPreviewScreen(albumId: album.id, albumTitle: album.title), settings: WebAppRouteSettings(
+    snapFitRoute<void>(
+      page: PrintOrderPreviewScreen(albumId: album.id, albumTitle: album.title),
+      settings: WebAppRouteSettings(
         WebAppLocation(WebAppPage.print, '${album.id}'),
-      )),
+      ),
+    ),
   );
 
   List<Album> _visible(List<Album> source, String owner) {
@@ -624,7 +651,11 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              ExperienceIcon('ArrowRight', size: 16, color: palette.muted),
+                              ExperienceIcon(
+                                'ArrowRight',
+                                size: 16,
+                                color: palette.muted,
+                              ),
                             ],
                           ),
                         ),
@@ -675,7 +706,11 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
               IconButton(
                 tooltip: '제작 사양과 주문 준비 확인',
                 onPressed: () => _print(album),
-                icon: ExperienceIcon('Printer', color: palette.brandInk, size: 20),
+                icon: ExperienceIcon(
+                  'Printer',
+                  color: palette.brandInk,
+                  size: 20,
+                ),
               ),
             ],
           );
@@ -717,7 +752,9 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
     key: ValueKey('web-album-publish-${album.id}'),
     tooltip: '프로필에 앨범 공개',
     onPressed: () => HomeAlbumActions.onPublishSelected(context, ref, album),
-    icon: ExperienceIcon('Globe', color: WebPalette.of(context).brandInk,
+    icon: ExperienceIcon(
+      'Globe',
+      color: WebPalette.of(context).brandInk,
       size: 20,
     ),
   );
@@ -738,7 +775,9 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
             key: ValueKey('web-album-artwork-ratio-${album.id}'),
             aspectRatio: album.physicalCoverSize.ratio,
             child: url == null
-                ? ExperienceIcon('BookOpen', color: WebPalette.of(context).muted,
+                ? ExperienceIcon(
+                    'BookOpen',
+                    color: WebPalette.of(context).muted,
                     size: 32,
                   )
                 : SnapfitImage(urlOrGs: url, fit: BoxFit.contain),
@@ -809,7 +848,10 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
     child: Center(
       child: Column(
         children: [
-          ExperienceIcon('Bookmark', size: 38, color: WebPalette.of(context).muted,
+          ExperienceIcon(
+            'Bookmark',
+            size: 38,
+            color: WebPalette.of(context).muted,
           ),
           const SizedBox(height: 20),
           Text(
@@ -869,7 +911,9 @@ class _WebAlbumLibraryScreenState extends ConsumerState<WebAlbumLibraryScreen> {
                 IconButton(
                   tooltip: '제작 사양과 주문 준비 확인',
                   onPressed: () => _print(album),
-                  icon: ExperienceIcon('Printer', color: WebPalette.of(context).brandInk,
+                  icon: ExperienceIcon(
+                    'Printer',
+                    color: WebPalette.of(context).brandInk,
                     size: 20,
                   ),
                 ),

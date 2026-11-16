@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../../../shared/widgets/album_stage_style.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../../../shared/widgets/experience_icon.dart';
-import '../../../../../core/theme/snapfit_design_tokens.dart' show SnapFitRadius;
+import '../../../../../core/theme/snapfit_design_tokens.dart'
+    show SnapFitRadius;
 
 enum EditorMode {
   none,

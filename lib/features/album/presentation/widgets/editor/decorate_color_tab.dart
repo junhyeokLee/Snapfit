@@ -192,7 +192,10 @@ class _DecorateColorTabState extends ConsumerState<DecorateColorTab> {
               ),
             ),
             child: isSelected
-                ? ExperienceIcon('Check', size: 14, color: color.computeLuminance() > 0.5
+                ? ExperienceIcon(
+                    'Check',
+                    size: 14,
+                    color: color.computeLuminance() > 0.5
                         ? Colors.black
                         : Colors.white,
                   )

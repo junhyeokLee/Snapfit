@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../../core/theme/snapfit_design_tokens.dart' show SnapFitRadius;
+import '../../../../../core/theme/snapfit_design_tokens.dart'
+    show SnapFitRadius;
 import '../../../../../core/utils/korean_text_preview.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../../../shared/widgets/experience_icon.dart';
@@ -49,78 +50,82 @@ class HomeMomentSummaryCard extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-            LayoutBuilder(
-              builder: (context, box) {
-                final title = Semantics(
-                  header: true,
-                  child: Text(
-                    journal == null ? '오늘의 기록' : '${journal.month.month}월의 기록',
-                    style: ExperienceFormStyle.text(
-                      context,
-                      20,
-                      weight: FontWeight.w700,
+              LayoutBuilder(
+                builder: (context, box) {
+                  final title = Semantics(
+                    header: true,
+                    child: Text(
+                      journal == null
+                          ? '오늘의 기록'
+                          : '${journal.month.month}월의 기록',
+                      style: ExperienceFormStyle.text(
+                        context,
+                        20,
+                        weight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                );
-                final open = TextButton(
-                  key: const ValueKey('home-monthly-feed-open'),
-                  onPressed: onOpenMonth,
-                  style: TextButton.styleFrom(
-                    foregroundColor: ExperienceFormStyle.selectionInk(context),
-                    minimumSize: const Size(44, 44),
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    textStyle: ExperienceFormStyle.text(
-                      context,
-                      12,
-                      weight: FontWeight.w600,
-                    ),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('모아보기'),
-                      SizedBox(width: 5),
-                      ExperienceIcon('ChevronRight', size: 14),
-                    ],
-                  ),
-                );
-                if (MediaQuery.textScalerOf(context).scale(14) / 14 > 1.5 &&
-                    box.maxWidth < 360) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [title, open],
                   );
-                }
-                return Row(
-                  children: [
-                    Expanded(child: title),
-                    open,
-                  ],
-                );
-              },
-            ),
-            const SizedBox(height: 6),
-            // Do not consume the one-time guide during loading, errors or a guest visit.
-            if (journal != null && firstUseGuide != null) firstUseGuide!,
-            KeyedSubtree(
-              key: const ValueKey('home-monthly-feed-summary'),
-              child: journal != null
-                  ? _JournalSummary(
-                      journal: journal,
-                      onRecord: onRecord,
-                      onOpenDate: onOpenDate,
-                    )
-                  : _UnavailableSummary(
-                      loading: state.isLoading && !state.hasError,
-                      failed: state.hasError,
-                      onOpen: onSignIn,
-                      onRetry: () {
-                        ref.invalidate(momentsMonthProvider);
-                        ref.invalidate(momentEntryJournalProvider);
-                      },
+                  final open = TextButton(
+                    key: const ValueKey('home-monthly-feed-open'),
+                    onPressed: onOpenMonth,
+                    style: TextButton.styleFrom(
+                      foregroundColor: ExperienceFormStyle.selectionInk(
+                        context,
+                      ),
+                      minimumSize: const Size(44, 44),
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      textStyle: ExperienceFormStyle.text(
+                        context,
+                        12,
+                        weight: FontWeight.w600,
+                      ),
                     ),
-            ),
-          ],
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('모아보기'),
+                        SizedBox(width: 5),
+                        ExperienceIcon('ChevronRight', size: 14),
+                      ],
+                    ),
+                  );
+                  if (MediaQuery.textScalerOf(context).scale(14) / 14 > 1.5 &&
+                      box.maxWidth < 360) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [title, open],
+                    );
+                  }
+                  return Row(
+                    children: [
+                      Expanded(child: title),
+                      open,
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 6),
+              // Do not consume the one-time guide during loading, errors or a guest visit.
+              if (journal != null && firstUseGuide != null) firstUseGuide!,
+              KeyedSubtree(
+                key: const ValueKey('home-monthly-feed-summary'),
+                child: journal != null
+                    ? _JournalSummary(
+                        journal: journal,
+                        onRecord: onRecord,
+                        onOpenDate: onOpenDate,
+                      )
+                    : _UnavailableSummary(
+                        loading: state.isLoading && !state.hasError,
+                        failed: state.hasError,
+                        onOpen: onSignIn,
+                        onRetry: () {
+                          ref.invalidate(momentsMonthProvider);
+                          ref.invalidate(momentEntryJournalProvider);
+                        },
+                      ),
+              ),
+            ],
           ),
         ),
       ),
@@ -171,8 +176,8 @@ class _JournalSummary extends StatelessWidget {
           momentDate(r.recordDate),
     }.length;
     final today = momentDate(journal.today);
-    final daysElapsed = today.year == thisMonth.year &&
-            today.month == thisMonth.month
+    final daysElapsed =
+        today.year == thisMonth.year && today.month == thisMonth.month
         ? today.day
         : today.isAfter(DateTime.utc(thisMonth.year, thisMonth.month + 1, 0))
         ? DateTime.utc(thisMonth.year, thisMonth.month + 1, 0).day
@@ -190,11 +195,7 @@ class _JournalSummary extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             '${thisMonth.month}월 · $daysElapsed일 중 $recordedCount일 기록',
-            style: ExperienceFormStyle.text(
-              context,
-              11,
-              secondary: true,
-            ),
+            style: ExperienceFormStyle.text(context, 11, secondary: true),
           ),
         ],
         const SizedBox(height: 16),
@@ -214,7 +215,8 @@ class _JournalSummary extends StatelessWidget {
                 : todayRecord == null
                 ? _EmptyPhotoSlot(width: 120, height: 120, onTap: onRecord)
                 : null;
-            final copyWidth = bounds.maxWidth - (previewSize?.width ?? 120) - 16;
+            final copyWidth =
+                bounds.maxWidth - (previewSize?.width ?? 120) - 16;
             // 큰 글씨를 사진 옆에 압축하지 않고 날짜와 기록 버튼의 읽을 폭을 확보한다.
             final stacked =
                 thumbnail != null &&
@@ -329,10 +331,7 @@ class _TodayCopy extends StatelessWidget {
               backgroundColor: ExperienceFormStyle.selectionInk(context),
               foregroundColor: Colors.white,
               minimumSize: const Size(48, 40),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 0,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
               textStyle: ExperienceFormStyle.text(
                 context,
                 13,

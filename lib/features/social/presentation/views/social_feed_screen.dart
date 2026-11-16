@@ -586,7 +586,9 @@ class _SocialFeedCardState extends ConsumerState<SocialFeedCard> {
                 PopupMenuButton<String>(
                   key: ValueKey('social-feed-more-${w.id}'),
                   tooltip: '기록 더보기',
-                  icon: ExperienceIcon('MoreHorizontal', color: SnapFitColors.textSecondaryOf(context),
+                  icon: ExperienceIcon(
+                    'MoreHorizontal',
+                    color: SnapFitColors.textSecondaryOf(context),
                   ),
                   onSelected: (_) => _report(),
                   itemBuilder: (_) => const [

@@ -20,11 +20,14 @@ void openPublicCommerce(BuildContext context, WebAppLocation location) {
     navigate(location);
   } else {
     Navigator.of(context).push(
-      snapFitRoute<void>(page: location.page == WebAppPage.printProducts
+      snapFitRoute<void>(
+        page: location.page == WebAppPage.printProducts
             ? const PrintProductsScreen()
             : CommercePolicyScreen(
                 kind: CommercePolicyKind.values.byName(location.id!),
-              ), settings: WebAppRouteSettings(location)),
+              ),
+        settings: WebAppRouteSettings(location),
+      ),
     );
   }
 }

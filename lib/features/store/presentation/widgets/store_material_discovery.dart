@@ -115,7 +115,8 @@ class StoreMaterialDiscovery extends ConsumerWidget {
                           ),
                           borderRadius: BorderRadius.circular(18),
                           onTap: () => Navigator.of(context).push(
-                            snapFitRoute<void>(page: MaterialDetailScreen(
+                            snapFitRoute<void>(
+                              page: MaterialDetailScreen(
                                 productKey: item.productKey,
                                 favoriteKey: favoriteKey,
                                 title: item.title,
@@ -123,7 +124,8 @@ class StoreMaterialDiscovery extends ConsumerWidget {
                                 preview: (_) => PointShopArtwork(
                                   productKey: item.productKey,
                                 ),
-                              )),
+                              ),
+                            ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

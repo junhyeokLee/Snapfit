@@ -152,8 +152,12 @@ void main() {
       ProviderScope(
         overrides: [
           authViewModelProvider.overrideWith(_Auth.new),
-          albumEditorOwnerReaderProvider.overrideWithValue(() => 'creation-workshop-owner'),
-          albumEditorOwnerChangesProvider.overrideWith((ref) => const Stream.empty()),
+          albumEditorOwnerReaderProvider.overrideWithValue(
+            () => 'creation-workshop-owner',
+          ),
+          albumEditorOwnerChangesProvider.overrideWith(
+            (ref) => const Stream.empty(),
+          ),
           ...unifiedCreationBackendOverrides(albums: albums),
           albumCreationDraftStoreProvider.overrideWithValue(
             MemoryCreationDraftStore(),
@@ -595,7 +599,9 @@ void main() {
             greaterThanOrEqualTo(64),
           );
           await capture(tester, 'creation-atelier-shell-settings', size, dark);
-          final acceptedCover = tester.widget<AlbumCreateStep1>(find.byType(AlbumCreateStep1)).coverLayers!;
+          final acceptedCover = tester
+              .widget<AlbumCreateStep1>(find.byType(AlbumCreateStep1))
+              .coverLayers!;
           await tap(tester, key('creation-setup-next'));
           expect(find.byType(PageEditorScreen), findsOneWidget);
           final container = ProviderScope.containerOf(
@@ -606,10 +612,16 @@ void main() {
           expect(vm.editingAlbumId, 71);
           expect(vm.currentPageIndex, 0);
           expect(vm.pages.length, pages.length);
-          final preservedCover = vm.pages.first.layers.where((layer) => layer.id != 'creation-edited-background').toList();
-          expect(preservedCover.map((layer) => layer.id), acceptedCover.map((layer) => layer.id));
+          final preservedCover = vm.pages.first.layers
+              .where((layer) => layer.id != 'creation-edited-background')
+              .toList();
+          expect(
+            preservedCover.map((layer) => layer.id),
+            acceptedCover.map((layer) => layer.id),
+          );
           for (var index = 0; index < acceptedCover.length; index++) {
-            final original = acceptedCover[index], preserved = preservedCover[index];
+            final original = acceptedCover[index],
+                preserved = preservedCover[index];
             expect(preserved.type, original.type);
             expect(preserved.text, original.text);
             expect(preserved.imageUrl, original.imageUrl);
@@ -618,17 +630,37 @@ void main() {
             expect(preserved.imageZoom, original.imageZoom);
             expect(preserved.imageOffset, original.imageOffset);
           }
-          final background = vm.pages.first.layers.singleWhere((layer) => layer.id == 'creation-edited-background');
+          final background = vm.pages.first.layers.singleWhere(
+            (layer) => layer.id == 'creation-edited-background',
+          );
           expect(background.type, LayerType.decoration);
           expect(background.zIndex, -100);
-          expect(background.decorationFillColor, matches(RegExp(r'^#[0-9a-fA-F]{8}$')));
+          expect(
+            background.decorationFillColor,
+            matches(RegExp(r'^#[0-9a-fA-F]{8}$')),
+          );
           expect(background.width, closeTo(500, .001));
-          expect(background.height, closeTo(500 / vm.selectedCover.ratio, .001));
-          final draft = (container.read(albumCreationDraftStoreProvider) as MemoryCreationDraftStore).draft!;
+          expect(
+            background.height,
+            closeTo(500 / vm.selectedCover.ratio, .001),
+          );
+          final draft =
+              (container.read(albumCreationDraftStoreProvider)
+                      as MemoryCreationDraftStore)
+                  .draft!;
           expect(draft.title, template.title);
           expect(draft.createdAlbumId, 71);
           expect(draft.editorCheckpoint!.pages.length, pages.length);
-          expect(draft.editorCheckpoint!.pages.first.layers.first.decorationFillColor, background.decorationFillColor);
+          expect(
+            draft
+                .editorCheckpoint!
+                .pages
+                .first
+                .layers
+                .first
+                .decorationFillColor,
+            background.decorationFillColor,
+          );
           expect(
             tester.getSize(find.byType(EditCover)).height,
             greaterThanOrEqualTo(64),

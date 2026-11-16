@@ -14,7 +14,10 @@ class SnapFitAppBarBackButton extends StatelessWidget {
     return IconButton(
       tooltip: '뒤로가기',
       onPressed: onPressed ?? () => Navigator.maybePop(context),
-      icon: ExperienceIcon('ArrowLeft', size: 20, color: color ?? SnapFitColors.textPrimaryOf(context),
+      icon: ExperienceIcon(
+        'ArrowLeft',
+        size: 20,
+        color: color ?? SnapFitColors.textPrimaryOf(context),
       ),
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(minWidth: 48, minHeight: 48),

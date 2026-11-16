@@ -206,13 +206,15 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                   return;
                 }
                 await _pushAdaptiveRoute<void>(
-                  snapFitRoute(page: AlbumInviteScreen(
+                  snapFitRoute(
+                    page: AlbumInviteScreen(
                       album: album,
                       albumId: album.id,
                       albumTitle: album.title.isEmpty
                           ? 'SnapFit Album'
                           : album.title,
-                    )),
+                    ),
+                  ),
                 );
               },
         compact: compact,
@@ -398,12 +400,15 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     final pageId = vm.pages[focus].id;
     final albumId = vm.album?.id;
     await _pushAdaptiveRoute<bool>(
-      snapFitRoute(page: PageEditorScreen(
+      snapFitRoute(
+        page: PageEditorScreen(
           initialPageIndex: focus,
           returnToPreviousOnSave: true,
-        ), settings: albumId != null && albumId > 0
+        ),
+        settings: albumId != null && albumId > 0
             ? WebAppRouteSettings(WebAppLocation(WebAppPage.editor, '$albumId'))
-            : null),
+            : null,
+      ),
     );
     if (!mounted || _sessionChanged) return;
     final current = ref.read(albumEditorViewModelProvider.notifier);
@@ -459,12 +464,15 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     final album = ref.read(albumEditorViewModelProvider.notifier).album;
     if (album == null || album.id <= 0 || !album.allowsEditing) return;
     final result = await _pushAdaptiveRoute<String>(
-      snapFitRoute(page: PrintOrderPreviewScreen(
+      snapFitRoute(
+        page: PrintOrderPreviewScreen(
           albumId: album.id,
           albumTitle: album.title.trim().isEmpty ? '스냅핏 앨범' : album.title,
-        ), settings: WebAppRouteSettings(
+        ),
+        settings: WebAppRouteSettings(
           WebAppLocation(WebAppPage.print, '${album.id}'),
-        )),
+        ),
+      ),
     );
     if (!mounted || !isCurrentDocument()) return;
     if (result == 'edit_album') {
@@ -479,11 +487,13 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     final album = ref.read(albumEditorViewModelProvider.notifier).album;
     if (album == null || album.id <= 0 || !album.allowsManagement) return;
     await _pushAdaptiveRoute<void>(
-      snapFitRoute(page: AlbumInviteScreen(
+      snapFitRoute(
+        page: AlbumInviteScreen(
           album: album,
           albumId: album.id,
           albumTitle: album.title.trim().isEmpty ? '스냅핏 앨범' : album.title,
-        )),
+        ),
+      ),
     );
   }
 
@@ -515,7 +525,8 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     final focus = _focusPageIndex.clamp(1, vm.pages.length - 1).toInt();
     var pageId = vm.pages[focus].id;
     final action = await _pushAdaptiveRoute<AlbumReaderInnerDetailAction>(
-      snapFitRoute<AlbumReaderInnerDetailAction>(page: AlbumReaderInnerDetailScreen(
+      snapFitRoute<AlbumReaderInnerDetailAction>(
+        page: AlbumReaderInnerDetailScreen(
           innerPages: pages,
           initialPageIndex: (_focusPageIndex - 1).clamp(0, pages.length - 1),
           singlePageW: kCoverReferenceWidth,
@@ -523,7 +534,8 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
           interaction: _interaction,
           layerBuilder: _layerBuilder,
           onPageFocused: (id) => pageId = id,
-        )),
+        ),
+      ),
     );
     if (!mounted || _sessionChanged) return;
     final current = ref.read(albumEditorViewModelProvider.notifier);
@@ -776,7 +788,11 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
               SizedBox(height: 24),
               Text(
                 '앨범을 생성하고 있습니다...',
-                style: ExperienceFormStyle.text(context, 16, weight: FontWeight.w700),
+                style: ExperienceFormStyle.text(
+                  context,
+                  16,
+                  weight: FontWeight.w700,
+                ),
               ),
             ],
           ),
@@ -984,7 +1000,11 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                                   left: 10 + leftSystemInset,
                                   top: 10,
                                   child: _ReaderHeaderButton(
-                                    icon: Icon(platformBackIcon(), size: 24, color: AlbumStageStyle.ink(context)),
+                                    icon: Icon(
+                                      platformBackIcon(),
+                                      size: 24,
+                                      color: AlbumStageStyle.ink(context),
+                                    ),
                                     tooltip: '앨범 목록으로 돌아가기',
                                     onTap: _isDeleting
                                         ? () {}
@@ -996,7 +1016,11 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                                     right: 68 + rightSystemInset,
                                     top: 10,
                                     child: _ReaderHeaderButton(
-                                      icon: ExperienceIcon('Users2', size: 24, color: AlbumStageStyle.ink(context)),
+                                      icon: ExperienceIcon(
+                                        'Users2',
+                                        size: 24,
+                                        color: AlbumStageStyle.ink(context),
+                                      ),
                                       tooltip: '함께하는 멤버',
                                       onTap: () => unawaited(_openMembers()),
                                     ),
@@ -1005,7 +1029,11 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                                   right: 14 + rightSystemInset,
                                   top: 10,
                                   child: _ReaderHeaderButton(
-                                    icon: ExperienceIcon('MoreHorizontal', size: 24, color: AlbumStageStyle.ink(context)),
+                                    icon: ExperienceIcon(
+                                      'MoreHorizontal',
+                                      size: 24,
+                                      color: AlbumStageStyle.ink(context),
+                                    ),
                                     tooltip: '앨범 메뉴',
                                     onTap: _showMoreOptions,
                                   ),
@@ -1029,7 +1057,11 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                                       children: [
                                         // 뒤로가기
                                         _ReaderHeaderButton(
-                                          icon: Icon(platformBackIcon(), size: 24, color: AlbumStageStyle.ink(context)),
+                                          icon: Icon(
+                                            platformBackIcon(),
+                                            size: 24,
+                                            color: AlbumStageStyle.ink(context),
+                                          ),
                                           tooltip: '앨범 목록으로 돌아가기',
                                           onTap: _isDeleting
                                               ? () {}
@@ -1068,13 +1100,23 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                                         // ... 메뉴
                                         if ((vm.album?.id ?? 0) > 0)
                                           _ReaderHeaderButton(
-                                            icon: ExperienceIcon('Users2', size: 24, color: AlbumStageStyle.ink(context)),
+                                            icon: ExperienceIcon(
+                                              'Users2',
+                                              size: 24,
+                                              color: AlbumStageStyle.ink(
+                                                context,
+                                              ),
+                                            ),
                                             tooltip: '함께하는 멤버',
                                             onTap: () =>
                                                 unawaited(_openMembers()),
                                           ),
                                         _ReaderHeaderButton(
-                                          icon: ExperienceIcon('MoreHorizontal', size: 24, color: AlbumStageStyle.ink(context)),
+                                          icon: ExperienceIcon(
+                                            'MoreHorizontal',
+                                            size: 24,
+                                            color: AlbumStageStyle.ink(context),
+                                          ),
                                           tooltip: '앨범 메뉴',
                                           onTap: _showMoreOptions,
                                         ),

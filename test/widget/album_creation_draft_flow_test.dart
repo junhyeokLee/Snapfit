@@ -565,13 +565,21 @@ void main() {
       _size(tester, const Size(390, 844));
       final store = MemoryCreationDraftStore();
       await _boot(tester, store);
-      for (final state in [AppLifecycleState.inactive, AppLifecycleState.hidden, AppLifecycleState.paused]) {
+      for (final state in [
+        AppLifecycleState.inactive,
+        AppLifecycleState.hidden,
+        AppLifecycleState.paused,
+      ]) {
         tester.binding.handleAppLifecycleStateChanged(state);
         await tester.pumpAndSettle();
       }
       expect(store.draft!.currentPage, 1);
       expect(find.byType(AlertDialog), findsNothing);
-      for (final state in [AppLifecycleState.hidden, AppLifecycleState.inactive, AppLifecycleState.resumed]) {
+      for (final state in [
+        AppLifecycleState.hidden,
+        AppLifecycleState.inactive,
+        AppLifecycleState.resumed,
+      ]) {
         tester.binding.handleAppLifecycleStateChanged(state);
         await tester.pumpAndSettle();
       }
@@ -668,13 +676,15 @@ void main() {
                 (ref) => Stream.value([]),
               ),
               notificationUnreadCountProvider.overrideWith((ref) async => 0),
-              momentEntryJournalProvider.overrideWith((ref) async => MomentJournal(
-                today: DateTime.utc(2026, 11, 11),
-                weekStart: DateTime.utc(2026, 11, 9),
-                month: DateTime.utc(2026, 11),
-                records: const [],
-                weekPhotoCount: 0,
-              )),
+              momentEntryJournalProvider.overrideWith(
+                (ref) async => MomentJournal(
+                  today: DateTime.utc(2026, 11, 11),
+                  weekStart: DateTime.utc(2026, 11, 9),
+                  month: DateTime.utc(2026, 11),
+                  records: const [],
+                  weekPhotoCount: 0,
+                ),
+              ),
             ],
             child: RepaintBoundary(
               key: capture,
@@ -793,7 +803,11 @@ void main() {
       tester,
     ) async {
       _size(tester, size);
-      final container = await _boot(tester, MemoryCreationDraftStore(), textScale: 1.6);
+      final container = await _boot(
+        tester,
+        MemoryCreationDraftStore(),
+        textScale: 1.6,
+      );
       expect(find.byType(AlbumCreateStep1), findsOneWidget);
       await _continueToEditor(tester);
       expect(find.byKey(const ValueKey('editor-page-rail')), findsOneWidget);

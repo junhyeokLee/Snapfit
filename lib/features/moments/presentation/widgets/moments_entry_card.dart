@@ -162,7 +162,11 @@ class _DailyStamp extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = SnapFitColors.actionAccent;
     final date = today == null
-        ? const ExperienceIcon('ImagePlus', color: SnapFitColors.onAccent, size: 24)
+        ? const ExperienceIcon(
+            'ImagePlus',
+            color: SnapFitColors.onAccent,
+            size: 24,
+          )
         : Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

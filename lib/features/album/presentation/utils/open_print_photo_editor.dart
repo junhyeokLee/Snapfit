@@ -193,13 +193,16 @@ Future<bool> openPrintPhotoEditor(
       edit: (album, snapshot) async {
         if (!active()) return false;
         final saved = await Navigator.of(context).push<bool>(
-          snapFitRoute(page: PrintPhotoCorrectionEditor(
+          snapFitRoute(
+            page: PrintPhotoCorrectionEditor(
               album: printPhotoEditableAlbum(album, snapshot),
               target: target,
               expectedOwner: startingOwner!,
-            ), settings: WebAppRouteSettings(
+            ),
+            settings: WebAppRouteSettings(
               WebAppLocation(WebAppPage.editor, '$albumId'),
-            )),
+            ),
+          ),
         );
         if (active()) {
           ref.invalidate(homeViewModelProvider);

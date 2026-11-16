@@ -148,33 +148,34 @@ class _EditorPhotoFillScreenState extends ConsumerState<EditorPhotoFillScreen> {
                 child: HeroControllerScope.none(
                   child: Navigator(
                     key: _toolsNavigator,
-                    onGenerateRoute: (_) => snapFitRoute<void>(page: ValueListenableBuilder<List<List<LayerModel>>>(
-                            valueListenable: _pages,
-                            builder: (context, pages, _) =>
-                                TemplatePhotoFillStep(
-                                  pages: pages,
-                                  pageBackgroundColors: _pageBackgroundColors,
-                                  cover: widget.draft.cover,
-                                  canvasSize: editorReferenceCanvasSize(
-                                    widget.draft.cover,
-                                  ),
-                                  session: _session,
-                                  preserveTypography: true,
-                                  enableAutoFill: true,
-                                  continueLabel: '편집기에 적용',
-                                  currentOwner: () =>
-                                      _current() ? widget.draft.ownerId : null,
-                                  onChanged: (pages) {
-                                    if (_current()) {
-                                      _pages.value = [
-                                        for (final page in pages)
-                                          List<LayerModel>.of(page),
-                                      ];
-                                    }
-                                  },
-                                  onContinue: _apply,
-                                ),
-                          )),
+                    onGenerateRoute: (_) => snapFitRoute<void>(
+                      page: ValueListenableBuilder<List<List<LayerModel>>>(
+                        valueListenable: _pages,
+                        builder: (context, pages, _) => TemplatePhotoFillStep(
+                          pages: pages,
+                          pageBackgroundColors: _pageBackgroundColors,
+                          cover: widget.draft.cover,
+                          canvasSize: editorReferenceCanvasSize(
+                            widget.draft.cover,
+                          ),
+                          session: _session,
+                          preserveTypography: true,
+                          enableAutoFill: true,
+                          continueLabel: '편집기에 적용',
+                          currentOwner: () =>
+                              _current() ? widget.draft.ownerId : null,
+                          onChanged: (pages) {
+                            if (_current()) {
+                              _pages.value = [
+                                for (final page in pages)
+                                  List<LayerModel>.of(page),
+                              ];
+                            }
+                          },
+                          onContinue: _apply,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               )

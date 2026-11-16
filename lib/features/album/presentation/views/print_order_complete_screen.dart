@@ -522,7 +522,9 @@ class _PrintOrderCompleteScreenState
       style: ExperienceFormStyle.primary(context),
       onPressed: () => Navigator.pushReplacement<void, void>(
         context,
-        snapFitRoute(page: OrderHistoryScreen(initialOrderId: widget.receipt.orderId)),
+        snapFitRoute(
+          page: OrderHistoryScreen(initialOrderId: widget.receipt.orderId),
+        ),
       ),
       child: const Text('주문 내역 확인하기'),
     );

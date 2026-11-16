@@ -101,14 +101,17 @@ Future<void> pickAlbumForMaterial(
     }
     await Navigator.push<bool>(
       context,
-      snapFitRoute(page: PageEditorScreen(
+      snapFitRoute(
+        page: PageEditorScreen(
           initialPageIndex: page,
           initialMaterialKey: productKey,
-        ), settings: kIsWeb
+        ),
+        settings: kIsWeb
             ? WebAppRouteSettings(
                 WebAppLocation(WebAppPage.editor, '${album.id}'),
               )
-            : null),
+            : null,
+      ),
     );
     if (context.mounted) ref.read(homeViewModelProvider.notifier).refresh();
   } catch (error) {
@@ -225,7 +228,10 @@ class _PickerShell extends StatelessWidget {
         IconButton(
           tooltip: '닫기',
           onPressed: () => Navigator.pop(context),
-          icon: ExperienceIcon('X', size: 22, color: ExperienceFormStyle.ink(context),
+          icon: ExperienceIcon(
+            'X',
+            size: 22,
+            color: ExperienceFormStyle.ink(context),
           ),
         ),
       ],

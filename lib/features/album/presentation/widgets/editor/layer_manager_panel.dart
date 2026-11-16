@@ -384,7 +384,10 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  ExperienceIcon('Layers2', size: 32, color: ExperienceFormStyle.muted(context),
+                                  ExperienceIcon(
+                                    'Layers2',
+                                    size: 32,
+                                    color: ExperienceFormStyle.muted(context),
                                   ),
                                   const SizedBox(height: 12),
                                   Text(
@@ -486,7 +489,9 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
                     message: '겹침 순서 이동',
                     child: SizedBox.square(
                       dimension: 44,
-                      child: ExperienceIcon('GripHorizontal', color: ExperienceFormStyle.muted(context),
+                      child: ExperienceIcon(
+                        'GripHorizontal',
+                        color: ExperienceFormStyle.muted(context),
                         size: 20,
                       ),
                     ),
@@ -760,7 +765,9 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
   /// 썸네일 없을 때: 순서 번호를 크게 표시해 "몇 번째 이미지/스티커"인지 한눈에 파악
   Widget _imageOrderPlaceholder(BuildContext context, int order) {
     return Center(
-      child: ExperienceIcon('Image', color: ExperienceFormStyle.muted(context),
+      child: ExperienceIcon(
+        'Image',
+        color: ExperienceFormStyle.muted(context),
         size: 20,
       ),
     );

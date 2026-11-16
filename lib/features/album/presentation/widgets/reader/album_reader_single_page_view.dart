@@ -918,14 +918,17 @@ class _AlbumReaderSinglePageViewState
     final owner = ref.read(albumEditorOwnerReaderProvider)();
     await Navigator.push(
       context,
-      snapFitRoute(page: PageEditorScreen(
+      snapFitRoute(
+        page: PageEditorScreen(
           initialPageIndex: editingPage,
           returnToPreviousOnSave: true,
-        ), settings: album != null && album.id > 0
+        ),
+        settings: album != null && album.id > 0
             ? WebAppRouteSettings(
                 WebAppLocation(WebAppPage.editor, '${album.id}'),
               )
-            : null),
+            : null,
+      ),
     );
     if (!mounted) return;
     if (!identical(ref.read(albumEditorViewModelProvider.notifier), vm) ||
@@ -1942,7 +1945,10 @@ class _AlbumReaderSinglePageViewState
                                           _readerPhotoFailed = false;
                                           _bookContentRevision++;
                                         }),
-                                        icon: const ExperienceIcon('RefreshCw', size: 18),
+                                        icon: const ExperienceIcon(
+                                          'RefreshCw',
+                                          size: 18,
+                                        ),
                                         label: const Text('사진 다시 불러오기'),
                                       ),
                                     ),

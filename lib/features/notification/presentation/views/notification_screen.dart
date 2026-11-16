@@ -129,9 +129,9 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     }
     setState(() => _openingNews = true);
     try {
-      await Navigator.of(context).push<void>(
-        snapFitRoute<void>(page: const HomeNewsScreen()),
-      );
+      await Navigator.of(
+        context,
+      ).push<void>(snapFitRoute<void>(page: const HomeNewsScreen()));
     } finally {
       if (mounted) setState(() => _openingNews = false);
     }
@@ -487,7 +487,9 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                     color: ExperienceFormStyle.selection(context),
                     shape: BoxShape.circle,
                   ),
-                  child: ExperienceIcon('Bell', color: ExperienceFormStyle.selectionInk(context),
+                  child: ExperienceIcon(
+                    'Bell',
+                    color: ExperienceFormStyle.selectionInk(context),
                     size: 28,
                   ),
                 ),
@@ -719,7 +721,10 @@ class _NotificationCard extends StatelessWidget {
             ),
           ],
         ),
-        trailing: ExperienceIcon('ChevronRight', size: 20, color: ExperienceFormStyle.muted(context),
+        trailing: ExperienceIcon(
+          'ChevronRight',
+          size: 20,
+          color: ExperienceFormStyle.muted(context),
         ),
         onTap: onTap,
       ),
@@ -829,7 +834,10 @@ class _NotificationCard extends StatelessWidget {
                 const SizedBox(width: 20),
                 Padding(
                   padding: EdgeInsets.only(top: 4),
-                  child: ExperienceIcon('ChevronRight', size: 18, color: WebPalette.of(context).muted,
+                  child: ExperienceIcon(
+                    'ChevronRight',
+                    size: 18,
+                    color: WebPalette.of(context).muted,
                   ),
                 ),
               ],

@@ -206,7 +206,10 @@ class _PageListSelectorState extends ConsumerState<PageListSelector> {
                   key: const ValueKey('deleteCurrentInnerPageButton'),
                   tooltip: '${widget.currentPageIndex}쪽 삭제',
                   onPressed: widget.onDeleteCurrentPage,
-                  icon: ExperienceIcon('Trash2', size: 20, color: ExperienceFormStyle.muted(context),
+                  icon: ExperienceIcon(
+                    'Trash2',
+                    size: 20,
+                    color: ExperienceFormStyle.muted(context),
                   ),
                 ),
             ],

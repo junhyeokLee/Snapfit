@@ -89,7 +89,10 @@ class TermsPolicyScreen extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ExperienceIcon('FileText', size: 26, color: WebPalette.of(context).brandInk,
+                  ExperienceIcon(
+                    'FileText',
+                    size: 26,
+                    color: WebPalette.of(context).brandInk,
                   ),
                   const SizedBox(width: 20),
                   Expanded(
@@ -125,7 +128,10 @@ class TermsPolicyScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  ExperienceIcon('ArrowRight', size: 20, color: WebPalette.of(context).muted,
+                  ExperienceIcon(
+                    'ArrowRight',
+                    size: 20,
+                    color: WebPalette.of(context).muted,
                   ),
                 ],
               ),

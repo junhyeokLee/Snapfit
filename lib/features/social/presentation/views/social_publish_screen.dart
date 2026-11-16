@@ -274,9 +274,12 @@ class _SocialPublishScreenState extends ConsumerState<SocialPublishScreen> {
   void _finished(SocialWork work) {
     invalidateSocial(ref, workId: work.id);
     Navigator.of(context).pushReplacement(
-      snapFitRoute<void>(page: SocialWorkDetailScreen(workId: work.id), settings: WebAppRouteSettings(
+      snapFitRoute<void>(
+        page: SocialWorkDetailScreen(workId: work.id),
+        settings: WebAppRouteSettings(
           WebAppLocation(WebAppPage.socialWork, work.id),
-        )),
+        ),
+      ),
     );
   }
 

@@ -93,7 +93,9 @@ class MomentDraftRecoveryCard extends StatelessWidget {
                       color: SocialStyle.accent(context).withValues(alpha: .08),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: ExperienceIcon('PenLine', color: SocialStyle.accent(context),
+                    child: ExperienceIcon(
+                      'PenLine',
+                      color: SocialStyle.accent(context),
                       size: 30,
                     ),
                   ),
@@ -125,7 +127,9 @@ class MomentDraftRecoveryCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  ExperienceIcon('ArrowRight', color: SocialStyle.accent(context),
+                  ExperienceIcon(
+                    'ArrowRight',
+                    color: SocialStyle.accent(context),
                     size: 20,
                   ),
                 ],

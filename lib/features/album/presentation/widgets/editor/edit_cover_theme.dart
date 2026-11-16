@@ -171,7 +171,10 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
                                   ),
                                 ),
                                 if (selected)
-                                  ExperienceIcon('CheckCircle2', size: 18, color: WebPalette.of(context).brandInk,
+                                  ExperienceIcon(
+                                    'CheckCircle2',
+                                    size: 18,
+                                    color: WebPalette.of(context).brandInk,
                                   ),
                               ],
                             ),

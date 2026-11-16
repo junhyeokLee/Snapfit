@@ -481,7 +481,10 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              ExperienceIcon('Check', size: 12, color: kIsWeb
+                              ExperienceIcon(
+                                'Check',
+                                size: 12,
+                                color: kIsWeb
                                     ? WebPalette.of(context).onBrand
                                     : Colors.white,
                               ),

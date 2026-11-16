@@ -117,7 +117,9 @@ class _SocialProfilePersonalAreaState
         SnackBar(
           content: const Text('앨범 목록을 불러오지 못했어요. 다시 시도해 주세요.'),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           action: SnackBarAction(
             label: '다시 시도',

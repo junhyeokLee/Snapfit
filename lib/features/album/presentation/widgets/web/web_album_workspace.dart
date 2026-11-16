@@ -700,7 +700,10 @@ class _WebAlbumEditorWorkspaceState extends State<WebAlbumEditorWorkspace> {
                           _propertiesOpen = !_propertiesOpen;
                           if (_propertiesOpen && narrow) _pagesOpen = false;
                         }),
-                        icon: const ExperienceIcon('SlidersHorizontal', size: 19),
+                        icon: const ExperienceIcon(
+                          'SlidersHorizontal',
+                          size: 19,
+                        ),
                       ),
                     const SizedBox(width: 8),
                   ],
@@ -1100,7 +1103,11 @@ class _WebPropertiesResizeHandleState
                     child: ExcludeSemantics(
                       child: Row(
                         children: [
-                          ExperienceIcon('GripHorizontal', size: 20, color: palette.muted),
+                          ExperienceIcon(
+                            'GripHorizontal',
+                            size: 20,
+                            color: palette.muted,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -1241,7 +1248,10 @@ class WebAlbumReaderWorkspace extends StatelessWidget {
                                   IconButton(
                                     tooltip: '이전 페이지',
                                     onPressed: busy ? null : onPrevious,
-                                    icon: const ExperienceIcon('ChevronLeft', size: 20),
+                                    icon: const ExperienceIcon(
+                                      'ChevronLeft',
+                                      size: 20,
+                                    ),
                                   ),
                                   SizedBox(
                                     width: compact ? 110 : 150,
@@ -1260,14 +1270,20 @@ class WebAlbumReaderWorkspace extends StatelessWidget {
                                   IconButton(
                                     tooltip: '다음 페이지',
                                     onPressed: busy ? null : onNext,
-                                    icon: const ExperienceIcon('ChevronRight', size: 20),
+                                    icon: const ExperienceIcon(
+                                      'ChevronRight',
+                                      size: 20,
+                                    ),
                                   ),
                                   if (onDetail != null) ...[
                                     const SizedBox(width: 8),
                                     IconButton(
                                       tooltip: '현재 페이지 크게 보기',
                                       onPressed: busy ? null : onDetail,
-                                      icon: const ExperienceIcon('ZoomIn', size: 20),
+                                      icon: const ExperienceIcon(
+                                        'ZoomIn',
+                                        size: 20,
+                                      ),
                                     ),
                                   ],
                                 ],

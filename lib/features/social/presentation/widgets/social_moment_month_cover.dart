@@ -125,8 +125,11 @@ class SocialMomentMonthCover extends StatelessWidget {
                                                     .cover
                                                     .imageUrls
                                                     .isEmpty
-                                                ? ExperienceIcon('Image', color: SocialStyle.accent(
-                                                      context),
+                                                ? ExperienceIcon(
+                                                    'Image',
+                                                    color: SocialStyle.accent(
+                                                      context,
+                                                    ),
                                                     size: 32,
                                                   )
                                                 : SocialWorkImage(

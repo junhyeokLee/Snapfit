@@ -202,7 +202,8 @@ _mount(
                 builder: (context) => TextButton(
                   onPressed: () => Navigator.of(context).push<void>(
                     MaterialPageRoute(
-                      builder: (_) => AlbumCreateFlowScreen(initialDraft: draft),
+                      builder: (_) =>
+                          AlbumCreateFlowScreen(initialDraft: draft),
                     ),
                   ),
                   child: const Text('앨범 만들기 시작'),
@@ -267,9 +268,7 @@ void main() {
         expect(
           identical(
             settingsState,
-            tester.state(
-              find.byType(AlbumCreateStep1, skipOffstage: false),
-            ),
+            tester.state(find.byType(AlbumCreateStep1, skipOffstage: false)),
           ),
           isTrue,
         );
@@ -294,9 +293,11 @@ void main() {
         expect(fixture.albums.creates, 1);
         expect(fixture.albums.updates, 1);
         (fixture.store as _FailLinkedStore).failLinked = false;
-        final retry = tester.widget<FilledButton>(
-          find.byKey(const ValueKey('creation-checkpoint-retry')),
-        ).onPressed!;
+        final retry = tester
+            .widget<FilledButton>(
+              find.byKey(const ValueKey('creation-checkpoint-retry')),
+            )
+            .onPressed!;
         // 재빌드 전 같은 콜백을 연속 호출해 중복 재시도 방어를 검증한다.
         retry();
         retry();
@@ -359,9 +360,11 @@ void main() {
 
       final response = Completer<void>();
       fixture.albums.createResponse = response.future;
-      final retry = tester.widget<FilledButton>(
-        find.byKey(const ValueKey('creation-entry-retry')),
-      ).onPressed!;
+      final retry = tester
+          .widget<FilledButton>(
+            find.byKey(const ValueKey('creation-entry-retry')),
+          )
+          .onPressed!;
       retry();
       retry();
       await tester.pump();
@@ -412,7 +415,10 @@ void main() {
       expect(fixture.albums.creates, 1);
       expect(fixture.albums.updates, 0);
       expect(fixture.store.writes, 2);
-      expect(fixture.store.draft!.creationAttempt!.requestId, attempt.requestId);
+      expect(
+        fixture.store.draft!.creationAttempt!.requestId,
+        attempt.requestId,
+      );
       expect(fixture.store.draft!.creationAttempt!.seed, attempt.seed);
       expect(fixture.store.draft!.createdAlbumId, isNull);
       expect(fixture.store.draft!.toJson()['pages'], localPages);
@@ -444,9 +450,11 @@ void main() {
       fixture.albums
         ..conflict = false
         ..updateResponse = response.future;
-      final retry = tester.widget<FilledButton>(
-        find.byKey(const ValueKey('creation-entry-retry')),
-      ).onPressed!;
+      final retry = tester
+          .widget<FilledButton>(
+            find.byKey(const ValueKey('creation-entry-retry')),
+          )
+          .onPressed!;
       retry();
       retry();
       await tester.pump();

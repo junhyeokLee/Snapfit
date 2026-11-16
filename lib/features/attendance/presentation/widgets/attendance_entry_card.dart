@@ -17,7 +17,10 @@ class AttendanceEntryCard extends StatelessWidget {
       key: const ValueKey('attendance-entry'),
       borderRadius: BorderRadius.circular(16),
       onTap: () => Navigator.of(context).push<void>(
-        snapFitRoute<void>(page: const AttendanceScreen(), settings: const WebAppRouteSettings(WebAppLocation.attendance)),
+        snapFitRoute<void>(
+          page: const AttendanceScreen(),
+          settings: const WebAppRouteSettings(WebAppLocation.attendance),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -54,7 +57,9 @@ class AttendanceEntryCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            ExperienceIcon('ChevronRight', color: ExperienceFormStyle.selectionInk(context),
+            ExperienceIcon(
+              'ChevronRight',
+              color: ExperienceFormStyle.selectionInk(context),
             ),
           ],
         ),

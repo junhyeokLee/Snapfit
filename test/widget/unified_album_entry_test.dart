@@ -91,15 +91,17 @@ class _Albums extends MockAlbumRepository {
   }
 
   @override
-  Future<Album> fetchAlbum(String id) async => created ?? Album(
-    id: 71,
-    userId: _owner,
-    memberRole: 'OWNER',
-    title: '이어 만드는 앨범',
-    ratio: _cover.ratio.toString(),
-    targetPages: 24,
-    updatedAt: _revision,
-  );
+  Future<Album> fetchAlbum(String id) async =>
+      created ??
+      Album(
+        id: 71,
+        userId: _owner,
+        memberRole: 'OWNER',
+        title: '이어 만드는 앨범',
+        ratio: _cover.ratio.toString(),
+        targetPages: 24,
+        updatedAt: _revision,
+      );
 }
 
 class _Store extends MemoryCreationDraftStore {
@@ -169,7 +171,10 @@ List<List<LayerModel>> _templatePages() => [
       LayerModel(
         id: 'photo-$page',
         type: LayerType.image,
-        position: Offset(_physicalCanvas.width * .1, _physicalCanvas.height * .1),
+        position: Offset(
+          _physicalCanvas.width * .1,
+          _physicalCanvas.height * .1,
+        ),
         width: _physicalCanvas.width * .7,
         height: _physicalCanvas.height * .5,
         imageUrl: 'asset:assets/frame_preview/alpine_lake.jpg',
@@ -206,18 +211,27 @@ AlbumCreationDraft _templateDraft() {
 }
 
 class _Fixture {
-  _Fixture(this.container, this.albums, this.store, this.auth, this.persistence);
+  _Fixture(
+    this.container,
+    this.albums,
+    this.store,
+    this.auth,
+    this.persistence,
+  );
   final ProviderContainer container;
   final _Albums albums;
   final _Store store;
   final _Auth auth;
   final _Persistence persistence;
-  AlbumEditorViewModel get vm => container.read(albumEditorViewModelProvider.notifier);
+  AlbumEditorViewModel get vm =>
+      container.read(albumEditorViewModelProvider.notifier);
 }
 
 Future<void> _until(WidgetTester tester, bool Function() ready) async {
   for (var frame = 0; frame < 100; frame++) {
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 10)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 10)),
+    );
     await tester.pump(const Duration(milliseconds: 32));
     if (ready()) return;
   }
@@ -243,17 +257,21 @@ Future<_Fixture> _mount(
   if (deferLinked) store.linking = Completer<void>();
   final auth = _Auth();
   final persistence = _Persistence(albums);
-  final container = ProviderContainer(overrides: [
-    authViewModelProvider.overrideWith(() => auth),
-    albumEditorOwnerReaderProvider.overrideWithValue(() => auth.owner),
-    albumEditorOwnerChangesProvider.overrideWith((ref) => auth.changes.stream),
-    albumCreationDraftStoreProvider.overrideWithValue(store),
-    albumRepositoryProvider.overrideWithValue(albums),
-    albumPersistenceServiceProvider.overrideWithValue(persistence),
-    storageServiceProvider.overrideWithValue(FakeStorageService()),
-    albumEditorServiceProvider.overrideWithValue(const AlbumEditorService()),
-    albumCreationCatalogProvider.overrideWith((ref) => Stream.value([])),
-  ]);
+  final container = ProviderContainer(
+    overrides: [
+      authViewModelProvider.overrideWith(() => auth),
+      albumEditorOwnerReaderProvider.overrideWithValue(() => auth.owner),
+      albumEditorOwnerChangesProvider.overrideWith(
+        (ref) => auth.changes.stream,
+      ),
+      albumCreationDraftStoreProvider.overrideWithValue(store),
+      albumRepositoryProvider.overrideWithValue(albums),
+      albumPersistenceServiceProvider.overrideWithValue(persistence),
+      storageServiceProvider.overrideWithValue(FakeStorageService()),
+      albumEditorServiceProvider.overrideWithValue(const AlbumEditorService()),
+      albumCreationCatalogProvider.overrideWith((ref) => Stream.value([])),
+    ],
+  );
   addTearDown(() async {
     await tester.pumpWidget(const SizedBox());
     await tester.pump();
@@ -270,27 +288,42 @@ Future<_Fixture> _mount(
     fixture.vm.startLocalTemplateAlbum(
       albumTitle: '이전 작업',
       initialCover: defaultCoverSize,
-      pages: [for (var page = 0; page < 25; page++) [_text('old-$page')]],
+      pages: [
+        for (var page = 0; page < 25; page++) [_text('old-$page')],
+      ],
       templateCanvasSize: const Size(500, 500),
     );
   }
-  await tester.pumpWidget(UncontrolledProviderScope(
-    container: container,
-    child: wrapCreation(AlbumCreateFlowScreen(initialDraft: draft)),
-  ));
-  await _until(tester, () => manual
-      ? find.byKey(const ValueKey('creation-manual-start')).evaluate().isNotEmpty
-      : draft?.createdAlbumId != null
-      ? find.byType(PageEditorScreen).evaluate().isNotEmpty
-      : find.byType(AlbumCreateStep1).evaluate().isNotEmpty);
+  await tester.pumpWidget(
+    UncontrolledProviderScope(
+      container: container,
+      child: wrapCreation(AlbumCreateFlowScreen(initialDraft: draft)),
+    ),
+  );
+  await _until(
+    tester,
+    () => manual
+        ? find
+              .byKey(const ValueKey('creation-manual-start'))
+              .evaluate()
+              .isNotEmpty
+        : draft?.createdAlbumId != null
+        ? find.byType(PageEditorScreen).evaluate().isNotEmpty
+        : find.byType(AlbumCreateStep1).evaluate().isNotEmpty,
+  );
   if (manual) {
     await tester.tap(find.byKey(const ValueKey('creation-manual-start')));
     await tester.pump();
     await openAlbumSettingsSection(tester, 'name');
-    await tester.enterText(find.byKey(const ValueKey('creation-album-title')), '직접 만든 새 책');
+    await tester.enterText(
+      find.byKey(const ValueKey('creation-album-title')),
+      '직접 만든 새 책',
+    );
     FocusManager.instance.primaryFocus?.unfocus();
     await tester.pump();
-    tester.widget<AlbumCreateStep1>(find.byType(AlbumCreateStep1)).onCoverSelected(_cover);
+    tester
+        .widget<AlbumCreateStep1>(find.byType(AlbumCreateStep1))
+        .onCoverSelected(_cover);
     await tester.pump();
   }
   return fixture;
@@ -322,89 +355,144 @@ void main() {
   setUpAll(loadCreationFonts);
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('template enters the editor only after ID and linked checkpoint', (tester) async {
-    final fixture = await _mount(tester, draft: _templateDraft(), deferLinked: true);
-    tester.widget<AlbumCreateStep1>(find.byType(AlbumCreateStep1)).onNext();
-    await tester.pump();
-    _expectNoOldStep();
-    await _until(tester, () => fixture.store.linkedAttempts > 0);
-    expect(fixture.albums.creates, 1);
-    expect(_editorShown(), isFalse);
-    expect(fixture.store.draft!.createdAlbumId, isNull);
-    fixture.store.linking!.complete();
-    await _until(tester, _editorShown);
-    _expectLinkedEditor(fixture);
-    expect(fixture.vm.selectedCover.productId, 'REDP_250X200_HARD');
-    expect(fixture.vm.innerPageCount, 24);
-    for (var page = 0; page < 25; page++) {
-      expect(fixture.vm.pages[page].layers.map((layer) => layer.id), ['photo-$page', 'text-$page']);
-    }
-    final crop = fixture.vm.pages.first.layers.first;
-    expect(crop.imageZoom, 1.7);
-    expect(crop.imageOffset, const Offset(12, -8));
-    final checkpoint = fixture.store.draft!.editorCheckpoint!;
-    expect(checkpoint.sourceTemplateProductKey, _productKey);
-    expect(checkpoint.coverCanvas, const Size(500, 400));
-    expect(checkpoint.innerCanvas, const Size(500, 400));
-    expect(checkpoint.pages.first.layers.first.imageZoom, 1.7);
-    expect(checkpoint.pages.first.layers.first.imageOffset, const Offset(12, -8));
-  });
+  testWidgets(
+    'template enters the editor only after ID and linked checkpoint',
+    (tester) async {
+      final fixture = await _mount(
+        tester,
+        draft: _templateDraft(),
+        deferLinked: true,
+      );
+      tester.widget<AlbumCreateStep1>(find.byType(AlbumCreateStep1)).onNext();
+      await tester.pump();
+      _expectNoOldStep();
+      await _until(tester, () => fixture.store.linkedAttempts > 0);
+      expect(fixture.albums.creates, 1);
+      expect(_editorShown(), isFalse);
+      expect(fixture.store.draft!.createdAlbumId, isNull);
+      fixture.store.linking!.complete();
+      await _until(tester, _editorShown);
+      _expectLinkedEditor(fixture);
+      expect(fixture.vm.selectedCover.productId, 'REDP_250X200_HARD');
+      expect(fixture.vm.innerPageCount, 24);
+      for (var page = 0; page < 25; page++) {
+        expect(fixture.vm.pages[page].layers.map((layer) => layer.id), [
+          'photo-$page',
+          'text-$page',
+        ]);
+      }
+      final crop = fixture.vm.pages.first.layers.first;
+      expect(crop.imageZoom, 1.7);
+      expect(crop.imageOffset, const Offset(12, -8));
+      final checkpoint = fixture.store.draft!.editorCheckpoint!;
+      expect(checkpoint.sourceTemplateProductKey, _productKey);
+      expect(checkpoint.coverCanvas, const Size(500, 400));
+      expect(checkpoint.innerCanvas, const Size(500, 400));
+      expect(checkpoint.pages.first.layers.first.imageZoom, 1.7);
+      expect(
+        checkpoint.pages.first.layers.first.imageOffset,
+        const Offset(12, -8),
+      );
+    },
+  );
 
-  testWidgets('manual entry clears an old editor and keeps twenty blank inner pages', (tester) async {
-    final fixture = await _mount(tester, manual: true, seedOldEditor: true);
-    tester.widget<AlbumCreateStep1>(find.byType(AlbumCreateStep1)).onNext();
-    await tester.pump();
-    _expectNoOldStep();
-    await _until(tester, _editorShown);
-    _expectLinkedEditor(fixture, pages: 21);
-    expect(fixture.vm.selectedCover.productId, 'REDP_250X200_HARD');
-    expect(fixture.vm.innerPageCount, 20);
-    expect(fixture.vm.pages.skip(1).every((page) => page.layers.isEmpty), isTrue);
-    expect(fixture.vm.pages.expand((page) => page.layers).any((layer) => layer.id.startsWith('old-')), isFalse);
-    expect(fixture.store.draft!.editorCheckpoint!.sourceTemplateProductKey, isNull);
-  });
+  testWidgets(
+    'manual entry clears an old editor and keeps twenty blank inner pages',
+    (tester) async {
+      final fixture = await _mount(tester, manual: true, seedOldEditor: true);
+      tester.widget<AlbumCreateStep1>(find.byType(AlbumCreateStep1)).onNext();
+      await tester.pump();
+      _expectNoOldStep();
+      await _until(tester, _editorShown);
+      _expectLinkedEditor(fixture, pages: 21);
+      expect(fixture.vm.selectedCover.productId, 'REDP_250X200_HARD');
+      expect(fixture.vm.innerPageCount, 20);
+      expect(
+        fixture.vm.pages.skip(1).every((page) => page.layers.isEmpty),
+        isTrue,
+      );
+      expect(
+        fixture.vm.pages
+            .expand((page) => page.layers)
+            .any((layer) => layer.id.startsWith('old-')),
+        isFalse,
+      );
+      expect(
+        fixture.store.draft!.editorCheckpoint!.sourceTemplateProductKey,
+        isNull,
+      );
+    },
+  );
 
-  testWidgets('repeated continue while create is pending makes one server request', (tester) async {
-    final fixture = await _mount(tester, draft: _templateDraft(), deferCreate: true);
-    final next = tester.widget<AlbumCreateStep1>(find.byType(AlbumCreateStep1)).onNext;
-    next();
-    next();
-    await _until(tester, () => fixture.albums.creates > 0);
-    expect(fixture.albums.creates, 1);
-    expect(_editorShown(), isFalse);
-    _expectNoOldStep();
-    expect(fixture.store.draft!.createdAlbumId, isNull);
-    fixture.albums.creating!.complete();
-    await _until(tester, _editorShown);
-    _expectLinkedEditor(fixture);
-  });
+  testWidgets(
+    'repeated continue while create is pending makes one server request',
+    (tester) async {
+      final fixture = await _mount(
+        tester,
+        draft: _templateDraft(),
+        deferCreate: true,
+      );
+      final next = tester
+          .widget<AlbumCreateStep1>(find.byType(AlbumCreateStep1))
+          .onNext;
+      next();
+      next();
+      await _until(tester, () => fixture.albums.creates > 0);
+      expect(fixture.albums.creates, 1);
+      expect(_editorShown(), isFalse);
+      _expectNoOldStep();
+      expect(fixture.store.draft!.createdAlbumId, isNull);
+      fixture.albums.creating!.complete();
+      await _until(tester, _editorShown);
+      _expectLinkedEditor(fixture);
+    },
+  );
 
-  testWidgets('failed linked checkpoint blocks entry and retries only the local write', (tester) async {
-    final fixture = await _mount(tester, draft: _templateDraft(), failLinked: true);
-    tester.widget<AlbumCreateStep1>(find.byType(AlbumCreateStep1)).onNext();
-    await _until(tester, () => find.byKey(const ValueKey('creation-checkpoint-retry')).evaluate().isNotEmpty);
-    expect(_editorShown(), isFalse);
-    _expectNoOldStep();
-    expect(fixture.albums.creates, 1);
-    expect(fixture.vm.editingAlbumId, 71);
-    expect(fixture.store.draft!.createdAlbumId, isNull);
-    expect(fixture.store.draft!.creationAttempt, isNotNull);
-    final uploads = fixture.persistence.calls;
-    final requestId = fixture.albums.requestIds.single;
-    fixture.store.failLinked = false;
-    final retry = find.byKey(const ValueKey('creation-checkpoint-retry'));
-    final retryAgain = tester.widget<ButtonStyleButton>(retry).onPressed!;
-    retryAgain();
-    retryAgain();
-    await _until(tester, _editorShown);
-    _expectLinkedEditor(fixture);
-    expect(fixture.persistence.calls, uploads);
-    expect(fixture.albums.requestIds, [requestId]);
-    expect(fixture.vm.pages[24].layers.last.id, 'text-24');
-  });
+  testWidgets(
+    'failed linked checkpoint blocks entry and retries only the local write',
+    (tester) async {
+      final fixture = await _mount(
+        tester,
+        draft: _templateDraft(),
+        failLinked: true,
+      );
+      tester.widget<AlbumCreateStep1>(find.byType(AlbumCreateStep1)).onNext();
+      await _until(
+        tester,
+        () => find
+            .byKey(const ValueKey('creation-checkpoint-retry'))
+            .evaluate()
+            .isNotEmpty,
+      );
+      expect(_editorShown(), isFalse);
+      _expectNoOldStep();
+      expect(fixture.albums.creates, 1);
+      expect(fixture.vm.editingAlbumId, 71);
+      expect(fixture.store.draft!.createdAlbumId, isNull);
+      expect(fixture.store.draft!.creationAttempt, isNotNull);
+      final uploads = fixture.persistence.calls;
+      final requestId = fixture.albums.requestIds.single;
+      fixture.store.failLinked = false;
+      final retry = find.byKey(const ValueKey('creation-checkpoint-retry'));
+      final retryAgain = tester.widget<ButtonStyleButton>(retry).onPressed!;
+      retryAgain();
+      retryAgain();
+      await _until(tester, _editorShown);
+      _expectLinkedEditor(fixture);
+      expect(fixture.persistence.calls, uploads);
+      expect(fixture.albums.requestIds, [requestId]);
+      expect(fixture.vm.pages[24].layers.last.id, 'text-24');
+    },
+  );
 
-  testWidgets('owner loss while create is pending blocks the old response', (tester) async {
-    final fixture = await _mount(tester, draft: _templateDraft(), deferCreate: true);
+  testWidgets('owner loss while create is pending blocks the old response', (
+    tester,
+  ) async {
+    final fixture = await _mount(
+      tester,
+      draft: _templateDraft(),
+      deferCreate: true,
+    );
     tester.widget<AlbumCreateStep1>(find.byType(AlbumCreateStep1)).onNext();
     await _until(tester, () => fixture.albums.creates == 1);
     fixture.auth.loseOwner();
@@ -412,7 +500,9 @@ void main() {
     final writes = fixture.store.writes;
     fixture.albums.creating!.complete();
     for (var frame = 0; frame < 12; frame++) {
-      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 10)));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 10)),
+      );
       await tester.pump(const Duration(milliseconds: 32));
     }
     expect(_editorShown(), isFalse);
@@ -422,41 +512,50 @@ void main() {
     expect(fixture.store.savedOwners.every((owner) => owner == _owner), isTrue);
   });
 
-  testWidgets('created legacy draft restores edited page and layers without recreating', (tester) async {
-    final old = _templateDraft();
-    final checkpoint = AlbumCreationEditorCheckpoint(
-      pages: [for (var page = 0; page < 25; page++) AlbumPage(
-        id: 'restored-page-$page',
-        pageIndex: page,
-        isCover: page == 0,
-        backgroundColor: page == 3 ? 0xFFDAE8E3 : null,
-        layers: old.pages![page],
-      )],
-      pageIndex: 3,
-      coverCanvas: const Size(500, 400),
-      innerCanvas: const Size(500, 400),
-      theme: CoverTheme.nature1,
-      sourceOwnerId: _owner,
-      sourceMemberRole: 'OWNER',
-      sourceUpdatedAt: _revision,
-      sourceTemplateProductKey: _productKey,
-    );
-    final json = old.toJson()
-      ..['createdAlbumId'] = 71
-      ..['showPhotoFill'] = true
-      ..['currentPage'] = 1
-      ..['editorCheckpoint'] = checkpoint.toJson();
-    final draft = AlbumCreationDraft.fromJson(json);
-    final fixture = await _mount(tester, draft: draft);
-    expect(_editorShown(), isTrue);
-    _expectNoOldStep();
-    expect(fixture.albums.creates, 0);
-    expect(fixture.vm.editingAlbumId, 71);
-    expect(fixture.vm.currentPageIndex, 3);
-    expect(fixture.vm.pages[3].id, 'restored-page-3');
-    expect(fixture.vm.pages[3].backgroundColor, 0xFFDAE8E3);
-    expect(fixture.vm.pages[3].layers.map((layer) => layer.id), ['photo-3', 'text-3']);
-    expect(fixture.vm.selectedTheme, CoverTheme.nature1);
-    expect(fixture.store.writes, 0);
-  });
+  testWidgets(
+    'created legacy draft restores edited page and layers without recreating',
+    (tester) async {
+      final old = _templateDraft();
+      final checkpoint = AlbumCreationEditorCheckpoint(
+        pages: [
+          for (var page = 0; page < 25; page++)
+            AlbumPage(
+              id: 'restored-page-$page',
+              pageIndex: page,
+              isCover: page == 0,
+              backgroundColor: page == 3 ? 0xFFDAE8E3 : null,
+              layers: old.pages![page],
+            ),
+        ],
+        pageIndex: 3,
+        coverCanvas: const Size(500, 400),
+        innerCanvas: const Size(500, 400),
+        theme: CoverTheme.nature1,
+        sourceOwnerId: _owner,
+        sourceMemberRole: 'OWNER',
+        sourceUpdatedAt: _revision,
+        sourceTemplateProductKey: _productKey,
+      );
+      final json = old.toJson()
+        ..['createdAlbumId'] = 71
+        ..['showPhotoFill'] = true
+        ..['currentPage'] = 1
+        ..['editorCheckpoint'] = checkpoint.toJson();
+      final draft = AlbumCreationDraft.fromJson(json);
+      final fixture = await _mount(tester, draft: draft);
+      expect(_editorShown(), isTrue);
+      _expectNoOldStep();
+      expect(fixture.albums.creates, 0);
+      expect(fixture.vm.editingAlbumId, 71);
+      expect(fixture.vm.currentPageIndex, 3);
+      expect(fixture.vm.pages[3].id, 'restored-page-3');
+      expect(fixture.vm.pages[3].backgroundColor, 0xFFDAE8E3);
+      expect(fixture.vm.pages[3].layers.map((layer) => layer.id), [
+        'photo-3',
+        'text-3',
+      ]);
+      expect(fixture.vm.selectedTheme, CoverTheme.nature1);
+      expect(fixture.store.writes, 0);
+    },
+  );
 }

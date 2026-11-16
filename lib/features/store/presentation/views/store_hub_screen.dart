@@ -76,9 +76,12 @@ class _StoreHubScreenState extends State<StoreHubScreen> {
       scope.onNavigate(6);
     } else {
       Navigator.of(context).push(
-        snapFitRoute<void>(page: const MaterialCatalogScreen(library: true), settings: kIsWeb
+        snapFitRoute<void>(
+          page: const MaterialCatalogScreen(library: true),
+          settings: kIsWeb
               ? const WebAppRouteSettings(WebAppLocation.library)
-              : null),
+              : null,
+        ),
       );
     }
   }

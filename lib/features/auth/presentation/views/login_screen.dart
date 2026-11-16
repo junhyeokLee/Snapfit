@@ -1300,7 +1300,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ),
         fields: Align(
           alignment: Alignment.centerLeft,
-          child: ExperienceIcon('CheckCircle2', size: 48, color: ExperienceFormStyle.selectionInk(context),
+          child: ExperienceIcon(
+            'CheckCircle2',
+            size: 48,
+            color: ExperienceFormStyle.selectionInk(context),
           ),
         ),
         aside: Text(
@@ -2677,7 +2680,10 @@ class _TermsCheckTile extends StatelessWidget {
               IconButton(
                 tooltip: '$label 보기',
                 onPressed: enabled ? onView : null,
-                icon: ExperienceIcon('ChevronRight', size: 20, color: ExperienceFormStyle.muted(context),
+                icon: ExperienceIcon(
+                  'ChevronRight',
+                  size: 20,
+                  color: ExperienceFormStyle.muted(context),
                 ),
               ),
           ],

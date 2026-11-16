@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/constants/snapfit_colors.dart';
+
 // Lucide v0.468.0 (ISC), the same icon definitions as the approved HTML prototype.
 // Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as
 // part of Feather (MIT). All other copyright (c) for Lucide are held by

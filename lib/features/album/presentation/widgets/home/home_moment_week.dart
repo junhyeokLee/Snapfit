@@ -104,8 +104,9 @@ class HomeMomentWeek extends StatelessWidget {
                                     : current
                                     ? accent
                                     : future
-                                    ? ExperienceFormStyle.muted(context)
-                                        .withValues(alpha: 0.4)
+                                    ? ExperienceFormStyle.muted(
+                                        context,
+                                      ).withValues(alpha: 0.4)
                                     : ExperienceFormStyle.muted(context),
                                 weight: recorded || current
                                     ? FontWeight.w700

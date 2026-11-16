@@ -547,7 +547,9 @@ class _FeaturedBookArtwork extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final placeholder = Center(
-      child: ExperienceIcon('BookOpen', color: ExperienceFormStyle.muted(context),
+      child: ExperienceIcon(
+        'BookOpen',
+        color: ExperienceFormStyle.muted(context),
         size: 40,
       ),
     );

@@ -188,7 +188,10 @@ class _AppIntroductionScreenState extends ConsumerState<AppIntroductionScreen> {
                                   onPressed: _finishing
                                       ? null
                                       : () => _goTo(_index - 1),
-                                  icon: const ExperienceIcon('ArrowLeft', size: 21),
+                                  icon: const ExperienceIcon(
+                                    'ArrowLeft',
+                                    size: 21,
+                                  ),
                                 ),
                                 const SizedBox(width: 8),
                               ],
@@ -223,7 +226,10 @@ class _AppIntroductionScreenState extends ConsumerState<AppIntroductionScreen> {
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      const ExperienceIcon('ArrowRight', size: 18),
+                                      const ExperienceIcon(
+                                        'ArrowRight',
+                                        size: 18,
+                                      ),
                                     ],
                                   ),
                                 ),

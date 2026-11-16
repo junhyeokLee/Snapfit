@@ -848,7 +848,9 @@ class _BillingManagementScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ExperienceIcon('CheckCircle2', color: ExperienceFormStyle.selectionInk(context),
+          ExperienceIcon(
+            'CheckCircle2',
+            color: ExperienceFormStyle.selectionInk(context),
             size: 30,
           ),
           const SizedBox(height: 14),
@@ -1004,9 +1006,11 @@ class _BillingManagementScreenState
                   ? null
                   : () => Navigator.push<void>(
                       context,
-                      snapFitRoute(page: const TermsPolicyScreen(
+                      snapFitRoute(
+                        page: const TermsPolicyScreen(
                           initialDocType: TermsPolicyDocType.refund,
-                        )),
+                        ),
+                      ),
                     ),
               icon: const ExperienceIcon('FileText', size: 17),
               label: const Text('포인트 이용·환불 안내'),

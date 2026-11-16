@@ -462,7 +462,10 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
               style: IconButton.styleFrom(
                 backgroundColor: ExperienceFormStyle.surface(context),
               ),
-              icon: ExperienceIcon('RefreshCw', size: 20, color: ExperienceFormStyle.ink(context),
+              icon: ExperienceIcon(
+                'RefreshCw',
+                size: 20,
+                color: ExperienceFormStyle.ink(context),
               ),
             ),
           ),

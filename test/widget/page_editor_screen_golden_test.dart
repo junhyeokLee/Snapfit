@@ -385,32 +385,33 @@ void main() {
     },
   );
 
-  testWidgets('editor page count follows added inner pages and keeps cover label', (
-    tester,
-  ) async {
-    await _pumpEditor(tester);
-    Finder header(String label) =>
-        find.descendant(of: find.byType(AppBar), matching: find.text(label));
-    expect(header('표지'), findsOneWidget);
-    final container = ProviderScope.containerOf(
-      tester.element(find.byType(PageEditorScreen)),
-    );
-    final editor = container.read(albumEditorViewModelProvider.notifier);
-    editor.goToPage(20);
-    await tester.pumpAndSettle();
-    expect(header('20 / 20쪽'), findsOneWidget);
+  testWidgets(
+    'editor page count follows added inner pages and keeps cover label',
+    (tester) async {
+      await _pumpEditor(tester);
+      Finder header(String label) =>
+          find.descendant(of: find.byType(AppBar), matching: find.text(label));
+      expect(header('표지'), findsOneWidget);
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(PageEditorScreen)),
+      );
+      final editor = container.read(albumEditorViewModelProvider.notifier);
+      editor.goToPage(20);
+      await tester.pumpAndSettle();
+      expect(header('20 / 20쪽'), findsOneWidget);
 
-    final add = find.byKey(const Key('addInnerPagesButton'));
-    await tester.ensureVisible(add);
-    await tester.tap(add);
-    await tester.pumpAndSettle();
-    expect(header('21 / 22쪽'), findsOneWidget);
+      final add = find.byKey(const Key('addInnerPagesButton'));
+      await tester.ensureVisible(add);
+      await tester.tap(add);
+      await tester.pumpAndSettle();
+      expect(header('21 / 22쪽'), findsOneWidget);
 
-    editor.goToPage(0);
-    await tester.pumpAndSettle();
-    expect(header('표지'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+      editor.goToPage(0);
+      await tester.pumpAndSettle();
+      expect(header('표지'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'page editor full workspace golden captures canvas dock and layer sheet',

@@ -36,7 +36,10 @@ class ReferralRewardCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(22),
                 border: Border.all(color: SocialStyle.line(context)),
               ),
-              child: ExperienceIcon('Users2', size: 33, color: SocialStyle.accent(context),
+              child: ExperienceIcon(
+                'Users2',
+                size: 33,
+                color: SocialStyle.accent(context),
               ),
             ),
           ),

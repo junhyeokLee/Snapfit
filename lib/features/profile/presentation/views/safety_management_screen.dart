@@ -384,7 +384,9 @@ class _SafetyManagementScreenState extends ConsumerState<SafetyManagementScreen>
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ExperienceIcon('Shield', color: ExperienceFormStyle.selectionInk(context),
+        ExperienceIcon(
+          'Shield',
+          color: ExperienceFormStyle.selectionInk(context),
           size: 32,
         ),
         const SizedBox(height: 20),

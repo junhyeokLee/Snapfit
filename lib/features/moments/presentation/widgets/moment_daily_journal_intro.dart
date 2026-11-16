@@ -205,7 +205,10 @@ class MomentDailyNotePreview extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ExperienceIcon('FileText', size: 18, color: ExperienceFormStyle.muted(context),
+              ExperienceIcon(
+                'FileText',
+                size: 18,
+                color: ExperienceFormStyle.muted(context),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -307,7 +310,10 @@ class _JournalJourney extends StatelessWidget {
         (2, '월간 앨범'),
       ]) ...[
         if (index > 0)
-          ExperienceIcon('ChevronRight', size: 15, color: ExperienceFormStyle.muted(context),
+          ExperienceIcon(
+            'ChevronRight',
+            size: 15,
+            color: ExperienceFormStyle.muted(context),
           ),
         Text(
           label,

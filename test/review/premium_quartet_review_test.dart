@@ -27,10 +27,12 @@ String _reviewOutput() {
     'output/premium-four-per-topic-20261103/native-review-location.json',
   );
   if (location.existsSync()) {
-    return (jsonDecode(location.readAsStringSync()) as Map)['directory'] as String;
+    return (jsonDecode(location.readAsStringSync()) as Map)['directory']
+        as String;
   }
   return 'output/premium-four-per-topic-20261103/review';
 }
+
 final _ids = [for (final book in premiumQuartetEditions) book.catalogId];
 // Small shared font metadata only; no document or photo is prepared here.
 final _families = <String>{

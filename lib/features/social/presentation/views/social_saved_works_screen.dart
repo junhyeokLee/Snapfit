@@ -354,8 +354,7 @@ class _SocialSavedWorksScreenState
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ExperienceIcon('Lock', size: 15, color: SocialStyle.accent(context),
-        ),
+        ExperienceIcon('Lock', size: 15, color: SocialStyle.accent(context)),
         const SizedBox(width: 6),
         Expanded(
           child: Text(

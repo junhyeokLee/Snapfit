@@ -36,7 +36,11 @@ class HomeCreateAlbumFab extends StatelessWidget {
             customBorder: const CircleBorder(),
             onTap: onPressed,
             child: const Center(
-              child: ExperienceIcon('Plus', color: SnapFitColors.pureWhite, size: 28),
+              child: ExperienceIcon(
+                'Plus',
+                color: SnapFitColors.pureWhite,
+                size: 28,
+              ),
             ),
           ),
         ),

@@ -337,7 +337,9 @@ class _CoverEmptyGuide extends StatelessWidget {
                         color: const Color(0xFF13C8EC).withValues(alpha: 0.12),
                         shape: BoxShape.circle,
                       ),
-                      child: const ExperienceIcon('ImagePlus', color: Color(0xFF13AFCF),
+                      child: const ExperienceIcon(
+                        'ImagePlus',
+                        color: Color(0xFF13AFCF),
                         size: 30,
                       ),
                     ),

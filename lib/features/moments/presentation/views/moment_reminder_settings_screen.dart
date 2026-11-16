@@ -280,7 +280,9 @@ class _MomentReminderSettingsScreenState
                       onPressed: _busy
                           ? null
                           : () => Navigator.of(context).push<void>(
-                              snapFitRoute(page: const NotificationSettingsScreen()),
+                              snapFitRoute(
+                                page: const NotificationSettingsScreen(),
+                              ),
                             ),
                       icon: const ExperienceIcon('Bell', size: 18),
                       label: const Text('기기 알림 설정'),

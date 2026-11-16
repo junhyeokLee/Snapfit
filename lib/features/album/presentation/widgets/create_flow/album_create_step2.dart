@@ -339,7 +339,10 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
             IconButton(
               tooltip: '초대 링크 복사',
               onPressed: _isCreatingInvite ? null : _copyInviteLink,
-              icon: ExperienceIcon('Copy', size: 21, color: ExperienceFormStyle.ink(context),
+              icon: ExperienceIcon(
+                'Copy',
+                size: 21,
+                color: ExperienceFormStyle.ink(context),
               ),
             ),
           ],
@@ -473,7 +476,9 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
           SnackBar(
             content: Row(
               children: [
-                ExperienceIcon('CheckCircle2', color: const Color(0xFF191919),
+                ExperienceIcon(
+                  'CheckCircle2',
+                  color: const Color(0xFF191919),
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -518,7 +523,9 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
         SnackBar(
           content: Row(
             children: [
-              ExperienceIcon('CheckCircle2', color: kIsWeb ? WebPalette.of(context).onBrand : Colors.white,
+              ExperienceIcon(
+                'CheckCircle2',
+                color: kIsWeb ? WebPalette.of(context).onBrand : Colors.white,
                 size: 20,
               ),
               const SizedBox(width: 8),

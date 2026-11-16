@@ -286,14 +286,17 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     FocusManager.instance.primaryFocus?.unfocus();
     Navigator.push(
       context,
-      snapFitRoute(page: TemplateDetailScreen(
+      snapFitRoute(
+        page: TemplateDetailScreen(
           template: template,
           heroTag: (this, template.id),
-        ), settings: kIsWeb
+        ),
+        settings: kIsWeb
             ? WebAppRouteSettings(
                 WebAppLocation(WebAppPage.template, '${template.id}'),
               )
-            : null),
+            : null,
+      ),
     );
   }
 
@@ -912,13 +915,19 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                       14,
                                       color: ExperienceFormStyle.muted(context),
                                     ),
-                                    prefixIcon: const ExperienceIcon('Search', size: 21),
+                                    prefixIcon: const ExperienceIcon(
+                                      'Search',
+                                      size: 21,
+                                    ),
                                     suffixIcon: query.isEmpty
                                         ? null
                                         : IconButton(
                                             tooltip: '검색 지우기',
                                             onPressed: _searchController.clear,
-                                            icon: const ExperienceIcon('X', size: 20),
+                                            icon: const ExperienceIcon(
+                                              'X',
+                                              size: 20,
+                                            ),
                                           ),
                                     filled: true,
                                     fillColor: ExperienceFormStyle.surface(
@@ -1241,9 +1250,12 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     }
     Navigator.push(
       context,
-      snapFitRoute<void>(page: const MaterialCatalogScreen(library: true), settings: kIsWeb
+      snapFitRoute<void>(
+        page: const MaterialCatalogScreen(library: true),
+        settings: kIsWeb
             ? const WebAppRouteSettings(WebAppLocation.library)
-            : null),
+            : null,
+      ),
     );
   }
 

@@ -173,7 +173,10 @@ class _MyPointBalanceCardState extends ConsumerState<MyPointBalanceCard> {
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
               child: Row(
                 children: [
-                  ExperienceIcon('Coins', size: 18, color: ExperienceFormStyle.selectionInk(context),
+                  ExperienceIcon(
+                    'Coins',
+                    size: 18,
+                    color: ExperienceFormStyle.selectionInk(context),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -195,7 +198,10 @@ class _MyPointBalanceCardState extends ConsumerState<MyPointBalanceCard> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  ExperienceIcon('ChevronDown', size: 19, color: ExperienceFormStyle.muted(context),
+                  ExperienceIcon(
+                    'ChevronDown',
+                    size: 19,
+                    color: ExperienceFormStyle.muted(context),
                   ),
                 ],
               ),
@@ -318,7 +324,9 @@ class _PointDetailsState extends ConsumerState<_PointDetails> {
               key: const ValueKey('my-point-charge'),
               contentPadding: EdgeInsets.zero,
               minVerticalPadding: 12,
-              leading: ExperienceIcon('Plus', color: ExperienceFormStyle.selectionInk(context),
+              leading: ExperienceIcon(
+                'Plus',
+                color: ExperienceFormStyle.selectionInk(context),
               ),
               title: const Text('포인트 충전'),
               trailing: const ExperienceIcon('ChevronRight'),

@@ -885,7 +885,9 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
     if (!_canChangeDraftDesign(owner)) return;
     final selection = await Navigator.push<AlbumCreationTemplate>(
       context,
-      snapFitRoute(page: TemplateDetailScreen(template: template, selectForCreation: true)),
+      snapFitRoute(
+        page: TemplateDetailScreen(template: template, selectForCreation: true),
+      ),
     );
     if (!mounted ||
         selection == null ||
@@ -1655,8 +1657,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
     if (owner == null ||
         owner.isEmpty ||
         (_draftOwner != null && owner != _draftOwner)) {
-      if (notify)
-        context.showSnack('로그인 상태를 확인한 뒤 다시 저장해주세요.');
+      if (notify) context.showSnack('로그인 상태를 확인한 뒤 다시 저장해주세요.');
       return false;
     }
     _draftOwner ??= owner;
@@ -1760,8 +1761,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
               .remove(_draftOwner!, _draftId);
           if (mounted) ref.invalidate(albumCreationDraftProvider);
         } catch (_) {
-          if (mounted)
-            context.showSnack('임시 저장을 지우지 못했어요. 다시 시도해주세요.');
+          if (mounted) context.showSnack('임시 저장을 지우지 못했어요. 다시 시도해주세요.');
           return;
         }
       }
@@ -2727,7 +2727,9 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
       case AiAlbumDraftRecoveryAction.reviewPointCost:
         await Navigator.push<bool>(
           context,
-          snapFitRoute(page: const BillingManagementScreen(returnToAiDraftFlow: true)),
+          snapFitRoute(
+            page: const BillingManagementScreen(returnToAiDraftFlow: true),
+          ),
         );
         if (!mounted) return;
         ref.invalidate(myPointBalanceProvider);
@@ -3318,7 +3320,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
               // 즉시 편집 화면으로 이동
               Navigator.pushReplacement(
                 context,
-                snapFitRoute(page: const PageEditorScreen(initialPageIndex: 1), settings: const WebAppRouteSettings(WebAppLocation.create)),
+                snapFitRoute(
+                  page: const PageEditorScreen(initialPageIndex: 1),
+                  settings: const WebAppRouteSettings(WebAppLocation.create),
+                ),
               );
             }
           },
@@ -3438,7 +3443,8 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
       ..selectedSlot = _photoSession.selectedSlot;
     Navigator.pushReplacement(
       context,
-      snapFitRoute(page: PageEditorScreen(
+      snapFitRoute(
+        page: PageEditorScreen(
           initialPageIndex:
               editorCheckpoint?.pageIndex ??
               (widget.initialDraft?.currentPage ?? 0).clamp(
@@ -3453,7 +3459,9 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
           initialPhotoFillSession: photoFillSession,
           creationDraftId: _draftId,
           creationDraftOwner: _draftOwner,
-        ), settings: const WebAppRouteSettings(WebAppLocation.create)),
+        ),
+        settings: const WebAppRouteSettings(WebAppLocation.create),
+      ),
     );
   }
 
@@ -3520,7 +3528,9 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
                 : '현재 요청의 결과를 기다리고 있어요. 중복 요청을 보내지 않도록 잠시 기다려 주세요.',
           ),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         ),
       );

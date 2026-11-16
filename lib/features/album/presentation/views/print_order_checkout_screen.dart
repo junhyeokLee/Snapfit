@@ -856,7 +856,9 @@ class _PrintOrderCheckoutScreenState
         ref.invalidate(myOrderSummaryProvider);
         await Navigator.pushReplacement<void, void>(
           context,
-          snapFitRoute(page: PrintOrderCompleteScreen(receipt: result.receipt!)),
+          snapFitRoute(
+            page: PrintOrderCompleteScreen(receipt: result.receipt!),
+          ),
         );
       }
     } catch (_) {
@@ -1184,7 +1186,9 @@ class _PrintOrderCheckoutScreenState
                 if (_reviewing)
                   _paymentActions(wide: false)
                 else ...[
-                  ExperienceIcon('Truck', color: WebPalette.of(context).brandInk,
+                  ExperienceIcon(
+                    'Truck',
+                    color: WebPalette.of(context).brandInk,
                     size: 24,
                   ),
                   _note(
@@ -1246,7 +1250,10 @@ class _PrintOrderCheckoutScreenState
             height: 92,
             child: Center(
               child: _previewAlbum == null
-                  ? ExperienceIcon('Bookmark', size: 42, color: ExperienceFormStyle.muted(context),
+                  ? ExperienceIcon(
+                      'Bookmark',
+                      size: 42,
+                      color: ExperienceFormStyle.muted(context),
                     )
                   : HomeAlbumCoverThumbnail(
                       album: _previewAlbum!,
@@ -1407,7 +1414,8 @@ class _PrintOrderCheckoutScreenState
               : () async {
                   final result = await Navigator.push<String>(
                     context,
-                    snapFitRoute(page: PrintOrderRequestScreen(
+                    snapFitRoute(
+                      page: PrintOrderRequestScreen(
                         target: _pendingTarget!,
                         albumTitle: _pendingCanResume
                             ? widget.albumTitle
@@ -1418,7 +1426,8 @@ class _PrintOrderCheckoutScreenState
                             ? '인쇄 파일을 다시 준비하기 위해 기존 주문 취소를 요청합니다.'
                             : null,
                         returnToAlbumEditing: !_pendingSdkStarted,
-                      )),
+                      ),
+                    ),
                   );
                   if (!mounted || !_ownerCurrent) return;
                   await _recoverPayment();
@@ -1445,7 +1454,9 @@ class _PrintOrderCheckoutScreenState
               ? null
               : () => Navigator.push(
                   context,
-                  snapFitRoute(page: OrderHistoryScreen(initialOrderId: _pendingOrderId)),
+                  snapFitRoute(
+                    page: OrderHistoryScreen(initialOrderId: _pendingOrderId),
+                  ),
                 ),
           child: const Text('이전 주문 확인하기'),
         ),

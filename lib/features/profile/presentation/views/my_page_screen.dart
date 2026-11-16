@@ -121,10 +121,9 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
       ),
     );
     if (mounted && result != null) {
-      Navigator.of(context).pushAndRemoveUntil(
-        snapFitRoute(page: const AuthGate()),
-        (_) => false,
-      );
+      Navigator.of(
+        context,
+      ).pushAndRemoveUntil(snapFitRoute(page: const AuthGate()), (_) => false);
     }
   }
 
@@ -577,8 +576,9 @@ class _ProfileHeader extends StatelessWidget {
             ),
             child: CircleAvatar(
               radius: 26,
-              backgroundImage:
-                  avatarUrl != null ? NetworkImage(avatarUrl) : null,
+              backgroundImage: avatarUrl != null
+                  ? NetworkImage(avatarUrl)
+                  : null,
               backgroundColor: accent.withValues(alpha: 0.15),
               child: avatarUrl == null
                   ? Text(

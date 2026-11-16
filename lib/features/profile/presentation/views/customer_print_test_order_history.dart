@@ -275,7 +275,10 @@ class _CustomerPrintTestOrderHistoryState
                                 ),
                               ),
                             ),
-                            ExperienceIcon('ChevronRight', size: 18, color: WebPalette.of(context).muted,
+                            ExperienceIcon(
+                              'ChevronRight',
+                              size: 18,
+                              color: WebPalette.of(context).muted,
                             ),
                           ],
                         ),

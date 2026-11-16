@@ -50,7 +50,10 @@ class AiAlbumDraftFailureStep extends StatelessWidget {
                 children: [
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: ExperienceIcon('CloudOff', size: 24, color: ExperienceFormStyle.muted(context),
+                    child: ExperienceIcon(
+                      'CloudOff',
+                      size: 24,
+                      color: ExperienceFormStyle.muted(context),
                     ),
                   ),
                   const SizedBox(height: 16),

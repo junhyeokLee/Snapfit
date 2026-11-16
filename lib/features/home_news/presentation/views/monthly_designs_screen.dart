@@ -72,17 +72,20 @@ class MonthlyDesignsScreen extends ConsumerWidget {
                       heroTag: (this, template.id),
                       onOpen: () async {
                         await Navigator.of(context).push<void>(
-                          snapFitRoute<void>(page: TemplateDetailScreen(
+                          snapFitRoute<void>(
+                            page: TemplateDetailScreen(
                               template: template,
                               heroTag: (this, template.id),
-                            ), settings: kIsWeb
+                            ),
+                            settings: kIsWeb
                                 ? WebAppRouteSettings(
                                     WebAppLocation(
                                       WebAppPage.template,
                                       '${template.id}',
                                     ),
                                   )
-                                : null),
+                                : null,
+                          ),
                         );
                       },
                     ),
@@ -179,7 +182,10 @@ class _MonthlyDesignCardState extends State<_MonthlyDesignCard> {
     final unavailableArtwork = ColoredBox(
       color: ExperienceFormStyle.surface(context),
       child: Center(
-        child: ExperienceIcon('BookOpen', size: 40, color: ExperienceFormStyle.muted(context),
+        child: ExperienceIcon(
+          'BookOpen',
+          size: 40,
+          color: ExperienceFormStyle.muted(context),
         ),
       ),
     );
@@ -237,7 +243,10 @@ class _MonthlyDesignCardState extends State<_MonthlyDesignCard> {
                     const SizedBox(width: 12),
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
-                      child: ExperienceIcon('ArrowRight', size: 20, color: ExperienceFormStyle.ink(context),
+                      child: ExperienceIcon(
+                        'ArrowRight',
+                        size: 20,
+                        color: ExperienceFormStyle.ink(context),
                       ),
                     ),
                   ],
@@ -274,7 +283,10 @@ class _DesignsMessage extends StatelessWidget {
     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 56),
     child: Column(
       children: [
-        ExperienceIcon('BookOpen', size: 36, color: ExperienceFormStyle.muted(context),
+        ExperienceIcon(
+          'BookOpen',
+          size: 36,
+          color: ExperienceFormStyle.muted(context),
         ),
         const SizedBox(height: 20),
         Text(

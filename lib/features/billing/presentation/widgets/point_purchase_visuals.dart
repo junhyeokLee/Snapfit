@@ -213,7 +213,11 @@ class PointPackOption extends StatelessWidget {
                             ),
                           ),
                           child: selected
-                              ? const ExperienceIcon('Check', size: 15, color: Colors.white)
+                              ? const ExperienceIcon(
+                                  'Check',
+                                  size: 15,
+                                  color: Colors.white,
+                                )
                               : null,
                         ),
                       ),

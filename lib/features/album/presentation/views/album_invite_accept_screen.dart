@@ -828,7 +828,10 @@ class _AlbumInviteAcceptScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      ExperienceIcon('Users2', size: 26, color: WebPalette.of(context).brandInk,
+                      ExperienceIcon(
+                        'Users2',
+                        size: 26,
+                        color: WebPalette.of(context).brandInk,
                       ),
                       const SizedBox(height: 18),
                       Text(

@@ -197,7 +197,10 @@ class CatalogFavoritesEmpty extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ExperienceIcon('Star', size: 30, color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ExperienceIcon(
+            'Star',
+            size: 30,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: 10),
           const Text(

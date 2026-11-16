@@ -121,7 +121,10 @@ class PageEditorCanvas extends StatelessWidget {
               return Center(
                 child: Semantics(
                   label: '빈 페이지',
-                  child: ExperienceIcon('Image', size: 32, color: SnapFitColors.deepCharcoal.withValues(alpha: .24),
+                  child: ExperienceIcon(
+                    'Image',
+                    size: 32,
+                    color: SnapFitColors.deepCharcoal.withValues(alpha: .24),
                   ),
                 ),
               );

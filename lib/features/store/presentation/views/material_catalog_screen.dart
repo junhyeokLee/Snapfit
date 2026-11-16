@@ -249,7 +249,10 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
         children: [
           Text(_sortLabel, style: ExperienceFormStyle.text(context, 12)),
           const SizedBox(width: 6),
-          ExperienceIcon('ChevronDown', size: 18, color: ExperienceFormStyle.muted(context),
+          ExperienceIcon(
+            'ChevronDown',
+            size: 18,
+            color: ExperienceFormStyle.muted(context),
           ),
         ],
       ),
@@ -607,23 +610,27 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
     if (item.template != null) {
       await Navigator.push(
         context,
-        snapFitRoute(page: TemplateDetailScreen(
+        snapFitRoute(
+          page: TemplateDetailScreen(
             template: item.template!,
             heroTag: (this, item.key),
-          )),
+          ),
+        ),
       );
       return;
     }
     await Navigator.push(
       context,
-      snapFitRoute(page: MaterialDetailScreen(
+      snapFitRoute(
+        page: MaterialDetailScreen(
           productKey: item.key,
           favoriteKey: item.favoriteKey,
           title: item.title,
           type: item.type,
           preview: (_) => item.preview(true),
           heroTag: (this, item.key),
-        )),
+        ),
+      ),
     );
   }
 
@@ -908,13 +915,19 @@ class _MaterialCatalogScreenState extends ConsumerState<MaterialCatalogScreen> {
                                 context,
                                 hint: '프레임, 스티커, 문구 검색',
                               ).copyWith(
-                                prefixIcon: const ExperienceIcon('Search', size: 20),
+                                prefixIcon: const ExperienceIcon(
+                                  'Search',
+                                  size: 20,
+                                ),
                                 suffixIcon: _query.isEmpty
                                     ? null
                                     : IconButton(
                                         tooltip: '검색 지우기',
                                         onPressed: _clearSearchFilter,
-                                        icon: const ExperienceIcon('X', size: 20),
+                                        icon: const ExperienceIcon(
+                                          'X',
+                                          size: 20,
+                                        ),
                                       ),
                               ),
                           onSubmitted: (_) =>

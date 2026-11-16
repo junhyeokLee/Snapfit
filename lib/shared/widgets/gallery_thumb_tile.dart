@@ -129,7 +129,9 @@ class GalleryThumbTileState extends State<GalleryThumbTile>
                                   strokeWidth: 2,
                                   color: SnapFitColors.textMutedOf(context),
                                 )
-                              : ExperienceIcon('Image', color: SnapFitColors.textMutedOf(context),
+                              : ExperienceIcon(
+                                  'Image',
+                                  color: SnapFitColors.textMutedOf(context),
                                   size: 22,
                                 ),
                         ),
@@ -145,7 +147,11 @@ class GalleryThumbTileState extends State<GalleryThumbTile>
                 Container(
                   color: Colors.black.withValues(alpha: 0.35),
                   alignment: Alignment.center,
-                  child: ExperienceIcon('CheckCircle2', color: SnapFitColors.accent, size: 28),
+                  child: ExperienceIcon(
+                    'CheckCircle2',
+                    color: SnapFitColors.accent,
+                    size: 28,
+                  ),
                 ),
             ],
           ),
@@ -191,7 +197,11 @@ class GalleryThumbTileState extends State<GalleryThumbTile>
                 Container(
                   color: Colors.black.withValues(alpha: 0.3),
                   alignment: Alignment.center,
-                  child: ExperienceIcon('CheckCircle2', color: SnapFitColors.accent, size: 28),
+                  child: ExperienceIcon(
+                    'CheckCircle2',
+                    color: SnapFitColors.accent,
+                    size: 28,
+                  ),
                 ),
             ],
           ),

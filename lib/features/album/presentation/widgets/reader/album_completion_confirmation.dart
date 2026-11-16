@@ -34,7 +34,9 @@ class AlbumCompletionConfirmation extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ExperienceIcon('BookOpen', color: WebPalette.of(context).brandInk,
+              ExperienceIcon(
+                'BookOpen',
+                color: WebPalette.of(context).brandInk,
                 size: 28,
               ),
               const SizedBox(height: 20),
@@ -85,7 +87,11 @@ class AlbumCompletionConfirmation extends StatelessWidget {
           ),
           title: Row(
             children: [
-              const ExperienceIcon('BookOpen', color: SnapFitColors.accent, size: 22),
+              const ExperienceIcon(
+                'BookOpen',
+                color: SnapFitColors.accent,
+                size: 22,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(

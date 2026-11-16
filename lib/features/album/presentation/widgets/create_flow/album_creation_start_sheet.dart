@@ -119,7 +119,10 @@ class _StartChoice extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            ExperienceIcon('ChevronRight', size: 20, color: ExperienceFormStyle.ink(context),
+            ExperienceIcon(
+              'ChevronRight',
+              size: 20,
+              color: ExperienceFormStyle.ink(context),
             ),
           ],
         ),

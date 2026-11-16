@@ -466,34 +466,34 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
-  testWidgets('rapid removals do not leave a queued undo for the previous account', (
-    tester,
-  ) async {
-    await _size(tester, const Size(1280, 1400));
-    String? actor = 'first';
-    final repository = _SavedRepository()
-      ..pages[0] = _page([_work('a'), _work('b')])
-      ..removeOnSuccess = true;
-    await tester.pumpWidget(_app(repository, actor: () => actor));
-    await tester.pumpAndSettle();
-    final container = ProviderScope.containerOf(
-      tester.element(find.byType(SocialSavedWorksScreen)),
-    );
-    await tester.tap(find.byKey(const ValueKey('social-saved-remove-a')));
-    await tester.pumpAndSettle();
-    expect(find.text('저장을 해제했어요'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('social-saved-remove-b')));
-    // Switch accounts before the first notice's reverse animation could finish.
-    await tester.pump();
-    actor = 'second';
-    repository.pages[0] = _page([_work('second')]);
-    container.invalidate(socialCurrentUserIdProvider);
-    await tester.pumpAndSettle();
-    expect(find.text('저장을 해제했어요'), findsNothing);
-    expect(find.text('되돌리기'), findsNothing);
-    expect(_card('second'), findsOneWidget);
-    expect(repository.saveStates, [false, false]);
-    expect(tester.takeException(), isNull);
-  });
-
+  testWidgets(
+    'rapid removals do not leave a queued undo for the previous account',
+    (tester) async {
+      await _size(tester, const Size(1280, 1400));
+      String? actor = 'first';
+      final repository = _SavedRepository()
+        ..pages[0] = _page([_work('a'), _work('b')])
+        ..removeOnSuccess = true;
+      await tester.pumpWidget(_app(repository, actor: () => actor));
+      await tester.pumpAndSettle();
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(SocialSavedWorksScreen)),
+      );
+      await tester.tap(find.byKey(const ValueKey('social-saved-remove-a')));
+      await tester.pumpAndSettle();
+      expect(find.text('저장을 해제했어요'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('social-saved-remove-b')));
+      // Switch accounts before the first notice's reverse animation could finish.
+      await tester.pump();
+      actor = 'second';
+      repository.pages[0] = _page([_work('second')]);
+      container.invalidate(socialCurrentUserIdProvider);
+      await tester.pumpAndSettle();
+      expect(find.text('저장을 해제했어요'), findsNothing);
+      expect(find.text('되돌리기'), findsNothing);
+      expect(_card('second'), findsOneWidget);
+      expect(repository.saveStates, [false, false]);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

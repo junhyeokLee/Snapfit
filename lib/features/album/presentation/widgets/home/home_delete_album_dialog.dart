@@ -51,7 +51,11 @@ class HomeDeleteAlbumDialog extends StatelessWidget {
                   color: SnapFitColors.errorLight,
                   shape: BoxShape.circle,
                 ),
-                child: const ExperienceIcon('Trash2', size: 32, color: SnapFitColors.error),
+                child: const ExperienceIcon(
+                  'Trash2',
+                  size: 32,
+                  color: SnapFitColors.error,
+                ),
               ),
               const SizedBox(height: 20),
               // 제목

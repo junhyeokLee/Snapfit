@@ -62,13 +62,16 @@ class _ReferralLinkRouterState extends ConsumerState<ReferralLinkRouter> {
       _presented[navigator] = active;
       navigator
           .push<void>(
-            snapFitRoute<void>(page: ValueListenableBuilder<PendingReferral>(
+            snapFitRoute<void>(
+              page: ValueListenableBuilder<PendingReferral>(
                 valueListenable: active,
                 builder: (_, current, __) =>
                     ReferralScreen(initialCode: current.code),
-              ), settings: WebAppRouteSettings(
+              ),
+              settings: WebAppRouteSettings(
                 WebAppLocation(WebAppPage.referral, invite.code),
-              )),
+              ),
+            ),
           )
           .whenComplete(() {
             if (identical(_presented[navigator], active))

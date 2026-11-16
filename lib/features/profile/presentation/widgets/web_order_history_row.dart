@@ -144,7 +144,11 @@ class WebOrderHistoryRow extends StatelessWidget {
                         ],
                       ),
                     ),
-                    ExperienceIcon('ChevronRight', size: 18, color: palette.muted),
+                    ExperienceIcon(
+                      'ChevronRight',
+                      size: 18,
+                      color: palette.muted,
+                    ),
                   ],
                 )
               : Column(
@@ -181,7 +185,11 @@ class WebOrderHistoryRow extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        ExperienceIcon('ChevronRight', size: 18, color: palette.muted),
+                        ExperienceIcon(
+                          'ChevronRight',
+                          size: 18,
+                          color: palette.muted,
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),

@@ -565,42 +565,41 @@ void main() {
     },
   );
 
-  testWidgets(
-    'a full album does not show an added blank page warning',
-    (tester) async {
-      final original = await orders.fetchOrderQuote(albumId: 7);
-      final snapshot = await orders.fetchPrintPreviewSnapshot(albumId: 7);
-      final album = Map<String, dynamic>.from(snapshot['album'] as Map);
-      album['cover_layers_json'] = jsonEncode({
-        'pages': [
-          {'index': 0, 'isCover': true, 'layers': []},
-          for (var page = 1; page <= 20; page++)
-            {'index': page, 'isCover': false, 'layers': []},
-        ],
-      });
-      when(() => orders.fetchPrintPreviewSnapshot(albumId: 7)).thenAnswer(
-        (_) async => {...snapshot, 'album': album},
-      );
-      when(() => orders.fetchOrderQuote(albumId: 7)).thenAnswer(
-        (_) async => OrderQuoteResult(
-          pageCount: 20,
-          sourcePageCount: 20,
-          addedBlankPageCount: 0,
-          amount: original.amount,
-          basePages: original.basePages,
-          basePrice: original.basePrice,
-          extraPageCount: 0,
-          extraPagePrice: original.extraPagePrice,
-          printSpec: original.printSpec,
-        ),
-      );
-      await pump(tester);
-      expect(find.text('내지 20페이지 · 앞표지와 뒤표지 별도'), findsOneWidget);
-      expect(find.byKey(const ValueKey('print-added-blank-pages')), findsNothing);
-      expect(find.text('앨범 계속 편집하기'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    },
-  );
+  testWidgets('a full album does not show an added blank page warning', (
+    tester,
+  ) async {
+    final original = await orders.fetchOrderQuote(albumId: 7);
+    final snapshot = await orders.fetchPrintPreviewSnapshot(albumId: 7);
+    final album = Map<String, dynamic>.from(snapshot['album'] as Map);
+    album['cover_layers_json'] = jsonEncode({
+      'pages': [
+        {'index': 0, 'isCover': true, 'layers': []},
+        for (var page = 1; page <= 20; page++)
+          {'index': page, 'isCover': false, 'layers': []},
+      ],
+    });
+    when(
+      () => orders.fetchPrintPreviewSnapshot(albumId: 7),
+    ).thenAnswer((_) async => {...snapshot, 'album': album});
+    when(() => orders.fetchOrderQuote(albumId: 7)).thenAnswer(
+      (_) async => OrderQuoteResult(
+        pageCount: 20,
+        sourcePageCount: 20,
+        addedBlankPageCount: 0,
+        amount: original.amount,
+        basePages: original.basePages,
+        basePrice: original.basePrice,
+        extraPageCount: 0,
+        extraPagePrice: original.extraPagePrice,
+        printSpec: original.printSpec,
+      ),
+    );
+    await pump(tester);
+    expect(find.text('내지 20페이지 · 앞표지와 뒤표지 별도'), findsOneWidget);
+    expect(find.byKey(const ValueKey('print-added-blank-pages')), findsNothing);
+    expect(find.text('앨범 계속 편집하기'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
     'unverified server estimate stays hidden while square preview remains available',

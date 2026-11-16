@@ -429,7 +429,15 @@ List<_StudioPage> _studioDiscoverySpread(
         l.mat('wavePencil', .55, .83, .34, .065);
         r.scene(p(2), .08, .11, .48, .37, frame: 'atelierWeave', fill: true);
         r.scene(p(1), .41, .51, .47, .32, frame: 'studioPhotoCorners', turn: 2);
-        _studioMilestoneNote(r, 'lifeWardrobeLabel', '오늘도 발견 완료', .09, .70, .31, .16);
+        _studioMilestoneNote(
+          r,
+          'lifeWardrobeLabel',
+          '오늘도 발견 완료',
+          .09,
+          .70,
+          .31,
+          .16,
+        );
       case 15:
         l.scene(
           p(0),

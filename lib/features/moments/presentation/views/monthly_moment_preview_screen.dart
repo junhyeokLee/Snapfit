@@ -1073,7 +1073,10 @@ class _MonthlyMomentPreviewScreenState
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            ExperienceIcon('Lock', size: 16, color: SocialStyle.accent(context),
+                            ExperienceIcon(
+                              'Lock',
+                              size: 16,
+                              color: SocialStyle.accent(context),
                             ),
                             const SizedBox(width: 4),
                             Text(

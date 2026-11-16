@@ -1309,8 +1309,12 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
                               if (pageSlots.isNotEmpty) ...[
                                 const SizedBox(width: 5),
                                 if (pageFilled == pageSlots.length)
-                                  ExperienceIcon('CheckCircle2', size: 12, color: ExperienceFormStyle.selectionInk(
-                                      context),
+                                  ExperienceIcon(
+                                    'CheckCircle2',
+                                    size: 12,
+                                    color: ExperienceFormStyle.selectionInk(
+                                      context,
+                                    ),
                                   )
                                 else
                                   Text(
@@ -1377,8 +1381,12 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               if (allPhotosPlaced) ...[
-                                ExperienceIcon('CheckCircle2', size: 16, color: ExperienceFormStyle.selectionInk(
-                                    context),
+                                ExperienceIcon(
+                                  'CheckCircle2',
+                                  size: 16,
+                                  color: ExperienceFormStyle.selectionInk(
+                                    context,
+                                  ),
                                 ),
                                 const SizedBox(width: 6),
                               ],
@@ -1510,7 +1518,10 @@ class _TemplatePhotoFillStepState extends ConsumerState<TemplatePhotoFillStep> {
                                 FilledButton.icon(
                                   key: const ValueKey('fill-auto-fill'),
                                   onPressed: _picking ? null : _autoFill,
-                                  icon: const ExperienceIcon('Sparkles', size: 18),
+                                  icon: const ExperienceIcon(
+                                    'Sparkles',
+                                    size: 18,
+                                  ),
                                   label: Text(
                                     _picking
                                         ? '사진을 준비하고 있어요…'

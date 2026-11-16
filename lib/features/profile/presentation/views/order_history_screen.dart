@@ -1240,9 +1240,11 @@ class _LiveOrderDetailState extends ConsumerState<_LiveOrderDetail>
                                     unawaited(
                                       Navigator.push(
                                         navigationContext,
-                                        snapFitRoute(page: PrintOrderCompleteScreen(
-                                                receipt: receipt,
-                                              )),
+                                        snapFitRoute(
+                                          page: PrintOrderCompleteScreen(
+                                            receipt: receipt,
+                                          ),
+                                        ),
                                       ),
                                     );
                                   } else {
@@ -1269,10 +1271,12 @@ class _LiveOrderDetailState extends ConsumerState<_LiveOrderDetail>
                                   unawaited(
                                     Navigator.push(
                                       navigationContext,
-                                      snapFitRoute(page: PrintOrderPreviewScreen(
+                                      snapFitRoute(
+                                        page: PrintOrderPreviewScreen(
                                           albumId: pending.albumId,
                                           albumTitle: order.title,
-                                        )),
+                                        ),
+                                      ),
                                     ),
                                   );
                                 } else {
@@ -1284,9 +1288,11 @@ class _LiveOrderDetailState extends ConsumerState<_LiveOrderDetail>
                                     unawaited(
                                       Navigator.push(
                                         navigationContext,
-                                        snapFitRoute(page: PrintOrderCompleteScreen(
-                                                receipt: result.receipt!,
-                                              )),
+                                        snapFitRoute(
+                                          page: PrintOrderCompleteScreen(
+                                            receipt: result.receipt!,
+                                          ),
+                                        ),
                                       ),
                                     );
                                   } else {

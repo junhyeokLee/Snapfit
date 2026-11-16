@@ -480,7 +480,11 @@ class _WebPointTopupPanelState extends ConsumerState<WebPointTopupPanel>
                       spacing: 10,
                       runSpacing: 8,
                       children: [
-                        ExperienceIcon('Clock', size: 20, color: colors.brandInk),
+                        ExperienceIcon(
+                          'Clock',
+                          size: 20,
+                          color: colors.brandInk,
+                        ),
                         Text(
                           pending.statusLabel,
                           style: TextStyle(
@@ -782,34 +786,35 @@ class _WebPointTopupPanelState extends ConsumerState<WebPointTopupPanel>
     ),
   );
 
-  Widget _statusNote(
-    WebPalette colors,
-    String message, {
-    Key? textKey,
-  }) => Semantics(
-    liveRegion: true,
-    child: Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colors.softBrand,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ExperienceIcon('Info', size: 18, color: colors.brandInk),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              message,
-              key: textKey,
-              style: TextStyle(color: colors.ink, fontSize: 13, height: 1.6),
-            ),
+  Widget _statusNote(WebPalette colors, String message, {Key? textKey}) =>
+      Semantics(
+        liveRegion: true,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: colors.softBrand,
+            borderRadius: BorderRadius.circular(16),
           ),
-        ],
-      ),
-    ),
-  );
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ExperienceIcon('Info', size: 18, color: colors.brandInk),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  message,
+                  key: textKey,
+                  style: TextStyle(
+                    color: colors.ink,
+                    fontSize: 13,
+                    height: 1.6,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
 
   ButtonStyle _secondaryAction(WebPalette colors) => OutlinedButton.styleFrom(
     minimumSize: const Size(0, 48),

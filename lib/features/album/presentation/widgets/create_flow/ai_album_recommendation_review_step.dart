@@ -336,7 +336,10 @@ class _TemplateSlotList extends StatelessWidget {
                             : const Color(0xFFE4D8C9),
                       ),
                     ),
-                    child: ExperienceIcon('ImagePlus', size: 18, color: SnapFitColors.textSecondaryOf(context),
+                    child: ExperienceIcon(
+                      'ImagePlus',
+                      size: 18,
+                      color: SnapFitColors.textSecondaryOf(context),
                     ),
                   ),
                   SizedBox(width: 11),
@@ -947,7 +950,10 @@ class _BackTextButton extends StatelessWidget {
         minimumSize: Size(0, 34),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      icon: ExperienceIcon('ArrowLeft', size: 14, color: SnapFitColors.textSecondaryOf(context),
+      icon: ExperienceIcon(
+        'ArrowLeft',
+        size: 14,
+        color: SnapFitColors.textSecondaryOf(context),
       ),
       label: Text(
         '이전',

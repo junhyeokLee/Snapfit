@@ -192,7 +192,10 @@ class PointShopPurchaseSheet extends StatelessWidget {
                 child: Row(
                   children: [
                     if (complete) ...[
-                      ExperienceIcon('CheckCircle2', size: 22, color: ExperienceFormStyle.selectionInk(context),
+                      ExperienceIcon(
+                        'CheckCircle2',
+                        size: 22,
+                        color: ExperienceFormStyle.selectionInk(context),
                       ),
                       const SizedBox(width: 10),
                     ],

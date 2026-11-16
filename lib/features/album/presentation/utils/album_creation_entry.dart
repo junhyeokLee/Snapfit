@@ -61,7 +61,9 @@ void _draftReadFailure(
     SnackBar(
       content: const Text('임시 저장한 앨범을 확인하지 못했어요. 다시 확인해 주세요.'),
       behavior: SnackBarBehavior.floating,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+      ),
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       action: SnackBarAction(
         label: '다시 확인',
@@ -136,7 +138,9 @@ Future<AlbumCreationEntryDecision?> resolveAlbumCreationEntry(
         SnackBar(
           content: const Text('로그인 상태를 확인하지 못했어요. 다시 시도해 주세요.'),
           behavior: SnackBarBehavior.floating,
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+          ),
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           action: SnackBarAction(
             label: '다시 확인',

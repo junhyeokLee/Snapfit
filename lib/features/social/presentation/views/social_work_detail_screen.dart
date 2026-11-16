@@ -459,9 +459,9 @@ class _SocialWorkDetailScreenState
         );
         return;
       }
-      await Navigator.of(context).push<Object?>(
-        snapFitRoute(page: MomentComposeScreen(record: record)),
-      );
+      await Navigator.of(
+        context,
+      ).push<Object?>(snapFitRoute(page: MomentComposeScreen(record: record)));
       if (!_sameRequest(actor, revision)) return;
       ref.invalidate(momentsMonthProvider);
       ref.invalidate(momentDraftsProvider);
@@ -561,9 +561,12 @@ class _SocialWorkDetailScreenState
       // The normal detail and checkout flow remains authoritative for price,
       // ownership and preparation of clean sample-free creation pages.
       await Navigator.of(context).push<void>(
-        snapFitRoute<void>(page: TemplateDetailScreen(template: template), settings: WebAppRouteSettings(
+        snapFitRoute<void>(
+          page: TemplateDetailScreen(template: template),
+          settings: WebAppRouteSettings(
             WebAppLocation(WebAppPage.template, '${template.id}'),
-          )),
+          ),
+        ),
       );
     } catch (_) {
       if (current()) {
@@ -1140,7 +1143,10 @@ class _SocialWorkDetailScreenState
                               : () => w.isMoment
                                     ? _editMoment(w)
                                     : openSocialManage(context),
-                          icon: const ExperienceIcon('SlidersHorizontal', size: 18),
+                          icon: const ExperienceIcon(
+                            'SlidersHorizontal',
+                            size: 18,
+                          ),
                           label: Text(w.isMoment ? '이 기록 수정' : '내 공개 앨범 관리'),
                         ),
                         if (w.isMoment && w.isPublished)
@@ -1456,7 +1462,11 @@ class _SocialWorkDetailScreenState
                           key: const ValueKey('social-comment-mention'),
                           tooltip: '사용자 멘션하기',
                           onPressed: _busy ? null : _insertMention,
-                          icon: ExperienceIcon('AtSign', size: 21, color: muted),
+                          icon: ExperienceIcon(
+                            'AtSign',
+                            size: 21,
+                            color: muted,
+                          ),
                         ),
                         Text(
                           '${_comment.text.characters.length}/300',
@@ -1600,14 +1610,20 @@ class _SocialWorkDetailScreenState
             action: user == comment.author.userId
                 ? IconButton(
                     tooltip: '내 댓글 삭제',
-                    icon: ExperienceIcon('Trash2', size: 17, color: SnapFitColors.textMutedOf(context),
+                    icon: ExperienceIcon(
+                      'Trash2',
+                      size: 17,
+                      color: SnapFitColors.textMutedOf(context),
                     ),
                     onPressed: _busy ? null : () => _deleteComment(comment),
                   )
                 : IconButton(
                     key: ValueKey('social-comment-report-${comment.id}'),
                     tooltip: '댓글 신고',
-                    icon: ExperienceIcon('MoreHorizontal', size: 19, color: SnapFitColors.textMutedOf(context),
+                    icon: ExperienceIcon(
+                      'MoreHorizontal',
+                      size: 19,
+                      color: SnapFitColors.textMutedOf(context),
                     ),
                     onPressed: _busy
                         ? null

@@ -33,10 +33,7 @@ Future<bool> requireSocialLogin(BuildContext context, WidgetRef ref) async {
     if (kIsWeb && web != null) {
       web(WebAppLocation.login);
     } else {
-      await Navigator.push(
-        context,
-        snapFitRoute(page: const LoginScreen()),
-      );
+      await Navigator.push(context, snapFitRoute(page: const LoginScreen()));
     }
   }
   return false;

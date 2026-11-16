@@ -63,13 +63,16 @@ class _AlbumInviteRouterState extends ConsumerState<AlbumInviteRouter> {
     _presented[navigator] = active;
     try {
       await navigator.push<void>(
-        snapFitRoute(page: ValueListenableBuilder<PendingAlbumInvite>(
+        snapFitRoute(
+          page: ValueListenableBuilder<PendingAlbumInvite>(
             valueListenable: active,
             builder: (_, current, __) => AlbumInviteAcceptScreen(
               key: ObjectKey(current),
               invite: current,
             ),
-          ), settings: const RouteSettings(name: '/album-invitation')),
+          ),
+          settings: const RouteSettings(name: '/album-invitation'),
+        ),
       );
     } finally {
       if (identical(_presented[navigator], active))

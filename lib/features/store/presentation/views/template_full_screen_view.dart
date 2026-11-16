@@ -179,7 +179,9 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
   Widget _imageError() => Container(
     color: kIsWeb ? WebPalette.of(context).canvas : SnapFitColors.deepCharcoal,
     alignment: Alignment.center,
-    child: ExperienceIcon('Image', color: kIsWeb
+    child: ExperienceIcon(
+      'Image',
+      color: kIsWeb
           ? WebPalette.of(context).muted
           : SnapFitStylePalette.charcoal,
       size: 36,

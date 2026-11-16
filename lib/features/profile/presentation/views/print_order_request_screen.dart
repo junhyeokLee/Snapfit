@@ -31,19 +31,23 @@ Future<String?> openPrintOrderRequest(
   if (isPrintOrderRequestOrderId(orderId))
     return Navigator.push<String>(
       context,
-      snapFitRoute(page: PrintOrderRequestScreen(
+      snapFitRoute(
+        page: PrintOrderRequestScreen(
           target: PrintOrderRequestTarget.order(orderId),
           albumId: albumId,
           albumTitle: albumTitle,
           initialType: initialType,
-        )),
+        ),
+      ),
     );
   await Navigator.push<void>(
     context,
-    snapFitRoute(page: SupportInquiryScreen(
+    snapFitRoute(
+      page: SupportInquiryScreen(
         initialCategory: 'ORDER',
         initialSubject: '주문 $orderId 문의',
-      )),
+      ),
+    ),
   );
   return null;
 }

@@ -36,8 +36,12 @@ Future<ProviderContainer> _mount(WidgetTester tester, Widget child) async {
     overrides: [
       authViewModelProvider.overrideWith(_Auth.new),
       albumEditorOwnerReaderProvider.overrideWithValue(() => _owner),
-      albumEditorOwnerChangesProvider.overrideWith((ref) => const Stream.empty()),
-      albumCreationDraftStoreProvider.overrideWithValue(MemoryCreationDraftStore()),
+      albumEditorOwnerChangesProvider.overrideWith(
+        (ref) => const Stream.empty(),
+      ),
+      albumCreationDraftStoreProvider.overrideWithValue(
+        MemoryCreationDraftStore(),
+      ),
       ...unifiedCreationBackendOverrides(albums: albums),
     ],
   );
@@ -48,10 +52,7 @@ Future<ProviderContainer> _mount(WidgetTester tester, Widget child) async {
     container.dispose();
   });
   await tester.pumpWidget(
-    UncontrolledProviderScope(
-      container: container,
-      child: wrapCreation(child),
-    ),
+    UncontrolledProviderScope(container: container, child: wrapCreation(child)),
   );
   await tester.pumpAndSettle();
   return container;
@@ -179,13 +180,22 @@ void main() {
       expect(vm.selectedCover.ratio, 1.25);
       final expectedWidth = 125 * 500 / coverCanvasBaseSize(target).width;
       expect(vm.pages[1].layers.single.width, closeTo(expectedWidth, .0001));
-      expect(vm.pages[1].layers.single.width / vm.pages[1].layers.single.height, 2);
-      final albums = container.read(albumRepositoryProvider) as RecordingCreationAlbums;
+      expect(
+        vm.pages[1].layers.single.width / vm.pages[1].layers.single.height,
+        2,
+      );
+      final albums =
+          container.read(albumRepositoryProvider) as RecordingCreationAlbums;
       expect(albums.creates, 1);
       expect(vm.editingAlbumId, albums.albumId);
-      final draft = await container.read(albumCreationDraftStoreProvider).load(_owner);
+      final draft = await container
+          .read(albumCreationDraftStoreProvider)
+          .load(_owner);
       expect(draft!.createdAlbumId, albums.albumId);
-      expect(draft.editorCheckpoint!.pages[1].layers.single.width, closeTo(expectedWidth, .0001));
+      expect(
+        draft.editorCheckpoint!.pages[1].layers.single.width,
+        closeTo(expectedWidth, .0001),
+      );
       expect(draft.editorCheckpoint!.coverCanvas, const Size(500, 400));
       expect(draft.editorCheckpoint!.innerCanvas, const Size(500, 400));
       expect(tester.takeException(), isNull);

@@ -69,7 +69,8 @@ Future<MomentPhotoDesign?> openMomentPhotoEditor(
   if (actor == null) throw const MomentException('로그인한 뒤 다시 꾸며 주세요.');
   final repository = parent.read(momentsRepositoryProvider);
   final result = await Navigator.of(context).push<MomentPhotoDesign>(
-    snapFitRoute(page: ProviderScope(
+    snapFitRoute(
+      page: ProviderScope(
         overrides: [
           albumEditorViewModelProvider.overrideWith(AlbumEditorViewModel.new),
           coverViewModelProvider.overrideWith(CoverViewModel.new),
@@ -90,7 +91,8 @@ Future<MomentPhotoDesign?> openMomentPhotoEditor(
           currentOwner: owner,
           useWebWorkspace: useWebWorkspace,
         ),
-      )),
+      ),
+    ),
   );
   return owner() == actor ? result : null;
 }
@@ -610,7 +612,10 @@ class _MomentPhotoEditorScreenState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ExperienceIcon('Bookmark', size: 36, color: WebPalette.of(context).muted,
+            ExperienceIcon(
+              'Bookmark',
+              size: 36,
+              color: WebPalette.of(context).muted,
             ),
             const SizedBox(height: 16),
             Text(

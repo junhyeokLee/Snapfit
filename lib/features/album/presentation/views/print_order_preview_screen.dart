@@ -501,11 +501,13 @@ class _PrintOrderPreviewScreenState
       return;
     await Navigator.push<void>(
       context,
-      snapFitRoute(page: PrintDevCheckoutScreen(
+      snapFitRoute(
+        page: PrintDevCheckoutScreen(
           albumId: widget.albumId,
           albumTitle: widget.albumTitle,
           reviewedRevision: printCheckoutRevision(_snapshot!),
-        )),
+        ),
+      ),
     );
   }
 

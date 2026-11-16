@@ -827,7 +827,8 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen>
     var lastViewedPage = initialIndex;
     var viewerActive = true;
     late final PageRoute<void> viewerRoute;
-    viewerRoute = snapFitRoute<void>(page: TemplateFullScreenView(
+    viewerRoute = snapFitRoute<void>(
+      page: TemplateFullScreenView(
         parsedPages: pages,
         previewImages: previews,
         initialIndex: initialIndex,
@@ -843,7 +844,8 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen>
           }
           lastViewedPage = index;
         },
-      ));
+      ),
+    );
     setState(() => _isFullScreenPreviewOpen = true);
     await Navigator.push<void>(context, viewerRoute);
     viewerActive = false;
@@ -1390,13 +1392,15 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen>
   void _openMaterial(String key) {
     if (widget.guestPreview) return;
     Navigator.of(context).push(
-      snapFitRoute(page: MaterialDetailScreen(
+      snapFitRoute(
+        page: MaterialDetailScreen(
           productKey: key,
           favoriteKey: _materialFavoriteKey(key),
           title: _materialName(key),
           type: _materialKind(key),
           preview: (_) => PointShopArtwork(productKey: key),
-        )),
+        ),
+      ),
     );
   }
 
@@ -1429,15 +1433,18 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen>
         onOpen: (template) async {
           final selection = await Navigator.of(context)
               .push<AlbumCreationTemplate>(
-                snapFitRoute<AlbumCreationTemplate>(page: TemplateDetailScreen(
+                snapFitRoute<AlbumCreationTemplate>(
+                  page: TemplateDetailScreen(
                     template: template,
                     selectForCreation: widget.selectForCreation,
                     guestPreview: widget.guestPreview,
-                  ), settings: kIsWeb
+                  ),
+                  settings: kIsWeb
                       ? WebAppRouteSettings(
                           WebAppLocation(WebAppPage.template, '${template.id}'),
                         )
-                      : null),
+                      : null,
+                ),
               );
           if (mounted &&
               widget.selectForCreation &&

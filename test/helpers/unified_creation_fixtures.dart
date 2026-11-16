@@ -72,13 +72,14 @@ class RecordingCreationAlbums extends MockAlbumRepository {
   @override
   Future<Album> fetchAlbum(String id) async {
     reads++;
-    return created ?? Album(
-      id: int.parse(id),
-      userId: owner,
-      memberRole: 'OWNER',
-      ratio: '1.0',
-      updatedAt: revision,
-    );
+    return created ??
+        Album(
+          id: int.parse(id),
+          userId: owner,
+          memberRole: 'OWNER',
+          ratio: '1.0',
+          updatedAt: revision,
+        );
   }
 
   @override

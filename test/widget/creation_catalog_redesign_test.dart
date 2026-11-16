@@ -142,24 +142,23 @@ Future<void> _choose(WidgetTester tester, String key) async {
 }
 
 void main() {
-  testWidgets(
-    'account ownership reload never shows previous account purchases',
-    (tester) async {
-      // Model Riverpod's dependency reload, including the previous account value.
-      // ignore: invalid_use_of_internal_member
-      final switching = const AsyncLoading<Set<String>>().copyWithPrevious(
-        const AsyncData({'template:server-2'}),
-        isRefresh: false,
-      );
-      expect(switching.hasValue, isTrue);
-      expect(switching.asData, isNull);
-      await _mount(tester, ownedState: switching);
-      await _open(tester);
-      await _choose(tester, 'creation-price-유료');
-      expect(find.byKey(const ValueKey('creation-template-2')), findsOneWidget);
-      expect(find.text('구매 완료'), findsNothing);
-    },
-  );
+  testWidgets('account ownership reload never shows previous account purchases', (
+    tester,
+  ) async {
+    // Model Riverpod's dependency reload, including the previous account value.
+    // ignore: invalid_use_of_internal_member
+    final switching = const AsyncLoading<Set<String>>().copyWithPrevious(
+      const AsyncData({'template:server-2'}),
+      isRefresh: false,
+    );
+    expect(switching.hasValue, isTrue);
+    expect(switching.asData, isNull);
+    await _mount(tester, ownedState: switching);
+    await _open(tester);
+    await _choose(tester, 'creation-price-유료');
+    expect(find.byKey(const ValueKey('creation-template-2')), findsOneWidget);
+    expect(find.text('구매 완료'), findsNothing);
+  });
 
   testWidgets(
     'price refresh failure retains the last confirmed classification',

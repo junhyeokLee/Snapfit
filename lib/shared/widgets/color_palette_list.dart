@@ -90,7 +90,10 @@ class ColorPaletteList extends StatelessWidget {
                     ),
                   ),
                   child: selected
-                      ? ExperienceIcon('Check', size: 16, color: color.computeLuminance() > .5
+                      ? ExperienceIcon(
+                          'Check',
+                          size: 16,
+                          color: color.computeLuminance() > .5
                               ? Colors.black
                               : Colors.white,
                         )

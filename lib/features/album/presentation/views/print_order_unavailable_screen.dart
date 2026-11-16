@@ -72,7 +72,10 @@ class PrintOrderUnavailableScreen extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ExperienceIcon('BookOpen', size: 24, color: ExperienceFormStyle.ink(context),
+                        ExperienceIcon(
+                          'BookOpen',
+                          size: 24,
+                          color: ExperienceFormStyle.ink(context),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -125,10 +128,12 @@ class PrintOrderUnavailableScreen extends StatelessWidget {
                     style: ExperienceFormStyle.primary(context),
                     onPressed: () => Navigator.push<void>(
                       context,
-                      snapFitRoute(page: PrintOrderPreviewScreen(
+                      snapFitRoute(
+                        page: PrintOrderPreviewScreen(
                           albumId: albumId,
                           albumTitle: albumTitle,
-                        )),
+                        ),
+                      ),
                     ),
                     icon: const ExperienceIcon('BookOpen', size: 20),
                     label: const Text('인쇄 미리보기 · PDF 만들기'),
@@ -192,7 +197,9 @@ class PrintOrderUnavailableScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  ExperienceIcon('BookOpen', color: WebPalette.of(context).brandInk,
+                  ExperienceIcon(
+                    'BookOpen',
+                    color: WebPalette.of(context).brandInk,
                     size: 32,
                   ),
                   const SizedBox(height: 20),
@@ -216,10 +223,12 @@ class PrintOrderUnavailableScreen extends StatelessWidget {
                   FilledButton.icon(
                     onPressed: () => Navigator.push<void>(
                       context,
-                      snapFitRoute(page: PrintOrderPreviewScreen(
+                      snapFitRoute(
+                        page: PrintOrderPreviewScreen(
                           albumId: albumId,
                           albumTitle: albumTitle,
-                        )),
+                        ),
+                      ),
                     ),
                     icon: const Icon(Icons.fact_check_outlined, size: 19),
                     label: const Text('인쇄 미리보기 · PDF 만들기'),

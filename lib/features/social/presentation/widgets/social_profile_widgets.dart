@@ -317,7 +317,11 @@ class _SocialProfileAvatarState extends State<SocialProfileAvatar> {
                           ),
                           child: const Padding(
                             padding: EdgeInsets.all(7),
-                            child: ExperienceIcon('Maximize2', size: 14, color: Colors.white),
+                            child: ExperienceIcon(
+                              'Maximize2',
+                              size: 14,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
@@ -886,7 +890,10 @@ class SocialProfileWorkTile extends StatelessWidget {
                     const SizedBox(width: 10),
                     Padding(
                       padding: const EdgeInsets.only(top: 3),
-                      child: ExperienceIcon('ChevronRight', size: large ? 18 : 16, color: ExperienceFormStyle.muted(context),
+                      child: ExperienceIcon(
+                        'ChevronRight',
+                        size: large ? 18 : 16,
+                        color: ExperienceFormStyle.muted(context),
                       ),
                     ),
                   ],

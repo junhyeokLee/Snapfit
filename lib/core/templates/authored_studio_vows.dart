@@ -411,7 +411,13 @@ List<_StudioPage> _studioVowSpread(StudioEdition e, CollectionAspect a, int i) {
         title(r, '앞으로도\n같은 편', .12, .18, .76, .26, size: .082);
         caption(r, .14, .60, .72, .16);
         r.rule(.14, .83, .72, color: '#BFA0A6');
-        _studioMilestoneLabel(r, 'A VOW TO KEEP / OUR NEXT CHAPTER', .14, .87, .72);
+        _studioMilestoneLabel(
+          r,
+          'A VOW TO KEEP / OUR NEXT CHAPTER',
+          .14,
+          .87,
+          .72,
+        );
     }
   }
   return [l, r];

@@ -144,7 +144,11 @@ class _WebLayerTransformInspectorState
               ),
               child: Row(
                 children: [
-                  ExperienceIcon('SlidersHorizontal', size: 17, color: palette.brandInk),
+                  ExperienceIcon(
+                    'SlidersHorizontal',
+                    size: 17,
+                    color: palette.brandInk,
+                  ),
                   const SizedBox(width: 7),
                   Expanded(
                     child: Text(

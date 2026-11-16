@@ -287,9 +287,11 @@ class _MomentPublicationPanelState
                   onPressed: _busy
                       ? null
                       : () => Navigator.of(context).push<void>(
-                          snapFitRoute<void>(page: SocialWorkDetailScreen(
+                          snapFitRoute<void>(
+                            page: SocialWorkDetailScreen(
                               workId: publication.workId!,
-                            )),
+                            ),
+                          ),
                         ),
                   child: const Text('공개한 기록 보기'),
                 ),

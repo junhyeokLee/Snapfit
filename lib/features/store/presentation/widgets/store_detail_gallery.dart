@@ -155,7 +155,10 @@ class StoreGallerySurface extends StatelessWidget {
                 minimumSize: const Size(48, 48),
                 visualDensity: VisualDensity.standard,
               ),
-              icon: ExperienceIcon('Maximize2', size: 18, color: ExperienceFormStyle.ink(context),
+              icon: ExperienceIcon(
+                'Maximize2',
+                size: 18,
+                color: ExperienceFormStyle.ink(context),
               ),
             ),
           ),

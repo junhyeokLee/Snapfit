@@ -507,13 +507,16 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
     }
     setState(() => _photoFillOpen = true);
     try {
-      final route = snapFitRoute<EditorPhotoFillResult>(page: UncontrolledProviderScope(
+      final route = snapFitRoute<EditorPhotoFillResult>(
+        page: UncontrolledProviderScope(
           container: scope,
           child: EditorPhotoFillScreen(
             draft: draft,
             initialSession: _photoFillQueue,
           ),
-        ), settings: editorModalRouteSettings(context));
+        ),
+        settings: editorModalRouteSettings(context),
+      );
       final result = await Navigator.of(context).push(route);
       await route.completed;
       if (!mounted ||
@@ -683,8 +686,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
           _draftWriteFailed = false;
           _lastDraftSavedAt = DateTime.now();
           ref.invalidate(albumCreationDraftProvider);
-          if (notify)
-            context.showSnack('이 기기에 임시 저장했어요. 홈에서 이어 만들 수 있어요.');
+          if (notify) context.showSnack('이 기기에 임시 저장했어요. 홈에서 이어 만들 수 있어요.');
         }
         return true;
       } catch (_) {
@@ -848,7 +850,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
           ))
             return;
           navigator.push<void>(
-            snapFitRoute<void>(page: AlbumSavedExperienceScreen(
+            snapFitRoute<void>(
+              page: AlbumSavedExperienceScreen(
                 albumId: savedId,
                 ownerId: actor,
                 reason: nowComplete && !previouslyComplete
@@ -856,7 +859,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
                     : celebrate
                     ? AlbumSavedReason.firstSave
                     : AlbumSavedReason.saved,
-              )),
+              ),
+            ),
           );
         }
 
@@ -2399,7 +2403,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
         ref.read(albumEditorOwnerReaderProvider)() == actor &&
         identical(session, vm.editSessionIdentity)) {
       context.showErrorSnack(
-        albumSaveErrorMessage(vm.lastSaveError ?? const AlbumEditAccessRevoked()),
+        albumSaveErrorMessage(
+          vm.lastSaveError ?? const AlbumEditAccessRevoked(),
+        ),
       );
     }
   }
@@ -2624,8 +2630,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
               checkpoint: checkpoint,
               notify: false,
             )) {
-          if (mounted)
-            context.showSnack('임시 저장을 정리하지 못했어요. 편집 내용은 유지돼요.');
+          if (mounted) context.showSnack('임시 저장을 정리하지 못했어요. 편집 내용은 유지돼요.');
           return false;
         }
         if (!mounted) return false;

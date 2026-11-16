@@ -93,7 +93,11 @@ class EditorPhotoFramePreview extends StatelessWidget {
     final placeholder = ColoredBox(
       color: colors.surfaceContainerHighest,
       child: Center(
-        child: ExperienceIcon('ImagePlus', size: 28, color: colors.onSurfaceVariant),
+        child: ExperienceIcon(
+          'ImagePlus',
+          size: 28,
+          color: colors.onSurfaceVariant,
+        ),
       ),
     );
     ImageProvider provider;

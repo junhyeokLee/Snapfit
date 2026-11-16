@@ -134,9 +134,9 @@ class MomentsDestination extends ConsumerWidget {
     initialDraftRecordId: initialDraftRecordId,
     initialMonth: initialMonth,
     initialDate: initialDate,
-    onReminderSettings: () => Navigator.of(context).push<void>(
-      snapFitRoute(page: const MomentReminderSettingsScreen()),
-    ),
+    onReminderSettings: () => Navigator.of(
+      context,
+    ).push<void>(snapFitRoute(page: const MomentReminderSettingsScreen())),
     onAlbumCreated: (album) async {
       final actor = ref.read(momentsCurrentUserIdProvider);
       ref.invalidate(homeViewModelProvider);

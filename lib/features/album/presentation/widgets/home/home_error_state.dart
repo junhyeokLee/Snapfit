@@ -47,7 +47,11 @@ class HomeErrorState extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        ExperienceIcon('CloudOff', size: 32, color: ExperienceFormStyle.muted(context)),
+                        ExperienceIcon(
+                          'CloudOff',
+                          size: 32,
+                          color: ExperienceFormStyle.muted(context),
+                        ),
                         const SizedBox(height: 20),
                         Text(
                           '앨범을 불러오지 못했어요',

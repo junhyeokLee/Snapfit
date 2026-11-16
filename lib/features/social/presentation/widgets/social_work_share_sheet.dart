@@ -108,7 +108,9 @@ Future<Uint8List> _rasterize(
   PrintAlbumPage page,
   ThemeData theme,
   SocialSnapshotLoader loader,
-) => SocialSnapshotRenderer(loader: loader).renderPage(page, theme: theme, watermark: true);
+) => SocialSnapshotRenderer(
+  loader: loader,
+).renderPage(page, theme: theme, watermark: true);
 
 final socialWorkShareSnapshotLoaderProvider = Provider<SocialSnapshotLoader>(
   (_) => _loadSnapshot,

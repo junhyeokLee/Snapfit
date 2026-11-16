@@ -506,7 +506,10 @@ class _AiTemplateDesignReviewState extends State<AiTemplateDesignReview> {
                           onPressed: widget.isAccepting
                               ? null
                               : _toggleComparison,
-                          icon: const ExperienceIcon('ArrowLeftRight', size: 18),
+                          icon: const ExperienceIcon(
+                            'ArrowLeftRight',
+                            size: 18,
+                          ),
                           label: Text(_showPrevious ? '현재 결과 보기' : '이전 결과와 비교'),
                         ),
                       if (_showPrevious || widget.readOnly)

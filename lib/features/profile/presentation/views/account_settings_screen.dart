@@ -220,7 +220,10 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
         child: ColoredBox(
           color: ExperienceFormStyle.selection(context),
           child: photo.isEmpty
-              ? ExperienceIcon('UserRound', size: 30, color: ExperienceFormStyle.selectionInk(context),
+              ? ExperienceIcon(
+                  'UserRound',
+                  size: 30,
+                  color: ExperienceFormStyle.selectionInk(context),
                 )
               : Image.network(
                   photo,
@@ -250,7 +253,9 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
             tooltip: '프로필 사진 변경',
             onPressed: _busy ? null : () => _changePhoto(user),
             constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-            icon: ExperienceIcon('Camera', color: ExperienceFormStyle.ink(context),
+            icon: ExperienceIcon(
+              'Camera',
+              color: ExperienceFormStyle.ink(context),
             ),
           )
         : null;
@@ -519,8 +524,11 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
                                                 color: WebPalette.of(
                                                   context,
                                                 ).softBrand,
-                                                child: ExperienceIcon('UserRound', color: WebPalette.of(
-                                                    context).brandInk,
+                                                child: ExperienceIcon(
+                                                  'UserRound',
+                                                  color: WebPalette.of(
+                                                    context,
+                                                  ).brandInk,
                                                 ),
                                               ),
                                         )
@@ -528,8 +536,11 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
                                           color: WebPalette.of(
                                             context,
                                           ).softBrand,
-                                          child: ExperienceIcon('UserRound', color: WebPalette.of(
-                                              context).brandInk,
+                                          child: ExperienceIcon(
+                                            'UserRound',
+                                            color: WebPalette.of(
+                                              context,
+                                            ).brandInk,
                                           ),
                                         ),
                                 ),
@@ -630,12 +641,18 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
                                       user.email?.isNotEmpty == true)
                                     OutlinedButton.icon(
                                       onPressed: () => _resetPassword(user),
-                                      icon: const ExperienceIcon('Key', size: 18),
+                                      icon: const ExperienceIcon(
+                                        'Key',
+                                        size: 18,
+                                      ),
                                       label: const Text('비밀번호 재설정'),
                                     ),
                                   OutlinedButton.icon(
                                     onPressed: () => _endSession(user),
-                                    icon: const ExperienceIcon('LogOut', size: 18),
+                                    icon: const ExperienceIcon(
+                                      'LogOut',
+                                      size: 18,
+                                    ),
                                     label: const Text('로그아웃'),
                                   ),
                                 ],

@@ -480,7 +480,10 @@ class _SocialMomentMonthCoverPickerState
                       ),
                     ),
                     if (selected)
-                      ExperienceIcon('CheckCircle2', size: 20, color: SocialStyle.accent(context),
+                      ExperienceIcon(
+                        'CheckCircle2',
+                        size: 20,
+                        color: SocialStyle.accent(context),
                       ),
                   ],
                 ),
