@@ -2,9 +2,11 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/entities/album.dart';
+import '../../../../../core/utils/context_extensions.dart';
 import 'home_album_actions.dart';
 import 'home_album_slider_card.dart';
 import 'home_album_shelf.dart';
@@ -12,6 +14,8 @@ import 'home_album_helpers.dart';
 import 'album_open_origin.dart';
 import '../../../../../shared/widgets/album_stage_style.dart';
 import '../../../../../shared/widgets/experience_form_style.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
+import '../../../../../core/constants/snapfit_colors.dart';
 import 'home_album_header.dart';
 import 'home_album_progress_builder.dart';
 import '../../utils/album_progress.dart' show albumCompletionCriteria;
@@ -25,6 +29,8 @@ class HomeAlbumSlider extends ConsumerStatefulWidget {
   final VoidCallback? onOpenAlbumTab;
   final bool showHeader;
   final ScrollController? scrollController;
+  final Widget? leadingContent;
+  final Widget? footer;
 
   const HomeAlbumSlider({
     super.key,
@@ -35,6 +41,8 @@ class HomeAlbumSlider extends ConsumerStatefulWidget {
     this.onOpenAlbumTab,
     this.showHeader = true,
     this.scrollController,
+    this.leadingContent,
+    this.footer,
   });
 
   @override
@@ -191,9 +199,7 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
       return;
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('앨범을 열 수 없습니다: $e')));
+      context.showErrorSnack('앨범을 열 수 없습니다: $e');
     }
   }
 
@@ -227,6 +233,7 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
                 );
                 final details = _FocusedAlbumDetails(
                   album: album,
+                  onOpen: _openFocusedAlbum,
                   onPrevious: _focusedIndex > 0
                       ? () => _animateToIndex(_focusedIndex - 1)
                       : null,
@@ -240,7 +247,7 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
                     children: [
                       Expanded(
                         child: Text(
-                          '나의 책장',
+                          '나의 앨범',
                           style: ExperienceFormStyle.text(
                             context,
                             12,
@@ -259,7 +266,7 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
                     ],
                   ),
                 );
-                if (landscape) {
+                if (landscape && widget.leadingContent == null) {
                   return Row(
                     children: [
                       Expanded(child: _buildAlbumStage()),
@@ -276,6 +283,11 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
                               details,
                               shelfHeading,
                               SizedBox(height: shelfHeight, child: shelf),
+                              if (widget.footer != null)
+                                _RetainedScrollSpace(
+                                  active: TickerMode.of(context),
+                                  child: widget.footer!,
+                                ),
                               const SizedBox(height: 12),
                             ],
                           ),
@@ -292,13 +304,102 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
                   primary: false,
                   child: Column(
                     children: [
+                      if (widget.leadingContent != null) ...[
+                        _RetainedScrollSpace(
+                          active: TickerMode.of(context),
+                          child: widget.leadingContent!,
+                        ),
+                        Padding(
+                          key: const ValueKey('home-album-section'),
+                          padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Wrap(
+                              alignment: WrapAlignment.spaceBetween,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 16,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Flexible(
+                                      child: Semantics(
+                                        header: true,
+                                        child: Text(
+                                          '나의 앨범',
+                                          key: const ValueKey(
+                                            'home-album-section-title',
+                                          ),
+                                          style: ExperienceFormStyle.text(
+                                            context,
+                                            20,
+                                            weight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      '${widget.albums.length}권',
+                                      style: ExperienceFormStyle.text(
+                                        context,
+                                        12,
+                                        secondary: true,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (widget.onOpenAlbumTab != null)
+                                  TextButton(
+                                    key: const ValueKey(
+                                      'home-album-section-open',
+                                    ),
+                                    onPressed: widget.onOpenAlbumTab,
+                                    style: TextButton.styleFrom(
+                                      foregroundColor:
+                                          ExperienceFormStyle.selectionInk(
+                                            context,
+                                          ),
+                                      minimumSize: const Size(48, 48),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 4,
+                                      ),
+                                      textStyle: ExperienceFormStyle.text(
+                                        context,
+                                        12,
+                                        weight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text('전체보기'),
+                                        SizedBox(width: 5),
+                                        ExperienceIcon('ChevronRight', size: 14),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                       SizedBox(
-                        height: (box.maxWidth * .94).clamp(280.0, 540.0),
+                        height: landscape
+                            ? (box.maxHeight * .9).clamp(180.0, 320.0)
+                            : (box.maxWidth * .84).clamp(260.0, 480.0),
                         child: _buildAlbumStage(),
                       ),
+                      if (!landscape && widget.albums.length > 1)
+                        _buildDotsIndicator(context),
                       details,
                       shelfHeading,
                       SizedBox(height: shelfHeight, child: shelf),
+                      if (widget.footer != null)
+                        _RetainedScrollSpace(
+                          active: TickerMode.of(context),
+                          child: widget.footer!,
+                        ),
                       const SizedBox(height: 12),
                     ],
                   ),
@@ -310,6 +411,40 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
       ),
     ),
   );
+
+  Widget _buildDotsIndicator(BuildContext context) =>
+      ValueListenableBuilder<double>(
+        valueListenable: _position,
+        builder: (context, page, _) {
+          final count = widget.albums.length;
+          if (count > 10) return const SizedBox.shrink();
+          return Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                for (var i = 0; i < count; i++) ...[
+                  if (i > 0) const SizedBox(width: 6),
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 160),
+                    curve: Curves.easeOut,
+                    width: i == page.round() ? 8.0 : 5.0,
+                    height: i == page.round() ? 8.0 : 5.0,
+                    decoration: BoxDecoration(
+                      color: i == page.round()
+                          ? ExperienceFormStyle.selectionInk(context)
+                          : ExperienceFormStyle.muted(
+                              context,
+                            ).withValues(alpha: 0.35),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        },
+      );
 
   Widget _buildAlbumStage() => LayoutBuilder(
     builder: (context, constraints) {
@@ -454,14 +589,55 @@ class _StageHorizontalClipper extends CustomClipper<Rect> {
   bool shouldReclip(covariant _StageHorizontalClipper oldClipper) => false;
 }
 
+/// Hidden journal widgets stop their work and collapse. Keep their last active
+/// space so switching views or opening a reader cannot clamp this scroll.
+class _RetainedScrollSpace extends SingleChildRenderObjectWidget {
+  const _RetainedScrollSpace({required this.active, required super.child});
+  final bool active;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderRetainedScrollSpace(active);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    covariant _RenderRetainedScrollSpace renderObject,
+  ) => renderObject.active = active;
+}
+
+class _RenderRetainedScrollSpace extends RenderProxyBox {
+  _RenderRetainedScrollSpace(this._active);
+  bool _active;
+  double? _lastActiveHeight;
+
+  set active(bool value) {
+    if (_active == value) return;
+    _active = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    if (_active) {
+      _lastActiveHeight = size.height;
+    } else if (_lastActiveHeight != null) {
+      size = constraints.constrain(Size(size.width, _lastActiveHeight!));
+    }
+  }
+}
+
 class _FocusedAlbumDetails extends StatelessWidget {
   const _FocusedAlbumDetails({
     required this.album,
+    required this.onOpen,
     required this.onPrevious,
     required this.onNext,
   });
 
   final Album album;
+  final VoidCallback onOpen;
   final VoidCallback? onPrevious, onNext;
 
   @override
@@ -490,7 +666,7 @@ class _FocusedAlbumDetails extends StatelessWidget {
               IconButton(
                 tooltip: '이전 앨범',
                 onPressed: onPrevious,
-                icon: const Icon(Icons.chevron_left_rounded, size: 22),
+                icon: const ExperienceIcon('ChevronLeft', size: 22),
               ),
               Expanded(
                 child: Column(
@@ -535,9 +711,39 @@ class _FocusedAlbumDetails extends StatelessWidget {
               IconButton(
                 tooltip: '다음 앨범',
                 onPressed: onNext,
-                icon: const Icon(Icons.chevron_right_rounded, size: 22),
+                icon: const ExperienceIcon('ChevronRight', size: 22),
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: FilledButton.icon(
+              key: const ValueKey('home-focused-album-open'),
+              onPressed: onOpen,
+              icon: const ExperienceIcon(
+                'ChevronRight',
+                size: 16,
+                color: SnapFitColors.onAccent,
+              ),
+              iconAlignment: IconAlignment.end,
+              label: const Text('앨범보기'),
+              style: FilledButton.styleFrom(
+                backgroundColor: ExperienceFormStyle.selectionInk(context),
+                foregroundColor: SnapFitColors.onAccent,
+                minimumSize: const Size(44, 44),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                textStyle: ExperienceFormStyle.text(
+                  context,
+                  13,
+                  weight: FontWeight.w600,
+                ).copyWith(height: 1.4),
+                shape: const StadiumBorder(),
+              ),
+            ),
           ),
         ],
       );

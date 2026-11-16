@@ -10,6 +10,8 @@ import '../social_actions.dart';
 import '../social_navigation.dart';
 import '../widgets/social_widgets.dart';
 import '../widgets/social_web_frame.dart';
+import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../shared/widgets/snapfit_shimmer.dart';
 
 class SocialSavedWorksScreen extends ConsumerStatefulWidget {
   const SocialSavedWorksScreen({super.key});
@@ -21,8 +23,10 @@ class SocialSavedWorksScreen extends ConsumerStatefulWidget {
 class _SocialSavedWorksScreenState
     extends ConsumerState<SocialSavedWorksScreen> {
   final _busy = <String>{};
+  final _removed = <String>{};
   int _mutationRevision = 0;
   final _offsets = <int>[0];
+  GlobalKey? _undoNoticeKey;
 
   Future<void> _refresh() async {
     final owner = ref.read(socialCurrentUserIdProvider);
@@ -42,25 +46,86 @@ class _SocialSavedWorksScreenState
     }
   }
 
+  bool _currentMutation(String actor, int revision) =>
+      mounted &&
+      revision == _mutationRevision &&
+      ref.read(socialCurrentUserIdProvider) == actor;
+
+  void _dismissUndoNotice() {
+    final key = _undoNoticeKey;
+    _undoNoticeKey = null;
+    if (key == null) return;
+    // The account listener can run during build; close only our visible notice.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final noticeContext = key.currentContext;
+      if (noticeContext != null && noticeContext.mounted) {
+        ScaffoldMessenger.maybeOf(noticeContext)?.hideCurrentSnackBar();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _dismissUndoNotice();
+    super.dispose();
+  }
+
   Future<void> _removeSaved(String id) async {
     final actor = ref.read(socialCurrentUserIdProvider);
-    if (actor == null || _busy.contains(id)) return;
-    final revision = _mutationRevision;
+    if (actor == null) return;
+    setState(() => _removed.add(id));
+    await _updateSaved(id, false, actor, _mutationRevision);
+  }
+
+  Future<void> _updateSaved(
+    String id,
+    bool saved,
+    String actor,
+    int revision,
+  ) async {
+    // Undo retains the account that removed the work, even after the card leaves.
+    if (!_currentMutation(actor, revision) || _busy.contains(id)) return;
     setState(() => _busy.add(id));
-    bool current() =>
-        mounted &&
-        revision == _mutationRevision &&
-        ref.read(socialCurrentUserIdProvider) == actor;
     try {
-      await ref.read(socialRepositoryProvider).setSaved(id, false);
-      if (current()) invalidateSocial(ref, workId: id);
+      final confirmed = await ref
+          .read(socialRepositoryProvider)
+          .setSaved(id, saved);
+      if (!_currentMutation(actor, revision)) return;
+      if (saved && !confirmed)
+        throw StateError('Save restoration not confirmed');
+      invalidateSocial(ref, workId: id);
+      if (!saved) {
+        final key = GlobalKey();
+        _undoNoticeKey = key;
+        final messenger = ScaffoldMessenger.of(context);
+        // Replace immediately so a previous account's undo cannot stay queued.
+        messenger.removeCurrentSnackBar();
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('저장을 해제했어요', key: key),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            action: SnackBarAction(
+              label: '되돌리기',
+              onPressed: () {
+                if (mounted) setState(() => _removed.remove(id));
+                _updateSaved(id, true, actor, revision);
+              },
+            ),
+          ),
+        );
+      }
     } catch (_) {
-      if (current()) {
+      if (_currentMutation(actor, revision)) {
+        if (!saved) setState(() => _removed.remove(id));
         invalidateSocial(ref, workId: id);
         socialError(context);
       }
     } finally {
-      if (current()) setState(() => _busy.remove(id));
+      if (_currentMutation(actor, revision)) setState(() => _busy.remove(id));
     }
   }
 
@@ -81,8 +146,10 @@ class _SocialSavedWorksScreenState
     ref.listen(socialCurrentUserIdProvider, (previous, next) {
       if (previous == next || !mounted) return;
       _mutationRevision++;
+      _dismissUndoNotice();
       setState(() {
         _busy.clear();
+        _removed.clear();
         _offsets
           ..clear()
           ..add(0);
@@ -101,14 +168,14 @@ class _SocialSavedWorksScreenState
     ];
     return SocialWebFrame(
       child: Scaffold(
-        appBar: kIsWeb ? null : AppBar(title: const Text('저장한 작품')),
+        appBar: kIsWeb ? null : AppBar(title: const Text('저장한 기록·앨범')),
         backgroundColor: SocialStyle.background(context),
         body: SocialContent(
           maxWidth: WebPageLayout.maxWidth,
           child: user == null
               ? SocialEmpty(
-                  title: '나만 보는 작품 보관함',
-                  message: '로그인하면 저장한 작품을 다시 볼 수 있어요.',
+                  title: '나만 보는 기록·앨범 보관함',
+                  message: '로그인하면 저장한 기록과 앨범을 다시 볼 수 있어요.',
                   action: FilledButton(
                     style: SocialStyle.primary(context),
                     onPressed: () => requireSocialLogin(context, ref),
@@ -134,19 +201,22 @@ class _SocialSavedWorksScreenState
                           for (final work
                               in pages[index].value?.items ??
                                   const <SocialWork>[])
-                            if (work.isPublished && seen.add(work.id))
+                            if (work.isPublished &&
+                                seen.add(work.id) &&
+                                !_removed.contains(work.id))
                               (work: work, offset: _offsets[index]),
                       ];
                       return CustomScrollView(
                         key: ValueKey('social-saved-scroll-$user'),
+                        cacheExtent: 800,
                         physics: const AlwaysScrollableScrollPhysics(),
                         slivers: [
                           SliverPadding(
                             padding: EdgeInsets.fromLTRB(
                               inset,
-                              kIsWeb ? 32 : 20,
+                              kIsWeb ? 32 : 16,
                               inset,
-                              28,
+                              kIsWeb ? 28 : 20,
                             ),
                             sliver: SliverToBoxAdapter(
                               child: _heading(context),
@@ -222,8 +292,10 @@ class _SocialSavedWorksScreenState
                                         : works.isNotEmpty &&
                                               pages[index].hasValue
                                         ? const SizedBox.shrink()
+                                        : index == 0
+                                        ? const SnapFitShimmerSocialFeed()
                                         : const SocialLoading(
-                                            message: '저장한 작품을 불러오고 있어요.',
+                                            message: '저장한 기록과 앨범을 불러오고 있어요.',
                                           ),
                                   ),
                                 ),
@@ -232,8 +304,8 @@ class _SocialSavedWorksScreenState
                                 !pages.first.hasError)
                               const SliverToBoxAdapter(
                                 child: SocialEmpty(
-                                  title: '아직 저장한 작품이 없어요.',
-                                  message: '피드에서 마음에 드는 작품의 저장 버튼을 눌러보세요.',
+                                  title: '아직 저장한 기록이나 앨범이 없어요.',
+                                  message: '마음에 드는 기록이나 앨범에서 저장 버튼을 눌러보세요.',
                                 ),
                               ),
                             if (!pages.last.isLoading &&
@@ -254,7 +326,7 @@ class _SocialSavedWorksScreenState
                                       }
                                       setState(() => _offsets.add(next));
                                     },
-                                    child: const Text('작품 더 보기'),
+                                    child: const Text('기록·앨범 더 보기'),
                                   ),
                                 ),
                               ),
@@ -271,54 +343,29 @@ class _SocialSavedWorksScreenState
   }
 
   Widget _heading(BuildContext context) {
-    const description = '내 취향이 모이는 곳. 마음에 든 작품을 다시 펼쳐보세요.';
+    const description = '마음에 든 기록과 앨범을 다시 펼쳐보세요.';
     if (kIsWeb) {
       return const WebPageHeading(
-        title: '저장한 작품',
+        title: '저장한 기록·앨범',
         eyebrow: 'MY COLLECTION',
         description: description,
       );
     }
-    return Column(
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '다시 보고 싶은 기록',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontSize: 26,
-            fontWeight: FontWeight.w600,
-            letterSpacing: -.7,
-          ),
+        ExperienceIcon('Lock', size: 15, color: SocialStyle.accent(context),
         ),
-        const SizedBox(height: 10),
-        Text(
-          description,
-          style: TextStyle(
-            color: SnapFitColors.textSecondaryOf(context),
-            height: 1.6,
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            '나에게만 보여요 · 공개가 종료된 기록과 앨범은 표시하지 않아요.',
+            style: TextStyle(
+              fontSize: 12,
+              height: 1.5,
+              color: SnapFitColors.textSecondaryOf(context),
+            ),
           ),
-        ),
-        const SizedBox(height: 10),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(
-              Icons.lock_outline_rounded,
-              size: 15,
-              color: SocialStyle.accent(context),
-            ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: Text(
-                '나에게만 보여요 · 공개가 종료된 작품은 표시하지 않아요.',
-                style: TextStyle(
-                  fontSize: 12,
-                  height: 1.5,
-                  color: SnapFitColors.textSecondaryOf(context),
-                ),
-              ),
-            ),
-          ],
         ),
       ],
     );
@@ -378,7 +425,7 @@ class _SocialSavedWorksScreenState
                 foregroundColor: SocialStyle.accent(context),
                 minimumSize: const Size(48, 48),
               ),
-              icon: const Icon(Icons.bookmark_rounded, size: 20),
+              icon: const ExperienceIcon('Bookmark', size: 20),
               label: const Text('저장 해제', style: TextStyle(fontSize: 13)),
             ),
           ],

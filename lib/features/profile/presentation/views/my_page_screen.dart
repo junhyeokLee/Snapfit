@@ -25,13 +25,15 @@ import '../../../home_news/data/admin_home_news_repository.dart';
 import '../../../home_news/presentation/views/admin_home_news_screen.dart';
 import '../../../onboarding/presentation/app_introduction_screen.dart';
 import '../../../onboarding/presentation/first_visit_controller.dart';
+import '../../../social/presentation/views/social_reports_admin_screen.dart';
 import '../widgets/theme_settings_sheet.dart';
 import 'account_settings_screen.dart';
 import 'admin_order_management_screen.dart';
 import 'admin_point_shop_management_screen.dart';
 import 'admin_template_management_screen.dart';
 import 'notification_settings_screen.dart';
-import 'support_inquiry_screen.dart';
+import 'safety_management_screen.dart';
+import 'support_center_screen.dart';
 import 'terms_policy_screen.dart';
 
 /// The settings destination retains its existing route and class name.
@@ -74,14 +76,14 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                 leading: const ExperienceIcon('BookOpen'),
                 title: const Text('앱 소개 다시 보기'),
                 subtitle: const Text('사진으로 시작하는 나만의 앨범'),
-                trailing: const Icon(Icons.chevron_right),
+                trailing: const ExperienceIcon('ChevronRight'),
                 onTap: () => Navigator.pop(context, 'introduction'),
               ),
               ListTile(
                 leading: const ExperienceIcon('Plus'),
                 title: const Text('메인 안내 다시 보기'),
                 subtitle: const Text('새 앨범을 시작하는 방법'),
-                trailing: const Icon(Icons.chevron_right),
+                trailing: const ExperienceIcon('ChevronRight'),
                 onTap: () => Navigator.pop(context, 'home'),
               ),
             ],
@@ -120,7 +122,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     );
     if (mounted && result != null) {
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const AuthGate()),
+        snapFitRoute(page: const AuthGate()),
         (_) => false,
       );
     }
@@ -132,6 +134,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
       _logged = true;
       ScreenLogger.enter('MyPageScreen', '설정 · 계정 · 화면 · 알림 · 도움말');
     }
+    final userInfo = ref.watch(authViewModelProvider).asData?.value;
     final themeMode = ref.watch(themeModeControllerProvider);
     final adminOrders = Env.orderAdminKey.trim().isNotEmpty;
     final adminShop = ref.watch(pointShopAdminAccessProvider);
@@ -139,48 +142,62 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     final settings = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _sectionTitle(context, '설정 및 도움말'),
-        Tooltip(
-          message: '계정 설정',
-          child: _accountRow(
-            icon: 'Settings2',
-            title: '계정 설정',
-            subtitle: '로그인 정보 · 보안 · 로그아웃',
-            onTap: _openAccountSettings,
+        _settingsGroup(context, '계정 및 안전', [
+          Tooltip(
+            message: '계정 설정',
+            child: _accountRow(
+              icon: 'Settings2',
+              title: '계정 설정',
+              subtitle: '로그인 정보 · 보안 · 로그아웃',
+              emphasized: true,
+              onTap: _openAccountSettings,
+            ),
           ),
-        ),
-        _accountRow(
-          icon: 'Shapes',
-          title: '화면 테마',
-          subtitle: switch (themeMode) {
-            ThemeMode.dark => '다크',
-            ThemeMode.light => '라이트',
-            ThemeMode.system => '시스템 설정',
-          },
-          onTap: () => _showThemeBottomSheet(context, ref, themeMode),
-        ),
-        _accountRow(
-          icon: 'Bell',
-          title: '알림 설정',
-          onTap: () => _open(const NotificationSettingsScreen()),
-        ),
-        _accountRow(
-          icon: 'MessageCircle',
-          title: '고객센터',
-          onTap: () => _open(const SupportInquiryScreen()),
-        ),
-        _accountRow(
-          icon: 'BookOpen',
-          title: '앱 사용 가이드',
-          subtitle: '앱 소개 · 메인 안내 다시 보기',
-          onTap: _openUsageGuide,
-        ),
-        _accountRow(
-          icon: 'BookOpen',
-          title: '이용 안내',
-          subtitle: '이용약관 · 개인정보처리방침',
-          onTap: () => _open(const TermsPolicyScreen()),
-        ),
+          _accountRow(
+            icon: 'UserRound',
+            title: '안전 관리',
+            subtitle: '차단한 사용자 · 내 신고 내역',
+            onTap: () => openSafetyManagement(Navigator.of(context)),
+          ),
+        ]),
+        const SizedBox(height: 24),
+        _settingsGroup(context, '앱 설정', [
+          _accountRow(
+            icon: 'Shapes',
+            title: '화면 테마',
+            subtitle: switch (themeMode) {
+              ThemeMode.dark => '다크',
+              ThemeMode.light => '라이트',
+              ThemeMode.system => '시스템 설정',
+            },
+            onTap: () => _showThemeBottomSheet(context, ref, themeMode),
+          ),
+          _accountRow(
+            icon: 'Bell',
+            title: '알림 설정',
+            onTap: () => _open(const NotificationSettingsScreen()),
+          ),
+        ]),
+        const SizedBox(height: 24),
+        _settingsGroup(context, '도움말', [
+          _accountRow(
+            icon: 'MessageCircle',
+            title: '고객센터',
+            onTap: () => _open(const SupportCenterScreen()),
+          ),
+          _accountRow(
+            icon: 'BookOpen',
+            title: '앱 사용 가이드',
+            subtitle: '앱 소개 · 메인 안내 다시 보기',
+            onTap: _openUsageGuide,
+          ),
+          _accountRow(
+            icon: 'Shield',
+            title: '이용 안내',
+            subtitle: '이용약관 · 개인정보처리방침',
+            onTap: () => _open(const TermsPolicyScreen()),
+          ),
+        ]),
         if (adminShop || adminOrders || adminNews) ...[
           const SizedBox(height: 24),
           Divider(color: ExperienceFormStyle.line(context)),
@@ -199,6 +216,16 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
               title: '상품 가격 관리',
               subtitle: '템플릿 · 소재의 판매 가격',
               onTap: () => _open(const AdminPointShopManagementScreen()),
+            ),
+          if (adminShop)
+            _accountRow(
+              icon: 'MessageCircle',
+              title: '신고 관리',
+              subtitle: '공개 기록 · 앨범 · 댓글 검토',
+              onTap: () {
+                if (ref.read(pointShopAdminAccessProvider))
+                  _open(const SocialReportsAdminScreen());
+              },
             ),
           if (adminOrders) ...[
             _accountRow(
@@ -237,7 +264,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                 trailing: Navigator.of(context).canPop()
                     ? OutlinedButton.icon(
                         onPressed: () => Navigator.maybePop(context),
-                        icon: const Icon(Icons.arrow_back, size: 18),
+                        icon: const ExperienceIcon('ArrowLeft', size: 18),
                         label: const Text('이전'),
                       )
                     : null,
@@ -269,6 +296,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
         top: false,
         child: LayoutBuilder(
           builder: (context, bounds) => ListView(
+            cacheExtent: 800,
             key: const PageStorageKey('profile-menu-scroll'),
             padding: EdgeInsets.symmetric(
               horizontal: ((bounds.maxWidth - 680) / 2).clamp(
@@ -277,7 +305,11 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
               ),
               vertical: 20,
             ),
-            children: [settings],
+            children: [
+              if (userInfo != null) _ProfileHeader(userInfo: userInfo),
+              if (userInfo != null) const SizedBox(height: 20),
+              settings,
+            ],
           ),
         ),
       ),
@@ -289,47 +321,89 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
   }
 
   Widget _sectionTitle(BuildContext context, String title) => Padding(
-    padding: const EdgeInsets.only(bottom: 4),
-    child: Text(
-      title,
-      style: ExperienceFormStyle.text(
-        context,
-        11,
-        weight: FontWeight.w700,
-        secondary: true,
-      ).copyWith(letterSpacing: 0.6),
+    padding: const EdgeInsets.only(left: 4, bottom: 10),
+    child: Semantics(
+      header: true,
+      child: Text(
+        title,
+        style: ExperienceFormStyle.text(
+          context,
+          13,
+          weight: FontWeight.w600,
+          secondary: true,
+        ),
+      ),
     ),
+  );
+
+  Widget _settingsGroup(
+    BuildContext context,
+    String title,
+    List<Widget> rows,
+  ) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      _sectionTitle(context, title),
+      Material(
+        color: ExperienceFormStyle.surface(context),
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(SnapFitRadius.lg),
+        ),
+        child: Column(
+          children: [
+            for (var index = 0; index < rows.length; index++) ...[
+              if (index > 0)
+                Divider(
+                  height: 1,
+                  indent: 64,
+                  endIndent: 16,
+                  color: ExperienceFormStyle.line(context),
+                ),
+              rows[index],
+            ],
+          ],
+        ),
+      ),
+    ],
   );
 
   Widget _accountRow({
     required String icon,
     required String title,
     String? subtitle,
+    bool emphasized = false,
     required VoidCallback onTap,
-  }) => Material(
-    color: Colors.transparent,
+  }) => Semantics(
+    button: true,
     child: InkWell(
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 11),
+      borderRadius: BorderRadius.circular(SnapFitRadius.md),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 60),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Row(
           children: [
             Container(
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: ExperienceFormStyle.surface(context),
+                color: emphasized
+                    ? ExperienceFormStyle.selection(context)
+                    : Colors.transparent,
                 borderRadius: BorderRadius.circular(9),
               ),
               child: Center(
                 child: ExperienceIcon(
                   icon,
                   size: 19,
-                  color: ExperienceFormStyle.ink(context),
+                  color: emphasized
+                      ? ExperienceFormStyle.selectionInk(context)
+                      : ExperienceFormStyle.ink(context),
                 ),
               ),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -338,7 +412,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                     title,
                     style: ExperienceFormStyle.text(
                       context,
-                      14,
+                      15,
                       weight: FontWeight.w600,
                     ),
                   ),
@@ -471,5 +545,87 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
         context.showErrorSnack('저장 실패: ${AppErrorMapper.toUserMessage(e)}');
       }
     }
+  }
+}
+
+class _ProfileHeader extends StatelessWidget {
+  const _ProfileHeader({required this.userInfo});
+
+  final UserInfo userInfo;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = ExperienceFormStyle.selectionInk(context);
+    final initials = userInfo.name.trim().isEmpty
+        ? '?'
+        : userInfo.name.trim()[0].toUpperCase();
+    final avatarUrl = userInfo.profileImageUrl;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      decoration: BoxDecoration(
+        color: ExperienceFormStyle.selection(context),
+        borderRadius: BorderRadius.circular(SnapFitRadius.lg),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: accent.withValues(alpha: 0.3)),
+            ),
+            child: CircleAvatar(
+              radius: 26,
+              backgroundImage:
+                  avatarUrl != null ? NetworkImage(avatarUrl) : null,
+              backgroundColor: accent.withValues(alpha: 0.15),
+              child: avatarUrl == null
+                  ? Text(
+                      initials,
+                      style: ExperienceFormStyle.text(
+                        context,
+                        20,
+                        color: accent,
+                        weight: FontWeight.w700,
+                      ),
+                    )
+                  : null,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  userInfo.name,
+                  style: ExperienceFormStyle.text(
+                    context,
+                    16,
+                    weight: FontWeight.w700,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (userInfo.email != null && userInfo.email!.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    userInfo.email!,
+                    style: ExperienceFormStyle.text(
+                      context,
+                      13,
+                      secondary: true,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

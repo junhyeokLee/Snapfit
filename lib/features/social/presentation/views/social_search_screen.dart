@@ -6,6 +6,9 @@ import '../providers/social_providers.dart';
 import '../social_navigation.dart';
 import '../widgets/social_widgets.dart';
 import '../widgets/social_web_frame.dart';
+import '../widgets/social_page_header.dart';
+import '../widgets/social_profile_widgets.dart';
+import '../../../../shared/widgets/experience_icon.dart';
 
 final socialWorkSearchProvider = FutureProvider.autoDispose
     .family<SocialWorkPage, SocialSearchQuery>((ref, query) {
@@ -129,11 +132,12 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen> {
     final shownProfiles = <String>{};
     return SocialWebFrame(
       child: Scaffold(
-        appBar: AppBar(title: const Text('검색')),
+        appBar: const SocialPageHeader(title: '검색'),
         backgroundColor: SocialStyle.background(context),
         body: SocialContent(
           child: ListView(
-            padding: const EdgeInsets.all(22),
+            cacheExtent: 800,
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
             children: [
               TextField(
                 controller: _controller,
@@ -141,19 +145,19 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen> {
                 textInputAction: TextInputAction.search,
                 onSubmitted: _search,
                 decoration: InputDecoration(
-                  labelText: '작품이나 창작자 찾기',
+                  labelText: '기록·앨범·사용자 검색',
                   counterText: '',
                   suffixIcon: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
                         tooltip: '검색어 지우기',
-                        icon: const Icon(Icons.close),
+                        icon: const ExperienceIcon('X'),
                         onPressed: () => _search(''),
                       ),
                       IconButton(
                         tooltip: '검색하기',
-                        icon: const Icon(Icons.search),
+                        icon: const ExperienceIcon('Search'),
                         onPressed: _search,
                       ),
                     ],
@@ -192,19 +196,19 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen> {
                 for (final query in _recent)
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.history),
+                    leading: const ExperienceIcon('History'),
                     title: Text(query),
                     onTap: () => _search(query),
                     trailing: IconButton(
                       tooltip: '$query 검색 기록 삭제',
                       onPressed: () => setState(() => _recent.remove(query)),
-                      icon: const Icon(Icons.close),
+                      icon: const ExperienceIcon('X'),
                     ),
                   ),
               ] else ...[
                 SegmentedButton<bool>(
                   segments: const [
-                    ButtonSegment(value: false, label: Text('작품')),
+                    ButtonSegment(value: false, label: Text('기록·앨범')),
                     ButtonSegment(value: true, label: Text('사용자')),
                   ],
                   selected: {_users},
@@ -272,7 +276,7 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen> {
                               page.hasMore &&
                               page.nextOffset > _workOffsets[index])
                             _loadMore(
-                              '작품 더 보기',
+                              '기록·앨범 더 보기',
                               _workOffsets,
                               _workOffsets[index],
                               page.nextOffset,
@@ -328,7 +332,7 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen> {
   }) => works.isEmpty
       ? showEmpty
             ? const SocialEmpty(
-                title: '찾는 작품이 아직 없어요.',
+                title: '찾는 기록이나 앨범이 아직 없어요.',
                 message: '다른 제목이나 주제로 찾아보세요.',
               )
             : const SizedBox.shrink()
@@ -370,13 +374,26 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen> {
                 key: ValueKey(person.userId),
                 contentPadding: EdgeInsets.zero,
                 title: Text(person.displayName),
-                subtitle: Text(
-                  '@${person.handle} · 공개 작품 ${person.worksCount}개',
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('@${person.handle}'),
+                    Text(
+                      '기록 ${person.momentsCount} · 앨범 ${person.worksCount}',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(fontSize: 11),
+                    ),
+                  ],
                 ),
-                leading: CircleAvatar(
-                  child: Text(person.displayName.characters.firstOrNull ?? 's'),
+                leading: SocialProfileAvatar(
+                  name: person.displayName,
+                  imageUrl: person.avatarUrl,
+                  size: 44,
                 ),
-                trailing: const Icon(Icons.chevron_right),
+                trailing: const ExperienceIcon('ChevronRight'),
                 onTap: () => _openResult(
                   () => openSocialProfile(context, person.userId),
                 ),

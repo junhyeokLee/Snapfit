@@ -10,14 +10,12 @@ import '../../../../../core/theme/snapfit_design_tokens.dart';
 class HomeBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
-  final bool hasUnreadNotification;
   final bool rail;
 
   const HomeBottomNavigationBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
-    this.hasUnreadNotification = false,
     this.rail = false,
   });
 
@@ -38,9 +36,9 @@ class HomeBottomNavigationBar extends StatelessWidget {
         : currentIndex;
     const destinations = [
       (0, '내 앨범', 'BookOpen'),
-      (7, '피드', 'Compass'),
-      (2, '스토어', 'Layers2'),
-      (6, '내 디자인', 'Bookmark'),
+      (7, '피드', 'Globe'),
+      (2, '스토어', 'ShoppingBag'),
+      (6, '내 디자인', 'LayoutGrid'),
       (4, '마이', 'UserRound'),
     ];
     final scaledLabel = MediaQuery.textScalerOf(context).scale(12);
