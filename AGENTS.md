@@ -79,3 +79,12 @@
   해제한다. 다른 작업의 빌드·렌더가 진행 중이면 겹치지 않도록 조정한다.
 - 앱 전체 빌드나 상시 미리보기 서버는 사용자 요청 없이 실행하지 않는다. 제작·운영 등록과
   실제 앱 공개를 구분하고 최초 공개일은 실제 공개가 확인된 뒤에 기록한다.
+
+## 작업 역할과 도구 담당
+
+- 큰 작업은 `snapfit-planner` → `snapfit-designer` → `snapfit-developer` 순서로 한 번에 하나씩
+  진행한다. 동시에 여러 에이전트를 띄우지 않는다(무거운 작업 1개 원칙).
+- 리뷰: Flutter는 `flutter-reviewer`, Supabase/SQL은 `database-reviewer`, 결제·권한은
+  `security-reviewer`. 빌드·분석 에러는 `dart-build-resolver`. 디버깅은 superpowers의
+  `systematic-debugging`. 마케팅 문구는 `marketing-agent`.
+- 같은 일을 다른 플러그인의 비슷한 스킬로 중복 실행하지 않는다.
